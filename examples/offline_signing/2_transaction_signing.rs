@@ -20,7 +20,7 @@ use iota_client::{
         payload::{transaction::TransactionPayload, Payload},
         unlock_block::UnlockBlocks,
     },
-    secret::{mnemonic::MnemonicSecretManager, Network, SecretManager, SignMessageMetadata},
+    secret::{mnemonic::MnemonicSecretManager, Network, SecretManageExt, SecretManager, SignMessageMetadata},
     Result,
 };
 
@@ -31,8 +31,9 @@ const SIGNED_TRANSACTION_FILE_NAME: &str = "examples/offline_signing/signed_tran
 async fn main() -> Result<()> {
     dotenv().ok();
 
-    let secret_manager =
-        MnemonicSecretManager::try_from_mnemonic(&env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap())?;
+    let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
+        &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
+    )?);
 
     let prepared_transaction = read_prepared_transaction_from_file(PREPARED_TRANSACTION_FILE_NAME)?;
 

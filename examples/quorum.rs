@@ -7,7 +7,9 @@ use std::env;
 
 use dotenv::dotenv;
 use iota_client::{
-    node_api::indexer::query_parameters::QueryParameter, secret::mnemonic::MnemonicSecretManager, Client, Result,
+    node_api::indexer::query_parameters::QueryParameter,
+    secret::{mnemonic::MnemonicSecretManager, SecretManager},
+    Client, Result,
 };
 
 /// In this example we will get the account balance of a known seed with quorum, which will compare the responses from
@@ -27,8 +29,9 @@ async fn main() -> Result<()> {
 
     // This example uses dotenv, which is not safe for use in production
     dotenv().ok();
-    let secret_manager =
-        MnemonicSecretManager::try_from_mnemonic(&env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap())?;
+    let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
+        &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
+    )?);
 
     // Generate the first address
     let addresses = client

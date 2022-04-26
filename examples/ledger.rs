@@ -3,7 +3,10 @@
 
 //! cargo run --example ledger --features=ledger --release
 
-use iota_client::{secret::ledger::LedgerSecretManager, Client, Result};
+use iota_client::{
+    secret::{ledger::LedgerSecretManager, SecretManager},
+    Client, Result,
+};
 
 /// In this example we will create addresses with a ledger nano hardware wallet
 
@@ -16,7 +19,7 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
 
-    let secret_manager = LedgerSecretManager::new(false);
+    let secret_manager = SecretManager::LedgerNano(LedgerSecretManager::new(false));
 
     // Generate addresses with custom account index and range
     let addresses = client

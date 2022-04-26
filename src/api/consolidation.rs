@@ -18,7 +18,7 @@ use crate::{
 /// Returns the address to which the funds got consolidated, if any were available
 pub async fn consolidate_funds(
     client: &Client,
-    secret_manager: &dyn SecretManager,
+    secret_manager: &SecretManager,
     account_index: u32,
     address_range: Range<u32>,
 ) -> Result<String> {

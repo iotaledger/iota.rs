@@ -30,12 +30,12 @@ pub use types::{GenerateAddressMetadata, LedgerStatus, Network, SignMessageMetad
 use self::ledger::LedgerSecretManager;
 #[cfg(feature = "stronghold")]
 use self::stronghold::StrongholdSecretManager;
-use self::{mnemonic::MnemonicSecretManager, types::SecretManagerTypeDto};
+use self::{mnemonic::MnemonicSecretManager, types::SecretManagerDto};
 use crate::secret::types::InputSigningData;
 
 /// The secret manager interface.
 #[async_trait]
-pub trait SecretManager: Send + Sync {
+pub trait SecretManage: Send + Sync {
     /// Generates an address.
     ///
     /// For `coin_type`, see also <https://github.com/satoshilabs/slips/blob/master/slip-0044.md>.
@@ -58,12 +58,33 @@ pub trait SecretManager: Send + Sync {
         essence_hash: &[u8; 32],
         metadata: &SignMessageMetadata<'a>,
     ) -> crate::Result<UnlockBlock>;
+}
 
+/// An extension to [`SecretManager`].
+///
+/// This trait is automatically implemented for any type that implements [`SecretManager`] - it contains methods for
+/// internal use that are based on the methods in [`SecretManager`]. Secret managers don't implement this on their
+/// sides.
+#[async_trait]
+pub trait SecretManageExt {
     /// Signs transaction essence.
     ///
     /// Secret managers usually don't implement this, as the default implementation has taken care of the placement of
     /// blocks (e.g. references between them). [SecretManager::signature_unlock()] will be invoked every time a
     /// necessary signing action needs to be performed.
+    async fn sign_transaction_essence<'a>(
+        &self,
+        essence: &TransactionEssence,
+        inputs: &[InputSigningData],
+        metadata: SignMessageMetadata<'a>,
+    ) -> crate::Result<Vec<UnlockBlock>>;
+}
+
+#[async_trait]
+impl<S> SecretManageExt for S
+where
+    S: SecretManage,
+{
     async fn sign_transaction_essence<'a>(
         &self,
         essence: &TransactionEssence,
@@ -134,30 +155,32 @@ pub trait SecretManager: Send + Sync {
     }
 }
 
-/// Supported secret managers.
-///
-/// Boxes are because of clippy::large_enum_variant.
-pub enum SecretManagerType {
+/// Supported secret managers
+
+// Boxes make this type clumsy to use.
+#[allow(clippy::large_enum_variant)]
+
+pub enum SecretManager {
     /// Secret manager that uses [`iota_stronghold`] as the backing storage.
     #[cfg(feature = "stronghold")]
     #[cfg_attr(docsrs, doc(cfg(feature = "stronghold")))]
-    Stronghold(Box<StrongholdSecretManager>),
+    Stronghold(StrongholdSecretManager),
 
     /// Secret manager that uses a Ledger hardware wallet.
     #[cfg(feature = "ledger")]
     #[cfg_attr(docsrs, doc(cfg(feature = "ledger")))]
-    LedgerNano(Box<LedgerSecretManager>),
+    LedgerNano(LedgerSecretManager),
 
     /// Secret manager that uses a Ledger Speculos simulator.
     #[cfg(feature = "ledger")]
     #[cfg_attr(docsrs, doc(cfg(feature = "ledger")))]
-    LedgerNanoSimulator(Box<LedgerSecretManager>),
+    LedgerNanoSimulator(LedgerSecretManager),
 
     /// Secret manager that uses only a mnemonic.
-    Mnemonic(Box<MnemonicSecretManager>),
+    Mnemonic(MnemonicSecretManager),
 }
 
-impl std::fmt::Debug for SecretManagerType {
+impl std::fmt::Debug for SecretManager {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             #[cfg(feature = "stronghold")]
@@ -171,13 +194,13 @@ impl std::fmt::Debug for SecretManagerType {
     }
 }
 
-impl FromStr for SecretManagerType {
+impl FromStr for SecretManager {
     type Err = crate::Error;
 
     fn from_str(s: &str) -> crate::Result<Self> {
         Ok(match serde_json::from_str(s)? {
             #[cfg(feature = "stronghold")]
-            SecretManagerTypeDto::Stronghold(stronghold_dto) => {
+            SecretManagerDto::Stronghold(stronghold_dto) => {
                 let mut builder = StrongholdSecretManager::builder();
 
                 if let Some(password) = &stronghold_dto.password {
@@ -188,26 +211,24 @@ impl FromStr for SecretManagerType {
                     builder = builder.snapshot_path(PathBuf::from(snapshot_path));
                 }
 
-                Self::Stronghold(Box::new(builder.build()))
+                Self::Stronghold(builder.build())
             }
 
             #[cfg(feature = "ledger")]
-            SecretManagerTypeDto::LedgerNano => Self::LedgerNano(Box::new(LedgerSecretManager::new(false))),
+            SecretManagerDto::LedgerNano => Self::LedgerNano(LedgerSecretManager::new(false)),
 
             #[cfg(feature = "ledger")]
-            SecretManagerTypeDto::LedgerNanoSimulator => {
-                Self::LedgerNanoSimulator(Box::new(LedgerSecretManager::new(true)))
-            }
+            SecretManagerDto::LedgerNanoSimulator => Self::LedgerNanoSimulator(LedgerSecretManager::new(true)),
 
-            SecretManagerTypeDto::Mnemonic(mnemonic) => {
-                Self::Mnemonic(Box::new(MnemonicSecretManager::try_from_mnemonic(&mnemonic)?))
+            SecretManagerDto::Mnemonic(mnemonic) => {
+                Self::Mnemonic(MnemonicSecretManager::try_from_mnemonic(&mnemonic)?)
             }
         })
     }
 }
 
 #[async_trait]
-impl SecretManager for SecretManagerType {
+impl SecretManage for SecretManager {
     async fn generate_addresses(
         &self,
         coin_type: u32,
@@ -218,24 +239,24 @@ impl SecretManager for SecretManagerType {
     ) -> crate::Result<Vec<Address>> {
         match self {
             #[cfg(feature = "stronghold")]
-            SecretManagerType::Stronghold(secret_manager) => {
+            SecretManager::Stronghold(secret_manager) => {
                 secret_manager
                     .generate_addresses(coin_type, account_index, address_indexes, internal, metadata)
                     .await
             }
             #[cfg(feature = "ledger")]
-            SecretManagerType::LedgerNano(secret_manager) => {
+            SecretManager::LedgerNano(secret_manager) => {
                 secret_manager
                     .generate_addresses(coin_type, account_index, address_indexes, internal, metadata)
                     .await
             }
             #[cfg(feature = "ledger")]
-            SecretManagerType::LedgerNanoSimulator(secret_manager) => {
+            SecretManager::LedgerNanoSimulator(secret_manager) => {
                 secret_manager
                     .generate_addresses(coin_type, account_index, address_indexes, internal, metadata)
                     .await
             }
-            SecretManagerType::Mnemonic(secret_manager) => {
+            SecretManager::Mnemonic(secret_manager) => {
                 secret_manager
                     .generate_addresses(coin_type, account_index, address_indexes, internal, metadata)
                     .await
@@ -251,18 +272,18 @@ impl SecretManager for SecretManagerType {
     ) -> crate::Result<UnlockBlock> {
         match self {
             #[cfg(feature = "stronghold")]
-            SecretManagerType::Stronghold(secret_manager) => {
+            SecretManager::Stronghold(secret_manager) => {
                 secret_manager.signature_unlock(input, essence_hash, metadata).await
             }
             #[cfg(feature = "ledger")]
-            SecretManagerType::LedgerNano(secret_manager) => {
+            SecretManager::LedgerNano(secret_manager) => {
                 secret_manager.signature_unlock(input, essence_hash, metadata).await
             }
             #[cfg(feature = "ledger")]
-            SecretManagerType::LedgerNanoSimulator(secret_manager) => {
+            SecretManager::LedgerNanoSimulator(secret_manager) => {
                 secret_manager.signature_unlock(input, essence_hash, metadata).await
             }
-            SecretManagerType::Mnemonic(secret_manager) => {
+            SecretManager::Mnemonic(secret_manager) => {
                 secret_manager.signature_unlock(input, essence_hash, metadata).await
             }
         }

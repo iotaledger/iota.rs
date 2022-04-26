@@ -635,7 +635,7 @@ impl Client {
     }
 
     /// Return a list of addresses from a secret manager regardless of their validity.
-    pub fn get_addresses<'a>(&'a self, secret_manager: &'a dyn SecretManager) -> GetAddressesBuilder<'a> {
+    pub fn get_addresses<'a>(&'a self, secret_manager: &'a SecretManager) -> GetAddressesBuilder<'a> {
         GetAddressesBuilder::new(secret_manager).with_client(self)
     }
 
@@ -751,7 +751,7 @@ impl Client {
     /// Returns the address to which the funds got consolidated, if any were available
     pub async fn consolidate_funds(
         &self,
-        secret_manager: &dyn SecretManager,
+        secret_manager: &SecretManager,
         account_index: u32,
         address_range: Range<u32>,
     ) -> crate::Result<String> {

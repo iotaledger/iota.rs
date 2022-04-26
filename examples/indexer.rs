@@ -7,8 +7,10 @@ use std::env;
 
 use dotenv::dotenv;
 use iota_client::{
-    node_api::indexer::query_parameters::QueryParameter, secret::mnemonic::MnemonicSecretManager,
-    utils::request_funds_from_faucet, Client, Result,
+    node_api::indexer::query_parameters::QueryParameter,
+    secret::{mnemonic::MnemonicSecretManager, SecretManager},
+    utils::request_funds_from_faucet,
+    Client, Result,
 };
 
 /// In this example we will get output ids from the indexer API
@@ -24,8 +26,9 @@ async fn main() -> Result<()> {
     // This example uses dotenv, which is not safe for use in production
     // Configure your own seed in ".env". Since the output amount cannot be zero, the seed must contain non-zero balance
     dotenv().ok();
-    let secret_manager =
-        MnemonicSecretManager::try_from_mnemonic(&env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap())?;
+    let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
+        &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
+    )?);
 
     let address = client.get_addresses(&secret_manager).with_range(0..1).get_raw().await?[0];
 

@@ -23,7 +23,7 @@ use packable::PackableExt;
 use crate::{
     api::{types::PreparedTransactionData, ClientMessageBuilder},
     bee_message::output::AliasId,
-    secret::{types::InputSigningData, Network, SignMessageMetadata},
+    secret::{types::InputSigningData, Network, SecretManageExt, SignMessageMetadata},
     Error, Result,
 };
 

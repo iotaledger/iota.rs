@@ -7,8 +7,10 @@ use std::env;
 
 use dotenv::dotenv;
 use iota_client::{
-    bee_message::output::Output, node_api::indexer::query_parameters::QueryParameter,
-    secret::mnemonic::MnemonicSecretManager, Client, Result,
+    bee_message::output::Output,
+    node_api::indexer::query_parameters::QueryParameter,
+    secret::{mnemonic::MnemonicSecretManager, SecretManager},
+    Client, Result,
 };
 
 /// In this example we will get the outputs of an address that have no additional unlock conditions and sum the amounts
@@ -30,7 +32,7 @@ async fn main() -> Result<()> {
 
     // Generate the first address
     let addresses = client
-        .get_addresses(&secret_manager)
+        .get_addresses(&SecretManager::Mnemonic(secret_manager))
         .with_account_index(0)
         .with_range(0..1)
         .finish()

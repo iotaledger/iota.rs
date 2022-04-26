@@ -6,7 +6,10 @@
 use std::env;
 
 use dotenv::dotenv;
-use iota_client::{secret::mnemonic::MnemonicSecretManager, Client, Result};
+use iota_client::{
+    secret::{mnemonic::MnemonicSecretManager, SecretManager},
+    Client, Result,
+};
 
 /// In this example we will send a transaction
 
@@ -21,8 +24,9 @@ async fn main() -> Result<()> {
     // This example uses dotenv, which is not safe for use in production
     // Configure your own seed in ".env". Since the output amount cannot be zero, the seed must contain non-zero balance
     dotenv().ok();
-    let secret_manager =
-        MnemonicSecretManager::try_from_mnemonic(&env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap())?;
+    let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
+        &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
+    )?);
 
     let message = client
         .message()

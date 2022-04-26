@@ -18,7 +18,7 @@ use crate::{
         client_method::ClientMethod, message::Message, message_type::MessageType, response::Response,
         response_type::ResponseType,
     },
-    secret::SecretManagerType,
+    secret::SecretManager,
     Client, Result,
 };
 
@@ -85,7 +85,7 @@ impl ClientMessageHandler {
                 secret_manager,
                 options,
             } => {
-                let secret_manager: SecretManagerType = secret_manager.parse()?;
+                let secret_manager: SecretManager = secret_manager.parse()?;
                 let addresses = self
                     .client
                     .get_addresses(&secret_manager)
@@ -101,7 +101,7 @@ impl ClientMessageHandler {
                 // Prepare transaction
                 let mut transaction_builder = self.client.message();
 
-                let secret_manager: Option<SecretManagerType> = match secret_manager {
+                let secret_manager: Option<SecretManager> = match secret_manager {
                     Some(secret_manager) => Some(secret_manager.parse()?),
                     None => None,
                 };
@@ -277,7 +277,7 @@ impl ClientMessageHandler {
                 account_index,
                 address_range,
             } => {
-                let secret_manager: SecretManagerType = secret_manager.parse()?;
+                let secret_manager: SecretManager = secret_manager.parse()?;
                 Ok(ResponseType::ConsolidatedFunds(
                     self.client
                         .consolidate_funds(&secret_manager, *account_index, address_range.clone())

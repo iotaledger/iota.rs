@@ -5,7 +5,10 @@
 use std::env;
 
 use dotenv::dotenv;
-use iota_client::{secret::mnemonic::MnemonicSecretManager, Client, Result};
+use iota_client::{
+    secret::{mnemonic::MnemonicSecretManager, SecretManager},
+    Client, Result,
+};
 
 /// In this example we will send 9_000_000 tokens to the following 3 locations, respectively
 /// First send 10 Mi from the faucet to atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r
@@ -38,10 +41,12 @@ async fn main() -> Result<()> {
     // Configure your own seed in ".env". Since the output amount cannot be zero, the seed must contain non-zero balance
     dotenv().ok();
 
-    let secret_manager_1 =
-        MnemonicSecretManager::try_from_hex_seed(&env::var("NON_SECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap())?;
-    let secret_manager_2 =
-        MnemonicSecretManager::try_from_hex_seed(&env::var("NON_SECURE_USE_OF_DEVELOPMENT_SEED_2").unwrap())?;
+    let secret_manager_1 = SecretManager::Mnemonic(MnemonicSecretManager::try_from_hex_seed(
+        &env::var("NON_SECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap(),
+    )?);
+    let secret_manager_2 = SecretManager::Mnemonic(MnemonicSecretManager::try_from_hex_seed(
+        &env::var("NON_SECURE_USE_OF_DEVELOPMENT_SEED_2").unwrap(),
+    )?);
 
     let message = client
         .message()

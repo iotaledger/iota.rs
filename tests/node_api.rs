@@ -6,7 +6,10 @@
 use std::str::FromStr;
 
 use bee_message::{output::OutputId, payload::transaction::TransactionId, MessageId};
-use iota_client::{node_api::indexer::query_parameters::QueryParameter, secret::mnemonic::MnemonicSecretManager};
+use iota_client::{
+    node_api::indexer::query_parameters::QueryParameter,
+    secret::{mnemonic::MnemonicSecretManager, SecretManager},
+};
 
 const DEFAULT_NODE_URL: &str = "http://localhost:14265";
 
@@ -109,9 +112,10 @@ async fn test_post_message_with_transaction() {
         .unwrap();
 
     // Insert your seed. Since the output amount cannot be zero. The seed must contain non-zero balance.
-    let secret_manager =
+    let secret_manager = SecretManager::Mnemonic(
         MnemonicSecretManager::try_from_hex_seed("256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2")
-            .unwrap();
+            .unwrap(),
+    );
     let message_id = iota
         .message()
         .with_secret_manager(&secret_manager)

@@ -170,9 +170,9 @@ pub enum Error {
     /// Rw lock failed.
     #[error("Rw lock failed")]
     PoisonError,
-    /// Specifically used for `TryInfo` implementations for `SecretManagerType`.
-    #[error("cannot unwrap a SecretManagerType: type mismatch!")]
-    SecretManagerTypeMismatch,
+    /// Specifically used for `TryInfo` implementations for `SecretManager`.
+    #[error("cannot unwrap a SecretManager: type mismatch!")]
+    SecretManagerMismatch,
     /// Missing unlock block error
     #[error("missing unlock block")]
     MissingUnlockBlock,

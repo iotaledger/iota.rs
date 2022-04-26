@@ -7,8 +7,10 @@ use std::env;
 
 use dotenv::dotenv;
 use iota_client::{
-    api::GetAddressesBuilder, constants::SHIMMER_TESTNET_BECH32_HRP, secret::mnemonic::MnemonicSecretManager, Client,
-    Result,
+    api::GetAddressesBuilder,
+    constants::SHIMMER_TESTNET_BECH32_HRP,
+    secret::{mnemonic::MnemonicSecretManager, SecretManager},
+    Client, Result,
 };
 
 /// In this example we will create addresses from a seed defined in .env
@@ -24,8 +26,9 @@ async fn main() -> Result<()> {
 
     // This example uses dotenv, which is not safe for use in production
     dotenv().ok();
-    let secret_manager =
-        MnemonicSecretManager::try_from_mnemonic(&env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap())?;
+    let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
+        &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
+    )?);
 
     // Generate addresses with default account index and range
     let addresses = client.get_addresses(&secret_manager).finish().await.unwrap();

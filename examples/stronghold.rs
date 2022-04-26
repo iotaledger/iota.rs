@@ -6,7 +6,10 @@
 use std::{env, path::PathBuf};
 
 use dotenv::dotenv;
-use iota_client::{secret::stronghold::StrongholdSecretManager, Client, Result};
+use iota_client::{
+    secret::{stronghold::StrongholdSecretManager, SecretManager},
+    Client, Result,
+};
 
 /// In this example we will create addresses with a stronghold secret manager
 
@@ -32,7 +35,7 @@ async fn main() -> Result<()> {
 
     // Generate addresses with custom account index and range
     let addresses = client
-        .get_addresses(&stronghold_secret_manager)
+        .get_addresses(&SecretManager::Stronghold(stronghold_secret_manager))
         .with_account_index(0)
         .with_range(0..2)
         .finish()

@@ -14,7 +14,7 @@ use crate::Result;
 
 /// DTO for secret manager types with required data.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum SecretManagerTypeDto {
+pub enum SecretManagerDto {
     /// Stronghold
     #[cfg(feature = "stronghold")]
     #[cfg_attr(docsrs, doc(cfg(feature = "stronghold")))]

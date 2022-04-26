@@ -11,7 +11,7 @@ use iota_client::{
         unlock_condition::AddressUnlockCondition, BasicOutputBuilder, NativeTokensBuilder, Output, UnlockCondition,
     },
     node_api::indexer::query_parameters::QueryParameter,
-    secret::mnemonic::MnemonicSecretManager,
+    secret::{mnemonic::MnemonicSecretManager, SecretManager},
     Client, Result,
 };
 
@@ -31,10 +31,12 @@ async fn main() -> Result<()> {
     // Configure your own seed in ".env". Since the output amount cannot be zero, the seed must contain non-zero balance
     dotenv().ok();
 
-    let secret_manager_1 =
-        MnemonicSecretManager::try_from_mnemonic(&env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap())?;
-    let secret_manager_2 =
-        MnemonicSecretManager::try_from_hex_seed(&env::var("NON_SECURE_USE_OF_DEVELOPMENT_SEED_2").unwrap())?;
+    let secret_manager_1 = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
+        &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
+    )?);
+    let secret_manager_2 = SecretManager::Mnemonic(MnemonicSecretManager::try_from_hex_seed(
+        &env::var("NON_SECURE_USE_OF_DEVELOPMENT_SEED_2").unwrap(),
+    )?);
 
     // Get output ids of outputs that can be controlled by this address without further unlock constraints
     let output_ids = client

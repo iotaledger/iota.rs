@@ -16,7 +16,7 @@ use crypto::{
     keys::slip10::{Chain, Curve, Seed},
 };
 
-use super::{types::InputSigningData, GenerateAddressMetadata, SecretManager, SignMessageMetadata};
+use super::{types::InputSigningData, GenerateAddressMetadata, SecretManage, SignMessageMetadata};
 use crate::{constants::HD_WALLET_TYPE, Client, Result};
 
 /// Secret manager that uses only a mnemonic.
@@ -25,7 +25,7 @@ use crate::{constants::HD_WALLET_TYPE, Client, Result};
 pub struct MnemonicSecretManager(Seed);
 
 #[async_trait]
-impl SecretManager for MnemonicSecretManager {
+impl SecretManage for MnemonicSecretManager {
     async fn generate_addresses(
         &self,
         coin_type: u32,

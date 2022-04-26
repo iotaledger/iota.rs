@@ -46,7 +46,7 @@ use crate::{
 /// Builder of the message API
 pub struct ClientMessageBuilder<'a> {
     client: &'a Client,
-    secret_manager: Option<&'a dyn SecretManager>,
+    secret_manager: Option<&'a SecretManager>,
     coin_type: u32,
     account_index: u32,
     initial_address_index: u32,
@@ -129,7 +129,7 @@ impl<'a> ClientMessageBuilder<'a> {
     }
 
     /// Sets the seed.
-    pub fn with_secret_manager(mut self, manager: &'a dyn SecretManager) -> Self {
+    pub fn with_secret_manager(mut self, manager: &'a SecretManager) -> Self {
         self.secret_manager.replace(manager);
         self
     }

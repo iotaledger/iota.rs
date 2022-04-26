@@ -20,12 +20,12 @@ use super::{
     StrongholdAdapter,
 };
 use crate::{
-    secret::{types::InputSigningData, GenerateAddressMetadata, SecretManager, SignMessageMetadata},
+    secret::{types::InputSigningData, GenerateAddressMetadata, SecretManage, SignMessageMetadata},
     Result,
 };
 
 #[async_trait]
-impl SecretManager for StrongholdAdapter {
+impl SecretManage for StrongholdAdapter {
     async fn generate_addresses(
         &self,
         coin_type: u32,

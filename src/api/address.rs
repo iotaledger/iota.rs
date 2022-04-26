@@ -9,14 +9,14 @@ use serde::Deserialize;
 use crate::{
     api::types::{Bech32Addresses, RawAddresses},
     constants::{SHIMMER_COIN_TYPE, SHIMMER_TESTNET_BECH32_HRP},
-    secret::{GenerateAddressMetadata, Network, SecretManager},
+    secret::{GenerateAddressMetadata, Network, SecretManage, SecretManager},
     Client, Error, Result,
 };
 
 /// Builder of get_addresses API
 pub struct GetAddressesBuilder<'a> {
     client: Option<&'a Client>,
-    secret_manager: Option<&'a dyn SecretManager>,
+    secret_manager: Option<&'a SecretManager>,
     coin_type: u32,
     account_index: u32,
     range: Range<u32>,
@@ -63,7 +63,7 @@ impl<'a> Default for GetAddressesBuilder<'a> {
 
 impl<'a> GetAddressesBuilder<'a> {
     /// Create get_addresses builder
-    pub fn new(manager: &'a dyn SecretManager) -> Self {
+    pub fn new(manager: &'a SecretManager) -> Self {
         Self {
             secret_manager: Some(manager),
             ..Default::default()
@@ -233,7 +233,7 @@ impl<'a> GetAddressesBuilder<'a> {
 
 /// Function to find the index and public (false) or internal (true) type of an Bech32 encoded address
 pub async fn search_address(
-    secret_manager: &dyn SecretManager,
+    secret_manager: &SecretManager,
     bech32_hrp: &str,
     coin_type: u32,
     account_index: u32,
