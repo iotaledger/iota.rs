@@ -10,13 +10,13 @@ use crate::{
     api::types::{Bech32Addresses, RawAddresses},
     constants::{SHIMMER_COIN_TYPE, SHIMMER_TESTNET_BECH32_HRP},
     secret::{GenerateAddressMetadata, Network, SecretManage, SecretManager},
-    Client, Error, Result,
+    Client, Result,
 };
 
 /// Builder of get_addresses API
 pub struct GetAddressesBuilder<'a> {
     client: Option<&'a Client>,
-    secret_manager: Option<&'a SecretManager>,
+    secret_manager: &'a SecretManager,
     coin_type: u32,
     account_index: u32,
     range: Range<u32>,
@@ -43,11 +43,12 @@ pub struct GetAddressesBuilderOptions {
     pub metadata: Option<GenerateAddressMetadata>,
 }
 
-impl<'a> Default for GetAddressesBuilder<'a> {
-    fn default() -> Self {
+impl<'a> GetAddressesBuilder<'a> {
+    /// Create get_addresses builder
+    pub fn new(manager: &'a SecretManager) -> Self {
         Self {
             client: None,
-            secret_manager: None,
+            secret_manager: manager,
             coin_type: SHIMMER_COIN_TYPE,
             account_index: 0,
             range: 0..super::ADDRESS_GAP_RANGE,
@@ -57,16 +58,6 @@ impl<'a> Default for GetAddressesBuilder<'a> {
                 syncing: true,
                 network: Network::Testnet,
             },
-        }
-    }
-}
-
-impl<'a> GetAddressesBuilder<'a> {
-    /// Create get_addresses builder
-    pub fn new(manager: &'a SecretManager) -> Self {
-        Self {
-            secret_manager: Some(manager),
-            ..Default::default()
         }
     }
 
@@ -150,7 +141,6 @@ impl<'a> GetAddressesBuilder<'a> {
 
         let addresses = self
             .secret_manager
-            .ok_or(Error::MissingParameter("secret manager"))?
             .generate_addresses(
                 self.coin_type,
                 self.account_index,
@@ -168,7 +158,6 @@ impl<'a> GetAddressesBuilder<'a> {
     /// Consume the builder and get a vector of public addresses
     pub async fn get_raw(self) -> Result<Vec<Address>> {
         self.secret_manager
-            .ok_or(Error::MissingParameter("secret manager"))?
             .generate_addresses(
                 self.coin_type,
                 self.account_index,
@@ -202,9 +191,8 @@ impl<'a> GetAddressesBuilder<'a> {
 
     /// Consume the builder and get the vector of public and internal addresses
     pub async fn get_all_raw(self) -> Result<RawAddresses> {
-        let secret_manager = self.secret_manager.ok_or(Error::MissingParameter("secret manager"))?;
-
-        let public_addresses = secret_manager
+        let public_addresses = self
+            .secret_manager
             .generate_addresses(
                 self.coin_type,
                 self.account_index,
@@ -214,7 +202,8 @@ impl<'a> GetAddressesBuilder<'a> {
             )
             .await?;
 
-        let internal_addresses = secret_manager
+        let internal_addresses = self
+            .secret_manager
             .generate_addresses(
                 self.coin_type,
                 self.account_index,
