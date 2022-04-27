@@ -14,7 +14,7 @@ use std::{
 
 use dotenv::dotenv;
 use iota_client::{
-    api::PreparedTransactionData,
+    api::{PreparedTransactionData, PreparedTransactionDataDto},
     bee_message::{
         address::Address,
         payload::{transaction::TransactionPayload, Payload},
@@ -73,7 +73,9 @@ fn read_prepared_transaction_from_file<P: AsRef<Path>>(path: P) -> Result<Prepar
     let mut json = String::new();
     file.read_to_string(&mut json)?;
 
-    Ok(serde_json::from_str(&json)?)
+    Ok(PreparedTransactionData::try_from(&serde_json::from_str::<
+        PreparedTransactionDataDto,
+    >(&json)?)?)
 }
 
 fn write_signed_transaction_to_file<P: AsRef<Path>>(path: P, signed_transaction: Payload) -> Result<()> {

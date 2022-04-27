@@ -29,7 +29,7 @@ async fn main() -> Result<()> {
     let addresses = offline_client
         .get_addresses(&signer)
         .with_range(0..10)
-        .with_bech32_hrp("atoi")
+        .with_bech32_hrp("rms")
         .finish()
         .await?;
 

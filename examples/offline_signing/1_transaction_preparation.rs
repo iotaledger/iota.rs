@@ -10,7 +10,10 @@ use std::{
     path::Path,
 };
 
-use iota_client::{api::PreparedTransactionData, Client, Result};
+use iota_client::{
+    api::{PreparedTransactionData, PreparedTransactionDataDto},
+    Client, Result,
+};
 
 const ADDRESS_FILE_NAME: &str = "examples/offline_signing/addresses.json";
 const PREPARED_TRANSACTION_FILE_NAME: &str = "examples/offline_signing/prepared_transaction.json";
@@ -18,7 +21,7 @@ const PREPARED_TRANSACTION_FILE_NAME: &str = "examples/offline_signing/prepared_
 #[tokio::main]
 async fn main() -> Result<()> {
     // Address to which we want to send the amount.
-    let address = "atoi1qruzprxum2934lr3p77t96pzlecxv8pjzvtjrzdcgh2f5exa22n6gek0qdq";
+    let address = "rms1qruzprxum2934lr3p77t96pzlecxv8pjzvtjrzdcgh2f5exa22n6ga0vm69";
     // The amount to send.
     let amount = 1_000_000;
 
@@ -59,7 +62,7 @@ fn read_addresses_from_file<P: AsRef<Path>>(path: P) -> Result<Vec<String>> {
 }
 
 fn write_transaction_to_file<P: AsRef<Path>>(path: P, prepared_transaction: PreparedTransactionData) -> Result<()> {
-    let json = serde_json::to_string_pretty(&prepared_transaction)?;
+    let json = serde_json::to_string_pretty(&PreparedTransactionDataDto::from(&prepared_transaction))?;
     let mut file = BufWriter::new(File::create(path)?);
 
     println!("{}", json);
