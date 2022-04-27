@@ -7,14 +7,16 @@ import type {
     GenerateAddressesOptions,
     NodeInfo,
     OutputResponse,
+    Message,
+    MessageMetadata,
+    GenerateMessageOptions,
+    QueryParameter,
+    Payload,
+    PreparedTransactionData,
+    MessageId,
+    NetworkInfo,
 } from '../types';
-import type { Message } from '../types/message';
-import type { MessageMetadata } from '../types/messageMetadata';
-import type { GenerateMessageOptions } from '../types/generateMessageOptions';
-import type { QueryParameter } from '../types/queryParameters';
 import type { UTXOInput } from '../types/inputs/UTXOInput';
-import type { Payload } from '../types/payloads';
-import type { PreparedTransactionData } from '../types/preparedTransactionData';
 
 export class Client {
     private messageHandler: MessageHandler;
@@ -34,7 +36,7 @@ export class Client {
     /**
      * Gets the network related information such as network_id and min_pow_score
      */
-    async getNetworkInfo() {
+    async getNetworkInfo(): Promise<NetworkInfo> {
         const response = await this.messageHandler.callClientMethod({
             name: 'GetNetworkInfo',
         });
@@ -42,7 +44,7 @@ export class Client {
         return JSON.parse(response).payload;
     }
 
-    // TODO: proper type for queryParameters
+    /** Fetch output IDs */
     async outputIds(queryParameters: QueryParameter[]): Promise<string[]> {
         const response = await this.messageHandler.callClientMethod({
             name: 'OutputIds',
@@ -129,7 +131,7 @@ export class Client {
      * Returns tips that are ideal for attaching a message.
      * The tips can be considered as non-lazy and are therefore ideal for attaching a message.
      */
-    async getTips(): Promise<string[]> {
+    async getTips(): Promise<MessageId[]> {
         const response = await this.messageHandler.callClientMethod({
             name: 'GetTips',
         });
@@ -137,7 +139,7 @@ export class Client {
         return JSON.parse(response).payload;
     }
 
-    async postMessage(message: Message) {
+    async postMessage(message: Message): Promise<MessageId> {
         const response = await this.messageHandler.callClientMethod({
             name: 'PostMessage',
             data: {
@@ -219,7 +221,7 @@ export class Client {
     async prepareTransaction(
         signer?: string,
         options?: GenerateMessageOptions,
-    ) {
+    ): Promise<PreparedTransactionData> {
         const response = await this.messageHandler.callClientMethod({
             name: 'PrepareTransaction',
             data: {
@@ -237,7 +239,7 @@ export class Client {
     async signTransaction(
         signer: string,
         preparedTransactionData: PreparedTransactionData,
-    ) {
+    ): Promise<Payload> {
         const response = await this.messageHandler.callClientMethod({
             name: 'SignTransaction',
             data: {
@@ -252,7 +254,7 @@ export class Client {
     /**
      * Submit a payload in a message
      */
-    async submitPayload(payload: Payload) {
+    async submitPayload(payload: Payload): Promise<Message> {
         const response = await this.messageHandler.callClientMethod({
             name: 'SubmitPayload',
             data: {

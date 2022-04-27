@@ -1,8 +1,8 @@
 // Copyright 2021-2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 import type { Ed25519Signature } from '../ed25519Signature';
+import type { MilestoneOption } from '../milestoneOptions';
 import type { TypeBase } from '../typeBase';
-import type { ReceiptPayload } from './receiptPayload';
 
 /**
  * The global type for the payload.
@@ -17,36 +17,44 @@ export interface MilestonePayload extends TypeBase<7> {
      * The index name.
      */
     index: number;
+
     /**
      * The timestamp of the milestone.
      */
     timestamp: number;
+
+    /**
+     * The timestamp of the milestone.
+     */
+    lastMilestoneId: string;
+
     /**
      * The parents where this milestone attaches to.
      */
     parentMessageIds: string[];
+
     /**
-     * The merkle proof inclusions.
+     * The Merkle tree hash of all messages confirmed by this milestone.
      */
-    inclusionMerkleProof: string;
+    confirmedMerkleRoot: string;
+
     /**
-     * The next PoW score.
+     * The Merkle tree hash of all messages applied by this milestone.
      */
-    nextPoWScore: number;
-    /**
-     * The milestone at which the next PoW score becomes active.
-     */
-    nextPoWScoreMilestoneIndex: number;
+    appliedMerkleRoot: string;
+
     /**
      * The metadata.
      */
     metadata: string;
+
+    /**
+     * The milestone options.
+     */
+    options?: MilestoneOption[];
+
     /**
      * The signatures.
      */
     signatures: Ed25519Signature[];
-    /**
-     * Receipt payload.
-     */
-    receipt?: ReceiptPayload;
 }

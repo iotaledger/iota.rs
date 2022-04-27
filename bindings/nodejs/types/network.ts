@@ -12,7 +12,7 @@ export interface Auth {
 
 export interface MqttBrokerOptions {
     automaticDisconnect?: boolean;
-    // timeout in seconds
+    /** timeout in seconds */
     timeout?: number;
     useWs?: boolean;
     port?: number;
@@ -59,4 +59,32 @@ export interface Protocol {
         vByteFactorData: number;
         vByteFactorKey: number;
     };
+}
+
+/**
+ * Struct containing network and PoW related information
+ */
+export interface NetworkInfo {
+    network?: Network;
+    networkId?: number;
+    bech32HRP: number;
+    /** Mininum proof of work score*/
+    minPowScore: number;
+    /** Local proof of work */
+    localPow: boolean;
+    /** Fallback to local proof of work if the node doesn't support remote PoW */
+    fallbackToLocalPow: boolean;
+    /** Tips request interval during PoW in seconds */
+    tipsInterval: number;
+    /** Rent structure of the protocol */
+    rentStructure: RentStructureResponse;
+}
+
+/**
+ * Rent information about the node.
+ */
+export interface RentStructureResponse {
+    vByteCost: number;
+    vByteFactorKey: number;
+    vByteFactorData: number;
 }

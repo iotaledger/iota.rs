@@ -2,32 +2,29 @@
 // SPDX-License-Identifier: Apache-2.0
 import type { MigratedFunds } from '../migratedFunds';
 import type { TypeBase } from '../typeBase';
-import type { TreasuryTransactionPayload } from './treasuryTransactionPayload';
+import type { TreasuryTransactionPayload } from '../payloads/treasuryTransactionPayload';
 
 /**
- * The global type for the payload.
+ * The global type for the option.
  */
-export const RECEIPT_PAYLOAD_TYPE = 3;
+export const RECEIPT_MILESTONE_OPTION_TYPE = 0;
 
 /**
- * Receipt payload.
+ * Receipt milestone option.
  */
-export interface ReceiptPayload extends TypeBase<3> {
+export interface ReceiptMilestoneOption extends TypeBase<0> {
     /**
      * The milestone index at which the funds were migrated in the legacy network.
      */
     migratedAt: number;
-
     /**
      * Whether this Receipt is the final one for a given migrated at index.
      */
     final: boolean;
-
     /**
      * The index data.
      */
     funds: MigratedFunds[];
-
     /**
      * The TreasuryTransaction used to fund the funds.
      */
