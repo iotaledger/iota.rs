@@ -325,4 +325,9 @@ pub enum ClientMethod {
         /// Mnemonic
         mnemonic: String,
     },
+    /// Returns a message ID (Blake2b256 hash of message bytes) from a message
+    MessageId {
+        /// Message
+        message: MessageDto,
+    },
 }

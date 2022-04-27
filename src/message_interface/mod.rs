@@ -38,6 +38,7 @@ pub async fn send_message(handle: &ClientMessageHandler, message_type: MessageTy
 #[cfg(test)]
 mod tests {
     use std::env;
+    use std::str::FromStr;
 
     use dotenv::dotenv;
 
@@ -46,6 +47,7 @@ mod tests {
         message_interface::{self, ClientMethod, MessageType, ResponseType},
         secret::{types::Network, GenerateAddressMetadata},
     };
+    use bee_message::{MessageDto, MessageId};
 
     #[tokio::test]
     async fn generate_addresses() {
@@ -174,6 +176,48 @@ mod tests {
         match response.response_type() {
             ResponseType::GeneratedMessage(message_data) => {
                 println!("{}", serde_json::to_string(message_data).unwrap())
+            }
+            response_type => panic!("Unexpected response type: {:?}", response_type),
+        }
+    }
+
+    #[tokio::test]
+    async fn get_message_id() {
+        let client_config = r#"{"offline": true}"#.to_string();
+        let message_handler = message_interface::create_message_handler(Some(client_config))
+            .await
+            .unwrap();
+
+        let message = r#"
+        {
+            "protocolVersion":2,
+            "parentMessageIds":
+                [
+                    "0x2881c4781c4126f2413a704ebdf8cd375b46007f8df0e32ee9158684ac7e307b",
+                    "0xe1956a33d608cb2bcfd6adeb67fe56ed0f33fc5ffd157e28a71047ecc52b0314",
+                    "0xecc442108b1f30b6208ea57d24d892a6bdbdd9eb068dd34640a4d38b3c757132",
+                    "0xfad7cc342cfa1135f9c12e99f98ec1658ec178524d19bde7b4797d81cecf9ea6"
+                ],
+            "payload":
+                {
+                    "type":5,
+                    "tag":"0x484f524e4554205370616d6d6572",
+                    "data":"0x494f5441202d2041206e6577206461776e0a436f756e743a203030323330330a54696d657374616d703a20323032322d30342d32375431383a35343a30395a0a54697073656c656374696f6e3a203832c2b573"
+                },
+            "nonce":"22897"
+        }"#;
+
+        let message_dto: MessageDto = serde_json::from_str(message).unwrap();
+        let message_type = MessageType::CallClientMethod(ClientMethod::MessageId { message: message_dto });
+
+        let response = message_interface::send_message(&message_handler, message_type).await;
+
+        match response.response_type() {
+            ResponseType::MessageId(message_id) => {
+                assert_eq!(
+                    *message_id,
+                    MessageId::from_str("0xbcd2b9feed097a7aa8b894cae5eaeb1d8f516a14af25aa6f7d8aa7e2604c406c").unwrap()
+                );
             }
             response_type => panic!("Unexpected response type: {:?}", response_type),
         }

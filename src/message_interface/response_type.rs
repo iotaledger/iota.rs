@@ -125,6 +125,8 @@ pub enum ResponseType {
     GeneratedMnemonic(String),
     /// Mnemonic to hex encoded seed
     MnemonicHexSeed(String),
+    /// The BLAKE2b-256 hash of the message bytes
+    MessageId(MessageId),
     /// An error occurred.
     Error(Error),
     /// A panic occurred.

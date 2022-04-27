@@ -333,6 +333,11 @@ impl ClientMessageHandler {
             ClientMethod::MnemonicToHexSeed { mnemonic } => {
                 Ok(ResponseType::MnemonicHexSeed(Client::mnemonic_to_hex_seed(mnemonic)?))
             }
+            ClientMethod::MessageId { message } => {
+                let message = BeeMessage::try_from(message)?;
+
+                Ok(ResponseType::MessageId(message.id()))
+            }
         }
     }
 }
