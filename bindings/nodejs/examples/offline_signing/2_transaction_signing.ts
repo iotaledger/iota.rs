@@ -15,7 +15,7 @@ const PREPARED_TRANSACTION_FILE_NAME = path.join(
 );
 const SIGNED_TRANSACTION_FILE_NAME = path.join(
     __dirname,
-    '../signed_transaction.json',
+    '../../offline_signing/signed_transaction.json',
 );
 
 async function run() {

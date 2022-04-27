@@ -10,7 +10,7 @@ import path = require('path');
 // In this example we will send the signed transaction in a message
 const SIGNED_TRANSACTION_FILE_NAME = path.join(
     __dirname,
-    '../signed_transaction.json',
+    '../../offline_signing/signed_transaction.json',
 );
 
 async function run() {
@@ -21,7 +21,7 @@ async function run() {
         nodes: [
             {
                 // Insert your node URL here.
-                url: 'https://api.alphanet.iotaledger.net/',
+                url: 'http://localhost:14265/',
                 disabled: false,
             },
         ],
