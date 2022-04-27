@@ -38,6 +38,7 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: '14'
+          registry-url: 'https://registry.npmjs.org'
 
       - name: Install Dasel
         run: brew install dasel
@@ -55,7 +56,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           command: version-or-publish
         env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Create Pull Request with Versions Bumped
         if: ${{ steps.covector.outputs.commandRan == 'version' }}
