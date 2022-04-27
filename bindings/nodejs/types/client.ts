@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 import type { MqttBrokerOptions, NetworkInfo, Node } from './network';
 
-// TODO: update this type
 export interface ClientOptions {
     /** If the Client should be able to use without a node connection */
     offline?: boolean;

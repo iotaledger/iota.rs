@@ -13,6 +13,5 @@ export interface OutputResponse {
     milestoneIndexBooked: number;
     milestoneTimestampBooked: number;
     ledgerIndex: number;
-    // TODO: Verify this type is correct.
     output: Output;
 }

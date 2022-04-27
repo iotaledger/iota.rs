@@ -25,59 +25,53 @@ async function run() {
     const signer = JSON.stringify({
         Mnemonic: process.env.NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1,
     });
-
-    const defaultOptions = {};
-
-    const customOptions = {
-        accountIndex: 0,
-        range: {
-            start: 0,
-            end: 4,
-        },
-    };
-
-    const offlineGeneratedOptions = {
-        accountIndex: 0,
-        range: {
-            start: 0,
-            end: 4,
-        },
-        bech32Hrp: SHIMMER_TESTNET_BECH32_HRP,
-    };
-
     try {
-        // Generate addresses with default account index and range
-        const defaultAddresses = await client.generateAddresses(
-            signer,
-            defaultOptions,
-        );
+        // Generate public addresses with default account index and range
+        const defaultAddresses = await client.generateAddresses(signer, {});
         console.log(
             'List of generated public addresses:',
             defaultAddresses,
             '\n',
         );
 
-        // Generate addresses with custom account index and range
-        const customAddresses = await client.generateAddresses(
-            signer,
-            customOptions,
-        );
+        // Generate public addresses with custom account index and range
+        const customAddresses = await client.generateAddresses(signer, {
+            accountIndex: 0,
+            range: {
+                start: 0,
+                end: 4,
+            },
+        });
         console.log(
             `List of generated public addresses:`,
             customAddresses,
             '\n',
         );
 
-        // TODO: Implement this example
-        // Generate public (false) & internal (true) addresses
-        // console.log(
-        //     `List of generated public and internal addresses: \n${bech32Addresses}\n`,
-        // );
+        // Generate internal addresses with custom account index and range
+        const internalAddresses = await client.generateAddresses(signer, {
+            accountIndex: 0,
+            range: {
+                start: 0,
+                end: 4,
+            },
+            internal: true,
+        });
+        console.log(
+            `List of generated internal addresses: \n${internalAddresses}\n`,
+        );
 
-        // Generate public addresses offline with the bech32_hrp defined
+        // Generate public addresses offline with the bech32Hrp defined
         const offlineGeneratedAddresses = await client.generateAddresses(
             signer,
-            offlineGeneratedOptions,
+            {
+                accountIndex: 0,
+                range: {
+                    start: 0,
+                    end: 4,
+                },
+                bech32Hrp: SHIMMER_TESTNET_BECH32_HRP,
+            },
         );
         console.log(
             `List of offline generated public addresses:`,
