@@ -1,5 +1,10 @@
 import CodeBlock from "@theme/CodeBlock";
-import a_get_address_outputs from "!!raw-loader!../../../../../examples/05_get_address_outputs.rs";
+import java_examples from "!!raw-loader!../../../../../bindings/java/examples/basic-app/src/main/java/org/example/ExampleApp.java";
+const javaFunctionName = "public static void getOutputs",
+  indexStart = java_examples.indexOf(javaFunctionName);
+const nextJavaFunctionName = "public static void simpleMessage",
+  indexEnd = java_examples.indexOf(nextJavaFunctionName);
+const a_get_address_outputs = java_examples.substring(indexStart, indexEnd);
 
 - [`Client.get_address().outputs(address: String, options: OutputOptions)`](#clientget_addressoutputsaddress-string-options-outputoptions)
 - [`Client.getOutput(str)`](#clientgetoutputoutput_id-string)

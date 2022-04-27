@@ -1,5 +1,12 @@
 import CodeBlock from "@theme/CodeBlock";
-import simple_message from "!!raw-loader!../../../../../examples/06_simple_message.rs";
+import java_examples from "!!raw-loader!../../../../../bindings/java/examples/basic-app/src/main/java/org/example/ExampleApp.java";
+const javaFunctionName = "public static void simpleMessage",
+  indexStart = java_examples.indexOf(javaFunctionName);
+const nextJavaFunctionName = "public static void getMessageMetadata",
+  indexEnd = java_examples.indexOf(nextJavaFunctionName);
+const simple_message = java_examples.substring(indexStart, indexEnd);
+
+<>
 
 You can use the [`Client.message()`](./../libraries/java/api_reference#message-clientmessagebuilder) to easily send any
 message over the network. Alternatively, there is a convenient
@@ -28,3 +35,5 @@ instance and broadcasts it over the network.
 ```
 
 - `messageId` is a unique id that refers to the given message in the network.
+
+</>

@@ -37,7 +37,11 @@ module.exports = {
             items:[
                 'how_tos/get_info',
                 'how_tos/generate_seed',
-                'how_tos/generate_addresses'
+                'how_tos/generate_addresses',
+                'how_tos/get_balance',
+                'how_tos/get_outputs',
+                'how_tos/simple_message',
+                'how_tos/get_message_data'
             ]
         },
         {
@@ -83,10 +87,6 @@ module.exports = {
                             type: 'category',
                             label: 'Examples',
                             items: [
-                                'libraries/nodejs/examples/get_balance',
-                                'libraries/nodejs/examples/get_outputs',
-                                'libraries/nodejs/examples/simple_message',
-                                'libraries/nodejs/examples/get_message_data',
                                 'libraries/nodejs/examples/data_message',
                                 'libraries/nodejs/examples/transaction',
                                 'libraries/nodejs/examples/mqtt',
@@ -112,10 +112,6 @@ module.exports = {
                             type: 'category',
                             label: 'Examples',
                             items: [
-                                'libraries/python/examples/get_balance',
-                                'libraries/python/examples/get_outputs',
-                                'libraries/python/examples/simple_message',
-                                'libraries/python/examples/get_message_data',
                                 'libraries/python/examples/data_message',
                                 'libraries/python/examples/transaction',
                             ]
@@ -161,9 +157,6 @@ module.exports = {
                             type: 'category',
                             label: 'Examples',
                             items: [
-                                'libraries/wasm/examples/get_balance',
-                                'libraries/wasm/examples/simple_message',
-                                'libraries/wasm/examples/get_message_data',
                                 'libraries/wasm/examples/data_message',
                                 'libraries/wasm/examples/transaction',
                             ],

@@ -1,25 +1,17 @@
----
-title: Get Message Data
-description: Once a message is broadcast, you can use the MessageFinder helper class that can be instantiated using the Client.getMessage() function to retrieve it from the network.
-image: /img/logo/iota_mark_light.png
-keywords:
-- message data
-- messagefinder
-- client
-- message metadata
-- wasm
----
-import CodeBlock from '@theme/CodeBlock';
-import get_message_data from '!!raw-loader!../../../../../examples/07_get_message_metadata.rs';
+import CodeBlock from "@theme/CodeBlock";
+import get_message_data from "!!raw-loader!../../../../../examples/07_get_message_metadata.rs";
 
+Once a [message](../../../key_concepts/messages_payloads_and_transactions.md) is broadcast, you can use the
+[`GetMessageBuilder`](https://docs.rs/iota-client/latest/iota_client/node/struct.GetMessageBuilder.html) helper class
+that you can instantiate using the
+[`Client.get_message()`](https://docs.rs/iota-client/latest/iota_client/client/struct.Client.html#method.get_message)
+function to retrieve it from the network. The `GetMessageBuilder` provides helper functions related to the message, such
+as
+[`Client.get_message().data(message_id: &MessageId)`](https://docs.rs/iota-client/latest/iota_client/node/struct.GetMessageBuilder.html#method.data)
+and
+[`Client.get_message().metadata(message_id: &MessageId)`](https://docs.rs/iota-client/latest/iota_client/node/struct.GetMessageBuilder.html#method.metadata):
 
-Once a [message](../../../key_concepts/messages_payloads_and_transactions.md) is broadcast, you can use the `MessageFinder` helper class that can be
-instantiated using the `Client.getMessage()` function to retrieve it from the network. The `MessageFinder` provides helper functions related to the
-message, such as `Client.getMessage().data(str)` and `Client.getMessage().metadata(str)`]:
-
-<CodeBlock className="language-javascript">
-    {get_message_data}
-</CodeBlock>
+<CodeBlock className="language-javascript">{get_message_data}</CodeBlock>
 
 **Output example**:
 
@@ -38,7 +30,7 @@ Message meta data:
    "shouldReattach":false
 }
 
-Message data:l
+Message data:
 {
    "message": {
       "networkId":"14379272398717627559",
@@ -59,6 +51,6 @@ Message data:l
 }
 ```
 
-* `Client.getMessage().metadata()` provides information on how the given message fits to network structures, such as
-`ledger_inclusion_state`, etc.
-* `Client.getMessage().data()` provides all the data that relates to the given message and its payload(s).
+- `Client.getMessage().metadata()` provides information on how the given message fits to network structures, such as
+  `ledger_inclusion_state`, etc.
+- `Client.getMessage().data()` provides all the data that relates to the given message and its payload(s).

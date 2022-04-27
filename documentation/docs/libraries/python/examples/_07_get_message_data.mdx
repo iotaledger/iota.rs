@@ -1,26 +1,12 @@
----
-title: Get Message Data
-description: Once a message is broadcast, you can use the Client.get_message_data() and Client.get_message_metadata() functions used to get all the information about the message from the Tangle.
-image: /img/logo/iota_mark_light.png
-keywords:
-- how to
-- message data
-- get_message_metadata
-- get_message_data
-- client
-- message metadata
-- wasm
----
-import CodeBlock from '@theme/CodeBlock';
-import get_message_data from '!!raw-loader!../../../../../bindings/wasm/examples/07_get_message_data.js';
+import CodeBlock from "@theme/CodeBlock";
+import get_message_data from "!!raw-loader!../../../../../bindings/wasm/examples/07_get_message_data.js";
 
 Once a [message](../../../key_concepts/messages_payloads_and_transactions.md) is broadcast, you can use the
-`Client.get_message_data()` and `Client.get_message_metadata()` functions used to get all the information about the message from the Tangle.
+[`Client.get_message_data(message_id: str)`](./../libraries/python/api_reference#get_message_datamessage_id-message) and
+[`Client.get_message_metadata()`](./../libraries/python/api_reference#get_message_metadatamessage_id-messagemetadataresponse)
+functions used to get all the information about the message from the Tangle.
 
-
-<CodeBlock className="language-python" >
-    {get_message_data}
-</CodeBlock>
+<CodeBlock className="language-python">{get_message_data}</CodeBlock>
 
 Output example:
 
@@ -60,5 +46,6 @@ Message data:
 }
 ```
 
-* `Client.get_message_metadata` provides information on how the given message fits to network structures such as `ledger_inclusion_state`.
-* `Client.get_message_data` provides all the data that relates to the message and its payload(s)
+- `Client.get_message_metadata` provides information on how the given message fits to network structures such as
+  `ledger_inclusion_state`.
+- `Client.get_message_data` provides all the data that relates to the message and its payload(s)
