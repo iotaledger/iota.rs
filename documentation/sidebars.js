@@ -41,7 +41,8 @@ module.exports = {
                 'how_tos/get_balance',
                 'how_tos/get_outputs',
                 'how_tos/simple_message',
-                'how_tos/get_message_data'
+                'how_tos/get_message_data',
+                'how_tos/data_message'
             ]
         },
         {
@@ -87,7 +88,6 @@ module.exports = {
                             type: 'category',
                             label: 'Examples',
                             items: [
-                                'libraries/nodejs/examples/data_message',
                                 'libraries/nodejs/examples/transaction',
                                 'libraries/nodejs/examples/mqtt',
                             ],
@@ -112,7 +112,6 @@ module.exports = {
                             type: 'category',
                             label: 'Examples',
                             items: [
-                                'libraries/python/examples/data_message',
                                 'libraries/python/examples/transaction',
                             ]
                         },
@@ -157,7 +156,6 @@ module.exports = {
                             type: 'category',
                             label: 'Examples',
                             items: [
-                                'libraries/wasm/examples/data_message',
                                 'libraries/wasm/examples/transaction',
                             ],
                         },
