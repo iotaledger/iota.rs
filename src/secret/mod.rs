@@ -13,9 +13,9 @@ pub mod stronghold;
 /// Signing related types
 pub mod types;
 
-#[cfg(feature = "wasm")]
-use std::sync::Mutex;
-use std::{collections::HashMap, ops::Range, path::PathBuf, str::FromStr};
+#[cfg(feature = "stronghold")]
+use std::path::PathBuf;
+use std::{collections::HashMap, ops::Range, str::FromStr};
 
 use async_trait::async_trait;
 use bee_message::{

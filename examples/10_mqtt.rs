@@ -5,7 +5,7 @@
 
 use std::sync::{mpsc::channel, Arc, Mutex};
 
-use iota_client::{bee_message::Message, BrokerOptions, Client, MqttEvent, MqttPayload, Result, Topic};
+use iota_client::{Client, MqttEvent, MqttPayload, Result, Topic};
 
 // Connecting to a MQTT broker using raw ip doesn't work with TCP. This is a limitation of rustls.
 #[tokio::main]
@@ -47,6 +47,8 @@ async fn main() -> Result<()> {
             match &event.payload {
                 MqttPayload::Json(val) => println!("{}", serde_json::to_string(&val).unwrap()),
                 MqttPayload::Message(msg) => println!("{:?}", msg),
+                MqttPayload::MilestonePayload(_) => todo!(),
+                MqttPayload::Receipt(_) => todo!(),
             }
             tx.lock().unwrap().send(()).unwrap();
         })
