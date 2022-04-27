@@ -208,6 +208,7 @@ Get the balance.
     * [.mnemonicToHexSeed(mnemonic)](#Client+mnemonicToHexSeed) ⇒ <code>string</code>
     * [.getMessageId(message)](#Client+getMessageId) ⇒ <code>string</code>
     * [.getTransactionId(transaction)](#Client+getTransactionId) ⇒ <code>string</code>
+    * [.getEssenceHash(essence)](#Client+getEssenceHash) ⇒ <code>string</code>
 
 <a name="Client+message"></a>
 
@@ -608,6 +609,17 @@ Returns the transaction id from a provided transaction payload.
 | Param | Type |
 | --- | --- |
 | transaction | <code>string</code> | 
+
+<a name="Client+getEssenceHash"></a>
+
+### client.getEssenceHash(essence) ⇒ <code>string</code>
+Get essence hash
+
+**Kind**: instance method of [<code>Client</code>](#Client)  
+
+| Param | Type |
+| --- | --- |
+| essence | <code>string</code> | 
 
 <a name="ClientBuilder"></a>
 
