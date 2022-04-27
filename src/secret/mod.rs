@@ -36,7 +36,7 @@ use crate::secret::types::InputSigningData;
 /// The secret manager interface.
 #[async_trait]
 pub trait SecretManage: Send + Sync {
-    /// Generates an address.
+    /// Generates addresses.
     ///
     /// For `coin_type`, see also <https://github.com/satoshilabs/slips/blob/master/slip-0044.md>.
     async fn generate_addresses(
@@ -49,9 +49,6 @@ pub trait SecretManage: Send + Sync {
     ) -> crate::Result<Vec<Address>>;
 
     /// Sign on `essence`, unlock `input` by returning an [UnlockBlock].
-    ///
-    /// Compared with `sign_transaction_essence()`, this signs on a single input. It's called by
-    /// `sign_transaction_essence()` on every input it receives.
     async fn signature_unlock<'a>(
         &self,
         input: &InputSigningData,
