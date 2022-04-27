@@ -9,58 +9,166 @@ keywords:
 - parameters
 - address
 - account
+- reference
 ---
 # High Level API Specification
 
 ## Introduction
 
-This document specifies a user-friendly API to be used in the client libraries. The main implementation will be in Rust which will receive automatically compiled client libraries in other languages via C or Webassembly bindings. There are also many crates to support developers creating foreign function interfaces with native bindings.
+This document specifies a user-friendly API used in the client libraries. The main implementation is in Rust, which will
+receive automatically compiled client libraries in other languages via C or WebAssembly bindings. There are many crates
+to support developers who want to create foreign function interfaces with native bindings.
 
 ## Builder
 
-The data structure to initialize the instance of the Higher level client library. This is always called first when starting a new interaction with the library. Note: This is the common approach to do initialization in Rust. Different languages might use different methods such as just calling an initialization function directly.
+The data structure to initialize the instance of the Higher level client library. It is always called first when
+starting a new interaction with the library.
+
+:::note
+
+This is the standard approach to do initialization in Rust. Different languages might use different methods, such as
+directly calling an initialization function.
+
+:::
 
 ### Parameters
 
-| Parameter               | Required | Default Value                                                                                                                                                                                                                                                                                                                                                                       | Type                                        | Definition                                                                                                                                                                                                                                                                                            |
-| ----------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **network**             | ✘        | Testnet                                                                                                                                                                                                                                                                                                                                                                             | &str                                        | Optional, the network type can be "testnet" or "mainnet". If no node url is provided, some default nodes are used for the specified network. Nodes that aren't in this network will be ignored.                                                                                                       |
-| **node**                | ✘        | None                                                                                                                                                                                                                                                                                                                                                                                | &str                                        | The URL of a node to connect to; format: `https://node:port`                                                                                                                                                                                                                                          |
-| **primary_node**        | ✘        | None                                                                                                                                                                                                                                                                                                                                                                                | &str, auth_name_pwd: Option<(&str, &str)>   | The URL of a node to always connect first to, if multiple nodes are available. Optional JWT and or name and password for basic authentication; format: `https://node:port`, Some("JWT"), Some("name", "password")                                                                                     |
-| **primary_pow_node**    | ✘        | None                                                                                                                                                                                                                                                                                                                                                                                | &str, auth_name_pwd: Option<(&str, &str)>   | The URL of a node to always connect first to when submitting a message with remote PoW, if multiple nodes are available. Will override primary_node in that case. With optional JWT or name and password for basic authentication; format: `https://node:port`, Some("JWT"), Some("name", "password") |
-| **permanode**           | ✘        | None                                                                                                                                                                                                                                                                                                                                                                                | &str, auth_name_pwd: Option<(&str, &str)>   | The URL of a permanode. With optional JWT or name and password for basic authentication; format: `https://node:port`, Some("JWT"), Some("name", "password")                                                                                                                                           |
-| **node_auth**           | ✘        | None                                                                                                                                                                                                                                                                                                                                                                                | &str, Option<String/>, Option<(&str, &str)> | The URL of a node to connect to with optional JWT and or name and password for basic authentication; format: `https://node:port`, Some("JWT"), Some("name", "password")                                                                                                                               |
-| **nodes**               | ✘        | None                                                                                                                                                                                                                                                                                                                                                                                | &[&str]                                     | A list of nodes to connect to; nodes are added with the `https://node:port` format. The amount of nodes specified in quorum_size are randomly selected from this node list to check for quorum based on the quorum threshold. If quorum_size is not given the full list of nodes is checked.          |
-| **node_sync_interval**  | ✘        | Duration::from_secs(60)                                                                                                                                                                                                                                                                                                                                                             | std::time::Duration                         | The interval in milliseconds to check for node health and sync                                                                                                                                                                                                                                        |
-| **node_sync_disabled**  | ✘        | false                                                                                                                                                                                                                                                                                                                                                                               | bool                                        | If disabled also unhealty nodes will be used                                                                                                                                                                                                                                                          |
-| **node_pool_urls**      | None     | ✘                                                                                                                                                                                                                                                                                                                                                                                   | &[String]                                   | A list of node_pool_urls from which nodes are added. The amount of nodes specified in quorum_size are randomly selected from this node list to check for quorum based on the quorum threshold. If quorum_size is not given the full list of nodes is checked.                                         |
-| **quorum**              | ✘        | false                                                                                                                                                                                                                                                                                                                                                                               | bool                                        | Define if quorum should be used for the requests                                                                                                                                                                                                                                                      |
-| **quorum_size**         | ✘        | 3                                                                                                                                                                                                                                                                                                                                                                                   | usize                                       | Define how many nodes should be used for quorum                                                                                                                                                                                                                                                       |
-| **quorum_threshold**    | ✘        | 66                                                                                                                                                                                                                                                                                                                                                                                  | usize                                       | Define the % of nodes that need to return the same response to accept it                                                                                                                                                                                                                              |
-| **request_timeout**     | ✘        | Duration::from_secs(30)                                                                                                                                                                                                                                                                                                                                                             | std::time::Duration                         | The amount of seconds a request can be outstanding to a node before it's considered timed out                                                                                                                                                                                                         |
-| **api_timeout**         | ✘        | Api::GetInfo: Duration::from_secs(2)),<br /> Api::GetHealth: Duration::from_secs(2),<br />Api::GetPeers: Duration::from_secs(2),<br />Api::GetMilestone: Duration::from_secs(2),<br />Api::GetTips: Duration::from_secs(2),<br />Api::PostMessage: Duration::from_secs(2),<br />Api::PostMessageWithRemotePow: Duration::from_secs(30),<br />Api::GetOutput: Duration::from_secs(2) | HashMap<[Api],<br /> std::time::Duration>   | The amount of milliseconds a request to a specific Api endpoint can be outstanding to a node before it's considered timed out.                                                                                                                                                                        |
-| **local_pow**           | ✘        | True                                                                                                                                                                                                                                                                                                                                                                                | bool                                        | If not defined it defaults to local PoW to offload node load times                                                                                                                                                                                                                                    |
-| **tips_interval**       | ✘        | 15                                                                                                                                                                                                                                                                                                                                                                                  | u64                                         | Time interval during PoW when new tips get requested.                                                                                                                                                                                                                                                 |
-| **mqtt_broker_options** | ✘        | True,<br />Duration::from_secs(30),<br />True                                                                                                                                                                                                                                                                                                                                       | [BrokerOptions]                             | If not defined the default values will be used                                                                                                                                                                                                                                                        |
+#### network
 
-* Note that there must be at least one node to build the instance successfully.
+| Required | Default Value | Type | Definition                                                                                                                                                                                                         |
+|----------|---------------|------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ✘        | devnet       | &str | Optional, the network type can be "devnet" or "mainnet". If you don not provide a node url is provided, default nodes will be used for the specified network. Nodes that are not in this network will be ignored. |
+
+#### node
+
+| Required | Default Value | Type | Definition                                                              |
+|----------|---------------|------|-------------------------------------------------------------------------|
+| ✘        | None          | &str | The URL of the node you want to connect to; format: `https://node:port` |
+
+#### primary_node
+
+| Required | Default Value | Type                                      | Definition                                                                                                                                                                                                                                         |
+|----------|---------------|-------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ✘        | None          | &str, auth_name_pwd: Option<(&str, &str)> | The URL of a node to always you want to connect to first, if multiple nodes are available. <br/>(optional) You can use a JWT and or name and password for basic authentication; format: `https://node:port`, Some("JWT"), Some("name", "password") |
+
+#### primary_pow_node
+
+| Required | Default Value | Type                                      | Definition                                                                                                                                                                                                                                                                                                                                |
+|----------|---------------|-------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ✘        | None          | &str, auth_name_pwd: Option<(&str, &str)> | The URL of a node to always you want to connect to first when submitting a message with remote PoW, if multiple nodes are available.  This will override primary_node in that case**. <br/>(optional) You can use a JWT or name and password for basic authentication; format: `https://node:port`, Some("JWT"), Some("name", "password") |
+
+#### permanode
+
+| Required | Default Value | Type                                      | Definition                                                                                                                                                                  |
+|----------|---------------|-------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ✘        | None          | &str, auth_name_pwd: Option<(&str, &str)> | The URL of a permanode. <br/>(optional) You can use a JWT or name and password for basic authentication; format: `https://node:port`, Some("JWT"), Some("name", "password") |
+
+#### node_auth
+
+| Required | Default Value | Type                                        | Definition                                                                                                                                                                                    |
+|----------|---------------|---------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ✘        | None          | &str, Option<String/>, Option<(&str, &str)> | The URL of a node to connect to with. <br/>(optional)You can use a  JWT and or name and password for basic authentication; format: `https://node:port`, Some("JWT"), Some("name", "password") |
+
+#### nodes
+
+| Required | Default Value | Type    | Definition                                                                                                                                                                                                                                                                                                   |
+|----------|---------------|---------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ✘        | None          | &[&str] | A list of nodes to connect to. You can add nodes are using the `https://node:port` format.<br/> The amount of nodes specified in quorum_size is randomly selected from this node list to check for quorum based on the quorum threshold.<br/> If quorum_size is not given the full list of nodes is checked. |
+
+#### node_sync_interval
+
+| Required | Default Value           | Type                | Definition                                                      |
+|----------|-------------------------|---------------------|-----------------------------------------------------------------|
+| ✘        | Duration::from_secs(60) | std::time::Duration | The interval in milliseconds to check for node health and sync. |
+
+#### node_sync_disabled
+
+| Required | Default Value | Type | Definition                                     |
+|----------|---------------|------|------------------------------------------------|
+| ✘        | false         | bool | If disabled unhealthy nodes will also be used. |
+
+#### node_pool_urls
+
+| Required | Default Value | Type      | Definition                                                                                                                                                                                                                                                             |
+|----------|---------------|-----------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ✘        | None          | &[String] | A list of node_pool_urls from which nodes are added. <br/>The amount of nodes specified in quorum_size is randomly selected from this node list to check for quorum based on the quorum threshold. <br/>If quorum_size is not given the full list of nodes is checked. |
+
+#### quorum
+
+| Required | Default Value | Type | Definition                                        |
+|----------|---------------|------|---------------------------------------------------|
+| ✘        | false         | bool | Defines if quorum should be used for the requests |
+
+##### quorum_size
+
+| Required | Default Value | Type  | Definition                                       |
+|----------|---------------|-------|--------------------------------------------------|
+| ✘        | 3             | usize | Defines how many nodes should be used for quorum |
+
+#### quorum_threshold
+
+| Required | Default Value | Type  | Definition                                                                |
+|----------|---------------|-------|---------------------------------------------------------------------------|
+| ✘        | 66            | usize | Defines the % of nodes that need to return the same response to accept it |
+
+#### request_timeout
+
+| Required | Default Value           | Type                | Definition                                                                                     |
+|----------|-------------------------|---------------------|------------------------------------------------------------------------------------------------|
+| ✘        | Duration::from_secs(30) | std::time::Duration | The amount of seconds a request can be outstanding to a node before it is considered timed out |
+
+#### api_timeout
+
+| Required | Default Value                                                                                                                                                                                                                                                                                                                                                                  | Type                                      | Definition                                                                                                                      |
+|----------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------|
+| ✘        | Api::GetInfo: Duration::from_secs(2)), <br/>Api::GetHealth: Duration::from_secs(2),<br/>Api::GetPeers: Duration::from_secs(2), <br/>Api::GetMilestone: Duration::from_secs(2),<br/>Api::GetTips: Duration::from_secs(2), <br/>Api::PostMessage: Duration::from_secs(2),<br/>Api::PostMessageWithRemotePow: Duration::from_secs(30),<br/>Api::GetOutput: Duration::from_secs(2) | HashMap<[Api],<br /> std::time::Duration> | The amount of milliseconds a request to a specific API endpoint can be outstanding to a node before it is considered timed out. |
+
+##### local_pow
+
+| Required | Default Value | Type | Definition                                                         |
+|----------|---------------|------|--------------------------------------------------------------------|
+| ✘        | True          | bool | If not defined it defaults to local PoW to offload node load times |
+
+#### tips_interval
+
+| Required | Default Value | Type | Definition                                            |
+|----------|---------------|------|-------------------------------------------------------|
+| ✘        | 15            | u64  | Time interval during PoW when new tips get requested. |
+
+##### mqtt_broker_options
+
+| Required | Default Value                                 | Type                            | Definition                                     |
+|----------|-----------------------------------------------|---------------------------------|------------------------------------------------|
+| ✘        | True,<br />Duration::from_secs(30),<br />True | [BrokerOptions](#BrokerOptions) | If not defined the default values will be used |
+
+::: note
+
+There must be at least one node to build the instance successfully.
+
+:::
 
 ### Return
 
-Finalize the builder with `finish()` will run the instance in the background. Users don’t need to worry about the return object handling.
+If you finalize the builder with `finish()` it will run the instance in the background. You do not need to worry about
+handling the return object.
 
-## On initialization
+## On Initialization
 
-On initialisation, call getNodeInfo API. Check the health of each node in the node list, and put healty nodes, matching the PoW settings and network in a synced nodelist.
+On initialisation, calls the getNodeInfo API. This will check the health of each node in the node list, and put the
+healthy nodes, which match the PoW settings and network in a synced `nodelist`.
 
-| Node metadata | Description                                                                                                         |
-| ------------- | ------------------------------------------------------------------------------------------------------------------- |
-| network       | If this parameter does not match the global builder parameter, don't add it to the synced nodelist.                 |
-| pow           | If the global local_pow parameter is set to false, then put only nodes with the PoW feature in the synced nodelist. |
+| Node metadata | Description                                                                                                                    |
+|---------------|--------------------------------------------------------------------------------------------------------------------------------|
+| network       | If this parameter does not match the global builder parameter, you should not add it to the synced nodelist.                   |
+| pow           | If the global local_pow parameter is set to false, then you should only use nodes with the PoW feature in the synced nodelist. |
 
 ## Sync Process
 
-When a `Client` instance (The instance which is used for calling the client APIs) is built, the status of each node listed is checked. If the returned status of the node information is healthy, which means the node is synced, then this node will be pushed into a `synced_nodes` list. The rust-like pseudo code of `synced_nodes` construction process follows. The process of syncing a node is repeated every 60 seconds or at the interval specified in the `node_sync_interval` argument of the initializer if set.
+When you build `Client` instance (The instance used for calling the client APIs), the status of each listed node will be
+checked. If the returned status of the node information is healthy, which means the node is synced, then this node will
+be pushed into a `synced_nodes` list. The rust-like pseudocode of the `synced_nodes` construction process follows. The
+node syncing process is repeated every 60 seconds by default. You can change this number by specifying the
+initializer's `node_sync_interval` argument.
 
 ```rust
 synced_nodes = Vec::new()
@@ -72,384 +180,567 @@ for node in node_pool_urls{
 }
 ```
 
-# `General high level API`
+## General High Level API
 
 Here is the high level abstraction API collection with sensible default values for users easy to use.
 
-## `message()`
+### message()
 
-A generic send function for easily sending a message.
+A generic send function you can use to easily send a message.
 
-### Parameters
-
-| Parameter                 | Required | Default | Type                                 | Definition                                                                                                                |
-| ------------------------- | -------- | ------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
-| **seed**                  | ✘        | None    | [Seed]                               | The seed of the account we are going to spend, only needed for transactions                                               |
-| **account_index**         | ✘        | 0       | usize                                | The account index, responsible for the value `✘` in the Bip32Path `m/44'/4218'/✘'/0'/0'`.                                 |
-| **initial_address_index** | ✘        | 0       | usize                                | The index from where to start looking for balance. Responsible for the value `✘` in the Bip32Path `m/44'/4218'/0'/0'/✘'`. |
-| **input**                 | ✘        | None    | UtxoInput                            | Users can manually select their UtxoInputs instead of having automatically selected inputs.                               |
-| **input_range**           | ✘        | 0..100  | Range                                | Custom range to search for the input addresses if custom inputs are provided.                                             |
-| **output**                | ✘        | None    | address: &[String],<br />amount: u64 | Address to send to and amount to send. Address needs to be Bech32 encoded.                                                |
-| **output_hex**            | ✘        | None    | address: &str,<br />amount: u64      | Address to send to and amount to send. Address needs to be hex encoded.                                                   |
-| **index**                 | ✘        | None    | &[u8] / &str                         | An optional indexation key for an indexation payload. 1-64 bytes long.                                                    |
-| **data**                  | ✘        | None    | Vec&lt;u8>                              | Optional data for the indexation payload.                                                                                 |
-| **parents**               | ✘        | None    | [MessageId]                          | 1-8 optional parents [MessageId] to be used.                                                                              |
+#### Parameters
 
 Depending on the provided values this function will create a message with:
 
-* no payload
-* an indexation payload
-* a transaction payload
-* a transaction payload containing an indexation payload
+* No payload.
+* An indexation payload.
+* A transaction payload.
+* A transaction payload containing an indexation payload.
 
-### Return
+##### seed
 
-The [Message] object we build.
+| Required | Default | Type                     | Definition                                                                        |
+|----------|---------|--------------------------|-----------------------------------------------------------------------------------|
+| ✘        | None    | [Seed](#seed-2)(#seed-1) | The seed of the account you are going to spend from. Only needed for transactions |
 
-### Implementation Details
+##### account_index
 
-* Validate inputs, such as address and seed to check if they are correct.
-* Check if account balance is bigger or equal to the value using method similar to [`get_balance()`](#get_balance);
-* Build and validate the message with signed transaction payload accordingly;
-* Get tips using [`get_tips()`](#get_tips);
-* Perform proof-of-work locally (if not set to remote);
-* Send the message using [`post_messages()`](#post_messages);
+| Required | Default | Type  | Definition                                                                               |
+|----------|---------|-------|------------------------------------------------------------------------------------------|
+| ✘        | 0       | usize | The account index responsible for the value `✘` in the Bip32Path `m/44'/4218'/✘'/0'/0'`. |
 
-## `get_message()`
+##### initial_address_index
+
+| Required | Default | Type  | Definition                                                                                                                |
+|----------|---------|-------|---------------------------------------------------------------------------------------------------------------------------|
+| ✘        | 0       | usize | The index from where to start looking for balance. Responsible for the value `✘` in the Bip32Path `m/44'/4218'/0'/0'/✘'`. |
+
+##### input
+
+| Required | Default | Type      | Definition                                                                                   |
+|----------|---------|-----------|----------------------------------------------------------------------------------------------|
+| ✘        | None    | UtxoInput | Users can manually select their UtxoInputs, instead of having automatically selected inputs. |
+
+##### input_range
+
+| Required | Default | Type  | Definition                                                                                       |
+|----------|---------|-------|--------------------------------------------------------------------------------------------------|
+| ✘        | 0..100  | Range | If custom inputs are provided, this custom range will be used to search for the input addresses. |
+
+##### output
+
+| Required | Default | Type                                 | Definition                                                                              |
+|----------|---------|--------------------------------------|-----------------------------------------------------------------------------------------|
+| ✘        | None    | address: &[String],<br />amount: u64 | Address you want to send to and amount to send. The address needs to be Bech32 encoded. |
+
+##### output_hex
+
+| Required | Default | Type                            | Definition                                                                           |
+|----------|---------|---------------------------------|--------------------------------------------------------------------------------------|
+| ✘        | None    | address: &str,<br />amount: u64 | Address you want to send to and amount to send. The address needs to be hex encoded. |
+
+##### index
+
+| Required | Default | Type         | Definition                                                             |
+|----------|---------|--------------|------------------------------------------------------------------------|
+| ✘        | None    | &[u8] / &str | An optional indexation key for an indexation payload. 1-64 bytes long. |
+
+##### data
+
+| Required | Default | Type       | Definition                                |
+|----------|---------|------------|-------------------------------------------|
+| ✘        | None    | Vec&lt;u8> | Optional data for the indexation payload. |
+
+##### parents
+
+| Required | Default | Type                    | Definition                                              |
+|----------|---------|-------------------------|---------------------------------------------------------|
+| ✘        | None    | [MessageId](#messageid) | 1-8 optional parents [messageId](#messageid)to be used. |
+
+#### Return
+
+The [Message](#message-1) object we build.
+
+#### Implementation Details
+
+When implementing this function please make sure that you:
+
+* Validate inputs, such as address and seed to check that they are correct.
+* Check if the account balance is bigger or equal to the value using method similar to [`get_balance()`](#get_balance).
+* Build and validate the message with signed transaction payload accordingly.
+* Get tips using the [`get_tips()`](#get_tips) method.
+* Perform proof-of-work locally (if not set to remote).
+* Send the message using the [`post_messages()`](#post_messages) method.
+
+### get_message()
 
 (`GET /api/v1/messages`)
 
-Endpoint collection all about GET messages.
+Endpoint collection of all GET messages.
 
-### Parameters
+#### Parameters
 
-| Parameter      | Required | Type         | Definition                 |
-| -------------- | -------- | ------------ | -------------------------- |
-| **message_id** | ✔        | [MessageId]  | The identifier of message. |
-| **index**      | ✔        | &[u8] / &str | An indexation key.         |
+##### message_id
 
-### Returns
+| Required | Type                    | Definition                |
+|----------|-------------------------|---------------------------|
+| ✔        | [messageId](#messageid) | The message's identifier. |
 
-Depend on the final calling method, users could get different results they need:
+##### index
 
-- `metadata(&MessageId)`: Return [MessageMetadata](#MessageMetadata) of the message.
-- `data(&MessageId)`: Return a [Message] object.
-- `raw(&MessageId)`: Return the raw data of given message.
-- `children(&MessageId)`: Return the list of [MessageId]s that reference a message by its identifier.
-- `index(&[u8] | &str)` : Return the list of [MessageId]s that have this str as indexation key
+| Required | Type         | Definition         |
+|----------|--------------|--------------------|
+| ✔        | &[u8] / &str | An indexation key. |
 
-## `find_messages()`
+#### Returns
 
-Find all messages by provided message IDs.
+Depending on the final calling method, users cam get different results according to their needs:
 
-### Parameters
+- `metadata(&MessageId)`: Returns [MessageMetadata](#messagemetadata) of the message.
+- `data(&MessageId)`: Returns a [Message](#message-1) object.
+- `raw(&MessageId)`: Returns the raw data of given message.
+- `children(&MessageId)`: Returns the list of [MessageId](#messageid)s that reference a message by its identifier.
+- `index(&[u8] | &str)` : Returns the list of [MessageId](#messageid)s that have this str as indexation key
 
-| Parameter           | Required | Type           | Definition                               |
-| ------------------- | -------- | -------------- | ---------------------------------------- |
-| **indexation_keys** | ✘        | [&[u8] / &str] | The index key of the indexation payload. |
-| **message_ids**     | ✘        | [[MessageId]]  | The identifier of message.               |
+### find_messages()
 
-### Returns
+Find all messages using the provided message IDs.
 
-A vector of [Message] Object.
+#### Parameters
 
-## `get_unspent_address()`
+##### indexation_keys
+
+| Required | Type           | Definition                               |
+|----------|----------------|------------------------------------------|
+| ✘        | [&[u8] / &str] | The index key of the indexation payload. |
+
+##### message_ids
+
+| Required | Type                    | Definition                |
+|----------|-------------------------|---------------------------|
+| ✘        | [MessageId](#messageid) | The message's identifier. |
+
+#### Returns
+
+A vector of [Message](#message-1) Object.
+
+### get_unspent_address()
 
 Return a valid unspent public Bech32 encoded address.
 
-### Parameters
+#### Parameters
 
-| Parameter                 | Required | Default | Type   | Definition                                                                                                     |
-| ------------------------- | -------- | ------- | ------ | -------------------------------------------------------------------------------------------------------------- |
-| **seed**                  | ✔        | -       | [Seed] | The seed we want to use.                                                                                       |
-| **account_index**         | ✘        | 0       | usize  | The account index, responsible for the value `✘` in the Bip32Path `m/44'/4218'/✘'/0'/0'`.                      |
-| **initial_address_index** | ✘        | 0       | usize  | Start index of the addresses to search. Responsible for the value `✘` in the Bip32Path `m/44'/4218'/0'/0'/✘'`. |
+##### seed
 
-### Return
+| Required | Default | Type            | Definition               |
+|----------|---------|-----------------|--------------------------|
+| ✔        | -       | [Seed](#seed-2) | The seed we want to use. |
+
+##### account_index
+
+| Required | Default | Type  | Definition                                                                                    |
+|----------|---------|-------|-----------------------------------------------------------------------------------------------|
+| ✘        | 0       | usize | The account index.<br/>Responsible for the value `✘` in the Bip32Path `m/44'/4218'/✘'/0'/0'`. |
+
+##### initial_address_index
+
+| Required | Default | Type  | Definition                                                                                                          |
+|----------|---------|-------|---------------------------------------------------------------------------------------------------------------------|
+| ✘        | 0       | usize | Start index of the addresses to search.<br/> Responsible for the value `✘` in the Bip32Path `m/44'/4218'/0'/0'/✘'`. |
+
+#### Return
 
 Return a tuple with type of `(String, usize)` as the address and corresponding index in the account.
 
-### Implementation Details
+#### Implementation Details
 
-Following are the steps for implementing this method:
+Please make sure that you follow these steps when implementing this method:
 
-* Start generating addresses with given account index and starting index. We will have a default [gap limit](https://blog.blockonomics.co/bitcoin-what-is-this-gap-limit-4f098e52d7e1) of 20 at a time;
-* Check for balances on the generated addresses using [`find_outputs()`](#find_outputs) and keep track of the positive balances;
-* Repeat the above step till there's an unspent address found;
-* Return the address with corresponding index on the wallet chain;
+* Start by generating addresses with given account index and starting index. We have a
+  default [gap limit](https://blog.blockonomics.co/bitcoin-what-is-this-gap-limit-4f098e52d7e1) of 20 at a time.
+* Check for balances on the generated addresses using the [find_outputs()](#find_outputs) method and keep track of the
+  positive balances.
+* Repeat the above step until you find an unspent address.
+* Return the address with corresponding index on the wallet chain.
 
-## `get_addresses()`
+### get_addresses()
 
-Return a list of addresses from the seed regardless of their validity.
+Returns a list of addresses from the seed regardless of their validity.
 
-### Parameters
+#### Parameters
 
-| Parameter         | Required | Default | Type            | Definition                                                                                                                                                                                                     |
-| ----------------- | -------- | ------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **seed**          | ✔        | None    | [Seed]          | The seed we want to search for.                                                                                                                                                                                |
-| **account_index** | ✘        | 0       | usize           | The account index, responsible for the value `✘` in the Bip32Path `m/44'/4218'/✘'/0'/0'`.                                                                                                                      |
-| **range**         | ✘        | None    | std::ops::Range | Range indices of the addresses we want to search for. Default is (0..20)                                                                                                                                       |
-| **get_all**       | ✘        | ✘       | ✘               | Get public and [change addresses](https://bitcoin.stackexchange.com/questions/75033/bip44-and-change-addresses). Will return Vec<([String], bool)>, where the bool is indicating whether it's a change address |
+##### seed
 
-### Return
+| Required | Default | Type            | Definition                       |
+|----------|---------|-----------------|----------------------------------|
+| ✔        | None    | [Seed](#seed-2) | The seed you want to search for. |
 
-Vec<[String]>, with the public addresses
+##### account_index
 
-## `get_balance()`
+| Required | Default | Type  | Definition                                                                                    |
+|----------|---------|-------|-----------------------------------------------------------------------------------------------|
+| ✘        | 0       | usize | The account index.<br/>Responsible for the value `✘` in the Bip32Path `m/44'/4218'/✘'/0'/0'`. |
 
-Return the balance for a provided seed and its wallet account index.
+##### range
 
-### Parameters
+| Required | Default | Type            | Definition                                                                |
+|----------|---------|-----------------|---------------------------------------------------------------------------|
+| ✘        | None    | std::ops::Range | Range indices of the addresses you want to search for. Default is (0..20) |
 
-| Parameter                 | Required | Default | Type   | Definition                                                                                                                                                 |
-| ------------------------- | -------- | ------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **seed**                  | ✔        | -       | [Seed] | The seed we want to search for.                                                                                                                            |
-| **account_index**         | ✘        | 0       | usize  | The account index, responsible for the value `✘` in the Bip32Path `m/44'/4218'/✘'/0'/0'`.                                                                  |
-| **initial_address_index** | ✘        | 0       | usize  | Start index from which to generate addresses. Default is 0. Responsible for the value `✘` in the Bip32Path `m/44'/4218'/0'/0'/✘'`.                         |
-| **gap_limit**             | ✘        | 20      | usize  | The gap limit specifies how many addresses will be checked each round. If gap_limit amount of addresses in a row have no balance the function will return. |
+##### get_all
 
-### Return
+| Required | Default | Type | Definition                                                                                                                                                                                                           |
+|----------|---------|------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ✘        | ✘       | ✘    | Get public and [change addresses](https://bitcoin.stackexchange.com/questions/75033/bip44-and-change-addresses). <br/>Will return Vec<([String], bool)>, where the bool is indicating whether it is a change address |
+
+#### Return
+
+A Vec<[String]>, with the public addresses
+
+### get_balance()
+
+Returns the balance for a provided seed and its wallet account index.
+
+#### Parameters
+
+##### seed
+
+| Required | Default | Type            | Definition                       |
+|----------|---------|-----------------|----------------------------------|
+| ✔        | -       | [Seed](#seed-2) | The seed you want to search for. |
+
+##### account_index
+
+| Required | Default | Type  | Definition                                                                                     |
+|----------|---------|-------|------------------------------------------------------------------------------------------------|
+| ✘        | 0       | usize | The account index. <br/>Responsible for the value `✘` in the Bip32Path `m/44'/4218'/✘'/0'/0'`. |
+
+##### initial_address_index
+
+| Required | Default | Type  | Definition                                                                                                                                       |
+|----------|---------|-------|--------------------------------------------------------------------------------------------------------------------------------------------------|
+| ✘        | 0       | usize | Start index from which to generate addresses. The default valu is 0. <br/>Responsible for the value `✘` in the Bip32Path `m/44'/4218'/0'/0'/✘'`. |
+
+##### gap_limit
+
+| Required | Default | Type  | Definition                                                                                                                                                      |
+|----------|---------|-------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ✘        | 20      | usize | The gap limit specifies how many addresses will be checked each round. <br/>If gap_limit amount of addresses in a row have no balance the function will return. |
+
+#### Return
 
 Total account balance.
 
-### Implementation Details
+#### Implementation Details
 
-Following are the steps for implementing this method:
+Please make sure to follow these steps when you are implementing this method:
 
-* Start generating addresses with given wallet account index and starting index. We will have a default [gap limit](https://blog.blockonomics.co/bitcoin-what-is-this-gap-limit-4f098e52d7e1) of 20 at a time;
-* Check for balances on the generated addresses using [`find_outputs()`](#find_outputs) and keep track of the positive balances;
-* Repeat the above step till an address of zero balance is found;
+* Start by generating addresses with given wallet account index and starting index. You will have a
+  default [gap limit](https://blog.blockonomics.co/bitcoin-what-is-this-gap-limit-4f098e52d7e1) of 20 at a time.
+* Check for balances on the generated addresses using the [`find_outputs()`](#find_outputs) method and keep track of the
+  positive balances.
+* Repeat the step above until you find an address with zero balance;
 * Accumulate the positive balances and return the result.
 
-## `get_address_balances()`
+### get_address_balances()
 
-Return the balance in iota for the given addresses; No seed or security level needed to do this since we are only checking and already know the addresses.
+Return the balance in iota for the given addresses. You do not need a seed or security level to do this since you are
+only checking and already know the addresses.
 
-### Parameters
+#### Parameters
 
-| Parameter     | Required | Type       | Definition                        |
-| ------------- | -------- | ---------- | --------------------------------- |
-| **addresses** | ✔        | [[String]] | List of Bech32 encoded addresses. |
+##### addresses
 
-### Return
+| Required | Type       | Definition                        |
+|----------|------------|-----------------------------------|
+| ✔        | [[String]] | List of Bech32 encoded addresses. |
 
-A list of tuples with value of [AddressBalancePair]. The usize is the balance of the address accordingly.
+#### Return
 
-### Implementation details:
+A list of tuples with value of [AddressBalancePair](#addressbalancepair). The usize is the balance of the address.
 
-Following are the steps for implementing this method:
+#### Implementation details:
 
-* Validate _address_ semantics;
-* Get latest balance for the provided address using [`find_outputs()`](#find_outputs) with addresses as parameter;
-* Return the list of Output which contains corresponding pairs of address and balance.
+Please make sure to follow these steps when implementing this method:
 
-## `generate_mnemonic()`
+* Validate the _address_ semantics.
+* Get the latest balance for the provided address using the [`find_outputs()`](#find_outputs) method with the addresses
+  as parameter.
+* Return the list of Output which contains corresponding pairs of addresses and balances.
 
-Returns a random generated Bip39 mnemonic with the English word list.
+### generate_mnemonic()
 
-### Return
+Returns a random generated Bip39 mnemonic with words from the English word list.
 
-Parsed [String].
-
-## `mnemonic_to_hex_seed(mnemonic)`
-
-Returns the seed hex encoded.
-
-### Parameters
-
-| Parameter    | Required | Type     | Definition                                            |
-| ------------ | -------- | -------- | ----------------------------------------------------- |
-| **mnemonic** | ✔        | [String] | Bip39 mnemonic with words from the English word list. |
-
-### Return
+#### Return
 
 Parsed [String].
 
-## `bech32_to_hex()`
+### mnemonic_to_hex_seed(mnemonic)
+
+Returns the hex encoded seed.
+
+#### Parameters
+
+##### mnemonic
+
+| Required | Type     | Definition                                              |
+|----------|----------|---------------------------------------------------------|
+| ✔        | [String] | A Bip39 mnemonic with words from the English word list. |
+
+#### Return
+
+Parsed [String].
+
+### bech32_to_hex()
 
 Returns a parsed hex String from bech32.
 
-### Parameters
+#### Parameters
 
-| Parameter  | Required | Type     | Definition              |
-| ---------- | -------- | -------- | ----------------------- |
-| **bech32** | ✔        | [String] | Bech32 encoded address. |
+#### bech32
 
-### Return
+| Required | Type     | Definition              |
+|----------|----------|-------------------------|
+| ✔        | [String] | Bech32 encoded address. |
+
+#### Return
 
 Parsed [String].
 
-## `hex_to_bech32()`
+### hex_to_bech32()
 
 Returns a parsed bech32 String from hex.
 
-### Parameters
+#### Parameters
 
-| Parameter      | Required | Type              | Definition           |
-| -------------- | -------- | ----------------- | -------------------- |
-| **hex**        | ✔        | [String]          | Hex encoded address. |
-| **bech32_hrp** | ✔        | [Option<String/>] | Optional bech32 hrp. |
+##### hex
 
-### Return
+| Required | Type     | Definition           |
+|----------|----------|----------------------|
+| ✔        | [String] | Hex encoded address. |
 
-Parsed [String].
+##### bech32_hrp
 
-## `parse_bech32_address()`
+| Required | Type              | Definition           |
+|----------|-------------------|----------------------|
+| ✔        | [Option<String/>] | Optional bech32 hrp. |
 
-Returns a valid Address parsed from a String.
+#### Return
 
-### Parameters
+A parsed [String].
 
-| Parameter   | Required | Type     | Definition              |
-| ----------- | -------- | -------- | ----------------------- |
-| **address** | ✔        | [String] | Bech32 encoded address. |
+### parse_bech32_address()
 
-### Return
+Returns a valid [Address](#address) parsed from a String.
 
-Parsed [Address].
+#### Parameters
 
-## `is_address_valid()`
+##### address
 
-### Parameters
+| Required | Type     | Definition              |
+|----------|----------|-------------------------|
+| ✔        | [String] | Bech32 encoded address. |
 
-| Parameter   | Required | Type     | Definition              |
-| ----------- | -------- | -------- | ----------------------- |
-| **address** | ✔        | [String] | Bech32 encoded address. |
+#### Return
 
-### Return
+A parsed [Address].
+
+### is_address_valid()
+
+#### Parameters
+
+##### address
+
+| Required | Type     | Definition              |
+|----------|----------|-------------------------|
+| ✔        | [String] | Bech32 encoded address. |
+
+#### Return
 
 A boolean showing if the address is valid.
 
-## `subscriber()`
+### subscriber()
 
-Subscribe to a node event [Topic] (MQTT)
+Subscribe to a node event [Topic](#topic)(MQTT).
 
-Required: one of
+Requires one of:
 
-* `topic()`: Add a new [Topic] to the list.
-* `topics()`: Add a vector of [Topic] to the list.
-
-* `subscribe()`: Subscribe to the given topics with the callback, which will be called every time when the topic is detected.
+* `topic()`: Add a new [Topic](#topic) to the list.
+* `topics()`: Add a vector of [Topic](#topic) to the list.
+* `subscribe()`: Subscribe to the given topics with the callback, which will be called every time when the topic is
+  detected.
 * `unsubscribe()`: Unsubscribes from all subscriptions.
 * `disconnect()`: Disconnects the broker. This will clear the stored topic handlers and close the MQTT connection.
 
-### Returns
+#### Returns
 
-Nothing apart from a Ok(()) result if successful
+An `Ok(())` result if the call was successful.
 
-## `retry()`
+### retry()
 
-Retries (promotes or reattaches) a message for provided [MessageId] if the node suggests it. The need to use this function should be low, because the confirmation throughput of the node is expected to be quite high.
+Retries (promotes or reattaches) a message for the provided [messageId](#messageid) if the node suggests it. As the
+confirmation throughput of the node is expected to be quite high, you should not need to use this function often.
 
-### Parameters
+#### Parameters
 
-| Parameter      | Required | Type        | Definition                 |
-| -------------- | -------- | ----------- | -------------------------- |
-| **message_id** | ✔        | [MessageId] | The identifier of message. |
+##### message_id
 
-### Returns:
+| Required | Type                    | Definition                 |
+|----------|-------------------------|----------------------------|
+| ✔        | [messageId](#messageid) | The identifier of message. |
 
-A tuple with the newly promoted or reattached `(MessageId,  Message)`.
+#### Returns
 
-### Implementation Details
+A tuple with the newly promoted or reattached `(MessageId, Message)`.
 
-Following are the steps for implementing this method:
+#### Implementation Details
 
-* Only unconfirmed messages should be allowed to retry. The method should validate the confirmation state of the provided messages. If a message id of a confirmed message is provided, the method should error out;
-* The method should also validate if a retry is necessary. This can be done by leveraging the `/messages/{messageId}/metadata` endpoint (already available through [get_message](#get_message)). See [this](https://github.com/iotaledger/trinity-wallet/blob/develop/src/shared/libs/iota/transfers.js#L105-L131) implementation for reference;
+Please make sure to follow these steps when implementing this method:
+
+* You should only allow unconfirmed messages to retry. The method will validate the confirmation state of the provided
+  messages. If a message id of a confirmed message is provided, the method will return an error.
+* The method will also validate if a retry is necessary. This can be done by leveraging
+  the `/messages/{messageId}/metadata` endpoint (already available through [get_message](#get_message)).
+  See [this](https://github.com/iotaledger/trinity-wallet/blob/develop/src/shared/libs/iota/transfers.js#L105-L131)
+  implementation for reference.
 * Use [reattach](#reattach) or [promote](#promote) accordingly.
 
-## `retry_until_included()`
+### retry_until_included()
 
-Retries (promotes or reattaches) a message for provided [MessageId] until it's included (referenced by a milestone). Default interval is 5 seconds and max attempts is 40. The need to use this function should be low, because the confirmation throughput of the node is expected to be quite high.
-### Parameters
+Retries (promotes or reattaches) a message for provided [messageId](#messageid) until it is included (referenced by a
+milestone). The default interval is 5 seconds and the max number of attempts is 40. As the confirmation throughput of
+the node is expected to be quite high, you should not need to use this function often.
 
-| Parameter        | Required | Type         | Definition                                    |
-| ---------------- | -------- | ------------ | --------------------------------------------- |
-| **message_id**   | ✔        | [&MessageId] | The identifier of message.                    |
-| **interval**     | ✘        | Option&lt;u64>  | The interval in which we retry the message.   |
-| **max_attempts** | ✘        | Option&lt;u64>  | The maximum of attempts we retry the message. |
+#### Parameters
 
-### Returns:
+##### message_id
 
-An array of tuples with the newly reattached `(MessageId,  Message)`.
+| Required | Type                       | Definition                 |
+|----------|----------------------------|----------------------------|
+| ✔        | [&[MessageId](#messageid)] | The identifier of message. |
 
-## `consolidate_funds()`
+##### interval
 
-Function to consolidate all funds from a range of addresses to the address with the lowest index in that range
-### Parameters
+| Required | Type           | Definition                                  |
+|----------|----------------|---------------------------------------------|
+| ✘        | Option&lt;u64> | The interval in which we retry the message. |
 
-| Parameter         | Type          | Definition                                                                                                                                                             |
-| ----------------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |  |
-| **seed**          | [Seed]        | The seed we want to search for.                                                                                                                                        |
-| **account_index** | usize         | The account index, responsible for the value `✘` in the Bip32Path `m/44'/4218'/✘'/0'/0'`.                                                                              |
-| **address_range** | Range<usize/> | Range from which to generate public and internal addresses from which to consolidate the funds. Responsible for the value `✘` in the Bip32Path `m/44'/4218'/0'/0'/✘'`. |
+##### max_attempts
 
-### Returns:
+| Required | Type           | Definition                                    |
+|----------|----------------|-----------------------------------------------|
+| ✘        | Option&lt;u64> | The maximum of attempts we retry the message. |
 
-The address to which the funds got consolidated.
+#### Returns
 
-## `reattach()`
+An array of tuples with the newly reattached `(MessageId, Message)`.
+
+### consolidate_funds()
+
+You can use this function to consolidate all funds from a range of addresses to the address with the lowest index in
+that range.
+
+#### Parameters
+
+##### seed
+
+| Required | Type            | Definition                       |
+|----------|-----------------|----------------------------------|
+| ✔        | [Seed](#seed-2) | The seed you want to search for. |
+
+##### account_index
+
+| Required | Type  | Definition                                                                                    |
+|----------|-------|-----------------------------------------------------------------------------------------------|
+| ✘        | usize | The account index.<br/>Responsible for the value `✘` in the Bip32Path `m/44'/4218'/✘'/0'/0'`. |
+
+##### address_range
+
+| Required | Type          | Definition                                                                                                                                                                 |
+|----------|---------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ✘        | Range<usize/> | Range from which to generate public and internal addresses from which to consolidate the funds.<br/>Responsible for the value `✘` in the Bip32Path `m/44'/4218'/0'/0'/✘'`. |
+
+#### Returns
+
+The address in which the funds got consolidated.
+
+### reattach()
 
 Depends on [find_messages](#find_messages), [get_message](#get_message) and [post_message](#post_message).
 
-Reattaches a message. The method should validate if a reattachment is necessary through [get_message](#get_message). If not, the method should error out and should not allow unnecessary reattachments.
+Reattaches a message. The method will validate if a reattachment is necessary using the [get_message](#get_message)
+method. If a reattachment is not necessary, the method will error out and will not allow unnecessary reattachments.
 
-### Parameters
+#### Parameters
 
-| Parameter      | Required | Type        | Definition                 |
-| -------------- | -------- | ----------- | -------------------------- |
-| **message_id** | ✔        | [MessageId] | The identifier of message. |
+##### message_id
 
-### Returns
+| Required | Type                    | Definition                 |
+|----------|-------------------------|----------------------------|
+| ✔        | [messageId](#messageid) | The identifier of message. |
 
-A tuple with the newly reattached `(MessageId,  Message)`.
+#### Returns
 
-## `promote()`
+A tuple with the newly reattached `(MessageId, Message)`.
+
+### promote()
 
 Depends on [find_messages](#find_messages), [get_message](#get_message) and [post_message](#post_message).
 
-Promotes a message. The method should validate if a promotion is necessary through [get_message](#get_message). If not, the method should error out and should not allow unnecessary promotions.
+Reattaches a message. The method will validate if a reattachment is necessary using the [get_message](#get_message)
+method. If a promotion is not necessary, the method will error out and will not allow unnecessary promotions.
 
-### Parameters
+#### Parameters
 
-| Parameter      | Required | Type        | Definition                 |
-| -------------- | -------- | ----------- | -------------------------- |
-| **message_id** | ✔        | [MessageId] | The identifier of message. |
+#### message_id
 
-### Returns
+| Required | Type                    | Definition                 |
+|----------|-------------------------|----------------------------|
+| ✔        | [messageId](#messageid) | The identifier of message. |
 
-A tuple with the newly promoted `(MessageId,  Message)`.
+#### Returns
 
-# Full node API
+A tuple with the newly promoted `(MessageId, Message)`.
 
-Full node API of Bee and HORNET will still be public. Users who know these relative low level Restful API can still call them directly if they are confident and think it’s good for them. Note that both Bee and HORNET haven't finalized their APIs either. Following items and signatures might change later.
+## Full Node API
 
-## `get_health()`
+The full node APIs of [Bee](https://wiki.iota.org/bee/welcome) and [Hornet](https://wiki.iota.org/hornet/welcome) will
+still be public. Users who are familiar with these relative low level Restful APIs can still call them directly if they
+are confident in their usage.
+
+:::note
+
+Given that both Bee and Hornet APIs are still in active development, the following items and signatures may change in
+the future.
+
+:::
+
+### get_health()
 
 (`GET /health`)
 
 Returns the health of the node, which can be used for load-balancing or uptime monitoring.
 
-### Parameters
+#### Parameters
 
-None
+None.
 
-### Returns
+#### Returns
 
 Boolean to indicate if node is healthy.
 
-## `get_peers()`
+### get_peers()
 
 (`GET /peers`)
 
 Get information about the peers of the node.
 
-### Parameters
+#### Parameters
 
-None
+None.
 
-### Returns
+#### Returns
 
 ```Rust
 pub struct PeerDto {
@@ -463,19 +754,19 @@ pub struct PeerDto {
 }
 ```
 
-## `get_info()`
+### get_info()
 
 (`GET /api/v1/info`)
 
 Returns information about the node.
 
-### Parameters
+#### Parameters
 
 None
 
-### Returns
+#### Returns
 
-A Response Object similar to this:
+A Response Object similar to:
 
 ```rust
 pub struct NodeInfoWrapper {
@@ -499,117 +790,136 @@ pub struct NodeInfo {
 }
 ```
 
-## `get_tips()`
+### get_tips()
 
 (`GET /tips`)
 
-Returns two non-lazy tips. In case the node can only provide one tip, tip1 and tip2 are identical.
+Returns two non-lazy tips. If the node can only provide one tip, tip1 and tip2 will be identical.
 
-### Parameters
+#### Parameters
 
-None
+None.
 
-### Returns
+#### Returns
 
-A tuple with two [MessageId]:
+A tuple with two [[MessageId](#messageid)]s:
 
 ```rust
 (MessageId, MessageId)
 ```
 
-## `post_message()`
+### post_message()
 
 (`POST /message`)
 
-Submit a message. The node takes care of missing fields and tries to build the message. On success, the message will be stored in the Tangle. This endpoint will return the identifier of the message.
+Submits a message. The node will take care of any missing fields and attempt to build the message. On success, the
+message will be stored in the Tangle. This endpoint will return the identifier of the message.
 
-### Parameters
+#### Parameters
 
-| Parameter   | Required | Type      | Definition          |
-| ----------- | -------- | --------- | ------------------- |
-| **message** | ✔        | [Message] | The message object. |
+##### message
 
-### Returns
+| Required | Type                  | Definition          |
+|----------|-----------------------|---------------------|
+| ✔        | [Message](#message-1) | The message object. |
 
-The [MessageId] of the message object.
+#### Returns
 
-## `get_output()`
+The [messageId](#messageid) of the message object.
+
+### get_output()
 
 (`GET /outputs`)
 
-Get the producer of the output, the corresponding address, amount and spend status of an output. This information can only be retrieved for outputs which are part of a confirmed transaction.
+Get the producer of the output, the corresponding address, amount and spend status of an output. This information can
+only be retrieved for outputs which are part of a confirmed transaction.
 
-### Parameters
+#### Parameters
 
-| Parameter     | Required | Type      | Definition                |
-| ------------- | -------- | --------- | ------------------------- |
-| **output_id** | ✔        | UtxoInput | Identifier of the output. |
+##### output_id
 
-### Returns
+| Required | Type      | Definition                |
+|----------|-----------|---------------------------|
+| ✔        | UtxoInput | Identifier of the output. |
 
-An [OutputMetadata](#OutputMetadata) that contains various information about the output.
+#### Returns
 
-## `get_address()`
+An [OutputMetadata](#OutputMetadata) that contains information about the output.
+
+### get_address()
 
 (`GET /addresses`)
 
-### Parameters
+#### Parameters
 
-| Parameter   | Required | Type     | Definition                 |
-| ----------- | -------- | -------- | -------------------------- |
-| **address** | ✔        | [String] | The address to search for. |
+##### address
 
-### Returns
+| Required | Type     | Definition                 |
+|----------|----------|----------------------------|
+| ✔        | [String] | The address to search for. |
 
-Depend on the final calling method, users could get different outputs they need:
+#### Returns
 
-* `balance()`: Return confirmed balance of the address.
-* `outputs([options])`: Return UtxoInput array (transaction IDs with corresponding output index).
+Depending on the final calling method, you can get different outputs you need:
 
-## `find_outputs()`
+* `balance()`: Returns the confirmed balance of the address.
+* `outputs([options])`: Returns the UtxoInput array (transaction IDs with corresponding output index).
+
+### find_outputs()
 
 Find all outputs based on the requests criteria.
 
-### Parameters
+#### Parameters
 
-| Parameter     | Required | Type        | Definition                  |
-| ------------- | -------- | ----------- | --------------------------- |
-| **output_id** | ✘        | [UtxoInput] | The identifier of output.   |
-| **addresses** | ✘        | [[String]]  | The Bech32 encoded address. |
+##### output_id
 
-### Returns
+| Required | Type        | Definition                |
+|----------|-------------|---------------------------|
+| ✘        | [UtxoInput] | The identifier of output. |
+
+##### addresses
+
+| Required | Type       | Definition                  |
+|----------|------------|-----------------------------|
+| ✘        | [[String]] | The Bech32 encoded address. |
+
+#### Returns
 
 A vector of [OutputMetadata](#OutputMetadata).
 
-## `get_milestone()`
+### get_milestone()
 
 (`GET /milestones`)
 
 Get the milestone by the given index.
 
-### Parameters
+#### Parameters
 
-| Parameter | Required | Type | Definition              |
-| --------- | -------- | ---- | ----------------------- |
-| **index** | ✔        | u32  | Index of the milestone. |
+##### index
 
-### Returns
+| Required | Type | Definition              |
+|----------|------|-------------------------|
+| ✔        | u32  | Index of the milestone. |
 
-An [Milestone] object.
+#### Returns
 
-## `get_milestone_utxo_changes()`
+An [[Milestone](#milestone)] object.
+
+### get_milestone_utxo_changes()
 
 (`GET /milestones/{}/utxo-changes`)
 
 Get all UTXO changes of a given milestone.
 
-### Parameters
+#### Parameters
 
-| Parameter | Required | Type | Definition              |
-| --------- | -------- | ---- | ----------------------- |
-| **index** | ✔        | u32  | Index of the milestone. |
+##### index
 
-### Returns
+| Required | Type | Definition              |
+|----------|------|-------------------------|
+| ✔        | u32  | Index of the milestone. |
+
+#### Returns
 
 ```Rust
 MilestoneUTXOChanges {
@@ -619,37 +929,37 @@ MilestoneUTXOChanges {
 }
 ```
 
-## `get_receipts()`
+### get_receipts()
 
 (`GET /receipts`)
 
 Get all receipts.
 
-### Returns
+#### Returns
 
 ```Rust
 Vec<ReceiptDto/>
 ```
 
-## `get_receipts_migrated_at()`
+### get_receipts_migrated_at()
 
 (`GET /receipts/{migratedAt}`)
 
 Get all receipts for a given milestone index.
 
-### Returns
+#### Returns
 
 ```Rust
 Vec<ReceiptDto/>
 ```
 
-## `get_treasury()`
+### get_treasury()
 
 (`GET /treasury`)
 
 Get the treasury amount.
 
-### Returns
+#### Returns
 
 ```Rust
 pub struct TreasuryResponse {
@@ -659,19 +969,21 @@ pub struct TreasuryResponse {
 }
 ```
 
-## `get_included_message()`
+### get_included_message()
 
 (`GET /transactions/{transactionId}/included-message`)
 
 Get the included message of the transaction.
 
-### Parameters
+#### Parameters
 
-| Parameter          | Required | Type            | Definition                 |
-| ------------------ | -------- | --------------- | -------------------------- |
-| **transaction_id** | ✔        | [TransactionId] | The id of the transaction. |
+##### transaction_id
 
-### Returns
+| Required | Type          | Definition                 |
+|----------|---------------|----------------------------|
+| ✔        | TransactionId | The id of the transaction. |
+
+#### Returns
 
 ```Rust
 struct Message {
@@ -681,38 +993,75 @@ struct Message {
 }
 ```
 
-# Objects
+## Objects
 
-Here are the objects used in the API above. They aim to provide a secure way to handle certain data structures specified in the Iota stack.
+The objects used in the [API](#full-node-api) aim to provide a secure way to handle certain data structures specified in the IOTA
+stack.
 
-## `MessageId`
+### Address
 
-[MessageId]: #MessageId
-
-MessageId is a 32 bytes array which can represent as hex string.
-
-```rust
-struct MessageId([u8; MESSAGE_ID_LENGTH]);
-```
-
-## `Seed`
-
-[Seed]: #Seed
+An Ed25519 address which can be encoded in either Bech32 or Hex. Bech32 is preferred and used in most functions.
 
 ```Rust
-pub enum Seed {
-    /// Ed25519 variant
-    Ed25519(Ed25519Seed)
+pub enum Address {
+    Ed25519(Ed25519Address),
 }
 ```
 
-An IOTA seed that inner structure is omitted. Users can create this type by passing a String. It will verify and return an error if it’s not valid. |
+### AddressBalancePair
 
-## `Message`
+```Rust
+pub struct AddressBalancePair {
+    /// Address, bech32 encoded
+    pub address: String,
+    /// Balance in the address
+    pub balance: u64,
+    /// If dust is allowed on the address
+    pub dust_allowed: bool,
+}
+```
 
-[Message]: #Message
+### Api
 
-The message object returned by various functions; based on the [RFC](https://github.com/GalRogozinski/protocol-rfcs/blob/message/text/0017-message/0017-message.md) for the Message object. Here's the brief overview of each components in Message type would look like:
+```Rust
+pub enum Api {
+    /// `get_health` API
+    GetHealth,
+    /// `get_info`API
+    GetInfo,
+    /// `get_tips` API
+    GetTips,
+    /// `post_message` API
+    PostMessage,
+    /// `post_message` API with remote pow
+    PostMessageWithRemotePow,
+    /// `get_output` API
+    GetOutput,
+    /// `get_milestone` API
+    GetMilestone,
+}
+```
+
+### BrokerOptions
+
+```Rust
+pub struct BrokerOptions {
+    #[serde(default = "default_broker_automatic_disconnect", rename = "automaticDisconnect")]
+    pub(crate) automatic_disconnect: bool,
+    #[serde(default = "default_broker_timeout")]
+    pub(crate) timeout: std::time::Duration,
+    #[serde(rename = "maxReconnectionAttempts", default)]
+    pub(crate) max_reconnection_attempts: usize,
+}
+```
+
+
+
+### Message
+
+The message object returned by various functions. Based on
+the [RFC](https://github.com/GalRogozinski/protocol-rfcs/blob/message/text/0017-message/0017-message.md) for the Message
+object. The following is a brief overview of how each of the components in a Message type will look like:
 
 ```rust
 struct Message {
@@ -783,9 +1132,16 @@ struct Ed25519Signature {
 struct ReferenceUnlock(u16);
 ```
 
-## `MessageMetadata`
+### MessageId
 
-[`MessageMetadata`]: #MessageMetadata
+A 32 bytes array which can represent as hex string.
+
+```rust
+struct MessageId([u8; MESSAGE_ID_LENGTH]);
+```
+
+
+### MessageMetadata
 
 ```rust
 pub struct MessageMetadata {
@@ -806,11 +1162,24 @@ pub struct MessageMetadata {
 }
 ```
 
-## `OutputMetadata`
+### Milestone
 
-[`OutputMetadata`]: #OutputMetadata
+A milestone metadata.
 
-The metadata of an output:
+```rust
+pub struct MilestoneMetadata {
+    /// Milestone index
+    pub milestone_index: u32,
+    /// Milestone ID
+    pub message_id: String,
+    /// Timestamp
+    pub timestamp: u64,
+}
+```
+
+### OutputMetadata
+
+The metadata of an output.
 
 ```rust
 pub struct OutputMetadata {
@@ -829,93 +1198,22 @@ pub struct OutputMetadata {
 }
 ```
 
-## `Address`
+### Seed
 
-[Address]: #Address
-
-An Ed25519 address can be encoded in Bech32 or Hex, with Bech32 being preferred and also used in most functions.
-
-```Rust
-pub enum Address {
-    Ed25519(Ed25519Address),
-}
-```
-
-## `AddressBalancePair`
-
-[AddressBalancePair]: #AddressBalancePair
+An IOTA seed with its inner structure omitted. You can create this type by passing a String. It will verify and return
+an error if it is not valid.
 
 ```Rust
-pub struct AddressBalancePair {
-    /// Address, bech32 encoded
-    pub address: String,
-    /// Balance in the address
-    pub balance: u64,
-    /// If dust is allowed on the address
-    pub dust_allowed: bool,
+pub enum Seed {
+    /// Ed25519 variant
+    Ed25519(Ed25519Seed)
 }
 ```
 
-## `Milestone`
 
-[Milestone]: #Milestone
+### Topic
 
-A milestone metadata.
-
-```rust
-pub struct MilestoneMetadata {
-    /// Milestone index
-    pub milestone_index: u32,
-    /// Milestone ID
-    pub message_id: String,
-    /// Timestamp
-    pub timestamp: u64,
-}
-```
-
-## `Api`
-
-[Api]: #Api
-
-```Rust
-pub enum Api {
-    /// `get_health` API
-    GetHealth,
-    /// `get_info`API
-    GetInfo,
-    /// `get_tips` API
-    GetTips,
-    /// `post_message` API
-    PostMessage,
-    /// `post_message` API with remote pow
-    PostMessageWithRemotePow,
-    /// `get_output` API
-    GetOutput,
-    /// `get_milestone` API
-    GetMilestone,
-}
-```
-
-## `BrokerOptions`
-
-[BrokerOptions]: #BrokerOptions
-
-```Rust
-pub struct BrokerOptions {
-    #[serde(default = "default_broker_automatic_disconnect", rename = "automaticDisconnect")]
-    pub(crate) automatic_disconnect: bool,
-    #[serde(default = "default_broker_timeout")]
-    pub(crate) timeout: std::time::Duration,
-    #[serde(rename = "maxReconnectionAttempts", default)]
-    pub(crate) max_reconnection_attempts: usize,
-}
-```
-
-## `Topic`
-
-[Topic]: #Topic
-
-A string with the exact MQTT topic to monitor, can have one of the following variations:
+A string with the exact MQTT topic to monitor. It can have one of the following variations:
 
 ```
 milestones/latest

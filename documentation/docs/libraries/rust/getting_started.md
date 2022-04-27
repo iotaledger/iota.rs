@@ -6,18 +6,27 @@ keywords:
 - install
 - cargo
 - system environment variables
+- how to
 ---
-# Getting Started with Rust
+# Getting Started With Rust
 
 ## Requirements
 
-To use the library, we recommend you update Rust to latest stable version [`$ rustup update stable`](https://github.com/rust-lang/rustup.rs#keeping-rust-up-to-date). Nightly should be fine but some changes might not be compatible.
+To use the library, you should update [Rust to the latest stable version](https://github.com/rust-lang/rustup.rs#keeping-rust-up-to-date).
+You can update your Rust installation by running the following command:
 
-`no_std` is not currently supported, but we are working on it in [bee](https://github.com/iotaledger/bee), and will provide it as feature once the new implementation is ready.
+```bash
+rustup update stable
+```
 
-## Using the library
+The nightly version should also be fine, but some changes might not be compatible.
 
-Using the library is easy, just add it as dependency in your `Cargo.toml`:
+`no_std` is not currently supported.  We are working on it in [Bee](https://github.com/iotaledger/bee), and will provide 
+it as feature once the new implementation is ready.
+
+## Using the Library
+
+To use the iota.rs library, you will simply need to add it as dependency in your `Cargo.toml`:
 
 ```bash
 [dependencies]
@@ -26,11 +35,11 @@ iota-client = { git = "https://github.com/iotaledger/iota.rs", branch = "dev" }
 tokio = { version = "1.12.0", features = ["full"] }
 ```
 
-And then you can use the library in your code with `use iota_client;`.
+After you have added it, you can use the library in your code with `use iota_client;`.
 
 ### Initialisation
 
-This example fetches node information
+You can use the following example to initialize the library and fetch node information.
 
 ```rust
 use iota_client::Client;
