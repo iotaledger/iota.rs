@@ -67,7 +67,8 @@ pub struct ClientMessageBuilderOutputAddress {
     /// Address
     pub address: String,
     /// Amount
-    pub amount: u64,
+    // Using a String to prevent overflow issues in other languages
+    pub amount: String,
 }
 
 /// Options for generating message
@@ -273,11 +274,23 @@ impl<'a> ClientMessageBuilder<'a> {
         }
 
         if let Some(output) = options.output {
-            self = self.with_output(&output.address, output.amount)?;
+            self = self.with_output(
+                &output.address,
+                output
+                    .amount
+                    .parse::<u64>()
+                    .map_err(|_| Error::InvalidAmount(output.amount))?,
+            )?;
         }
 
         if let Some(output_hex) = options.output_hex {
-            self = self.with_output_hex(&output_hex.address, output_hex.amount)?;
+            self = self.with_output_hex(
+                &output_hex.address,
+                output_hex
+                    .amount
+                    .parse::<u64>()
+                    .map_err(|_| Error::InvalidAmount(output_hex.amount))?,
+            )?;
         }
 
         if let Some(outputs) = options.outputs {
