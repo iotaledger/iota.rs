@@ -1,14 +1,19 @@
 // Copyright 2021-2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
+import { Client, initLogger } from '@iota/client';
+import { readFile } from 'fs/promises';
+import path = require('path');
+
+// From examples directory, run with:
+// node ./dist/offline_signing/3_send_message.js
 
 // In this example we will send the signed transaction in a message
-
-const SIGNED_TRANSACTION_FILE_NAME = './signed_transaction.json';
+const SIGNED_TRANSACTION_FILE_NAME = path.join(
+    __dirname,
+    '../signed_transaction.json',
+);
 
 async function run() {
-    const { Client, initLogger } = require('@iota/client');
-    const { readFile } = require('fs/promises');
-
     initLogger();
 
     // client will connect to testnet by default
@@ -16,7 +21,7 @@ async function run() {
         nodes: [
             {
                 // Insert your node URL here.
-                url: 'http://localhost:14265',
+                url: 'https://api.alphanet.iotaledger.net/',
                 disabled: false,
             },
         ],
@@ -28,14 +33,13 @@ async function run() {
             await readFile(SIGNED_TRANSACTION_FILE_NAME, 'utf8'),
         );
 
-        let message = await onlineClient.submitPayload(signedTransaction);
+        const message = await onlineClient.submitPayload(signedTransaction);
 
         // TODO: get messageId from message (Blake2b256 hash of message)
         console.log(
             'Transaction sent: https://explorer.iota.org/devnet/message/' +
                 message.messageId,
         );
-        console.log(message);
     } catch (error) {
         console.error(error);
     }

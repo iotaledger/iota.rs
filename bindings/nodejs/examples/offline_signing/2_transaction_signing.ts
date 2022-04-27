@@ -1,16 +1,24 @@
 // Copyright 2021-2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
+import { Client, initLogger } from '@iota/client';
+import { writeFile, readFile } from 'fs/promises';
+import 'dotenv/config';
+import path = require('path');
+
+// From examples directory, run with:
+// node ./dist/offline_signing/2_transaction_signing.js
 
 // In this example we will sign the prepared transaction
-
-const PREPARED_TRANSACTION_FILE_NAME = './prepared_transaction.json';
-const SIGNED_TRANSACTION_FILE_NAME = './signed_transaction.json';
+const PREPARED_TRANSACTION_FILE_NAME = path.join(
+    __dirname,
+    '../../offline_signing/prepared_transaction.json',
+);
+const SIGNED_TRANSACTION_FILE_NAME = path.join(
+    __dirname,
+    '../signed_transaction.json',
+);
 
 async function run() {
-    const { Client, initLogger } = require('@iota/client');
-    const { writeFile, readFile } = require('fs/promises');
-    require('dotenv').config({ path: '../.env' });
-
     initLogger();
 
     // client will connect to testnet by default
@@ -26,15 +34,14 @@ async function run() {
         localPow: true,
     });
 
+    const signer = JSON.stringify({
+        Mnemonic: process.env.NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1,
+    });
     try {
         // Read in prepared transaction from example 2_transaction_preparation
         const preparedTransaction = JSON.parse(
             await readFile(PREPARED_TRANSACTION_FILE_NAME, 'utf8'),
         );
-
-        const signer = JSON.stringify({
-            Mnemonic: process.env.NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1,
-        });
 
         // Signs prepared transaction offline.
         const signedTransaction = await offlineClient.signTransaction(
@@ -47,11 +54,6 @@ async function run() {
         await writeFile(
             SIGNED_TRANSACTION_FILE_NAME,
             JSON.stringify(signedTransaction),
-            (err) => {
-                if (err) {
-                    console.error(err);
-                }
-            },
         );
     } catch (error) {
         console.error(error);

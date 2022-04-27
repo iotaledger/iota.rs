@@ -1,15 +1,23 @@
 // Copyright 2021-2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
+import { Client, initLogger } from '@iota/client';
+import { writeFile, readFile } from 'fs/promises';
+import path = require('path');
+
+// From examples directory, run with:
+// node ./dist/offline_signing/1_transaction_preparation.js
 
 // In this example we will get inputs and prepare a transaction
-
-const ADDRESS_FILE_NAME = './addresses.json';
-const PREPARED_TRANSACTION_FILE_NAME = './prepared_transaction.json';
+const ADDRESS_FILE_NAME = path.join(
+    __dirname,
+    '../../offline_signing/addresses.json',
+);
+const PREPARED_TRANSACTION_FILE_NAME = path.join(
+    __dirname,
+    '../../offline_signing/prepared_transaction.json',
+);
 
 async function run() {
-    const { Client, initLogger } = require('@iota/client');
-    const { writeFile, readFile } = require('fs/promises');
-
     initLogger();
 
     // client will connect to testnet by default
@@ -24,9 +32,9 @@ async function run() {
         localPow: true,
     });
 
-    let address =
+    const address =
         'rms1qqv5avetndkxzgr3jtrswdtz5ze6mag20s0jdqvzk4fwezve8q9vkpnqlqe';
-    let amount = 1_000_000;
+    const amount = 1_000_000;
     try {
         // Recovers addresses from example `0_address_generation`.
         const addresses = JSON.parse(await readFile(ADDRESS_FILE_NAME, 'utf8'));
@@ -49,11 +57,6 @@ async function run() {
         await writeFile(
             PREPARED_TRANSACTION_FILE_NAME,
             JSON.stringify(preparedTransaction),
-            (err) => {
-                if (err) {
-                    console.error(err);
-                }
-            },
         );
     } catch (error) {
         console.error(error);
