@@ -1,0 +1,47 @@
+---
+title: Post a Message
+description: You can use the function Client.postMessage(message) to send a message instance over a network.
+image: /img/logo/iota_mark_light.png
+keywords:
+- how to
+- message
+- encapsulating data structure
+- network
+- java
+- nodejs
+- python
+- wasm
+- rust
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+import JavaSimpleMessage from "../libraries/java/examples/_06_simple_message.mdx";
+import NodejsSimpleMessage from "../libraries/nodejs/examples/_06_simple_message.mdx";
+import PythonSimpleMessage from "../libraries/python/examples/_06_simple_message.mdx";
+import RustSimpleMessage from "../libraries/rust/examples/_06_simple_message.mdx";
+import WasmSimpleMessage from "../libraries/wasm/examples/_06_simple_message.mdx";
+
+## Messages
+
+A [message](../key_concepts/messages_payloads_and_transactions#messages) is an encapsulating data structure that is being actually broadcast across the network. It is an atomic unit that is either accepted or rejected as a whole.
+
+The simplest message you can broadcast is a message without any particular payload, as shown in the following examples.
+
+<Tabs groupId="language">
+  <TabItem value="java" label="Java">
+    <JavaSimpleMessage />
+  </TabItem>
+  <TabItem value="nodejs" label="Nodejs">
+    <NodejsSimpleMessage />
+  </TabItem>
+  <TabItem value="python" label="Python">
+    <PythonSimpleMessage />
+  </TabItem>
+  <TabItem value="rust" label="Rust">
+    <RustSimpleMessage />
+  </TabItem>
+  <TabItem value="wasm" label="Wasm">
+    <WasmSimpleMessage />
+  </TabItem>
+</Tabs>
