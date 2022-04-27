@@ -14,7 +14,7 @@ use crate::{
         get_accumulated_output_amounts, get_minted_and_melted_native_tokens, get_remainder_native_tokens,
         minimum_storage_deposit, AccumulatedOutputAmounts,
     },
-    signing::types::InputSigningData,
+    secret::types::InputSigningData,
     Error, Result,
 };
 

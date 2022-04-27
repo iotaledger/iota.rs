@@ -146,7 +146,7 @@ pub enum Error {
     /// Output Error
     #[error("Output error: {0}")]
     OutputError(&'static str),
-    /// Not implemented, specially for the default impl of [crate::signing::Signer::signature_unlock()].
+    /// Not implemented, specially for the default impl of [crate::secret::SecretManager::signature_unlock()].
     #[error("No mnemonic was stored! Please implement signature_unlock() :)")]
     SignatureUnlockNotImplemented,
     #[cfg(not(feature = "wasm"))]
@@ -170,15 +170,15 @@ pub enum Error {
     /// Rw lock failed.
     #[error("Rw lock failed")]
     PoisonError,
+    /// Specifically used for `TryInfo` implementations for `SecretManager`.
+    #[error("cannot unwrap a SecretManager: type mismatch!")]
+    SecretManagerMismatch,
     /// Missing unlock block error
     #[error("missing unlock block")]
     MissingUnlockBlock,
     /// No input with matching ed25519 unlock condition provided
     #[error("No input with matching ed25519 unlock condition provided")]
     MissingInputWithEd25519UnlockCondition,
-    /// No mnemonic was stored, specially for the default impl of [crate::signing::Signer::store_mnemonic()].
-    #[error("No mnemonic was stored! Please implement store_mnemonic() :)")]
-    NoMnemonicWasStored,
     /// Ledger transport error
     #[cfg(feature = "ledger")]
     #[error("ledger transport error")]

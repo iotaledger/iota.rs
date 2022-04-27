@@ -11,19 +11,19 @@ use bee_message::{
 
 use crate::{
     api::message_builder::ClientMessageBuilder, node_api::indexer::query_parameters::QueryParameter,
-    signing::SignerHandle, Client, Result,
+    secret::SecretManager, Client, Result,
 };
 
 /// Function to consolidate all funds from a range of addresses to the address with the lowest index in that range
 /// Returns the address to which the funds got consolidated, if any were available
 pub async fn consolidate_funds(
     client: &Client,
-    signer: &SignerHandle,
+    secret_manager: &SecretManager,
     account_index: u32,
     address_range: Range<u32>,
 ) -> Result<String> {
     let addresses = client
-        .get_addresses(signer)
+        .get_addresses(secret_manager)
         .with_account_index(account_index)
         .with_range(address_range.clone())
         .finish()
@@ -73,7 +73,7 @@ pub async fn consolidate_funds(
             let outputs_chunks = output_with_metadata.chunks(INPUT_COUNT_MAX.into());
 
             for chunk in outputs_chunks {
-                let mut message_builder = client.message().with_signer(signer);
+                let mut message_builder = client.message().with_secret_manager(secret_manager);
                 let mut total_amount = 0;
                 for (input, amount) in chunk {
                     message_builder = message_builder.with_input(UtxoInput::from(OutputId::new(

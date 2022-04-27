@@ -6,7 +6,11 @@
 use std::env;
 
 use dotenv::dotenv;
-use iota_client::{api::consolidate_funds, signing::mnemonic::MnemonicSigner, Client, Result};
+use iota_client::{
+    api::consolidate_funds,
+    secret::{mnemonic::MnemonicSecretManager, SecretManager},
+    Client, Result,
+};
 
 /// In this example we will consolidate all funds in a range of addresses
 
@@ -20,10 +24,12 @@ async fn main() -> Result<()> {
     // Configure your own seed in ".env". Since the output amount cannot be zero, the seed must contain non-zero balance
     dotenv().ok();
 
-    let seed = MnemonicSigner::new_from_seed(&env::var("NON_SECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap())?;
+    let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_hex_seed(
+        &env::var("NON_SECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap(),
+    )?);
 
     // Here all funds will be send to the address with the lowest index in the range
-    let address = consolidate_funds(&client, &seed, 0, address_range).await?;
+    let address = consolidate_funds(&client, &secret_manager, 0, address_range).await?;
 
     println!("Funds consolidated to {}", address);
     Ok(())

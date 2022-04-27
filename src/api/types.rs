@@ -7,7 +7,7 @@ use bee_message::{
     DtoError,
 };
 
-use crate::signing::types::InputSigningData;
+use crate::secret::types::InputSigningData;
 
 /// Helper struct for offline signing
 #[derive(Debug, Clone, Serialize, Deserialize)]

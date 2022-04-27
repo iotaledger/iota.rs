@@ -5,7 +5,10 @@
 use std::env;
 
 use dotenv::dotenv;
-use iota_client::{signing::mnemonic::MnemonicSigner, Client, Result};
+use iota_client::{
+    secret::{mnemonic::MnemonicSecretManager, SecretManager},
+    Client, Result,
+};
 
 /// In this example we will send 9_000_000 tokens to the following 3 locations, respectively
 /// First send 10 Mi from the faucet to atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r
@@ -38,15 +41,23 @@ async fn main() -> Result<()> {
     // Configure your own seed in ".env". Since the output amount cannot be zero, the seed must contain non-zero balance
     dotenv().ok();
 
-    let signer_1 = MnemonicSigner::new_from_seed(&env::var("NONSECURE_USE_OF_DEVELOPMENT_signer_1").unwrap())?;
-    let signer_2 = MnemonicSigner::new_from_seed(&env::var("NONSECURE_USE_OF_DEVELOPMENT_signer_1").unwrap())?;
+    let secret_manager_1 = SecretManager::Mnemonic(MnemonicSecretManager::try_from_hex_seed(
+        &env::var("NON_SECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap(),
+    )?);
+    let secret_manager_2 = SecretManager::Mnemonic(MnemonicSecretManager::try_from_hex_seed(
+        &env::var("NON_SECURE_USE_OF_DEVELOPMENT_SEED_2").unwrap(),
+    )?);
 
     let message = client
         .message()
-        .with_signer(&signer_1)
+        .with_secret_manager(&secret_manager_1)
         // Insert the output address and amount to spent. The amount cannot be zero.
         .with_output(
-            &client.get_addresses(&signer_2).with_range(0..1).finish().await?[0],
+            &client
+                .get_addresses(&secret_manager_2)
+                .with_range(0..1)
+                .finish()
+                .await?[0],
             3_000_000,
         )?
         .finish()
@@ -57,9 +68,13 @@ async fn main() -> Result<()> {
 
     let message = client
         .message()
-        .with_signer(&signer_1)
+        .with_secret_manager(&secret_manager_1)
         .with_output(
-            &client.get_addresses(&signer_2).with_range(1..2).finish().await?[0],
+            &client
+                .get_addresses(&secret_manager_2)
+                .with_range(1..2)
+                .finish()
+                .await?[0],
             3_000_000,
         )?
         .finish()
@@ -70,9 +85,13 @@ async fn main() -> Result<()> {
 
     let message = client
         .message()
-        .with_signer(&signer_1)
+        .with_secret_manager(&secret_manager_1)
         .with_output(
-            &client.get_addresses(&signer_2).with_range(2..3).finish().await?[0],
+            &client
+                .get_addresses(&secret_manager_2)
+                .with_range(2..3)
+                .finish()
+                .await?[0],
             3_000_000,
         )?
         .finish()
@@ -83,14 +102,22 @@ async fn main() -> Result<()> {
 
     let message = client
         .message()
-        .with_signer(&signer_2)
+        .with_secret_manager(&secret_manager_2)
         // Note that we can transfer to multiple outputs by using the `SendTransactionBuilder`
         .with_output(
-            &client.get_addresses(&signer_1).with_range(1..2).finish().await?[0],
+            &client
+                .get_addresses(&secret_manager_1)
+                .with_range(1..2)
+                .finish()
+                .await?[0],
             3_000_000,
         )?
         .with_output(
-            &client.get_addresses(&signer_1).with_range(2..3).finish().await?[0],
+            &client
+                .get_addresses(&secret_manager_1)
+                .with_range(2..3)
+                .finish()
+                .await?[0],
             3_000_000,
         )?
         .finish()

@@ -3,23 +3,27 @@
 
 use iota_client::{
     api::GetAddressesBuilder,
-    constants::{IOTA_BECH32_HRP, IOTA_COIN_TYPE, SHIMMER_BECH32_HRP, SHIMMER_COIN_TYPE},
-    signing::mnemonic::MnemonicSigner,
+    constants::{IOTA_BECH32_HRP, IOTA_COIN_TYPE, IOTA_TESTNET_BECH32_HRP, SHIMMER_BECH32_HRP, SHIMMER_COIN_TYPE},
+    secret::{mnemonic::MnemonicSecretManager, SecretManager},
     Client,
 };
 
 #[tokio::test]
 async fn addresses() {
-    let signer =
-        MnemonicSigner::new_from_seed("256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2").unwrap();
-    let addresses = GetAddressesBuilder::new(&signer)
+    let secret_manager = SecretManager::Mnemonic(
+        MnemonicSecretManager::try_from_hex_seed("256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2")
+            .unwrap(),
+    );
+
+    let addresses = GetAddressesBuilder::new(&secret_manager)
         .with_coin_type(IOTA_COIN_TYPE)
-        .with_bech32_hrp("atoi")
+        .with_bech32_hrp(IOTA_TESTNET_BECH32_HRP)
         .with_account_index(0)
         .with_range(0..1)
         .get_all()
         .await
         .unwrap();
+
     assert_eq!(
         *addresses.public[0],
         "atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r".to_string()
@@ -33,13 +37,13 @@ async fn addresses() {
 #[tokio::test]
 async fn public_key_to_address() {
     let client = Client::builder().with_offline_mode().finish().await.unwrap();
-
     let hex_public_key = "2baaf3bca8ace9f862e60184bd3e79df25ff230f7eaaa4c7f03daa9833ba854a";
 
     let public_key_address = client
         .hex_public_key_to_bech32_address(hex_public_key, Some("atoi"))
         .await
         .unwrap();
+
     assert_eq!(
         public_key_address,
         "atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r".to_string()
@@ -49,10 +53,10 @@ async fn public_key_to_address() {
 #[tokio::test]
 async fn mnemonic_address_generation_iota() {
     let mnemonic = "acoustic trophy damage hint search taste love bicycle foster cradle brown govern endless depend situate athlete pudding blame question genius transfer van random vast";
-    let signer = MnemonicSigner::new(mnemonic).unwrap();
+    let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(mnemonic).unwrap());
 
     // account 0, address 0 and 1
-    let addresses = GetAddressesBuilder::new(&signer)
+    let addresses = GetAddressesBuilder::new(&secret_manager)
         .with_coin_type(IOTA_COIN_TYPE)
         .with_bech32_hrp(IOTA_BECH32_HRP)
         .with_account_index(0)
@@ -71,7 +75,7 @@ async fn mnemonic_address_generation_iota() {
     );
 
     // account 1
-    let addresses = GetAddressesBuilder::new(&signer)
+    let addresses = GetAddressesBuilder::new(&secret_manager)
         .with_coin_type(IOTA_COIN_TYPE)
         .with_bech32_hrp(IOTA_BECH32_HRP)
         .with_account_index(1)
@@ -89,10 +93,10 @@ async fn mnemonic_address_generation_iota() {
 #[tokio::test]
 async fn mnemonic_address_generation_shimmer() {
     let mnemonic = "acoustic trophy damage hint search taste love bicycle foster cradle brown govern endless depend situate athlete pudding blame question genius transfer van random vast";
-    let signer = MnemonicSigner::new(mnemonic).unwrap();
+    let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(mnemonic).unwrap());
 
     // account 0, address 0 and 1
-    let addresses = GetAddressesBuilder::new(&signer)
+    let addresses = GetAddressesBuilder::new(&secret_manager)
         .with_coin_type(SHIMMER_COIN_TYPE)
         .with_bech32_hrp(SHIMMER_BECH32_HRP)
         .with_account_index(0)
@@ -111,7 +115,7 @@ async fn mnemonic_address_generation_shimmer() {
     );
 
     // account 1
-    let addresses = GetAddressesBuilder::new(&signer)
+    let addresses = GetAddressesBuilder::new(&secret_manager)
         .with_coin_type(SHIMMER_COIN_TYPE)
         .with_bech32_hrp(SHIMMER_BECH32_HRP)
         .with_account_index(1)

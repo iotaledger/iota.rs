@@ -17,7 +17,7 @@ use crate::{
         message_builder::input_selection::types::SelectedTransactionData, ClientMessageBuilder,
     },
     constants::HD_WALLET_TYPE,
-    signing::types::InputSigningData,
+    secret::types::InputSigningData,
     Result,
 };
 
@@ -46,12 +46,12 @@ pub(crate) async fn get_custom_inputs(
                 )?;
 
                 let bech32_hrp = message_builder.client.get_bech32_hrp().await?;
-                let (address_index, internal) = match message_builder.signer {
-                    Some(signer) => {
+                let (address_index, internal) = match message_builder.secret_manager {
+                    Some(secret_manager) => {
                         match output_address {
                             Address::Ed25519(_) => {
                                 search_address(
-                                    signer,
+                                    secret_manager,
                                     &bech32_hrp,
                                     message_builder.coin_type,
                                     message_builder.account_index,

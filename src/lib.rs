@@ -46,7 +46,7 @@ pub mod error;
 pub mod message_interface;
 pub mod node_api;
 pub mod node_manager;
-pub mod signing;
+pub mod secret;
 #[cfg(feature = "stronghold")]
 pub mod stronghold;
 pub mod utils;

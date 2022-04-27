@@ -18,7 +18,7 @@ use crate::{
     },
     constants::HD_WALLET_TYPE,
     node_api::indexer::query_parameters::QueryParameter,
-    signing::types::InputSigningData,
+    secret::types::InputSigningData,
     Error, Result,
 };
 
@@ -63,9 +63,8 @@ pub(crate) async fn get_inputs(
             .client
             .get_addresses(
                 message_builder
-                    .signer
-                    .as_ref()
-                    .ok_or(crate::Error::MissingParameter("signer"))?,
+                    .secret_manager
+                    .ok_or(crate::Error::MissingParameter("secret manager"))?,
             )
             .with_account_index(account_index)
             .with_range(gap_index..gap_index + ADDRESS_GAP_RANGE)
@@ -215,7 +214,9 @@ async fn get_inputs_for_sender_and_issuer(
     for address in required_ed25519_addresses {
         if let Address::Ed25519(address) = address {
             let (address_index, internal) = search_address(
-                message_builder.signer.ok_or(Error::MissingParameter("Signer"))?,
+                message_builder
+                    .secret_manager
+                    .ok_or(Error::MissingParameter("secret manager"))?,
                 &bech32_hrp,
                 message_builder.coin_type,
                 message_builder.account_index,

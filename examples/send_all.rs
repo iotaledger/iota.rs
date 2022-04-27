@@ -11,7 +11,7 @@ use iota_client::{
         unlock_condition::AddressUnlockCondition, BasicOutputBuilder, NativeTokensBuilder, Output, UnlockCondition,
     },
     node_api::indexer::query_parameters::QueryParameter,
-    signing::mnemonic::MnemonicSigner,
+    secret::{mnemonic::MnemonicSecretManager, SecretManager},
     Client, Result,
 };
 
@@ -31,13 +31,24 @@ async fn main() -> Result<()> {
     // Configure your own seed in ".env". Since the output amount cannot be zero, the seed must contain non-zero balance
     dotenv().ok();
 
-    let signer = MnemonicSigner::new(&env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap())?;
-    let seed_2 = MnemonicSigner::new_from_seed(&env::var("NON_SECURE_USE_OF_DEVELOPMENT_SEED_2").unwrap())?;
+    let secret_manager_1 = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
+        &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
+    )?);
+    let secret_manager_2 = SecretManager::Mnemonic(MnemonicSecretManager::try_from_hex_seed(
+        &env::var("NON_SECURE_USE_OF_DEVELOPMENT_SEED_2").unwrap(),
+    )?);
 
     // Get output ids of outputs that can be controlled by this address without further unlock constraints
     let output_ids = client
         .output_ids(vec![
-            QueryParameter::Address(client.get_addresses(&signer).with_range(0..1).finish().await?[0].clone()),
+            QueryParameter::Address(
+                client
+                    .get_addresses(&secret_manager_1)
+                    .with_range(0..1)
+                    .finish()
+                    .await?[0]
+                    .clone(),
+            ),
             QueryParameter::HasExpirationCondition(false),
             QueryParameter::HasTimelockCondition(false),
             QueryParameter::HasStorageDepositReturnCondition(false),
@@ -64,10 +75,15 @@ async fn main() -> Result<()> {
 
     println!("Total amount: {}", total_amount);
 
-    let mut basic_output_builder =
-        BasicOutputBuilder::new_with_amount(total_amount)?.add_unlock_condition(UnlockCondition::Address(
-            AddressUnlockCondition::new(client.get_addresses(&seed_2).with_range(0..1).get_raw().await?[0]),
-        ));
+    let mut basic_output_builder = BasicOutputBuilder::new_with_amount(total_amount)?.add_unlock_condition(
+        UnlockCondition::Address(AddressUnlockCondition::new(
+            client
+                .get_addresses(&secret_manager_2)
+                .with_range(0..1)
+                .get_raw()
+                .await?[0],
+        )),
+    );
 
     for native_token in total_native_tokens.into_iter() {
         basic_output_builder = basic_output_builder.add_native_token(native_token);
@@ -76,7 +92,7 @@ async fn main() -> Result<()> {
 
     let message = client
         .message()
-        .with_signer(&signer)
+        .with_secret_manager(&secret_manager_1)
         .with_outputs(vec![new_output])?
         .finish()
         .await?;

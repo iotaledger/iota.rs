@@ -13,7 +13,10 @@ use std::{
 };
 
 use dotenv::dotenv;
-use iota_client::{signing::mnemonic::MnemonicSigner, Client, Result};
+use iota_client::{
+    secret::{mnemonic::MnemonicSecretManager, SecretManager},
+    Client, Result,
+};
 
 const ADDRESS_FILE_NAME: &str = "examples/offline_signing/addresses.json";
 
@@ -23,11 +26,13 @@ async fn main() -> Result<()> {
 
     // Creates a client instance.
     let offline_client = Client::builder().with_offline_mode().finish().await?;
-    let signer = MnemonicSigner::new(&env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap())?;
+    let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
+        &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
+    )?);
 
     // Generates addresses offline.
     let addresses = offline_client
-        .get_addresses(&signer)
+        .get_addresses(&secret_manager)
         .with_range(0..10)
         .with_bech32_hrp("rms")
         .finish()
