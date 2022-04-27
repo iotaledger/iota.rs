@@ -42,7 +42,8 @@ module.exports = {
                 'how_tos/get_outputs',
                 'how_tos/simple_message',
                 'how_tos/get_message_data',
-                'how_tos/data_message'
+                'how_tos/data_message',
+                'how_tos/transaction'
             ]
         },
         {
@@ -88,7 +89,6 @@ module.exports = {
                             type: 'category',
                             label: 'Examples',
                             items: [
-                                'libraries/nodejs/examples/transaction',
                                 'libraries/nodejs/examples/mqtt',
                             ],
                         },
@@ -107,13 +107,6 @@ module.exports = {
                             type: 'doc',
                             id: 'libraries/python/getting_started',
                             label: 'Getting Started'
-                        },
-                        {
-                            type: 'category',
-                            label: 'Examples',
-                            items: [
-                                'libraries/python/examples/transaction',
-                            ]
                         },
                         {
                             type: 'doc',
@@ -151,13 +144,6 @@ module.exports = {
                             type: 'doc',
                             id: 'libraries/wasm/getting_started',
                             label: 'Getting Started'
-                        },
-                        {
-                            type: 'category',
-                            label: 'Examples',
-                            items: [
-                                'libraries/wasm/examples/transaction',
-                            ],
                         },
                         {
                             type: 'doc',

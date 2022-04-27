@@ -1,0 +1,12 @@
+import CodeBlock from "@theme/CodeBlock";
+import transaction from "!!raw-loader!../../../../../bindings/nodejs/examples/09_transaction.js";
+
+Sending value-based messages is a very straightforward process if you use the
+[`MessageSender`](./../libraries/nodejs/api_reference#messagesender) helper class. You will only need to provide a valid
+seed by chaining a call to [`.seed(seed: string)`](./../libraries/nodejs/api_reference#seedseed-messagesender), and an
+output address and amount by chaining a call to
+[`.output(address: string, amount: string)`](./../libraries/nodejs/api_reference#outputaddress-amount-messagesender). The
+method will find valid output(s) that can be used to fund the given amount(s) and the unspent amount will be sent to the
+same address.
+
+<CodeBlock className="language-javascript">{transaction}</CodeBlock>
