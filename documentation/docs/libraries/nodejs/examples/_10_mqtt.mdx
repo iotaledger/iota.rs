@@ -1,0 +1,33 @@
+---
+title: Listening to MQTT
+description:
+  You can reach the listener using an instance of a Client.TopicSubscriber object that is returned from the
+  Client.subscriber() function.
+image: /img/logo/iota_mark_light.png
+keywords:
+  - how to
+  - message
+  - message queuing telemetry
+  - queues
+  - asynchronous events listener
+  - list topics
+  - nodejs
+---
+
+import CodeBlock from "@theme/CodeBlock";
+import mqtt from "!!raw-loader!../../../../../bindings/nodejs/examples/10_mqtt.js";
+
+You can reach the listener using an instance of a
+[`Client.TopicSubscriber`](./../libraries/nodejs/api_reference#topicsubscriber) object that is returned from the
+[`Client.subscriber()`](./../libraries/nodejs/api_reference#subscriber-topicsubscriber) function. It offers several
+chaining calls:
+
+- [`.topic(str)`](./../libraries/nodejs/api_reference#topictopic-topicsubscriber) /
+  [`.topics(str[])`](./../libraries/nodejs/api_reference#topicstopic-topicsubscriber): A topic or list of topics that
+  should trigger a provided callback.
+- [`.subscribe(cb)`](./../libraries/nodejs/api_reference#subscribecb-topicsubscriber): Subscribes the listener to a callback function that is being triggered every time the given topic(s)
+  is noticed.
+- [`.unsubscribe(cb)`](./../libraries/nodejs/api_reference#unsubscribecb-callback-topicsubscriber): Unsubscribes the listener from the given topics. Once unsubscribed, the given callback function is
+  executed in the form `(err, message) => {}`.
+
+<CodeBlock className="language-javascript">{mqtt}</CodeBlock>

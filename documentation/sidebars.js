@@ -43,7 +43,8 @@ module.exports = {
                 'how_tos/simple_message',
                 'how_tos/get_message_data',
                 'how_tos/data_message',
-                'how_tos/transaction'
+                'how_tos/transaction',
+                'how_tos/mqqt'
             ]
         },
         {
@@ -84,13 +85,6 @@ module.exports = {
                             type: 'doc',
                             id: 'libraries/nodejs/getting_started',
                             label: 'Getting Started'
-                        },
-                        {
-                            type: 'category',
-                            label: 'Examples',
-                            items: [
-                                'libraries/nodejs/examples/mqtt',
-                            ],
                         },
                         {
                             type: 'doc',
