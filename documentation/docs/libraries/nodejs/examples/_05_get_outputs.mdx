@@ -1,0 +1,90 @@
+import CodeBlock from "@theme/CodeBlock";
+import a_get_address_outputs from "!!raw-loader!./../../../../../bindings/nodejs/examples/05a_get_address_outputs.js";
+import b_get_output from "!!raw-loader!./../../../../../bindings/nodejs/examples/05b_get_output.js";
+import c_find_outputs from "!!raw-loader!./../../../../../bindings/nodejs/examples/05c_find_outputs.js";
+
+- [`Client.getAddressOutputs(str)`](#clientgetoutputstr)
+- [`Client.getOutput(str)`](#clientgetoutputstr)
+- [`Client.findOutputs(output_ids (optional), addresses (optional))`](#clientfindoutputsoutput_ids-optional-addresses-optional):
+
+## Client.getAddressOutputs(str)
+
+This [`Client.getAddressOutputs(str)`](./../libraries/nodejs/api_reference#getaddressoutputsaddress-options-promisestring) expects an address in Bech32 format and returns a `str[]` of `output_ids`.
+
+<CodeBlock className="language-javascript">{a_get_address_outputs}</CodeBlock>
+
+**Output example**:
+
+```json
+[
+  "0f2d5d2651f8061a9f5417d0658009f32b2e3f77f9706b0be3b4b3f466171f360000",
+  "7614ba900a90b130707766a660a454942ac7cc4adea3fb9ad0cdca90114417c20000",
+  "768c20c15a290e02a43b83263a98501b9d7eb0b57da40a9247289c672de63ea60000"
+]
+```
+
+## Client.getOutput(str)
+
+You can use the [`Client.getOutput(str)`](./../libraries/nodejs/api_reference#getoutputoutputid-promise) function to get metadata about the an `output_id`:
+
+<CodeBlock className="language-javascript">{b_get_output}</CodeBlock>
+
+**Output example**:
+
+```json
+{
+  "messageId": "f303bc90a5ed3ef15af5fc6aa81a739978c59458a71e68ce8e380f1f534da1e6",
+  "transactionId": "0f2d5d2651f8061a9f5417d0658009f32b2e3f77f9706b0be3b4b3f466171f36",
+  "outputIndex": 0,
+  "isSpent": false,
+  "address": "atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r",
+  "amount": 1000000
+}
+```
+
+## Client.findOutputs(output_ids (optional), addresses (optional))
+
+The function [`Client.findOutputs()`](./../libraries/nodejs/api_reference#findoutputsoutputids-addresses-promiseoutputmetadata) is a convenient shortcut combining both `Client.getAddressOutputs(str)` and
+`Client.getOutput(str)` methods in a single call. It supports two arguments, a list of `output_ids` or a list of
+`addresses`.
+
+<CodeBlock className="language-javascript">{c_find_outputs}</CodeBlock>
+
+**Output example**:
+
+```json
+[
+  {
+    "messageId": "f303bc90a5ed3ef15af5fc6aa81a739978c59458a71e68ce8e380f1f534da1e6",
+    "transactionId": "0f2d5d2651f8061a9f5417d0658009f32b2e3f77f9706b0be3b4b3f466171f36",
+    "outputIndex": 0,
+    "isSpent": false,
+    "address": "atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r",
+    "amount": 1000000
+  },
+  {
+    "messageId": "825266a79c0ffb6001ed263eb150357863b7d0052627c5766e8ef5acd6fed533",
+    "transactionId": "768c20c15a290e02a43b83263a98501b9d7eb0b57da40a9247289c672de63ea6",
+    "outputIndex": 0,
+    "isSpent": false,
+    "address": "atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r",
+    "amount": 1000000
+  }
+]
+```
+
+- `messageId`: Refers to the encapsulating message in which the transaction was sent.
+- `transactionId`, `outputIndex`: Refers to the output within the `SignedTransaction` payload. There may be several
+  `outputs` involved in a single transaction, so the `transactionId` by itself would not be enough.
+- `output`: This section provides details about the iota address to which the given
+  [unspent transaction output](../../../key_concepts/messages_payloads_and_transactions.md#unspent-transaction-output-utxo) is coupled with.
+- `amount`: States an amount of tokens related to the `output`.
+- `isSpent`: Indicates whether the given `output` is a part of the actual ledger state or not. As mentioned in the
+  [Messages, Payloads, and Transactions section](../../../key_concepts/messages_payloads_and_transactions.md#unspent-transaction-output-utxo),
+  if an output was already spent it is not part of the ledger state any more and is replaced by some other `output(s)`
+  in the process.
+
+Notice that the `outputId` that was used in a function call to get output details is the same as a combination of the
+`transactionId` and `outputIndex`. This way a transaction is tightly coupled with `outputs` since the
+`SignedTransaction` payload is a main vehicle to create and spend `outputs`, and everything is encapsulated in a
+[message](../../../key_concepts/messages_payloads_and_transactions.md#Messages).

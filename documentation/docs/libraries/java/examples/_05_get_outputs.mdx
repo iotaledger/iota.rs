@@ -1,0 +1,34 @@
+import CodeBlock from "@theme/CodeBlock";
+import a_get_address_outputs from "!!raw-loader!../../../../../examples/05_get_address_outputs.rs";
+
+- [`Client.get_address().outputs(address: String, options: OutputOptions)`](#clientget_addressoutputsaddress-string-options-outputoptions)
+- [`Client.getOutput(str)`](#clientgetoutputoutput_id-string)
+- [`Client.findOutputs(output_ids, addresses)`](#clientfindoutputsoutput_idsstring-addressesstring):
+
+## Client.get_address().outputs(address: String, options: OutputOptions)
+
+This [`Client.get_address().outputs(address: String, options: OutputOptions)`](./../libraries/java/api_reference#outputsaddress-options-balanceaddressresponse)
+expects an address in Bech32 format and will get all outputs that use a given address.  You can use [OutputOptions](./../java/api_reference#outputsoptions) to limit the returned results.
+
+<CodeBlock className="language-java">{a_get_address_outputs}</CodeBlock>
+
+**Output example**:
+
+```json
+[
+  "0f2d5d2651f8061a9f5417d0658009f32b2e3f77f9706b0be3b4b3f466171f360000",
+  "7614ba900a90b130707766a660a454942ac7cc4adea3fb9ad0cdca90114417c20000",
+  "768c20c15a290e02a43b83263a98501b9d7eb0b57da40a9247289c672de63ea60000"
+]
+```
+## Client.getOutput(output_id: String)
+
+The [`Client.getOutput(output_id: String)`](./../libraries/java/api_reference#getoutputoutput_id-outputresponse) function to get metadata about the an `output_id`:
+
+
+## Client.findOutputs(output_ids:String[], addresses:String[])
+
+The
+[`Client.findOutputs(output_ids:String[], addresses:String[])`](./../libraries/java/api_reference#findoutputsoutput_ids-addresses-outputresponse)
+function expects an array of Strings representing the output ids to look up, as well as an array of Strings representing
+the addresses to look up.

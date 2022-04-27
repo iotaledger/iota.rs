@@ -1,0 +1,37 @@
+import CodeBlock from "@theme/CodeBlock";
+import a_get_address_outputs from "!!raw-loader!../../../../../examples/05_get_address_outputs.rs";
+
+- [`Client.get_address.get_output( output_id: &UtxoInput)`](#clientget_addressget_output-output_id-utxoinput)
+- [`Client.get_output(output_id: &UtxoInput)`](#clientget_outputoutput_id-utxoinput)
+- [`Client.find_outputs(outputs: &[UtxoInput], addresses: &[String])`](#clientfind_outputsoutputs-utxoinput-addresses-string):
+
+## Client.get_address.get_output( output_id: &UtxoInput)
+
+The
+[`Client.get_address.get_output( output_id: &UtxoInput)`](https://docs.rs/iota-client/latest/iota_client/client/struct.Client.html#method.get_output)
+function expects an address in Bech32 format and returns a `str[]` of `output_ids`.
+
+<CodeBlock className="language-javascript">{a_get_address_outputs}</CodeBlock>
+
+**Output example**:
+
+```json
+[
+  "0f2d5d2651f8061a9f5417d0658009f32b2e3f77f9706b0be3b4b3f466171f360000",
+  "7614ba900a90b130707766a660a454942ac7cc4adea3fb9ad0cdca90114417c20000",
+  "768c20c15a290e02a43b83263a98501b9d7eb0b57da40a9247289c672de63ea60000"
+]
+```
+
+## Client.get_output(output_id: &UtxoInput)
+
+The
+[Client.get_output(output_id: &UtxoInput)](https://docs.rs/iota-client/latest/iota_client/client/struct.Client.html#method.get_output)
+function finds an output by its `transaction_id` and corresponding `output_index`.
+
+## Client.find_outputs(outputs: &[UtxoInput], addresses: &[String])
+
+The
+[Client.find_outputs(outputs: &[UtxoInput], addresses: &[String])](https://docs.rs/iota-client/latest/iota_client/client/struct.Client.html#method.find_outputs)
+function supports two arguments, a list of `outputs` or a list of `addresses` and will return all the outputs related to
+the requested criteria.
