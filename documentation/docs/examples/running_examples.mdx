@@ -17,40 +17,30 @@ keywords:
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
-import WarningPasswordStorage from '../_partials/admonitions/_warning_password_storage.md';
-import JavaGetInfo from '../libraries/java/examples/_01_get_info.mdx';
-import NodejsGetInfo from '../libraries/nodejs/examples/_01_get_info.mdx';
-import PythonGetInfo from '../libraries/python/examples/_01_get_info.mdx';
-import RustGetInfo from '../libraries/rust/examples/_01_get_info.mdx';
-import WasmGetInfo from '../libraries/wasm/examples/_01_get_info.mdx';
+import JavaRunningExamples from '../libraries/java/examples/running_examples.mdx';
+import NodejsRunningExamples from '../libraries/nodejs/examples/running_examples.mdx';
+import PythonRunningExamples from '../libraries/python/examples/running_examples.mdx';
+import RustRunningExamples from '../libraries/rust/examples/running_examples.mdx';
+import WasmRunningExamples from '../libraries/wasm/examples/running_examples.mdx';
 
-# Connecting to Node(s)
-
-You can access all the features of the `iota.rs` library using an instance of the `Client` class. The `Client` class
-provides high-level abstraction to all interactions over IOTA network (Tangle). You have to instantiate this class
-before you start any interactions with the library, or more precisely with the
-[IOTA nodes](https://wiki.iota.org/chrysalis-docs/node_software) that power IOTA network.
-
-The library is designed to automatically choose a starting IOTA node based on the network type you would like to
-participate in: [`devnet`](https://wiki.iota.org/chrysalis-docs/devnet) or
-[`mainnet`](https://wiki.iota.org/chrysalis-docs/mainnet).
+# Running Examples
 
 <WarningPasswordStorage/>
 
 <Tabs groupId="language">
     <TabItem value="java" label="Java">
-        <JavaGetInfo/>
+        <JavaRunningExamples/>
     </TabItem>
     <TabItem value="nodejs" label="Nodejs">
-        <NodejsGetInfo/>
+        <NodejsRunningExamples/>
     </TabItem>
     <TabItem value="python" label="Python">
-        <PythonGetInfo/>
+        <PythonRunningExamples/>
     </TabItem>
     <TabItem value="rust" label="Rust">
-        <RustGetInfo/>
+        <RustRunningExamples/>
     </TabItem>
     <TabItem value="wasm" label="Wasm">
-        <WasmGetInfo/>
+        <WasmRunningExamples/>
     </TabItem>
 </Tabs>

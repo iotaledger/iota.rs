@@ -1,0 +1,35 @@
+## Prequisites
+
+### Clone the project
+
+You can clone the project by running the following command
+
+```bash
+git clone https://github.com/iotaledger/iota.rs
+```
+
+### Set Up Your .env file
+
+After you have [cloned the project](#clone-the-project), you should:
+
+1. Move into the project directory by running the following command:
+
+```bash
+cd iota.rs
+```
+
+2. Create your `.env` file by making a copy of the `.env.example` file by running the following command:
+
+```bash
+cp .env.example .env
+```
+
+## Run the Examples
+
+After you have fulfilled the [prequisites](#prequisites), you can run examples by using the following command:
+
+```bash
+cargo run --example 01_get_info --release
+```
+
+You can replace the `01_get_info` by any other example from the [Rust examples directory](https://github.com/iotaledger/iota.rs/tree/dev/examples).

@@ -27,7 +27,9 @@ In this tutorial we mention the followint 2 variables:
 These variables are used to generate correct binaries during cross compilation and linking.
 
 #### List of target Devices
-`$ARCH` and ->  `$TARGET` related to each other in the following manner: 
+
+`$ARCH` and ->  `$TARGET` related to each other in the following manner:
+
 - `armeabi-v7a` -> `armv7-linux-androideabi`
 - `arm64-v8a` -> `aarch64-linux-android`
 - `x86` -> `i686-linux-android`
@@ -44,8 +46,9 @@ We will use `archTriplets` for the enabled list of device targets during this tu
 - Dependencies indicated in the [Getting started](getting_started.md) Prerequisite section
 - Android NDK or Android Studio with NDK installed (If you extract make sure to make it executable `chmod -R +x android-ndk-VERSION` )
 
-In order to cross compile the binaries for Android; we need the following target toolchains: (All of the enabled `archTriplets`) 
-```
+In order to cross compile the binaries for Android; we need the following target toolchains: (All of the enabled `archTriplets`)
+
+```bas
 rustup target add \
     armv7-linux-androideabi \
     aarch64-linux-android \
@@ -54,6 +57,7 @@ rustup target add \
 ```
 
 For this setup we use `$ANDROID_NDK_HOME` for the location of your NDK, wether you use Android studio or manual compilation
+
 1. set `ANDROID_NDK_HOME` environment variable
 
 Example: `export ANDROID_NDK_HOME=$ANDROID_HOME/ndk/{A_VERSION_NUMBER}`
@@ -64,7 +68,8 @@ Attempt to run `android` on your terminal. If this command does not open the And
 ## 1. Generating the java files
 
 ### 1.1 Compiling a binary
-In order to generate the Java source files; we need to run cargo manually once. 
+
+In order to generate the Java source files; we need to run cargo manually once.
 
 This step will require you to run `cargo build --release` in `iota.rs/bindings/java`.
 
@@ -73,19 +78,20 @@ This step is simplifying the process by running an unnecesary build (We compile 
 :::
 
 ### 1.2 Creating the jar
+
 Afterwards, you need to run `./gradlew jar` in `iota.rs/bindings/java` in order to generate the jar file.
 
 The jar will be found at `iota.rs/bindings/java/native/build/libs/native.jar`
 
 ## 2. Build the app
 
-Building the actual app can be done through two different ways. Using Android Studio and by manual linking. 
+Building the actual app can be done through two different ways. Using Android Studio and by manual linking.
 
-The following 2 Sections describe both methods. 
+The following 2 Sections describe both methods.
 
-#### Cross compile note
+:::note Cross compile
 
-In order to build on windows, we need to add android triplets to our VCPKG and use that during compilation. 
+In order to build on windows, we need to add android triplets to our VCPKG and use that during compilation.
 [TODO]
 
 Currently cross compiling has only worked on WSL/Linux.
@@ -93,12 +99,15 @@ If you wish to use Android Studio in Windows, first make the android target bina
 
 Afterwards you need to comment out all `archTriplets` in `build.gradle` in order for you not to regenerate them (and fail on Windows).
 
+:::
+
 ### 2.1 Android studio
 
 Load the project under the `iota.rs/bindings/java` folder in Android studio.
 
 Make sure you have an NDK and SDK: `file->Project Structure->SDK Location`. If the NDK location is marked grey, edit the `local.properties` like so: (This must be the location of `$ANDROID_NDK_HOME`, which still needs to be on your path)
-```
+
+```bash
 ndk.dir=I\:\\Path\\To\\AndroidSDK\\ndk\\VERSION
 ```
 
@@ -117,11 +126,13 @@ Replace `{OS}` with your OS name; on Linux this would be called `linux-x86_64`, 
 These toolchains can alternatively be prepended to the cargo command as well, but we wont discuss that in this tutorial.
 
 #### Setting Cargo config
+
 In order to compile the binaries for the various Android targets, we need to specify the targets to rust.
 
 Create or update the following file: `~/.cargo/config`.
 Replace each instance of `$ANDROID_NDK_HOME` with the actual location (variables do not work) and add the text below to the config file.
-```
+
+```bash
 [target.armv7-linux-androideabi]
 linker = "$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/armv7a-linux-androideabi21-clang"
 ar = "$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/arm-linux-androideabi-ar"
@@ -140,19 +151,20 @@ ar = "$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-a
 ```
 
 #### Generating the binaries
+
 Now we need to generate binaries for all the enabled targets inside your `build.gradle` `archTriplets`.
 The easiest way is to use the gradle build system. Using the `build.gradle` inside `examples/android-app`, we automatically build all enabled targets after running the following:
-```
+
+```bash
 cd iota.rs/bindings/java
 ./gradlew build
 ```
 
-Alternatively, you can also manually run the commands; 
+Alternatively, you can also manually run the commands;
 
-1. Compile the binaries for the target 
+1. Compile the binaries for the target
 
 Example: `cargo build --target aarch64-linux-android --release`
-
 
 2. Adding shared library
 
@@ -163,6 +175,7 @@ Example: `cp $ANDROID_NDK_HOME/sources/cxx-stl/llvm-libc++/libs/arm64-v8a/libc++
 #### Building your app
 
 Assemble your android app with gradle using:
+
 ```
 cd iota.rs/bindings/java
 ./gradlew aR
@@ -171,28 +184,31 @@ cd iota.rs/bindings/java
 #### Signing your app
 
 1. prepare a signing keystore; we will call it `signed_ks.jks`
-> How to make: https://developer.android.com/studio/publish/app-signing#generate-key
+
+> How to make: <https://developer.android.com/studio/publish/app-signing#generate-key>
 
 2. Sign the apk
 
 > `$ANDROID_HOME/build-tools/{VERSION}/apksigner sign --ks examples/android-app/signed_ks.jks --out examples/android-app/android-app-release-signed.apk -v examples/android-app/build/outputs/apk/release/android-app-release-unsigned.apk`
 
-3. Connect device 
-> https://developer.android.com/studio/command-line/adb#connect-to-a-device-over-wi-fi-android-11+
+3. Connect device
+
+> <https://developer.android.com/studio/command-line/adb#connect-to-a-device-over-wi-fi-android-11>+
 
 For example:
-- `adb pair 192.168.0.x:x` 
+
+- `adb pair 192.168.0.x:x`
 - `adb connect 192.168.0.x:x`
 - `adb install -r --fastdeploy examples/android-app/android-app-release-signed.apk`
 - `adb shell am monitor`
 
 ## Using pre-generated binaries
 
-It is very likely you dont want or need to compile by yourself. That is why we provide precompiled binaries found on our release page [here](https://github.com/iotaledger/iota.rs/releases). The Java releases are tagged with `android-binding-vX.Y.Z`. 
+It is very likely you dont want or need to compile by yourself. That is why we provide precompiled binaries found on our release page [here](https://github.com/iotaledger/iota.rs/releases). The Java releases are tagged with `android-binding-vX.Y.Z`.
 
 Install the files attached to the release so that you achieve the following directory structure: (extract the `jniLibs.zip` into `root_app/src/main/`)
 
-```
+```plaintext
 root_app/src/main/
   libs/
     native.jar
@@ -211,10 +227,12 @@ root_app/src/main/
       libiota_client_java.so
 ```
 
-### Android studio 
+### Android studio
+
 Then using Android Studio, add the native.jar to your project by right clicking -> Add As Library... -> Select your Android app Module and press OK.
 
 ### Manual
+
 Add the jar to your `build.gradle` dependencies section using; for example: `implementation files('src\\main\\libs\\native.jar')`
 
 :::info

@@ -28,7 +28,7 @@ behind each language provide their documentation for beginners you can use as re
 
 If you have little experience coding, you could start with any of those first or refer to these guides as you read
 through our iota.rs documentation. If you have never programmed in your life, MIT has published an
-open [introductory course to programming](https://ocw.mit.edu/courses/intro-programming/#general) which could help you
+open [introductory course to programming](https://ocw.mit.edu/courses/6-00sc-introduction-to-computer-science-and-programming-spring-2011/) which could help you
 get started.
 
 ## Choose Your Language
