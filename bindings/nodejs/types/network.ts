@@ -4,13 +4,13 @@ export enum Network {
     Mainnet,
     Testnet,
 }
-export interface Auth {
+export interface IAuth {
     jwt?: string;
     username?: string;
     password?: string;
 }
 
-export interface MqttBrokerOptions {
+export interface IMqttBrokerOptions {
     automaticDisconnect?: boolean;
     /** timeout in seconds */
     timeout?: number;
@@ -19,52 +19,16 @@ export interface MqttBrokerOptions {
     maxReconnectionAttempts?: number;
 }
 
-export type Node = {
+export interface INode {
     url: string;
-    auth?: Auth;
+    auth?: IAuth;
     disabled?: boolean;
-};
-
-export interface NodeInfo {
-    name: string;
-    version: string;
-    status: Status;
-    metrics: Metrics;
-    protocol: Protocol;
-    features: string[];
-    plugins: string[];
-    url: string;
-}
-
-export interface Status {
-    isHealthy: boolean;
-    latestMilestoneTimestamp: number;
-    latestMilestoneIndex: number;
-    confirmedMilestoneIndex: number;
-    pruningIndex: number;
-}
-
-export interface Metrics {
-    messagesPerSecond: number;
-    referencedMessagesPerSecond: number;
-    referencedRate: number;
-}
-
-export interface Protocol {
-    networkName: string;
-    bech32HRP: string;
-    minPoWScore: number;
-    rentStructure?: {
-        vByteCost: number;
-        vByteFactorData: number;
-        vByteFactorKey: number;
-    };
 }
 
 /**
  * Struct containing network and PoW related information
  */
-export interface NetworkInfo {
+export interface INetworkInfo {
     network?: Network;
     networkId?: number;
     bech32HRP: number;
@@ -77,13 +41,13 @@ export interface NetworkInfo {
     /** Tips request interval during PoW in seconds */
     tipsInterval: number;
     /** Rent structure of the protocol */
-    rentStructure: RentStructureResponse;
+    rentStructure: IRentStructureResponse;
 }
 
 /**
  * Rent information about the node.
  */
-export interface RentStructureResponse {
+export interface IRentStructureResponse {
     vByteCost: number;
     vByteFactorKey: number;
     vByteFactorData: number;

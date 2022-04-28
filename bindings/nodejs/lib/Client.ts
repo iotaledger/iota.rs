@@ -2,30 +2,35 @@
 // SPDX-License-Identifier: Apache-2.0
 import { MessageHandler } from './MessageHandler';
 import type {
-    Address,
-    ClientOptions,
-    GenerateAddressesOptions,
-    NodeInfo,
-    OutputResponse,
-    Message,
-    MessageMetadata,
-    GenerateMessageOptions,
+    IClientOptions,
+    IGenerateAddressesOptions,
+    IGenerateMessageOptions,
     QueryParameter,
-    Payload,
-    PreparedTransactionData,
+    IPreparedTransactionData,
     MessageId,
-    NetworkInfo,
+    INetworkInfo,
 } from '../types';
-import type { UTXOInput } from '../types/inputs/UTXOInput';
+import type {
+    INodeInfo,
+    IUTXOInput,
+    AddressTypes,
+    IOutputResponse,
+    IMessage,
+    IMessageMetadata,
+    PayloadTypes,
+} from '@iota/types';
 
 export class Client {
     private messageHandler: MessageHandler;
 
-    constructor(options: ClientOptions) {
+    constructor(options: IClientOptions) {
         this.messageHandler = new MessageHandler(options);
     }
 
-    async getInfo(): Promise<NodeInfo> {
+    /**
+     * Get info about the node
+     */
+    async getInfo(): Promise<INodeInfo> {
         const response = await this.messageHandler.callClientMethod({
             name: 'GetInfo',
         });
@@ -36,7 +41,7 @@ export class Client {
     /**
      * Gets the network related information such as network_id and min_pow_score
      */
-    async getNetworkInfo(): Promise<NetworkInfo> {
+    async getNetworkInfo(): Promise<INetworkInfo> {
         const response = await this.messageHandler.callClientMethod({
             name: 'GetNetworkInfo',
         });
@@ -44,7 +49,7 @@ export class Client {
         return JSON.parse(response).payload;
     }
 
-    /** Fetch output IDs */
+    /** Get output IDs based on query parameters */
     async outputIds(queryParameters: QueryParameter[]): Promise<string[]> {
         const response = await this.messageHandler.callClientMethod({
             name: 'OutputIds',
@@ -56,7 +61,8 @@ export class Client {
         return JSON.parse(response).payload;
     }
 
-    async getOutput(outputId: string): Promise<OutputResponse> {
+    /** Get output from a known outputID */
+    async getOutput(outputId: string): Promise<IOutputResponse> {
         const response = await this.messageHandler.callClientMethod({
             name: 'GetOutput',
             data: {
@@ -67,7 +73,7 @@ export class Client {
         return JSON.parse(response).payload;
     }
 
-    async getOutputs(outputIds: string[]): Promise<OutputResponse[]> {
+    async getOutputs(outputIds: string[]): Promise<IOutputResponse[]> {
         const response = await this.messageHandler.callClientMethod({
             name: 'GetOutputs',
             data: {
@@ -99,7 +105,7 @@ export class Client {
 
     async generateAddresses(
         mnemonic: string,
-        generateAddressesOptions: GenerateAddressesOptions,
+        generateAddressesOptions: IGenerateAddressesOptions,
     ): Promise<string[]> {
         const response = await this.messageHandler.callClientMethod({
             name: 'GenerateAddresses',
@@ -114,8 +120,8 @@ export class Client {
 
     async generateMessage(
         signer?: string,
-        options?: GenerateMessageOptions,
-    ): Promise<Message> {
+        options?: IGenerateMessageOptions,
+    ): Promise<IMessage> {
         const response = await this.messageHandler.callClientMethod({
             name: 'GenerateMessage',
             data: {
@@ -139,7 +145,7 @@ export class Client {
         return JSON.parse(response).payload;
     }
 
-    async postMessage(message: Message): Promise<MessageId> {
+    async postMessage(message: IMessage): Promise<MessageId> {
         const response = await this.messageHandler.callClientMethod({
             name: 'PostMessage',
             data: {
@@ -153,7 +159,7 @@ export class Client {
     /**
      * Get message data with message ID
      */
-    async getMessageData(messageId: string): Promise<Message> {
+    async getMessageData(messageId: MessageId): Promise<IMessage> {
         const response = await this.messageHandler.callClientMethod({
             name: 'GetMessageData',
             data: {
@@ -167,7 +173,7 @@ export class Client {
     /**
      * Get message metadata with message ID
      */
-    async getMessageMetadata(messageId: string): Promise<MessageMetadata> {
+    async getMessageMetadata(messageId: MessageId): Promise<IMessageMetadata> {
         const response = await this.messageHandler.callClientMethod({
             name: 'GetMessageMetadata',
             data: {
@@ -184,7 +190,7 @@ export class Client {
     async findInputs(
         addresses: string[],
         amount: number,
-    ): Promise<UTXOInput[]> {
+    ): Promise<IUTXOInput[]> {
         const response = await this.messageHandler.callClientMethod({
             name: 'FindInputs',
             data: {
@@ -201,9 +207,10 @@ export class Client {
      * the request amount exceeds individual node limit.
      */
     async findOutputs(
-        outputs: UTXOInput[],
+        // TODO: should be outputIds: string[], fixed in https://github.com/iotaledger/iota.rs/pull/952
+        outputs: IUTXOInput[],
         addresses: string[],
-    ): Promise<UTXOInput[]> {
+    ): Promise<IOutputResponse[]> {
         const response = await this.messageHandler.callClientMethod({
             name: 'FindOutputs',
             data: {
@@ -220,8 +227,8 @@ export class Client {
      */
     async prepareTransaction(
         signer?: string,
-        options?: GenerateMessageOptions,
-    ): Promise<PreparedTransactionData> {
+        options?: IGenerateMessageOptions,
+    ): Promise<IPreparedTransactionData> {
         const response = await this.messageHandler.callClientMethod({
             name: 'PrepareTransaction',
             data: {
@@ -238,8 +245,8 @@ export class Client {
      */
     async signTransaction(
         signer: string,
-        preparedTransactionData: PreparedTransactionData,
-    ): Promise<Payload> {
+        preparedTransactionData: IPreparedTransactionData,
+    ): Promise<PayloadTypes> {
         const response = await this.messageHandler.callClientMethod({
             name: 'SignTransaction',
             data: {
@@ -254,7 +261,7 @@ export class Client {
     /**
      * Submit a payload in a message
      */
-    async submitPayload(payload: Payload): Promise<Message> {
+    async submitPayload(payload: PayloadTypes): Promise<IMessage> {
         const response = await this.messageHandler.callClientMethod({
             name: 'SubmitPayload',
             data: {
@@ -268,7 +275,7 @@ export class Client {
     /**
      * Returns a valid Address parsed from a String.
      */
-    async parseBech32Address(address: string): Promise<Address> {
+    async parseBech32Address(address: string): Promise<AddressTypes> {
         const response = await this.messageHandler.callClientMethod({
             name: 'ParseBech32Address',
             data: {

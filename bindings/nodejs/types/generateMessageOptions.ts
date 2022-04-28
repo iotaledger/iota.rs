@@ -1,23 +1,21 @@
 // Copyright 2021-2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
+import type { IUTXOInput, OutputTypes } from '@iota/types';
 
-import type { UTXOInput } from './inputs/UTXOInput';
-import type { Output } from './outputs';
-
-export interface GenerateMessageOptions {
+export interface IGenerateMessageOptions {
     coinType?: number;
     accountIndex?: number;
     initialAddressIndex?: number;
-    inputs?: UTXOInput[];
+    inputs?: IUTXOInput[];
     inputRange?: {
         start: number;
         end: number;
     };
     /** Bech32 encoded output address and amount */
-    output?: ClientMessageBuilderOutputAddress;
+    output?: IClientMessageBuilderOutputAddress;
     /** Hex encoded output address and amount */
-    outputHex?: ClientMessageBuilderOutputAddress;
-    outputs?: Output[];
+    outputHex?: IClientMessageBuilderOutputAddress;
+    outputs?: OutputTypes[];
     customRemainderAddress?: string;
     tag?: number[];
     data?: number[];
@@ -27,7 +25,7 @@ export interface GenerateMessageOptions {
     allowBurning: boolean;
 }
 
-export interface ClientMessageBuilderOutputAddress {
+export interface IClientMessageBuilderOutputAddress {
     address: string;
     amount: number;
 }

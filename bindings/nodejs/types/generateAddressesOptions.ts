@@ -5,7 +5,7 @@ import type { Network } from './network';
 /**
  * Input options for GenerateAddresses
  */
-export interface GenerateAddressesOptions {
+export interface IGenerateAddressesOptions {
     coinType?: number;
     accountIndex?: number;
     range?: {
@@ -20,13 +20,13 @@ export interface GenerateAddressesOptions {
      * Bech32 human readable part
      */
     bech32Hrp?: string;
-    metadata?: GenerateAddressMetadata;
+    metadata?: IGenerateAddressMetadata;
 }
 
 /**
  * Metadata provided to Generate Address
  */
-export interface GenerateAddressMetadata {
+export interface IGenerateAddressMetadata {
     /**
      * Indicates that the address is being generated as part of the account syncing process.
      * This means that the account might not be saved.

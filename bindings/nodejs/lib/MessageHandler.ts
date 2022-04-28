@@ -3,7 +3,7 @@
 
 import { sendMessageAsync, messageHandlerNew, listen } from './bindings';
 import type {
-    ClientOptions,
+    IClientOptions,
     __ClientPayloadMethods__,
     __SendMessagePayload__,
 } from '../types';
@@ -11,7 +11,7 @@ import type {
 export class MessageHandler {
     messageHandler: MessageHandler;
 
-    constructor(options: ClientOptions) {
+    constructor(options: IClientOptions) {
         this.messageHandler = messageHandlerNew(JSON.stringify(options));
     }
 
@@ -23,7 +23,7 @@ export class MessageHandler {
         return this.sendMessage({
             cmd: 'CallClientMethod',
             payload: method,
-        } as __SendMessagePayload__);
+        });
     }
 
     // MQTT

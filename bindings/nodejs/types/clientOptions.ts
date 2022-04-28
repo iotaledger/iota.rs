@@ -1,20 +1,21 @@
 // Copyright 2021-2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
-import type { MqttBrokerOptions, NetworkInfo, Node } from './network';
+import type { IMqttBrokerOptions, INetworkInfo, INode } from './network';
 
-export interface ClientOptions {
+/** Options for the client builder */
+export interface IClientOptions {
     /** If the Client should be able to use without a node connection */
     offline?: boolean;
     /** Node which will be tried first for all requests */
-    primaryNode?: string | Node;
+    primaryNode?: string | INode;
     /** Node which will be tried first when using remote PoW, even before the primary_node */
-    primaryPoWNode?: string | Node;
-    nodes?: Array<string | Node>;
-    permanodes?: Array<string | Node>;
+    primaryPoWNode?: string | INode;
+    nodes?: Array<string | INode>;
+    permanodes?: Array<string | INode>;
     /** If node syncing is enabled */
     nodeSyncEnabled?: boolean;
     /** Interval in which nodes will be checked for their sync status and the NetworkInfo gets updated */
-    nodeSyncInterval?: Duration;
+    nodeSyncInterval?: IDuration;
     /** If node quorum is enabled. Will compare the responses from multiple nodes and only returns the
      * response if quorum_threshold of the nodes return the same one
      */
@@ -24,20 +25,20 @@ export interface ClientOptions {
     /** % of nodes that have to return the same response so it gets accepted */
     quorumThreshold?: number;
     /** Data related to the used network */
-    networkInfo?: NetworkInfo;
+    networkInfo?: INetworkInfo;
     /** Options for the MQTT broker */
-    brokerOptions?: MqttBrokerOptions;
+    brokerOptions?: IMqttBrokerOptions;
     /** Timeout for API requests */
-    apiTimeout?: Duration;
+    apiTimeout?: IDuration;
     /** Timeout when sending a message that requires remote proof of work */
-    remotePowTimeout?: Duration;
+    remotePowTimeout?: IDuration;
     /** The amount of threads to be used for proof of work */
     powWorkerCount?: number;
     /** Whether the PoW should be done locally or remotely. */
     localPow?: boolean;
 }
 
-export interface Duration {
+export interface IDuration {
     secs: number;
     nanos: number;
 }

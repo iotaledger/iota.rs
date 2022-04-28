@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /** Logger output configuration. */
-export interface LoggerConfig {
+export interface ILoggerConfig {
     /** Name of an output file, or `stdout` for standard output.*/
     name?: string;
     /** Log level filter of an output.*/
