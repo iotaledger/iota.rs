@@ -8,9 +8,9 @@ use std::{collections::HashSet, str::FromStr};
 use bee_message::{
     address::Address,
     input::{Input, UtxoInput},
-    milestone::MilestoneIndex,
     output::{dto::OutputDto, Output, OutputId},
     payload::{
+        milestone::MilestoneIndex,
         transaction::{RegularTransactionEssence, TransactionEssence, TransactionId, TransactionPayload},
         Payload, TaggedDataPayload,
     },
