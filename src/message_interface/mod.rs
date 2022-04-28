@@ -149,7 +149,7 @@ mod tests {
         // Find inputs
         let find_inputs_message = MessageType::CallClientMethod(ClientMethod::FindInputs {
             addresses: addresses.to_vec(),
-            amount: amount,
+            amount,
         });
 
         let response = message_interface::send_message(&message_handler, find_inputs_message).await;

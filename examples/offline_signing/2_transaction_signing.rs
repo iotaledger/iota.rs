@@ -57,7 +57,7 @@ async fn main() -> Result<()> {
         )
         .await?;
     let unlock_blocks = UnlockBlocks::new(unlock_blocks)?;
-    let signed_transaction = TransactionPayload::new(prepared_transaction.essence.clone(), unlock_blocks.clone())?;
+    let signed_transaction = TransactionPayload::new(prepared_transaction.essence.clone(), unlock_blocks)?;
 
     println!("Signed transaction.");
 

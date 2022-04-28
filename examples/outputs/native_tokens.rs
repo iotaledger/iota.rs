@@ -9,7 +9,7 @@ use dotenv::dotenv;
 use iota_client::{
     bee_message::output::{
         unlock_condition::{AddressUnlockCondition, UnlockCondition},
-        BasicOutputBuilder, NativeToken, Output, TokenId,
+        BasicOutputBuilder, NativeToken, TokenId,
     },
     secret::{mnemonic::MnemonicSecretManager, SecretManager},
     utils::request_funds_from_faucet,
@@ -45,14 +45,13 @@ async fn main() -> Result<()> {
         hex::decode("08e68f7616cd4948efebc6a77c4f93aed770ac53860100000000000000000000000000000000")?
             .try_into()
             .unwrap();
-    let mut outputs: Vec<Output> = Vec::new();
-    // most simple output
-    outputs.push(Output::Basic(
+    let outputs = vec![
+        // most simple output
         BasicOutputBuilder::new_with_amount(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             .add_native_token(NativeToken::new(TokenId::new(token_id), U256::from(50))?)
-            .finish()?,
-    ));
+            .finish_output()?,
+    ];
 
     let message = client
         .message()

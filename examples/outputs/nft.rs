@@ -49,15 +49,14 @@ async fn main() -> Result<()> {
     //////////////////////////////////
     // create new nft output
     //////////////////////////////////
-    let mut outputs: Vec<Output> = Vec::new();
-    outputs.push(Output::Nft(
+    let outputs = vec![
         // address of the owner of the NFT
         NftOutputBuilder::new_with_amount(1_000_000, NftId::from([0; 20]))?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             // address of the minter of the NFT
             // .add_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
-            .finish()?,
-    ));
+            .finish_output()?,
+    ];
 
     let message = client
         .message()
@@ -102,11 +101,12 @@ async fn main() -> Result<()> {
         .with_secret_manager(&secret_manager)
         .with_input(nft_output_id.into())?
         .with_input(output_ids[0].into())?
-        .with_outputs(vec![Output::Nft(
-            NftOutputBuilder::new_with_amount(1_000_000 + output.amount(), nft_id)?
-                .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-                .finish()?,
-        )])?
+        .with_outputs(vec![NftOutputBuilder::new_with_amount(
+            1_000_000 + output.amount(),
+            nft_id,
+        )?
+        .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
+        .finish_output()?])?
         .finish()
         .await?;
 
@@ -123,12 +123,9 @@ async fn main() -> Result<()> {
     let nft_output_id = get_nft_output_id(message.payload().unwrap());
     let output_response = client.get_output(&nft_output_id).await?;
     let output = Output::try_from(&output_response.output)?;
-    let mut outputs: Vec<Output> = Vec::new();
-    outputs.push(Output::Basic(
-        BasicOutputBuilder::new_with_amount(output.amount())?
-            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-            .finish()?,
-    ));
+    let outputs = vec![BasicOutputBuilder::new_with_amount(output.amount())?
+        .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
+        .finish_output()?];
 
     let message = client
         .message()

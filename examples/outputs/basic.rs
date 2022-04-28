@@ -15,7 +15,7 @@ use iota_client::{
                 AddressUnlockCondition, ExpirationUnlockCondition, StorageDepositReturnUnlockCondition,
                 TimelockUnlockCondition, UnlockCondition,
             },
-            BasicOutputBuilder, FeatureBlock, Output,
+            BasicOutputBuilder, FeatureBlock,
         },
     },
     secret::{mnemonic::MnemonicSecretManager, SecretManager},
@@ -50,31 +50,24 @@ async fn main() -> Result<()> {
         .await?
     );
 
-    let mut outputs: Vec<Output> = Vec::new();
-    // most simple output
-    outputs.push(Output::Basic(
+    let outputs = vec![
+        // most simple output
         BasicOutputBuilder::new_with_amount(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-            .finish()?,
-    ));
-    // with metadata feature block
-    outputs.push(Output::Basic(
+            .finish_output()?,
+        // with metadata feature block
         BasicOutputBuilder::new_with_amount(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             .add_feature_block(FeatureBlock::Metadata(MetadataFeatureBlock::new(vec![13, 37])?))
-            .finish()?,
-    ));
-    // with storage deposit return
-    outputs.push(Output::Basic(
+            .finish_output()?,
+        // with storage deposit return
         BasicOutputBuilder::new_with_amount(234100)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             .add_unlock_condition(UnlockCondition::StorageDepositReturn(
                 StorageDepositReturnUnlockCondition::new(address, 234000)?,
             ))
-            .finish()?,
-    ));
-    // with expiration
-    outputs.push(Output::Basic(
+            .finish_output()?,
+        // with expiration
         BasicOutputBuilder::new_with_amount(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             .add_unlock_condition(UnlockCondition::Expiration(ExpirationUnlockCondition::new(
@@ -82,18 +75,16 @@ async fn main() -> Result<()> {
                 MilestoneIndex::new(400),
                 0,
             )?))
-            .finish()?,
-    ));
-    // with timelock
-    outputs.push(Output::Basic(
+            .finish_output()?,
+        // with timelock
         BasicOutputBuilder::new_with_amount(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             .add_unlock_condition(UnlockCondition::Timelock(TimelockUnlockCondition::new(
                 MilestoneIndex::new(400),
                 0,
             )?))
-            .finish()?,
-    ));
+            .finish_output()?,
+    ];
 
     let message = client
         .message()
