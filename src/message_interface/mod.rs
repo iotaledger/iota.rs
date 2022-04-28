@@ -37,9 +37,9 @@ pub async fn send_message(handle: &ClientMessageHandler, message_type: MessageTy
 
 #[cfg(test)]
 mod tests {
-    use std::env;
-    use std::str::FromStr;
+    use std::{env, str::FromStr};
 
+    use bee_message::{MessageDto, MessageId};
     use dotenv::dotenv;
 
     use crate::{
@@ -47,7 +47,6 @@ mod tests {
         message_interface::{self, ClientMethod, MessageType, ResponseType},
         secret::{types::Network, GenerateAddressMetadata},
     };
-    use bee_message::{MessageDto, MessageId};
 
     #[tokio::test]
     async fn generate_addresses() {

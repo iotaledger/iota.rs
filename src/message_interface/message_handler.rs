@@ -295,8 +295,8 @@ impl ClientMessageHandler {
                     .map(UtxoInputDto::from)
                     .collect(),
             )),
-            ClientMethod::FindOutputs { outputs, addresses } => Ok(ResponseType::Outputs(
-                self.client.find_outputs(outputs, addresses).await?,
+            ClientMethod::FindOutputs { output_ids, addresses } => Ok(ResponseType::Outputs(
+                self.client.find_outputs(output_ids, addresses).await?,
             )),
             ClientMethod::Reattach { message_id } => {
                 let (message_id, message) = self.client.reattach(message_id).await?;

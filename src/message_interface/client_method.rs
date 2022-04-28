@@ -259,7 +259,7 @@ pub enum ClientMethod {
     /// the request amount exceeds individual node limit.
     FindOutputs {
         /// UtxoInputs
-        outputs: Vec<UtxoInput>,
+        output_ids: Vec<OutputId>,
         /// Addresses
         addresses: Vec<String>,
     },
