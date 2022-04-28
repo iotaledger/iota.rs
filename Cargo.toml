@@ -15,9 +15,9 @@ categories = [ "cryptography::cryptocurrencies" ]
 normal = ["async-trait"]
 
 [dependencies]
-bee-rest-api = { git = "https://github.com/iotaledger/bee", rev = "b3588a58ec007dce975bed979426f7d03cc34aa7", default-features = false }
-bee-message = { git = "https://github.com/iotaledger/bee", rev = "b3588a58ec007dce975bed979426f7d03cc34aa7", default-features = false, features = [ "serde", "dto" ] }
-bee-pow = { git = "https://github.com/iotaledger/bee", rev = "b3588a58ec007dce975bed979426f7d03cc34aa7", default-features = false }
+bee-rest-api = { git = "https://github.com/iotaledger/bee", rev = "ab53dd6afffb97ed83c1ae446ab37799b70acb0d", default-features = false }
+bee-message = { git = "https://github.com/iotaledger/bee", rev = "ab53dd6afffb97ed83c1ae446ab37799b70acb0d", default-features = false, features = [ "serde", "dto" ] }
+bee-pow = { git = "https://github.com/iotaledger/bee", rev = "ab53dd6afffb97ed83c1ae446ab37799b70acb0d", default-features = false }
 fern-logger = { version = "0.5.0", default-features = false }
 iota-crypto = { version = "0.9.2", default-features = false, features = [ "std", "chacha", "blake2b", "ed25519", "random", "slip10", "bip39", "bip39-en" ] }
 packable = { version = "0.3.1", default-features = false, features = [ "serde", "primitive-types" ] }
