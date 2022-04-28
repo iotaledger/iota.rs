@@ -21,37 +21,6 @@ git clone https://github.com/iotaledger/iota.rs
 cd iota.rs/bindings/java
 ```
 
-Examples are all collected in a sample project. By default it runs a node info example, but there are many more.
-
-Run the example like:
-
-Gradle: `./gradlew examples:java-app:test --info`
-
-Maven: `cd examples/java-app && mvn test`
-
-
-For the rest of the examples in this document we will be using the `node()` method below:
-```java
-import org.iota.client.*;
-
-private static Client node() {
-    String nodeUrl = "https://chrysalis-nodes.iota.cafe:443";
-    Client iota = Client.Builder()
-        // Insert your node URL here
-        .withNode(nodeUrl) 
-        // Or instead here but with authentication
-        .withNodeAuth("https://somechrysalisiotanode.com", "jwt_or_null", "name_or_null", "password_or_null")
-        // Choose pow mode
-        .withLocalPow(true)
-        // You can also set a time-out in seconds for the API calls
-        .withRequestTimeout(5)
-        //Then create the Client instance
-        .finish();
-    return iota;
-}
-```
-
-***
 
 The most basic example is creating a client, and then requesting the information about the node. 
 ```java

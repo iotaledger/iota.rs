@@ -8,7 +8,6 @@ keywords:
 - java
 - javascript
 - IDE
-- reference
 - WASM
 ---
 # Getting Started
@@ -16,11 +15,6 @@ keywords:
 ![IOTA Client Library getting started](/img/Banner/banner_client_lib_getting_started.png)
 
 ## Required Prior Knowledge
-
-To check out our examples and write and test your own code, you will need an IDE or a code editor of your choice and a
-stable internet connection. You also need to set up your environment by following instructions for one of the
-languages: [Rust](./libraries/rust/getting_started.md), [Node.js](./libraries/nodejs/getting_started.md)
-, [Python](./libraries/python/getting_started.md), [Java](./libraries/java/getting_started.md), or [WASM](./libraries/wasm/getting_started.md).
 
 This wiki assumes that you already know the basics of your programming language of choice. Companies and communities
 behind each language provide their documentation for beginners you can use as reference:
@@ -30,8 +24,21 @@ behind each language provide their documentation for beginners you can use as re
 * [Node.js](https://nodejs.org/en/docs/guides/).
 * [Python](https://www.python.org/about/gettingstarted/).
 * [Rust](https://www.rust-lang.org/learn/get-started).
+* [Wasm](https://webassembly.org/).
 
 If you have little experience coding, you could start with any of those first or refer to these guides as you read
 through our iota.rs documentation. If you have never programmed in your life, MIT has published an
 open [introductory course to programming](https://ocw.mit.edu/courses/intro-programming/#general) which could help you
 get started.
+
+## Choose Your Language
+
+To check out our examples and write and test your own code, you will need an IDE or a code editor of your choice and a
+stable internet connection. You also need to set up your environment by following instructions for one of the
+languages:
+
+* [Java](./java/getting_started.md).
+* [Node.js](./nodejs.md).
+* [Python](./python.md).
+* [Rust](./rust.md).
+* [Wasm](./wasm.md).

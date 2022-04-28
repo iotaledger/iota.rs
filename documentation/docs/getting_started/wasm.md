@@ -1,16 +1,31 @@
+---
+description: Getting started with the official IOTA Client Library Wasm binding.
+image: /img/logo/iota_mark_light.png
+keywords:
+- Rust
+- install
+- npm
+- system environment variables
+---
 # Getting Started with Wasm
 
-## Install the library:
+## Install the library
+
+### NPM
 
 ```bash
 npm install @iota/client-wasm
-// or using yarn
+```
+
+### Yarn
+
+```bash
 yarn add @iota/client-wasm
 ```
 
 ## Build
 
-Alternatively, you can build the bindings if you have Rust installed. If not, refer to [rustup.rs](https://rustup.rs) for the installation. Then install the necessary dependencies using:
+Alternatively, you can build the bindings if you have Rust installed. If not, refer to [rustup.rs](https://rustup.rs) for installation instructions. Then install the necessary dependencies using:
 
 ```npm install```
 
