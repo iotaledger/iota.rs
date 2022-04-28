@@ -31,7 +31,6 @@ It is based on a randomly generated list of english words and later used to gene
 all generated private keys and addresses.
 :::
 
+## Related Examples
 
-## How-to Guides
-
-[Generate Seed](../how_tos/generate_seed.mdx)
+* [Generate Seed](../how_tos/generate_seed.mdx)

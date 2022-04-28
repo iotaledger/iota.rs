@@ -69,6 +69,6 @@ provides some useful tips on how different accounts may be leveraged._
 In case of IOTA, the derivation path of address/key space is `[seed]/44/4218/{int}/{0,1}/{int}`. The levels `purpose`
 and `coin_type` are given, the rest levels are up to developers to integrate.
 
-## How-to Guides
+## Related Examples
 
-[Generate Addresses](../how_tos/generate_addresses.mdx)
+* [Generate Addresses](./../how_tos/generate_addresses.mdx)

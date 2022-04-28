@@ -172,3 +172,10 @@ the given address, i.e., the number of tokens the address can spend. And the sum
 amounts is equal to the total supply.
 
 Outputs are encapsulated in a message as a part of the `SignedTransaction` payload.
+
+## Related Examples
+
+* [Simple Message](./../examples/simple_message.mdx)
+* [Get Outputs](./../examples/get_outputs.mdx)
+* [Get Message Data](./../examples/data_message.mdx)
+* [Send a Signed Transaction](./../examples/transaction.mdx)
