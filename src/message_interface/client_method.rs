@@ -258,7 +258,7 @@ pub enum ClientMethod {
     /// Find all outputs based on the requests criteria. This method will try to query multiple nodes if
     /// the request amount exceeds individual node limit.
     FindOutputs {
-        /// UtxoInputs
+        /// Output IDs
         output_ids: Vec<OutputId>,
         /// Addresses
         addresses: Vec<String>,
