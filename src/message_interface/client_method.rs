@@ -4,7 +4,6 @@
 use std::ops::Range;
 
 use bee_message::{
-    input::UtxoInput,
     output::{AliasId, FoundryId, NftId, OutputId},
     payload::{dto::PayloadDto, transaction::TransactionId},
     MessageDto, MessageId,
