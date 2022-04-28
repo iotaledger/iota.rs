@@ -295,8 +295,8 @@ impl ClientMessageHandler {
                     .map(UtxoInputDto::from)
                     .collect(),
             )),
-            ClientMethod::FindOutputs { outputs, addresses } => Ok(ResponseType::Outputs(
-                self.client.find_outputs(outputs, addresses).await?,
+            ClientMethod::FindOutputs { output_ids, addresses } => Ok(ResponseType::Outputs(
+                self.client.find_outputs(output_ids, addresses).await?,
             )),
             ClientMethod::Reattach { message_id } => {
                 let (message_id, message) = self.client.reattach(message_id).await?;
@@ -332,6 +332,11 @@ impl ClientMessageHandler {
             ClientMethod::GenerateMnemonic => Ok(ResponseType::GeneratedMnemonic(Client::generate_mnemonic()?)),
             ClientMethod::MnemonicToHexSeed { mnemonic } => {
                 Ok(ResponseType::MnemonicHexSeed(Client::mnemonic_to_hex_seed(mnemonic)?))
+            }
+            ClientMethod::MessageId { message } => {
+                let message = BeeMessage::try_from(message)?;
+
+                Ok(ResponseType::MessageId(message.id()))
             }
         }
     }

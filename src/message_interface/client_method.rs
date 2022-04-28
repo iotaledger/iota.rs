@@ -4,7 +4,6 @@
 use std::ops::Range;
 
 use bee_message::{
-    input::UtxoInput,
     output::{AliasId, FoundryId, NftId, OutputId},
     payload::{dto::PayloadDto, transaction::TransactionId},
     MessageDto, MessageId,
@@ -258,8 +257,8 @@ pub enum ClientMethod {
     /// Find all outputs based on the requests criteria. This method will try to query multiple nodes if
     /// the request amount exceeds individual node limit.
     FindOutputs {
-        /// UtxoInputs
-        outputs: Vec<UtxoInput>,
+        /// Output IDs
+        output_ids: Vec<OutputId>,
         /// Addresses
         addresses: Vec<String>,
     },
@@ -324,5 +323,10 @@ pub enum ClientMethod {
     MnemonicToHexSeed {
         /// Mnemonic
         mnemonic: String,
+    },
+    /// Returns a message ID (Blake2b256 hash of message bytes) from a message
+    MessageId {
+        /// Message
+        message: MessageDto,
     },
 }

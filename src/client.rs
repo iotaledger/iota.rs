@@ -816,10 +816,8 @@ impl Client {
 
     /// Find all outputs based on the requests criteria. This method will try to query multiple nodes if
     /// the request amount exceeds individual node limit.
-    pub async fn find_outputs(&self, outputs: &[UtxoInput], addresses: &[String]) -> Result<Vec<OutputResponse>> {
-        let mut output_metadata =
-            crate::node_api::core::get_outputs(self, outputs.iter().map(|output| *output.output_id()).collect())
-                .await?;
+    pub async fn find_outputs(&self, output_ids: &[OutputId], addresses: &[String]) -> Result<Vec<OutputResponse>> {
+        let mut output_metadata = crate::node_api::core::get_outputs(self, output_ids.to_vec()).await?;
 
         // Use `get_address()` API to get the address outputs first,
         // then collect the `UtxoInput` in the HashSet.
