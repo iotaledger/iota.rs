@@ -508,7 +508,7 @@ impl Client {
         crate::node_api::core::routes::get_output(self, output_id).await
     }
 
-    /// GET /api/plugins/indexer/v1/basic-outputs{query} endpoint
+    /// GET /api/plugins/indexer/v1/outputs/basic{query} endpoint
     pub fn get_address(&self) -> GetAddressBuilder<'_> {
         GetAddressBuilder::new(self)
     }
@@ -553,37 +553,37 @@ impl Client {
     // Node indexer API
     //////////////////////////////////////////////////////////////////////
 
-    /// api/plugins/indexer/v1/basic-outputs
+    /// api/plugins/indexer/v1/outputs/basic
     pub async fn output_ids(&self, query_parameters: Vec<QueryParameter>) -> Result<Vec<OutputId>> {
         crate::node_api::indexer::routes::output_ids(self, query_parameters).await
     }
 
-    /// api/plugins/indexer/v1/aliases
+    /// api/plugins/indexer/v1/outputs/alias
     pub async fn aliases_output_ids(&self, query_parameters: Vec<QueryParameter>) -> Result<Vec<OutputId>> {
         crate::node_api::indexer::routes::aliases_output_ids(self, query_parameters).await
     }
 
-    /// api/plugins/indexer/v1/aliases/{AliasId}
+    /// api/plugins/indexer/v1/outputs/alias/{AliasId}
     pub async fn alias_output_id(&self, alias_id: AliasId) -> Result<OutputId> {
         crate::node_api::indexer::routes::alias_output_id(self, alias_id).await
     }
 
-    /// api/plugins/indexer/v1/nfts
+    /// api/plugins/indexer/v1/outputs/nft
     pub async fn nfts_output_ids(&self, query_parameters: Vec<QueryParameter>) -> Result<Vec<OutputId>> {
         crate::node_api::indexer::routes::nfts_output_ids(self, query_parameters).await
     }
 
-    /// api/plugins/indexer/v1/nfts/{NftId}
+    /// api/plugins/indexer/v1/outputs/nft/{NftId}
     pub async fn nft_output_id(&self, nft_id: NftId) -> Result<OutputId> {
         crate::node_api::indexer::routes::nft_output_id(self, nft_id).await
     }
 
-    /// api/plugins/indexer/v1/foundries
+    /// api/plugins/indexer/v1/foundry
     pub async fn foundries_output_ids(&self, query_parameters: Vec<QueryParameter>) -> Result<Vec<OutputId>> {
         crate::node_api::indexer::routes::foundries_output_ids(self, query_parameters).await
     }
 
-    /// api/plugins/indexer/v1/foundries/{FoundryID}
+    /// api/plugins/indexer/v1/foundry/{FoundryID}
     pub async fn foundry_output_id(&self, foundry_id: FoundryId) -> Result<OutputId> {
         crate::node_api::indexer::routes::foundry_output_id(self, foundry_id).await
     }
