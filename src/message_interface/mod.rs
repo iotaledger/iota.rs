@@ -45,7 +45,7 @@ mod tests {
     use crate::{
         api::GetAddressesBuilderOptions as GenerateAddressesOptions,
         message_interface::{self, ClientMethod, MessageType, ResponseType},
-        secret::{types::Network, GenerateAddressMetadata},
+        secret::{types::Network, GenerateAddressMetadata, SecretManagerDto},
     };
 
     #[tokio::test]
@@ -81,7 +81,7 @@ mod tests {
             }),
         };
         let message = MessageType::CallClientMethod(ClientMethod::GenerateAddresses {
-            secret_manager,
+            secret_manager: serde_json::from_str::<SecretManagerDto>(&secret_manager).unwrap(),
             options,
         });
 
@@ -135,7 +135,7 @@ mod tests {
         };
 
         let generate_addresses_message = MessageType::CallClientMethod(ClientMethod::GenerateAddresses {
-            secret_manager: secret_manager.clone(),
+            secret_manager: serde_json::from_str(&secret_manager).unwrap(),
             options,
         });
 
@@ -169,7 +169,7 @@ mod tests {
 
         let options = serde_json::from_str(&options).unwrap();
         let generate_message = MessageType::CallClientMethod(ClientMethod::GenerateMessage {
-            secret_manager: Some(secret_manager),
+            secret_manager: Some(serde_json::from_str(&secret_manager).unwrap()),
             options: Some(options),
         });
 

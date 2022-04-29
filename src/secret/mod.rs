@@ -28,9 +28,9 @@ pub use types::{GenerateAddressMetadata, LedgerStatus, Network, SignMessageMetad
 
 #[cfg(feature = "ledger")]
 use self::ledger::LedgerSecretManager;
+use self::mnemonic::MnemonicSecretManager;
 #[cfg(feature = "stronghold")]
 use self::stronghold::StrongholdSecretManager;
-use self::{mnemonic::MnemonicSecretManager, types::SecretManagerDto};
 use crate::secret::types::InputSigningData;
 
 /// The secret manager interface.
@@ -195,7 +195,30 @@ impl FromStr for SecretManager {
     type Err = crate::Error;
 
     fn from_str(s: &str) -> crate::Result<Self> {
-        Ok(match serde_json::from_str(s)? {
+        SecretManager::try_from(&serde_json::from_str::<SecretManagerDto>(s)?)
+    }
+}
+/// DTO for secret manager types with required data.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum SecretManagerDto {
+    /// Stronghold
+    #[cfg(feature = "stronghold")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "stronghold")))]
+    Stronghold(StrongholdDto),
+    /// Ledger Device
+    #[cfg(feature = "ledger")]
+    LedgerNano,
+    /// Ledger Speculos Simulator
+    #[cfg(feature = "ledger")]
+    LedgerNanoSimulator,
+    /// Mnemonic
+    Mnemonic(String),
+}
+
+impl TryFrom<&SecretManagerDto> for SecretManager {
+    type Error = crate::Error;
+    fn try_from(value: &SecretManagerDto) -> crate::Result<Self> {
+        Ok(match value {
             #[cfg(feature = "stronghold")]
             SecretManagerDto::Stronghold(stronghold_dto) => {
                 let mut builder = StrongholdSecretManager::builder();
@@ -217,9 +240,7 @@ impl FromStr for SecretManager {
             #[cfg(feature = "ledger")]
             SecretManagerDto::LedgerNanoSimulator => Self::LedgerNanoSimulator(LedgerSecretManager::new(true)),
 
-            SecretManagerDto::Mnemonic(mnemonic) => {
-                Self::Mnemonic(MnemonicSecretManager::try_from_mnemonic(&mnemonic)?)
-            }
+            SecretManagerDto::Mnemonic(mnemonic) => Self::Mnemonic(MnemonicSecretManager::try_from_mnemonic(mnemonic)?),
         })
     }
 }
