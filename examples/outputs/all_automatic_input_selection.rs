@@ -9,7 +9,6 @@ use dotenv::dotenv;
 use iota_client::{
     bee_message::{
         address::AliasAddress,
-        milestone::MilestoneIndex,
         output::{
             feature_block::{IssuerFeatureBlock, MetadataFeatureBlock, SenderFeatureBlock},
             unlock_condition::{
@@ -20,7 +19,7 @@ use iota_client::{
             AliasId, AliasOutputBuilder, BasicOutputBuilder, FeatureBlock, FoundryId, FoundryOutputBuilder,
             NativeToken, NftId, NftOutputBuilder, Output, OutputId, SimpleTokenScheme, TokenId, TokenScheme, TokenTag,
         },
-        payload::{transaction::TransactionEssence, Payload},
+        payload::{milestone::MilestoneIndex, transaction::TransactionEssence, Payload},
     },
     request_funds_from_faucet,
     secret::{mnemonic::MnemonicSecretManager, SecretManager},
@@ -33,7 +32,7 @@ use primitive_types::U256;
 #[tokio::main]
 async fn main() -> Result<()> {
     let client = Client::builder()
-        .with_node("http://localhost:14265")?
+        .with_node("https://api.alphanet.iotaledger.net/")?
         .with_node_sync_disabled()
         // .with_local_pow(false)
         .with_default_logger()?
@@ -51,7 +50,7 @@ async fn main() -> Result<()> {
     println!(
         "{}",
         request_funds_from_faucet(
-            "http://localhost:14265/api/plugins/faucet/v1/enqueue",
+            "https://faucet.alphanet.iotaledger.net/api/enqueue",
             &address.to_bech32("atoi"),
         )
         .await?

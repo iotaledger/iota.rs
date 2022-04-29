@@ -8,7 +8,6 @@ use std::env;
 use dotenv::dotenv;
 use iota_client::{
     bee_message::{
-        milestone::MilestoneIndex,
         output::{
             feature_block::MetadataFeatureBlock,
             unlock_condition::{
@@ -17,6 +16,7 @@ use iota_client::{
             },
             BasicOutputBuilder, FeatureBlock, Output,
         },
+        payload::milestone::MilestoneIndex,
     },
     secret::{mnemonic::MnemonicSecretManager, SecretManager},
     utils::request_funds_from_faucet,

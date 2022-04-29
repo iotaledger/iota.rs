@@ -9,7 +9,6 @@ use dotenv::dotenv;
 use iota_client::{
     bee_message::{
         address::AliasAddress,
-        milestone::MilestoneIndex,
         output::{
             feature_block::{IssuerFeatureBlock, MetadataFeatureBlock, SenderFeatureBlock},
             unlock_condition::{
@@ -20,7 +19,7 @@ use iota_client::{
             AliasId, AliasOutputBuilder, BasicOutputBuilder, FeatureBlock, FoundryId, FoundryOutputBuilder,
             NativeToken, NftId, NftOutputBuilder, Output, OutputId, SimpleTokenScheme, TokenId, TokenScheme, TokenTag,
         },
-        payload::{transaction::TransactionEssence, Payload},
+        payload::{milestone::MilestoneIndex, transaction::TransactionEssence, Payload},
     },
     node_api::indexer::query_parameters::QueryParameter,
     request_funds_from_faucet,

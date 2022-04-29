@@ -188,7 +188,7 @@ checksum = "cf9ff0bbfd639f15c74af777d81383cf53efb7c93613f6cab67c6c11e05bbf8b"
 [[package]]
 name = "bee-ledger"
 version = "0.7.0"
-source = "git+https://github.com/iotaledger/bee?rev=ab53dd6afffb97ed83c1ae446ab37799b70acb0d#ab53dd6afffb97ed83c1ae446ab37799b70acb0d"
+source = "git+https://github.com/iotaledger/bee?rev=749e3c25fbf06f9ccec6287d11fe6b2587638cf6#749e3c25fbf06f9ccec6287d11fe6b2587638cf6"
 dependencies = [
  "bee-message",
  "packable",
@@ -199,11 +199,11 @@ dependencies = [
 [[package]]
 name = "bee-message"
 version = "0.2.0"
-source = "git+https://github.com/iotaledger/bee?rev=ab53dd6afffb97ed83c1ae446ab37799b70acb0d#ab53dd6afffb97ed83c1ae446ab37799b70acb0d"
+source = "git+https://github.com/iotaledger/bee?rev=749e3c25fbf06f9ccec6287d11fe6b2587638cf6#749e3c25fbf06f9ccec6287d11fe6b2587638cf6"
 dependencies = [
  "bech32 0.8.1",
  "bee-pow",
- "bee-ternary",
+ "bee-ternary 0.6.0",
  "bitflags",
  "bytemuck",
  "derive_more",
@@ -224,9 +224,9 @@ dependencies = [
 [[package]]
 name = "bee-pow"
 version = "0.2.0"
-source = "git+https://github.com/iotaledger/bee?rev=ab53dd6afffb97ed83c1ae446ab37799b70acb0d#ab53dd6afffb97ed83c1ae446ab37799b70acb0d"
+source = "git+https://github.com/iotaledger/bee?rev=749e3c25fbf06f9ccec6287d11fe6b2587638cf6#749e3c25fbf06f9ccec6287d11fe6b2587638cf6"
 dependencies = [
- "bee-ternary",
+ "bee-ternary 0.6.0",
  "iota-crypto 0.9.2",
  "thiserror",
 ]
@@ -234,7 +234,7 @@ dependencies = [
 [[package]]
 name = "bee-rest-api"
 version = "0.2.2"
-source = "git+https://github.com/iotaledger/bee?rev=ab53dd6afffb97ed83c1ae446ab37799b70acb0d#ab53dd6afffb97ed83c1ae446ab37799b70acb0d"
+source = "git+https://github.com/iotaledger/bee?rev=749e3c25fbf06f9ccec6287d11fe6b2587638cf6#749e3c25fbf06f9ccec6287d11fe6b2587638cf6"
 dependencies = [
  "bee-ledger",
  "bee-message",
@@ -246,6 +246,16 @@ dependencies = [
  "serde 1.0.136",
  "serde_json",
  "thiserror",
+]
+
+[[package]]
+name = "bee-ternary"
+version = "0.5.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8e8479555c8e9bf3cad36daf16e6a2f77771774e977276a08df4d8ac5f1dda66"
+dependencies = [
+ "autocfg",
+ "num-traits 0.2.14",
 ]
 
 [[package]]
@@ -1135,7 +1145,7 @@ dependencies = [
  "bee-message",
  "bee-pow",
  "bee-rest-api",
- "bee-ternary",
+ "bee-ternary 0.5.2",
  "derive_builder",
  "dotenv",
  "fern-logger",
@@ -1194,7 +1204,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "13a3db4f13f4324788e4b870fdd264895a558cb523a851a9dd77bcfa43750b24"
 dependencies = [
  "aead",
- "bee-ternary",
+ "bee-ternary 0.6.0",
  "blake2",
  "chacha20poly1305",
  "digest",
