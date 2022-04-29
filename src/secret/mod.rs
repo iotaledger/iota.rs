@@ -32,6 +32,8 @@ use self::mnemonic::MnemonicSecretManager;
 #[cfg(feature = "stronghold")]
 use self::stronghold::StrongholdSecretManager;
 use crate::secret::types::InputSigningData;
+#[cfg(feature = "stronghold")]
+use crate::secret::types::StrongholdDto;
 
 /// The secret manager interface.
 #[async_trait]
