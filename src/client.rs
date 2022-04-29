@@ -578,12 +578,12 @@ impl Client {
         crate::node_api::indexer::routes::nft_output_id(self, nft_id).await
     }
 
-    /// api/plugins/indexer/v1/foundry
+    /// api/plugins/indexer/v1/outputs/foundry
     pub async fn foundries_output_ids(&self, query_parameters: Vec<QueryParameter>) -> Result<Vec<OutputId>> {
         crate::node_api::indexer::routes::foundries_output_ids(self, query_parameters).await
     }
 
-    /// api/plugins/indexer/v1/foundry/{FoundryID}
+    /// api/plugins/indexer/v1/outputs/foundry/{FoundryID}
     pub async fn foundry_output_id(&self, foundry_id: FoundryId) -> Result<OutputId> {
         crate::node_api::indexer::routes::foundry_output_id(self, foundry_id).await
     }

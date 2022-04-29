@@ -75,17 +75,17 @@ pub async fn nft_output_id(client: &Client, nft_id: NftId) -> Result<OutputId> {
 /// GET with query parameter returns all outputIDs that fit these filter criteria.
 /// Query parameters: "address", "createdBefore", "createdAfter"
 /// Returns an empty list if no results are found.
-/// api/plugins/indexer/v1/foundry
+/// api/plugins/indexer/v1/outputs/foundry
 pub async fn foundries_output_ids(client: &Client, query_parameters: Vec<QueryParameter>) -> Result<Vec<OutputId>> {
-    let route = "api/plugins/indexer/v1/foundry";
+    let route = "api/plugins/indexer/v1/outputs/foundry";
 
     get_output_ids_with_pagination(client, route, query_parameters).await
 }
 
 /// Get foundries by their foundryID.
-/// api/plugins/indexer/v1/foundry/:{FoundryID}
+/// api/plugins/indexer/v1/outputs/foundry/:{FoundryID}
 pub async fn foundry_output_id(client: &Client, foundry_id: FoundryId) -> Result<OutputId> {
-    let route = format!("api/plugins/indexer/v1/foundry/{foundry_id}");
+    let route = format!("api/plugins/indexer/v1/outputs/foundry/{foundry_id}");
 
     Ok(*(get_output_ids_with_pagination(client, &route, Vec::new())
         .await?
