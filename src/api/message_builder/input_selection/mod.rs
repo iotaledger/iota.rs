@@ -271,7 +271,9 @@ pub fn minimum_storage_deposit(
     if let Some(native_tokens) = native_tokens {
         basic_output_builder = basic_output_builder.with_native_tokens(native_tokens.clone());
     }
-    let basic_output = basic_output_builder.add_unlock_condition(address_condition).finish()?;
+    let basic_output = basic_output_builder
+        .add_unlock_condition(address_condition)
+        .finish_output()?;
 
-    Ok(Output::Basic(basic_output).byte_cost(config))
+    Ok(basic_output.byte_cost(config))
 }

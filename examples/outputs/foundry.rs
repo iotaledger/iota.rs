@@ -58,7 +58,7 @@ async fn main() -> Result<()> {
     //////////////////////////////////
     // create new alias output
     //////////////////////////////////
-    let outputs = vec![Output::Alias(
+    let outputs = vec![
         AliasOutputBuilder::new_with_amount(2_000_000, AliasId::from([0; 20]))?
             .with_state_index(0)
             .with_foundry_counter(0)
@@ -71,8 +71,8 @@ async fn main() -> Result<()> {
             .add_unlock_condition(UnlockCondition::GovernorAddress(GovernorAddressUnlockCondition::new(
                 address,
             )))
-            .finish()?,
-    )];
+            .finish_output()?,
+    ];
 
     let message = client
         .message()
@@ -100,29 +100,25 @@ async fn main() -> Result<()> {
     );
     let token_id = TokenId::build(&foundry_id, &TokenTag::new([0u8; 12]));
     let outputs = vec![
-        Output::Alias(
-            AliasOutputBuilder::new_with_amount(1_000_000, alias_id)?
-                .with_state_index(1)
-                .with_foundry_counter(1)
-                .add_feature_block(FeatureBlock::Sender(SenderFeatureBlock::new(address)))
-                .add_feature_block(FeatureBlock::Metadata(MetadataFeatureBlock::new(vec![1, 2, 3])?))
-                .add_immutable_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
-                .add_unlock_condition(UnlockCondition::StateControllerAddress(
-                    StateControllerAddressUnlockCondition::new(address),
-                ))
-                .add_unlock_condition(UnlockCondition::GovernorAddress(GovernorAddressUnlockCondition::new(
-                    address,
-                )))
-                .finish()?,
-        ),
-        Output::Foundry(
-            FoundryOutputBuilder::new_with_amount(1_000_000, 1, TokenTag::new([0u8; 12]), token_scheme)?
-                .add_native_token(NativeToken::new(token_id, U256::from(70))?)
-                .add_unlock_condition(UnlockCondition::ImmutableAliasAddress(
-                    ImmutableAliasAddressUnlockCondition::new(AliasAddress::from(alias_id)),
-                ))
-                .finish()?,
-        ),
+        AliasOutputBuilder::new_with_amount(1_000_000, alias_id)?
+            .with_state_index(1)
+            .with_foundry_counter(1)
+            .add_feature_block(FeatureBlock::Sender(SenderFeatureBlock::new(address)))
+            .add_feature_block(FeatureBlock::Metadata(MetadataFeatureBlock::new(vec![1, 2, 3])?))
+            .add_immutable_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
+            .add_unlock_condition(UnlockCondition::StateControllerAddress(
+                StateControllerAddressUnlockCondition::new(address),
+            ))
+            .add_unlock_condition(UnlockCondition::GovernorAddress(GovernorAddressUnlockCondition::new(
+                address,
+            )))
+            .finish_output()?,
+        FoundryOutputBuilder::new_with_amount(1_000_000, 1, TokenTag::new([0u8; 12]), token_scheme)?
+            .add_native_token(NativeToken::new(token_id, U256::from(70))?)
+            .add_unlock_condition(UnlockCondition::ImmutableAliasAddress(
+                ImmutableAliasAddressUnlockCondition::new(AliasAddress::from(alias_id)),
+            ))
+            .finish_output()?,
     ];
 
     let message = client
@@ -144,34 +140,30 @@ async fn main() -> Result<()> {
     let alias_output_id = get_alias_output_id(message.payload().unwrap());
     let foundry_output_id = get_foundry_output_id(message.payload().unwrap());
     let outputs = vec![
-        Output::Alias(
-            AliasOutputBuilder::new_with_amount(1_000_000, alias_id)?
-                .with_state_index(2)
-                .with_foundry_counter(1)
-                .add_feature_block(FeatureBlock::Sender(SenderFeatureBlock::new(address)))
-                .add_feature_block(FeatureBlock::Metadata(MetadataFeatureBlock::new(vec![1, 2, 3])?))
-                .add_immutable_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
-                .add_unlock_condition(UnlockCondition::StateControllerAddress(
-                    StateControllerAddressUnlockCondition::new(address),
-                ))
-                .add_unlock_condition(UnlockCondition::GovernorAddress(GovernorAddressUnlockCondition::new(
-                    address,
-                )))
-                .finish()?,
-        ),
-        Output::Foundry(
-            FoundryOutputBuilder::new_with_amount(
-                1_000_000,
-                1,
-                TokenTag::new([0u8; 12]),
-                TokenScheme::Simple(SimpleTokenScheme::new(U256::from(70), U256::from(20), U256::from(100))?),
-            )?
-            .add_native_token(NativeToken::new(token_id, U256::from(50))?)
-            .add_unlock_condition(UnlockCondition::ImmutableAliasAddress(
-                ImmutableAliasAddressUnlockCondition::new(AliasAddress::from(alias_id)),
+        AliasOutputBuilder::new_with_amount(1_000_000, alias_id)?
+            .with_state_index(2)
+            .with_foundry_counter(1)
+            .add_feature_block(FeatureBlock::Sender(SenderFeatureBlock::new(address)))
+            .add_feature_block(FeatureBlock::Metadata(MetadataFeatureBlock::new(vec![1, 2, 3])?))
+            .add_immutable_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
+            .add_unlock_condition(UnlockCondition::StateControllerAddress(
+                StateControllerAddressUnlockCondition::new(address),
             ))
-            .finish()?,
-        ),
+            .add_unlock_condition(UnlockCondition::GovernorAddress(GovernorAddressUnlockCondition::new(
+                address,
+            )))
+            .finish_output()?,
+        FoundryOutputBuilder::new_with_amount(
+            1_000_000,
+            1,
+            TokenTag::new([0u8; 12]),
+            TokenScheme::Simple(SimpleTokenScheme::new(U256::from(70), U256::from(20), U256::from(100))?),
+        )?
+        .add_native_token(NativeToken::new(token_id, U256::from(50))?)
+        .add_unlock_condition(UnlockCondition::ImmutableAliasAddress(
+            ImmutableAliasAddressUnlockCondition::new(AliasAddress::from(alias_id)),
+        ))
+        .finish_output()?,
     ];
 
     let message = client
@@ -194,39 +186,33 @@ async fn main() -> Result<()> {
     let alias_output_id = get_alias_output_id(message.payload().unwrap());
     let foundry_output_id = get_foundry_output_id(message.payload().unwrap());
     let outputs = vec![
-        Output::Alias(
-            AliasOutputBuilder::new_with_amount(1_000_000, alias_id)?
-                .with_state_index(3)
-                .with_foundry_counter(1)
-                .add_feature_block(FeatureBlock::Sender(SenderFeatureBlock::new(address)))
-                .add_feature_block(FeatureBlock::Metadata(MetadataFeatureBlock::new(vec![1, 2, 3])?))
-                .add_immutable_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
-                .add_unlock_condition(UnlockCondition::StateControllerAddress(
-                    StateControllerAddressUnlockCondition::new(address),
-                ))
-                .add_unlock_condition(UnlockCondition::GovernorAddress(GovernorAddressUnlockCondition::new(
-                    address,
-                )))
-                .finish()?,
-        ),
-        Output::Foundry(
-            FoundryOutputBuilder::new_with_amount(
-                1_000_000,
-                1,
-                TokenTag::new([0u8; 12]),
-                TokenScheme::Simple(SimpleTokenScheme::new(U256::from(70), U256::from(20), U256::from(100))?),
-            )?
-            .add_unlock_condition(UnlockCondition::ImmutableAliasAddress(
-                ImmutableAliasAddressUnlockCondition::new(AliasAddress::from(alias_id)),
+        AliasOutputBuilder::new_with_amount(1_000_000, alias_id)?
+            .with_state_index(3)
+            .with_foundry_counter(1)
+            .add_feature_block(FeatureBlock::Sender(SenderFeatureBlock::new(address)))
+            .add_feature_block(FeatureBlock::Metadata(MetadataFeatureBlock::new(vec![1, 2, 3])?))
+            .add_immutable_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
+            .add_unlock_condition(UnlockCondition::StateControllerAddress(
+                StateControllerAddressUnlockCondition::new(address),
             ))
-            .finish()?,
-        ),
-        Output::Basic(
-            BasicOutputBuilder::new_with_amount(1_000_000)?
-                .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-                .add_native_token(NativeToken::new(token_id, U256::from(50))?)
-                .finish()?,
-        ),
+            .add_unlock_condition(UnlockCondition::GovernorAddress(GovernorAddressUnlockCondition::new(
+                address,
+            )))
+            .finish_output()?,
+        FoundryOutputBuilder::new_with_amount(
+            1_000_000,
+            1,
+            TokenTag::new([0u8; 12]),
+            TokenScheme::Simple(SimpleTokenScheme::new(U256::from(70), U256::from(20), U256::from(100))?),
+        )?
+        .add_unlock_condition(UnlockCondition::ImmutableAliasAddress(
+            ImmutableAliasAddressUnlockCondition::new(AliasAddress::from(alias_id)),
+        ))
+        .finish_output()?,
+        BasicOutputBuilder::new_with_amount(1_000_000)?
+            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
+            .add_native_token(NativeToken::new(token_id, U256::from(50))?)
+            .finish_output()?,
     ];
 
     // get additional input for the new basic output
@@ -255,12 +241,12 @@ async fn main() -> Result<()> {
     // send native token without foundry
     //////////////////////////////////
     let basic_output_id = get_basic_output_id_with_native_tokens(message.payload().unwrap());
-    let outputs = vec![Output::Basic(
+    let outputs = vec![
         BasicOutputBuilder::new_with_amount(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             .add_native_token(NativeToken::new(token_id, U256::from(50))?)
-            .finish()?,
-    )];
+            .finish_output()?,
+    ];
 
     let message = client
         .message()
@@ -279,12 +265,12 @@ async fn main() -> Result<()> {
     // burn native token without foundry
     //////////////////////////////////
     let basic_output_id = get_basic_output_id_with_native_tokens(message.payload().unwrap());
-    let outputs = vec![Output::Basic(
+    let outputs = vec![
         BasicOutputBuilder::new_with_amount(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             .add_native_token(NativeToken::new(token_id, U256::from(30))?)
-            .finish()?,
-    )];
+            .finish_output()?,
+    ];
 
     let message = client
         .message()

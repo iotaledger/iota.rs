@@ -181,8 +181,8 @@ impl<'a> ClientMessageBuilder<'a> {
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(
                 Address::try_from_bech32(address)?.1,
             )))
-            .finish()?;
-        self.outputs.push(Output::Basic(output));
+            .finish_output()?;
+        self.outputs.push(output);
         if !OUTPUT_COUNT_RANGE.contains(&(self.outputs.len() as u16)) {
             return Err(crate::Error::MessageError(bee_message::Error::InvalidOutputCount(
                 TryIntoBoundedU16Error::Truncated(self.outputs.len()),
@@ -208,8 +208,8 @@ impl<'a> ClientMessageBuilder<'a> {
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(
                 address.parse::<Ed25519Address>()?.into(),
             )))
-            .finish()?;
-        self.outputs.push(Output::Basic(output));
+            .finish_output()?;
+        self.outputs.push(output);
         if !OUTPUT_COUNT_RANGE.contains(&(self.outputs.len() as u16)) {
             return Err(crate::Error::MessageError(bee_message::Error::InvalidOutputCount(
                 TryIntoBoundedU16Error::Truncated(self.outputs.len()),
