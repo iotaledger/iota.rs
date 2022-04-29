@@ -18,9 +18,9 @@ use crate::{
 ///                 "hasTimelockCondition", "timelockedBefore", "timelockedAfter", "timelockedBeforeMilestone",
 ///                 "timelockedAfterMilestone", "sender", "tag", "createdBefore", "createdAfter"
 /// Returns an empty Vec if no results are found.
-/// api/plugins/indexer/v1/basic-outputs
+/// api/plugins/indexer/v1/outputs/basic
 pub async fn output_ids(client: &Client, query_parameters: Vec<QueryParameter>) -> Result<Vec<OutputId>> {
-    let route = "api/plugins/indexer/v1/basic-outputs";
+    let route = "api/plugins/indexer/v1/outputs/basic";
 
     get_output_ids_with_pagination(client, route, query_parameters).await
 }
@@ -29,17 +29,17 @@ pub async fn output_ids(client: &Client, query_parameters: Vec<QueryParameter>) 
 /// GET with query parameter returns all outputIDs that fit these filter criteria.
 /// Query parameters: "stateController", "governor", "issuer", "sender", "createdBefore", "createdAfter"
 /// Returns an empty list if no results are found.
-/// api/plugins/indexer/v1/aliases
+/// api/plugins/indexer/v1/outputs/alias
 pub async fn aliases_output_ids(client: &Client, query_parameters: Vec<QueryParameter>) -> Result<Vec<OutputId>> {
-    let route = "api/plugins/indexer/v1/aliases";
+    let route = "api/plugins/indexer/v1/outputs/alias";
 
     get_output_ids_with_pagination(client, route, query_parameters).await
 }
 
 /// Get aliases by their aliasID.
-/// api/plugins/indexer/v1/aliases/:{AliasId}
+/// api/plugins/indexer/v1/outputs/alias/:{AliasId}
 pub async fn alias_output_id(client: &Client, alias_id: AliasId) -> Result<OutputId> {
-    let route = format!("api/plugins/indexer/v1/aliases/{alias_id}");
+    let route = format!("api/plugins/indexer/v1/outputs/alias/{alias_id}");
 
     Ok(*(get_output_ids_with_pagination(client, &route, Vec::new())
         .await?
@@ -53,17 +53,17 @@ pub async fn alias_output_id(client: &Client, alias_id: AliasId) -> Result<Outpu
 ///                 "hasTimelockCondition", "timelockedBefore", "timelockedAfter", "timelockedBeforeMilestone",
 ///                 "timelockedAfterMilestone", "issuer", "sender", "tag", "createdBefore", "createdAfter"
 /// Returns an empty list if no results are found.
-/// api/plugins/indexer/v1/nfts
+/// api/plugins/indexer/v1/outputs/nft
 pub async fn nfts_output_ids(client: &Client, query_parameters: Vec<QueryParameter>) -> Result<Vec<OutputId>> {
-    let route = "api/plugins/indexer/v1/nfts";
+    let route = "api/plugins/indexer/v1/outputs/nft";
 
     get_output_ids_with_pagination(client, route, query_parameters).await
 }
 
 /// Get NFT by their nftID.
-/// api/plugins/indexer/v1/nfts/:{NftId}
+/// api/plugins/indexer/v1/outputs/nft/:{NftId}
 pub async fn nft_output_id(client: &Client, nft_id: NftId) -> Result<OutputId> {
-    let route = format!("api/plugins/indexer/v1/nfts/{nft_id}");
+    let route = format!("api/plugins/indexer/v1/outputs/nft/{nft_id}");
 
     Ok(*(get_output_ids_with_pagination(client, &route, Vec::new())
         .await?
@@ -75,17 +75,17 @@ pub async fn nft_output_id(client: &Client, nft_id: NftId) -> Result<OutputId> {
 /// GET with query parameter returns all outputIDs that fit these filter criteria.
 /// Query parameters: "address", "createdBefore", "createdAfter"
 /// Returns an empty list if no results are found.
-/// api/plugins/indexer/v1/foundries
+/// api/plugins/indexer/v1/outputs/foundry
 pub async fn foundries_output_ids(client: &Client, query_parameters: Vec<QueryParameter>) -> Result<Vec<OutputId>> {
-    let route = "api/plugins/indexer/v1/foundries";
+    let route = "api/plugins/indexer/v1/outputs/foundry";
 
     get_output_ids_with_pagination(client, route, query_parameters).await
 }
 
 /// Get foundries by their foundryID.
-/// api/plugins/indexer/v1/foundries/:{FoundryID}
+/// api/plugins/indexer/v1/outputs/foundry/:{FoundryID}
 pub async fn foundry_output_id(client: &Client, foundry_id: FoundryId) -> Result<OutputId> {
-    let route = format!("api/plugins/indexer/v1/foundries/{foundry_id}");
+    let route = format!("api/plugins/indexer/v1/outputs/foundry/{foundry_id}");
 
     Ok(*(get_output_ids_with_pagination(client, &route, Vec::new())
         .await?
