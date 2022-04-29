@@ -18,6 +18,7 @@ import type {
     __SignTransactionPayloadMethod__,
     __SubmitPayloadPayloadMethod__,
     __ParseBech32AddressPayloadMethod__,
+    __MessageIdPayloadMethod__,
 } from './client';
 
 export type __ClientPayloadMethods__ =
@@ -39,7 +40,8 @@ export type __ClientPayloadMethods__ =
     | __PrepareTransactionPayloadMethod__
     | __SignTransactionPayloadMethod__
     | __SubmitPayloadPayloadMethod__
-    | __ParseBech32AddressPayloadMethod__;
+    | __ParseBech32AddressPayloadMethod__
+    | __MessageIdPayloadMethod__;
 
 export interface __SendMessagePayload__ {
     cmd: 'CallClientMethod';

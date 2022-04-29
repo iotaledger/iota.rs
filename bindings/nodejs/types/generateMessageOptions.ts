@@ -22,10 +22,10 @@ export interface IGenerateMessageOptions {
     /** Parent message IDs */
     parents?: string[];
     /** Allow burning of native tokens */
-    allowBurning: boolean;
+    allowBurning?: boolean;
 }
 
 export interface IClientMessageBuilderOutputAddress {
     address: string;
-    amount: number;
+    amount: string;
 }

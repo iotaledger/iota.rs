@@ -33,12 +33,15 @@ async function run() {
             await readFile(SIGNED_TRANSACTION_FILE_NAME, 'utf8'),
         );
 
+        // Send message with the signed transaction as a payload
         const message = await onlineClient.submitPayload(signedTransaction);
 
-        // TODO: get messageId from message (Blake2b256 hash of message)
+        // Get the message ID from the message (Blake2b256 hash of the message bytes)
+        const messageId = await onlineClient.messageId(message);
+
         console.log(
             'Transaction sent: https://explorer.iota.org/devnet/message/' +
-                message.messageId,
+                messageId,
         );
     } catch (error) {
         console.error(error);

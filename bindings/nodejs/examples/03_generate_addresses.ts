@@ -22,12 +22,19 @@ async function run() {
         localPow: true,
     });
 
-    const signer = JSON.stringify({
-        Mnemonic: process.env.NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1,
-    });
     try {
+        if (!process.env.NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1) {
+            throw new Error('.env mnemonic is undefined, see .env.example');
+        }
+        const secretManager = JSON.stringify({
+            Mnemonic: process.env.NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1,
+        });
+
         // Generate public addresses with default account index and range
-        const defaultAddresses = await client.generateAddresses(signer, {});
+        const defaultAddresses = await client.generateAddresses(
+            secretManager,
+            {},
+        );
         console.log(
             'List of generated public addresses:',
             defaultAddresses,
@@ -35,7 +42,7 @@ async function run() {
         );
 
         // Generate public addresses with custom account index and range
-        const customAddresses = await client.generateAddresses(signer, {
+        const customAddresses = await client.generateAddresses(secretManager, {
             accountIndex: 0,
             range: {
                 start: 0,
@@ -43,27 +50,32 @@ async function run() {
             },
         });
         console.log(
-            `List of generated public addresses:`,
+            'List of generated public addresses:',
             customAddresses,
             '\n',
         );
 
         // Generate internal addresses with custom account index and range
-        const internalAddresses = await client.generateAddresses(signer, {
-            accountIndex: 0,
-            range: {
-                start: 0,
-                end: 4,
+        const internalAddresses = await client.generateAddresses(
+            secretManager,
+            {
+                accountIndex: 0,
+                range: {
+                    start: 0,
+                    end: 4,
+                },
+                internal: true,
             },
-            internal: true,
-        });
+        );
         console.log(
-            `List of generated internal addresses: \n${internalAddresses}\n`,
+            'List of generated internal addresses:',
+            internalAddresses,
+            '\n',
         );
 
         // Generate public addresses offline with the bech32Hrp defined
         const offlineGeneratedAddresses = await client.generateAddresses(
-            signer,
+            secretManager,
             {
                 accountIndex: 0,
                 range: {
@@ -74,7 +86,7 @@ async function run() {
             },
         );
         console.log(
-            `List of offline generated public addresses:`,
+            'List of offline generated public addresses:',
             offlineGeneratedAddresses,
         );
     } catch (error) {

@@ -30,13 +30,18 @@ async function run() {
         localPow: true,
     });
 
-    const signer = JSON.stringify({
-        Mnemonic: process.env.NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1,
-    });
     try {
+        if (!process.env.NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1) {
+            throw new Error('.env mnemonic is undefined, see .env.example');
+        }
+
+        const secretManager = JSON.stringify({
+            Mnemonic: process.env.NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1,
+        });
+
         // Generates addresses offline.
         const offlineGeneratedAddresses = await offlineClient.generateAddresses(
-            signer,
+            secretManager,
             {
                 range: {
                     start: 0,

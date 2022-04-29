@@ -6,3 +6,4 @@ export * from './generateAddressesOptions';
 export * from './messageId';
 export * from './queryParameters';
 export * from './preparedTransactionData';
+export * from './secretManager';

@@ -22,11 +22,15 @@ async function run() {
     });
 
     try {
+        // Get output ids of outputs that can be controlled by this address without further unlock constraints
         const outputIds = await client.outputIds([
             {
                 address:
-                    'rms1qqv5avetndkxzgr3jtrswdtz5ze6mag20s0jdqvzk4fwezve8q9vkpnqlqe',
+                    'rms1qpllaj0pyveqfkwxmnngz2c488hfdtmfrj3wfkgxtk4gtyrax0jaxzt70zy',
             },
+            { hasExpirationCondition: false },
+            { hasTimelockCondition: false },
+            { hasStorageDepositReturnCondition: false },
         ]);
         console.log('Output ids: ', outputIds, '\n');
 

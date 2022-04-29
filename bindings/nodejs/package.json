@@ -29,9 +29,7 @@
         "test": "mocha ./tests --exclude assertions.js --timeout 0"
     },
     "devDependencies": {
-        "@iota/crypto.js": "^1.8.6",
-        "@iota/types": "^1.0.0-beta.2",
-        "@iota/util.js": "^1.8.6",
+        "@iota/types": "^1.0.0-beta.4",
         "@typescript-eslint/eslint-plugin": "^5.19.0",
         "@typescript-eslint/parser": "^5.19.0",
         "electron-build-env": "^0.2.0",

@@ -34,10 +34,15 @@ async function run() {
         localPow: true,
     });
 
-    const signer = JSON.stringify({
-        Mnemonic: process.env.NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1,
-    });
     try {
+        if (!process.env.NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1) {
+            throw new Error('.env mnemonic is undefined, see .env.example');
+        }
+
+        const secretManager = JSON.stringify({
+            Mnemonic: process.env.NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1,
+        });
+
         // Read in prepared transaction from example 2_transaction_preparation
         const preparedTransaction = JSON.parse(
             await readFile(PREPARED_TRANSACTION_FILE_NAME, 'utf8'),
@@ -45,7 +50,7 @@ async function run() {
 
         // Signs prepared transaction offline.
         const signedTransaction = await offlineClient.signTransaction(
-            signer,
+            secretManager,
             preparedTransaction,
         );
 

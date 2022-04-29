@@ -29,7 +29,6 @@ async function run() {
         // Send message
         const messageId = await client.postMessage(message);
 
-        // TODO: link doesn't work (Not found), same goes for the rust example (06_simple_message.rs)
         console.log(
             `Empty message sent: https://explorer.iota.org/devnet/message/${messageId}`,
         );

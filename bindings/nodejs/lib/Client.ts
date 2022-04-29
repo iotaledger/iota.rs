@@ -9,6 +9,7 @@ import type {
     IPreparedTransactionData,
     MessageId,
     INetworkInfo,
+    SecretManager,
 } from '../types';
 import type {
     INodeInfo,
@@ -104,13 +105,13 @@ export class Client {
     }
 
     async generateAddresses(
-        mnemonic: string,
+        secretManager: SecretManager,
         generateAddressesOptions: IGenerateAddressesOptions,
     ): Promise<string[]> {
         const response = await this.messageHandler.callClientMethod({
             name: 'GenerateAddresses',
             data: {
-                signer: mnemonic,
+                secretManager,
                 options: generateAddressesOptions,
             },
         });
@@ -119,13 +120,13 @@ export class Client {
     }
 
     async generateMessage(
-        signer?: string,
+        secretManager?: SecretManager,
         options?: IGenerateMessageOptions,
     ): Promise<IMessage> {
         const response = await this.messageHandler.callClientMethod({
             name: 'GenerateMessage',
             data: {
-                signer,
+                secretManager,
                 options,
             },
         });
@@ -226,13 +227,13 @@ export class Client {
      * Prepare a transaction for signing
      */
     async prepareTransaction(
-        signer?: string,
+        secretManager?: SecretManager,
         options?: IGenerateMessageOptions,
     ): Promise<IPreparedTransactionData> {
         const response = await this.messageHandler.callClientMethod({
             name: 'PrepareTransaction',
             data: {
-                signer,
+                secretManager,
                 options,
             },
         });
@@ -244,13 +245,13 @@ export class Client {
      * Sign a transaction
      */
     async signTransaction(
-        signer: string,
+        secretManager: SecretManager,
         preparedTransactionData: IPreparedTransactionData,
     ): Promise<PayloadTypes> {
         const response = await this.messageHandler.callClientMethod({
             name: 'SignTransaction',
             data: {
-                signer,
+                secretManager,
                 preparedTransactionData,
             },
         });
@@ -280,6 +281,20 @@ export class Client {
             name: 'ParseBech32Address',
             data: {
                 address,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Returns a message ID (Blake2b256 hash of the message bytes)
+     */
+    async messageId(message: IMessage): Promise<MessageId> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'MessageId',
+            data: {
+                message,
             },
         });
 

@@ -34,7 +34,7 @@ async function run() {
 
     const address =
         'rms1qqv5avetndkxzgr3jtrswdtz5ze6mag20s0jdqvzk4fwezve8q9vkpnqlqe';
-    const amount = 1_000_000;
+    const amount = 1000000;
     try {
         // Recovers addresses from example `0_address_generation`.
         const addresses = JSON.parse(await readFile(ADDRESS_FILE_NAME, 'utf8'));
@@ -47,8 +47,7 @@ async function run() {
             undefined,
             {
                 inputs,
-                output: { address, amount },
-                allowBurning: false,
+                output: { address, amount: amount.toString() },
             },
         );
 

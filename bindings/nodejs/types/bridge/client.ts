@@ -1,4 +1,5 @@
 import type { IMessage, IUTXOInput, PayloadTypes } from '@iota/types';
+import type { SecretManager } from '../secretManager';
 import type { IGenerateAddressesOptions } from '../generateAddressesOptions';
 import type { IGenerateMessageOptions } from '../generateMessageOptions';
 import type { MessageId } from '../messageId';
@@ -44,7 +45,7 @@ export interface __MnemonicToHexSeedPayloadMethod__ {
 export interface __GenerateAddressesPayloadMethod__ {
     name: 'GenerateAddresses';
     data: {
-        signer: string;
+        secretManager: SecretManager;
         options: IGenerateAddressesOptions;
     };
 }
@@ -59,7 +60,7 @@ export interface __PostMessagePayloadMethod__ {
 export interface __GenerateMessagePayloadMethod__ {
     name: 'GenerateMessage';
     data: {
-        signer?: string;
+        secretManager?: SecretManager;
         options?: IGenerateMessageOptions;
     };
 }
@@ -105,7 +106,7 @@ export interface __FindOutputsPayloadMethod__ {
 export interface __PrepareTransactionPayloadMethod__ {
     name: 'PrepareTransaction';
     data: {
-        signer?: string;
+        secretManager?: SecretManager;
         options?: IGenerateMessageOptions;
     };
 }
@@ -113,7 +114,7 @@ export interface __PrepareTransactionPayloadMethod__ {
 export interface __SignTransactionPayloadMethod__ {
     name: 'SignTransaction';
     data: {
-        signer: string;
+        secretManager: SecretManager;
         preparedTransactionData: IPreparedTransactionData;
     };
 }
@@ -129,5 +130,12 @@ export interface __ParseBech32AddressPayloadMethod__ {
     name: 'ParseBech32Address';
     data: {
         address: string;
+    };
+}
+
+export interface __MessageIdPayloadMethod__ {
+    name: 'MessageId';
+    data: {
+        message: IMessage;
     };
 }

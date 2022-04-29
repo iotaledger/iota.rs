@@ -24,19 +24,18 @@ async function run() {
     const options = {
         tag: utf8ToBytes('Hello'),
         data: utf8ToBytes('Tangle'),
-        allowBurning: false,
     };
     try {
         const mnemonic = await client.generateMnemonic();
-        const signer = JSON.stringify({ Mnemonic: mnemonic });
+        const secretManager = JSON.stringify({ Mnemonic: mnemonic });
 
         // Create message with tagged payload
-        const message = await client.generateMessage(signer, options);
+        const message = await client.generateMessage(secretManager, options);
         console.log('Message:', message, '\n');
 
         // Send message
         const messageId = await client.postMessage(message);
-        // TODO: link doesn't work (Not found), same goes for the rust example (06_simple_message.rs)
+
         console.log(
             `Message sent: https://explorer.iota.org/devnet/message/${messageId}\n`,
         );
