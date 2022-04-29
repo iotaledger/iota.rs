@@ -35,7 +35,6 @@ async fn main() -> Result<()> {
     let client = Client::builder()
         .with_node("http://localhost:14265")?
         .with_node_sync_disabled()
-        // .with_local_pow(false)
         .with_default_logger()?
         .finish()
         .await?;
