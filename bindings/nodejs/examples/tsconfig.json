@@ -8,6 +8,6 @@
         "importsNotUsedAsValues": "error",
         "noImplicitAny": true,
         "removeComments": true,
-        "outDir": "dist",
+        "outDir": "dist"
     }
 }

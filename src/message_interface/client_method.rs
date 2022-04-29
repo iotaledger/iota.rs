@@ -137,11 +137,13 @@ pub enum ClientMethod {
     /// Get message raw
     GetMessageRaw {
         /// Message ID
+        #[serde(rename = "messageId")]
         message_id: MessageId,
     },
     /// Get message children
     GetMessageChildren {
         /// Message ID
+        #[serde(rename = "messageId")]
         message_id: MessageId,
     },
     /// Get output
@@ -175,6 +177,7 @@ pub enum ClientMethod {
     /// Get the receipts by the given milestone index.
     GetReceiptsMigratedAt {
         /// Milestone index
+        #[serde(rename = "milestoneIndex")]
         milestone_index: u32,
     },
     /// Get the treasury output.
@@ -182,6 +185,7 @@ pub enum ClientMethod {
     /// Returns the included message of the transaction.
     GetIncludedMessage {
         /// Transaction ID
+        #[serde(rename = "transactionId")]
         transaction_id: TransactionId,
     },
 

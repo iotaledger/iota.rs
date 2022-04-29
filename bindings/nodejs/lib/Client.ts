@@ -10,6 +10,8 @@ import type {
     MessageId,
     INetworkInfo,
     SecretManager,
+    INode,
+    IAuth,
 } from '../types';
 import type {
     INodeInfo,
@@ -19,6 +21,11 @@ import type {
     IMessage,
     IMessageMetadata,
     PayloadTypes,
+    IPeer,
+    IMilestoneResponse,
+    IMilestoneUtxoChangesResponse,
+    IReceiptsResponse,
+    ITreasury,
 } from '@iota/types';
 
 export class Client {
@@ -29,7 +36,8 @@ export class Client {
     }
 
     /**
-     * Get info about the node
+     * Returns the node information together with the url of the used node
+     * TODO: INodeInfo is missing url and BaseTokenResponse
      */
     async getInfo(): Promise<INodeInfo> {
         const response = await this.messageHandler.callClientMethod({
@@ -295,6 +303,261 @@ export class Client {
             name: 'MessageId',
             data: {
                 message,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Get a node candidate from the synced node pool.
+     */
+    async getNode(): Promise<INode> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'GetNode',
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Get the network id of the node we're connecting to.
+     */
+    async getNetworkId(): Promise<number> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'GetNetworkId',
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Returns the bech32_hrp.
+     */
+    async getBech32Hrp(): Promise<string> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'GetBech32Hrp',
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Returns the min PoW score.
+     */
+    async getMinPowScore(): Promise<number> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'GetMinPoWScore',
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Returns the tips interval.
+     */
+    async getTipsInterval(): Promise<number> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'GetTipsInterval',
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Returns if local pow should be used or not.
+     */
+    async getLocalPow(): Promise<boolean> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'GetLocalPoW',
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Get fallback to local proof of work timeout.
+     */
+    async getFallbackToLocalPow(): Promise<boolean> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'GetFallbackToLocalPoW',
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Get health of node with input url.
+     */
+    async getNodeHealth(url: string): Promise<boolean> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'GetNodeHealth',
+            data: {
+                url,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Get current node health.
+     */
+    async getHealth(): Promise<boolean> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'GetHealth',
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Get info of node with input url.
+     */
+    async getNodeInfo(url: string, auth?: IAuth): Promise<INodeInfo> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'GetNodeInfo',
+            data: {
+                url,
+                auth,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Get peers.
+     * TODO: fix error: 'missing or malformed jwt'.
+     */
+    async getPeers(): Promise<IPeer[]> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'GetPeers',
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Post message json.
+     */
+    async postMessageJson(message: IMessage): Promise<MessageId> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'PostMessageJson',
+            data: {
+                message,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Get message raw.
+     * TODO: Error: 404 message not found. However, if calling getMessageData/metadata
+     * on the same ID, the message is found
+     */
+    async getMessageRaw(messageId: MessageId): Promise<string> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'GetMessageRaw',
+            data: {
+                messageId,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Get message children.
+     */
+    async getMessageChildren(messageId: MessageId): Promise<MessageId[]> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'GetMessageChildren',
+            data: {
+                messageId,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Look up a milestone by a given milestone index.
+     */
+    async getMilestone(index: number): Promise<IMilestoneResponse> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'GetMilestone',
+            data: {
+                index,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Returns all UTXO changes that happened at a specific milestone.
+     */
+    async getMilestoneUtxoChanges(
+        index: number,
+    ): Promise<IMilestoneUtxoChangesResponse> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'GetMilestoneUtxoChanges',
+            data: {
+                index,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Get receipts.
+     */
+    async getReceipts(): Promise<IReceiptsResponse> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'GetReceipts',
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Get the receipts by the given milestone index.
+     */
+    async getReceiptsMigratedAt(
+        milestoneIndex: number,
+    ): Promise<IReceiptsResponse[]> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'GetReceiptsMigratedAt',
+            data: {
+                milestoneIndex,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Get the treasury output.
+     */
+    async getTreasury(): Promise<ITreasury> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'GetTreasury',
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Returns the included message of the transaction.
+     */
+    async getIncludedMessage(transactionId: string): Promise<IMessage> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'GetIncludedMessage',
+            data: {
+                transactionId,
             },
         });
 

@@ -1,0 +1,46 @@
+// Copyright 2021-2022 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
+import { Client, initLogger } from '@iota/client';
+
+// Run with command:
+// node ./dist/additionalMethods/message.js
+
+async function run() {
+    initLogger();
+
+    // client will connect to testnet by default
+    const client = new Client({
+        nodes: [
+            {
+                // Insert your node URL here.
+                url: 'http://localhost:14265',
+                disabled: false,
+            },
+        ],
+        nodeSyncEnabled: false,
+        localPow: true,
+    });
+
+    try {
+        // Create message with no payload
+        const message = await client.generateMessage();
+        console.log('Message:', message, '\n');
+
+        const jsonMessageId = await client.postMessageJson(message);
+        console.log('JsonMessage ID: ', jsonMessageId);
+
+        // TODO: Error: 404 message not found. However, if calling getMessageData/metadata
+        // on the same ID, the message is found
+        // const getMessageRaw = await client.getMessageRaw(jsonMessageId);
+        // console.log('Raw message: ', getMessageRaw);
+
+        const getMessageChildren = await client.getMessageChildren(
+            jsonMessageId,
+        );
+        console.log('Message children: ', getMessageChildren);
+    } catch (error) {
+        console.error('Error: ', error);
+    }
+}
+
+run().then(() => process.exit());

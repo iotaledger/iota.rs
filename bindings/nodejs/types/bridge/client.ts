@@ -5,6 +5,7 @@ import type { IGenerateMessageOptions } from '../generateMessageOptions';
 import type { MessageId } from '../messageId';
 import type { IPreparedTransactionData } from '../preparedTransactionData';
 import type { QueryParameter } from '../queryParameters';
+import type { IAuth } from '../network';
 
 export interface __GetInfoPayloadMethod__ {
     name: 'GetInfo';
@@ -137,5 +138,113 @@ export interface __MessageIdPayloadMethod__ {
     name: 'MessageId';
     data: {
         message: IMessage;
+    };
+}
+
+export interface __GetNodePayloadMethod__ {
+    name: 'GetNode';
+}
+
+export interface __GetNetworkIdPayloadMethod__ {
+    name: 'GetNetworkId';
+}
+
+export interface __GetBech32HrpPayloadMethod__ {
+    name: 'GetBech32Hrp';
+}
+
+export interface __GetMinPowScorePayloadMethod__ {
+    name: 'GetMinPoWScore';
+}
+
+export interface __GetTipsIntervalPayloadMethod__ {
+    name: 'GetTipsInterval';
+}
+
+export interface __GetLocalPowPayloadMethod__ {
+    name: 'GetLocalPoW';
+}
+
+export interface __GetFallbackToLocalPowPayloadMethod__ {
+    name: 'GetFallbackToLocalPoW';
+}
+
+export interface __GetNodeHealthPayloadMethod__ {
+    name: 'GetNodeHealth';
+    data: {
+        url: string;
+    };
+}
+
+export interface __GetHealthPayloadMethod__ {
+    name: 'GetHealth';
+}
+
+export interface __GetNodeInfoPayloadMethod__ {
+    name: 'GetNodeInfo';
+    data: {
+        url: string;
+        auth?: IAuth;
+    };
+}
+
+export interface __GetPeersPayloadMethod__ {
+    name: 'GetPeers';
+}
+
+export interface __PostMessageJsonPayloadMethod__ {
+    name: 'PostMessageJson';
+    data: {
+        message: IMessage;
+    };
+}
+
+export interface __GetMessageRawPayloadMethod__ {
+    name: 'GetMessageRaw';
+    data: {
+        messageId: MessageId;
+    };
+}
+
+export interface __GetMessageChildrenPayloadMethod__ {
+    name: 'GetMessageChildren';
+    data: {
+        messageId: MessageId;
+    };
+}
+
+export interface __GetMilestonePayloadMethod__ {
+    name: 'GetMilestone';
+    data: {
+        index: number;
+    };
+}
+
+export interface __GetMilestoneUtxoChangesPayloadMethod__ {
+    name: 'GetMilestoneUtxoChanges';
+    data: {
+        index: number;
+    };
+}
+
+export interface __GetReceiptsPayloadMethod__ {
+    name: 'GetReceipts';
+}
+
+export interface __GetReceiptsMigratedAtPayloadMethod__ {
+    name: 'GetReceiptsMigratedAt';
+    data: {
+        milestoneIndex: number;
+    };
+}
+
+export interface __GetTreasuryPayloadMethod__ {
+    name: 'GetTreasury';
+}
+
+export interface __GetIncludedMessagePayloadMethod__ {
+    name: 'GetIncludedMessage';
+    data: {
+        transactionId: string;
     };
 }

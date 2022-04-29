@@ -19,6 +19,26 @@ import type {
     __SubmitPayloadPayloadMethod__,
     __ParseBech32AddressPayloadMethod__,
     __MessageIdPayloadMethod__,
+    __GetNodePayloadMethod__,
+    __GetNetworkIdPayloadMethod__,
+    __GetBech32HrpPayloadMethod__,
+    __GetMinPowScorePayloadMethod__,
+    __GetTipsIntervalPayloadMethod__,
+    __GetLocalPowPayloadMethod__,
+    __GetFallbackToLocalPowPayloadMethod__,
+    __GetNodeHealthPayloadMethod__,
+    __GetHealthPayloadMethod__,
+    __GetNodeInfoPayloadMethod__,
+    __GetPeersPayloadMethod__,
+    __PostMessageJsonPayloadMethod__,
+    __GetMessageRawPayloadMethod__,
+    __GetMessageChildrenPayloadMethod__,
+    __GetMilestonePayloadMethod__,
+    __GetMilestoneUtxoChangesPayloadMethod__,
+    __GetReceiptsPayloadMethod__,
+    __GetReceiptsMigratedAtPayloadMethod__,
+    __GetTreasuryPayloadMethod__,
+    __GetIncludedMessagePayloadMethod__,
 } from './client';
 
 export type __ClientPayloadMethods__ =
@@ -41,7 +61,27 @@ export type __ClientPayloadMethods__ =
     | __SignTransactionPayloadMethod__
     | __SubmitPayloadPayloadMethod__
     | __ParseBech32AddressPayloadMethod__
-    | __MessageIdPayloadMethod__;
+    | __MessageIdPayloadMethod__
+    | __GetNodePayloadMethod__
+    | __GetNetworkIdPayloadMethod__
+    | __GetBech32HrpPayloadMethod__
+    | __GetMinPowScorePayloadMethod__
+    | __GetTipsIntervalPayloadMethod__
+    | __GetLocalPowPayloadMethod__
+    | __GetFallbackToLocalPowPayloadMethod__
+    | __GetNodeHealthPayloadMethod__
+    | __GetHealthPayloadMethod__
+    | __GetNodeInfoPayloadMethod__
+    | __GetPeersPayloadMethod__
+    | __PostMessageJsonPayloadMethod__
+    | __GetMessageRawPayloadMethod__
+    | __GetMessageChildrenPayloadMethod__
+    | __GetMilestonePayloadMethod__
+    | __GetMilestoneUtxoChangesPayloadMethod__
+    | __GetReceiptsPayloadMethod__
+    | __GetReceiptsMigratedAtPayloadMethod__
+    | __GetTreasuryPayloadMethod__
+    | __GetIncludedMessagePayloadMethod__;
 
 export interface __SendMessagePayload__ {
     cmd: 'CallClientMethod';
