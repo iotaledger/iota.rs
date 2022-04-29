@@ -61,30 +61,31 @@ async fn main() -> Result<()> {
     //////////////////////////////////
     // create new alias and nft output
     //////////////////////////////////
-    let mut outputs: Vec<Output> = Vec::new();
-    outputs.push(Output::Alias(
-        AliasOutputBuilder::new_with_amount(2_000_000, AliasId::from([0; 20]))?
-            .with_state_index(0)
-            .with_foundry_counter(0)
-            .add_feature_block(FeatureBlock::Sender(SenderFeatureBlock::new(address)))
-            .add_feature_block(FeatureBlock::Metadata(MetadataFeatureBlock::new(vec![1, 2, 3])?))
-            .add_immutable_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
-            .add_unlock_condition(UnlockCondition::StateControllerAddress(
-                StateControllerAddressUnlockCondition::new(address),
-            ))
-            .add_unlock_condition(UnlockCondition::GovernorAddress(GovernorAddressUnlockCondition::new(
-                address,
-            )))
-            .finish()?,
-    ));
-    outputs.push(Output::Nft(
-        // address of the owner of the NFT
-        NftOutputBuilder::new_with_amount(1_000_000, NftId::from([0; 20]))?
-            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-            // address of the minter of the NFT
-            // .add_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
-            .finish()?,
-    ));
+    let outputs = vec![
+        Output::Alias(
+            AliasOutputBuilder::new_with_amount(2_000_000, AliasId::from([0; 20]))?
+                .with_state_index(0)
+                .with_foundry_counter(0)
+                .add_feature_block(FeatureBlock::Sender(SenderFeatureBlock::new(address)))
+                .add_feature_block(FeatureBlock::Metadata(MetadataFeatureBlock::new(vec![1, 2, 3])?))
+                .add_immutable_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
+                .add_unlock_condition(UnlockCondition::StateControllerAddress(
+                    StateControllerAddressUnlockCondition::new(address),
+                ))
+                .add_unlock_condition(UnlockCondition::GovernorAddress(GovernorAddressUnlockCondition::new(
+                    address,
+                )))
+                .finish()?,
+        ),
+        Output::Nft(
+            // address of the owner of the NFT
+            NftOutputBuilder::new_with_amount(1_000_000, NftId::from([0; 20]))?
+                .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
+                // address of the minter of the NFT
+                // .add_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
+                .finish()?,
+        ),
+    ];
 
     let message = client
         .message()
@@ -106,9 +107,8 @@ async fn main() -> Result<()> {
     let alias_id = AliasId::from(alias_output_id_1);
     let nft_output_id = get_nft_output_id(message.payload().unwrap());
     let nft_id = NftId::from(nft_output_id);
-    let mut outputs: Vec<Output> = Vec::new();
-    outputs.push(Output::Alias(
-        AliasOutputBuilder::new_with_amount(1_000_000, alias_id.clone())?
+    let mut outputs = vec![Output::Alias(
+        AliasOutputBuilder::new_with_amount(1_000_000, alias_id)?
             .with_state_index(1)
             .with_foundry_counter(1)
             .add_feature_block(FeatureBlock::Sender(SenderFeatureBlock::new(address)))
@@ -121,7 +121,7 @@ async fn main() -> Result<()> {
                 address,
             )))
             .finish()?,
-    ));
+    )];
 
     let token_scheme = TokenScheme::Simple(SimpleTokenScheme::new(U256::from(50), U256::from(0), U256::from(100))?);
     let foundry_id = FoundryId::build(
@@ -160,89 +160,90 @@ async fn main() -> Result<()> {
     //////////////////////////////////
     // create all outputs
     //////////////////////////////////
-    let mut outputs: Vec<Output> = Vec::new();
-    outputs.push(Output::Alias(
-        AliasOutputBuilder::new_with_amount(1_000_000, alias_id)?
-            .with_state_index(2)
-            .with_foundry_counter(1)
-            .add_feature_block(FeatureBlock::Sender(SenderFeatureBlock::new(address)))
-            .add_feature_block(FeatureBlock::Metadata(MetadataFeatureBlock::new(vec![1, 2, 3])?))
-            .add_immutable_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
-            .add_unlock_condition(UnlockCondition::StateControllerAddress(
-                StateControllerAddressUnlockCondition::new(address),
-            ))
-            .add_unlock_condition(UnlockCondition::GovernorAddress(GovernorAddressUnlockCondition::new(
-                address,
-            )))
-            .finish()?,
-    ));
-    outputs.push(Output::Foundry(
-        FoundryOutputBuilder::new_with_amount(
-            1_000_000,
-            1,
-            TokenTag::new([0u8; 12]),
-            TokenScheme::Simple(SimpleTokenScheme::new(U256::from(50), U256::from(0), U256::from(100))?),
-        )?
-        .add_unlock_condition(UnlockCondition::ImmutableAliasAddress(
-            ImmutableAliasAddressUnlockCondition::new(AliasAddress::from(alias_id)),
-        ))
-        .finish()?,
-    ));
-    outputs.push(Output::Nft(
-        NftOutputBuilder::new_with_amount(1_000_000, nft_id)?
-            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-            .finish()?,
-    ));
-    // with native token
-    outputs.push(Output::Basic(
-        BasicOutputBuilder::new_with_amount(1_000_000)?
-            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-            .add_native_token(NativeToken::new(token_id, U256::from(50))?)
-            .finish()?,
-    ));
-    // with most simple output
-    outputs.push(Output::Basic(
-        BasicOutputBuilder::new_with_amount(1_000_000)?
-            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-            .finish()?,
-    ));
-    // with metadata feature block
-    outputs.push(Output::Basic(
-        BasicOutputBuilder::new_with_amount(1_000_000)?
-            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-            .add_feature_block(FeatureBlock::Metadata(MetadataFeatureBlock::new(vec![13, 37])?))
-            .finish()?,
-    ));
-    // with storage deposit return
-    outputs.push(Output::Basic(
-        BasicOutputBuilder::new_with_amount(234100)?
-            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-            .add_unlock_condition(UnlockCondition::StorageDepositReturn(
-                StorageDepositReturnUnlockCondition::new(address, 234000)?,
+    let outputs = vec![
+        Output::Alias(
+            AliasOutputBuilder::new_with_amount(1_000_000, alias_id)?
+                .with_state_index(2)
+                .with_foundry_counter(1)
+                .add_feature_block(FeatureBlock::Sender(SenderFeatureBlock::new(address)))
+                .add_feature_block(FeatureBlock::Metadata(MetadataFeatureBlock::new(vec![1, 2, 3])?))
+                .add_immutable_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
+                .add_unlock_condition(UnlockCondition::StateControllerAddress(
+                    StateControllerAddressUnlockCondition::new(address),
+                ))
+                .add_unlock_condition(UnlockCondition::GovernorAddress(GovernorAddressUnlockCondition::new(
+                    address,
+                )))
+                .finish()?,
+        ),
+        Output::Foundry(
+            FoundryOutputBuilder::new_with_amount(
+                1_000_000,
+                1,
+                TokenTag::new([0u8; 12]),
+                TokenScheme::Simple(SimpleTokenScheme::new(U256::from(50), U256::from(0), U256::from(100))?),
+            )?
+            .add_unlock_condition(UnlockCondition::ImmutableAliasAddress(
+                ImmutableAliasAddressUnlockCondition::new(AliasAddress::from(alias_id)),
             ))
             .finish()?,
-    ));
-    // with expiration
-    outputs.push(Output::Basic(
-        BasicOutputBuilder::new_with_amount(1_000_000)?
-            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-            .add_unlock_condition(UnlockCondition::Expiration(ExpirationUnlockCondition::new(
-                address,
-                MilestoneIndex::new(400),
-                0,
-            )?))
-            .finish()?,
-    ));
-    // with timelock
-    outputs.push(Output::Basic(
-        BasicOutputBuilder::new_with_amount(1_000_000)?
-            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-            .add_unlock_condition(UnlockCondition::Timelock(TimelockUnlockCondition::new(
-                MilestoneIndex::new(400),
-                0,
-            )?))
-            .finish()?,
-    ));
+        ),
+        Output::Nft(
+            NftOutputBuilder::new_with_amount(1_000_000, nft_id)?
+                .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
+                .finish()?,
+        ),
+        // with native token
+        Output::Basic(
+            BasicOutputBuilder::new_with_amount(1_000_000)?
+                .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
+                .add_native_token(NativeToken::new(token_id, U256::from(50))?)
+                .finish()?,
+        ),
+        // with most simple output
+        Output::Basic(
+            BasicOutputBuilder::new_with_amount(1_000_000)?
+                .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
+                .finish()?,
+        ),
+        // with metadata feature block
+        Output::Basic(
+            BasicOutputBuilder::new_with_amount(1_000_000)?
+                .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
+                .add_feature_block(FeatureBlock::Metadata(MetadataFeatureBlock::new(vec![13, 37])?))
+                .finish()?,
+        ),
+        // with storage deposit return
+        Output::Basic(
+            BasicOutputBuilder::new_with_amount(234100)?
+                .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
+                .add_unlock_condition(UnlockCondition::StorageDepositReturn(
+                    StorageDepositReturnUnlockCondition::new(address, 234000)?,
+                ))
+                .finish()?,
+        ),
+        // with expiration
+        Output::Basic(
+            BasicOutputBuilder::new_with_amount(1_000_000)?
+                .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
+                .add_unlock_condition(UnlockCondition::Expiration(ExpirationUnlockCondition::new(
+                    address,
+                    MilestoneIndex::new(400),
+                    0,
+                )?))
+                .finish()?,
+        ),
+        // with timelock
+        Output::Basic(
+            BasicOutputBuilder::new_with_amount(1_000_000)?
+                .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
+                .add_unlock_condition(UnlockCondition::Timelock(TimelockUnlockCondition::new(
+                    MilestoneIndex::new(400),
+                    0,
+                )?))
+                .finish()?,
+        ),
+    ];
 
     let message = client
         .message()

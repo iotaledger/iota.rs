@@ -56,7 +56,7 @@ pub enum ClientMethod {
     /// Get fallback to local proof of work timeout
     GetFallbackToLocalPoW,
     /// returns the unsynced nodes.
-    #[cfg(not(feature = "wasm"))]
+    #[cfg(not(target_family = "wasm"))]
     UnsyncedNodes,
     /// Prepare a transaction for signing
     PrepareTransaction {

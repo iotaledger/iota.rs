@@ -50,8 +50,7 @@ async fn main() -> Result<()> {
     //////////////////////////////////
     // create new alias output
     //////////////////////////////////
-    let mut outputs: Vec<Output> = Vec::new();
-    outputs.push(Output::Alias(
+    let outputs = vec![Output::Alias(
         AliasOutputBuilder::new_with_amount(1_000_000, AliasId::from([0; 20]))?
             .with_state_index(0)
             .with_foundry_counter(0)
@@ -65,7 +64,7 @@ async fn main() -> Result<()> {
                 address,
             )))
             .finish()?,
-    ));
+    )];
 
     let message = client
         .message()
@@ -85,8 +84,7 @@ async fn main() -> Result<()> {
     //////////////////////////////////
     let alias_output_id = get_alias_output_id(message.payload().unwrap());
     let alias_id = AliasId::from(alias_output_id);
-    let mut outputs: Vec<Output> = Vec::new();
-    outputs.push(Output::Alias(
+    let outputs = vec![Output::Alias(
         AliasOutputBuilder::new_with_amount(1_000_000, alias_id)?
             .with_state_index(1)
             .with_foundry_counter(0)
@@ -100,7 +98,7 @@ async fn main() -> Result<()> {
                 address,
             )))
             .finish()?,
-    ));
+    )];
 
     let message = client
         .message()

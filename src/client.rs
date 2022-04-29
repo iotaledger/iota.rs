@@ -31,11 +31,11 @@ use bee_rest_api::types::{
     },
 };
 use crypto::keys::slip10::Seed;
-#[cfg(feature = "wasm")]
+#[cfg(target_family = "wasm")]
 use gloo_timers::future::TimeoutFuture;
 use packable::PackableExt;
 use url::Url;
-#[cfg(not(feature = "wasm"))]
+#[cfg(not(target_family = "wasm"))]
 use {
     crate::api::finish_pow,
     std::collections::HashMap,
@@ -79,16 +79,16 @@ pub struct NodeInfoWrapper {
 }
 
 /// An instance of the client using HORNET or Bee URI
-// #[cfg_attr(feature = "wasm", derive(Clone))]
+// #[cfg_attr(target_family = "wasm", derive(Clone))]
 #[derive(Clone)]
 pub struct Client {
     #[allow(dead_code)]
-    #[cfg(not(feature = "wasm"))]
+    #[cfg(not(target_family = "wasm"))]
     pub(crate) runtime: Option<Arc<Runtime>>,
     /// Node manager
     pub(crate) node_manager: crate::node_manager::NodeManager,
     /// Flag to stop the node syncing
-    #[cfg(not(feature = "wasm"))]
+    #[cfg(not(target_family = "wasm"))]
     pub(crate) sync_kill_sender: Option<Arc<Sender<()>>>,
     /// A MQTT client to subscribe/unsubscribe to topics.
     #[cfg(feature = "mqtt")]
@@ -122,12 +122,12 @@ impl std::fmt::Debug for Client {
 impl Drop for Client {
     /// Gracefully shutdown the `Client`
     fn drop(&mut self) {
-        #[cfg(not(feature = "wasm"))]
+        #[cfg(not(target_family = "wasm"))]
         if let Some(sender) = self.sync_kill_sender.take() {
             sender.send(()).expect("failed to stop syncing process");
         }
 
-        #[cfg(not(feature = "wasm"))]
+        #[cfg(not(target_family = "wasm"))]
         if let Some(runtime) = self.runtime.take() {
             if let Ok(runtime) = Arc::try_unwrap(runtime) {
                 runtime.shutdown_background()
@@ -154,7 +154,7 @@ impl Client {
     }
 
     /// Sync the node lists per node_sync_interval milliseconds
-    #[cfg(not(feature = "wasm"))]
+    #[cfg(not(target_family = "wasm"))]
     pub(crate) fn start_sync_process(
         runtime: &Runtime,
         sync: Arc<RwLock<HashSet<Node>>>,
@@ -185,7 +185,7 @@ impl Client {
         });
     }
 
-    #[cfg(not(feature = "wasm"))]
+    #[cfg(not(target_family = "wasm"))]
     pub(crate) async fn sync_nodes(
         sync: &Arc<RwLock<HashSet<Node>>>,
         nodes: &HashSet<Node>,
@@ -276,7 +276,7 @@ impl Client {
         // For WASM we don't have the node syncing process, which updates the network_info every 60 seconds, but the PoW
         // difficulty or the byte cost could change via a milestone, so we request the nodeinfo every time, so we don't
         // create invalid transactions/messages
-        if not_synced || cfg!(feature = "wasm") {
+        if not_synced || cfg!(target_family = "wasm") {
             let info = self.get_info().await?.nodeinfo;
             let network_id = hash_network(&info.protocol.network_name).ok();
             {
@@ -353,7 +353,7 @@ impl Client {
     }
 
     /// returns the unsynced nodes.
-    #[cfg(not(feature = "wasm"))]
+    #[cfg(not(target_family = "wasm"))]
     pub async fn unsynced_nodes(&self) -> HashSet<&Node> {
         self.node_manager.synced_nodes.read().map_or(HashSet::new(), |synced| {
             self.node_manager
@@ -688,11 +688,11 @@ impl Client {
         // Reattached Messages that get returned
         let mut messages_with_id = Vec::new();
         for _ in 0..max_attempts.unwrap_or(40) {
-            #[cfg(feature = "wasm")]
+            #[cfg(target_family = "wasm")]
             {
                 TimeoutFuture::new((interval.unwrap_or(5) * 1000).try_into().unwrap()).await;
             }
-            #[cfg(not(feature = "wasm"))]
+            #[cfg(not(target_family = "wasm"))]
             sleep(Duration::from_secs(interval.unwrap_or(5))).await;
             // Check inclusion state for each attachment
             let message_ids_len = message_ids.len();
@@ -854,7 +854,7 @@ impl Client {
         // Get the Message object by the MessageID.
         let message = self.get_message_data(message_id).await?;
         let reattach_message = {
-            #[cfg(feature = "wasm")]
+            #[cfg(target_family = "wasm")]
             {
                 let mut tips = self.get_tips().await?;
                 tips.sort_unstable_by_key(|a| a.pack_to_vec());
@@ -865,7 +865,7 @@ impl Client {
                 }
                 message_builder.finish().map_err(Error::MessageError)?
             }
-            #[cfg(not(feature = "wasm"))]
+            #[cfg(not(target_family = "wasm"))]
             {
                 finish_pow(self, message.payload().cloned()).await?
             }

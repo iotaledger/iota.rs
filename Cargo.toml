@@ -12,7 +12,7 @@ keywords = [ "iota", "tangle", "client" ]
 categories = [ "cryptography::cryptocurrencies" ]
 
 [package.metadata.cargo-udeps.ignore]
-normal = ["async-trait"]
+normal = [ "async-trait", "derive_builder", "slog-stdlog", "ureq" ]
 
 [dependencies]
 bee-rest-api = { git = "https://github.com/iotaledger/bee", rev = "ab53dd6afffb97ed83c1ae446ab37799b70acb0d", default-features = false }
@@ -55,12 +55,6 @@ riker = { version = "0.4.2", default-features = false, optional = true }
 # for stronghold
 crypto05 = { package = "iota-crypto", version = "0.5.1", default-features = false, features = [ "slip10" ], optional = true }
 
-# wasm
-instant = { version = "0.1.12", default-features = false, optional = true }
-gloo-timers = { version = "0.2.3", default-features = false, features = [ "futures" ], optional = true }
-# single thread pow for wasm
-bee-ternary = { version = "0.6.0", default-features = false, optional = true }
-
 # message_interface
 backtrace = { version = "0.3.62", default-features = false, features = [ "std" ], optional = true }
 
@@ -68,16 +62,20 @@ backtrace = { version = "0.3.62", default-features = false, features = [ "std" ]
 # https://github.com/slog-rs/stdlog/releases/tag/v4.1.1
 slog-stdlog = { version = "4.1.1" }
 
+[target.'cfg(target_family = "wasm")'.dependencies]
+instant = { version = "0.1.12", default-features = false }
+gloo-timers = { version = "0.2.3", default-features = false, features = [ "futures" ] }
+# single thread pow for wasm
+bee-ternary = { version = "0.5.2", default-features = false }
+
 [dev-dependencies]
-dotenv = { version =  "0.15.0", default-features = false }
-ureq = { version = "2.2.0", default-features = false, features = [ "tls", "json" ] }
+dotenv = { version = "0.15.0", default-features = false }
 
 [features]
 default = [ "async", "tls" ]
 sync = [ "ureq", "tokio", "futures" ]
 async = [ "reqwest", "futures", "tokio" ]
 mqtt = [ "rumqttc", "once_cell", "futures" ]
-wasm = [ "reqwest", "futures", "gloo-timers", "instant", "bee-ternary" ]
 ledger = [ "iota-ledger" ]
 tls = [ "reqwest/rustls-tls", "ureq/tls" ]
 stronghold = [ "iota_stronghold", "riker", "crypto05" ]

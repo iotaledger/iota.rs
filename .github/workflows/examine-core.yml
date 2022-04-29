@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - develop
+      - dev
     paths:
       - '.github/workflows/examine-core.yml'
       - '.github/actions/**'
@@ -14,6 +15,7 @@ on:
   pull_request:
     branches:
       - develop
+      - dev
     paths:
       - '.github/workflows/examine-core.yml'
       - '.github/actions/**'
@@ -48,6 +50,12 @@ jobs:
           cache-job-id: ${{ github.workflow }}-${{ github.job }}-${{ matrix.os }}
           cache-hash: ${{ hashFiles('.github/workflows/examine-core.yml') }}
 
+      - name: Install Required Dependencies (Ubuntu)
+        if: ${{ startsWith(matrix.os, 'ubuntu') }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install libudev-dev libusb-1.0-0-dev
+
       - name: Run Cargo Test
         uses: actions-rs/cargo@v1
         with:
@@ -71,6 +79,11 @@ jobs:
           cache: true
           cache-job-id: ${{ github.workflow }}-${{ github.job }}
           cache-hash: ${{ hashFiles('.github/workflows/examine-core.yml') }}
+
+      - name: Install Required Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install libudev-dev libusb-1.0-0-dev
 
       - name: Run Clippy
         uses: actions-rs/clippy-check@v1
@@ -146,4 +159,15 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: audit
-          args: --file Cargo.lock --deny warnings
+          # The ignored security advisories:
+          #
+          # - RUSTSEC-2020-0026: linked-hash-map creates uninitialized NonNull pointer.
+          #   - A transitive dependency of riker. A new version of Stronghold should fix this.
+          # - RUSTSEC-2020-0159: Potential segfault in `localtime_r` invocations.
+          #   - From chrono, depended bt riker, depended by iota_stronghold. A new version of Stronghold should fix this.
+          # - RUSTSEC-2020-0071: Potential segfault in the time crate.
+          #   - A dependency of chrono; related to RUSTSEC-2020-0159. A new version of Stronghold should fix this.
+          # - RUSTSEC-2021-0119: Out-of-bounds write in nix::unistd::getgrouplist.
+          #   - A dependency of iota-ledger; it should be updated.
+          #   - We don't call this API, so we should be fine.
+          args: --file Cargo.lock --deny warnings --ignore RUSTSEC-2020-0026 --ignore RUSTSEC-2020-0159 --ignore RUSTSEC-2020-0071 --ignore RUSTSEC-2021-0119

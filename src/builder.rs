@@ -9,7 +9,7 @@ use std::{
 
 use bee_rest_api::types::responses::RentStructureResponse;
 use log::LevelFilter;
-#[cfg(not(feature = "wasm"))]
+#[cfg(not(target_family = "wasm"))]
 use {
     std::collections::HashSet,
     tokio::{runtime::Runtime, sync::broadcast::channel},
@@ -73,11 +73,11 @@ fn default_rent_structure() -> RentStructureResponse {
 }
 
 fn default_local_pow() -> bool {
-    #[cfg(not(feature = "wasm"))]
+    #[cfg(not(target_family = "wasm"))]
     {
         true
     }
-    #[cfg(feature = "wasm")]
+    #[cfg(target_family = "wasm")]
     {
         false
     }
@@ -356,9 +356,9 @@ impl ClientBuilder {
             .iter()
             .map(|node| node.clone().into())
             .collect();
-        #[cfg(feature = "wasm")]
+        #[cfg(target_family = "wasm")]
         let (sync, network_info) = (Arc::new(RwLock::new(nodes)), network_info);
-        #[cfg(not(feature = "wasm"))]
+        #[cfg(not(target_family = "wasm"))]
         let (runtime, sync, sync_kill_sender, network_info) = if self.node_manager_builder.node_sync_enabled {
             let sync = Arc::new(RwLock::new(HashSet::new()));
             let sync_ = sync.clone();
@@ -388,9 +388,9 @@ impl ClientBuilder {
         let (mqtt_event_tx, mqtt_event_rx) = tokio::sync::watch::channel(MqttEvent::Connected);
         let client = Client {
             node_manager: self.node_manager_builder.build(sync),
-            #[cfg(not(feature = "wasm"))]
+            #[cfg(not(target_family = "wasm"))]
             runtime,
-            #[cfg(not(feature = "wasm"))]
+            #[cfg(not(target_family = "wasm"))]
             sync_kill_sender: sync_kill_sender.map(Arc::new),
             #[cfg(feature = "mqtt")]
             mqtt_client: None,

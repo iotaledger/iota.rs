@@ -110,11 +110,11 @@ impl NodeManager {
             nodes_with_modified_url.push(primary_node);
         }
         let nodes = if self.node_sync_enabled {
-            #[cfg(not(feature = "wasm"))]
+            #[cfg(not(target_family = "wasm"))]
             {
                 self.synced_nodes.read().map_err(|_| crate::Error::PoisonError)?.clone()
             }
-            #[cfg(feature = "wasm")]
+            #[cfg(target_family = "wasm")]
             {
                 self.nodes.clone()
             }
@@ -166,12 +166,12 @@ impl NodeManager {
         let mut result_counter = 0;
         let mut error = None;
         // Send requests parallel for quorum
-        #[cfg(feature = "wasm")]
+        #[cfg(target_family = "wasm")]
         let wasm = true;
-        #[cfg(not(feature = "wasm"))]
+        #[cfg(not(target_family = "wasm"))]
         let wasm = false;
         if !wasm && self.quorum && quorum_regexes.iter().any(|re| re.is_match(path)) && query.is_none() {
-            #[cfg(not(feature = "wasm"))]
+            #[cfg(not(target_family = "wasm"))]
             {
                 let mut tasks = Vec::new();
                 let nodes_ = nodes.clone();

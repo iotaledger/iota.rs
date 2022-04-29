@@ -7,18 +7,18 @@ pub mod miner;
 
 use bee_message::{parent::Parents, payload::Payload, Message, MessageBuilder, MessageId};
 use packable::PackableExt;
-#[cfg(not(feature = "wasm"))]
+#[cfg(not(target_family = "wasm"))]
 use {
     crate::api::miner::ClientMinerBuilder,
     bee_pow::providers::{miner::MinerCancel, NonceProviderBuilder},
 };
-#[cfg(feature = "wasm")]
+#[cfg(target_family = "wasm")]
 use {bee_message::payload::OptionalPayload, packable::Packable};
 
 use crate::{api::miner::ClientMiner, Client, Error, Result};
 
 /// Does PoW with always new tips
-#[cfg(not(feature = "wasm"))]
+#[cfg(not(target_family = "wasm"))]
 pub async fn finish_pow(client: &Client, payload: Option<Payload>) -> Result<Message> {
     let local_pow = client.get_local_pow().await;
     let pow_worker_count = client.pow_worker_count;
@@ -61,7 +61,7 @@ pub async fn finish_pow(client: &Client, payload: Option<Payload>) -> Result<Mes
 }
 
 // PoW timeout, if we reach this we will restart the PoW with new tips, so the final message will never be lazy
-#[cfg(not(feature = "wasm"))]
+#[cfg(not(target_family = "wasm"))]
 fn pow_timeout(after_seconds: u64, cancel: MinerCancel) -> (u64, Option<Message>) {
     std::thread::sleep(std::time::Duration::from_secs(after_seconds));
     cancel.trigger();
@@ -87,7 +87,7 @@ pub fn do_pow(
 }
 
 // Single threaded PoW for wasm
-#[cfg(feature = "wasm")]
+#[cfg(target_family = "wasm")]
 use {
     bee_ternary::{b1t6, Btrit, T1B1Buf, TritBuf},
     crypto::hashes::ternary::{
@@ -99,12 +99,12 @@ use {
 
 // Precomputed natural logarithm of 3 for performance reasons.
 // See https://oeis.org/A002391.
-#[cfg(feature = "wasm")]
+#[cfg(target_family = "wasm")]
 const LN_3: f64 = 1.098_612_288_668_109;
-#[cfg(feature = "wasm")]
+#[cfg(target_family = "wasm")]
 // should take around one second to reach on an average CPU, so shouldn't cause a noticeable delay on tips_interval
 const POW_ROUNDS_BEFORE_INTERVAL_CHECK: usize = 3000;
-#[cfg(feature = "wasm")]
+#[cfg(target_family = "wasm")]
 /// Single threaded PoW function for wasm
 pub async fn finish_single_thread_pow(
     client: &Client,

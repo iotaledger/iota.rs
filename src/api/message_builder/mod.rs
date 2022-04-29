@@ -18,10 +18,10 @@ use bee_message::{
     payload::{Payload, TaggedDataPayload},
     Message, MessageId,
 };
-#[cfg(feature = "wasm")]
+#[cfg(target_family = "wasm")]
 use gloo_timers::future::TimeoutFuture;
 use packable::bounded::{TryIntoBoundedU16Error, TryIntoBoundedU8Error};
-#[cfg(not(feature = "wasm"))]
+#[cfg(not(target_family = "wasm"))]
 use {
     crate::api::{do_pow, miner::ClientMinerBuilder, pow::finish_pow},
     bee_pow::providers::NonceProviderBuilder,
@@ -491,7 +491,7 @@ impl<'a> ClientMessageBuilder<'a> {
 
     /// Builds the final message and posts it to the node
     pub async fn finish_message(self, payload: Option<Payload>) -> Result<Message> {
-        #[cfg(feature = "wasm")]
+        #[cfg(target_family = "wasm")]
         let final_message = {
             let parent_message_ids = match self.parents {
                 Some(parents) => parents,
@@ -508,7 +508,7 @@ impl<'a> ClientMessageBuilder<'a> {
             )
             .await?
         };
-        #[cfg(not(feature = "wasm"))]
+        #[cfg(not(target_family = "wasm"))]
         let final_message = match self.parents {
             Some(mut parents) => {
                 // Sort parents
@@ -538,9 +538,9 @@ impl<'a> ClientMessageBuilder<'a> {
                     if let Ok(message) = self.client.get_message_data(&msg_id).await {
                         return Ok(message);
                     }
-                    #[cfg(not(feature = "wasm"))]
+                    #[cfg(not(target_family = "wasm"))]
                     sleep(Duration::from_millis(time * 50)).await;
-                    #[cfg(feature = "wasm")]
+                    #[cfg(target_family = "wasm")]
                     {
                         TimeoutFuture::new((time * 50).try_into().unwrap()).await;
                     }
