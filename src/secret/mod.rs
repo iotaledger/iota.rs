@@ -247,6 +247,29 @@ impl TryFrom<&SecretManagerDto> for SecretManager {
     }
 }
 
+impl From<&SecretManager> for SecretManagerDto {
+    fn from(value: &SecretManager) -> Self {
+        match value {
+            #[cfg(feature = "stronghold")]
+            SecretManager::Stronghold(stronghold_dto) => Self::Stronghold(StrongholdDto {
+                password: None,
+                snapshot_path: stronghold_dto
+                    .snapshot_path
+                    .as_ref()
+                    .map(|s| s.clone().into_os_string().to_string_lossy().into()),
+            }),
+
+            #[cfg(feature = "ledger")]
+            SecretManager::LedgerNano => Self::LedgerNano(LedgerSecretManager::new(false)),
+
+            #[cfg(feature = "ledger")]
+            SecretManager::LedgerNanoSimulator => Self::LedgerNanoSimulator(LedgerSecretManager::new(true)),
+
+            SecretManager::Mnemonic(_mnemonic) => Self::Mnemonic("...".to_string()),
+        }
+    }
+}
+
 #[async_trait]
 impl SecretManage for SecretManager {
     async fn generate_addresses(
