@@ -1,4 +1,4 @@
-import type { IMessage, IUTXOInput, PayloadTypes } from '@iota/types';
+import type { IMessage, PayloadTypes } from '@iota/types';
 import type { SecretManager } from '../secretManager';
 import type { IGenerateAddressesOptions } from '../generateAddressesOptions';
 import type { IGenerateMessageOptions } from '../generateMessageOptions';
@@ -99,7 +99,7 @@ export interface __FindInputsPayloadMethod__ {
 export interface __FindOutputsPayloadMethod__ {
     name: 'FindOutputs';
     data: {
-        outputs: IUTXOInput[];
+        outputIds: string[];
         addresses: string[];
     };
 }
@@ -246,5 +246,35 @@ export interface __GetIncludedMessagePayloadMethod__ {
     name: 'GetIncludedMessage';
     data: {
         transactionId: string;
+    };
+}
+
+export interface __Bech32ToHexPayloadMethod__ {
+    name: 'Bech32ToHex';
+    data: {
+        bech32: string;
+    };
+}
+
+export interface __HexToBech32PayloadMethod__ {
+    name: 'HexToBech32';
+    data: {
+        hex: string;
+        bech32Hrp?: string;
+    };
+}
+
+export interface __HexPublicKeyToBech32AddressPayloadMethod__ {
+    name: 'HexPublicKeyToBech32Address';
+    data: {
+        hex: string;
+        bech32Hrp?: string;
+    };
+}
+
+export interface __IsAddressValidPayloadMethod__ {
+    name: 'IsAddressValid';
+    data: {
+        address: string;
     };
 }

@@ -17,7 +17,6 @@ async function run() {
                 disabled: false,
             },
         ],
-        nodeSyncEnabled: false,
         localPow: true,
     });
 

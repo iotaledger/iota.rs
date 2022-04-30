@@ -1,7 +1,6 @@
 // Copyright 2021-2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 import { Client, initLogger } from '@iota/client';
-
 // Run with command:
 // node ./dist/additionalMethods/milestone.js
 
@@ -22,24 +21,27 @@ async function run() {
     });
 
     try {
-        // TODO: Get a valid milestone index/ID to test.
-        // Fix:
-        //  error: invalid milestone ID: 154862
+        const info = await client.getInfo();
+        // @ts-ignore: INodeInfo type is incorrect?
+        const milestoneIndex = info.nodeinfo.status.confirmedMilestone.index;
+        console.log(milestoneIndex);
+
+        // TODO:
+        //  error: invalid milestone ID: 6405
         //  error: hex string without 0x prefix: code=400, message=invalid parameter
-        //  endpoint called: https://nodeurl.net/api/v2/milestones/154862
-        //  should be: https://nodeurl.net/api/v2/milestones/by-index/154862
+        //  endpoint called: https://nodeurl.net/api/v2/milestones/6405
+        //  should be: https://nodeurl.net/api/v2/milestones/by-index/6405
         // Look up a milestone by a given milestone index.
-        const milestone = await client.getMilestone(154862);
+        const milestone = await client.getMilestone(milestoneIndex);
         console.log('Milestone:', milestone);
 
-        // TODO: Get a valid milestone index/ID to test.
-        // Fix:
+        // TODO:
         //  Same errors as above
-        //  endpoint called: https://nodeurl.net/api/v2/milestones/154862/utxo-changes
-        //  should be: https://nodeurl.net/api/v2/milestones/by-index/154862/utxo-changes
+        //  endpoint called: https://nodeurl.net/api/v2/milestones/6405/utxo-changes
+        //  should be: https://nodeurl.net/api/v2/milestones/by-index/6405/utxo-changes
         // Get all UTXO changes of a given milestone by milestone index.
         const milestoneUtxoChanges = await client.getMilestoneUtxoChanges(
-            154862,
+            milestoneIndex,
         );
         console.log('MilestoneUtxoChanges:', milestoneUtxoChanges);
     } catch (error) {

@@ -23,7 +23,7 @@ async function run() {
 
     try {
         const output = await client.getOutput(
-            '0xd6d082e0f8a5e8c1ce109b8c45abf70bde4d23429ef9b90b40648c6d5408aa100100',
+            '0xee8255ece109f4d460fa85d34f2a5f152014633db571220c84d6ebb944f129c00000',
         );
         console.log('Output: ', output);
     } catch (error) {

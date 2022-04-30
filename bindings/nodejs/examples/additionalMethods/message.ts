@@ -29,15 +29,15 @@ async function run() {
         const jsonMessageId = await client.postMessageJson(message);
         console.log('JsonMessage ID: ', jsonMessageId);
 
-        // TODO: Error: 404 message not found. However, if calling getMessageData/metadata
-        // on the same ID, the message is found
-        // const getMessageRaw = await client.getMessageRaw(jsonMessageId);
-        // console.log('Raw message: ', getMessageRaw);
-
         const getMessageChildren = await client.getMessageChildren(
             jsonMessageId,
         );
         console.log('Message children: ', getMessageChildren);
+
+        // TODO: Error: 404 message not found. However, if calling getMessageData/metadata
+        // on the same ID, the message is found
+        const getMessageRaw = await client.getMessageRaw(jsonMessageId);
+        console.log('Raw message: ', getMessageRaw);
     } catch (error) {
         console.error('Error: ', error);
     }

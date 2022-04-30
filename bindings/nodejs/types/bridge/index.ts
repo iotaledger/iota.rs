@@ -39,6 +39,10 @@ import type {
     __GetReceiptsMigratedAtPayloadMethod__,
     __GetTreasuryPayloadMethod__,
     __GetIncludedMessagePayloadMethod__,
+    __Bech32ToHexPayloadMethod__,
+    __HexToBech32PayloadMethod__,
+    __HexPublicKeyToBech32AddressPayloadMethod__,
+    __IsAddressValidPayloadMethod__,
 } from './client';
 
 export type __ClientPayloadMethods__ =
@@ -81,7 +85,11 @@ export type __ClientPayloadMethods__ =
     | __GetReceiptsPayloadMethod__
     | __GetReceiptsMigratedAtPayloadMethod__
     | __GetTreasuryPayloadMethod__
-    | __GetIncludedMessagePayloadMethod__;
+    | __GetIncludedMessagePayloadMethod__
+    | __Bech32ToHexPayloadMethod__
+    | __HexToBech32PayloadMethod__
+    | __HexPublicKeyToBech32AddressPayloadMethod__
+    | __IsAddressValidPayloadMethod__;
 
 export interface __SendMessagePayload__ {
     cmd: 'CallClientMethod';

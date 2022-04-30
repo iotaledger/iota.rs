@@ -287,6 +287,7 @@ pub enum ClientMethod {
     /// the request amount exceeds individual node limit.
     FindOutputs {
         /// Output IDs
+        #[serde(rename = "outputIds")]
         output_ids: Vec<OutputId>,
         /// Addresses
         addresses: Vec<String>,
@@ -327,6 +328,7 @@ pub enum ClientMethod {
         /// Hex encoded bech32 address
         hex: String,
         /// Human readable part
+        #[serde(rename = "bech32Hrp")]
         bech32_hrp: Option<String>,
     },
     /// Transforms a hex encoded public key to a bech32 encoded address
@@ -334,6 +336,7 @@ pub enum ClientMethod {
         /// Hex encoded public key
         hex: String,
         /// Human readable part
+        #[serde(rename = "bech32Hrp")]
         bech32_hrp: Option<String>,
     },
     /// Returns a valid Address parsed from a String.

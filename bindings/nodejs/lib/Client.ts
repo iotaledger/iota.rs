@@ -93,6 +93,9 @@ export class Client {
         return JSON.parse(response).payload;
     }
 
+    /**
+     * Generates a new mnemonic.
+     */
     async generateMnemonic(): Promise<string> {
         const response = await this.messageHandler.callClientMethod({
             name: 'GenerateMnemonic',
@@ -101,6 +104,9 @@ export class Client {
         return JSON.parse(response).payload;
     }
 
+    /**
+     * Returns a hex encoded seed for a mnemonic.
+     */
     async mnemonicToHexSeed(mnemonic: string): Promise<string> {
         const response = await this.messageHandler.callClientMethod({
             name: 'MnemonicToHexSeed',
@@ -154,6 +160,9 @@ export class Client {
         return JSON.parse(response).payload;
     }
 
+    /**
+     * Send message, returns the message ID.
+     */
     async postMessage(message: IMessage): Promise<MessageId> {
         const response = await this.messageHandler.callClientMethod({
             name: 'PostMessage',
@@ -216,14 +225,13 @@ export class Client {
      * the request amount exceeds individual node limit.
      */
     async findOutputs(
-        // TODO: should be outputIds: string[], fixed in https://github.com/iotaledger/iota.rs/pull/952
-        outputs: IUTXOInput[],
+        outputIds: string[],
         addresses: string[],
     ): Promise<IOutputResponse[]> {
         const response = await this.messageHandler.callClientMethod({
             name: 'FindOutputs',
             data: {
-                outputs,
+                outputIds,
                 addresses,
             },
         });
@@ -428,7 +436,6 @@ export class Client {
 
     /**
      * Get peers.
-     * TODO: fix error: 'missing or malformed jwt'.
      */
     async getPeers(): Promise<IPeer[]> {
         const response = await this.messageHandler.callClientMethod({
@@ -454,8 +461,6 @@ export class Client {
 
     /**
      * Get message raw.
-     * TODO: Error: 404 message not found. However, if calling getMessageData/metadata
-     * on the same ID, the message is found
      */
     async getMessageRaw(messageId: MessageId): Promise<string> {
         const response = await this.messageHandler.callClientMethod({
@@ -558,6 +563,67 @@ export class Client {
             name: 'GetIncludedMessage',
             data: {
                 transactionId,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Transforms bech32 to hex.
+     */
+    async bech32ToHex(bech32: string): Promise<string> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'Bech32ToHex',
+            data: {
+                bech32,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Transforms a hex encoded address to a bech32 encoded address.
+     */
+    async hexToBech32(hex: string, bech32Hrp?: string): Promise<string> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'HexToBech32',
+            data: {
+                hex,
+                bech32Hrp,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Transforms a hex encoded public key to a bech32 encoded address.
+     */
+    async hexPublicKeyToBech32Address(
+        hex: string,
+        bech32Hrp?: string,
+    ): Promise<string> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'HexPublicKeyToBech32Address',
+            data: {
+                hex,
+                bech32Hrp,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Checks if a String is a valid bech32 encoded address.
+     */
+    async isAddressValid(address: string): Promise<string> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'IsAddressValid',
+            data: {
+                address,
             },
         });
 
