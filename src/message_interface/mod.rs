@@ -49,7 +49,6 @@ mod tests {
     };
 
     #[tokio::test]
-    #[should_panic]
     async fn generate_addresses() {
         // This test uses dotenv, which is not safe for use in production
         dotenv().unwrap();

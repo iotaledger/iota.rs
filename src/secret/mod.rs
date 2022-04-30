@@ -260,10 +260,10 @@ impl From<&SecretManager> for SecretManagerDto {
             }),
 
             #[cfg(feature = "ledger")]
-            SecretManager::LedgerNano => Self::LedgerNano(LedgerSecretManager::new(false)),
+            SecretManager::LedgerNano(_) => Self::LedgerNano,
 
             #[cfg(feature = "ledger")]
-            SecretManager::LedgerNanoSimulator => Self::LedgerNanoSimulator(LedgerSecretManager::new(true)),
+            SecretManager::LedgerNanoSimulator(_) => Self::LedgerNanoSimulator,
 
             SecretManager::Mnemonic(_mnemonic) => Self::Mnemonic("...".to_string()),
         }
