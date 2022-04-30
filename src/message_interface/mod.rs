@@ -50,9 +50,6 @@ mod tests {
 
     #[tokio::test]
     async fn generate_addresses() {
-        // This test uses dotenv, which is not safe for use in production
-        dotenv().unwrap();
-
         let client_config = r#"{
                 "nodes":[],
                 "localPow":true,
@@ -66,7 +63,7 @@ mod tests {
 
         let secret_manager = format!(
             "{{\"Mnemonic\":\"{}\"}}",
-            &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap()
+            "endorse answer radar about source reunion marriage tag sausage weekend frost daring base attack because joke dream slender leisure group reason prepare broken river"
         );
         let options = GenerateAddressesOptions {
             coin_type: None,
