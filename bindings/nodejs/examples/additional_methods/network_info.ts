@@ -3,7 +3,7 @@
 import { Client, initLogger } from '@iota/client';
 
 // Run with command:
-// node ./dist/additionalMethods/networkInfo.js
+// node ./dist/additional_methods/network_info.js
 
 // In this example we will get information about the network
 async function run() {

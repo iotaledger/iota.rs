@@ -108,7 +108,6 @@ jobs:
           args: --manifest-path bindings/nodejs/Cargo.toml --all-features --all-targets -- --deny warnings
           name: Clippy Results for the Node.js Bindings
 
-      # TODO: Lint the JavaScript code too
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
@@ -173,7 +172,6 @@ jobs:
           command: fmt
           args: --manifest-path bindings/nodejs/Cargo.toml --all -- --check
 
-      # TODO: Check the JavaScript code too
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import { Client, initLogger } from '@iota/client';
 // Run with command:
-// node ./dist/additionalMethods/milestone.js
+// node ./dist/additional_methods/milestone.js
 
 async function run() {
     initLogger();
@@ -16,7 +16,6 @@ async function run() {
                 disabled: false,
             },
         ],
-        nodeSyncEnabled: false,
         localPow: true,
     });
 

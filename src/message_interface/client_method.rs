@@ -201,31 +201,37 @@ pub enum ClientMethod {
     /// Fetch aliases output IDs
     AliasesOutputIds {
         /// Query parameters for output requests
+        #[serde(rename = "queryParameters")]
         query_parameters: Vec<QueryParameter>,
     },
     /// Fetch alias output ID
     AliasOutputId {
         /// Alias id
+        #[serde(rename = "aliasId")]
         alias_id: AliasId,
     },
     /// Fetch NFTs output IDs
     NftsOutputIds {
         /// Query parameters for output requests
+        #[serde(rename = "queryParameters")]
         query_parameters: Vec<QueryParameter>,
     },
     /// Fetch NFT output ID
     NftOutputId {
         /// NFT ID
+        #[serde(rename = "nftId")]
         nft_id: NftId,
     },
     /// Fetch Foundries Output IDs
     FoundriesOutputIds {
         /// Query parameters for output requests
+        #[serde(rename = "queryParameters")]
         query_parameters: Vec<QueryParameter>,
     },
     /// Fetch Foundry Output ID
     FoundryOutputId {
         /// Foundry ID
+        #[serde(rename = "foundryId")]
         foundry_id: FoundryId,
     },
 
@@ -242,17 +248,20 @@ pub enum ClientMethod {
     /// useful for spent outputs)
     TryGetOutputs {
         /// Output IDs
+        #[serde(rename = "outputIds")]
         output_ids: Vec<OutputId>,
     },
     /// Find all messages by provided message IDs.
     FindMessages {
         /// MessageIDs
+        #[serde(rename = "messageIds")]
         message_ids: Vec<MessageId>,
     },
     /// Retries (promotes or reattaches) a message for provided message id. Message should only be
     /// retried only if they are valid and haven't been confirmed for a while.
     Retry {
         /// Message ID
+        #[serde(rename = "messageId")]
         message_id: MessageId,
     },
     /// Retries (promotes or reattaches) a message for provided message id until it's included (referenced by a
@@ -260,10 +269,12 @@ pub enum ClientMethod {
     /// position and additional reattached messages
     RetryUntilIncluded {
         /// Message ID
+        #[serde(rename = "messageId")]
         message_id: MessageId,
         /// Interval
         interval: Option<u64>,
         /// Maximum attempts
+        #[serde(rename = "maxAttempts")]
         max_attempts: Option<u64>,
     },
     /// Function to consolidate all funds from a range of addresses to the address with the lowest index in that range
@@ -272,8 +283,10 @@ pub enum ClientMethod {
         /// Secret manager
         secret_manager: SecretManagerDto,
         /// Account index
+        #[serde(rename = "accountIndex")]
         account_index: u32,
         /// Address_range
+        #[serde(rename = "addressRange")]
         address_range: Range<u32>,
     },
     /// Function to find inputs from addresses for a provided amount (useful for offline signing)
@@ -296,22 +309,26 @@ pub enum ClientMethod {
     /// confirmed for a while.
     Reattach {
         /// Message ID
+        #[serde(rename = "messageId")]
         message_id: MessageId,
     },
     /// Reattach a message without checking if it should be reattached
     ReattachUnchecked {
         /// Message ID
+        #[serde(rename = "messageId")]
         message_id: MessageId,
     },
     /// Promotes a message. The method should validate if a promotion is necessary through get_message. If not, the
     /// method should error out and should not allow unnecessary promotions.
     Promote {
         /// Message ID
+        #[serde(rename = "messageId")]
         message_id: MessageId,
     },
     /// Promote a message without checking if it should be promoted
     PromoteUnchecked {
         /// Message ID
+        #[serde(rename = "messageId")]
         message_id: MessageId,
     },
 

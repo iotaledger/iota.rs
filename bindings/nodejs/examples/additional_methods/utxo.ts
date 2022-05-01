@@ -3,7 +3,7 @@
 import { Client, initLogger } from '@iota/client';
 
 // Run with command:
-// node ./dist/additionalMethods/utxo.js
+// node ./dist/additional_methods/utxo.js
 
 async function run() {
     initLogger();
@@ -24,11 +24,16 @@ async function run() {
         const receipts = await client.getReceipts();
         console.log('Receipts:', receipts);
 
-        const receiptsMigratedAt = await client.getReceiptsMigratedAt(154862);
-        console.log('Receipts:', receiptsMigratedAt);
+        const receiptsMigratedAt = await client.getReceiptsMigratedAt(6085);
+        console.log('Receipts by given milestone index:', receiptsMigratedAt);
 
         const treasury = await client.getTreasury();
         console.log('Treasury:', treasury);
+
+        const outputs = await client.tryGetOutputs([
+            '0xee8255ece109f4d460fa85d34f2a5f152014633db571220c84d6ebb944f129c00000',
+        ]);
+        console.log('Outputs:', outputs);
     } catch (error) {
         console.error('Error: ', error);
     }

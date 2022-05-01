@@ -3,7 +3,7 @@
 import { Client, initLogger } from '@iota/client';
 
 // Run with command:
-// node ./dist/additionalMethods/nodeInfo.js
+// node ./dist/additional_methods/node_info.js
 
 // In this example we will get information about the node
 async function run() {
@@ -33,6 +33,12 @@ async function run() {
 
         const getNodeInfo = await client.getNodeInfo(nodeInfo.url);
         console.log('NodeInfo by URL: ', getNodeInfo);
+
+        const unsyncedNodes = await client.unsyncedNodes();
+        console.log('Unsynced nodes: ', unsyncedNodes);
+
+        const tips = await client.getTips();
+        console.log('Tips: ', tips);
 
         // TODO: fix error: missing or malformed JWT
         const getPeers = await client.getPeers();

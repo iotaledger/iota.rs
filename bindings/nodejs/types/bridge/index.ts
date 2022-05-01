@@ -43,6 +43,22 @@ import type {
     __HexToBech32PayloadMethod__,
     __HexPublicKeyToBech32AddressPayloadMethod__,
     __IsAddressValidPayloadMethod__,
+    __AliasesOutputIdsPayloadMethod__,
+    __AliasOutputIdPayloadMethod__,
+    __NftsOutputIdsPayloadMethod__,
+    __NftOutputIdPayloadMethod__,
+    __FoundriesOutputIdsPayloadMethod__,
+    __FoundryOutputIdPayloadMethod__,
+    __TryGetOutputsPayloadMethod__,
+    __FindMessagesPayloadMethod__,
+    __RetryPayloadMethod__,
+    __RetryUntilIncludedPayloadMethod__,
+    __ConsolidateFundsPayloadMethod__,
+    __ReattachPayloadMethod__,
+    __ReattachUncheckedPayloadMethod__,
+    __PromotePayloadMethod__,
+    __PromoteUncheckedPayloadMethod__,
+    __UnsyncedNodesPayloadMethod__,
 } from './client';
 
 export type __ClientPayloadMethods__ =
@@ -89,7 +105,23 @@ export type __ClientPayloadMethods__ =
     | __Bech32ToHexPayloadMethod__
     | __HexToBech32PayloadMethod__
     | __HexPublicKeyToBech32AddressPayloadMethod__
-    | __IsAddressValidPayloadMethod__;
+    | __IsAddressValidPayloadMethod__
+    | __AliasesOutputIdsPayloadMethod__
+    | __AliasOutputIdPayloadMethod__
+    | __NftsOutputIdsPayloadMethod__
+    | __NftOutputIdPayloadMethod__
+    | __FoundriesOutputIdsPayloadMethod__
+    | __FoundryOutputIdPayloadMethod__
+    | __TryGetOutputsPayloadMethod__
+    | __FindMessagesPayloadMethod__
+    | __RetryPayloadMethod__
+    | __RetryUntilIncludedPayloadMethod__
+    | __ConsolidateFundsPayloadMethod__
+    | __ReattachPayloadMethod__
+    | __ReattachUncheckedPayloadMethod__
+    | __PromotePayloadMethod__
+    | __PromoteUncheckedPayloadMethod__
+    | __UnsyncedNodesPayloadMethod__;
 
 export interface __SendMessagePayload__ {
     cmd: 'CallClientMethod';

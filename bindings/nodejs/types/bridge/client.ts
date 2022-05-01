@@ -6,6 +6,7 @@ import type { MessageId } from '../messageId';
 import type { IPreparedTransactionData } from '../preparedTransactionData';
 import type { QueryParameter } from '../queryParameters';
 import type { IAuth } from '../network';
+import type { IRange } from '../range';
 
 export interface __GetInfoPayloadMethod__ {
     name: 'GetInfo';
@@ -277,4 +278,117 @@ export interface __IsAddressValidPayloadMethod__ {
     data: {
         address: string;
     };
+}
+
+export interface __AliasesOutputIdsPayloadMethod__ {
+    name: 'AliasesOutputIds';
+    data: {
+        queryParameters: QueryParameter[];
+    };
+}
+
+export interface __AliasOutputIdPayloadMethod__ {
+    name: 'AliasOutputId';
+    data: {
+        aliasId: string;
+    };
+}
+
+export interface __NftsOutputIdsPayloadMethod__ {
+    name: 'NftsOutputIds';
+    data: {
+        queryParameters: QueryParameter[];
+    };
+}
+
+export interface __NftOutputIdPayloadMethod__ {
+    name: 'NftOutputId';
+    data: {
+        nftId: string;
+    };
+}
+
+export interface __FoundriesOutputIdsPayloadMethod__ {
+    name: 'FoundriesOutputIds';
+    data: {
+        queryParameters: QueryParameter[];
+    };
+}
+
+export interface __FoundryOutputIdPayloadMethod__ {
+    name: 'FoundryOutputId';
+    data: {
+        foundryId: string;
+    };
+}
+
+export interface __TryGetOutputsPayloadMethod__ {
+    name: 'TryGetOutputs';
+    data: {
+        outputIds: string[];
+    };
+}
+
+export interface __FindMessagesPayloadMethod__ {
+    name: 'FindMessages';
+    data: {
+        messageIds: string[];
+    };
+}
+
+export interface __RetryPayloadMethod__ {
+    name: 'Retry';
+    data: {
+        messageId: string;
+    };
+}
+
+export interface __RetryUntilIncludedPayloadMethod__ {
+    name: 'RetryUntilIncluded';
+    data: {
+        messageId: string;
+        interval?: number;
+        maxAttempts?: number;
+    };
+}
+
+export interface __ConsolidateFundsPayloadMethod__ {
+    name: 'ConsolidateFunds';
+    data: {
+        secretManager: SecretManager;
+        accountIndex: number;
+        addressRange?: IRange;
+    };
+}
+
+export interface __ReattachPayloadMethod__ {
+    name: 'Reattach';
+    data: {
+        messageId: MessageId;
+    };
+}
+
+export interface __ReattachUncheckedPayloadMethod__ {
+    name: 'ReattachUnchecked';
+    data: {
+        messageId: MessageId;
+    };
+}
+
+export interface __PromotePayloadMethod__ {
+    name: 'Promote';
+    data: {
+        messageId: MessageId;
+    };
+}
+
+export interface __PromoteUncheckedPayloadMethod__ {
+    name: 'PromoteUnchecked';
+    data: {
+        messageId: MessageId;
+    };
+}
+
+export interface __UnsyncedNodesPayloadMethod__ {
+    name: 'UnsyncedNodes';
 }

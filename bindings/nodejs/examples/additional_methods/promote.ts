@@ -3,8 +3,9 @@
 import { Client, initLogger } from '@iota/client';
 
 // Run with command:
-// node ./dist/additionalMethods/message.js
+// node ./dist/additional_methods/promote.js
 
+// In this example we will promote a message
 async function run() {
     initLogger();
 
@@ -17,7 +18,6 @@ async function run() {
                 disabled: false,
             },
         ],
-        nodeSyncEnabled: false,
         localPow: true,
     });
 
@@ -26,18 +26,16 @@ async function run() {
         const message = await client.generateMessage();
         console.log('Message:', message, '\n');
 
-        const jsonMessageId = await client.postMessageJson(message);
-        console.log('JsonMessage ID: ', jsonMessageId);
+        const messageId = await client.postMessage(message);
+        console.log('Message Id: ', messageId, '\n');
 
-        const getMessageChildren = await client.getMessageChildren(
-            jsonMessageId,
-        );
-        console.log('Message children: ', getMessageChildren);
+        // Promote a message without checking if it should be promoted
+        const promoteUnchecked = await client.promoteUnchecked(messageId);
+        console.log('Promoted message: ', promoteUnchecked);
 
-        // TODO: Error: 404 message not found. However, if calling getMessageData/metadata
-        // on the same ID, the message is found
-        const getMessageRaw = await client.getMessageRaw(jsonMessageId);
-        console.log('Raw message: ', getMessageRaw);
+        // Returns expected error: no need to promote or reattach.
+        const promote = await client.promote(messageId);
+        console.log('Promote message: ', promote);
     } catch (error) {
         console.error('Error: ', error);
     }

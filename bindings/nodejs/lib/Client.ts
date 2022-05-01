@@ -12,6 +12,7 @@ import type {
     SecretManager,
     INode,
     IAuth,
+    IRange,
 } from '../types';
 import type {
     INodeInfo,
@@ -625,6 +626,253 @@ export class Client {
             data: {
                 address,
             },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Fetch aliases output IDs
+     */
+    async aliasesOutputIds(
+        queryParameters: QueryParameter[],
+    ): Promise<string[]> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'AliasesOutputIds',
+            data: {
+                queryParameters,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Fetch alias output ID
+     */
+    async aliasOutputId(aliasId: string): Promise<string> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'AliasOutputId',
+            data: {
+                aliasId,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Fetch NFTs output IDs
+     */
+    async nftsOutputIds(queryParameters: QueryParameter[]): Promise<string[]> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'NftsOutputIds',
+            data: {
+                queryParameters,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Fetch NFT output ID
+     */
+    async nftOutputId(nftId: string): Promise<string> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'NftOutputId',
+            data: {
+                nftId,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Fetch Foundries Output IDs
+     */
+    async foundriesOutputIds(
+        queryParameters: QueryParameter[],
+    ): Promise<string[]> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'FoundriesOutputIds',
+            data: {
+                queryParameters,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Fetch Foundry Output ID
+     */
+    async foundryOutputId(foundryId: string): Promise<string> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'FoundryOutputId',
+            data: {
+                foundryId,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Try to get OutputResponse from provided OutputIds (requests are sent
+     * in parallel and errors are ignored, can be useful for spent outputs)
+     */
+    async tryGetOutputs(outputIds: string[]): Promise<IOutputResponse[]> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'TryGetOutputs',
+            data: {
+                outputIds,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Find all messages by provided message IDs.
+     */
+    async findMessages(messageIds: MessageId[]): Promise<IMessage[]> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'FindMessages',
+            data: {
+                messageIds,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Retries (promotes or reattaches) a message for provided message id. Message should be
+     * retried only if they are valid and haven't been confirmed for a while.
+     */
+    async retry(messageId: MessageId): Promise<[MessageId, IMessage]> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'Retry',
+            data: {
+                messageId,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Retries (promotes or reattaches) a message for provided message id until it's included (referenced by a
+     * milestone). Default interval is 5 seconds and max attempts is 40. Returns the included message at first
+     * position and additional reattached messages
+     */
+    async retryUntilIncluded(
+        messageId: MessageId,
+        interval?: number,
+        maxAttempts?: number,
+    ): Promise<[MessageId, IMessage][]> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'RetryUntilIncluded',
+            data: {
+                messageId,
+                interval,
+                maxAttempts,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Function to consolidate all funds from a range of addresses to the address with the lowest index in that range
+     * Returns the address to which the funds got consolidated, if any were available
+     */
+    async consolidateFunds(
+        secretManager: SecretManager,
+        accountIndex: number,
+        addressRange?: IRange,
+    ): Promise<string> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'ConsolidateFunds',
+            data: {
+                secretManager,
+                accountIndex,
+                addressRange,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Reattaches messages for provided message id. Messages can be reattached only if they are valid and haven't been
+     * confirmed for a while.
+     */
+    async reattach(messageId: MessageId): Promise<[MessageId, IMessage]> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'Reattach',
+            data: {
+                messageId,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Reattach a message without checking if it should be reattached
+     */
+    async reattachUnchecked(
+        messageId: MessageId,
+    ): Promise<[MessageId, IMessage]> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'ReattachUnchecked',
+            data: {
+                messageId,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Promotes a message. The method should validate if a promotion is necessary through get_message. If not, the
+     * method should error out and should not allow unnecessary promotions.
+     */
+    async promote(messageId: MessageId): Promise<[MessageId, IMessage]> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'Promote',
+            data: {
+                messageId,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+    /**
+     * Promote a message without checking if it should be promoted
+     */
+    async promoteUnchecked(
+        messageId: MessageId,
+    ): Promise<[MessageId, IMessage]> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'PromoteUnchecked',
+            data: {
+                messageId,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Returns the unsynced nodes.
+     */
+    async unsyncedNodes(): Promise<Set<INode>> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'UnsyncedNodes',
         });
 
         return JSON.parse(response).payload;

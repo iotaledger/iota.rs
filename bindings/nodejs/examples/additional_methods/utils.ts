@@ -3,7 +3,7 @@
 import { Client, initLogger } from '@iota/client';
 
 // Run with command:
-// node ./dist/additionalMethods/utils.js
+// node ./dist/additional_methods/utils.js
 
 async function run() {
     initLogger();
@@ -32,9 +32,12 @@ async function run() {
         const isAddressValid = await client.isAddressValid(bech32);
         console.log('Is address valid:', isAddressValid);
 
-        // TODO: get public key to test with
-        // const hexPublicKeyToBech32Address = await client.hexPublicKeyToBech32Address(hexPublicKey, "rms");
-        // console.log('Public to address:', hexPublicKeyToBech32Address);
+        const hexPublicKeyToBech32Address =
+            await client.hexPublicKeyToBech32Address(
+                '2baaf3bca8ace9f862e60184bd3e79df25ff230f7eaaa4c7f03daa9833ba854a',
+                'rms',
+            );
+        console.log('Public key to address:', hexPublicKeyToBech32Address);
     } catch (error) {
         console.error('Error: ', error);
     }

@@ -7,3 +7,4 @@ export * from './messageId';
 export * from './queryParameters';
 export * from './preparedTransactionData';
 export * from './secretManager';
+export * from './range';
