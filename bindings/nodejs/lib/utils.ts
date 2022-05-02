@@ -9,5 +9,5 @@ export const hexToUtf8 = (hex: string) =>
     decodeURIComponent(hex.replace('0x', '').replace(/[0-9a-f]{2}/g, '%$&'));
 
 /** Convert UTF8 string to hex encoded string */
-export const utf8ToHex = (utf8: string, prefix?: string) =>
+export const utf8ToHex = (utf8: string) =>
     '0x' + Buffer.from(utf8, 'utf8').toString('hex');

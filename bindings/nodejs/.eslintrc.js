@@ -19,5 +19,7 @@ module.exports = {
             'error',
             { 'ts-ignore': 'allow-with-description' },
         ],
+        '@typescript-eslint/no-namespace': 'off',
+        '@typescript-eslint/no-empty-interface': 'off',
     },
 };
