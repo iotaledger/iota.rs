@@ -300,15 +300,6 @@ pub async fn get_milestone_by_milestone_id(client: &Client, milestone_id: Milest
         .get_request(path, None, client.get_timeout())
         .await?;
 
-    // converted to an object with a MessageId instead of a String
-    // let milestone = resp;
-    // let mut message_id = [0u8; 32];
-    // hex::decode_to_slice(milestone.message_id, &mut message_id)?;
-    // Ok(MilestoneResponse {
-    //     index: milestone.milestone_index,
-    //     message_id: MessageId::new(message_id),
-    //     timestamp: milestone.timestamp,
-    // })
     Ok(resp)
 }
 
@@ -321,16 +312,7 @@ pub async fn get_milestone_by_milestone_index(client: &Client, index: u32) -> Re
         .node_manager
         .get_request(path, None, client.get_timeout())
         .await?;
-
-    // converted to an object with a MessageId instead of a String
-    // let milestone = resp;
-    // let mut message_id = [0u8; 32];
-    // hex::decode_to_slice(milestone.message_id, &mut message_id)?;
-    // Ok(MilestoneResponse {
-    //     index: milestone.milestone_index,
-    //     message_id: MessageId::new(message_id),
-    //     timestamp: milestone.timestamp,
-    // })
+    
     Ok(resp)
 }
 
