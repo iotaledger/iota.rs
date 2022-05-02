@@ -95,12 +95,13 @@ pub async fn try_select_inputs(
 
     // 1. get alias, foundry or nft inputs (because amount and native tokens of these outputs will also be available for
     // the outputs)
-    for input_signing_data in &utxo_chain_outputs {
+    for input_signing_data in utxo_chain_outputs {
         let output = Output::try_from(&input_signing_data.output_response.output)?;
         selected_input_amount += output.amount();
         if let Some(output_native_tokens) = output.native_tokens() {
             selected_input_native_tokens.add_native_tokens(output_native_tokens.clone())?;
         }
+        selected_inputs.push(input_signing_data.clone());
     }
 
     // 2. get basic inputs for the required native tokens (because the amount of these outputs will also be available in
