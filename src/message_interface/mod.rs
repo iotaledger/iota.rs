@@ -223,4 +223,52 @@ mod tests {
             response_type => panic!("Unexpected response type: {:?}", response_type),
         }
     }
+
+    #[cfg(feature = "stronghold")]
+    #[tokio::test]
+    async fn stronghold() {
+        let client_config = r#"{"offline": true}"#.to_string();
+        let message_handler = message_interface::create_message_handler(Some(client_config))
+            .await
+            .unwrap();
+
+        let secret_manager_dto = r#"{"Stronghold": {"password": "some_hopefully_secure_password", "snapshotPath": "teststronghold.stronghold"}}"#;
+        let mnemonic = String::from(
+            "acoustic trophy damage hint search taste love bicycle foster cradle brown govern endless depend situate athlete pudding blame question genius transfer van random vast",
+        );
+
+        let message_type = MessageType::CallClientMethod(ClientMethod::StoreMnemonic {
+            secret_manager: secret_manager_dto.to_string(),
+            mnemonic,
+        });
+        let _response = message_interface::send_message(&message_handler, message_type).await;
+
+        // Generate an address with the stored mnemonic to verify that it's usable
+        let options = GenerateAddressesOptions {
+            coin_type: None,
+            account_index: None,
+            range: Some(std::ops::Range { start: 0, end: 1 }),
+            internal: None,
+            bech32_hrp: Some("rms".to_string()),
+            metadata: None,
+        };
+        let message = MessageType::CallClientMethod(ClientMethod::GenerateAddresses {
+            secret_manager: secret_manager_dto.to_string(),
+            options,
+        });
+        let response = message_interface::send_message(&message_handler, message).await;
+
+        match response.response_type() {
+            ResponseType::GeneratedAddresses(addresses) => {
+                assert_eq!(
+                    addresses[0],
+                    "rms1qzev36lk0gzld0k28fd2fauz26qqzh4hd4cwymlqlv96x7phjxcw6v3ea5a".to_string(),
+                );
+            }
+            response_type => panic!("Unexpected response type: {:?}", response_type),
+        }
+
+        // Remove garbage after test, but don't care about the result
+        std::fs::remove_file("teststronghold.stronghold").unwrap_or(());
+    }
 }

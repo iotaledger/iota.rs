@@ -73,6 +73,15 @@ pub enum ClientMethod {
         #[serde(rename = "preparedTransactionData")]
         prepared_transaction_data: PreparedTransactionDataDto,
     },
+    #[cfg(feature = "stronghold")]
+    /// Store a mnemonic in the Stronghold vault
+    StoreMnemonic {
+        #[serde(rename = "secretManager")]
+        /// Stronghold secret manager
+        secret_manager: String,
+        /// Mnemonic
+        mnemonic: String,
+    },
     /// Submit a payload in a message
     SubmitPayload {
         /// The payload to send
