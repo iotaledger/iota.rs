@@ -221,6 +221,21 @@ async function test() {
       assert.strictEqual(essence_hash, "509d0ba50e38b37d5c4e446f54c07378ad6811b32343388e7b3b02b7b86c1b09")
     })
 
+    it('mnemonic to address conversion', async () => {
+      const mnemonic = TestVectors['general']['MNEMNONIC'];
+      const address = TestVectors['general']['MNEMNONIC_ADDRESS'];
+  
+      const seed = await client.mnemonicToHexSeed(mnemonic)
+  
+      const generatedAddresses = await client.getAddresses(seed)
+        .accountIndex(0)
+        .bech32Hrp('iota')
+        .range(0, 1)
+        .get()
+  
+      assert.strictEqual(address, generatedAddresses[0])
+    })
+
   })
 
   // transaction tests disabled for workflows, because they fail if we don't have funds
@@ -274,21 +289,5 @@ async function test() {
   //       .finishMessage(signed_transaction);
   //   }
   // })
-
-  it.only('mnemonic to address conversion', async () => {
-    const mnemonic = TestVectors['general']['MNEMNONIC'];
-    const address = TestVectors['general']['MNEMNONIC_ADDRESS'];
-
-    const seed = await client.mnemonicToHexSeed(mnemonic)
-
-    const generatedAddresses = await client.getAddresses(seed)
-      .accountIndex(0)
-      .bech32Hrp('iota')
-      .range(0, 1)
-      .get()
-
-
-    assert.strictEqual(address, generatedAddresses[0])
-  })
 }
 test()
