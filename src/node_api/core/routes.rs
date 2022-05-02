@@ -5,7 +5,11 @@
 
 use std::str::FromStr;
 
-use bee_message::{output::OutputId, payload::transaction::TransactionId, Message, MessageDto, MessageId};
+use bee_message::{
+    output::OutputId,
+    payload::{milestone::MilestoneId, transaction::TransactionId},
+    Message, MessageDto, MessageId,
+};
 use bee_rest_api::types::{
     dtos::{PeerDto, ReceiptDto},
     responses::{
@@ -286,10 +290,10 @@ pub async fn get_included_message(client: &Client, transaction_id: &TransactionI
     Ok(Message::try_from(&resp.0)?)
 }
 
-/// Get the milestone by the given milestone index.
-/// GET /api/v2/milestones/{index} endpoint
-pub async fn get_milestone(client: &Client, index: u32) -> Result<MilestoneResponse> {
-    let path = &format!("api/v2/milestones/{}", index);
+/// Get the milestone by the given milestone id.
+/// GET /api/v2/milestones/{milestoneId} endpoint
+pub async fn get_milestone_by_milestone_id(client: &Client, milestone_id: MilestoneId) -> Result<MilestoneResponse> {
+    let path = &format!("api/v2/milestones/{}", milestone_id);
 
     let resp: MilestoneResponse = client
         .node_manager
@@ -308,10 +312,48 @@ pub async fn get_milestone(client: &Client, index: u32) -> Result<MilestoneRespo
     Ok(resp)
 }
 
+/// Get the milestone by the given milestone index.
+/// GET /api/v2/milestones/{index} endpoint
+pub async fn get_milestone_by_milestone_index(client: &Client, index: u32) -> Result<MilestoneResponse> {
+    let path = &format!("api/v2/milestones/by-index/{}", index);
+
+    let resp: MilestoneResponse = client
+        .node_manager
+        .get_request(path, None, client.get_timeout())
+        .await?;
+
+    // converted to an object with a MessageId instead of a String
+    // let milestone = resp;
+    // let mut message_id = [0u8; 32];
+    // hex::decode_to_slice(milestone.message_id, &mut message_id)?;
+    // Ok(MilestoneResponse {
+    //     index: milestone.milestone_index,
+    //     message_id: MessageId::new(message_id),
+    //     timestamp: milestone.timestamp,
+    // })
+    Ok(resp)
+}
+
+/// Gets all UTXO changes of a milestone by its milestone id
+/// GET /api/v2/milestones/{milestoneId}/utxo-changes endpoint
+pub async fn get_utxo_changes_by_milestone_id(
+    client: &Client,
+    milestone_id: MilestoneId,
+) -> Result<UtxoChangesResponse> {
+    let path = &format!("api/v2/milestones/{}/utxo-changes", milestone_id);
+
+    let resp: UtxoChangesResponse = client
+        .node_manager
+        .get_request(path, None, client.get_timeout())
+        .await?;
+
+    Ok(resp)
+}
+
 /// Gets all UTXO changes of a milestone by its milestone index
-/// GET /api/v2/milestones/{index}/utxo-changes endpoint
-pub async fn get_milestone_utxo_changes(client: &Client, index: u32) -> Result<UtxoChangesResponse> {
-    let path = &format!("api/v2/milestones/{}/utxo-changes", index);
+/// GET /api/v2/milestones/by-index/{index}/utxo-changes endpoint
+pub async fn get_utxo_changes_by_milestone_index(client: &Client, index: u32) -> Result<UtxoChangesResponse> {
+    let path = &format!("api/v2/milestones/by-index/{}/utxo-changes", index);
 
     let resp: UtxoChangesResponse = client
         .node_manager
