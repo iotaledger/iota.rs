@@ -41,6 +41,7 @@ async function run() {
 
         // We prepare the transaction
         // Insert the output address and amount to spend. The amount cannot be zero.
+        // TODO: fix error: {"type":"MessageDtoError","error":"tokenId"}
         const message = await client.generateMessage(secretManager, {
             output: {
                 address: addresses[0],
