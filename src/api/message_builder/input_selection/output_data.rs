@@ -3,7 +3,7 @@
 
 use bee_message::{
     address::Address,
-    output::{dto::OutputDto, unlock_condition::dto::UnlockConditionDto, NativeTokensBuilder, Output},
+    output::{dto::OutputDto, unlock_condition::dto::UnlockConditionDto, AliasId, NativeTokensBuilder, NftId, Output},
 };
 use bee_rest_api::types::responses::OutputResponse;
 use crypto::keys::slip10::Chain;
@@ -60,9 +60,9 @@ pub(crate) async fn get_utxo_chains_inputs(
     for output in outputs {
         match output {
             Output::Alias(alias_output) => {
-                // if the state_index is [0u8; 20] then there can't be a previous output and it can also not be a
+                // if the state_index is null then there can't be a previous output and it can also not be a
                 // governance transition
-                if alias_output.alias_id().as_ref() != [0u8; 20] {
+                if *alias_output.alias_id() != AliasId::null() {
                     // Check if the transaction is a governance_transition, by checking if the new index is the same
                     // as the previous index
                     let output_id = client.alias_output_id(*alias_output.alias_id()).await?;
@@ -92,8 +92,8 @@ pub(crate) async fn get_utxo_chains_inputs(
                 }
             }
             Output::Nft(nft_output) => {
-                // If the id is [0u8; 20] then this output creates it and we can't have a previous output
-                if nft_output.nft_id().as_ref() != [0u8; 20] {
+                // If the id is null then this output creates it and we can't have a previous output
+                if *nft_output.nft_id() != NftId::null() {
                     let output_id = client.nft_output_id(*nft_output.nft_id()).await?;
                     let output_response = client.get_output(&output_id).await?;
                     if let OutputDto::Nft(nft_output_dto) = &output_response.output {
