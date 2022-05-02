@@ -61,7 +61,7 @@ async fn main() -> Result<()> {
     // create new alias and nft output
     //////////////////////////////////
     let outputs = vec![
-        AliasOutputBuilder::new_with_amount(2_000_000, AliasId::from([0; 32]))?
+        AliasOutputBuilder::new_with_amount(2_000_000, AliasId::null())?
             .with_state_index(0)
             .with_foundry_counter(0)
             .add_feature_block(FeatureBlock::Sender(SenderFeatureBlock::new(address)))
@@ -75,7 +75,7 @@ async fn main() -> Result<()> {
             )))
             .finish_output()?,
         // address of the owner of the NFT
-        NftOutputBuilder::new_with_amount(1_000_000, NftId::from([0; 32]))?
+        NftOutputBuilder::new_with_amount(1_000_000, NftId::null())?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             // address of the minter of the NFT
             // .add_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))

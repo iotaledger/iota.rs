@@ -51,7 +51,7 @@ async fn main() -> Result<()> {
     // create new alias output
     //////////////////////////////////
     let outputs = vec![
-        AliasOutputBuilder::new_with_amount(1_000_000, AliasId::from([0; 32]))?
+        AliasOutputBuilder::new_with_amount(1_000_000, AliasId::null())?
             .with_state_index(0)
             .with_foundry_counter(0)
             .add_feature_block(FeatureBlock::Sender(SenderFeatureBlock::new(address)))
