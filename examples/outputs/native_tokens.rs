@@ -41,10 +41,12 @@ async fn main() -> Result<()> {
     )
     .await?;
 
-    let token_id: [u8; 38] =
-        hex::decode("08e68f7616cd4948efebc6a77c4f93aed770ac53860100000000000000000000000000000000")?
-            .try_into()
-            .unwrap();
+    // Replace with the token ID of native tokens you own.
+    let token_id: [u8; 50] = hex::decode(
+        "08e68f7616cd4948efebc6a77c4f93aed770ac53869cba56d104f2b472a8836d0100000000000000000000000000000000",
+    )?
+    .try_into()
+    .unwrap();
     let outputs = vec![
         // most simple output
         BasicOutputBuilder::new_with_amount(1_000_000)?
