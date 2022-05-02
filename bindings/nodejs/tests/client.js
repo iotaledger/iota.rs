@@ -16,7 +16,7 @@ const client = new Client({
 });
 
 describe('Client', () => {
-  // Tests are temprarily disabled until they're updated
+  // Tests are temporarily disabled until they're updated
   // it('gets network info', async () => {
   //   const info = await client.networkInfo()
   //   assert.strictEqual(typeof info, 'object')
