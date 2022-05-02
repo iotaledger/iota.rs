@@ -312,7 +312,7 @@ pub async fn get_milestone_by_milestone_index(client: &Client, index: u32) -> Re
         .node_manager
         .get_request(path, None, client.get_timeout())
         .await?;
-    
+
     Ok(resp)
 }
 
