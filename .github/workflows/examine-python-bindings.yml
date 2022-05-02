@@ -127,7 +127,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: udeps
-          args: --manifest-path bindings/python/native/Cargo.toml --all-targets
+          args: --manifest-path bindings/python/native/Cargo.toml --all-targets --all-features
 
       # TODO: Check requirements.txt too
 
