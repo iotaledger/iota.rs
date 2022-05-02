@@ -79,6 +79,8 @@ impl ClientMessageHandler {
         let _ = message.response_tx.send(Response::new(message.message_type, response));
     }
 
+    // secret_manager needs to be mutable for Stronghold
+    #[allow(unused_mut)]
     async fn call_client_method(&self, method: &ClientMethod) -> Result<ResponseType> {
         match method {
             ClientMethod::GenerateAddresses {
@@ -193,6 +195,7 @@ impl ClientMessageHandler {
                         .await?,
                 )))
             }
+            #[cfg(feature = "stronghold")]
             ClientMethod::StoreMnemonic {
                 secret_manager,
                 mnemonic,
