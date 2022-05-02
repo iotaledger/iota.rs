@@ -110,11 +110,12 @@ mod tests {
 
     #[test]
     fn nativ_token() {
-        let token_id_bytes: [u8; 38] =
-            hex::decode("08e68f7616cd4948efebc6a77c4f93aed770ac53860100000000000000000000000000000000")
-                .unwrap()
-                .try_into()
-                .unwrap();
+        let token_id_bytes: [u8; 50] = hex::decode(
+            "08e68f7616cd4948efebc6a77c4f935eaed770ac53869cba56d104f2b472a8836d0100000000000000000000000000000000",
+        )
+        .unwrap()
+        .try_into()
+        .unwrap();
         let token_id = TokenId::from(token_id_bytes);
 
         // inputs == required

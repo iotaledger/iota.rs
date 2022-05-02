@@ -51,7 +51,7 @@ async fn main() -> Result<()> {
     //////////////////////////////////
     let outputs = vec![
         // address of the owner of the NFT
-        NftOutputBuilder::new_with_amount(1_000_000, NftId::from([0; 20]))?
+        NftOutputBuilder::new_with_amount(1_000_000, NftId::from([0; 32]))?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             // address of the minter of the NFT
             // .add_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
