@@ -1,0 +1,66 @@
+{
+    "general": {
+        "address_generations": [
+            {
+                "mnemonic": "acoustic trophy damage hint search taste love bicycle foster cradle brown govern endless depend situate athlete pudding blame question genius transfer van random vast",
+                "bech32_hrp": "iota",
+                "coin_type": 4218,
+                "account_index": 0,
+                "internal": false,
+                "address_index": 0,
+                "ed25519_address": "0x50a35a5ad39c899c2a42261f0687522474683e2f214bb32a5c38d10603574358",
+                "bech32_address": "iota1qpg2xkj66wwgn8p2ggnp7p582gj8g6p79us5hve2tsudzpsr2ap4skprwjg"
+            },
+            {
+                "mnemonic": "acoustic trophy damage hint search taste love bicycle foster cradle brown govern endless depend situate athlete pudding blame question genius transfer van random vast",
+                "bech32_hrp": "atoi",
+                "coin_type": 4218,
+                "account_index": 1,
+                "internal": true,
+                "address_index": 1,
+                "ed25519_address": "0xdc3fb50c7c2a9277f8f68a5fd79d03a670299b9f66e5f20399d48c23f0cfc0ff",
+                "bech32_address": "atoi1qrwrldgv0s4fyalc7699l4uaqwn8q2vmnanwtusrn82gcglselq07u2vu5n"
+            },
+            {
+                "mnemonic": "acoustic trophy damage hint search taste love bicycle foster cradle brown govern endless depend situate athlete pudding blame question genius transfer van random vast",
+                "bech32_hrp": "smr",
+                "coin_type": 4219,
+                "account_index": 0,
+                "internal": false,
+                "address_index": 0,
+                "ed25519_address": "0xb2c8ebf67a05f6beca3a5aa4f7825680015eb76d70e26fe0fb0ba3783791b0ed",
+                "bech32_address": "smr1qzev36lk0gzld0k28fd2fauz26qqzh4hd4cwymlqlv96x7phjxcw6ckj80y"
+            },
+            {
+                "mnemonic": "acoustic trophy damage hint search taste love bicycle foster cradle brown govern endless depend situate athlete pudding blame question genius transfer van random vast",
+                "bech32_hrp": "rms",
+                "coin_type": 4219,
+                "account_index": 1,
+                "internal": true,
+                "address_index": 1,
+                "ed25519_address": "0x0be1655b16c05f2f5f2b60bd7caaaf0aa1e0e32991479ad85faf351991ed49b8",
+                "bech32_address": "rms1qq97ze2mzmq97t6l9dst6l924u92rc8r9xg50xkct7hn2xv3a4yms0afsge"
+            },
+            {
+                "mnemonic": "acoustic trophy damage hint search taste love bicycle foster cradle brown govern endless depend situate athlete pudding blame question genius transfer van random vast",
+                "bech32_hrp": "iota",
+                "coin_type": 4218,
+                "account_index": 123456789,
+                "internal": false,
+                "address_index": 123456789,
+                "ed25519_address": "0x4e513e4ea31041ff1cc0303aecb34b53fe4f2c2954c497cf4869f1cb9d728c35",
+                "bech32_address": "iota1qp89z0jw5vgyrlcucqcr4m9nfdflunev992vf970fp5lrjuaw2xr2jldfd0"
+            },
+            {
+                "mnemonic": "giant dynamic museum toddler six deny defense ostrich bomb access mercy blood explain muscle shoot shallow glad autumn author calm heavy hawk abuse rally",
+                "bech32_hrp": "tst",
+                "coin_type": 4218,
+                "account_index": 0,
+                "internal": false,
+                "address_index": 0,
+                "ed25519_address": "0x60200bad8137a704216e84f8f9acfe65b972d9f4155becb4815282b03cef99fe",
+                "bech32_address": "tst1qpszqzadsym6wpppd6z037dvlejmjuke7s24hm95s9fg9vpua7vlupxvxq2"
+            }
+        ]
+    }
+}
