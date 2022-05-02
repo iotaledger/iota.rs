@@ -203,7 +203,6 @@ impl ClientMessageHandler {
                 let mut secret_manager: SecretManager = secret_manager.parse()?;
                 if let SecretManager::Stronghold(secret_manager) = &mut secret_manager {
                     secret_manager.store_mnemonic(mnemonic.to_string()).await?;
-                    secret_manager.write_stronghold_snapshot().await?;
                 } else {
                     return Err(crate::Error::SecretManagerMismatch);
                 }
