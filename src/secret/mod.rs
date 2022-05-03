@@ -266,6 +266,9 @@ impl From<&SecretManager> for SecretManagerDto {
             #[cfg(feature = "ledger")]
             SecretManager::LedgerNanoSimulator(_) => Self::LedgerNanoSimulator,
 
+            // `MnemonicSecretManager(Seed)` doesn't has Debug or Display implemented and in the current use cases of
+            // the client/wallet we also don't need to convert it in this direction with the mnemonic/seed, we only need
+            // to know the type
             SecretManager::Mnemonic(_mnemonic) => Self::Mnemonic("...".to_string()),
         }
     }
