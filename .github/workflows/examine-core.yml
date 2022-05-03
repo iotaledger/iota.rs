@@ -110,11 +110,16 @@ jobs:
           cache-job-id: ${{ github.workflow }}-${{ github.job }}
           cache-hash: ${{ hashFiles('.github/workflows/examine-core.yml') }}
 
+      - name: Install Required Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install libudev-dev libusb-1.0-0-dev
+
       - name: Run Cargo Udeps
         uses: actions-rs/cargo@v1
         with:
           command: udeps
-          args: --all-targets
+          args: --all-targets --all-features
 
   check-format:
     name: Check Format
