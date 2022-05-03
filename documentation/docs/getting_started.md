@@ -1,6 +1,6 @@
 ---
-description:   Choose your binding and get started with the IOTA Client Library.
-image: /img/logo/iota_mark_light.png
+description:   Choose your binding and get started with the IOTA Client Library. 
+image: /img/Banner/banner_client_lib_getting_started.png
 keywords:
 - rust
 - python
@@ -9,15 +9,18 @@ keywords:
 - javascript
 - IDE
 - reference
+- WASM
 ---
 # Getting Started
+
+![IOTA Client Library getting started](/img/Banner/banner_client_lib_getting_started.png)
 
 ## Required Prior Knowledge
 
 To check out our examples and write and test your own code, you will need an IDE or a code editor of your choice and a
 stable internet connection. You also need to set up your environment by following instructions for one of the
 languages: [Rust](./libraries/rust/getting_started.md), [Node.js](./libraries/nodejs/getting_started.md)
-, [Python](./libraries/python/getting_started.md), or [Java](./libraries/java/getting_started.md).
+, [Python](./libraries/python/getting_started.md), [Java](./libraries/java/getting_started.md), or [WASM](./libraries/wasm/getting_started.md).
 
 This wiki assumes that you already know the basics of your programming language of choice. Companies and communities
 behind each language provide their documentation for beginners you can use as reference:
