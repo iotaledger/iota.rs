@@ -257,56 +257,55 @@ async fn address_generation() {
         }
     }
 
-    // todo: enable when https://github.com/iotaledger/iota.rs/pull/965 is merged
-    // #[cfg(all(feature = "message_interface", feature = "stronghold"))]
-    // {
-    //     let client_config = r#"{"offline": true}"#.to_string();
-    //     let message_handler = message_interface::create_message_handler(Some(client_config))
-    //         .await
-    //         .unwrap();
-    //     for address in addresses_data {
-    //         let stronghold_filename = format!("{}.stronghold", address.bech32_address);
-    //         let secret_manager_dto = format!(
-    //             r#"{{"Stronghold": {{"password": "some_hopefully_secure_password", "snapshotPath": "{}"}}"#,
-    //             stronghold_filename
-    //         );
-    //         let message_type = MessageType::CallClientMethod(ClientMethod::StoreMnemonic {
-    //             secret_manager: secret_manager_dto.to_string(),
-    //             address: address.mnemonic,
-    //         });
-    //         let _response = message_interface::send_message(&message_handler, message_type).await;
+    #[cfg(all(feature = "message_interface", feature = "stronghold"))]
+    {
+        let client_config = r#"{"offline": true}"#.to_string();
+        let message_handler = message_interface::create_message_handler(Some(client_config))
+            .await
+            .unwrap();
+        for address in addresses_data {
+            let stronghold_filename = format!("{}.stronghold", address.bech32_address);
+            let secret_manager_dto = format!(
+                r#"{{"Stronghold": {{"password": "some_hopefully_secure_password", "snapshotPath": "{}"}}}}"#,
+                stronghold_filename
+            );
+            let message_type = MessageType::CallClientMethod(ClientMethod::StoreMnemonic {
+                secret_manager: secret_manager_dto.to_string(),
+                mnemonic: address.mnemonic,
+            });
+            let _response = message_interface::send_message(&message_handler, message_type).await;
 
-    //         let options = GetAddressesBuilderOptions {
-    //             coin_type: Some(address.coin_type),
-    //             account_index: Some(address.account_index),
-    //             range: Some(std::ops::Range {
-    //                 start: address.address_index,
-    //                 end: address.address_index + 1,
-    //             }),
-    //             internal: Some(address.internal),
-    //             bech32_hrp: Some(address.bech32_hrp.to_string()),
-    //             metadata: None,
-    //         };
-    //         let message = MessageType::CallClientMethod(ClientMethod::GenerateAddresses {
-    //             secret_manager: secret_manager_dto.to_string(),
-    //             options,
-    //         });
+            let options = GetAddressesBuilderOptions {
+                coin_type: Some(address.coin_type),
+                account_index: Some(address.account_index),
+                range: Some(std::ops::Range {
+                    start: address.address_index,
+                    end: address.address_index + 1,
+                }),
+                internal: Some(address.internal),
+                bech32_hrp: Some(address.bech32_hrp.to_string()),
+                metadata: None,
+            };
+            let message = MessageType::CallClientMethod(ClientMethod::GenerateAddresses {
+                secret_manager: secret_manager_dto.to_string(),
+                options,
+            });
 
-    //         let response = message_interface::send_message(&message_handler, message).await;
-    //         match response.response_type() {
-    //             ResponseType::GeneratedAddresses(addresses) => {
-    //                 assert_eq!(addresses[0], address.bech32_address);
-    //                 if let (_bech32_hrp, Address::Ed25519(ed25519_address)) =
-    //                     Address::try_from_bech32(&addresses[0]).unwrap()
-    //                 {
-    //                     assert_eq!(ed25519_address.to_string(), address.ed25519_address);
-    //                 } else {
-    //                     panic!("Invalid address type")
-    //                 }
-    //             }
-    //             _ => panic!("Unexpected response type"),
-    //         }
-    //         std::fs::remove_file(stronghold_filename).unwrap();
-    //     }
-    // }
+            let response = message_interface::send_message(&message_handler, message).await;
+            match response.response_type() {
+                ResponseType::GeneratedAddresses(addresses) => {
+                    assert_eq!(addresses[0], address.bech32_address);
+                    if let (_bech32_hrp, Address::Ed25519(ed25519_address)) =
+                        Address::try_from_bech32(&addresses[0]).unwrap()
+                    {
+                        assert_eq!(ed25519_address.to_string(), address.ed25519_address);
+                    } else {
+                        panic!("Invalid address type")
+                    }
+                }
+                _ => panic!("Unexpected response type"),
+            }
+            std::fs::remove_file(stronghold_filename).unwrap();
+        }
+    }
 }
