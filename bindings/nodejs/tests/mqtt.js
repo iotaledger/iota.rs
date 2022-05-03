@@ -1,7 +1,16 @@
-const { ClientBuilder } = require('../lib')
+const { Client } = require('../lib')
 const assert = require('assert')
 
-const client = new ClientBuilder().node('http://localhost:14265').build()
+const client = new Client({
+  "nodes": [
+     {
+        "url": "http://localhost:14265/",
+        "auth": null,
+        "disabled": false
+     }
+  ],
+  "localPow": true,
+});
 
 describe('MQTT', () => {
   // TODO: test not exiting

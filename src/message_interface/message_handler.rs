@@ -79,13 +79,20 @@ impl ClientMessageHandler {
         let _ = message.response_tx.send(Response::new(message.message_type, response));
     }
 
+    // secret_manager needs to be mutable for Stronghold
+    #[allow(unused_mut)]
     async fn call_client_method(&self, method: &ClientMethod) -> Result<ResponseType> {
         match method {
             ClientMethod::GenerateAddresses {
                 secret_manager,
                 options,
             } => {
-                let secret_manager: SecretManager = secret_manager.parse()?;
+                let mut secret_manager: SecretManager = secret_manager.parse()?;
+                // If we use stronghold we need to read the snapshot in case it hasn't been done already
+                #[cfg(feature = "stronghold")]
+                if let SecretManager::Stronghold(stronghold_secret_manager) = &mut secret_manager {
+                    stronghold_secret_manager.read_stronghold_snapshot().await?;
+                }
                 let addresses = self
                     .client
                     .get_addresses(&secret_manager)
@@ -102,7 +109,15 @@ impl ClientMessageHandler {
                 let mut transaction_builder = self.client.message();
 
                 let secret_manager: Option<SecretManager> = match secret_manager {
-                    Some(secret_manager) => Some(secret_manager.parse()?),
+                    Some(secret_manager) => {
+                        let mut secret_manager = secret_manager.parse()?;
+                        // If we use stronghold we need to read the snapshot in case it hasn't been done already
+                        #[cfg(feature = "stronghold")]
+                        if let SecretManager::Stronghold(stronghold_secret_manager) = &mut secret_manager {
+                            stronghold_secret_manager.read_stronghold_snapshot().await?;
+                        }
+                        Some(secret_manager)
+                    }
                     None => None,
                 };
 
@@ -135,7 +150,15 @@ impl ClientMessageHandler {
                 let mut message_builder = self.client.message();
 
                 let secret_manager = match secret_manager {
-                    Some(secret_manager) => Some(secret_manager.parse::<SecretManager>()?),
+                    Some(secret_manager) => {
+                        let mut secret_manager = secret_manager.parse()?;
+                        // If we use stronghold we need to read the snapshot in case it hasn't been done already
+                        #[cfg(feature = "stronghold")]
+                        if let SecretManager::Stronghold(stronghold_secret_manager) = &mut secret_manager {
+                            stronghold_secret_manager.read_stronghold_snapshot().await?;
+                        }
+                        Some(secret_manager)
+                    }
                     None => None,
                 };
 
@@ -157,7 +180,12 @@ impl ClientMessageHandler {
             } => {
                 let mut message_builder = self.client.message();
 
-                let secret_manager = secret_manager.parse()?;
+                let mut secret_manager: SecretManager = secret_manager.parse()?;
+                // If we use stronghold we need to read the snapshot in case it hasn't been done already
+                #[cfg(feature = "stronghold")]
+                if let SecretManager::Stronghold(stronghold_secret_manager) = &mut secret_manager {
+                    stronghold_secret_manager.read_stronghold_snapshot().await?;
+                }
 
                 message_builder = message_builder.with_secret_manager(&secret_manager);
 
@@ -166,6 +194,19 @@ impl ClientMessageHandler {
                         .sign_transaction(PreparedTransactionData::try_from(prepared_transaction_data)?)
                         .await?,
                 )))
+            }
+            #[cfg(feature = "stronghold")]
+            ClientMethod::StoreMnemonic {
+                secret_manager,
+                mnemonic,
+            } => {
+                let mut secret_manager: SecretManager = secret_manager.parse()?;
+                if let SecretManager::Stronghold(secret_manager) = &mut secret_manager {
+                    secret_manager.store_mnemonic(mnemonic.to_string()).await?;
+                } else {
+                    return Err(crate::Error::SecretManagerMismatch);
+                }
+                Ok(ResponseType::Ok(()))
             }
             ClientMethod::SubmitPayload { payload_dto } => {
                 let message_builder = self.client.message();
@@ -286,7 +327,12 @@ impl ClientMessageHandler {
                 account_index,
                 address_range,
             } => {
-                let secret_manager: SecretManager = secret_manager.parse()?;
+                let mut secret_manager: SecretManager = secret_manager.parse()?;
+                // If we use stronghold we need to read the snapshot in case it hasn't been done already
+                #[cfg(feature = "stronghold")]
+                if let SecretManager::Stronghold(stronghold_secret_manager) = &mut secret_manager {
+                    stronghold_secret_manager.read_stronghold_snapshot().await?;
+                }
                 Ok(ResponseType::ConsolidatedFunds(
                     self.client
                         .consolidate_funds(&secret_manager, *account_index, address_range.clone())
