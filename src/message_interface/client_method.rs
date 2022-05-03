@@ -17,6 +17,7 @@ use crate::{
     },
     node_api::indexer::query_parameters::QueryParameter,
     node_manager::node::NodeAuth,
+    secret::SecretManagerDto,
 };
 
 /// Each public client method.
@@ -26,14 +27,14 @@ pub enum ClientMethod {
     /// Generate a addresses.
     GenerateAddresses {
         /// Create secret manager from json
-        secret_manager: String,
+        secret_manager: SecretManagerDto,
         /// Addresses generation options
         options: GenerateAddressesOptions,
     },
     /// Generate client message
     GenerateMessage {
         /// Secret manager
-        secret_manager: Option<String>,
+        secret_manager: Option<SecretManagerDto>,
         /// Options
         options: Option<GenerateMessageOptions>,
     },
@@ -61,14 +62,14 @@ pub enum ClientMethod {
     /// Prepare a transaction for signing
     PrepareTransaction {
         /// Secret manager
-        secret_manager: Option<String>,
+        secret_manager: Option<SecretManagerDto>,
         /// Options
         options: Option<GenerateMessageOptions>,
     },
     /// Sign a transaction
     SignTransaction {
         /// Secret manager
-        secret_manager: String,
+        secret_manager: SecretManagerDto,
         /// Prepared transaction data
         #[serde(rename = "preparedTransactionData")]
         prepared_transaction_data: PreparedTransactionDataDto,
@@ -78,7 +79,7 @@ pub enum ClientMethod {
     StoreMnemonic {
         /// Stronghold secret manager
         #[serde(rename = "secretManager")]
-        secret_manager: String,
+        secret_manager: SecretManagerDto,
         /// Mnemonic
         mnemonic: String,
     },
@@ -260,7 +261,7 @@ pub enum ClientMethod {
     /// Returns the address to which the funds got consolidated, if any were available
     ConsolidateFunds {
         /// Secret manager
-        secret_manager: String,
+        secret_manager: SecretManagerDto,
         /// Account index
         account_index: u32,
         /// Address_range

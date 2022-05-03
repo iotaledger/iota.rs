@@ -28,10 +28,12 @@ pub use types::{GenerateAddressMetadata, LedgerStatus, Network, SignMessageMetad
 
 #[cfg(feature = "ledger")]
 use self::ledger::LedgerSecretManager;
+use self::mnemonic::MnemonicSecretManager;
 #[cfg(feature = "stronghold")]
 use self::stronghold::StrongholdSecretManager;
-use self::{mnemonic::MnemonicSecretManager, types::SecretManagerDto};
 use crate::secret::types::InputSigningData;
+#[cfg(feature = "stronghold")]
+use crate::secret::types::StrongholdDto;
 
 /// The secret manager interface.
 #[async_trait]
@@ -195,7 +197,31 @@ impl FromStr for SecretManager {
     type Err = crate::Error;
 
     fn from_str(s: &str) -> crate::Result<Self> {
-        Ok(match serde_json::from_str(s)? {
+        SecretManager::try_from(&serde_json::from_str::<SecretManagerDto>(s)?)
+    }
+}
+
+/// DTO for secret manager types with required data.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum SecretManagerDto {
+    /// Stronghold
+    #[cfg(feature = "stronghold")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "stronghold")))]
+    Stronghold(StrongholdDto),
+    /// Ledger Device
+    #[cfg(feature = "ledger")]
+    LedgerNano,
+    /// Ledger Speculos Simulator
+    #[cfg(feature = "ledger")]
+    LedgerNanoSimulator,
+    /// Mnemonic
+    Mnemonic(String),
+}
+
+impl TryFrom<&SecretManagerDto> for SecretManager {
+    type Error = crate::Error;
+    fn try_from(value: &SecretManagerDto) -> crate::Result<Self> {
+        Ok(match value {
             #[cfg(feature = "stronghold")]
             SecretManagerDto::Stronghold(stronghold_dto) => {
                 let mut builder = StrongholdSecretManager::builder();
@@ -217,10 +243,34 @@ impl FromStr for SecretManager {
             #[cfg(feature = "ledger")]
             SecretManagerDto::LedgerNanoSimulator => Self::LedgerNanoSimulator(LedgerSecretManager::new(true)),
 
-            SecretManagerDto::Mnemonic(mnemonic) => {
-                Self::Mnemonic(MnemonicSecretManager::try_from_mnemonic(&mnemonic)?)
-            }
+            SecretManagerDto::Mnemonic(mnemonic) => Self::Mnemonic(MnemonicSecretManager::try_from_mnemonic(mnemonic)?),
         })
+    }
+}
+
+impl From<&SecretManager> for SecretManagerDto {
+    fn from(value: &SecretManager) -> Self {
+        match value {
+            #[cfg(feature = "stronghold")]
+            SecretManager::Stronghold(stronghold_dto) => Self::Stronghold(StrongholdDto {
+                password: None,
+                snapshot_path: stronghold_dto
+                    .snapshot_path
+                    .as_ref()
+                    .map(|s| s.clone().into_os_string().to_string_lossy().into()),
+            }),
+
+            #[cfg(feature = "ledger")]
+            SecretManager::LedgerNano(_) => Self::LedgerNano,
+
+            #[cfg(feature = "ledger")]
+            SecretManager::LedgerNanoSimulator(_) => Self::LedgerNanoSimulator,
+
+            // `MnemonicSecretManager(Seed)` doesn't have Debug or Display implemented and in the current use cases of
+            // the client/wallet we also don't need to convert it in this direction with the mnemonic/seed, we only need
+            // to know the type
+            SecretManager::Mnemonic(_mnemonic) => Self::Mnemonic("...".to_string()),
+        }
     }
 }
 

@@ -12,23 +12,6 @@ use serde::{Deserialize, Serialize};
 
 use crate::Result;
 
-/// DTO for secret manager types with required data.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum SecretManagerDto {
-    /// Stronghold
-    #[cfg(feature = "stronghold")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "stronghold")))]
-    Stronghold(StrongholdDto),
-    /// Ledger Device
-    #[cfg(feature = "ledger")]
-    LedgerNano,
-    /// Ledger Speculos Simulator
-    #[cfg(feature = "ledger")]
-    LedgerNanoSimulator,
-    /// Mnemonic
-    Mnemonic(String),
-}
-
 /// Stronghold DTO to allow the creation of a Stronghold secret manager from bindings
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg(feature = "stronghold")]

@@ -45,15 +45,11 @@ mod tests {
     use crate::{
         api::GetAddressesBuilderOptions as GenerateAddressesOptions,
         message_interface::{self, ClientMethod, MessageType, ResponseType},
-        secret::{types::Network, GenerateAddressMetadata},
+        secret::{types::Network, GenerateAddressMetadata, SecretManagerDto},
     };
 
     #[tokio::test]
-    #[should_panic]
     async fn generate_addresses() {
-        // This test uses dotenv, which is not safe for use in production
-        dotenv().unwrap();
-
         let client_config = r#"{
                 "nodes":[],
                 "localPow":true,
@@ -67,7 +63,7 @@ mod tests {
 
         let secret_manager = format!(
             "{{\"Mnemonic\":\"{}\"}}",
-            &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap()
+            "endorse answer radar about source reunion marriage tag sausage weekend frost daring base attack because joke dream slender leisure group reason prepare broken river"
         );
         let options = GenerateAddressesOptions {
             coin_type: None,
@@ -81,7 +77,7 @@ mod tests {
             }),
         };
         let message = MessageType::CallClientMethod(ClientMethod::GenerateAddresses {
-            secret_manager,
+            secret_manager: serde_json::from_str::<SecretManagerDto>(&secret_manager).unwrap(),
             options,
         });
 
@@ -135,7 +131,7 @@ mod tests {
         };
 
         let generate_addresses_message = MessageType::CallClientMethod(ClientMethod::GenerateAddresses {
-            secret_manager: secret_manager.clone(),
+            secret_manager: serde_json::from_str(&secret_manager).unwrap(),
             options,
         });
 
@@ -169,7 +165,7 @@ mod tests {
 
         let options = serde_json::from_str(&options).unwrap();
         let generate_message = MessageType::CallClientMethod(ClientMethod::GenerateMessage {
-            secret_manager: Some(secret_manager),
+            secret_manager: Some(serde_json::from_str(&secret_manager).unwrap()),
             options: Some(options),
         });
 
@@ -238,7 +234,7 @@ mod tests {
         );
 
         let message_type = MessageType::CallClientMethod(ClientMethod::StoreMnemonic {
-            secret_manager: secret_manager_dto.to_string(),
+            secret_manager: serde_json::from_str(secret_manager_dto).unwrap(),
             mnemonic,
         });
         let _response = message_interface::send_message(&message_handler, message_type).await;
@@ -253,7 +249,7 @@ mod tests {
             metadata: None,
         };
         let message = MessageType::CallClientMethod(ClientMethod::GenerateAddresses {
-            secret_manager: secret_manager_dto.to_string(),
+            secret_manager: serde_json::from_str(secret_manager_dto).unwrap(),
             options,
         });
         let response = message_interface::send_message(&message_handler, message).await;
