@@ -234,7 +234,7 @@ mod tests {
         );
 
         let message_type = MessageType::CallClientMethod(ClientMethod::StoreMnemonic {
-            secret_manager: secret_manager_dto.to_string(),
+            secret_manager: serde_json::from_str(secret_manager_dto).unwrap(),
             mnemonic,
         });
         let _response = message_interface::send_message(&message_handler, message_type).await;
@@ -249,7 +249,7 @@ mod tests {
             metadata: None,
         };
         let message = MessageType::CallClientMethod(ClientMethod::GenerateAddresses {
-            secret_manager: secret_manager_dto.to_string(),
+            secret_manager: serde_json::from_str(secret_manager_dto).unwrap(),
             options,
         });
         let response = message_interface::send_message(&message_handler, message).await;

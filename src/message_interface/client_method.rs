@@ -79,7 +79,7 @@ pub enum ClientMethod {
     StoreMnemonic {
         /// Stronghold secret manager
         #[serde(rename = "secretManager")]
-        secret_manager: String,
+        secret_manager: SecretManagerDto,
         /// Mnemonic
         mnemonic: String,
     },

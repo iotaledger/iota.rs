@@ -200,6 +200,7 @@ impl FromStr for SecretManager {
         SecretManager::try_from(&serde_json::from_str::<SecretManagerDto>(s)?)
     }
 }
+
 /// DTO for secret manager types with required data.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum SecretManagerDto {

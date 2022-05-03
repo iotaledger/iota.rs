@@ -200,7 +200,7 @@ impl ClientMessageHandler {
                 secret_manager,
                 mnemonic,
             } => {
-                let mut secret_manager: SecretManager = secret_manager.parse()?;
+                let mut secret_manager: SecretManager = secret_manager.try_into()?;
                 if let SecretManager::Stronghold(secret_manager) = &mut secret_manager {
                     secret_manager.store_mnemonic(mnemonic.to_string()).await?;
                 } else {
