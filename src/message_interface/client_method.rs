@@ -5,7 +5,7 @@ use std::ops::Range;
 
 use bee_message::{
     output::{AliasId, FoundryId, NftId, OutputId},
-    payload::{dto::PayloadDto, transaction::TransactionId},
+    payload::{dto::PayloadDto, milestone::MilestoneId, transaction::TransactionId},
     MessageDto, MessageId,
 };
 use serde::Deserialize;
@@ -137,14 +137,24 @@ pub enum ClientMethod {
         /// Output ID
         output_id: OutputId,
     },
-    /// Get the milestone by the given index.
-    GetMilestone {
-        /// Index
-        index: u32,
+    /// Get the milestone by the given milestone id.
+    GetMilestoneByMilestoneId {
+        /// Milestone ID
+        milestone_id: MilestoneId,
     },
     /// Get the milestone by the given index.
-    GetMilestoneUtxoChanges {
-        /// Index
+    GetMilestoneByMilestoneIndex {
+        /// Milestone Index
+        index: u32,
+    },
+    /// Get the UTXO changes by the given milestone id.
+    GetUtxoChangesByMilestoneId {
+        /// Milestone ID
+        milestone_id: MilestoneId,
+    },
+    /// Get the UTXO changes by the given milestone index.
+    GetUtxoChangesByMilestoneIndex {
+        /// Milestone Index
         index: u32,
     },
     /// Get all receipts.

@@ -17,6 +17,7 @@ use bee_message::{
     output::{AliasId, ByteCostConfig, ByteCostConfigBuilder, FoundryId, NftId, OutputId},
     parent::Parents,
     payload::{
+        milestone::MilestoneId,
         transaction::{TransactionEssence, TransactionId},
         Payload, TaggedDataPayload,
     },
@@ -513,16 +514,28 @@ impl Client {
         GetAddressBuilder::new(self)
     }
 
-    /// GET /api/v2/milestones/{index} endpoint
-    /// Get the milestone by the given index.
-    pub async fn get_milestone(&self, index: u32) -> Result<MilestoneResponse> {
-        crate::node_api::core::routes::get_milestone(self, index).await
+    /// GET /api/v2/milestones/{milestoneId} endpoint
+    /// Get the milestone by the given milestone id.
+    pub async fn get_milestone_by_milestone_id(&self, milestone_id: MilestoneId) -> Result<MilestoneResponse> {
+        crate::node_api::core::routes::get_milestone_by_milestone_id(self, milestone_id).await
     }
 
-    /// GET /api/v2/milestones/{index}/utxo-changes endpoint
+    /// GET /api/v2/milestones/by-index/{milestoneIndex} endpoint
     /// Get the milestone by the given index.
-    pub async fn get_milestone_utxo_changes(&self, index: u32) -> Result<MilestoneUTXOChanges> {
-        crate::node_api::core::routes::get_milestone_utxo_changes(self, index).await
+    pub async fn get_milestone_by_milestone_index(&self, index: u32) -> Result<MilestoneResponse> {
+        crate::node_api::core::routes::get_milestone_by_milestone_index(self, index).await
+    }
+
+    /// GET /api/v2/milestones/{milestoneId}/utxo-changes endpoint
+    /// Get the milestone by the given milestone id.
+    pub async fn get_utxo_changes_by_milestone_id(&self, milestone_id: MilestoneId) -> Result<MilestoneUTXOChanges> {
+        crate::node_api::core::routes::get_utxo_changes_by_milestone_id(self, milestone_id).await
+    }
+
+    /// GET /api/v2/milestones/by-index/{milestoneIndex}/utxo-changes endpoint
+    /// Get the milestone by the given index.
+    pub async fn get_utxo_changes_by_milestone_index(&self, index: u32) -> Result<MilestoneUTXOChanges> {
+        crate::node_api::core::routes::get_utxo_changes_by_milestone_index(self, index).await
     }
 
     /// GET /api/v2/receipts endpoint

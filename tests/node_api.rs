@@ -278,7 +278,7 @@ async fn test_get_peers() {
 
 #[tokio::test]
 #[ignore]
-async fn test_get_milestone() {
+async fn test_get_milestone_by_milestone_id() {
     let client = iota_client::Client::builder()
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
@@ -286,11 +286,13 @@ async fn test_get_milestone() {
         .finish()
         .await
         .unwrap();
-    // get nodeinfo first, because if we hardocde the milestones get pruned and if we hardcode an index it would fail
+
+    // get node info first, because if we hardcode the milestones get pruned and if we hardcode an index it would fail
     // after some time
-    let nodeinfo = client.get_info().await.unwrap();
+    let node_info = client.get_info().await.unwrap();
+
     let r = client
-        .get_milestone(nodeinfo.nodeinfo.status.latest_milestone.index)
+        .get_milestone_by_milestone_id(node_info.nodeinfo.status.latest_milestone.milestone_id.parse().unwrap())
         .await
         .unwrap();
 
@@ -299,15 +301,67 @@ async fn test_get_milestone() {
 
 #[tokio::test]
 #[ignore]
-async fn test_get_milestone_utxo_changes() {
-    let r = iota_client::Client::builder()
+async fn test_get_milestone_by_milestone_index() {
+    let client = iota_client::Client::builder()
         .with_node(DEFAULT_NODE_URL)
         .unwrap()
         .with_node_sync_disabled()
         .finish()
         .await
+        .unwrap();
+
+    // get node info first, because if we hardcode the milestones get pruned and if we hardcode an index it would fail
+    // after some time
+    let node_info = client.get_info().await.unwrap();
+
+    let r = client
+        .get_milestone_by_milestone_index(node_info.nodeinfo.status.latest_milestone.index)
+        .await
+        .unwrap();
+
+    println!("{:#?}", r);
+}
+
+#[tokio::test]
+#[ignore]
+async fn test_get_utxo_changes_by_milestone_id() {
+    let client = iota_client::Client::builder()
+        .with_node(DEFAULT_NODE_URL)
         .unwrap()
-        .get_milestone_utxo_changes(3)
+        .with_node_sync_disabled()
+        .finish()
+        .await
+        .unwrap();
+
+    // get node info first, because if we hardcode the milestones get pruned and if we hardcode an index it would fail
+    // after some time
+    let node_info = client.get_info().await.unwrap();
+
+    let r = client
+        .get_utxo_changes_by_milestone_id(node_info.nodeinfo.status.latest_milestone.milestone_id.parse().unwrap())
+        .await
+        .unwrap();
+
+    println!("{:#?}", r);
+}
+
+#[tokio::test]
+#[ignore]
+async fn test_get_utxo_changes_by_milestone_index() {
+    let client = iota_client::Client::builder()
+        .with_node(DEFAULT_NODE_URL)
+        .unwrap()
+        .with_node_sync_disabled()
+        .finish()
+        .await
+        .unwrap();
+
+    // get node info first, because if we hardcode the milestones get pruned and if we hardcode an index it would fail
+    // after some time
+    let node_info = client.get_info().await.unwrap();
+
+    let r = client
+        .get_utxo_changes_by_milestone_index(node_info.nodeinfo.status.latest_milestone.index)
         .await
         .unwrap();
 
