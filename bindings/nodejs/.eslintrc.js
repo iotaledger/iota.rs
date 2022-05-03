@@ -1,3 +1,12 @@
+const typescriptEslintRules = {
+    '@typescript-eslint/ban-ts-comment': [
+        'error',
+        { 'ts-ignore': 'allow-with-description' },
+    ],
+    '@typescript-eslint/no-empty-interface': 'off',
+    '@typescript-eslint/no-var-requires': 'off', // cleanest way to set dotenv path
+};
+
 module.exports = {
     env: {
         commonjs: true,
@@ -14,12 +23,5 @@ module.exports = {
         ecmaVersion: 12,
         sourceType: 'module',
     },
-    rules: {
-        '@typescript-eslint/ban-ts-comment': [
-            'error',
-            { 'ts-ignore': 'allow-with-description' },
-        ],
-        '@typescript-eslint/no-namespace': 'off',
-        '@typescript-eslint/no-empty-interface': 'off',
-    },
+    rules: typescriptEslintRules,
 };

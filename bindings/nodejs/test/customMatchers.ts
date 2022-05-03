@@ -1,3 +1,17 @@
+interface CustomMatchers<R = unknown> {
+    toBeValidAddress(): R;
+    toBeValidMessageId(): R;
+}
+
+declare global {
+    // eslint-disable-next-line @typescript-eslint/no-namespace
+    namespace jest {
+        interface Expect extends CustomMatchers {}
+        interface Matchers<R> extends CustomMatchers<R> {}
+        interface InverseAsymmetricMatchers extends CustomMatchers {}
+    }
+}
+
 expect.extend({
     toBeValidAddress(received: string) {
         const pass = received.length === 63 && received.slice(0, 3) === 'rms';
@@ -40,3 +54,5 @@ expect.extend({
         }
     },
 });
+
+export {};

@@ -1,19 +1,7 @@
 import type { IMessage, ITaggedDataPayload } from '@iota/types';
-import { Client, utf8ToBytes, utf8ToHex } from '../lib';
+import { Client, utf8ToBytes, utf8ToHex } from '../../lib';
+import '../customMatchers';
 import 'dotenv/config';
-
-interface CustomMatchers<R = unknown> {
-    toBeValidAddress(): R;
-    toBeValidMessageId(): R;
-}
-
-declare global {
-    namespace jest {
-        interface Expect extends CustomMatchers {}
-        interface Matchers<R> extends CustomMatchers<R> {}
-        interface InverseAsymmetricMatchers extends CustomMatchers {}
-    }
-}
 
 const client = new Client({
     nodes: [

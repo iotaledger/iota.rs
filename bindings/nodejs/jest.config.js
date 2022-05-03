@@ -6,5 +6,4 @@ module.exports = {
     moduleNameMapper: {
         'index.node': '<rootDir>/index.node',
     },
-    setupFilesAfterEnv: ['./jest.setup.ts'],
 };

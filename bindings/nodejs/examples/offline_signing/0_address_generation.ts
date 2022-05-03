@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import { Client, initLogger, SHIMMER_TESTNET_BECH32_HRP } from '@iota/client';
 import { writeFile } from 'fs/promises';
-import 'dotenv/config';
+require('dotenv').config({ path: '../../../.env' });
 import path = require('path');
 
 // From examples directory, run with:

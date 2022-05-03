@@ -1,8 +1,7 @@
 // Copyright 2021-2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 import { Client, initLogger } from '@iota/client';
-import 'dotenv/config';
-
+require('dotenv').config({ path: '../../../.env' });
 // Run with command:
 // node ./dist/additional_methods/consolidate.js
 
@@ -26,6 +25,7 @@ async function run() {
         start: 0,
         end: 10,
     };
+
     try {
         if (!process.env.NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1) {
             throw new Error('.env mnemonic is undefined, see .env.example');
