@@ -49,6 +49,8 @@ impl QueryParameters {
 pub enum QueryParameter {
     /// Bech32-encoded address that should be searched for.
     Address(String),
+    /// Bech32-encoded alias address that should be searched for.
+    AliasAddress(String),
     /// Filters outputs based on the presence of storage deposit return unlockcondition.
     HasStorageDepositReturnCondition(bool),
     /// Filter outputs based on the presence of a specific Bech32-encoded return address in the storage deposit return
@@ -114,6 +116,7 @@ impl QueryParameter {
     fn as_query_string(&self) -> String {
         match self {
             QueryParameter::Address(v) => format!("address={}", v),
+            QueryParameter::AliasAddress(v) => format!("aliasAddress={}", v),
             QueryParameter::HasStorageDepositReturnCondition(v) => format!("hasStorageDepositReturnCondition={}", v),
             QueryParameter::StorageDepositReturnAddress(v) => format!("storageReturnAddress={}", v),
             QueryParameter::HasTimelockCondition(v) => format!("hasTimelockCondition={}", v),
