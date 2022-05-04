@@ -8,7 +8,7 @@ use std::collections::HashSet;
 use bee_message::{
     address::Address,
     input::{Input, UtxoInput},
-    output::{dto::OutputDto, Output, OutputId},
+    output::{dto::OutputDto, InputsCommitment, Output, OutputId},
     payload::{
         milestone::MilestoneIndex,
         transaction::{RegularTransactionEssence, TransactionEssence, TransactionPayload},
@@ -17,8 +17,6 @@ use bee_message::{
     semantic::{semantic_validation, ConflictReason, ValidationContext},
     unlock_block::UnlockBlocks,
 };
-use crypto::hashes::{blake2b::Blake2b256, Digest};
-use packable::PackableExt;
 
 use crate::{
     api::{types::PreparedTransactionData, ClientMessageBuilder},
@@ -67,11 +65,9 @@ pub async fn prepare_transaction(message_builder: &ClientMessageBuilder<'_>) -> 
     let input_outputs = selected_transaction_data
         .inputs
         .iter()
-        .flat_map(|i| i.output.pack_to_vec())
-        .collect::<Vec<u8>>();
-    let inputs_commitment = Blake2b256::digest(&input_outputs)
-        .try_into()
-        .map_err(|_e| crate::Error::Blake2b256Error("Hashing outputs for inputs_commitment failed."))?;
+        .map(|i| i.output.clone())
+        .collect::<Vec<Output>>();
+    let inputs_commitment = InputsCommitment::new(input_outputs.iter());
 
     let mut essence =
         RegularTransactionEssence::builder(message_builder.client.get_network_id().await?, inputs_commitment);
