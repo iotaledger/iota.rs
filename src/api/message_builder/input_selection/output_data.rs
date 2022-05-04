@@ -1,9 +1,13 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+use std::str::FromStr;
+
 use bee_message::{
     address::Address,
     output::{dto::OutputDto, unlock_condition::dto::UnlockConditionDto, NativeTokensBuilder, Output},
+    payload::transaction::TransactionId,
+    MessageId,
 };
 use bee_rest_api::types::responses::OutputResponse;
 use crypto::keys::slip10::Chain;
@@ -15,7 +19,7 @@ use crate::{
         search_address,
     },
     constants::HD_WALLET_TYPE,
-    secret::types::InputSigningData,
+    secret::types::{InputSigningData, OutputMetadata},
     Result,
 };
 
@@ -151,7 +155,22 @@ pub(crate) async fn get_utxo_chains_inputs(
         };
 
         utxo_chain_inputs.push(InputSigningData {
-            output_response: output_response.clone(),
+            output: Output::try_from(&output_response.output)?,
+            output_metadata: OutputMetadata {
+                message_id: MessageId::from_str(&output_response.message_id)?,
+                transaction_id: TransactionId::from_str(&output_response.transaction_id)?,
+                output_index: output_response.output_index,
+                is_spent: output_response.is_spent,
+                milestone_index_spent: output_response.milestone_index_spent,
+                milestone_timestamp_spent: output_response.milestone_timestamp_spent,
+                transaction_id_spent: output_response
+                    .transaction_id_spent
+                    .map(|s| TransactionId::from_str(&s))
+                    .transpose()?,
+                milestone_index_booked: output_response.milestone_index_booked,
+                milestone_timestamp_booked: output_response.milestone_timestamp_booked,
+                ledger_index: output_response.ledger_index,
+            },
             chain: Some(Chain::from_u32_hardened(vec![
                 HD_WALLET_TYPE,
                 message_builder.coin_type,

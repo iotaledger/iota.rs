@@ -123,8 +123,8 @@ pub(crate) fn get_additional_required_remainder_amount(
                     None => get_remainder_address(
                         &selected_inputs
                             .iter()
-                            .map(|i| Ok(Output::try_from(&i.output_response.output)?))
-                            .collect::<Result<Vec<Output>>>()?,
+                            .map(|i| i.output.clone())
+                            .collect::<Vec<Output>>(),
                     )?,
                 },
                 &native_token_remainder,

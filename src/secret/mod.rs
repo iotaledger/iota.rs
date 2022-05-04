@@ -133,8 +133,7 @@ where
             // When we have an alias or Nft output, we will add their alias or nft address to unlock_block_indexes,
             // because they can be used to unlock outputs via [UnlockBlock::Alias] or [UnlockBlock::Nft],
             // that have the corresponding alias or nft address in their unlock condition
-            let output = Output::try_from(&input.output_response.output)?;
-            match &output {
+            match &input.output {
                 Output::Alias(alias_output) => unlock_block_indexes.insert(
                     Address::Alias(AliasAddress::new(
                         alias_output.alias_id().or_from_output_id(input.output_id()?),

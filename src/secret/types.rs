@@ -3,10 +3,12 @@
 
 //! Miscellaneous types for secret managers.
 
-use std::str::FromStr;
-
-use bee_message::{address::Address, output::OutputId, payload::transaction::TransactionId};
-use bee_rest_api::types::responses::OutputResponse;
+use bee_message::{
+    address::Address,
+    output::{Output, OutputId},
+    payload::transaction::TransactionId,
+    MessageId,
+};
 use crypto::keys::slip10::Chain;
 use serde::{Deserialize, Serialize};
 
@@ -88,11 +90,38 @@ pub struct LedgerStatus {
     pub(crate) app: Option<LedgerApp>,
 }
 
+///
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct OutputMetadata {
+    ///
+    pub message_id: MessageId,
+    ///
+    pub transaction_id: TransactionId,
+    ///
+    pub output_index: u16,
+    ///
+    pub is_spent: bool,
+    ///
+    pub milestone_index_spent: Option<u32>,
+    ///
+    pub milestone_timestamp_spent: Option<u64>,
+    ///
+    pub transaction_id_spent: Option<TransactionId>,
+    ///
+    pub milestone_index_booked: u32,
+    ///
+    pub milestone_timestamp_booked: u64,
+    ///
+    pub ledger_index: u32,
+}
+
 /// Data for transaction inputs for signing and ordering of unlock blocks
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct InputSigningData {
-    /// The output response
-    pub output_response: OutputResponse,
+    /// The output
+    pub output: Output,
+    /// The output metadata
+    pub output_metadata: OutputMetadata,
     /// The chain derived from seed, only for ed25519 addresses
     pub chain: Option<Chain>,
     /// The bech32 encoded address, required because of alias outputs where we have multiple possible unlock
@@ -104,15 +133,15 @@ impl InputSigningData {
     /// Return the [OutputId]
     pub fn output_id(&self) -> Result<OutputId> {
         Ok(OutputId::new(
-            TransactionId::from_str(&self.output_response.transaction_id)?,
-            self.output_response.output_index,
+            self.output_metadata.transaction_id,
+            self.output_metadata.output_index,
         )?)
     }
 }
 
 impl PartialEq for InputSigningData {
     fn eq(&self, other: &Self) -> bool {
-        self.output_response.transaction_id == other.output_response.transaction_id
-            && self.output_response.output_index == other.output_response.output_index
+        self.output_metadata.transaction_id == other.output_metadata.transaction_id
+            && self.output_metadata.output_index == other.output_metadata.output_index
     }
 }
