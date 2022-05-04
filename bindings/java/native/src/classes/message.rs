@@ -125,6 +125,24 @@ impl Message {
     pub fn to_inner_clone(self) -> RustMessage {
         self.rust_message
     }
+
+    pub fn deserialize(serialised_data: &str) -> Result<Self> {
+        let res: Result<RustMessage, _> = serde_json::from_str(serialised_data);
+
+        match res {
+            Ok(s) => Ok(s.into()),
+            Err(e) => Err(anyhow::anyhow!(e.to_string())),
+        }
+    }
+
+    pub fn serialize(&self) -> Result<String> {
+        let res = serde_json::to_string(&self.rust_message);
+
+        match res {
+            Ok(s) => Ok(s),
+            Err(e) => Err(anyhow::anyhow!(e.to_string())),
+        }
+    }
 }
 
 pub struct MessageBuilder {

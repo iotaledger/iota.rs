@@ -951,6 +951,10 @@ foreign_class!(
         private constructor = empty;
         private fn Message::to_string(&self) -> String; alias to_string;
         private fn Message::eq(&self, o: &Message) -> bool; alias rustEq;
+        /// Serializes the receipt payload into a json string
+        fn Message::serialize(&self) -> Result<String>;
+        /// Turns a serialized receipt payload string back into its class 
+        fn Message::deserialize(serialised_data: &str) -> Result<Message>;
         /// Creates a new `MessageBuilder` to construct an instance of a `Message`.
         fn Message::builder() -> MessageBuilder;
         /// Returns the network id of a `Message`.
@@ -1385,7 +1389,7 @@ foreign_class!(
         fn MqttTopicManager::unsubscribe(&mut self) -> Result<()>;
 
         // Subscribe to the given topics with the callback.
-        //fn MqttTopicManager::subscribe(&mut self, cb: Box<dyn MqttListener + Send + 'static>) -> Result<()>;
+        fn MqttTopicManager::subscribe(&mut self, cb: Box<dyn MqttListener + Send + Sync + 'static>) -> Result<()>;
     }
 );
 

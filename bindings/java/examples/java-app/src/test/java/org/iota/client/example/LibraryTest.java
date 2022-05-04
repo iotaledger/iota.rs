@@ -2,6 +2,9 @@ package org.iota.client.example;
 
 import java.util.Arrays;
 import java.util.Date;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.Assert.*;	
 import org.junit.Test;
@@ -31,6 +34,28 @@ public class LibraryTest {
 
         assertEquals(info.url(), NODE);
         assertNotNull(info.nodeInfo());
+    }
+
+    @Test
+    public void mqtt() throws MqttException, InterruptedException {
+        AtomicBoolean received = new AtomicBoolean(false);
+        MqttListener listener = new MqttListener() {
+            @Override
+            public void onEvent(TopicEvent event){ 
+                Message message = Message.deserialize(event.payload());
+
+                received.set(true);
+            }
+        };
+
+        iota.subscriber().withTopic(Topic.from("messages")).subscribe(listener);
+
+        while (!received.get()) {
+            TimeUnit.SECONDS.sleep(1);
+        }
+
+        // unsubscribe from 'messages' topic, will continue to receive events for 'milestones/confirmed'
+        iota.subscriber().withTopic(Topic.from("messages")).unsubscribe();
     }
 
     @Test
