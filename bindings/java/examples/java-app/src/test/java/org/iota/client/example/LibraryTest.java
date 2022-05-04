@@ -37,7 +37,7 @@ public class LibraryTest {
     }
 
     @Test
-    public void mqtt() throws MqttException, InterruptedException {
+    public void mqtt() throws InterruptedException {
         AtomicBoolean received = new AtomicBoolean(false);
         MqttListener listener = new MqttListener() {
             @Override
@@ -54,7 +54,7 @@ public class LibraryTest {
             TimeUnit.SECONDS.sleep(1);
         }
 
-        // unsubscribe from 'messages' topic, will continue to receive events for 'milestones/confirmed'
+        // unsubscribe from 'messages' topic
         iota.subscriber().withTopic(Topic.from("messages")).unsubscribe();
     }
 
