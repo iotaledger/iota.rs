@@ -93,10 +93,7 @@ pub struct MilestonePayload {
 
 impl From<RustMilestonePayload> for MilestonePayload {
     fn from(payload: RustMilestonePayload) -> Self {
-        Self::new(
-            payload.essence().to_owned(),
-            payload.signatures().to_owned(),
-        )
+        Self::new(payload.essence().to_owned(), payload.signatures().to_owned())
     }
 }
 

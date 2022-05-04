@@ -12,7 +12,7 @@ use std::fmt::{Display, Formatter};
 
 use crate::{
     bee_types::{TreasuryInput, TreasuryOutput},
-    Result
+    Result,
 };
 
 /// Response of GET /api/v1/treasury.

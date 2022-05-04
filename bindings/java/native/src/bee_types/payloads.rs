@@ -41,9 +41,7 @@ impl MessagePayload {
         let res = serde_json::from_str(serialised_data);
 
         match res {
-            Ok(s) => Ok(MessagePayload {
-                payload: s
-            }),
+            Ok(s) => Ok(MessagePayload { payload: s }),
             Err(e) => Err(anyhow::anyhow!(e.to_string())),
         }
     }
