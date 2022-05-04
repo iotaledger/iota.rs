@@ -259,6 +259,25 @@ export class Client {
     }
 
     /**
+     * Store a mnemonic in the Stronghold vault
+     * TODO: test this method
+     */
+    async storeMnemonic(
+        secretManager: SecretManager,
+        mnemonic: string,
+    ): Promise<IPreparedTransactionData> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'StoreMnemonic',
+            data: {
+                secretManager,
+                mnemonic,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
      * Sign a transaction
      */
     async signTransaction(

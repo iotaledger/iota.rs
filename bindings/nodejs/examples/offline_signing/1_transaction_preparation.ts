@@ -2,20 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 import { Client, initLogger } from '@iota/client';
 import { writeFile, readFile } from 'fs/promises';
-import path = require('path');
 
 // From examples directory, run with:
 // node ./dist/offline_signing/1_transaction_preparation.js
 
 // In this example we will get inputs and prepare a transaction
-const ADDRESS_FILE_NAME = path.join(
-    __dirname,
-    '../../offline_signing/addresses.json',
-);
-const PREPARED_TRANSACTION_FILE_NAME = path.join(
-    __dirname,
-    '../../offline_signing/prepared_transaction.json',
-);
+const ADDRESS_FILE_NAME = __dirname + '/../../offline_signing/addresses.json';
+const PREPARED_TRANSACTION_FILE_NAME =
+    __dirname + '/../../offline_signing/prepared_transaction.json';
 
 async function run() {
     initLogger();

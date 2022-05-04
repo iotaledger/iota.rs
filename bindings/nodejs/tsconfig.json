@@ -10,6 +10,7 @@
         "importsNotUsedAsValues": "error",
         "noImplicitAny": true,
         "preserveConstEnums": true,
+        "resolveJsonModule": true,
         "outDir": "out"
     },
     "include": ["lib/**/*", "types/**/*", "test"]

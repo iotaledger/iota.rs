@@ -2,17 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 import { Client, initLogger, SHIMMER_TESTNET_BECH32_HRP } from '@iota/client';
 import { writeFile } from 'fs/promises';
+
 require('dotenv').config({ path: '../../../.env' });
-import path = require('path');
 
 // From examples directory, run with:
 // node ./dist/offline_signing/0_address_generation.js
 
 // In this example we will generate addresses offline which will be used later to find inputs
-const ADDRESS_FILE_NAME = path.join(
-    __dirname,
-    '../../offline_signing/addresses.json',
-);
+const ADDRESS_FILE_NAME = __dirname + '/../../offline_signing/addresses.json';
 
 async function run() {
     initLogger();

@@ -121,6 +121,14 @@ export interface __SignTransactionPayloadMethod__ {
     };
 }
 
+export interface __StoreMnemonicPayloadMethod__ {
+    name: 'StoreMnemonic';
+    data: {
+        secretManager: SecretManager;
+        mnemonic: string;
+    };
+}
+
 export interface __SubmitPayloadPayloadMethod__ {
     name: 'SubmitPayload';
     data: {

@@ -61,6 +61,7 @@ import type {
     __GetUtxoChangesByMilestoneIdPayloadMethod__,
     __GetMilestoneByMilestoneIndexPayloadMethod__,
     __GetUtxoChangesByMilestoneIndexPayloadMethod__,
+    __StoreMnemonicPayloadMethod__,
 } from './client';
 
 export type __ClientPayloadMethods__ =
@@ -81,6 +82,7 @@ export type __ClientPayloadMethods__ =
     | __FindOutputsPayloadMethod__
     | __PrepareTransactionPayloadMethod__
     | __SignTransactionPayloadMethod__
+    | __StoreMnemonicPayloadMethod__
     | __SubmitPayloadPayloadMethod__
     | __ParseBech32AddressPayloadMethod__
     | __MessageIdPayloadMethod__

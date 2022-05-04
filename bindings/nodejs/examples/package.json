@@ -3,6 +3,9 @@
     "version": "1.0.0",
     "main": "dist/index.js",
     "private": true,
+    "scripts": {
+        "build": "tsc"
+    },
     "dependencies": {
         "@iota/client": "../",
         "dotenv": "^16.0.0"

@@ -1,7 +1,12 @@
-import type { IMessage, ITaggedDataPayload } from '@iota/types';
+import type {
+    IMessage,
+    IOutputResponse,
+    ITaggedDataPayload,
+} from '@iota/types';
 import { Client, utf8ToBytes, utf8ToHex } from '../../lib';
 import '../customMatchers';
 import 'dotenv/config';
+import * as addressOutputs from '../fixtures/addressOutputs.json';
 
 const client = new Client({
     nodes: [
@@ -81,10 +86,60 @@ describe.skip('Main examples', () => {
         expect(output.messageId).toBeValidMessageId();
     });
 
-    // TODO: implement this test
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    it.skip('gets the balance of an address', () => {});
+    it('gets the balance of an address', async () => {
+        // Generate the first address
+        const addresses = await client.generateAddresses(secretManager, {
+            accountIndex: 0,
+            range: {
+                start: 0,
+                end: 1,
+            },
+        });
+        expect(addresses[0]).toBeValidAddress();
 
+        // Get output ids of outputs that can be controlled by this address without further unlock constraints
+        const outputIds = await client.outputIds([
+            { address: addresses[0] },
+            { hasExpirationCondition: false },
+            { hasTimelockCondition: false },
+            { hasStorageDepositReturnCondition: false },
+        ]);
+        expect(outputIds).toBeDefined();
+
+        // Get outputs by their IDs
+        const addressOutputs = await client.getOutputs(outputIds);
+        expect(addressOutputs).toBeDefined();
+    });
+
+    it('calculates the balance of an address', () => {
+        const testOutputs = addressOutputs as IOutputResponse[];
+
+        // Calculate the total amount and native tokens
+        let totalAmount = 0;
+        const totalNativeTokens: { [id: string]: number } = {};
+        for (const outputResponse of testOutputs) {
+            const output = outputResponse['output'];
+
+            if ('nativeTokens' in output) {
+                output.nativeTokens.forEach(
+                    (token) =>
+                        (totalNativeTokens[token.id] =
+                            (totalNativeTokens[token.id] || 0) +
+                            parseInt(token.amount)),
+                );
+            }
+
+            totalAmount += parseInt(output.amount);
+        }
+
+        expect(totalAmount).toBe(1960954000);
+        expect(Object.keys(totalNativeTokens).length).toBe(2);
+        expect(
+            Object.values(totalNativeTokens).reduce(
+                (acc: number, val: number) => acc + val,
+            ),
+        ).toBe(200);
+    });
     it('sends a message', async () => {
         const message = await client.generateMessage();
 
@@ -124,7 +179,8 @@ describe.skip('Main examples', () => {
         });
     });
 
-    it('sends a transaction', async () => {
+    // transaction tests disabled for workflows, because they fail if we don't have funds
+    it.skip('sends a transaction', async () => {
         const addresses = await client.generateAddresses(secretManager, {
             range: {
                 start: 1,

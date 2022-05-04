@@ -2,7 +2,10 @@ import { Client, SHIMMER_TESTNET_BECH32_HRP } from '../../lib';
 import '../customMatchers';
 import 'dotenv/config';
 import { addresses } from '../fixtures/addresses';
-import { readFile } from 'fs/promises';
+import * as preparedTransactionJson from '../fixtures/preparedTransaction.json';
+import * as signedTransactionJson from '../fixtures/signedTransaction.json';
+import type { IPreparedTransactionData } from '../../types';
+import type { PayloadTypes } from '@iota/types';
 
 const onlineClient = new Client({
     nodes: [
@@ -47,7 +50,7 @@ describe('Offline signing examples', () => {
         });
     });
 
-    // Skipped for CI, needs node
+    // transaction tests disabled for workflows, because they fail if we don't have funds
     it.skip('prepares a transaction', async () => {
         const address =
             'rms1qqv5avetndkxzgr3jtrswdtz5ze6mag20s0jdqvzk4fwezve8q9vkpnqlqe';
@@ -68,33 +71,23 @@ describe('Offline signing examples', () => {
     });
 
     it('signs a transaction', async () => {
-        const preparedTransaction = JSON.parse(
-            await readFile(
-                __dirname + '/../fixtures/preparedTransaction.json',
-                'utf8',
-            ),
-        );
-
         const signedTransaction = await offlineClient.signTransaction(
             secretManager,
-            preparedTransaction,
+            // Imported JSON is typed with literal types
+            preparedTransactionJson as unknown as IPreparedTransactionData,
         );
 
         // TODO: more assertions
         expect(signedTransaction.type).toBe(6);
     });
 
-    // Skipped for CI, needs node
+    // transaction tests disabled for workflows, because they fail if we don't have funds
     it.skip('sends a transaction', async () => {
-        const signedTransaction = JSON.parse(
-            await readFile(
-                __dirname + '/../fixtures/signedTransaction.json',
-                'utf8',
-            ),
-        );
-
         // Send message with the signed transaction as a payload
-        const message = await onlineClient.submitPayload(signedTransaction);
+        const message = await onlineClient.submitPayload(
+            // Imported JSON is typed with literal types
+            signedTransactionJson as unknown as PayloadTypes,
+        );
 
         expect(message.payload).toBeDefined();
 

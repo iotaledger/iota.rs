@@ -2,16 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 import { Client, initLogger } from '@iota/client';
 import { readFile } from 'fs/promises';
-import path = require('path');
 
 // From examples directory, run with:
 // node ./dist/offline_signing/3_send_message.js
 
 // In this example we will send the signed transaction in a message
-const SIGNED_TRANSACTION_FILE_NAME = path.join(
-    __dirname,
-    '../../offline_signing/signed_transaction.json',
-);
+const SIGNED_TRANSACTION_FILE_NAME =
+    __dirname + '/../../offline_signing/signed_transaction.json';
 
 async function run() {
     initLogger();

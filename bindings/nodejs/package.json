@@ -19,7 +19,6 @@
         "format": "prettier --ignore-path .eslintignore -w {,*/**/}*.{ts,js,json}",
         "format-check": "prettier --ignore-path .eslintignore -c {,*/**/}*.{ts,js,json}",
         "install": "prebuild-install --tag-prefix nodejs-binding-v || npm run rebuild",
-        "install:examples": "cd ./examples && yarn && tsc",
         "build": "npm run build:neon && tsc",
         "build:neon": "cargo-cp-artifact -nc ./index.node -- cargo build --release --message-format=json-render-diagnostics",
         "rebuild": "npm run build:neon && tsc && node scripts/strip.js",
@@ -31,7 +30,6 @@
     "devDependencies": {
         "@iota/types": "^1.0.0-beta.4",
         "@types/jest": "^27.4.1",
-        "@types/node": "^17.0.31",
         "@typescript-eslint/eslint-plugin": "^5.19.0",
         "@typescript-eslint/parser": "^5.19.0",
         "dotenv": "^16.0.0",
