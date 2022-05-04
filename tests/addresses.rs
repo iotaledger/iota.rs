@@ -1,6 +1,18 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+#[cfg(feature = "stronghold")]
+use std::path::PathBuf;
+
+use bee_message::address::Address;
+#[cfg(feature = "message_interface")]
+use iota_client::api::GetAddressesBuilderOptions;
+#[cfg(feature = "message_interface")]
+use iota_client::message_interface;
+#[cfg(feature = "message_interface")]
+use iota_client::message_interface::{ClientMethod, MessageType, ResponseType};
+#[cfg(feature = "stronghold")]
+use iota_client::secret::stronghold::StrongholdSecretManager;
 use iota_client::{
     api::GetAddressesBuilder,
     constants::{IOTA_BECH32_HRP, IOTA_COIN_TYPE, IOTA_TESTNET_BECH32_HRP, SHIMMER_BECH32_HRP, SHIMMER_COIN_TYPE},
@@ -128,4 +140,172 @@ async fn mnemonic_address_generation_shimmer() {
         addresses[0],
         "smr1qrexl2g0m74v57y4kl6kfwqz7zrlrkvjt8m30av0cxgxlu92kyzc5npslm8".to_string()
     );
+}
+
+use serde::{Deserialize, Serialize};
+#[tokio::test]
+async fn address_generation() {
+    #[derive(Serialize, Deserialize)]
+    struct AddressData {
+        mnemonic: String,
+        bech32_hrp: String,
+        coin_type: u32,
+        account_index: u32,
+        internal: bool,
+        address_index: u32,
+        ed25519_address: String,
+        bech32_address: String,
+    }
+
+    let file = std::fs::File::open("./tests/fixtures/test_vectors.json").unwrap();
+    let json: serde_json::Value = serde_json::from_reader(file).unwrap();
+    let general = json.get("general").unwrap();
+    let addresses_data: Vec<AddressData> =
+        serde_json::from_value(general.get("address_generations").unwrap().clone()).unwrap();
+
+    for address in &addresses_data {
+        let secret_manager =
+            SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(&address.mnemonic).unwrap());
+        let addresses = GetAddressesBuilder::new(&secret_manager)
+            .with_bech32_hrp(address.bech32_hrp.to_string())
+            .with_coin_type(address.coin_type)
+            .with_account_index(address.account_index)
+            .with_range(address.address_index..address.address_index + 1)
+            .with_internal_addresses(address.internal)
+            .finish()
+            .await
+            .unwrap();
+
+        assert_eq!(addresses[0], address.bech32_address);
+        if let (_bech32_hrp, Address::Ed25519(ed25519_address)) = Address::try_from_bech32(&addresses[0]).unwrap() {
+            assert_eq!(ed25519_address.to_string(), address.ed25519_address);
+        } else {
+            panic!("Invalid address type")
+        }
+    }
+
+    #[cfg(feature = "stronghold")]
+    for address in &addresses_data {
+        let stronghold_filename = format!("{}.stronghold", address.bech32_address);
+        let mut stronghold_secret_manager = StrongholdSecretManager::builder()
+            .password("some_hopefully_secure_password")
+            .snapshot_path(PathBuf::from(stronghold_filename.to_string()))
+            .build();
+
+        stronghold_secret_manager
+            .store_mnemonic(address.mnemonic.to_string())
+            .await
+            .unwrap();
+
+        let addresses = GetAddressesBuilder::new(&SecretManager::Stronghold(stronghold_secret_manager))
+            .with_bech32_hrp(address.bech32_hrp.to_string())
+            .with_coin_type(address.coin_type)
+            .with_account_index(address.account_index)
+            .with_range(address.address_index..address.address_index + 1)
+            .with_internal_addresses(address.internal)
+            .finish()
+            .await
+            .unwrap();
+
+        assert_eq!(addresses[0], address.bech32_address);
+        if let (_bech32_hrp, Address::Ed25519(ed25519_address)) = Address::try_from_bech32(&addresses[0]).unwrap() {
+            assert_eq!(ed25519_address.to_string(), address.ed25519_address);
+        } else {
+            panic!("Invalid address type")
+        }
+        std::fs::remove_file(stronghold_filename).unwrap();
+    }
+
+    #[cfg(feature = "message_interface")]
+    {
+        let client_config = r#"{"offline": true}"#.to_string();
+        let message_handler = message_interface::create_message_handler(Some(client_config))
+            .await
+            .unwrap();
+        for address in &addresses_data {
+            let secret_manager = format!("{{\"Mnemonic\":\"{}\"}}", address.mnemonic);
+            let options = GetAddressesBuilderOptions {
+                coin_type: Some(address.coin_type),
+                account_index: Some(address.account_index),
+                range: Some(std::ops::Range {
+                    start: address.address_index,
+                    end: address.address_index + 1,
+                }),
+                internal: Some(address.internal),
+                bech32_hrp: Some(address.bech32_hrp.to_string()),
+                metadata: None,
+            };
+            let message = MessageType::CallClientMethod(ClientMethod::GenerateAddresses {
+                secret_manager,
+                options,
+            });
+
+            let response = message_interface::send_message(&message_handler, message).await;
+            match response.response_type() {
+                ResponseType::GeneratedAddresses(addresses) => {
+                    assert_eq!(addresses[0], address.bech32_address);
+                    if let (_bech32_hrp, Address::Ed25519(ed25519_address)) =
+                        Address::try_from_bech32(&addresses[0]).unwrap()
+                    {
+                        assert_eq!(ed25519_address.to_string(), address.ed25519_address);
+                    } else {
+                        panic!("Invalid address type")
+                    }
+                }
+                _ => panic!("Unexpected response type"),
+            }
+        }
+    }
+
+    #[cfg(all(feature = "message_interface", feature = "stronghold"))]
+    {
+        let client_config = r#"{"offline": true}"#.to_string();
+        let message_handler = message_interface::create_message_handler(Some(client_config))
+            .await
+            .unwrap();
+        for address in addresses_data {
+            let stronghold_filename = format!("{}.stronghold", address.bech32_address);
+            let secret_manager_dto = format!(
+                r#"{{"Stronghold": {{"password": "some_hopefully_secure_password", "snapshotPath": "{}"}}}}"#,
+                stronghold_filename
+            );
+            let message_type = MessageType::CallClientMethod(ClientMethod::StoreMnemonic {
+                secret_manager: secret_manager_dto.to_string(),
+                mnemonic: address.mnemonic,
+            });
+            let _response = message_interface::send_message(&message_handler, message_type).await;
+
+            let options = GetAddressesBuilderOptions {
+                coin_type: Some(address.coin_type),
+                account_index: Some(address.account_index),
+                range: Some(std::ops::Range {
+                    start: address.address_index,
+                    end: address.address_index + 1,
+                }),
+                internal: Some(address.internal),
+                bech32_hrp: Some(address.bech32_hrp.to_string()),
+                metadata: None,
+            };
+            let message = MessageType::CallClientMethod(ClientMethod::GenerateAddresses {
+                secret_manager: secret_manager_dto.to_string(),
+                options,
+            });
+
+            let response = message_interface::send_message(&message_handler, message).await;
+            match response.response_type() {
+                ResponseType::GeneratedAddresses(addresses) => {
+                    assert_eq!(addresses[0], address.bech32_address);
+                    if let (_bech32_hrp, Address::Ed25519(ed25519_address)) =
+                        Address::try_from_bech32(&addresses[0]).unwrap()
+                    {
+                        assert_eq!(ed25519_address.to_string(), address.ed25519_address);
+                    } else {
+                        panic!("Invalid address type")
+                    }
+                }
+                _ => panic!("Unexpected response type"),
+            }
+            std::fs::remove_file(stronghold_filename).unwrap();
+        }
+    }
 }
