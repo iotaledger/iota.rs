@@ -15,12 +15,12 @@ categories = [ "cryptography::cryptocurrencies" ]
 normal = [ "async-trait", "derive_builder", "slog-stdlog", "ureq" ]
 
 [dependencies]
-bee-rest-api = { git = "https://github.com/iotaledger/bee", rev = "4e42bc2e0bf2ea39eefd806827ee134bee0ec8c0", default-features = false }
-bee-message = { git = "https://github.com/iotaledger/bee", rev = "4e42bc2e0bf2ea39eefd806827ee134bee0ec8c0", default-features = false, features = [ "serde", "dto" ] }
-bee-pow = { git = "https://github.com/iotaledger/bee", rev = "4e42bc2e0bf2ea39eefd806827ee134bee0ec8c0", default-features = false }
+bee-rest-api = { git = "https://github.com/iotaledger/bee", rev = "c51f749e5679395874a24fce2cf8eb977c1af67c", default-features = false }
+bee-message = { git = "https://github.com/iotaledger/bee", rev = "c51f749e5679395874a24fce2cf8eb977c1af67c", default-features = false, features = [ "serde", "dto" ] }
+bee-pow = { git = "https://github.com/iotaledger/bee", rev = "c51f749e5679395874a24fce2cf8eb977c1af67c", default-features = false }
 fern-logger = { version = "0.5.0", default-features = false }
 iota-crypto = { version = "0.10.0", default-features = false, features = [ "std", "chacha", "blake2b", "ed25519", "random", "slip10", "bip39", "bip39-en" ] }
-packable = { version = "0.3.1", default-features = false, features = [ "serde", "primitive-types" ] }
+packable = { version = "0.3.2", default-features = false, features = [ "serde", "primitive-types" ] }
 
 async-trait = { version ="0.1.51", default-features = false }
 derive_builder = { version = "0.11.1", default-features = false, features = [ "std" ]}
