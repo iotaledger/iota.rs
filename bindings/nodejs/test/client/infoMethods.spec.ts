@@ -12,7 +12,8 @@ const client = new Client({
     localPow: true,
 });
 
-describe('Client info methods', () => {
+// Skip for CI
+describe.skip('Client info methods', () => {
     it('gets a node candidate from the synced node pool', async () => {
         const nodeInfo = await client.getNode();
 

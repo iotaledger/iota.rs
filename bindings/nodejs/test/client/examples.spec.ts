@@ -18,7 +18,8 @@ const secretManager = {
         'endorse answer radar about source reunion marriage tag sausage weekend frost daring base attack because joke dream slender leisure group reason prepare broken river',
 };
 
-describe('Main examples', () => {
+// Skip for CI
+describe.skip('Main examples', () => {
     it('gets info about the node', async () => {
         const info = await client.getInfo();
 

@@ -47,7 +47,8 @@ describe('Offline signing examples', () => {
         });
     });
 
-    it('prepares a transaction', async () => {
+    // Skipped for CI, needs node
+    it.skip('prepares a transaction', async () => {
         const address =
             'rms1qqv5avetndkxzgr3jtrswdtz5ze6mag20s0jdqvzk4fwezve8q9vkpnqlqe';
         const amount = 1000000;
@@ -83,7 +84,8 @@ describe('Offline signing examples', () => {
         expect(signedTransaction.type).toBe(6);
     });
 
-    it('sends a transaction', async () => {
+    // Skipped for CI, needs node
+    it.skip('sends a transaction', async () => {
         const signedTransaction = JSON.parse(
             await readFile(
                 __dirname + '/../fixtures/signedTransaction.json',
