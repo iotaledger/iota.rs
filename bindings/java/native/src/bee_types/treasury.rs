@@ -10,7 +10,10 @@ use iota_client::{
 };
 use std::fmt::{Display, Formatter};
 
-use crate::bee_types::{TreasuryInput, TreasuryOutput};
+use crate::{
+    bee_types::{TreasuryInput, TreasuryOutput},
+    Result
+};
 
 /// Response of GET /api/v1/treasury.
 /// Returns all information about the treasury.
@@ -66,6 +69,24 @@ impl TreasuryPayload {
             return (*payload).into();
         }
         unreachable!()
+    }
+
+    pub fn deserialize(serialised_data: &str) -> Result<TreasuryPayload> {
+        let res = serde_json::from_str(serialised_data);
+
+        match res {
+            Ok(s) => Ok(TreasuryPayload(s)),
+            Err(e) => Err(anyhow::anyhow!(e.to_string())),
+        }
+    }
+
+    pub fn serialize(&self) -> Result<String> {
+        let res = serde_json::to_string(&self.0);
+
+        match res {
+            Ok(s) => Ok(s),
+            Err(e) => Err(anyhow::anyhow!(e.to_string())),
+        }
     }
 }
 

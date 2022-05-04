@@ -91,6 +91,15 @@ pub struct MilestonePayload {
     signatures: Vec<[u8; MILESTONE_SIGNATURE_LENGTH]>,
 }
 
+impl From<RustMilestonePayload> for MilestonePayload {
+    fn from(payload: RustMilestonePayload) -> Self {
+        Self::new(
+            payload.essence().to_owned(),
+            payload.signatures().to_owned(),
+        )
+    }
+}
+
 impl MilestonePayload {
     pub fn new(essence: RustMilestonePayloadEssence, box_signatures: Vec<Box<[u8]>>) -> MilestonePayload {
         let signatures: Vec<[u8; MILESTONE_SIGNATURE_LENGTH]> =
@@ -129,6 +138,24 @@ impl MilestonePayload {
 
     pub fn id(&self) -> String {
         self.rust_milestone.id().to_string()
+    }
+
+    pub fn deserialize(serialised_data: &str) -> Result<Self> {
+        let res: Result<RustMilestonePayload, _> = serde_json::from_str(serialised_data);
+
+        match res {
+            Ok(s) => Ok(s.into()),
+            Err(e) => Err(anyhow::anyhow!(e.to_string())),
+        }
+    }
+
+    pub fn serialize(&self) -> Result<String> {
+        let res = serde_json::to_string(&self.rust_milestone);
+
+        match res {
+            Ok(s) => Ok(s),
+            Err(e) => Err(anyhow::anyhow!(e.to_string())),
+        }
     }
 }
 

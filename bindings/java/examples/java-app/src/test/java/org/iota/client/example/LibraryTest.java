@@ -54,12 +54,15 @@ public class LibraryTest {
         // Fetch message Ids
         fetched_message_ids = iota.getMessage().indexString(index);
         assertTrue(fetched_message_ids.length == 2);
-        assertEquals(fetched_message_ids[0], message2.id());
         
         // get message data
         message1Remote = iota.getMessage().data(fetched_message_ids[0]);
         assertTrue(message1Remote.payload().isPresent());
         verifyPayload(message1Remote.payload().get().asIndexation(), index, data);
+
+        String serialised = message1Remote.payload().get().asIndexation().serialize();
+        IndexationPayload deserialised = IndexationPayload.deserialize(serialised);
+        verifyPayload(deserialised, index, data);
     }
 
     private void verifyPayload(IndexationPayload payload, String index, String data){

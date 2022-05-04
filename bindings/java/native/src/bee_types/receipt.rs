@@ -131,19 +131,17 @@ impl Display for MigratedFundsEntryDto {
     }
 }
 
-pub struct ReceiptPayload {
-    payload: RustReceiptPayload,
-}
+pub struct ReceiptPayload(RustReceiptPayload);
 
 impl From<RustReceiptPayload> for ReceiptPayload {
     fn from(payload: RustReceiptPayload) -> Self {
-        Self { payload }
+        Self(payload)
     }
 }
 
 impl ReceiptPayload {
     pub fn to_inner(self) -> RustReceiptPayload {
-        self.payload
+        self.0
     }
     pub fn from(
         migrated_at: u32,
@@ -158,40 +156,58 @@ impl ReceiptPayload {
             transaction.to_inner(),
         );
         match res {
-            Ok(payload) => Ok(Self { payload }),
+            Ok(payload) => Ok(Self(payload)),
             Err(e) => Err(anyhow::anyhow!(e.to_string())),
         }
     }
 
     pub fn migrated_at(&self) -> u32 {
-        *self.payload.migrated_at()
+        *self.0.migrated_at()
     }
 
     pub fn last(&self) -> bool {
-        self.payload.last()
+        self.0.last()
     }
 
     pub fn transaction(&self) -> TreasuryPayload {
-        let p: MessagePayload = self.payload.transaction().clone().into();
+        let p: MessagePayload = self.0.transaction().clone().into();
         p.as_treasury().unwrap()
     }
 
     pub fn amount(&self) -> u64 {
-        self.payload.amount()
+        self.0.amount()
     }
 
     pub fn funds(&self) -> Vec<MigratedFundsEntry> {
-        self.payload
+        self.0
             .funds()
             .iter()
             .map(|m| MigratedFundsEntry { payload: m.clone() })
             .collect()
     }
+
+    pub fn deserialize(serialised_data: &str) -> Result<ReceiptPayload> {
+        let res = serde_json::from_str(serialised_data);
+
+        match res {
+            Ok(s) => Ok(ReceiptPayload(s)),
+            Err(e) => Err(anyhow::anyhow!(e.to_string())),
+        }
+    }
+
+    pub fn serialize(&self) -> Result<String> {
+        let res = serde_json::to_string(&self.0);
+
+        match res {
+            Ok(s) => Ok(s),
+            Err(e) => Err(anyhow::anyhow!(e.to_string())),
+        }
+    }
 }
 
 impl Display for ReceiptPayload {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
-        write!(f, "({:?})", self.payload)
+        write!(f, "({:?})", self.0)
     }
 }
 
