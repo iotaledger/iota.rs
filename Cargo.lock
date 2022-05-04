@@ -188,7 +188,7 @@ checksum = "cf9ff0bbfd639f15c74af777d81383cf53efb7c93613f6cab67c6c11e05bbf8b"
 [[package]]
 name = "bee-ledger"
 version = "0.7.0"
-source = "git+https://github.com/iotaledger/bee?rev=9aafbde975ab466ed9988b667f58a40e62bd965d#9aafbde975ab466ed9988b667f58a40e62bd965d"
+source = "git+https://github.com/iotaledger/bee?rev=4e42bc2e0bf2ea39eefd806827ee134bee0ec8c0#4e42bc2e0bf2ea39eefd806827ee134bee0ec8c0"
 dependencies = [
  "bee-message",
  "packable",
@@ -199,7 +199,7 @@ dependencies = [
 [[package]]
 name = "bee-message"
 version = "0.2.0"
-source = "git+https://github.com/iotaledger/bee?rev=9aafbde975ab466ed9988b667f58a40e62bd965d#9aafbde975ab466ed9988b667f58a40e62bd965d"
+source = "git+https://github.com/iotaledger/bee?rev=4e42bc2e0bf2ea39eefd806827ee134bee0ec8c0#4e42bc2e0bf2ea39eefd806827ee134bee0ec8c0"
 dependencies = [
  "bech32 0.8.1",
  "bee-pow",
@@ -224,7 +224,7 @@ dependencies = [
 [[package]]
 name = "bee-pow"
 version = "0.2.0"
-source = "git+https://github.com/iotaledger/bee?rev=9aafbde975ab466ed9988b667f58a40e62bd965d#9aafbde975ab466ed9988b667f58a40e62bd965d"
+source = "git+https://github.com/iotaledger/bee?rev=4e42bc2e0bf2ea39eefd806827ee134bee0ec8c0#4e42bc2e0bf2ea39eefd806827ee134bee0ec8c0"
 dependencies = [
  "bee-ternary 0.6.0",
  "iota-crypto 0.9.2",
@@ -234,7 +234,7 @@ dependencies = [
 [[package]]
 name = "bee-rest-api"
 version = "0.2.2"
-source = "git+https://github.com/iotaledger/bee?rev=9aafbde975ab466ed9988b667f58a40e62bd965d#9aafbde975ab466ed9988b667f58a40e62bd965d"
+source = "git+https://github.com/iotaledger/bee?rev=4e42bc2e0bf2ea39eefd806827ee134bee0ec8c0#4e42bc2e0bf2ea39eefd806827ee134bee0ec8c0"
 dependencies = [
  "bee-ledger",
  "bee-message",
@@ -1153,8 +1153,8 @@ dependencies = [
  "gloo-timers",
  "hex",
  "instant",
+ "iota-crypto 0.10.0",
  "iota-crypto 0.5.1",
- "iota-crypto 0.9.2",
  "iota-ledger",
  "iota_stronghold",
  "log",
@@ -1203,8 +1203,20 @@ version = "0.9.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "13a3db4f13f4324788e4b870fdd264895a558cb523a851a9dd77bcfa43750b24"
 dependencies = [
- "aead",
  "bee-ternary 0.6.0",
+ "blake2",
+ "digest",
+ "ed25519-zebra",
+ "lazy_static",
+]
+
+[[package]]
+name = "iota-crypto"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1689fd8524d3516d499a94267f593ba9c984e31762a278ef66ce60d6621d16ff"
+dependencies = [
+ "aead",
  "blake2",
  "chacha20poly1305",
  "digest",
@@ -1212,7 +1224,6 @@ dependencies = [
  "generic-array",
  "getrandom 0.2.6",
  "hmac",
- "lazy_static",
  "pbkdf2",
  "serde 1.0.136",
  "sha2",
