@@ -13,6 +13,10 @@ use iota_client::message_interface;
 use iota_client::message_interface::{ClientMethod, MessageType, ResponseType};
 #[cfg(feature = "stronghold")]
 use iota_client::secret::stronghold::StrongholdSecretManager;
+#[cfg(feature = "message_interface")]
+use iota_client::secret::types::StrongholdDto;
+#[cfg(feature = "message_interface")]
+use iota_client::secret::SecretManagerDto;
 use iota_client::{
     api::GetAddressesBuilder,
     constants::{IOTA_BECH32_HRP, IOTA_COIN_TYPE, IOTA_TESTNET_BECH32_HRP, SHIMMER_BECH32_HRP, SHIMMER_COIN_TYPE},
@@ -223,7 +227,6 @@ async fn address_generation() {
             .await
             .unwrap();
         for address in &addresses_data {
-            let secret_manager = format!("{{\"Mnemonic\":\"{}\"}}", address.mnemonic);
             let options = GetAddressesBuilderOptions {
                 coin_type: Some(address.coin_type),
                 account_index: Some(address.account_index),
@@ -236,7 +239,7 @@ async fn address_generation() {
                 metadata: None,
             };
             let message = MessageType::CallClientMethod(ClientMethod::GenerateAddresses {
-                secret_manager,
+                secret_manager: SecretManagerDto::Mnemonic(address.mnemonic.clone()),
                 options,
             });
 
@@ -265,12 +268,12 @@ async fn address_generation() {
             .unwrap();
         for address in addresses_data {
             let stronghold_filename = format!("{}.stronghold", address.bech32_address);
-            let secret_manager_dto = format!(
-                r#"{{"Stronghold": {{"password": "some_hopefully_secure_password", "snapshotPath": "{}"}}}}"#,
-                stronghold_filename
-            );
+            let secret_manager_dto = StrongholdDto {
+                password: Some("some_hopefully_secure_password".to_string()),
+                snapshot_path: Some(stronghold_filename.clone()),
+            };
             let message_type = MessageType::CallClientMethod(ClientMethod::StoreMnemonic {
-                secret_manager: secret_manager_dto.to_string(),
+                secret_manager: SecretManagerDto::Stronghold(secret_manager_dto.clone()),
                 mnemonic: address.mnemonic,
             });
             let _response = message_interface::send_message(&message_handler, message_type).await;
@@ -287,7 +290,7 @@ async fn address_generation() {
                 metadata: None,
             };
             let message = MessageType::CallClientMethod(ClientMethod::GenerateAddresses {
-                secret_manager: secret_manager_dto.to_string(),
+                secret_manager: SecretManagerDto::Stronghold(secret_manager_dto),
                 options,
             });
 
