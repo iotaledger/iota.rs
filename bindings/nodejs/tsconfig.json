@@ -12,5 +12,5 @@
         "preserveConstEnums": true,
         "outDir": "out"
     },
-    "include": ["lib/**/*", "types/**/*"]
+    "include": ["lib/**/*", "types/**/*", "test"]
 }

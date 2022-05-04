@@ -146,7 +146,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: udeps
-          args: --manifest-path bindings/nodejs/Cargo.toml --all-targets
+          args: --manifest-path bindings/nodejs/Cargo.toml --all-targets --all-features
 
       # TODO: Check yarn too
 

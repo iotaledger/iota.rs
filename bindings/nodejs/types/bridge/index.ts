@@ -33,8 +33,6 @@ import type {
     __PostMessageJsonPayloadMethod__,
     __GetMessageRawPayloadMethod__,
     __GetMessageChildrenPayloadMethod__,
-    __GetMilestonePayloadMethod__,
-    __GetMilestoneUtxoChangesPayloadMethod__,
     __GetReceiptsPayloadMethod__,
     __GetReceiptsMigratedAtPayloadMethod__,
     __GetTreasuryPayloadMethod__,
@@ -59,6 +57,10 @@ import type {
     __PromotePayloadMethod__,
     __PromoteUncheckedPayloadMethod__,
     __UnsyncedNodesPayloadMethod__,
+    __GetMilestoneByMilestoneIdPayloadMethod__,
+    __GetUtxoChangesByMilestoneIdPayloadMethod__,
+    __GetMilestoneByMilestoneIndexPayloadMethod__,
+    __GetUtxoChangesByMilestoneIndexPayloadMethod__,
 } from './client';
 
 export type __ClientPayloadMethods__ =
@@ -96,8 +98,10 @@ export type __ClientPayloadMethods__ =
     | __PostMessageJsonPayloadMethod__
     | __GetMessageRawPayloadMethod__
     | __GetMessageChildrenPayloadMethod__
-    | __GetMilestonePayloadMethod__
-    | __GetMilestoneUtxoChangesPayloadMethod__
+    | __GetMilestoneByMilestoneIdPayloadMethod__
+    | __GetUtxoChangesByMilestoneIdPayloadMethod__
+    | __GetMilestoneByMilestoneIndexPayloadMethod__
+    | __GetUtxoChangesByMilestoneIndexPayloadMethod__
     | __GetReceiptsPayloadMethod__
     | __GetReceiptsMigratedAtPayloadMethod__
     | __GetTreasuryPayloadMethod__

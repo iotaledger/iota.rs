@@ -27,9 +27,9 @@ async function run() {
             throw new Error('.env mnemonic is undefined, see .env.example');
         }
 
-        const secretManager = JSON.stringify({
+        const secretManager = {
             Mnemonic: process.env.NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1,
-        });
+        };
 
         // We generate an address from our seed so that we send the funds to ourselves
         const addresses = await client.generateAddresses(secretManager, {
@@ -41,7 +41,6 @@ async function run() {
 
         // We prepare the transaction
         // Insert the output address and amount to spend. The amount cannot be zero.
-        // TODO: fix error: {"type":"MessageDtoError","error":"tokenId"}
         const message = await client.generateMessage(secretManager, {
             output: {
                 address: addresses[0],

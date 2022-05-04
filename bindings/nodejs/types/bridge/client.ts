@@ -214,15 +214,28 @@ export interface __GetMessageChildrenPayloadMethod__ {
     };
 }
 
-export interface __GetMilestonePayloadMethod__ {
-    name: 'GetMilestone';
+export interface __GetMilestoneByMilestoneIdPayloadMethod__ {
+    name: 'GetMilestoneByMilestoneId';
+    data: {
+        milestoneId: string;
+    };
+}
+
+export interface __GetUtxoChangesByMilestoneIdPayloadMethod__ {
+    name: 'GetUtxoChangesByMilestoneId';
+    data: {
+        milestoneId: string;
+    };
+}
+export interface __GetMilestoneByMilestoneIndexPayloadMethod__ {
+    name: 'GetMilestoneByMilestoneIndex';
     data: {
         index: number;
     };
 }
 
-export interface __GetMilestoneUtxoChangesPayloadMethod__ {
-    name: 'GetMilestoneUtxoChanges';
+export interface __GetUtxoChangesByMilestoneIndexPayloadMethod__ {
+    name: 'GetUtxoChangesByMilestoneIndex';
     data: {
         index: number;
     };

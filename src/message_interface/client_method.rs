@@ -27,6 +27,7 @@ pub enum ClientMethod {
     /// Generate a addresses.
     GenerateAddresses {
         /// Create secret manager from json
+        #[serde(rename = "secretManager")]
         secret_manager: SecretManagerDto,
         /// Addresses generation options
         options: GenerateAddressesOptions,
@@ -34,6 +35,7 @@ pub enum ClientMethod {
     /// Generate client message
     GenerateMessage {
         /// Secret manager
+        #[serde(rename = "secretManager")]
         secret_manager: Option<SecretManagerDto>,
         /// Options
         options: Option<GenerateMessageOptions>,
@@ -62,6 +64,7 @@ pub enum ClientMethod {
     /// Prepare a transaction for signing
     PrepareTransaction {
         /// Secret manager
+        #[serde(rename = "secretManager")]
         secret_manager: Option<SecretManagerDto>,
         /// Options
         options: Option<GenerateMessageOptions>,
@@ -69,6 +72,7 @@ pub enum ClientMethod {
     /// Sign a transaction
     SignTransaction {
         /// Secret manager
+        #[serde(rename = "secretManager")]
         secret_manager: SecretManagerDto,
         /// Prepared transaction data
         #[serde(rename = "preparedTransactionData")]
@@ -155,6 +159,7 @@ pub enum ClientMethod {
     /// Get the milestone by the given milestone id.
     GetMilestoneByMilestoneId {
         /// Milestone ID
+        #[serde(rename = "milestoneId")]
         milestone_id: MilestoneId,
     },
     /// Get the milestone by the given index.
@@ -165,6 +170,7 @@ pub enum ClientMethod {
     /// Get the UTXO changes by the given milestone id.
     GetUtxoChangesByMilestoneId {
         /// Milestone ID
+        #[serde(rename = "milestoneId")]
         milestone_id: MilestoneId,
     },
     /// Get the UTXO changes by the given milestone index.
@@ -281,6 +287,7 @@ pub enum ClientMethod {
     /// Returns the address to which the funds got consolidated, if any were available
     ConsolidateFunds {
         /// Secret manager
+        #[serde(rename = "secretManager")]
         secret_manager: SecretManagerDto,
         /// Account index
         #[serde(rename = "accountIndex")]

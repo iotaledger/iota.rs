@@ -6,7 +6,6 @@ import 'dotenv/config';
 const client = new Client({
     nodes: [
         {
-            // Insert your node URL here.
             url: process.env.NODE_URL || 'http://localhost:14265',
             disabled: false,
         },
@@ -14,11 +13,12 @@ const client = new Client({
     localPow: true,
 });
 
-const secretManager = JSON.stringify({
-    Mnemonic: process.env.NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1,
-});
+const secretManager = {
+    Mnemonic:
+        'endorse answer radar about source reunion marriage tag sausage weekend frost daring base attack because joke dream slender leisure group reason prepare broken river',
+};
 
-describe('Client', () => {
+describe('Main examples', () => {
     it('gets info about the node', async () => {
         const info = await client.getInfo();
 
@@ -36,8 +36,6 @@ describe('Client', () => {
     });
 
     it('generates addresses', async () => {
-        // @ts-ignore: clientMethods expect secretManager to be JSON string
-        // fixed in https://github.com/iotaledger/iota.rs/pull/960
         const addresses = await client.generateAddresses(secretManager, {
             accountIndex: 0,
             range: {
@@ -108,8 +106,6 @@ describe('Client', () => {
     });
 
     it('sends a message with a tagged data payload', async () => {
-        // @ts-ignore: clientMethods expect secretManager to be JSON string
-        // fixed in https://github.com/iotaledger/iota.rs/pull/960
         const message = await client.generateMessage(secretManager, {
             tag: utf8ToBytes('Hello'),
             data: utf8ToBytes('Tangle'),
@@ -127,10 +123,7 @@ describe('Client', () => {
         });
     });
 
-    // Test currently broken, error: tokenId
-    it.skip('sends a transaction', async () => {
-        // @ts-ignore: clientMethods expect secretManager to be JSON string
-        // fixed in https://github.com/iotaledger/iota.rs/pull/960
+    it('sends a transaction', async () => {
         const addresses = await client.generateAddresses(secretManager, {
             range: {
                 start: 1,
@@ -138,9 +131,6 @@ describe('Client', () => {
             },
         });
 
-        // @ts-ignore: clientMethods expect secretManager to be JSON string
-        // fixed in https://github.com/iotaledger/iota.rs/pull/960
-        // TODO: fix error: {"type":"MessageDtoError","error":"tokenId"}
         const message = await client.generateMessage(secretManager, {
             output: {
                 address: addresses[0],
@@ -152,23 +142,5 @@ describe('Client', () => {
         const messageId = await client.postMessage(message);
 
         expect(messageId).toBeValidMessageId();
-    });
-
-    it('converts address', async () => {
-        const address =
-            'rms1qpllaj0pyveqfkwxmnngz2c488hfdtmfrj3wfkgxtk4gtyrax0jaxzt70zy';
-        const hexAddress = await client.bech32ToHex(address);
-
-        expect(hexAddress.slice(0, 2)).toBe('0x');
-
-        const bech32Address = await client.hexToBech32(hexAddress, 'rms');
-
-        expect(bech32Address).toBe(address);
-    });
-
-    it('gets tips', async () => {
-        const tips = await client.getTips();
-
-        expect(tips[0]).toBeValidMessageId();
     });
 });

@@ -25,23 +25,15 @@ async function run() {
         const milestoneIndex = info.nodeinfo.status.confirmedMilestone.index;
         console.log(milestoneIndex);
 
-        // TODO:
-        //  error: invalid milestone ID: 6405
-        //  error: hex string without 0x prefix: code=400, message=invalid parameter
-        //  endpoint called: https://nodeurl.net/api/v2/milestones/6405
-        //  should be: https://nodeurl.net/api/v2/milestones/by-index/6405
         // Look up a milestone by a given milestone index.
-        const milestone = await client.getMilestone(milestoneIndex);
-        console.log('Milestone:', milestone);
-
-        // TODO:
-        //  Same errors as above
-        //  endpoint called: https://nodeurl.net/api/v2/milestones/6405/utxo-changes
-        //  should be: https://nodeurl.net/api/v2/milestones/by-index/6405/utxo-changes
-        // Get all UTXO changes of a given milestone by milestone index.
-        const milestoneUtxoChanges = await client.getMilestoneUtxoChanges(
+        const milestone = await client.getMilestoneByMilestoneIndex(
             milestoneIndex,
         );
+        console.log('Milestone:', milestone);
+
+        // Get all UTXO changes of a given milestone by milestone index.
+        const milestoneUtxoChanges =
+            await client.getUtxoChangesByMilestoneIndex(milestoneIndex);
         console.log('MilestoneUtxoChanges:', milestoneUtxoChanges);
     } catch (error) {
         console.error('Error: ', error);

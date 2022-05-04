@@ -31,9 +31,9 @@ export interface INode {
 export interface INetworkInfo {
     network?: Network;
     networkId?: number;
-    bech32HRP: number;
+    bech32HRP: string;
     /** Mininum proof of work score*/
-    minPowScore: number;
+    minPoWScore: number;
     /** Local proof of work */
     localPow: boolean;
     /** Fallback to local proof of work if the node doesn't support remote PoW */

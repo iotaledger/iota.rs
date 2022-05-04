@@ -24,7 +24,7 @@ async function run() {
     try {
         const mnemonic = await client.generateMnemonic();
 
-        const secretManager = JSON.stringify({ Mnemonic: mnemonic });
+        const secretManager = { Mnemonic: mnemonic };
 
         // Generate addresses with custom account index and range
         const addresses = await client.generateAddresses(secretManager, {

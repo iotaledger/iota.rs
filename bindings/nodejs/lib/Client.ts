@@ -491,9 +491,42 @@ export class Client {
     /**
      * Look up a milestone by a given milestone index.
      */
-    async getMilestone(index: number): Promise<IMilestoneResponse> {
+    async getMilestoneByMilestoneId(
+        milestoneId: string,
+    ): Promise<IMilestoneResponse> {
         const response = await this.messageHandler.callClientMethod({
-            name: 'GetMilestone',
+            name: 'GetMilestoneByMilestoneId',
+            data: {
+                milestoneId,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Returns all UTXO changes that happened at a specific milestone.
+     */
+    async getUtxoChangesByMilestoneId(
+        milestoneId: string,
+    ): Promise<IMilestoneUtxoChangesResponse> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'GetUtxoChangesByMilestoneId',
+            data: {
+                milestoneId,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+    /**
+     * Look up a milestone by a given milestone index.
+     */
+    async getMilestoneByMilestoneIndex(
+        index: number,
+    ): Promise<IMilestoneResponse> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'GetMilestoneByMilestoneIndex',
             data: {
                 index,
             },
@@ -505,11 +538,11 @@ export class Client {
     /**
      * Returns all UTXO changes that happened at a specific milestone.
      */
-    async getMilestoneUtxoChanges(
+    async getUtxoChangesByMilestoneIndex(
         index: number,
     ): Promise<IMilestoneUtxoChangesResponse> {
         const response = await this.messageHandler.callClientMethod({
-            name: 'GetMilestoneUtxoChanges',
+            name: 'GetUtxoChangesByMilestoneIndex',
             data: {
                 index,
             },
@@ -620,7 +653,7 @@ export class Client {
     /**
      * Checks if a String is a valid bech32 encoded address.
      */
-    async isAddressValid(address: string): Promise<string> {
+    async isAddressValid(address: string): Promise<boolean> {
         const response = await this.messageHandler.callClientMethod({
             name: 'IsAddressValid',
             data: {

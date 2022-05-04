@@ -27,7 +27,7 @@ async function run() {
     };
     try {
         const mnemonic = await client.generateMnemonic();
-        const secretManager = JSON.stringify({ Mnemonic: mnemonic });
+        const secretManager = { Mnemonic: mnemonic };
 
         // Create message with tagged payload
         const message = await client.generateMessage(secretManager, options);
