@@ -132,7 +132,7 @@ impl TryFrom<&OutputResponse> for OutputMetadata {
             transaction_id_spent: response
                 .transaction_id_spent
                 .as_ref()
-                .map(|s| TransactionId::from_str(&s))
+                .map(|s| TransactionId::from_str(s))
                 .transpose()?,
             milestone_index_booked: response.milestone_index_booked,
             milestone_timestamp_booked: response.milestone_timestamp_booked,
