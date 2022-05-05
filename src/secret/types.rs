@@ -97,24 +97,34 @@ pub struct LedgerStatus {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct OutputMetadata {
     /// The identifier of the message in which the output was included.
+    #[serde(rename = "messageId")]
     pub message_id: MessageId,
     /// The identifier of the transaction in which the output was included.
+    #[serde(rename = "transactionId")]
     pub transaction_id: TransactionId,
     /// The index of the output in the transaction.
+    #[serde(rename = "outputIndex")]
     pub output_index: u16,
     /// Whether the output is spent or not.
+    #[serde(rename = "isSpent")]
     pub is_spent: bool,
     /// If spent, the index of the milestone in which the output was spent.
+    #[serde(rename = "milestoneIndexSpent", skip_serializing_if = "Option::is_none")]
     pub milestone_index_spent: Option<u32>,
     /// If spent, the timestamp of the milestone in which the output was spent.
+    #[serde(rename = "milestoneTimestampSpent", skip_serializing_if = "Option::is_none")]
     pub milestone_timestamp_spent: Option<u32>,
     /// If spent, the identifier of the transaction that spent the output.
+    #[serde(rename = "transactionIdSpent", skip_serializing_if = "Option::is_none")]
     pub transaction_id_spent: Option<TransactionId>,
     /// The index of the milestone that booked the output.
+    #[serde(rename = "milestoneIndexBooked")]
     pub milestone_index_booked: u32,
     /// The timestamp of the milestone that booked the output.
+    #[serde(rename = "milestoneTimestampBooked")]
     pub milestone_timestamp_booked: u32,
     /// The index of ledger when the output was fetched.
+    #[serde(rename = "ledgerIndex", default)]
     pub ledger_index: u32,
 }
 
@@ -147,11 +157,13 @@ pub struct InputSigningData {
     /// The output
     pub output: Output,
     /// The output metadata
+    #[serde(rename = "outputMetadata")]
     pub output_metadata: OutputMetadata,
     /// The chain derived from seed, only for ed25519 addresses
     pub chain: Option<Chain>,
     /// The bech32 encoded address, required because of alias outputs where we have multiple possible unlock
     /// conditions, because we otherwise don't know which one we need
+    #[serde(rename = "bech32Address")]
     pub bech32_address: String,
 }
 
