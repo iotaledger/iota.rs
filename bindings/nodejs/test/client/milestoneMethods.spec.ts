@@ -17,20 +17,17 @@ const client = new Client({
 describe.skip('Milestone methods', () => {
     it('gets milestone by given milestone ID', async () => {
         const info = await client.getInfo();
-        // @ts-ignore: INodeInfo type is incorrect?
         const milestoneId = info.nodeinfo.status.confirmedMilestone.milestoneId;
 
         const milestone = await client.getMilestoneByMilestoneId(milestoneId);
 
         expect(milestone.index).toEqual(
-            // @ts-ignore: INodeInfo type is incorrect?
             info.nodeinfo.status.confirmedMilestone.index,
         );
     });
 
     it('gets all UTXO changes of a given milestone by milestone ID', async () => {
         const info = await client.getInfo();
-        // @ts-ignore: INodeInfo type is incorrect?
         const milestoneId = info.nodeinfo.status.confirmedMilestone.milestoneId;
 
         const milestoneUtxoChanges = await client.getUtxoChangesByMilestoneId(
@@ -38,14 +35,12 @@ describe.skip('Milestone methods', () => {
         );
 
         expect(milestoneUtxoChanges.index).toEqual(
-            // @ts-ignore: INodeInfo type is incorrect?
             info.nodeinfo.status.confirmedMilestone.index,
         );
     });
 
     it('gets milestone by given milestone index', async () => {
         const info = await client.getInfo();
-        // @ts-ignore: INodeInfo type is incorrect?
         const milestoneIndex = info.nodeinfo.status.confirmedMilestone.index;
 
         const milestone = await client.getMilestoneByMilestoneIndex(
@@ -57,7 +52,6 @@ describe.skip('Milestone methods', () => {
 
     it('gets all UTXO changes of a given milestone by milestone index', async () => {
         const info = await client.getInfo();
-        // @ts-ignore: INodeInfo type is incorrect?
         const milestoneIndex = info.nodeinfo.status.confirmedMilestone.index;
 
         const milestoneUtxoChanges =

@@ -28,16 +28,13 @@ describe.skip('Main examples', () => {
     it('gets info about the node', async () => {
         const info = await client.getInfo();
 
-        // @ts-ignore: INodeInfo type is incorrect
         expect(info.nodeinfo.protocol.bech32HRP).toBe('rms');
-        // @ts-ignore: INodeInfo type is incorrect
         expect(info.nodeinfo.protocol.minPoWScore).toBe(1000);
     });
 
     it('generates a mnemonic', async () => {
         const mnemonic = await client.generateMnemonic();
 
-        // TODO: verify mnemonic is valid?
         expect(mnemonic).toBeDefined();
     });
 
@@ -68,6 +65,7 @@ describe.skip('Main examples', () => {
             { hasTimelockCondition: false },
             { hasStorageDepositReturnCondition: false },
         ]);
+        outputIds.forEach((id) => expect(id).toBeValidOutputId());
 
         const addressOutputs = await client.getOutputs(outputIds);
 
@@ -104,7 +102,7 @@ describe.skip('Main examples', () => {
             { hasTimelockCondition: false },
             { hasStorageDepositReturnCondition: false },
         ]);
-        expect(outputIds).toBeDefined();
+        outputIds.forEach((id) => expect(id).toBeValidOutputId());
 
         // Get outputs by their IDs
         const addressOutputs = await client.getOutputs(outputIds);

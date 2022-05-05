@@ -6,7 +6,7 @@ const offlineClient = new Client({
     offline: true,
     nodes: [
         {
-            url: process.env.NODE_URL || 'http://localhost:14265',
+            url: 'http://localhost:14265',
             disabled: false,
         },
     ],
@@ -14,6 +14,22 @@ const offlineClient = new Client({
 });
 
 describe('Client utility methods', () => {
+    // Skipped because storeMnemonic initializes logger and outputs to stdout
+    // Requires "stronghold" in cargo toml iota-client features
+    it.skip('generates and stores mnemonic', async () => {
+        const mnemonic = await offlineClient.generateMnemonic();
+
+        const StrongholdSecretManager = {
+            Stronghold: {
+                password: 'some_hopefully_secure_password',
+                snapshotPath: './stronghold',
+            },
+        };
+        await expect(
+            offlineClient.storeMnemonic(StrongholdSecretManager, mnemonic),
+        ).resolves.toBe(null);
+    });
+
     it('converts address to hex and bech32', async () => {
         const address =
             'rms1qpllaj0pyveqfkwxmnngz2c488hfdtmfrj3wfkgxtk4gtyrax0jaxzt70zy';

@@ -7,3 +7,4 @@ build
 out/
 **/dist
 **/client.log
+stronghold

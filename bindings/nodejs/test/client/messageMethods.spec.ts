@@ -25,16 +25,15 @@ describe.skip('Message methods', () => {
 
     it('gets message children', async () => {
         const message = await client.generateMessage();
-        const messageId = await client.messageId(message);
+        const messageId = await client.postMessage(message);
 
         const messageChildren = await client.getMessageChildren(messageId);
 
-        expect(messageChildren).toBeDefined();
+        messageChildren.forEach((id) => expect(id).toBeValidMessageId);
     });
 
     it('finds messages by message IDs', async () => {
         const messageIds = await client.getTips();
-
         const messages = await client.findMessages(messageIds);
 
         expect(messages.length).toBe(messageIds.length);

@@ -37,6 +37,7 @@
         "eslint": "^8.13.0",
         "eslint-config-prettier": "^8.5.0",
         "jest": "^27.5.1",
+        "jest-matcher-utils": "^28.0.2",
         "prebuild": "^10.0.1",
         "prettier": "^2.6.2",
         "ts-jest": "^27.1.4",

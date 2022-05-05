@@ -7,8 +7,8 @@ export interface MnemonicSecretManager {
 
 export interface StrongholdSecretManager {
     Stronghold: {
-        password: string;
-        snapshotPath: string;
+        password?: string;
+        snapshotPath?: string;
     };
 }
 

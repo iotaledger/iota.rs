@@ -8,6 +8,7 @@
         "importsNotUsedAsValues": "error",
         "noImplicitAny": true,
         "removeComments": true,
+        "skipLibCheck": true,
         "outDir": "dist"
     }
 }

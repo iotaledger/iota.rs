@@ -13,9 +13,9 @@ import type {
     INode,
     IAuth,
     IRange,
+    INodeInfo,
 } from '../types';
 import type {
-    INodeInfo,
     IUTXOInput,
     AddressTypes,
     IOutputResponse,
@@ -28,6 +28,7 @@ import type {
     IReceiptsResponse,
     ITreasury,
 } from '@iota/types';
+import type { INodeInfoWrapper } from '../types/nodeInfo';
 
 export class Client {
     private messageHandler: MessageHandler;
@@ -38,9 +39,8 @@ export class Client {
 
     /**
      * Returns the node information together with the url of the used node
-     * TODO: INodeInfo is missing url and BaseTokenResponse
      */
-    async getInfo(): Promise<INodeInfo> {
+    async getInfo(): Promise<INodeInfoWrapper> {
         const response = await this.messageHandler.callClientMethod({
             name: 'GetInfo',
         });
@@ -260,12 +260,11 @@ export class Client {
 
     /**
      * Store a mnemonic in the Stronghold vault
-     * TODO: test this method
      */
     async storeMnemonic(
         secretManager: SecretManager,
         mnemonic: string,
-    ): Promise<IPreparedTransactionData> {
+    ): Promise<void> {
         const response = await this.messageHandler.callClientMethod({
             name: 'StoreMnemonic',
             data: {

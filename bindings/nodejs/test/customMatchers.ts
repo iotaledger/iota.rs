@@ -1,6 +1,9 @@
+import { printExpected, printReceived, matcherHint } from 'jest-matcher-utils';
+
 interface CustomMatchers<R = unknown> {
     toBeValidAddress(): R;
     toBeValidMessageId(): R;
+    toBeValidOutputId(): R;
 }
 
 declare global {
@@ -12,47 +15,36 @@ declare global {
     }
 }
 
+const failMessage =
+    (received: string, length: number, prefix: string, not: boolean) => () =>
+        `${matcherHint(
+            `${not ? '.not' : ''}.toHaveLengthAndPrefix`,
+            'received',
+            'length, prefix',
+        )}
+Expected${not ? ' not' : ''}:
+  length: ${printExpected(length)}
+  prefix: ${printExpected(prefix)}
+Received: 
+  length: ${printReceived(received.length)}
+  prefix: ${printReceived(received.slice(0, prefix.length))}`;
+
+const idMatcher = (received: string, length: number, prefix: string) => {
+    const pass = received.length === length && received.startsWith(prefix);
+    return {
+        message: failMessage(received, length, prefix, pass),
+        pass,
+    };
+};
+
 expect.extend({
     toBeValidAddress(received: string) {
-        const pass = received.length === 63 && received.slice(0, 3) === 'rms';
-        if (pass) {
-            return {
-                message: () => `expected invalid address`,
-                pass: true,
-            };
-        } else {
-            return {
-                message: () =>
-                    `
-                     expected length: 63
-                     received: ${received.length}
-                     expected bech32hrp: "rms"
-                     received: "${received.slice(0, 3)}"
-                    `,
-                pass: false,
-            };
-        }
+        return idMatcher(received, 63, 'rms');
     },
     toBeValidMessageId(received: string) {
-        const pass = received.length === 66 && received.slice(0, 2) === '0x';
-        if (pass) {
-            return {
-                message: () => `expected invalid message ID`,
-                pass: true,
-            };
-        } else {
-            return {
-                message: () =>
-                    `
-                     expected length: 66
-                     received: ${received.length}
-                     expected prefix: "0x"
-                     received: "${received.slice(0, 2)}"
-                    `,
-                pass: false,
-            };
-        }
+        return idMatcher(received, 66, '0x');
+    },
+    toBeValidOutputId(received: string) {
+        return idMatcher(received, 70, '0x');
     },
 });
-
-export {};

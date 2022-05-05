@@ -17,7 +17,6 @@ const client = new Client({
 describe.skip('UTXO methods', () => {
     it('gets receipts', async () => {
         const info = await client.getInfo();
-        // @ts-ignore: INodeInfo type is incorrect?
         const milestoneIndex = info.nodeinfo.status.confirmedMilestone.index;
 
         const receipts = await client.getReceipts();
