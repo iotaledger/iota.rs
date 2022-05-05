@@ -276,14 +276,14 @@ impl NodeManager {
             Err(Error::QuorumThresholdError(res.1, self.min_quorum_size))
         }
     }
-    // Only used for api/v2/messages/{messageID}/raw, that's why we don't need the quorum stuff
+    // Only used for api/v2/messages/{messageID}, that's why we don't need the quorum stuff
     pub(crate) async fn get_request_text(&self, path: &str, query: Option<&str>, timeout: Duration) -> Result<String> {
         // Get node urls and set path
         let nodes = self.get_nodes(path, query, false).await?;
         let mut error = None;
         // Send requests
         for node in nodes {
-            match self.http_client.get(node, timeout).await {
+            match self.http_client.get_raw(node, timeout).await {
                 Ok(res) => {
                     let status = res.status();
                     if let Ok(res_text) = res.text().await {

@@ -649,7 +649,7 @@ Consume the builder and find a message by its identifier. This method returns th
 
 #### raw(message_id): String
 
-GET /api/v2/messages/{messageID}/raw endpoint
+GET /api/v2/messages/{MessageId} endpoint
 Consume the builder and find a message by its identifier. This method returns the given message raw data if it exists.
 
 | Param | Type       | Description |
