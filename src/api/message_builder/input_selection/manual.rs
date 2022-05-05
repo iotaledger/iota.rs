@@ -3,13 +3,11 @@
 
 //! Manual input selection for transactions
 
-use std::{collections::HashSet, str::FromStr};
+use std::collections::HashSet;
 
 use bee_message::{
     address::Address,
     output::{AliasId, ByteCostConfig, Output},
-    payload::transaction::TransactionId,
-    MessageId,
 };
 use crypto::keys::slip10::Chain;
 
@@ -70,21 +68,7 @@ pub(crate) async fn get_custom_inputs(
                 };
                 input_signing_data_entries.push(InputSigningData {
                     output: Output::try_from(&output_response.output)?,
-                    output_metadata: OutputMetadata {
-                        message_id: MessageId::from_str(&output_response.message_id)?,
-                        transaction_id: TransactionId::from_str(&output_response.transaction_id)?,
-                        output_index: output_response.output_index,
-                        is_spent: output_response.is_spent,
-                        milestone_index_spent: output_response.milestone_index_spent,
-                        milestone_timestamp_spent: output_response.milestone_timestamp_spent,
-                        transaction_id_spent: output_response
-                            .transaction_id_spent
-                            .map(|s| TransactionId::from_str(&s))
-                            .transpose()?,
-                        milestone_index_booked: output_response.milestone_index_booked,
-                        milestone_timestamp_booked: output_response.milestone_timestamp_booked,
-                        ledger_index: output_response.ledger_index,
-                    },
+                    output_metadata: OutputMetadata::try_from(&output_response)?,
                     chain: Some(Chain::from_u32_hardened(vec![
                         HD_WALLET_TYPE,
                         message_builder.coin_type,

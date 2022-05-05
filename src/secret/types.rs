@@ -3,16 +3,19 @@
 
 //! Miscellaneous types for secret managers.
 
+use std::str::FromStr;
+
 use bee_message::{
     address::Address,
     output::{Output, OutputId},
     payload::transaction::TransactionId,
     MessageId,
 };
+use bee_rest_api::types::responses::OutputResponse;
 use crypto::keys::slip10::Chain;
 use serde::{Deserialize, Serialize};
 
-use crate::Result;
+use crate::{Error, Result};
 
 /// Stronghold DTO to allow the creation of a Stronghold secret manager from bindings
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -113,6 +116,29 @@ pub struct OutputMetadata {
     pub milestone_timestamp_booked: u32,
     /// The index of ledger when the output was fetched.
     pub ledger_index: u32,
+}
+
+impl TryFrom<&OutputResponse> for OutputMetadata {
+    type Error = Error;
+
+    fn try_from(response: &OutputResponse) -> Result<Self> {
+        Ok(OutputMetadata {
+            message_id: MessageId::from_str(&response.message_id)?,
+            transaction_id: TransactionId::from_str(&response.transaction_id)?,
+            output_index: response.output_index,
+            is_spent: response.is_spent,
+            milestone_index_spent: response.milestone_index_spent,
+            milestone_timestamp_spent: response.milestone_timestamp_spent,
+            transaction_id_spent: response
+                .transaction_id_spent
+                .as_ref()
+                .map(|s| TransactionId::from_str(&s))
+                .transpose()?,
+            milestone_index_booked: response.milestone_index_booked,
+            milestone_timestamp_booked: response.milestone_timestamp_booked,
+            ledger_index: response.ledger_index,
+        })
+    }
 }
 
 /// Data for transaction inputs for signing and ordering of unlock blocks
