@@ -47,13 +47,13 @@ pub async fn try_select_inputs(
         return Err(Error::ConsolidationRequired(inputs.len()));
     }
 
-    let input_outputs = inputs.iter().map(|i| i.output.clone()).collect::<Vec<Output>>();
+    let input_outputs = inputs.iter().map(|i| &i.output);
 
     // Validate and only create a remainder if necessary
     if force_use_all_inputs {
         let remainder_output = get_remainder_output(
-            &input_outputs,
-            &outputs,
+            input_outputs,
+            outputs.iter(),
             remainder_address,
             byte_cost_config,
             allow_burning,
@@ -70,7 +70,7 @@ pub async fn try_select_inputs(
     }
     // else: only select inputs that are necessary for the provided outputs
 
-    let required = get_accumulated_output_amounts(&input_outputs, &outputs).await?;
+    let required = get_accumulated_output_amounts(input_outputs, outputs.iter()).await?;
     let mut selected_input_native_tokens = required.minted_native_tokens.clone();
 
     let mut selected_input_amount = 0;
@@ -227,15 +227,12 @@ pub async fn try_select_inputs(
     }
 
     // create remainder output if necessary
-    let selected_input_outputs = selected_inputs
-        .iter()
-        .map(|i| i.output.clone())
-        .collect::<Vec<Output>>();
+    let selected_input_outputs = selected_inputs.iter().map(|i| &i.output);
 
     // get_remainder also checks for amounts and returns an error if we don't have enough
     let remainder_output = get_remainder_output(
-        &selected_input_outputs,
-        &outputs,
+        selected_input_outputs,
+        outputs.iter(),
         remainder_address,
         byte_cost_config,
         allow_burning,

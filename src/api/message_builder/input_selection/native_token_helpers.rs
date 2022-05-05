@@ -44,9 +44,9 @@ pub(crate) fn get_remainder_native_tokens(
 
 // Get minted and melted tokens from foundry outputs
 // minted first, melted second
-pub(crate) fn get_minted_and_melted_native_tokens(
-    inputs: &[Output],
-    outputs: &[Output],
+pub(crate) fn get_minted_and_melted_native_tokens<'a>(
+    inputs: impl Iterator<Item = &'a Output> + Clone,
+    outputs: impl Iterator<Item = &'a Output> + Clone,
 ) -> Result<(NativeTokensBuilder, NativeTokensBuilder)> {
     let mut minted_native_tokens = NativeTokensBuilder::new();
     let mut melted_native_tokens = NativeTokensBuilder::new();
@@ -56,7 +56,7 @@ pub(crate) fn get_minted_and_melted_native_tokens(
             let TokenScheme::Simple(output_foundry_simple_ts) = output_foundry.token_scheme();
             let mut initial_creation = true;
 
-            for input in inputs {
+            for input in inputs.clone() {
                 if let Output::Foundry(input_foundry) = input {
                     let token_id = TokenId::build(&output_foundry.id(), output_foundry.token_tag());
                     if output_foundry.id() == input_foundry.id() {

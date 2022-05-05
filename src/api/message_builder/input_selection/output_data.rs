@@ -20,15 +20,15 @@ use crate::{
 };
 
 // Calculate required accumulated amounts from the outputs, considers also minted and melted native tokens
-pub(crate) async fn get_accumulated_output_amounts(
-    inputs: &[Output],
-    outputs: &[Output],
+pub(crate) async fn get_accumulated_output_amounts<'a>(
+    inputs: impl Iterator<Item = &'a Output> + Clone,
+    outputs: impl Iterator<Item = &'a Output> + Clone,
 ) -> Result<AccumulatedOutputAmounts> {
     // Calculate the total tokens to spend
     let mut required_amount: u64 = 0;
     let mut required_native_tokens = NativeTokensBuilder::new();
 
-    for output in outputs {
+    for output in outputs.clone() {
         required_amount += output.amount();
 
         if let Some(output_native_tokens) = output.native_tokens() {

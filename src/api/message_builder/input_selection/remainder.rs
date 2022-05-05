@@ -20,19 +20,19 @@ use crate::{
 
 // Get a remainder with amount and native tokens if necessary, if no remainder_address is provided it will be selected
 // from the inputs, also validates the amounts
-pub(crate) async fn get_remainder_output(
-    inputs: &[Output],
-    outputs: &[Output],
+pub(crate) async fn get_remainder_output<'a>(
+    inputs: impl Iterator<Item = &'a Output> + Clone,
+    outputs: impl Iterator<Item = &'a Output> + Clone,
     remainder_address: Option<Address>,
     byte_cost_config: &ByteCostConfig,
     allow_burning: bool,
 ) -> Result<Option<Output>> {
     log::debug!("[get_remainder]");
     let mut remainder_output = None;
-    let input_data = get_accumulated_output_amounts(&[], inputs).await?;
-    let output_data = get_accumulated_output_amounts(&[], outputs).await?;
+    let input_data = get_accumulated_output_amounts(std::iter::empty(), inputs.clone()).await?;
+    let output_data = get_accumulated_output_amounts(std::iter::empty(), outputs.clone()).await?;
     // Get minted native tokens
-    let (minted_native_tokens, melted_native_tokens) = get_minted_and_melted_native_tokens(inputs, outputs)?;
+    let (minted_native_tokens, melted_native_tokens) = get_minted_and_melted_native_tokens(inputs.clone(), outputs)?;
 
     // check amount first
     if input_data.amount < output_data.amount {
@@ -79,7 +79,7 @@ pub(crate) async fn get_remainder_output(
 
 // Get an Ed25519 address from the inputs as remainder address
 // We don't want to use nft or alias addresses as remainder address, because we might can't control them later
-pub(crate) fn get_remainder_address(inputs: &[Output]) -> Result<Address> {
+pub(crate) fn get_remainder_address<'a>(inputs: impl Iterator<Item = &'a Output>) -> Result<Address> {
     // get address from an input, by default we only allow ed25519 addresses as remainder, because then we're sure that
     // the sender can access it
     let mut address = None;
@@ -120,12 +120,7 @@ pub(crate) fn get_additional_required_remainder_amount(
                 byte_cost_config,
                 &match remainder_address {
                     Some(a) => a,
-                    None => get_remainder_address(
-                        &selected_inputs
-                            .iter()
-                            .map(|i| i.output.clone())
-                            .collect::<Vec<Output>>(),
-                    )?,
+                    None => get_remainder_address(selected_inputs.iter().map(|i| &i.output))?,
                 },
                 &native_token_remainder,
             )?;
