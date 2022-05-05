@@ -35,13 +35,11 @@ pub async fn get_output_ids_with_pagination(
                 client.get_timeout(),
             )
             .await?;
-        // convert string response to output ids
-        let output_ids = outputs_response
-            .items
-            .iter()
-            .map(|s| Ok(OutputId::from_str(s)?))
-            .collect::<Result<Vec<OutputId>>>()?;
-        all_output_ids.extend(output_ids.into_iter());
+
+        for output_id in outputs_response.items {
+            all_output_ids.push(OutputId::from_str(&output_id)?);
+        }
+
         outputs_response.cursor
     } {
         query_parameters.replace(QueryParameter::Cursor(cursor));

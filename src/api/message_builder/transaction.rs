@@ -62,12 +62,7 @@ pub async fn prepare_transaction(message_builder: &ClientMessageBuilder<'_>) -> 
     };
 
     // Build transaction payload
-    let input_outputs = selected_transaction_data
-        .inputs
-        .iter()
-        .map(|i| i.output.clone())
-        .collect::<Vec<Output>>();
-    let inputs_commitment = InputsCommitment::new(input_outputs.iter());
+    let inputs_commitment = InputsCommitment::new(selected_transaction_data.inputs.iter().map(|i| &i.output));
 
     let mut essence =
         RegularTransactionEssence::builder(message_builder.client.get_network_id().await?, inputs_commitment);
