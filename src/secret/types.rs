@@ -104,13 +104,13 @@ pub struct OutputMetadata {
     /// If spent, the index of the milestone in which the output was spent.
     pub milestone_index_spent: Option<u32>,
     /// If spent, the timestamp of the milestone in which the output was spent.
-    pub milestone_timestamp_spent: Option<u64>,
+    pub milestone_timestamp_spent: Option<u32>,
     /// If spent, the identifier of the transaction that spent the output.
     pub transaction_id_spent: Option<TransactionId>,
     /// The index of the milestone that booked the output.
     pub milestone_index_booked: u32,
     /// The timestamp of the milestone that booked the output.
-    pub milestone_timestamp_booked: u64,
+    pub milestone_timestamp_booked: u32,
     /// The index of ledger when the output was fetched.
     pub ledger_index: u32,
 }
