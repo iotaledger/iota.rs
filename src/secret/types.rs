@@ -94,7 +94,7 @@ pub struct LedgerStatus {
 }
 
 ///
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub struct OutputMetadata {
     /// The identifier of the message in which the output was included.
     #[serde(rename = "messageId")]
