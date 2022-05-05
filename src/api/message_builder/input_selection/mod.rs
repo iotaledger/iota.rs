@@ -47,10 +47,7 @@ pub async fn try_select_inputs(
         return Err(Error::ConsolidationRequired(inputs.len()));
     }
 
-    let input_outputs = inputs
-        .iter()
-        .map(|i| Ok(Output::try_from(&i.output_response.output)?))
-        .collect::<Result<Vec<Output>>>()?;
+    let input_outputs = inputs.iter().map(|i| i.output.clone()).collect::<Vec<Output>>();
 
     // Validate and only create a remainder if necessary
     if force_use_all_inputs {
@@ -84,9 +81,7 @@ pub async fn try_select_inputs(
     // alias, foundry, nft outputs
     let mut utxo_chain_outputs = Vec::new();
     for input_signing_data in &inputs {
-        let output = Output::try_from(&input_signing_data.output_response.output)?;
-
-        match output {
+        match input_signing_data.output {
             Output::Basic(_) => basic_outputs.push(input_signing_data),
             Output::Alias(_) | Output::Foundry(_) | Output::Nft(_) => utxo_chain_outputs.push(input_signing_data),
             _ => {}
@@ -96,11 +91,13 @@ pub async fn try_select_inputs(
     // 1. get alias, foundry or nft inputs (because amount and native tokens of these outputs will also be available for
     // the outputs)
     for input_signing_data in utxo_chain_outputs {
-        let output = Output::try_from(&input_signing_data.output_response.output)?;
+        let output = &input_signing_data.output;
         selected_input_amount += output.amount();
+
         if let Some(output_native_tokens) = output.native_tokens() {
             selected_input_native_tokens.add_native_tokens(output_native_tokens.clone())?;
         }
+
         selected_inputs.push(input_signing_data.clone());
     }
 
@@ -110,8 +107,8 @@ pub async fn try_select_inputs(
         let mut index = 0;
         while index < basic_outputs.len() {
             let mut added_to_inputs = false;
+            let output = &basic_outputs[index].output;
 
-            let output = Output::try_from(&basic_outputs[index].output_response.output)?;
             if let Some(output_native_tokens) = output.native_tokens() {
                 // Only add output to the inputs if it has a native token we need for the outputs
                 if output_native_tokens
@@ -158,7 +155,8 @@ pub async fn try_select_inputs(
         )?;
 
         if selected_input_amount < required.amount || additional_required_remainder_amount > 0 {
-            let output = Output::try_from(&basic_outputs[index].output_response.output)?;
+            let output = &basic_outputs[index].output;
+
             if let Some(output_native_tokens) = output.native_tokens() {
                 if output_native_tokens.is_empty() {
                     selected_input_amount += output.amount();
@@ -185,11 +183,7 @@ pub async fn try_select_inputs(
     }
 
     // Order input outputs descending, so that as few inputs as necessary are used
-    basic_outputs.sort_by(|l, r| {
-        let output_1 = Output::try_from(&l.output_response.output).unwrap();
-        let output_2 = Output::try_from(&r.output_response.output).unwrap();
-        output_1.amount().cmp(&output_2.amount())
-    });
+    basic_outputs.sort_by(|l, r| l.output.amount().cmp(&r.output.amount()));
 
     // 4. try to select basic outputs with native tokens we need for the outputs
     let mut index = 0;
@@ -206,7 +200,8 @@ pub async fn try_select_inputs(
         )?;
 
         if selected_input_amount < required.amount || additional_required_remainder_amount > 0 {
-            let output = Output::try_from(&basic_outputs[index].output_response.output)?;
+            let output = &basic_outputs[index].output;
+
             selected_input_amount += output.amount();
             if let Some(output_native_tokens) = output.native_tokens() {
                 selected_input_native_tokens.add_native_tokens(output_native_tokens.clone())?;
@@ -234,8 +229,9 @@ pub async fn try_select_inputs(
     // create remainder output if necessary
     let selected_input_outputs = selected_inputs
         .iter()
-        .map(|i| Ok(Output::try_from(&i.output_response.output)?))
-        .collect::<Result<Vec<Output>>>()?;
+        .map(|i| i.output.clone())
+        .collect::<Vec<Output>>();
+
     // get_remainder also checks for amounts and returns an error if we don't have enough
     let remainder_output = get_remainder_output(
         &selected_input_outputs,

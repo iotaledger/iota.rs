@@ -5,7 +5,7 @@
 
 use bee_message::{
     address::Address,
-    output::{feature_block::FeatureBlock, ByteCostConfig},
+    output::{feature_block::FeatureBlock, ByteCostConfig, Output},
 };
 use crypto::keys::slip10::Chain;
 
@@ -18,7 +18,7 @@ use crate::{
     },
     constants::HD_WALLET_TYPE,
     node_api::indexer::query_parameters::QueryParameter,
-    secret::types::InputSigningData,
+    secret::types::{InputSigningData, OutputMetadata},
     Error, Result,
 };
 
@@ -108,7 +108,8 @@ pub(crate) async fn get_inputs(
 
                 for output_response in address_outputs {
                     available_inputs.push(InputSigningData {
-                        output_response: output_response.clone(),
+                        output: Output::try_from(&output_response.output)?,
+                        output_metadata: OutputMetadata::try_from(&output_response)?,
                         chain: Some(Chain::from_u32_hardened(vec![
                             HD_WALLET_TYPE,
                             message_builder.coin_type,
@@ -241,7 +242,8 @@ async fn get_inputs_for_sender_and_issuer(
             match address_outputs.first() {
                 Some(output_response) => {
                     required_ed25519_inputs.push(InputSigningData {
-                        output_response: output_response.clone(),
+                        output: Output::try_from(&output_response.output)?,
+                        output_metadata: OutputMetadata::try_from(output_response)?,
                         chain: Some(Chain::from_u32_hardened(vec![
                             HD_WALLET_TYPE,
                             message_builder.coin_type,

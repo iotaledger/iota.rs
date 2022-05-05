@@ -7,7 +7,7 @@ use std::collections::HashSet;
 
 use bee_message::{
     address::Address,
-    output::{AliasId, ByteCostConfig},
+    output::{AliasId, ByteCostConfig, Output},
 };
 use crypto::keys::slip10::Chain;
 
@@ -17,7 +17,7 @@ use crate::{
         message_builder::input_selection::types::SelectedTransactionData, ClientMessageBuilder,
     },
     constants::HD_WALLET_TYPE,
-    secret::types::InputSigningData,
+    secret::types::{InputSigningData, OutputMetadata},
     Result,
 };
 
@@ -67,7 +67,8 @@ pub(crate) async fn get_custom_inputs(
                     None => (0, false),
                 };
                 input_signing_data_entries.push(InputSigningData {
-                    output_response: output_response.clone(),
+                    output: Output::try_from(&output_response.output)?,
+                    output_metadata: OutputMetadata::try_from(&output_response)?,
                     chain: Some(Chain::from_u32_hardened(vec![
                         HD_WALLET_TYPE,
                         message_builder.coin_type,

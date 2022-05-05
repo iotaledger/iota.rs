@@ -3,7 +3,7 @@
 
 //! Transaction preparation and signing
 
-use std::{collections::HashSet, str::FromStr};
+use std::collections::HashSet;
 
 use bee_message::{
     address::Address,
@@ -11,7 +11,7 @@ use bee_message::{
     output::{dto::OutputDto, InputsCommitment, Output, OutputId},
     payload::{
         milestone::MilestoneIndex,
-        transaction::{RegularTransactionEssence, TransactionEssence, TransactionId, TransactionPayload},
+        transaction::{RegularTransactionEssence, TransactionEssence, TransactionPayload},
         Payload, TaggedDataPayload,
     },
     semantic::{semantic_validation, ConflictReason, ValidationContext},
@@ -65,8 +65,8 @@ pub async fn prepare_transaction(message_builder: &ClientMessageBuilder<'_>) -> 
     let input_outputs = selected_transaction_data
         .inputs
         .iter()
-        .map(|i| Ok(Output::try_from(&i.output_response.output)?))
-        .collect::<Result<Vec<Output>>>()?;
+        .map(|i| i.output.clone())
+        .collect::<Vec<Output>>();
     let inputs_commitment = InputsCommitment::new(input_outputs.iter());
 
     let mut essence =
@@ -76,8 +76,8 @@ pub async fn prepare_transaction(message_builder: &ClientMessageBuilder<'_>) -> 
         .iter()
         .map(|i| {
             Ok(Input::Utxo(UtxoInput::new(
-                TransactionId::from_str(&i.output_response.transaction_id)?,
-                i.output_response.output_index,
+                i.output_metadata.transaction_id,
+                i.output_metadata.output_index,
             )?))
         })
         .collect::<Result<Vec<Input>>>()?;
@@ -166,8 +166,8 @@ pub fn verify_semantic(
         .collect::<Result<Vec<OutputId>>>()?;
     let outputs = input_signing_data
         .iter()
-        .map(|i| Ok(Output::try_from(&i.output_response.output)?))
-        .collect::<Result<Vec<Output>>>()?;
+        .map(|i| i.output.clone())
+        .collect::<Vec<Output>>();
     let inputs = output_ids
         .into_iter()
         .zip(outputs.iter())

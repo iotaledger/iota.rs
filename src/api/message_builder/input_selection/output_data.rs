@@ -15,7 +15,7 @@ use crate::{
         search_address,
     },
     constants::HD_WALLET_TYPE,
-    secret::types::InputSigningData,
+    secret::types::{InputSigningData, OutputMetadata},
     Result,
 };
 
@@ -151,7 +151,8 @@ pub(crate) async fn get_utxo_chains_inputs(
         };
 
         utxo_chain_inputs.push(InputSigningData {
-            output_response: output_response.clone(),
+            output: Output::try_from(&output_response.output)?,
+            output_metadata: OutputMetadata::try_from(&output_response)?,
             chain: Some(Chain::from_u32_hardened(vec![
                 HD_WALLET_TYPE,
                 message_builder.coin_type,
