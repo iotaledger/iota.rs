@@ -138,6 +138,7 @@ describe.skip('Main examples', () => {
             ),
         ).toBe(200);
     });
+
     it('sends a message', async () => {
         const message = await client.generateMessage();
 
@@ -177,8 +178,7 @@ describe.skip('Main examples', () => {
         });
     });
 
-    // transaction tests disabled for workflows, because they fail if we don't have funds
-    it.skip('sends a transaction', async () => {
+    it('sends a transaction', async () => {
         const addresses = await client.generateAddresses(secretManager, {
             range: {
                 start: 1,

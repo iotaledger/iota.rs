@@ -83,6 +83,7 @@ export class Client {
         return JSON.parse(response).payload;
     }
 
+    /** Fetch OutputResponse from provided OutputIds (requests are sent in parallel) */
     async getOutputs(outputIds: string[]): Promise<IOutputResponse[]> {
         const response = await this.messageHandler.callClientMethod({
             name: 'GetOutputs',
@@ -119,6 +120,7 @@ export class Client {
         return JSON.parse(response).payload;
     }
 
+    /** Generate addresses */
     async generateAddresses(
         secretManager: SecretManager,
         generateAddressesOptions: IGenerateAddressesOptions,
@@ -134,6 +136,7 @@ export class Client {
         return JSON.parse(response).payload;
     }
 
+    /** Generate client message */
     async generateMessage(
         secretManager?: SecretManager,
         options?: IGenerateMessageOptions,

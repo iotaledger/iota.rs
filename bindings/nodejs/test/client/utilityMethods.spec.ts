@@ -14,7 +14,6 @@ const offlineClient = new Client({
 });
 
 describe('Client utility methods', () => {
-    // Skipped because storeMnemonic initializes logger and outputs to stdout
     // Requires "stronghold" in cargo toml iota-client features
     it.skip('generates and stores mnemonic', async () => {
         const mnemonic = await offlineClient.generateMnemonic();

@@ -2,9 +2,7 @@ import { Client, SHIMMER_TESTNET_BECH32_HRP } from '../../lib';
 import '../customMatchers';
 import 'dotenv/config';
 import { addresses } from '../fixtures/addresses';
-import * as preparedTransactionJson from '../fixtures/preparedTransaction.json';
 import * as signedTransactionJson from '../fixtures/signedTransaction.json';
-import type { IPreparedTransactionData } from '../../types';
 import type { PayloadTypes } from '@iota/types';
 
 const onlineClient = new Client({
@@ -51,7 +49,7 @@ describe('Offline signing examples', () => {
     });
 
     // transaction tests disabled for workflows, because they fail if we don't have funds
-    it.skip('prepares a transaction', async () => {
+    it.skip('prepares and signs a transaction', async () => {
         const address =
             'rms1qqv5avetndkxzgr3jtrswdtz5ze6mag20s0jdqvzk4fwezve8q9vkpnqlqe';
         const amount = 1000000;
@@ -66,19 +64,14 @@ describe('Offline signing examples', () => {
             },
         );
 
-        // TODO: more assertions
         expect(preparedTransaction.essence.type).toBe(1);
-    });
 
-    // Skip for CI
-    it.skip('signs a transaction', async () => {
         const signedTransaction = await offlineClient.signTransaction(
             secretManager,
             // Imported JSON is typed with literal types
-            preparedTransactionJson as unknown as IPreparedTransactionData,
+            preparedTransaction,
         );
 
-        // TODO: more assertions
         expect(signedTransaction.type).toBe(6);
     });
 
@@ -94,7 +87,6 @@ describe('Offline signing examples', () => {
 
         const messageId = await onlineClient.messageId(message);
 
-        // TODO: more assertions
         expect(messageId).toBeValidMessageId;
     });
 });
