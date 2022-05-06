@@ -152,7 +152,7 @@ pub(crate) async fn get_utxo_chains_inputs(
 
         utxo_chain_inputs.push(InputSigningData {
             output: Output::try_from(&output_response.output)?,
-            output_metadata: OutputMetadata::try_from(&output_response)?,
+            output_metadata: OutputMetadata::try_from(&output_response.metadata)?,
             chain: Some(Chain::from_u32_hardened(vec![
                 HD_WALLET_TYPE,
                 message_builder.coin_type,

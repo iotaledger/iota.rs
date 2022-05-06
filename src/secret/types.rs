@@ -11,7 +11,7 @@ use bee_message::{
     payload::transaction::TransactionId,
     MessageId,
 };
-use bee_rest_api::types::responses::OutputResponse;
+use bee_rest_api::types::responses::OutputMetadataResponse;
 use crypto::keys::slip10::Chain;
 use serde::{Deserialize, Serialize};
 
@@ -128,10 +128,10 @@ pub struct OutputMetadata {
     pub ledger_index: u32,
 }
 
-impl TryFrom<&OutputResponse> for OutputMetadata {
+impl TryFrom<&OutputMetadataResponse> for OutputMetadata {
     type Error = Error;
 
-    fn try_from(response: &OutputResponse) -> Result<Self> {
+    fn try_from(response: &OutputMetadataResponse) -> Result<Self> {
         Ok(OutputMetadata {
             message_id: MessageId::from_str(&response.message_id)?,
             transaction_id: TransactionId::from_str(&response.transaction_id)?,

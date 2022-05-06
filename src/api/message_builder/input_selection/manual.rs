@@ -39,7 +39,7 @@ pub(crate) async fn get_custom_inputs(
         for input in inputs {
             let output_response = message_builder.client.get_output(input.output_id()).await?;
 
-            if !output_response.is_spent {
+            if !output_response.metadata.is_spent {
                 let (_output_amount, output_address) = ClientMessageBuilder::get_output_amount_and_address(
                     &output_response.output,
                     governance_transition.clone(),
@@ -68,7 +68,7 @@ pub(crate) async fn get_custom_inputs(
                 };
                 input_signing_data_entries.push(InputSigningData {
                     output: Output::try_from(&output_response.output)?,
-                    output_metadata: OutputMetadata::try_from(&output_response)?,
+                    output_metadata: OutputMetadata::try_from(&output_response.metadata)?,
                     chain: Some(Chain::from_u32_hardened(vec![
                         HD_WALLET_TYPE,
                         message_builder.coin_type,
