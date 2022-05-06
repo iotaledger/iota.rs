@@ -20,10 +20,11 @@ This library follows the following branching strategy:
 
 |Branch|Description|
 |------|-----------|
-|`production`|The latest release for the IOTA networks (`mainnet`, `devnet`, `comnet`).|
-|`develop`|The ongoing development for future releases of these networks. With every release, the `develop` branch will be merged into `production`.|
-|`staging`|The latest release for the Shimmer networks (`testnet`).|
-| other | Branches with codenames like `stardust` reflect current projects. Similar to `develop`, they will find their way into `staging` once they are ready.| 
+|`develop`|Ongoing development for future releases of the networks. This branch gets merged into `staging` on releases.|
+|`legacy`|Deprecated, contains legacy releases supporting pre-Chrysalis features.|
+|`production`|The latest releases for the IOTA networks.|
+|`staging`|The latest releases for the Shimmer networks.|
+| other |Other branches that may reflect current projects. Similar to `develop`, they will find their way into `staging` once they are ready.|
 
 ## Using the library
 
