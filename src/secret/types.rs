@@ -11,7 +11,7 @@ use bee_block::{
     payload::transaction::TransactionId,
     BlockId,
 };
-use bee_rest_api::types::responses::OutputResponse;
+use bee_rest_api::types::responses::OutputMetadataResponse;
 use crypto::keys::slip10::Chain;
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "stronghold")]
@@ -105,10 +105,10 @@ pub struct OutputMetadata {
     pub ledger_index: u32,
 }
 
-impl TryFrom<&OutputResponse> for OutputMetadata {
+impl TryFrom<&OutputMetadataResponse> for OutputMetadata {
     type Error = Error;
 
-    fn try_from(response: &OutputResponse) -> Result<Self> {
+    fn try_from(response: &OutputMetadataResponse) -> Result<Self> {
         Ok(OutputMetadata {
             block_id: BlockId::from_str(&response.metadata.block_id)?,
             transaction_id: TransactionId::from_str(&response.metadata.transaction_id)?,

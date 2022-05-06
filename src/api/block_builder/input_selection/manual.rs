@@ -68,7 +68,7 @@ pub(crate) async fn get_custom_inputs(
                 };
                 inputs_data.push(InputSigningData {
                     output: Output::try_from(&output_response.output)?,
-                    output_metadata: OutputMetadata::try_from(&output_response)?,
+                    output_metadata: OutputMetadata::try_from(&output_response.metadata)?,
                     chain: Some(Chain::from_u32_hardened(vec![
                         HD_WALLET_TYPE,
                         block_builder.coin_type,
