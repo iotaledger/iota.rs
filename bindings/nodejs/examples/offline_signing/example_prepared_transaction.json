@@ -1,95 +1,74 @@
 {
     "essence": {
-        "type": "Regular",
-        "data": {
-            "network_id": 10859088168901003000,
-            "inputs": {
-                "inner": [
+        "type": 1,
+        "networkId": "1020014395361784349",
+        "inputs": [
+            {
+                "type": 0,
+                "transactionId": "0xdddb6f40a3d442f54b74acbe140655056b0bd37641ff0153596ecafa806cf035",
+                "transactionOutputIndex": 1
+            }
+        ],
+        "inputsCommitment": "0x65aff15d2bb761f4dcb1b68df8cb655d9f25bc718d83c3f19d6281cffec02bcb",
+        "outputs": [
+            {
+                "type": 3,
+                "amount": "1000000",
+                "unlockConditions": [
                     {
-                        "type": "Utxo",
-                        "data": "0xbb2bdc323adf0e1ae8d8c35ae71d06bde7ff46978072a801c9279d901e5a68060200"
-                    }
-                ],
-                "bounded": null
-            },
-            "inputs_commitment": [
-                18, 177, 93, 152, 247, 36, 206, 226, 89, 230, 20, 127, 45, 93,
-                60, 98, 96, 136, 48, 16, 181, 30, 150, 142, 133, 168, 210, 52,
-                218, 52, 121, 255
-            ],
-            "outputs": {
-                "inner": [
-                    {
-                        "type": "Basic",
-                        "data": {
-                            "amount": 1000000,
-                            "native_tokens": { "inner": [], "bounded": null },
-                            "unlock_conditions": {
-                                "inner": [
-                                    {
-                                        "type": "Address",
-                                        "data": {
-                                            "type": "Ed25519",
-                                            "data": "0x194eb32b9b6c61207192c7073562a0b3adf50a7c1f268182b552ec8999380acb"
-                                        }
-                                    }
-                                ],
-                                "bounded": null
-                            },
-                            "feature_blocks": { "inner": [], "bounded": null }
-                        }
-                    },
-                    {
-                        "type": "Basic",
-                        "data": {
-                            "amount": 12000000,
-                            "native_tokens": { "inner": [], "bounded": null },
-                            "unlock_conditions": {
-                                "inner": [
-                                    {
-                                        "type": "Address",
-                                        "data": {
-                                            "type": "Ed25519",
-                                            "data": "0x7ffec9e1233204d9c6dce6812b1539ee96af691ca2e4d9065daa85907d33e5d3"
-                                        }
-                                    }
-                                ],
-                                "bounded": null
-                            },
-                            "feature_blocks": { "inner": [], "bounded": null }
+                        "type": 0,
+                        "address": {
+                            "type": 0,
+                            "pubKeyHash": "0x194eb32b9b6c61207192c7073562a0b3adf50a7c1f268182b552ec8999380acb"
                         }
                     }
-                ],
-                "bounded": null
+                ]
             },
-            "payload": null
-        }
+            {
+                "type": 3,
+                "amount": "1943952500",
+                "unlockConditions": [
+                    {
+                        "type": 0,
+                        "address": {
+                            "type": 0,
+                            "pubKeyHash": "0x7ffec9e1233204d9c6dce6812b1539ee96af691ca2e4d9065daa85907d33e5d3"
+                        }
+                    }
+                ]
+            }
+        ]
     },
     "input_signing_data_entries": [
         {
-            "output_response": {
-                "messageId": "0x07a0deed236a41a9ad5d3f1bba9397ca23de6e0e37f791d0984528a5b784a55b",
-                "transactionId": "0xbb2bdc323adf0e1ae8d8c35ae71d06bde7ff46978072a801c9279d901e5a6806",
-                "outputIndex": 2,
-                "isSpent": false,
-                "milestoneIndexBooked": 34859,
-                "milestoneTimestampBooked": 1650903521,
-                "ledgerIndex": 35503,
-                "output": {
-                    "type": 3,
-                    "amount": "13000000",
-                    "nativeTokens": [],
-                    "unlockConditions": [
-                        {
-                            "type": 0,
-                            "address": {
-                                "type": 0,
-                                "pubKeyHash": "0x7ffec9e1233204d9c6dce6812b1539ee96af691ca2e4d9065daa85907d33e5d3"
+            "output": {
+                "type": "Basic",
+                "data": {
+                    "amount": 1944952500,
+                    "native_tokens": { "inner": [], "bounded": null },
+                    "unlock_conditions": {
+                        "inner": [
+                            {
+                                "type": "Address",
+                                "data": {
+                                    "type": "Ed25519",
+                                    "data": "0x7ffec9e1233204d9c6dce6812b1539ee96af691ca2e4d9065daa85907d33e5d3"
+                                }
                             }
-                        }
-                    ],
-                    "featureBlocks": []
+                        ],
+                        "bounded": null
+                    },
+                    "feature_blocks": { "inner": [], "bounded": null }
                 }
+            },
+            "outputMetadata": {
+                "messageId": "0x560a69e4079e4b510ab9c495d585d418fd1c22cb1003d1e503989e02e26664d2",
+                "transactionId": "0xdddb6f40a3d442f54b74acbe140655056b0bd37641ff0153596ecafa806cf035",
+                "outputIndex": 1,
+                "isSpent": false,
+                "milestoneIndexBooked": 58123,
+                "milestoneTimestampBooked": 1651837724,
+                "ledgerIndex": 59042
             },
             "chain": [
                 { "hardened": true, "bs": [128, 0, 0, 44] },
@@ -98,7 +77,7 @@
                 { "hardened": true, "bs": [128, 0, 0, 0] },
                 { "hardened": true, "bs": [128, 0, 0, 0] }
             ],
-            "bech32_address": "rms1qpllaj0pyveqfkwxmnngz2c488hfdtmfrj3wfkgxtk4gtyrax0jaxzt70zy"
+            "bech32Address": "rms1qpllaj0pyveqfkwxmnngz2c488hfdtmfrj3wfkgxtk4gtyrax0jaxzt70zy"
         }
     ]
 }

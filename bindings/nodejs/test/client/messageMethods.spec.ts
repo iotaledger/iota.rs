@@ -39,8 +39,7 @@ describe.skip('Message methods', () => {
         expect(messages.length).toBe(messageIds.length);
     });
 
-    // TODO: Error: 404 message not found. However, if calling getMessageData/metadata
-    // on the same ID, the message is found
+    // TODO: Error: 404 message not found. Fixed in https://github.com/iotaledger/iota.rs/pull/983
     it.skip('gets raw message', async () => {
         const message = await client.generateMessage();
         const messageId = await client.postMessage(message);

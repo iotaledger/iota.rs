@@ -54,11 +54,10 @@ describe.skip('Client info methods', () => {
         expect(tips.length).toBeGreaterThan(0);
     });
 
-    // TODO: fix error: missing or malformed JWT
-    it.skip('gets peers', async () => {
-        const peers = await client.getPeers();
-
-        expect(peers).toBeDefined();
+    it('gets peers', async () => {
+        await expect(client.getPeers()).rejects.toMatch(
+            'missing or malformed jwt',
+        );
     });
 
     it('gets networkInfo', async () => {

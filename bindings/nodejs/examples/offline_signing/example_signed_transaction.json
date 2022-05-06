@@ -2,20 +2,19 @@
     "type": 6,
     "essence": {
         "type": 1,
-        "networkId": "10859088168901003000",
+        "networkId": "1020014395361784349",
         "inputs": [
             {
                 "type": 0,
-                "transactionId": "0xbb2bdc323adf0e1ae8d8c35ae71d06bde7ff46978072a801c9279d901e5a6806",
-                "transactionOutputIndex": 2
+                "transactionId": "0xdddb6f40a3d442f54b74acbe140655056b0bd37641ff0153596ecafa806cf035",
+                "transactionOutputIndex": 1
             }
         ],
-        "inputsCommitment": "0x12b15d98f724cee259e6147f2d5d3c6260883010b51e968e85a8d234da3479ff",
+        "inputsCommitment": "0x65aff15d2bb761f4dcb1b68df8cb655d9f25bc718d83c3f19d6281cffec02bcb",
         "outputs": [
             {
                 "type": 3,
                 "amount": "1000000",
-                "nativeTokens": [],
                 "unlockConditions": [
                     {
                         "type": 0,
@@ -24,13 +23,11 @@
                             "pubKeyHash": "0x194eb32b9b6c61207192c7073562a0b3adf50a7c1f268182b552ec8999380acb"
                         }
                     }
-                ],
-                "featureBlocks": []
+                ]
             },
             {
                 "type": 3,
-                "amount": "12000000",
-                "nativeTokens": [],
+                "amount": "1943952500",
                 "unlockConditions": [
                     {
                         "type": 0,
@@ -39,8 +36,7 @@
                             "pubKeyHash": "0x7ffec9e1233204d9c6dce6812b1539ee96af691ca2e4d9065daa85907d33e5d3"
                         }
                     }
-                ],
-                "featureBlocks": []
+                ]
             }
         ]
     },
@@ -50,7 +46,7 @@
             "signature": {
                 "type": 0,
                 "publicKey": "0x67b7fc3f78763c9394fc4fcdb52cf3a973b6e064bdc3defb40a6cb2c880e6f5c",
-                "signature": "0xdeaed4e5f650eaf3c61920d36e8a113c80c938c9b0b026edb83567d788f6c47da07709030f4b30bffe113db1b24f4419615723e74e516d272aa5313a3e5d8806"
+                "signature": "0x0b74d29d243eb7dc4c78ffa562a1fb6f710eaaac302acda1ea3abd72ea5790bcff351aae374a12f027647f48366b0772454573789b07b7073c50e4267ceb9a05"
             }
         }
     ]
