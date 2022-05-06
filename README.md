@@ -14,6 +14,18 @@ This library allows you to do the following:
 * Generate addresses
 * Interact with an IOTA node
 
+## Branching structure for development
+
+This library follows the following branching strategy:
+
+|Branch|Description|
+|------|-----------|
+|`develop`|Ongoing development for future releases of the networks. This branch gets merged into `staging` on releases.|
+|`legacy`|Deprecated, contains legacy releases supporting pre-Chrysalis features.|
+|`production`|The latest releases for the IOTA networks.|
+|`staging`|The latest releases for the Shimmer networks.|
+| other |Other branches that may reflect current projects. Similar to `develop`, they will find their way into `staging` once they are ready.|
+
 ## Using the library
 
 We recommend you to first update the Rust compiler to the latest stable version:
