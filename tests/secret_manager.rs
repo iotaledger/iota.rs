@@ -27,7 +27,8 @@ async fn mnemonic_secret_manager_dto() -> Result<()> {
 #[cfg(feature = "stronghold")]
 #[tokio::test]
 async fn stronghold_secret_manager_dto() -> Result<()> {
-    let dto = r#"{"Stronghold": {"password": "some_hopefully_secure_password", "snapshotPath": "test.stronghold"}}"#;
+    let dto =
+        r#"{"Stronghold": {"password": "some_hopefully_secure_password", "snapshotPath": "test/test.stronghold"}}"#;
     let mnemonic = String::from(
         "acoustic trophy damage hint search taste love bicycle foster cradle brown govern endless depend situate athlete pudding blame question genius transfer van random vast",
     );
@@ -62,6 +63,6 @@ async fn stronghold_secret_manager_dto() -> Result<()> {
     }
 
     // Remove garbage after test, but don't care about the result
-    std::fs::remove_file("test.stronghold").unwrap_or(());
+    std::fs::remove_file("test/test.stronghold").unwrap_or(());
     Ok(())
 }

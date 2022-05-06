@@ -324,6 +324,12 @@ impl StrongholdAdapter {
             return Err(Error::StrongholdSnapshotPathMissing);
         };
 
+        if let Some(parent) = snapshot_path.parent() {
+            if !parent.is_dir() {
+                std::fs::create_dir_all(parent)?;
+            }
+        }
+
         match self
             .stronghold
             .write_all_to_snapshot(
