@@ -11,11 +11,11 @@ use crate::{node_api::indexer::query_parameters::QueryParameter, Client, Result}
 impl Client {
     /// Get outputs filtered by the given parameters.
     /// GET with query parameter returns all outputIDs that fit these filter criteria.
-    /// Query parameters: "address", "hasStorageDepositReturnCondition", "storageReturnAddress", "hasExpirationCondition",
-    ///                 "expiresBefore", "expiresAfter", "expiresBeforeMilestone", "expiresAfterMilestone",
-    ///                 "hasTimelockCondition", "timelockedBefore", "timelockedAfter", "timelockedBeforeMilestone",
-    ///                 "timelockedAfterMilestone", "sender", "tag", "createdBefore", "createdAfter"
-    /// Returns an empty Vec if no results are found.
+    /// Query parameters: "address", "hasStorageDepositReturnCondition", "storageReturnAddress",
+    /// "hasExpirationCondition",                 "expiresBefore", "expiresAfter", "expiresBeforeMilestone",
+    /// "expiresAfterMilestone",                 "hasTimelockCondition", "timelockedBefore", "timelockedAfter",
+    /// "timelockedBeforeMilestone",                 "timelockedAfterMilestone", "sender", "tag", "createdBefore",
+    /// "createdAfter" Returns an empty Vec if no results are found.
     /// api/plugins/indexer/v1/outputs/basic
     pub async fn output_ids(&self, query_parameters: Vec<QueryParameter>) -> Result<Vec<OutputId>> {
         let route = "api/plugins/indexer/v1/outputs/basic";
@@ -47,11 +47,11 @@ impl Client {
     }
 
     /// Get NFT filtered by the given parameters.
-    /// Query parameters: "address", "hasStorageDepositReturnCondition", "storageReturnAddress", "hasExpirationCondition",
-    ///                 "expiresBefore", "expiresAfter", "expiresBeforeMilestone", "expiresAfterMilestone",
-    ///                 "hasTimelockCondition", "timelockedBefore", "timelockedAfter", "timelockedBeforeMilestone",
-    ///                 "timelockedAfterMilestone", "issuer", "sender", "tag", "createdBefore", "createdAfter"
-    /// Returns an empty list if no results are found.
+    /// Query parameters: "address", "hasStorageDepositReturnCondition", "storageReturnAddress",
+    /// "hasExpirationCondition",                 "expiresBefore", "expiresAfter", "expiresBeforeMilestone",
+    /// "expiresAfterMilestone",                 "hasTimelockCondition", "timelockedBefore", "timelockedAfter",
+    /// "timelockedBeforeMilestone",                 "timelockedAfterMilestone", "issuer", "sender", "tag",
+    /// "createdBefore", "createdAfter" Returns an empty list if no results are found.
     /// api/plugins/indexer/v1/outputs/nft
     pub async fn nfts_output_ids(&self, query_parameters: Vec<QueryParameter>) -> Result<Vec<OutputId>> {
         let route = "api/plugins/indexer/v1/outputs/nft";
