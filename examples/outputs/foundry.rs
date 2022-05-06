@@ -58,21 +58,19 @@ async fn main() -> Result<()> {
     //////////////////////////////////
     // create new alias output
     //////////////////////////////////
-    let outputs = vec![
-        AliasOutputBuilder::new_with_amount(2_000_000, AliasId::null())?
-            .with_state_index(0)
-            .with_foundry_counter(0)
-            .add_feature_block(FeatureBlock::Sender(SenderFeatureBlock::new(address)))
-            .add_feature_block(FeatureBlock::Metadata(MetadataFeatureBlock::new(vec![1, 2, 3])?))
-            .add_immutable_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
-            .add_unlock_condition(UnlockCondition::StateControllerAddress(
-                StateControllerAddressUnlockCondition::new(address),
-            ))
-            .add_unlock_condition(UnlockCondition::GovernorAddress(GovernorAddressUnlockCondition::new(
-                address,
-            )))
-            .finish_output()?,
-    ];
+    let outputs = vec![AliasOutputBuilder::new_with_amount(2_000_000, AliasId::null())?
+        .with_state_index(0)
+        .with_foundry_counter(0)
+        .add_feature_block(FeatureBlock::Sender(SenderFeatureBlock::new(address)))
+        .add_feature_block(FeatureBlock::Metadata(MetadataFeatureBlock::new(vec![1, 2, 3])?))
+        .add_immutable_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
+        .add_unlock_condition(UnlockCondition::StateControllerAddress(
+            StateControllerAddressUnlockCondition::new(address),
+        ))
+        .add_unlock_condition(UnlockCondition::GovernorAddress(GovernorAddressUnlockCondition::new(
+            address,
+        )))
+        .finish_output()?];
 
     let message = client
         .message()
@@ -216,11 +214,9 @@ async fn main() -> Result<()> {
     ];
 
     // get additional input for the new basic output
-    let output_ids = iota_client::node_api::indexer::routes::output_ids(
-        &client,
-        vec![QueryParameter::Address(address.to_bech32("atoi"))],
-    )
-    .await?;
+    let output_ids = client
+        .output_ids(vec![QueryParameter::Address(address.to_bech32("atoi"))])
+        .await?;
 
     let message = client
         .message()
@@ -241,12 +237,10 @@ async fn main() -> Result<()> {
     // send native token without foundry
     //////////////////////////////////
     let basic_output_id = get_basic_output_id_with_native_tokens(message.payload().unwrap());
-    let outputs = vec![
-        BasicOutputBuilder::new_with_amount(1_000_000)?
-            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-            .add_native_token(NativeToken::new(token_id, U256::from(50))?)
-            .finish_output()?,
-    ];
+    let outputs = vec![BasicOutputBuilder::new_with_amount(1_000_000)?
+        .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
+        .add_native_token(NativeToken::new(token_id, U256::from(50))?)
+        .finish_output()?];
 
     let message = client
         .message()
@@ -265,12 +259,10 @@ async fn main() -> Result<()> {
     // burn native token without foundry
     //////////////////////////////////
     let basic_output_id = get_basic_output_id_with_native_tokens(message.payload().unwrap());
-    let outputs = vec![
-        BasicOutputBuilder::new_with_amount(1_000_000)?
-            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-            .add_native_token(NativeToken::new(token_id, U256::from(30))?)
-            .finish_output()?,
-    ];
+    let outputs = vec![BasicOutputBuilder::new_with_amount(1_000_000)?
+        .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
+        .add_native_token(NativeToken::new(token_id, U256::from(30))?)
+        .finish_output()?];
 
     let message = client
         .message()

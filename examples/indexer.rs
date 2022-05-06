@@ -41,14 +41,12 @@ async fn main() -> Result<()> {
         .await?
     );
 
-    let output_ids = iota_client::node_api::indexer::routes::output_ids(
-        &client,
-        vec![QueryParameter::Address(address.to_bech32("atoi"))],
-    )
-    .await?;
+    let output_ids = client
+        .output_ids(vec![QueryParameter::Address(address.to_bech32("atoi"))])
+        .await?;
     println!("output ids {:?}", output_ids);
 
-    let outputs = iota_client::node_api::core::get_outputs(&client, output_ids).await?;
+    let outputs = client.get_outputs(output_ids).await?;
 
     println!("outputs {:?}", outputs);
     Ok(())
