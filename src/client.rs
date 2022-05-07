@@ -491,7 +491,7 @@ impl Client {
         crate::node_api::core::routes::metadata(self, message_id).await
     }
 
-    /// GET /api/v2/messages/{messageID}/raw endpoint
+    /// GET /api/v2/messages/{MessageId} endpoint
     /// Consume the builder and find a message by its identifer. This method returns the given message raw data.
     pub async fn get_message_raw(&self, message_id: &MessageId) -> Result<String> {
         crate::node_api::core::routes::raw(self, message_id).await

@@ -80,9 +80,9 @@ pub async fn metadata(client: &Client, message_id: &MessageId) -> Result<Message
 }
 
 /// Consume the builder and find a message by its MessageId. This method returns the given message raw data.
-/// GET /api/v2/messages/{MessageId}/raw endpoint
+/// GET /api/v2/messages/{MessageId} endpoint
 pub async fn raw(client: &Client, message_id: &MessageId) -> Result<String> {
-    let path = &format!("api/v2/messages/{}/raw", message_id);
+    let path = &format!("api/v2/messages/{}", message_id);
     let resp = client
         .node_manager
         .get_request_text(path, None, client.get_timeout())

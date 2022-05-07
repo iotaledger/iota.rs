@@ -117,7 +117,7 @@ def main():
     message_raw = client.get_message_raw(message_id)
     print(f"raw_data = {message_raw.encode('utf-8')}")
     print(
-        f"Note the raw data is exactly the same from http://127.0.0.1:14265/api/v2/messages/{message_id}/raw")
+        f"Note the raw data is exactly the same from http://127.0.0.1:14265/api/v2/messages/{message_id}")
     print(', which is not utf-8 format. The utf-8 format here is just for ease of demonstration')
 
     print(f'get_message_children() for message_id {message_id}')
