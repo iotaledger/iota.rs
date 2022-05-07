@@ -216,11 +216,9 @@ async fn main() -> Result<()> {
     ];
 
     // get additional input for the new basic output
-    let output_ids = iota_client::node_api::indexer::routes::output_ids(
-        &client,
-        vec![QueryParameter::Address(address.to_bech32("atoi"))],
-    )
-    .await?;
+    let output_ids = client
+        .output_ids(vec![QueryParameter::Address(address.to_bech32("atoi"))])
+        .await?;
 
     let message = client
         .message()

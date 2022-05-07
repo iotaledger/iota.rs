@@ -14,10 +14,9 @@ use std::{
 use bee_message::{
     address::Address,
     input::{Input, UtxoInput, INPUT_COUNT_MAX},
-    output::{AliasId, ByteCostConfig, ByteCostConfigBuilder, FoundryId, NftId, OutputId},
+    output::{ByteCostConfig, ByteCostConfigBuilder, OutputId},
     parent::Parents,
     payload::{
-        milestone::MilestoneId,
         transaction::{TransactionEssence, TransactionId},
         Payload, TaggedDataPayload,
     },
@@ -25,11 +24,8 @@ use bee_message::{
 };
 use bee_pow::providers::NonceProviderBuilder;
 use bee_rest_api::types::{
-    dtos::{LedgerInclusionStateDto, PeerDto, ReceiptDto},
-    responses::{
-        InfoResponse as NodeInfo, MessageMetadataResponse, MilestoneResponse, OutputResponse, TreasuryResponse,
-        UtxoChangesResponse as MilestoneUTXOChanges,
-    },
+    dtos::LedgerInclusionStateDto,
+    responses::{InfoResponse as NodeInfo, OutputResponse},
 };
 use crypto::keys::slip10::Seed;
 #[cfg(target_family = "wasm")]
@@ -453,172 +449,18 @@ impl Client {
         Ok(resp)
     }
 
-    /// Returns the node information together with the url of the used node
-    /// GET /api/v2/info endpoint
-    pub async fn get_info(&self) -> Result<NodeInfoWrapper> {
-        crate::node_api::core::routes::get_info(self).await
-    }
-
-    /// GET /api/v2/peers endpoint
-    pub async fn get_peers(&self) -> Result<Vec<PeerDto>> {
-        crate::node_api::core::routes::get_peers(self).await
-    }
-
-    /// GET /api/v2/tips endpoint
-    pub async fn get_tips(&self) -> Result<Vec<MessageId>> {
-        crate::node_api::core::routes::get_tips(self).await
-    }
-
-    /// POST /api/v2/messages endpoint
-    pub async fn post_message(&self, message: &Message) -> Result<MessageId> {
-        crate::node_api::core::routes::post_message(self, message).await
-    }
-
-    /// POST JSON to /api/v2/messages endpoint
-    pub async fn post_message_json(&self, message: &Message) -> Result<MessageId> {
-        crate::node_api::core::routes::post_message_json(self, message).await
-    }
-
-    /// GET /api/v2/messages/{messageID} endpoint
-    /// Consume the builder and find a message by its identifer. This method returns the given message object.
-    pub async fn get_message_data(&self, message_id: &MessageId) -> Result<Message> {
-        crate::node_api::core::routes::data(self, message_id).await
-    }
-
-    /// GET /api/v2/messages/{messageID}/metadata endpoint
-    /// Consume the builder and find a message by its identifer. This method returns the given message metadata.
-    pub async fn get_message_metadata(&self, message_id: &MessageId) -> Result<MessageMetadataResponse> {
-        crate::node_api::core::routes::metadata(self, message_id).await
-    }
-
-    /// GET /api/v2/messages/{MessageId} endpoint
-    /// Consume the builder and find a message by its identifer. This method returns the given message raw data.
-    pub async fn get_message_raw(&self, message_id: &MessageId) -> Result<String> {
-        crate::node_api::core::routes::raw(self, message_id).await
-    }
-
-    /// GET /api/v2/messages/{messageID}/children endpoint
-    /// Consume the builder and returns the list of message IDs that reference a message by its identifier.
-    pub async fn get_message_children(&self, message_id: &MessageId) -> Result<Box<[MessageId]>> {
-        crate::node_api::core::routes::children(self, message_id).await
-    }
-
-    /// GET /api/v2/outputs/{outputId} endpoint
-    /// Find an output by its transaction_id and corresponding output_index.
-    pub async fn get_output(&self, output_id: &OutputId) -> Result<OutputResponse> {
-        crate::node_api::core::routes::get_output(self, output_id).await
-    }
-
     /// GET /api/plugins/indexer/v1/outputs/basic{query} endpoint
     pub fn get_address(&self) -> GetAddressBuilder<'_> {
         GetAddressBuilder::new(self)
-    }
-
-    /// GET /api/v2/milestones/{milestoneId} endpoint
-    /// Get the milestone by the given milestone id.
-    pub async fn get_milestone_by_milestone_id(&self, milestone_id: MilestoneId) -> Result<MilestoneResponse> {
-        crate::node_api::core::routes::get_milestone_by_milestone_id(self, milestone_id).await
-    }
-
-    /// GET /api/v2/milestones/by-index/{milestoneIndex} endpoint
-    /// Get the milestone by the given index.
-    pub async fn get_milestone_by_milestone_index(&self, index: u32) -> Result<MilestoneResponse> {
-        crate::node_api::core::routes::get_milestone_by_milestone_index(self, index).await
-    }
-
-    /// GET /api/v2/milestones/{milestoneId}/utxo-changes endpoint
-    /// Get the milestone by the given milestone id.
-    pub async fn get_utxo_changes_by_milestone_id(&self, milestone_id: MilestoneId) -> Result<MilestoneUTXOChanges> {
-        crate::node_api::core::routes::get_utxo_changes_by_milestone_id(self, milestone_id).await
-    }
-
-    /// GET /api/v2/milestones/by-index/{milestoneIndex}/utxo-changes endpoint
-    /// Get the milestone by the given index.
-    pub async fn get_utxo_changes_by_milestone_index(&self, index: u32) -> Result<MilestoneUTXOChanges> {
-        crate::node_api::core::routes::get_utxo_changes_by_milestone_index(self, index).await
-    }
-
-    /// GET /api/v2/receipts endpoint
-    /// Get all receipts.
-    pub async fn get_receipts(&self) -> Result<Vec<ReceiptDto>> {
-        crate::node_api::core::routes::get_receipts(self).await
-    }
-
-    /// GET /api/v2/receipts/{migratedAt} endpoint
-    /// Get the receipts by the given milestone index.
-    pub async fn get_receipts_migrated_at(&self, milestone_index: u32) -> Result<Vec<ReceiptDto>> {
-        crate::node_api::core::routes::get_receipts_migrated_at(self, milestone_index).await
-    }
-
-    /// GET /api/v2/treasury endpoint
-    /// Get the treasury output.
-    pub async fn get_treasury(&self) -> Result<TreasuryResponse> {
-        crate::node_api::core::routes::get_treasury(self).await
-    }
-
-    /// GET /api/v2/transactions/{transactionId}/included-message
-    /// Returns the included message of the transaction.
-    pub async fn get_included_message(&self, transaction_id: &TransactionId) -> Result<Message> {
-        crate::node_api::core::routes::get_included_message(self, transaction_id).await
-    }
-
-    //////////////////////////////////////////////////////////////////////
-    // Node indexer API
-    //////////////////////////////////////////////////////////////////////
-
-    /// api/plugins/indexer/v1/outputs/basic
-    pub async fn output_ids(&self, query_parameters: Vec<QueryParameter>) -> Result<Vec<OutputId>> {
-        crate::node_api::indexer::routes::output_ids(self, query_parameters).await
-    }
-
-    /// api/plugins/indexer/v1/outputs/alias
-    pub async fn aliases_output_ids(&self, query_parameters: Vec<QueryParameter>) -> Result<Vec<OutputId>> {
-        crate::node_api::indexer::routes::aliases_output_ids(self, query_parameters).await
-    }
-
-    /// api/plugins/indexer/v1/outputs/alias/{AliasId}
-    pub async fn alias_output_id(&self, alias_id: AliasId) -> Result<OutputId> {
-        crate::node_api::indexer::routes::alias_output_id(self, alias_id).await
-    }
-
-    /// api/plugins/indexer/v1/outputs/nft
-    pub async fn nfts_output_ids(&self, query_parameters: Vec<QueryParameter>) -> Result<Vec<OutputId>> {
-        crate::node_api::indexer::routes::nfts_output_ids(self, query_parameters).await
-    }
-
-    /// api/plugins/indexer/v1/outputs/nft/{NftId}
-    pub async fn nft_output_id(&self, nft_id: NftId) -> Result<OutputId> {
-        crate::node_api::indexer::routes::nft_output_id(self, nft_id).await
-    }
-
-    /// api/plugins/indexer/v1/outputs/foundry
-    pub async fn foundries_output_ids(&self, query_parameters: Vec<QueryParameter>) -> Result<Vec<OutputId>> {
-        crate::node_api::indexer::routes::foundries_output_ids(self, query_parameters).await
-    }
-
-    /// api/plugins/indexer/v1/outputs/foundry/{FoundryID}
-    pub async fn foundry_output_id(&self, foundry_id: FoundryId) -> Result<OutputId> {
-        crate::node_api::indexer::routes::foundry_output_id(self, foundry_id).await
     }
 
     //////////////////////////////////////////////////////////////////////
     // High level API
     //////////////////////////////////////////////////////////////////////
 
-    /// Get OutputResponse from provided OutputIds (requests are sent in parallel)
-    pub async fn get_outputs(&self, output_ids: Vec<OutputId>) -> Result<Vec<OutputResponse>> {
-        crate::node_api::core::get_outputs(self, output_ids).await
-    }
-
-    /// Try to get OutputResponse from provided OutputIds (requests are sent in parallel and errors are ignored, can be
-    /// useful for spent outputs)
-    pub async fn try_get_outputs(&self, output_ids: Vec<OutputId>) -> Result<Vec<OutputResponse>> {
-        crate::node_api::core::try_get_outputs(self, output_ids).await
-    }
-
     /// Get the inputs of a transaction for the given transaction id.
     pub async fn inputs_from_transaction_id(&self, transaction_id: &TransactionId) -> Result<Vec<OutputResponse>> {
-        let message = crate::node_api::core::routes::get_included_message(self, transaction_id).await?;
+        let message = self.get_included_message(transaction_id).await?;
 
         let inputs = match message.payload() {
             Some(Payload::Transaction(t)) => match t.essence() {
@@ -639,7 +481,7 @@ impl Client {
             })
             .collect();
 
-        crate::node_api::core::get_outputs(self, input_ids).await
+        self.get_outputs(input_ids).await
     }
 
     /// A generic send function for easily sending transaction or tagged data messages.
@@ -830,7 +672,7 @@ impl Client {
     /// Find all outputs based on the requests criteria. This method will try to query multiple nodes if
     /// the request amount exceeds individual node limit.
     pub async fn find_outputs(&self, output_ids: &[OutputId], addresses: &[String]) -> Result<Vec<OutputResponse>> {
-        let mut output_metadata = crate::node_api::core::get_outputs(self, output_ids.to_vec()).await?;
+        let mut output_metadata = self.get_outputs(output_ids.to_vec()).await?;
 
         // Use `get_address()` API to get the address outputs first,
         // then collect the `UtxoInput` in the HashSet.

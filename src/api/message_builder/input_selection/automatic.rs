@@ -80,18 +80,17 @@ pub(crate) async fn get_inputs(
         // For each address, get the address outputs
         let mut address_index = gap_index;
         for (index, (str_address, internal)) in public_and_internal_addresses.iter().enumerate() {
-            let output_ids = crate::node_api::indexer::routes::output_ids(
-                message_builder.client,
-                vec![
+            let output_ids = message_builder
+                .client
+                .output_ids(vec![
                     QueryParameter::Address(str_address.to_string()),
                     QueryParameter::HasExpirationCondition(false),
                     QueryParameter::HasTimelockCondition(false),
                     QueryParameter::HasStorageDepositReturnCondition(false),
-                ],
-            )
-            .await?;
+                ])
+                .await?;
 
-            let address_outputs = crate::node_api::core::get_outputs(message_builder.client, output_ids).await?;
+            let address_outputs = message_builder.client.get_outputs(output_ids).await?;
 
             // If there are more than 20 (ADDRESS_GAP_RANGE) consecutive empty addresses, then we stop
             // looking up the addresses belonging to the seed. Note that we don't
@@ -227,18 +226,18 @@ async fn get_inputs_for_sender_and_issuer(
             .await?;
             // if we didn't return with an error, then the address was found
 
-            let output_ids = crate::node_api::indexer::routes::output_ids(
-                message_builder.client,
-                vec![
+            let output_ids = message_builder
+                .client
+                .output_ids(vec![
                     QueryParameter::Address(Address::Ed25519(*address).to_bech32(&bech32_hrp)),
                     QueryParameter::HasExpirationCondition(false),
                     QueryParameter::HasTimelockCondition(false),
                     QueryParameter::HasStorageDepositReturnCondition(false),
-                ],
-            )
-            .await?;
+                ])
+                .await?;
 
-            let address_outputs = crate::node_api::core::get_outputs(message_builder.client, output_ids).await?;
+            let address_outputs = message_builder.client.get_outputs(output_ids).await?;
+
             match address_outputs.first() {
                 Some(output_response) => {
                     required_ed25519_inputs.push(InputSigningData {
