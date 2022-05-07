@@ -104,6 +104,23 @@ impl HttpClient {
         Self::parse_response(resp, &node.url).await
     }
 
+    // Get with header: "accept", "application/vnd.iota.serializer-v1"
+    pub(crate) async fn get_raw(&self, node: Node, _timeout: Duration) -> Result<Response> {
+        let mut request_builder = self.client.get(node.url.clone());
+        if let Some(node_auth) = node.auth {
+            if let Some(jwt) = node_auth.jwt {
+                request_builder = request_builder.bearer_auth(jwt);
+            }
+        }
+        #[cfg(not(target_family = "wasm"))]
+        {
+            request_builder = request_builder.timeout(_timeout);
+        }
+        request_builder = request_builder.header("accept", "application/vnd.iota.serializer-v1");
+        let resp = request_builder.send().await?;
+        Self::parse_response(resp, &node.url).await
+    }
+
     pub(crate) async fn post_bytes(&self, node: Node, _timeout: Duration, body: &[u8]) -> Result<Response> {
         let mut request_builder = self.client.post(node.url.clone());
         if let Some(node_auth) = node.auth {
@@ -151,6 +168,17 @@ impl HttpClient {
                 request_builder = request_builder.set("Authorization", &format!("Bearer {}", jwt));
             }
         }
+        Ok(request_builder.call()?.into())
+    }
+
+    pub(crate) async fn get_raw(&self, node: Node, timeout: Duration) -> Result<Response> {
+        let mut request_builder = Self::get_ureq_agent(timeout).get(node.url.as_str());
+        if let Some(node_auth) = node.auth {
+            if let Some(jwt) = node_auth.jwt {
+                request_builder = request_builder.set("Authorization", &format!("Bearer {}", jwt));
+            }
+        }
+        request_builder = request_builder.set("Content-Type", "application/vnd.iota.serializer-v1");
         Ok(request_builder.call()?.into())
     }
 

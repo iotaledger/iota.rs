@@ -49,7 +49,7 @@ impl Client {
         Ok(tips)
     }
 
-    /// Consume the builder and find a message by its MessageId. This method returns the given message object.
+    /// Find a message by its MessageId. This method returns the given message object.
     /// GET /api/v2/messages/{MessageId} endpoint
     pub async fn get_message_data(&self, message_id: &MessageId) -> Result<Message> {
         let path = &format!("api/v2/messages/{}", message_id);
@@ -69,10 +69,10 @@ impl Client {
         Ok(resp)
     }
 
-    /// Consume the builder and find a message by its MessageId. This method returns the given message raw data.
-    /// GET /api/v2/messages/{MessageId}/raw endpoint
+    /// Find a message by its MessageId. This method returns the given message raw data.
+    /// GET /api/v2/messages/{MessageId} endpoint
     pub async fn get_message_raw(&self, message_id: &MessageId) -> Result<String> {
-        let path = &format!("api/v2/messages/{}/raw", message_id);
+        let path = &format!("api/v2/messages/{}", message_id);
         let resp = self
             .node_manager
             .get_request_text(path, None, self.get_timeout())
@@ -82,7 +82,7 @@ impl Client {
     }
 
     /// GET /api/v2/messages/{messageID}/children endpoint
-    /// Consume the builder and returns the list of message IDs that reference a message by its identifier.
+    /// Returns the list of message IDs that reference a message by its identifier.
     pub async fn get_message_children(&self, message_id: &MessageId) -> Result<Box<[MessageId]>> {
         let path = &format!("api/v2/messages/{}/children", message_id);
 

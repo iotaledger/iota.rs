@@ -826,7 +826,7 @@ foreign_class!(
         /// Consume the builder and find a message by its identifer. This method returns the given message metadata.
         fn GetMessageBuilder::metadata(&self, message_id: MessageId) -> Result<MessageMetadata>;
 
-        /// GET /api/v2/messages/{messageID}/raw endpoint
+        /// GET /api/v2/messages/{MessageId} endpoint
         /// Consume the builder and find a message by its identifer. This method returns the given message raw data.
         fn GetMessageBuilder::raw(&self, message_id: MessageId) -> Result<String>;
 
