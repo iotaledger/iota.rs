@@ -309,6 +309,19 @@ impl Client {
             .await
     }
 
+    /// Get the metadata for a given `OutputId` (TransactionId + output_index).
+    /// GET /api/v2/outputs/{outputId}/metadata endpoint
+    pub async fn get_output_metadata(client: &Client, output_id: &OutputId) -> Result<OutputMetadataResponse> {
+        let path = &format!("api/v2/outputs/{}/metadata", output_id);
+
+        let resp: OutputMetadataResponse = client
+            .node_manager
+            .get_request(path, None, client.get_timeout())
+            .await?;
+
+        Ok(resp)
+    }
+
     /// Gets all stored receipts.
     /// GET /api/v2/receipts
     pub async fn get_receipts(&self) -> Result<Vec<ReceiptDto>> {
