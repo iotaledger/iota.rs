@@ -324,6 +324,7 @@ impl StrongholdAdapter {
             return Err(Error::StrongholdSnapshotPathMissing);
         };
 
+        // Check if directory in path exists, if not create it
         if let Some(parent) = snapshot_path.parent() {
             if !parent.is_dir() {
                 std::fs::create_dir_all(parent)?;
