@@ -8,6 +8,7 @@ use bee_message::{
     MessageId,
 };
 use iota_client::{
+    bech32_to_hex,
     node_api::indexer::query_parameters::QueryParameter,
     request_funds_from_faucet,
     secret::{mnemonic::MnemonicSecretManager, SecretManager},
@@ -52,15 +53,15 @@ async fn setup_transaction_message() -> (MessageId, TransactionId) {
             .unwrap(),
     );
 
-    let address = client
+    let addresses = client
         .get_addresses(&secret_manager)
-        .with_range(0..1)
+        .with_range(0..2)
         .get_raw()
         .await
-        .unwrap()[0];
+        .unwrap();
     println!(
         "{}",
-        request_funds_from_faucet(DEFAULT_DEVNET_FAUCET_URL, &address.to_bech32("rms"),)
+        request_funds_from_faucet(DEFAULT_DEVNET_FAUCET_URL, &addresses[0].to_bech32("rms"),)
             .await
             .unwrap()
     );
@@ -69,10 +70,9 @@ async fn setup_transaction_message() -> (MessageId, TransactionId) {
     let message_id = client
         .message()
         .with_secret_manager(&secret_manager)
-        // Insert the output address and ampunt to spent. The amount cannot be zero.
         .with_output_hex(
-            "0x5eec99d6ee4ba21aa536c3364bbf2b587cb98a7f2565b75d948b10083e2143f8", // Insert the address to search for
-            1_000_000,
+            &bech32_to_hex(&addresses[1].to_bech32("rms")).unwrap(), // Send funds back to the sender.
+            1_000_000,                                               // The amount to spend, cannot be zero.
         )
         .unwrap()
         .finish()
@@ -237,8 +237,6 @@ async fn test_get_peers() {
 async fn test_get_milestone_by_milestone_id() {
     let client = setup_client_with_sync_disabled().await;
 
-    // get node info first, because if we hardcode the milestones get pruned and if we hardcode an index it would fail
-    // after some time
     let node_info = client.get_info().await.unwrap();
 
     let r = client
@@ -254,8 +252,6 @@ async fn test_get_milestone_by_milestone_id() {
 async fn test_get_milestone_by_milestone_index() {
     let client = setup_client_with_sync_disabled().await;
 
-    // get node info first, because if we hardcode the milestones get pruned and if we hardcode an index it would fail
-    // after some time
     let node_info = client.get_info().await.unwrap();
 
     let r = client
@@ -271,8 +267,6 @@ async fn test_get_milestone_by_milestone_index() {
 async fn test_get_utxo_changes_by_milestone_id() {
     let client = setup_client_with_sync_disabled().await;
 
-    // get node info first, because if we hardcode the milestones get pruned and if we hardcode an index it would fail
-    // after some time
     let node_info = client.get_info().await.unwrap();
 
     let r = client
@@ -288,8 +282,6 @@ async fn test_get_utxo_changes_by_milestone_id() {
 async fn test_get_utxo_changes_by_milestone_index() {
     let client = setup_client_with_sync_disabled().await;
 
-    // get node info first, because if we hardcode the milestones get pruned and if we hardcode an index it would fail
-    // after some time
     let node_info = client.get_info().await.unwrap();
 
     let r = client
