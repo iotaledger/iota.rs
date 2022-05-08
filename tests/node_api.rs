@@ -47,7 +47,7 @@ async fn setup_tagged_data_message() -> MessageId {
 async fn setup_transaction_message() -> (MessageId, TransactionId) {
     let client = setup_client_with_sync_disabled().await;
 
-    // Insert your seed. Since the output amount cannot be zero. The seed must contain non-zero balance.
+    // This seed only serves for testing purposes! DO NOT USE THIS SEED IN PRODUCTION!
     let secret_manager = SecretManager::Mnemonic(
         MnemonicSecretManager::try_from_hex_seed("256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2")
             .unwrap(),
