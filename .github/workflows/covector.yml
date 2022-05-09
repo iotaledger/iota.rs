@@ -2,9 +2,8 @@ name: Covector
 on:
   push:
     branches:
-      # disabled until node.js or wasm binding is updated
-      # - develop
-      - dev
+      - develop
+      - production
     paths-ignore:
       - 'specs/**'
       - 'documentation/**'

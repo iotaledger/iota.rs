@@ -2,9 +2,8 @@ name: Examine the WebAssembly Bindings
 on:
   push:
     branches:
-      # disabled until wasm binding is updated
-      # - develop
-      - dev
+      - develop
+      - production
     paths:
       - ".github/workflows/examine-wasm-bindings.yml"
       - ".github/actions/**"
@@ -15,9 +14,8 @@ on:
       - "Cargo.lock"
   pull_request:
     branches:
-      # disabled until wasm binding is updated
-      # - develop
-      - dev
+      - develop
+      - production
     paths:
       - ".github/workflows/examine-wasm-bindings.yml"
       - ".github/actions/**"

@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - develop
-      - dev
+      - production
     paths:
       - ".github/workflows/examine-core.yml"
       - ".github/actions/**"
@@ -15,7 +15,7 @@ on:
   pull_request:
     branches:
       - develop
-      - dev
+      - production
     paths:
       - ".github/workflows/examine-core.yml"
       - ".github/actions/**"
