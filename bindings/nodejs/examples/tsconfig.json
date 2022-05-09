@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "target": "es2019",
+        "module": "commonjs",
+        "sourceMap": true,
+        "strict": true,
+        "moduleResolution": "node",
+        "importsNotUsedAsValues": "error",
+        "noImplicitAny": true,
+        "removeComments": true,
+        "skipLibCheck": true,
+        "outDir": "dist"
+    }
+}

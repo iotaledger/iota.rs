@@ -27,6 +27,7 @@ pub enum ClientMethod {
     /// Generate a addresses.
     GenerateAddresses {
         /// Create secret manager from json
+        #[serde(rename = "secretManager")]
         secret_manager: SecretManagerDto,
         /// Addresses generation options
         options: GenerateAddressesOptions,
@@ -34,6 +35,7 @@ pub enum ClientMethod {
     /// Generate client message
     GenerateMessage {
         /// Secret manager
+        #[serde(rename = "secretManager")]
         secret_manager: Option<SecretManagerDto>,
         /// Options
         options: Option<GenerateMessageOptions>,
@@ -62,6 +64,7 @@ pub enum ClientMethod {
     /// Prepare a transaction for signing
     PrepareTransaction {
         /// Secret manager
+        #[serde(rename = "secretManager")]
         secret_manager: Option<SecretManagerDto>,
         /// Options
         options: Option<GenerateMessageOptions>,
@@ -69,6 +72,7 @@ pub enum ClientMethod {
     /// Sign a transaction
     SignTransaction {
         /// Secret manager
+        #[serde(rename = "secretManager")]
         secret_manager: SecretManagerDto,
         /// Prepared transaction data
         #[serde(rename = "preparedTransactionData")]
@@ -125,31 +129,37 @@ pub enum ClientMethod {
     /// Get message data
     GetMessageData {
         /// Message ID
+        #[serde(rename = "messageId")]
         message_id: MessageId,
     },
     /// Get message metadata with message_id
     GetMessageMetadata {
         /// Message ID
+        #[serde(rename = "messageId")]
         message_id: MessageId,
     },
     /// Get message raw
     GetMessageRaw {
         /// Message ID
+        #[serde(rename = "messageId")]
         message_id: MessageId,
     },
     /// Get message children
     GetMessageChildren {
         /// Message ID
+        #[serde(rename = "messageId")]
         message_id: MessageId,
     },
     /// Get output
     GetOutput {
         /// Output ID
+        #[serde(rename = "outputId")]
         output_id: OutputId,
     },
     /// Get the milestone by the given milestone id.
     GetMilestoneByMilestoneId {
         /// Milestone ID
+        #[serde(rename = "milestoneId")]
         milestone_id: MilestoneId,
     },
     /// Get the milestone by the given index.
@@ -160,6 +170,7 @@ pub enum ClientMethod {
     /// Get the UTXO changes by the given milestone id.
     GetUtxoChangesByMilestoneId {
         /// Milestone ID
+        #[serde(rename = "milestoneId")]
         milestone_id: MilestoneId,
     },
     /// Get the UTXO changes by the given milestone index.
@@ -172,6 +183,7 @@ pub enum ClientMethod {
     /// Get the receipts by the given milestone index.
     GetReceiptsMigratedAt {
         /// Milestone index
+        #[serde(rename = "milestoneIndex")]
         milestone_index: u32,
     },
     /// Get the treasury output.
@@ -179,6 +191,7 @@ pub enum ClientMethod {
     /// Returns the included message of the transaction.
     GetIncludedMessage {
         /// Transaction ID
+        #[serde(rename = "transactionId")]
         transaction_id: TransactionId,
     },
 
@@ -188,36 +201,43 @@ pub enum ClientMethod {
     /// Fetch output IDs
     OutputIds {
         /// Query parameters for output requests
+        #[serde(rename = "queryParameters")]
         query_parameters: Vec<QueryParameter>,
     },
     /// Fetch aliases output IDs
     AliasesOutputIds {
         /// Query parameters for output requests
+        #[serde(rename = "queryParameters")]
         query_parameters: Vec<QueryParameter>,
     },
     /// Fetch alias output ID
     AliasOutputId {
         /// Alias id
+        #[serde(rename = "aliasId")]
         alias_id: AliasId,
     },
     /// Fetch NFTs output IDs
     NftsOutputIds {
         /// Query parameters for output requests
+        #[serde(rename = "queryParameters")]
         query_parameters: Vec<QueryParameter>,
     },
     /// Fetch NFT output ID
     NftOutputId {
         /// NFT ID
+        #[serde(rename = "nftId")]
         nft_id: NftId,
     },
     /// Fetch Foundries Output IDs
     FoundriesOutputIds {
         /// Query parameters for output requests
+        #[serde(rename = "queryParameters")]
         query_parameters: Vec<QueryParameter>,
     },
     /// Fetch Foundry Output ID
     FoundryOutputId {
         /// Foundry ID
+        #[serde(rename = "foundryId")]
         foundry_id: FoundryId,
     },
 
@@ -227,23 +247,27 @@ pub enum ClientMethod {
     /// Fetch OutputResponse from provided OutputIds (requests are sent in parallel)
     GetOutputs {
         /// Output IDs
+        #[serde(rename = "outputIds")]
         output_ids: Vec<OutputId>,
     },
     /// Try to get OutputResponse from provided OutputIds (requests are sent in parallel and errors are ignored, can be
     /// useful for spent outputs)
     TryGetOutputs {
         /// Output IDs
+        #[serde(rename = "outputIds")]
         output_ids: Vec<OutputId>,
     },
     /// Find all messages by provided message IDs.
     FindMessages {
         /// MessageIDs
+        #[serde(rename = "messageIds")]
         message_ids: Vec<MessageId>,
     },
     /// Retries (promotes or reattaches) a message for provided message id. Message should only be
     /// retried only if they are valid and haven't been confirmed for a while.
     Retry {
         /// Message ID
+        #[serde(rename = "messageId")]
         message_id: MessageId,
     },
     /// Retries (promotes or reattaches) a message for provided message id until it's included (referenced by a
@@ -251,20 +275,25 @@ pub enum ClientMethod {
     /// position and additional reattached messages
     RetryUntilIncluded {
         /// Message ID
+        #[serde(rename = "messageId")]
         message_id: MessageId,
         /// Interval
         interval: Option<u64>,
         /// Maximum attempts
+        #[serde(rename = "maxAttempts")]
         max_attempts: Option<u64>,
     },
     /// Function to consolidate all funds from a range of addresses to the address with the lowest index in that range
     /// Returns the address to which the funds got consolidated, if any were available
     ConsolidateFunds {
         /// Secret manager
+        #[serde(rename = "secretManager")]
         secret_manager: SecretManagerDto,
         /// Account index
+        #[serde(rename = "accountIndex")]
         account_index: u32,
         /// Address_range
+        #[serde(rename = "addressRange")]
         address_range: Range<u32>,
     },
     /// Function to find inputs from addresses for a provided amount (useful for offline signing)
@@ -278,6 +307,7 @@ pub enum ClientMethod {
     /// the request amount exceeds individual node limit.
     FindOutputs {
         /// Output IDs
+        #[serde(rename = "outputIds")]
         output_ids: Vec<OutputId>,
         /// Addresses
         addresses: Vec<String>,
@@ -286,22 +316,26 @@ pub enum ClientMethod {
     /// confirmed for a while.
     Reattach {
         /// Message ID
+        #[serde(rename = "messageId")]
         message_id: MessageId,
     },
     /// Reattach a message without checking if it should be reattached
     ReattachUnchecked {
         /// Message ID
+        #[serde(rename = "messageId")]
         message_id: MessageId,
     },
     /// Promotes a message. The method should validate if a promotion is necessary through get_message. If not, the
     /// method should error out and should not allow unnecessary promotions.
     Promote {
         /// Message ID
+        #[serde(rename = "messageId")]
         message_id: MessageId,
     },
     /// Promote a message without checking if it should be promoted
     PromoteUnchecked {
         /// Message ID
+        #[serde(rename = "messageId")]
         message_id: MessageId,
     },
 
@@ -318,6 +352,7 @@ pub enum ClientMethod {
         /// Hex encoded bech32 address
         hex: String,
         /// Human readable part
+        #[serde(rename = "bech32Hrp")]
         bech32_hrp: Option<String>,
     },
     /// Transforms a hex encoded public key to a bech32 encoded address
@@ -325,6 +360,7 @@ pub enum ClientMethod {
         /// Hex encoded public key
         hex: String,
         /// Human readable part
+        #[serde(rename = "bech32Hrp")]
         bech32_hrp: Option<String>,
     },
     /// Returns a valid Address parsed from a String.

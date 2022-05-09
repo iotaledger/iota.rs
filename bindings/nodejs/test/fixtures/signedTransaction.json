@@ -6,11 +6,11 @@
         "inputs": [
             {
                 "type": 0,
-                "transactionId": "0xdddb6f40a3d442f54b74acbe140655056b0bd37641ff0153596ecafa806cf035",
+                "transactionId": "0x60740e02678a6e29cad19e5df4ac367897c88904d9c137a88b7b37c473df9ba4",
                 "transactionOutputIndex": 1
             }
         ],
-        "inputsCommitment": "0x65aff15d2bb761f4dcb1b68df8cb655d9f25bc718d83c3f19d6281cffec02bcb",
+        "inputsCommitment": "0xf027c155a58527f1e3d2c0e93ffe101edcc6cc58d7ce7ec0bea0cdbfb08f73ef",
         "outputs": [
             {
                 "type": 3,
@@ -27,7 +27,7 @@
             },
             {
                 "type": 3,
-                "amount": "1943952500",
+                "amount": "2043446000",
                 "unlockConditions": [
                     {
                         "type": 0,
@@ -46,7 +46,7 @@
             "signature": {
                 "type": 0,
                 "publicKey": "0x67b7fc3f78763c9394fc4fcdb52cf3a973b6e064bdc3defb40a6cb2c880e6f5c",
-                "signature": "0x0b74d29d243eb7dc4c78ffa562a1fb6f710eaaac302acda1ea3abd72ea5790bcff351aae374a12f027647f48366b0772454573789b07b7073c50e4267ceb9a05"
+                "signature": "0xb0b507effca036496504003afb237413a25c61d473fd02e82a151ff0b34c90965c232e5c9b8f7eb489fbe12da408df69b4dd40df0828cc59670dea8a9c9a330b"
             }
         }
     ]

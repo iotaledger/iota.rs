@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+        "lib": ["es2019", "DOM"],
+        "declaration": true,
+        "target": "es2019",
+        "module": "commonjs",
+        "sourceMap": true,
+        "strict": true,
+        "moduleResolution": "node",
+        "importsNotUsedAsValues": "error",
+        "noImplicitAny": true,
+        "preserveConstEnums": true,
+        "resolveJsonModule": true,
+        "outDir": "out"
+    },
+    "include": ["lib/**/*", "types/**/*", "test"]
+}
