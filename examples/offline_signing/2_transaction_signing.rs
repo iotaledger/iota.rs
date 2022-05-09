@@ -20,7 +20,7 @@ use iota_client::{
         payload::{transaction::TransactionPayload, Payload},
         unlock_block::UnlockBlocks,
     },
-    secret::{mnemonic::MnemonicSecretManager, Network, SecretManageExt, SecretManager, SignMessageMetadata},
+    secret::{mnemonic::MnemonicSecretManager, SecretManageExt, SecretManager, SignMessageMetadata},
     Result,
 };
 
@@ -52,7 +52,6 @@ async fn main() -> Result<()> {
             SignMessageMetadata {
                 remainder_value: 0,
                 remainder_deposit_address: None,
-                network: Network::Testnet,
             },
         )
         .await?;

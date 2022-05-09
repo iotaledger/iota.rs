@@ -9,7 +9,7 @@ use serde::Deserialize;
 use crate::{
     api::types::{Bech32Addresses, RawAddresses},
     constants::{SHIMMER_COIN_TYPE, SHIMMER_TESTNET_BECH32_HRP},
-    secret::{GenerateAddressMetadata, Network, SecretManage, SecretManager},
+    secret::{GenerateAddressMetadata, SecretManage, SecretManager},
     Client, Result,
 };
 
@@ -54,10 +54,7 @@ impl<'a> GetAddressesBuilder<'a> {
             range: 0..super::ADDRESS_GAP_RANGE,
             internal: false,
             bech32_hrp: None,
-            metadata: GenerateAddressMetadata {
-                syncing: true,
-                network: Network::Testnet,
-            },
+            metadata: GenerateAddressMetadata { syncing: true },
         }
     }
 

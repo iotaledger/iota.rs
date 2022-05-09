@@ -8,10 +8,10 @@
 use std::ops::Range;
 
 use async_trait::async_trait;
-use bee_message::{address::Address, unlock_block::UnlockBlock};
+use bee_message::{address::Address, payload::transaction::TransactionEssence, unlock_block::UnlockBlock};
 use tokio::sync::Mutex;
 
-use super::{types::InputSigningData, GenerateAddressMetadata, SecretManage, SignMessageMetadata};
+use super::{types::InputSigningData, GenerateAddressMetadata, SecretManage, SecretManageExt, SignMessageMetadata};
 use crate::secret::LedgerStatus;
 
 /// Hardened const for the bip path.
@@ -51,7 +51,7 @@ impl SecretManage for LedgerSecretManager {
         internal: bool,
         meta: GenerateAddressMetadata,
     ) -> crate::Result<Vec<Address>> {
-        // lock the mutex
+        // lock the mutex to prevent multiple simultaneous requests to a ledger
         let _lock = self.mutex.lock().await;
 
         let bip32_account = account_index | HARDENED;
@@ -62,16 +62,6 @@ impl SecretManage for LedgerSecretManager {
         };
         // get ledger
         let ledger = iota_ledger::get_ledger(bip32_account, self.is_simulator)?;
-
-        // let compiled_for = match ledger.is_debug_app() {
-        // true => Network::Testnet,
-        // false => Network::Mainnet,
-        // };
-        //
-        // check if ledger app is compiled for the same network
-        // if compiled_for != meta.network {
-        // return Err(crate::Error::LedgerNetMismatch);
-        // }
 
         // if it's not for syncing, then it's a new receiving / remainder address
         // that needs shown to the user
@@ -91,38 +81,52 @@ impl SecretManage for LedgerSecretManager {
         Ok(ed25519_addresses)
     }
 
+    // Ledger Nano will use `sign_transaction_essence`
     async fn signature_unlock<'a>(
         &self,
         _input: &InputSigningData,
         _essence_hash: &[u8; 32],
         _metadata: &SignMessageMetadata<'a>,
     ) -> crate::Result<UnlockBlock> {
+        panic!("signature_unlock is not supported with ledger")
+    }
+}
+
+#[async_trait]
+impl SecretManageExt for LedgerSecretManager {
+    async fn sign_transaction_essence<'a>(
+        &self,
+        _essence: &TransactionEssence,
+        inputs: &[InputSigningData],
+        _metadata: SignMessageMetadata<'a>,
+    ) -> crate::Result<Vec<UnlockBlock>> {
+        // lock the mutex to prevent multiple simultaneous requests to a ledger
+        let _lock = self.mutex.lock().await;
+
+        // Get coin type and account index from first input
+        let (coin_type, account_index) = match &inputs.first() {
+            Some(input) => {
+                match &input.chain {
+                    Some(chain) => {
+                        let raw: Vec<u32> = chain
+                            .segments()
+                            .iter()
+                            // XXX: "ser32(i)". RTFSC: [crypto::keys::slip10::Segment::from_u32()]
+                            .map(|seg| u32::from_be_bytes(seg.bs()))
+                            .collect();
+                        (raw[0], raw[1])
+                    }
+                    None => return Err(crate::Error::NoInputs),
+                }
+            }
+            None => return Err(crate::Error::NoInputs),
+        };
+
+        let bip32_account = account_index | HARDENED;
+        let _ledger = iota_ledger::get_ledger(bip32_account, self.is_simulator)?;
         todo!()
     }
 
-    // async fn sign_transaction_essence<'a>(
-    //     &self,
-    //     _essence: &TransactionEssence,
-    //     _inputs: &[InputSigningData],
-    //     _metadata: SignMessageMetadata<'a>,
-    // ) -> crate::Result<Vec<UnlockBlock>> {
-    //     todo!()
-    //     // lock the mutex
-    //     let _lock = self.mutex.lock().await;
-
-    //     // todo don't use default 0, use account index from InputSigningData
-    //     let account_index = 0;
-    //     let bip32_account = account_index | HARDENED;
-    //     let ledger = iota_ledger::get_ledger(bip32_account, self.is_simulator)?;
-    //     // let compiled_for = match ledger.is_debug_app() {
-    //     // true => Network::Testnet,
-    //     // false => Network::Mainnet,
-    //     // };
-    //     //
-    //     // check if ledger app is compiled for the same network
-    //     // if compiled_for != meta.network {
-    //     // return Err(crate::Error::LedgerNetMismatch);
-    //     // }
     //     let input_len = inputs.len();
 
     //     // on essence finalization, inputs are sorted lexically before they are packed into bytes.
@@ -276,12 +280,16 @@ impl LedgerSecretManager {
         };
 
         log::info!("get_ledger");
-        let (connected_, locked) =
-            match iota_ledger::get_ledger(crate::secret::ledger::HARDENED, self.is_simulator).map_err(Into::into) {
-                Ok(_) => (true, false),
-                Err(crate::Error::LedgerDongleLocked) => (true, true),
-                Err(_) => (false, false),
-            };
+        let (connected_, locked) = match iota_ledger::get_ledger(
+            crate::secret::ledger_nano::HARDENED,
+            self.is_simulator,
+        )
+        .map_err(Into::into)
+        {
+            Ok(_) => (true, false),
+            Err(crate::Error::LedgerDongleLocked) => (true, true),
+            Err(_) => (false, false),
+        };
         // We get the app info also if not the iota app is open, but another one
         // connected_ is in this case false, even tough the ledger is connected, that's why we always return true if we
         // got the app

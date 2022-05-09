@@ -34,9 +34,6 @@ pub struct SignMessageMetadata<'a> {
     pub remainder_value: u64,
     /// The transfer's deposit address for the remainder value if any.
     pub remainder_deposit_address: Option<&'a AccountAddress>,
-    /// The network which is used so the correct BIP32 path is used for the ledger. Debug mode starts with 44'/1' and
-    /// in mainnet-mode it's 44'/4218'
-    pub network: Network,
 }
 
 /// An account address.
@@ -59,18 +56,6 @@ pub struct GenerateAddressMetadata {
     /// This means that the account might not be saved.
     /// If it is false, the prompt will be displayed on ledger devices.
     pub syncing: bool,
-    /// The network which is used so the correct BIP32 path is used for the ledger. Debug mode starts with 44'/1' and
-    /// in mainnet-mode it's 44'/4218'
-    pub network: Network,
-}
-
-/// Network enum for ledger metadata
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub enum Network {
-    /// Mainnet
-    Mainnet,
-    /// Testnet
-    Testnet,
 }
 
 /// The Ledger device status.

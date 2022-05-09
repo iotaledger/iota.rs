@@ -8,6 +8,7 @@ use std::ops::Range;
 use async_trait::async_trait;
 use bee_message::{
     address::{Address, Ed25519Address},
+    payload::transaction::TransactionEssence,
     signature::{Ed25519Signature, Signature},
     unlock_block::{SignatureUnlockBlock, UnlockBlock},
 };
@@ -20,7 +21,10 @@ use super::{
     StrongholdAdapter,
 };
 use crate::{
-    secret::{types::InputSigningData, GenerateAddressMetadata, SecretManage, SignMessageMetadata},
+    secret::{
+        default_sign_transaction_essence, types::InputSigningData, GenerateAddressMetadata, SecretManage,
+        SecretManageExt, SignMessageMetadata,
+    },
     Result,
 };
 
@@ -126,6 +130,18 @@ impl SecretManage for StrongholdAdapter {
         )));
 
         Ok(unlock_block)
+    }
+}
+
+#[async_trait]
+impl SecretManageExt for StrongholdAdapter {
+    async fn sign_transaction_essence<'a>(
+        &self,
+        essence: &TransactionEssence,
+        inputs: &[InputSigningData],
+        metadata: SignMessageMetadata<'a>,
+    ) -> crate::Result<Vec<UnlockBlock>> {
+        default_sign_transaction_essence(self, essence, inputs, metadata).await
     }
 }
 
@@ -308,7 +324,7 @@ mod tests {
     use std::path::PathBuf;
 
     use super::*;
-    use crate::{constants::IOTA_COIN_TYPE, secret::Network};
+    use crate::constants::IOTA_COIN_TYPE;
 
     #[tokio::test]
     async fn test_address_generation() {
@@ -332,10 +348,7 @@ mod tests {
                 0,
                 0..1,
                 false,
-                GenerateAddressMetadata {
-                    syncing: false,
-                    network: Network::Testnet,
-                },
+                GenerateAddressMetadata { syncing: false },
             )
             .await
             .unwrap();

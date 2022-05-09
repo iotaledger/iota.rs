@@ -45,7 +45,7 @@ mod tests {
     use crate::{
         api::GetAddressesBuilderOptions as GenerateAddressesOptions,
         message_interface::{self, ClientMethod, MessageType, ResponseType},
-        secret::{types::Network, GenerateAddressMetadata, SecretManagerDto},
+        secret::{GenerateAddressMetadata, SecretManagerDto},
     };
 
     #[tokio::test]
@@ -71,10 +71,7 @@ mod tests {
             range: Some(std::ops::Range { start: 0, end: 10 }),
             internal: None,
             bech32_hrp: Some("atoi".to_string()),
-            metadata: Some(GenerateAddressMetadata {
-                syncing: false,
-                network: Network::Testnet,
-            }),
+            metadata: Some(GenerateAddressMetadata { syncing: false }),
         };
         let message = MessageType::CallClientMethod(ClientMethod::GenerateAddresses {
             secret_manager: serde_json::from_str::<SecretManagerDto>(&secret_manager).unwrap(),
@@ -124,10 +121,7 @@ mod tests {
             range: Some(std::ops::Range { start: 0, end: 10 }),
             internal: None,
             bech32_hrp: Some("atoi".to_string()),
-            metadata: Some(GenerateAddressMetadata {
-                syncing: false,
-                network: Network::Testnet,
-            }),
+            metadata: Some(GenerateAddressMetadata { syncing: false }),
         };
 
         let generate_addresses_message = MessageType::CallClientMethod(ClientMethod::GenerateAddresses {

@@ -21,7 +21,7 @@ use bee_message::{
 use crate::{
     api::{types::PreparedTransactionData, ClientMessageBuilder},
     bee_message::output::AliasId,
-    secret::{types::InputSigningData, Network, SecretManageExt, SignMessageMetadata},
+    secret::{types::InputSigningData, SecretManageExt, SignMessageMetadata},
     Error, Result,
 };
 
@@ -119,10 +119,6 @@ pub async fn sign_transaction(
             SignMessageMetadata {
                 remainder_value: 0,
                 remainder_deposit_address: None,
-                network: match message_builder.client.get_network_id().await? {
-                    1454675179895816119 => Network::Mainnet,
-                    _ => Network::Testnet,
-                },
             },
         )
         .await?;
