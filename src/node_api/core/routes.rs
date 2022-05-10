@@ -1,7 +1,7 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! IOTA node core API routes
+//! Node core API routes.
 
 use std::str::FromStr;
 
@@ -53,89 +53,8 @@ impl Client {
     // Messages routes.
 
     /// Returns the MessageId of the submitted message.
-    /// POST /api/v2/messages
-    pub async fn post_message(&self, message: &Message) -> Result<MessageId> {
-        let path = "api/v2/messages";
-        let local_pow = self.get_local_pow().await;
-        let timeout = if local_pow {
-            self.get_timeout()
-        } else {
-            self.get_remote_pow_timeout()
-        };
-
-        // fallback to local PoW if remote PoW fails
-        let resp = match self
-            .node_manager
-            .post_request_bytes::<SubmitMessageResponse>(path, timeout, &message.pack_to_vec(), local_pow)
-            .await
-        {
-            Ok(res) => res,
-            Err(e) => {
-                if let Error::NodeError(e) = e {
-                    let fallback_to_local_pow = self.get_fallback_to_local_pow().await;
-                    // hornet and bee return different error messages
-                    if (e == *"No available nodes with remote PoW"
-                        || e.contains("proof of work is not enabled")
-                        || e.contains("`PoW` not enabled"))
-                        && fallback_to_local_pow
-                    {
-                        // Without this we get:within `impl Future<Output = [async output]>`, the trait `Send` is not
-                        // implemented for `std::sync::RwLockWriteGuard<'_, NetworkInfo>`
-                        {
-                            let mut client_network_info =
-                                self.network_info.write().map_err(|_| crate::Error::PoisonError)?;
-                            // switch to local PoW
-                            client_network_info.local_pow = true;
-                        }
-                        #[cfg(not(target_family = "wasm"))]
-                        let msg_res = crate::api::finish_pow(self, message.payload().cloned()).await;
-                        #[cfg(target_family = "wasm")]
-                        let msg_res = {
-                            let min_pow_score = self.get_min_pow_score().await?;
-                            let network_id = self.get_network_id().await?;
-                            crate::api::finish_single_thread_pow(
-                                client,
-                                network_id,
-                                None,
-                                message.payload().cloned(),
-                                min_pow_score,
-                            )
-                            .await
-                        };
-                        let message_with_local_pow = match msg_res {
-                            Ok(msg) => {
-                                // reset local PoW state
-                                let mut client_network_info =
-                                    self.network_info.write().map_err(|_| crate::Error::PoisonError)?;
-                                client_network_info.local_pow = false;
-                                msg
-                            }
-                            Err(e) => {
-                                // reset local PoW state
-                                let mut client_network_info =
-                                    self.network_info.write().map_err(|_| crate::Error::PoisonError)?;
-                                client_network_info.local_pow = false;
-                                return Err(e);
-                            }
-                        };
-                        self.node_manager
-                            .post_request_bytes(path, timeout, &message_with_local_pow.pack_to_vec(), true)
-                            .await?
-                    } else {
-                        return Err(Error::NodeError(e));
-                    }
-                } else {
-                    return Err(e);
-                }
-            }
-        };
-
-        Ok(MessageId::from_str(&resp.message_id)?)
-    }
-
-    /// Returns the MessageId of the submitted message.
     /// POST JSON to /api/v2/messages
-    pub async fn post_message_json(&self, message: &Message) -> Result<MessageId> {
+    pub async fn post_message(&self, message: &Message) -> Result<MessageId> {
         let path = "api/v2/messages";
         let local_pow = self.get_local_pow().await;
         let timeout = if local_pow {
@@ -204,6 +123,87 @@ impl Client {
 
                         self.node_manager
                             .post_request_json(path, timeout, serde_json::to_value(message_dto)?, true)
+                            .await?
+                    } else {
+                        return Err(Error::NodeError(e));
+                    }
+                } else {
+                    return Err(e);
+                }
+            }
+        };
+
+        Ok(MessageId::from_str(&resp.message_id)?)
+    }
+
+    /// Returns the MessageId of the submitted message.
+    /// POST /api/v2/messages
+    pub async fn post_message_raw(&self, message: &Message) -> Result<MessageId> {
+        let path = "api/v2/messages";
+        let local_pow = self.get_local_pow().await;
+        let timeout = if local_pow {
+            self.get_timeout()
+        } else {
+            self.get_remote_pow_timeout()
+        };
+
+        // fallback to local PoW if remote PoW fails
+        let resp = match self
+            .node_manager
+            .post_request_bytes::<SubmitMessageResponse>(path, timeout, &message.pack_to_vec(), local_pow)
+            .await
+        {
+            Ok(res) => res,
+            Err(e) => {
+                if let Error::NodeError(e) = e {
+                    let fallback_to_local_pow = self.get_fallback_to_local_pow().await;
+                    // hornet and bee return different error messages
+                    if (e == *"No available nodes with remote PoW"
+                        || e.contains("proof of work is not enabled")
+                        || e.contains("`PoW` not enabled"))
+                        && fallback_to_local_pow
+                    {
+                        // Without this we get:within `impl Future<Output = [async output]>`, the trait `Send` is not
+                        // implemented for `std::sync::RwLockWriteGuard<'_, NetworkInfo>`
+                        {
+                            let mut client_network_info =
+                                self.network_info.write().map_err(|_| crate::Error::PoisonError)?;
+                            // switch to local PoW
+                            client_network_info.local_pow = true;
+                        }
+                        #[cfg(not(target_family = "wasm"))]
+                        let msg_res = crate::api::finish_pow(self, message.payload().cloned()).await;
+                        #[cfg(target_family = "wasm")]
+                        let msg_res = {
+                            let min_pow_score = self.get_min_pow_score().await?;
+                            let network_id = self.get_network_id().await?;
+                            crate::api::finish_single_thread_pow(
+                                client,
+                                network_id,
+                                None,
+                                message.payload().cloned(),
+                                min_pow_score,
+                            )
+                            .await
+                        };
+                        let message_with_local_pow = match msg_res {
+                            Ok(msg) => {
+                                // reset local PoW state
+                                let mut client_network_info =
+                                    self.network_info.write().map_err(|_| crate::Error::PoisonError)?;
+                                client_network_info.local_pow = false;
+                                msg
+                            }
+                            Err(e) => {
+                                // reset local PoW state
+                                let mut client_network_info =
+                                    self.network_info.write().map_err(|_| crate::Error::PoisonError)?;
+                                client_network_info.local_pow = false;
+                                return Err(e);
+                            }
+                        };
+                        self.node_manager
+                            .post_request_bytes(path, timeout, &message_with_local_pow.pack_to_vec(), true)
                             .await?
                     } else {
                         return Err(Error::NodeError(e));

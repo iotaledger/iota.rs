@@ -116,18 +116,18 @@ pub enum ClientMethod {
     GetPeers,
     /// Get tips
     GetTips,
-    /// Post message
+    /// Post message (JSON)
     PostMessage {
         /// Message
         message: MessageDto,
     },
-    /// Post message json
-    PostMessageJson {
+    /// Post message (raw)
+    PostMessageRaw {
         /// Message
         message: MessageDto,
     },
-    /// Get message data
-    GetMessageData {
+    /// Get message
+    GetMessage {
         /// Message ID
         #[serde(rename = "messageId")]
         message_id: MessageId,

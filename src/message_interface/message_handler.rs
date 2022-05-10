@@ -229,13 +229,13 @@ impl ClientMessageHandler {
             ClientMethod::GetInfo => Ok(ResponseType::Info(self.client.get_info().await?)),
             ClientMethod::GetPeers => Ok(ResponseType::Peers(self.client.get_peers().await?)),
             ClientMethod::GetTips => Ok(ResponseType::Tips(self.client.get_tips().await?)),
+            ClientMethod::PostMessageRaw { message } => Ok(ResponseType::PostMessageSuccessful(
+                self.client.post_message_raw(&BeeMessage::try_from(message)?).await?,
+            )),
             ClientMethod::PostMessage { message } => Ok(ResponseType::PostMessageSuccessful(
                 self.client.post_message(&BeeMessage::try_from(message)?).await?,
             )),
-            ClientMethod::PostMessageJson { message } => Ok(ResponseType::PostMessageSuccessful(
-                self.client.post_message_json(&BeeMessage::try_from(message)?).await?,
-            )),
-            ClientMethod::GetMessageData { message_id } => Ok(ResponseType::MessageData(MessageDto::from(
+            ClientMethod::GetMessage { message_id } => Ok(ResponseType::Message(MessageDto::from(
                 &self.client.get_message(message_id).await?,
             ))),
             ClientMethod::GetMessageMetadata { message_id } => Ok(ResponseType::MessageMetadata(

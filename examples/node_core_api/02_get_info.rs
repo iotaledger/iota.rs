@@ -8,7 +8,9 @@ use iota_client::{Client, Result};
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let node = std::env::args().nth(1).unwrap_or("http://localhost:14265".to_string());
+    let node = std::env::args()
+        .nth(1)
+        .unwrap_or_else(|| "http://localhost:14265".to_string());
     let client = Client::builder()
         .with_node(&node)?
         .with_node_sync_disabled()

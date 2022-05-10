@@ -728,7 +728,7 @@ impl Client {
         };
 
         // Post the modified
-        let message_id = self.post_message(&reattach_message).await?;
+        let message_id = self.post_message_raw(&reattach_message).await?;
         // Get message if we use remote PoW, because the node will change parents and nonce
         let msg = match self.get_local_pow().await {
             true => reattach_message,
@@ -763,7 +763,7 @@ impl Client {
             .finish()
             .map_err(|_| Error::TransactionError)?;
 
-        let message_id = self.post_message(&promote_message).await?;
+        let message_id = self.post_message_raw(&promote_message).await?;
         // Get message if we use remote PoW, because the node will change parents and nonce
         let msg = match self.get_local_pow().await {
             true => promote_message,

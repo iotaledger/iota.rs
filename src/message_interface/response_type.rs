@@ -67,8 +67,8 @@ pub enum ResponseType {
     Tips(Vec<MessageId>),
     /// Posted message
     PostMessageSuccessful(MessageId),
-    /// Message data
-    MessageData(MessageDto),
+    /// Message
+    Message(MessageDto),
     /// Message metadata
     MessageMetadata(MessageMetadataResponse),
     /// Message raw
