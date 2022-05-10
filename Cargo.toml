@@ -81,6 +81,15 @@ tls = [ "reqwest/rustls-tls", "ureq/tls" ]
 stronghold = [ "iota_stronghold", "riker", "crypto05" ]
 message_interface = [ "backtrace" ]
 
+# Node core API examples
+
+[[example]]
+name = "node_core_api_get_info"
+path = "examples/node_core_api/02_get_info.rs"
+
+
+
+
 [[example]]
 name = "10_mqtt"
 required-features = [ "mqtt" ]
