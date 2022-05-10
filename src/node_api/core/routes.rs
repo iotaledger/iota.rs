@@ -21,85 +21,39 @@ use packable::PackableExt;
 
 use crate::{constants::DEFAULT_API_TIMEOUT, Client, Error, NodeInfoWrapper, Result};
 
-// https://github.com/gohornet/hornet/blob/stardust-utxo/plugins/restapi/v2/plugin.go
-
 impl Client {
+    // Node routes
+
     /// Returns general information about the node.
-    /// GET /api/v2/info endpoint
+    /// GET /api/v2/info
     pub async fn get_info(&self) -> Result<NodeInfoWrapper> {
         let path = "api/v2/info";
 
-        let resp = self.node_manager.get_request(path, None, self.get_timeout()).await?;
-
-        Ok(resp)
+        self.node_manager.get_request(path, None, self.get_timeout()).await
     }
 
-    /// Returns non-lazy tips.
-    /// GET /api/v2/tips endpoint
+    // Tangle routes
+
+    /// Returns tips that are ideal for attaching a message.
+    /// GET /api/v2/tips
     pub async fn get_tips(&self) -> Result<Vec<MessageId>> {
         let path = "api/v2/tips";
 
-        let resp: TipsResponse = self.node_manager.get_request(path, None, self.get_timeout()).await?;
-
-        let mut tips = Vec::new();
-        for message_id in resp.tip_message_ids {
-            tips.push(MessageId::from_str(&message_id)?);
-        }
-
-        Ok(tips)
-    }
-
-    /// Find a message by its MessageId. This method returns the given message object.
-    /// GET /api/v2/messages/{MessageId} endpoint
-    pub async fn get_message_data(&self, message_id: &MessageId) -> Result<Message> {
-        let path = &format!("api/v2/messages/{}", message_id);
-
-        let resp: MessageResponse = self.node_manager.get_request(path, None, self.get_timeout()).await?;
-
-        Ok(Message::try_from(&resp.0)?)
-    }
-
-    /// Returns the metadata of a message.
-    /// GET /api/v2/messages/{MessageId}/metadata endpoint
-    pub async fn get_message_metadata(&self, message_id: &MessageId) -> Result<MessageMetadataResponse> {
-        let path = &format!("api/v2/messages/{}/metadata", message_id);
-
-        let resp: MessageMetadataResponse = self.node_manager.get_request(path, None, self.get_timeout()).await?;
-
-        Ok(resp)
-    }
-
-    /// Find a message by its MessageId. This method returns the given message raw data.
-    /// GET /api/v2/messages/{MessageId} endpoint
-    pub async fn get_message_raw(&self, message_id: &MessageId) -> Result<String> {
-        let path = &format!("api/v2/messages/{}", message_id);
         let resp = self
             .node_manager
-            .get_request_text(path, None, self.get_timeout())
+            .get_request::<TipsResponse>(path, None, self.get_timeout())
             .await?;
 
-        Ok(resp)
-    }
-
-    /// GET /api/v2/messages/{messageID}/children endpoint
-    /// Returns the list of message IDs that reference a message by its identifier.
-    pub async fn get_message_children(&self, message_id: &MessageId) -> Result<Box<[MessageId]>> {
-        let path = &format!("api/v2/messages/{}/children", message_id);
-
-        let resp: MessageChildrenResponse = self.node_manager.get_request(path, None, self.get_timeout()).await?;
-
-        resp.children_message_ids
+        resp.tip_message_ids
             .iter()
-            .map(|s| {
-                let mut message_id = [0u8; 32];
-                hex::decode_to_slice(s, &mut message_id)?;
-                Ok(MessageId::from(message_id))
-            })
-            .collect::<Result<Box<[MessageId]>>>()
+            .map(|tip| MessageId::from_str(tip).map_err(Error::MessageError))
+            .collect::<Result<Vec<_>>>()
     }
+
+    // Messages routes
 
     /// Returns the MessageId of the submitted message.
-    /// POST /api/v2/messages endpoint
+    /// POST /api/v2/messages
     pub async fn post_message(&self, message: &Message) -> Result<MessageId> {
         let path = "api/v2/messages";
         let local_pow = self.get_local_pow().await;
@@ -110,9 +64,9 @@ impl Client {
         };
 
         // fallback to local PoW if remote PoW fails
-        let resp: SubmitMessageResponse = match self
+        let resp = match self
             .node_manager
-            .post_request_bytes(path, timeout, &message.pack_to_vec(), local_pow)
+            .post_request_bytes::<SubmitMessageResponse>(path, timeout, &message.pack_to_vec(), local_pow)
             .await
         {
             Ok(res) => res,
@@ -180,7 +134,7 @@ impl Client {
     }
 
     /// Returns the MessageId of the submitted message.
-    /// POST JSON to /api/v2/messages endpoint
+    /// POST JSON to /api/v2/messages
     pub async fn post_message_json(&self, message: &Message) -> Result<MessageId> {
         let path = "api/v2/messages";
         let local_pow = self.get_local_pow().await;
@@ -190,12 +144,11 @@ impl Client {
             self.get_remote_pow_timeout()
         };
         let message_dto = MessageDto::from(message);
-        // println!("{}", hex::encode(message.pack_to_vec()));
-        // println!("{}", serde_json::to_string(&message_dto)?);
+
         // fallback to local PoW if remote PoW fails
-        let resp: SubmitMessageResponse = match self
+        let resp = match self
             .node_manager
-            .post_request_json(path, timeout, serde_json::to_value(message_dto)?, local_pow)
+            .post_request_json::<SubmitMessageResponse>(path, timeout, serde_json::to_value(message_dto)?, local_pow)
             .await
         {
             Ok(res) => res,
@@ -264,95 +217,147 @@ impl Client {
         Ok(MessageId::from_str(&resp.message_id)?)
     }
 
+    /// Find a message by its MessageId. This method returns the given message object.
+    /// GET /api/v2/messages/{MessageId}
+    pub async fn get_message_data(&self, message_id: &MessageId) -> Result<Message> {
+        let path = &format!("api/v2/messages/{}", message_id);
+
+        let resp = self
+            .node_manager
+            .get_request::<MessageResponse>(path, None, self.get_timeout())
+            .await?;
+
+        Ok(Message::try_from(&resp.0)?)
+    }
+
+    /// Returns the metadata of a message.
+    /// GET /api/v2/messages/{MessageId}/metadata
+    pub async fn get_message_metadata(&self, message_id: &MessageId) -> Result<MessageMetadataResponse> {
+        let path = &format!("api/v2/messages/{}/metadata", message_id);
+
+        self.node_manager.get_request(path, None, self.get_timeout()).await
+    }
+
+    /// Find a message by its MessageId. This method returns the given message raw data.
+    /// GET /api/v2/messages/{MessageId}
+    pub async fn get_message_raw(&self, message_id: &MessageId) -> Result<String> {
+        let path = &format!("api/v2/messages/{}", message_id);
+
+        self.node_manager.get_request_text(path, None, self.get_timeout()).await
+    }
+
+    /// Returns the list of message IDs that reference a message by its identifier.
+    /// GET /api/v2/messages/{messageID}/children
+    pub async fn get_message_children(&self, message_id: &MessageId) -> Result<Box<[MessageId]>> {
+        let path = &format!("api/v2/messages/{}/children", message_id);
+
+        let resp = self
+            .node_manager
+            .get_request::<MessageChildrenResponse>(path, None, self.get_timeout())
+            .await?;
+
+        resp.children_message_ids
+            .iter()
+            .map(|s| {
+                let mut message_id = [0u8; 32];
+                hex::decode_to_slice(s, &mut message_id)?;
+                Ok(MessageId::from(message_id))
+            })
+            .collect::<Result<Box<[MessageId]>>>()
+    }
+
+    // UTXO routes
+
     /// Returns the message that was included in the ledger for a given TransactionId
     /// GET /api/v2/transactions/{transactionId}/included-message
     pub async fn get_included_message(&self, transaction_id: &TransactionId) -> Result<Message> {
         let path = &format!("api/v2/transactions/{}/included-message", transaction_id);
 
-        let resp: MessageResponse = self.node_manager.get_request(path, None, self.get_timeout()).await?;
+        let resp = self
+            .node_manager
+            .get_request::<MessageResponse>(path, None, self.get_timeout())
+            .await?;
 
         Ok(Message::try_from(&resp.0)?)
     }
 
-    /// Get the milestone by the given milestone id.
-    /// GET /api/v2/milestones/{milestoneId} endpoint
-    pub async fn get_milestone_by_milestone_id(&self, milestone_id: MilestoneId) -> Result<MilestoneResponse> {
-        let path = &format!("api/v2/milestones/{}", milestone_id);
-
-        let resp: MilestoneResponse = self.node_manager.get_request(path, None, self.get_timeout()).await?;
-
-        Ok(resp)
-    }
-
-    /// Get the milestone by the given milestone index.
-    /// GET /api/v2/milestones/{index} endpoint
-    pub async fn get_milestone_by_milestone_index(&self, index: u32) -> Result<MilestoneResponse> {
-        let path = &format!("api/v2/milestones/by-index/{}", index);
-
-        let resp: MilestoneResponse = self.node_manager.get_request(path, None, self.get_timeout()).await?;
-
-        Ok(resp)
-    }
-
     /// Gets all UTXO changes of a milestone by its milestone id
-    /// GET /api/v2/milestones/{milestoneId}/utxo-changes endpoint
+    /// GET /api/v2/milestones/{milestoneId}/utxo-changes
     pub async fn get_utxo_changes_by_milestone_id(&self, milestone_id: MilestoneId) -> Result<UtxoChangesResponse> {
         let path = &format!("api/v2/milestones/{}/utxo-changes", milestone_id);
 
-        let resp: UtxoChangesResponse = self.node_manager.get_request(path, None, self.get_timeout()).await?;
-
-        Ok(resp)
+        self.node_manager.get_request(path, None, self.get_timeout()).await
     }
 
     /// Gets all UTXO changes of a milestone by its milestone index
-    /// GET /api/v2/milestones/by-index/{index}/utxo-changes endpoint
+    /// GET /api/v2/milestones/by-index/{index}/utxo-changes
     pub async fn get_utxo_changes_by_milestone_index(&self, index: u32) -> Result<UtxoChangesResponse> {
         let path = &format!("api/v2/milestones/by-index/{}/utxo-changes", index);
 
-        let resp: UtxoChangesResponse = self.node_manager.get_request(path, None, self.get_timeout()).await?;
-
-        Ok(resp)
+        self.node_manager.get_request(path, None, self.get_timeout()).await
     }
 
     /// Find an output by its OutputId (TransactionId + output_index).
-    /// GET /api/v2/outputs/{outputId} endpoint
+    /// GET /api/v2/outputs/{outputId}
     pub async fn get_output(&self, output_id: &OutputId) -> Result<OutputResponse> {
         let path = &format!("api/v2/outputs/{}", output_id);
 
-        let resp: OutputResponse = self.node_manager.get_request(path, None, self.get_timeout()).await?;
-
-        Ok(resp)
+        self.node_manager.get_request(path, None, self.get_timeout()).await
     }
 
     /// Get the current treasury output.
-    /// GET /api/v2/treasury endpoint
+    /// GET /api/v2/treasury
     pub async fn get_treasury(&self) -> Result<TreasuryResponse> {
         let path = "api/v2/treasury";
 
-        let resp: TreasuryResponse = self.node_manager.get_request(path, None, DEFAULT_API_TIMEOUT).await?;
-
-        Ok(resp)
+        self.node_manager.get_request(path, None, DEFAULT_API_TIMEOUT).await
     }
 
     /// Get all stored receipts.
-    /// GET /api/v2/receipts endpoint
+    /// GET /api/v2/receipts
     pub async fn get_receipts(&self) -> Result<Vec<ReceiptDto>> {
         let path = &"api/v2/receipts";
 
-        let resp: ReceiptsResponse = self.node_manager.get_request(path, None, DEFAULT_API_TIMEOUT).await?;
+        let resp = self
+            .node_manager
+            .get_request::<ReceiptsResponse>(path, None, DEFAULT_API_TIMEOUT)
+            .await?;
 
         Ok(resp.receipts)
     }
 
     /// Get the receipts by the given milestone index.
-    /// GET /api/v2/receipts/{migratedAt} endpoint
+    /// GET /api/v2/receipts/{migratedAt}
     pub async fn get_receipts_migrated_at(&self, milestone_index: u32) -> Result<Vec<ReceiptDto>> {
         let path = &format!("api/v2/receipts/{}", milestone_index);
 
-        let resp: ReceiptsResponse = self.node_manager.get_request(path, None, DEFAULT_API_TIMEOUT).await?;
+        let resp = self
+            .node_manager
+            .get_request::<ReceiptsResponse>(path, None, DEFAULT_API_TIMEOUT)
+            .await?;
 
         Ok(resp.receipts)
     }
+
+    // Milestones routes
+
+    /// Get the milestone by the given milestone id.
+    /// GET /api/v2/milestones/{milestoneId}
+    pub async fn get_milestone_by_milestone_id(&self, milestone_id: MilestoneId) -> Result<MilestoneResponse> {
+        let path = &format!("api/v2/milestones/{}", milestone_id);
+
+        self.node_manager.get_request(path, None, self.get_timeout()).await
+    }
+
+    /// Get the milestone by the given milestone index.
+    /// GET /api/v2/milestones/{index}
+    pub async fn get_milestone_by_milestone_index(&self, index: u32) -> Result<MilestoneResponse> {
+        let path = &format!("api/v2/milestones/by-index/{}", index);
+
+        self.node_manager.get_request(path, None, self.get_timeout()).await
+    }
+
+    // Peers routes
 
     // // RoutePeer is the route for getting peers by their peerID.
     // // GET returns the peer
@@ -364,14 +369,19 @@ impl Client {
     // // POST adds a new peer.
     // RoutePeers = "/peers"
 
-    /// GET /api/v2/peers endpoint
+    /// GET /api/v2/peers
     pub async fn get_peers(&self) -> Result<Vec<PeerDto>> {
         let path = "api/v2/peers";
 
-        let resp: PeersResponse = self.node_manager.get_request(path, None, self.get_timeout()).await?;
+        let resp = self
+            .node_manager
+            .get_request::<PeersResponse>(path, None, self.get_timeout())
+            .await?;
 
         Ok(resp.0)
     }
+
+    // Control routes
 
     // // RouteControlDatabasePrune is the control route to manually prune the database.
     // // POST prunes the database.
