@@ -17,6 +17,8 @@ use iota_client::{
 
 const DEFAULT_DEVNET_NODE_URL: &str = "http://localhost:14265";
 const DEFAULT_DEVNET_FAUCET_URL: &str = "http://localhost:14265";
+// THIS SEED SERVES FOR TESTING PURPOSES! DON'T USE THIS SEED IN PRODUCTION!
+const DEFAULT_DEVELOPMENT_SEED: &str = "256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2";
 
 // Sets up a Client with node synchronization disabled.
 async fn setup_client_with_sync_disabled() -> Client {
@@ -43,15 +45,14 @@ async fn setup_tagged_data_message() -> MessageId {
         .id()
 }
 
+async fn setup_secret_manager() -> SecretManager {
+    SecretManager::Mnemonic(MnemonicSecretManager::try_from_hex_seed(DEFAULT_DEVELOPMENT_SEED).unwrap())
+}
+
 // Sends a transaction message to the node to test against it.
 async fn setup_transaction_message() -> (MessageId, TransactionId) {
     let client = setup_client_with_sync_disabled().await;
-
-    // This seed only serves for testing purposes! DO NOT USE THIS SEED IN PRODUCTION!
-    let secret_manager = SecretManager::Mnemonic(
-        MnemonicSecretManager::try_from_hex_seed("256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2")
-            .unwrap(),
-    );
+    let secret_manager = setup_secret_manager().await;
 
     let addresses = client
         .get_addresses(&secret_manager)
@@ -61,9 +62,12 @@ async fn setup_transaction_message() -> (MessageId, TransactionId) {
         .unwrap();
     println!(
         "{}",
-        request_funds_from_faucet(DEFAULT_DEVNET_FAUCET_URL, &addresses[0].to_bech32("rms"),)
-            .await
-            .unwrap()
+        request_funds_from_faucet(
+            DEFAULT_DEVNET_FAUCET_URL,
+            &addresses[0].to_bech32(client.get_bech32_hrp().await.unwrap()),
+        )
+        .await
+        .unwrap()
     );
     tokio::time::sleep(std::time::Duration::from_secs(20)).await;
 
@@ -71,8 +75,10 @@ async fn setup_transaction_message() -> (MessageId, TransactionId) {
         .message()
         .with_secret_manager(&secret_manager)
         .with_output_hex(
-            &bech32_to_hex(&addresses[1].to_bech32("rms")).unwrap(), // Send funds back to the sender.
-            1_000_000,                                               // The amount to spend, cannot be zero.
+            &bech32_to_hex(&addresses[1].to_bech32(client.get_bech32_hrp().await.unwrap())).unwrap(), /* Send funds
+                                                                                                       * back to the
+                                                                                                       * sender. */
+            1_000_000, // The amount to spend, cannot be zero.
         )
         .unwrap()
         .finish()
@@ -96,42 +102,36 @@ async fn setup_transaction_message() -> (MessageId, TransactionId) {
     (message_id, transaction_id)
 }
 
-#[ignore]
 #[tokio::test]
 async fn test_get_health() {
     let r = Client::get_node_health(DEFAULT_DEVNET_NODE_URL).await.unwrap();
     println!("{:#?}", r);
 }
 
-#[ignore]
 #[tokio::test]
 async fn test_get_info() {
     let r = Client::get_node_info(DEFAULT_DEVNET_NODE_URL, None).await.unwrap();
     println!("{:#?}", r);
 }
 
-#[ignore]
 #[tokio::test]
 async fn test_get_tips() {
     let r = setup_client_with_sync_disabled().await.get_tips().await.unwrap();
     println!("{:#?}", r);
 }
 
-#[ignore]
 #[tokio::test]
 async fn test_post_message_with_tagged_data() {
     let message_id = setup_tagged_data_message().await;
     println!("{}", message_id);
 }
 
-#[ignore]
 #[tokio::test]
 async fn test_post_message_with_transaction() {
     let message_id = setup_transaction_message().await;
     println!("Message ID: {:?}", message_id);
 }
 
-#[ignore]
 #[tokio::test]
 async fn test_get_message_data() {
     let client = setup_client_with_sync_disabled().await;
@@ -142,7 +142,6 @@ async fn test_get_message_data() {
     println!("{:#?}", r);
 }
 
-#[ignore]
 #[tokio::test]
 async fn test_get_message_metadata() {
     let message_id = setup_tagged_data_message().await;
@@ -156,7 +155,6 @@ async fn test_get_message_metadata() {
     println!("{:#?}", r);
 }
 
-#[ignore]
 #[tokio::test]
 async fn test_get_message_raw() {
     let message_id = setup_tagged_data_message().await;
@@ -170,7 +168,6 @@ async fn test_get_message_raw() {
     println!("{:#?}", r);
 }
 
-#[ignore]
 #[tokio::test]
 async fn test_get_message_children() {
     let message_id = setup_tagged_data_message().await;
@@ -182,35 +179,50 @@ async fn test_get_message_children() {
     println!("{:#?}", r);
 }
 
-#[ignore]
 #[tokio::test]
 async fn test_get_address_balance() {
-    let r = setup_client_with_sync_disabled()
+    let client = setup_client_with_sync_disabled().await;
+    let secret_manager = setup_secret_manager().await;
+
+    let address = client
+        .get_addresses(&secret_manager)
+        .with_range(0..1)
+        .get_raw()
         .await
+        .unwrap()[0];
+
+    let r = client
         .get_address()
-        .balance("rms1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx4aaacx")
+        .balance(&address.to_bech32(&client.get_bech32_hrp().await.unwrap()))
         .await
         .unwrap();
 
     println!("{:#?}", r);
 }
 
-#[ignore]
 #[tokio::test]
 async fn test_get_address_outputs() {
     let client = setup_client_with_sync_disabled().await;
-    let output_ids = client
+    let secret_manager = setup_secret_manager().await;
+
+    let address = client
+        .get_addresses(&secret_manager)
+        .with_range(0..1)
+        .get_raw()
+        .await
+        .unwrap()[0];
+
+    let address = client
         .output_ids(vec![QueryParameter::Address(
-            "rms1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx4aaacx".to_string(),
+            address.to_bech32(&client.get_bech32_hrp().await.unwrap()),
         )])
         .await
         .unwrap();
 
-    let r = client.get_outputs(output_ids).await.unwrap();
+    let r = client.get_outputs(address).await.unwrap();
     println!("{:#?}", r);
 }
 
-#[ignore]
 #[tokio::test]
 async fn test_get_output() {
     let (_message_id, transaction_id) = setup_transaction_message().await;
@@ -224,7 +236,6 @@ async fn test_get_output() {
     println!("{:#?}", r);
 }
 
-#[ignore]
 #[tokio::test]
 async fn test_get_peers() {
     let r = setup_client_with_sync_disabled().await.get_peers().await.unwrap();
@@ -232,7 +243,6 @@ async fn test_get_peers() {
     println!("{:#?}", r);
 }
 
-#[ignore]
 #[tokio::test]
 async fn test_get_milestone_by_milestone_id() {
     let client = setup_client_with_sync_disabled().await;
@@ -247,7 +257,6 @@ async fn test_get_milestone_by_milestone_id() {
     println!("{:#?}", r);
 }
 
-#[ignore]
 #[tokio::test]
 async fn test_get_milestone_by_milestone_index() {
     let client = setup_client_with_sync_disabled().await;
@@ -262,7 +271,6 @@ async fn test_get_milestone_by_milestone_index() {
     println!("{:#?}", r);
 }
 
-#[ignore]
 #[tokio::test]
 async fn test_get_utxo_changes_by_milestone_id() {
     let client = setup_client_with_sync_disabled().await;
@@ -277,7 +285,6 @@ async fn test_get_utxo_changes_by_milestone_id() {
     println!("{:#?}", r);
 }
 
-#[ignore]
 #[tokio::test]
 async fn test_get_utxo_changes_by_milestone_index() {
     let client = setup_client_with_sync_disabled().await;
@@ -292,7 +299,6 @@ async fn test_get_utxo_changes_by_milestone_index() {
     println!("{:#?}", r);
 }
 
-#[ignore]
 #[tokio::test]
 async fn test_get_receipts() {
     let r = setup_client_with_sync_disabled().await.get_receipts().await.unwrap();
@@ -300,7 +306,6 @@ async fn test_get_receipts() {
     println!("{:#?}", r);
 }
 
-#[ignore]
 #[tokio::test]
 async fn get_receipts_migrated_at() {
     let r = setup_client_with_sync_disabled()
@@ -312,7 +317,6 @@ async fn get_receipts_migrated_at() {
     println!("{:#?}", r);
 }
 
-#[ignore]
 #[tokio::test]
 async fn test_get_treasury() {
     let r = setup_client_with_sync_disabled().await.get_treasury().await.unwrap();
@@ -320,7 +324,6 @@ async fn test_get_treasury() {
     println!("{:#?}", r);
 }
 
-#[ignore]
 #[tokio::test]
 async fn test_get_included_message() {
     let (_message_id, transaction_id) = setup_transaction_message().await;
