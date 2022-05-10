@@ -97,7 +97,7 @@ async fn setup_transaction_message() -> (MessageId, TransactionId) {
         _ => unreachable!(),
     };
 
-    tokio::time::sleep(std::time::Duration::from_secs(20)).await;
+    let _ = client.retry_until_included(&message.id(), None, None).await.unwrap();
 
     (message_id, transaction_id)
 }
