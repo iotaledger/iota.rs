@@ -15,9 +15,9 @@ categories = [ "cryptography::cryptocurrencies" ]
 normal = [ "async-trait", "derive_builder", "slog-stdlog", "ureq" ]
 
 [dependencies]
-bee-rest-api = { git = "https://github.com/iotaledger/bee", rev = "c51f749e5679395874a24fce2cf8eb977c1af67c", default-features = false }
-bee-message = { git = "https://github.com/iotaledger/bee", rev = "c51f749e5679395874a24fce2cf8eb977c1af67c", default-features = false, features = [ "serde", "dto" ] }
-bee-pow = { git = "https://github.com/iotaledger/bee", rev = "c51f749e5679395874a24fce2cf8eb977c1af67c", default-features = false }
+bee-rest-api = { git = "https://github.com/iotaledger/bee", rev = "12458320af158cef1ebc62b2b8c75f49184ae6dc", default-features = false }
+bee-message = { git = "https://github.com/iotaledger/bee", rev = "12458320af158cef1ebc62b2b8c75f49184ae6dc", default-features = false, features = [ "serde", "dto" ] }
+bee-pow = { git = "https://github.com/iotaledger/bee", rev = "12458320af158cef1ebc62b2b8c75f49184ae6dc", default-features = false }
 fern-logger = { version = "0.5.0", default-features = false }
 iota-crypto = { version = "0.10.0", default-features = false, features = [ "std", "chacha", "blake2b", "ed25519", "random", "slip10", "bip39", "bip39-en" ] }
 packable = { version = "0.3.2", default-features = false, features = [ "serde", "primitive-types" ] }
@@ -29,7 +29,7 @@ log = { version = "0.4.14", default-features = false }
 num_cpus = { version = "1.13.0", default-features = false }
 primitive-types = { version = "0.10.1", default-features = false }
 regex = { version = "1.5.4", default-features = false, features = [ "std", "unicode-perl" ] }
-serde = { version = "1.0.130", default-features = false, features = [ "derive" ] }
+serde = { version = "1.0.137", default-features = false, features = [ "derive" ] }
 serde_json = { version = "1.0.68", default-features = false }
 thiserror = { version = "1.0.29", default-features = false }
 tokio = { version = "1.12.0", default-features = false, features = [ "macros", "rt-multi-thread", "time", "sync" ], optional = true }
@@ -87,8 +87,15 @@ message_interface = [ "backtrace" ]
 name = "node_api_core_get_info"
 path = "examples/node_api_core/02_get_info.rs"
 
+[[example]]
+name = "node_api_core_get_tips"
+path = "examples/node_api_core/03_get_tips.rs"
 
+[[example]]
+name = "node_api_core_post_message"
+path = "examples/node_api_core/04_post_message.rs"
 
+#######
 
 [[example]]
 name = "10_mqtt"

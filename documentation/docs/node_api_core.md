@@ -13,7 +13,7 @@ Returns the health of the node.
 ```rust
 ```
 
-Run `cargo run --example node_api_core_ --release`.
+Run `cargo run --example node_api_core_ --release -- [NODE URL]`.
 
 # `Client::get_info`
 
@@ -24,6 +24,8 @@ Calls `GET /api/v2/info`.
 Returns general information about the node.
 
 ## Parameters
+
+None.
 
 ## Example
 
@@ -43,20 +45,41 @@ Returns tips that are ideal for attaching a message.
 
 ## Parameters
 
+None.
+
 ## Example
 
 ```rust
+let tips = client.get_tips().await?;
 ```
 
-Run `cargo run --example node_api_core_ --release`.
+Run `cargo run --example node_api_core_get_tips --release -- [NODE URL]`.
 
-# `Client::`
+# `Client::post_message`
 
 ## Description
 
 Calls `POST /api/v2/messages`.
 
-Submits a message.
+Submits a message as a JSON payload.
+
+## Parameters
+
+## Example
+
+```rust
+let message_id = client.post_message(&message).await?;
+```
+
+Run `cargo run --example node_api_core_post_message --release -- [NODE URL]`.
+
+# `Client::post_message`
+
+## Description
+
+Calls `POST /api/v2/messages`.
+
+Submits a message as raw bytes.
 
 ## Parameters
 
@@ -65,7 +88,7 @@ Submits a message.
 ```rust
 ```
 
-Run `cargo run --example node_api_core_ --release`.
+Run `cargo run --example node_api_core_ --release -- [NODE URL]`.
 
 # `Client::`
 
@@ -82,7 +105,7 @@ Returns message data as JSON by its identifier.
 ```rust
 ```
 
-Run `cargo run --example node_api_core_ --release`.
+Run `cargo run --example node_api_core_ --release -- [NODE URL]`.
 
 # `Client::get_message_metadata`
 
@@ -99,7 +122,7 @@ Finds the metadata of a given message.
 ```rust
 ```
 
-Run `cargo run --example node_api_core_ --release`.
+Run `cargo run --example node_api_core_ --release -- [NODE URL]`.
 
 # `Client::get_message_children`
 
@@ -116,7 +139,7 @@ Returns the children of a message.
 ```rust
 ```
 
-Run `cargo run --example node_api_core_ --release`.
+Run `cargo run --example node_api_core_ --release -- [NODE URL]`.
 
 # `Client::`
 
@@ -131,7 +154,7 @@ Finds an output by its identifier.
 ```rust
 ```
 
-Run `cargo run --example node_api_core_ --release`.
+Run `cargo run --example node_api_core_ --release -- [NODE URL]`.
 
 # `Client::`
 
@@ -148,7 +171,7 @@ Returns metadata about an output by its identifier.
 ```rust
 ```
 
-Run `cargo run --example node_api_core_ --release`.
+Run `cargo run --example node_api_core_ --release -- [NODE URL]`.
 
 # `Client::`
 
@@ -163,7 +186,7 @@ Returns all stored receipts.
 ```rust
 ```
 
-Run `cargo run --example node_api_core_ --release`.
+Run `cargo run --example node_api_core_ --release -- [NODE URL]`.
 
 # `Client::`
 
@@ -180,7 +203,7 @@ Returns all stored receipts for a given migration index.
 ```rust
 ```
 
-Run `cargo run --example node_api_core_ --release`.
+Run `cargo run --example node_api_core_ --release -- [NODE URL]`.
 
 # `Client::`
 
@@ -195,7 +218,7 @@ Returns information about the treasury.
 ```rust
 ```
 
-Run `cargo run --example node_api_core_ --release`.
+Run `cargo run --example node_api_core_ --release -- [NODE URL]`.
 
 # `Client::`
 
@@ -212,7 +235,7 @@ Returns the included message of a transaction.
 ```rust
 ```
 
-Run `cargo run --example node_api_core_ --release`.
+Run `cargo run --example node_api_core_ --release -- [NODE URL]`.
 
 # `Client::`
 
@@ -229,7 +252,7 @@ Looks up a milestone by a given milestone ID.
 ```rust
 ```
 
-Run `cargo run --example node_api_core_ --release`.
+Run `cargo run --example node_api_core_ --release -- [NODE URL]`.
 
 # `Client::`
 
@@ -246,7 +269,7 @@ Gets all UTXO changes of a given milestone by Milestone ID.
 ```rust
 ```
 
-Run `cargo run --example node_api_core_ --release`.
+Run `cargo run --example node_api_core_ --release -- [NODE URL]`.
 
 # `Client::`
 
@@ -263,7 +286,7 @@ Looks up a milestone by a given milestone index.
 ```rust
 ```
 
-Run `cargo run --example node_api_core_ --release`.
+Run `cargo run --example node_api_core_ --release -- [NODE URL]`.
 
 # `Client::`
 
@@ -280,7 +303,7 @@ Gets all UTXO changes of a given milestone by milestone index.
 ```rust
 ```
 
-Run `cargo run --example node_api_core_ --release`.
+Run `cargo run --example node_api_core_ --release -- [NODE URL]`.
 
 # `Client::`
 
@@ -297,7 +320,7 @@ Computes applied and confirmed merkle route hashes for a proposed milestone.
 ```rust
 ```
 
-Run `cargo run --example node_api_core_ --release`.
+Run `cargo run --example node_api_core_ --release -- [NODE URL]`.
 
 # `Client::`
 
@@ -314,7 +337,7 @@ Gets information about the peers of the node.
 ```rust
 ```
 
-Run `cargo run --example node_api_core_ --release`.
+Run `cargo run --example node_api_core_ --release -- [NODE URL]`.
 
 # `Client::`
 
@@ -331,7 +354,7 @@ Adds a given peer to the node.
 ```rust
 ```
 
-Run `cargo run --example node_api_core_ --release`.
+Run `cargo run --example node_api_core_ --release -- [NODE URL]`.
 
 # `Client::`
 
@@ -345,7 +368,7 @@ Gets information about a given peer.
 
 ## Example
 
-Run `cargo run --example node_api_core_ --release`.
+Run `cargo run --example node_api_core_ --release -- [NODE URL]`.
 
 # `Client::`
 
@@ -362,7 +385,7 @@ Removes/disconnects a given peer.
 ```rust
 ```
 
-Run `cargo run --example node_api_core_ --release`.
+Run `cargo run --example node_api_core_ --release -- [NODE URL]`.
 
 # `Client::`
 
@@ -379,7 +402,7 @@ Prunes the node database.
 ```rust
 ```
 
-Run `cargo run --example node_api_core_ --release`.
+Run `cargo run --example node_api_core_ --release -- [NODE URL]`.
 
 # `Client::`
 
