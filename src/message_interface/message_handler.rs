@@ -236,7 +236,7 @@ impl ClientMessageHandler {
                 self.client.post_message_json(&BeeMessage::try_from(message)?).await?,
             )),
             ClientMethod::GetMessageData { message_id } => Ok(ResponseType::MessageData(MessageDto::from(
-                &self.client.get_message_data(message_id).await?,
+                &self.client.get_message(message_id).await?,
             ))),
             ClientMethod::GetMessageMetadata { message_id } => Ok(ResponseType::MessageMetadata(
                 self.client.get_message_metadata(message_id).await?,

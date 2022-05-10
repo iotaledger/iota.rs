@@ -535,7 +535,7 @@ impl<'a> ClientMessageBuilder<'a> {
                 // Request message multiple times because the node maybe didn't process it completely in this time
                 // or a node balancer could be used which forwards the request to different node than we published
                 for time in 1..3 {
-                    if let Ok(message) = self.client.get_message_data(&msg_id).await {
+                    if let Ok(message) = self.client.get_message(&msg_id).await {
                         return Ok(message);
                     }
                     #[cfg(not(target_family = "wasm"))]
@@ -545,7 +545,7 @@ impl<'a> ClientMessageBuilder<'a> {
                         TimeoutFuture::new((time * 50).try_into().unwrap()).await;
                     }
                 }
-                self.client.get_message_data(&msg_id).await
+                self.client.get_message(&msg_id).await
             }
         }
     }

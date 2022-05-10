@@ -219,7 +219,7 @@ impl Client {
 
     /// Find a message by its MessageId. This method returns the given message object.
     /// GET /api/v2/messages/{MessageId}
-    pub async fn get_message_data(&self, message_id: &MessageId) -> Result<Message> {
+    pub async fn get_message(&self, message_id: &MessageId) -> Result<Message> {
         let path = &format!("api/v2/messages/{}", message_id);
 
         let resp = self

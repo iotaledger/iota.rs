@@ -88,7 +88,7 @@ async fn setup_transaction_message() -> (MessageId, TransactionId) {
 
     let message = setup_client_with_sync_disabled()
         .await
-        .get_message_data(&message_id)
+        .get_message(&message_id)
         .await
         .unwrap();
 
@@ -143,7 +143,7 @@ async fn test_get_message_data() {
     let client = setup_client_with_sync_disabled().await;
 
     let message_id = setup_tagged_data_message().await;
-    let r = client.get_message_data(&message_id).await.unwrap();
+    let r = client.get_message(&message_id).await.unwrap();
 
     println!("{:#?}", r);
 }

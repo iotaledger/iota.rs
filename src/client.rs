@@ -507,9 +507,9 @@ impl Client {
             message_ids_to_query.insert(message_id.to_owned());
         }
 
-        // Use `get_message_data()` API to get the `Message`.
+        // Use `get_message()` API to get the `Message`.
         for message_id in message_ids_to_query {
-            let message = self.get_message_data(&message_id).await?;
+            let message = self.get_message(&message_id).await?;
             messages.push(message);
         }
         Ok(messages)
@@ -561,7 +561,7 @@ impl Client {
                             // if original message, request it so we can return it on first position
                             if message_id == msg_id {
                                 let mut included_and_reattached_messages =
-                                    vec![(*message_id, self.get_message_data(message_id).await?)];
+                                    vec![(*message_id, self.get_message(message_id).await?)];
                                 included_and_reattached_messages.extend(messages_with_id);
                                 return Ok(included_and_reattached_messages);
                             } else {
@@ -591,7 +591,7 @@ impl Client {
             // After we checked all our reattached messages, check if the transaction got reattached in another message
             // and confirmed
             if conflicting {
-                let message = self.get_message_data(message_id).await?;
+                let message = self.get_message(message_id).await?;
                 if let Some(Payload::Transaction(transaction_payload)) = message.payload() {
                     let included_message = self.get_included_message(&transaction_payload.id()).await?;
                     let mut included_and_reattached_messages = vec![(included_message.id(), included_message)];
@@ -708,7 +708,7 @@ impl Client {
     /// Reattach a message without checking if it should be reattached
     pub async fn reattach_unchecked(&self, message_id: &MessageId) -> Result<(MessageId, Message)> {
         // Get the Message object by the MessageID.
-        let message = self.get_message_data(message_id).await?;
+        let message = self.get_message(message_id).await?;
         let reattach_message = {
             #[cfg(target_family = "wasm")]
             {
@@ -732,7 +732,7 @@ impl Client {
         // Get message if we use remote PoW, because the node will change parents and nonce
         let msg = match self.get_local_pow().await {
             true => reattach_message,
-            false => self.get_message_data(&message_id).await?,
+            false => self.get_message(&message_id).await?,
         };
         Ok((message_id, msg))
     }
@@ -767,7 +767,7 @@ impl Client {
         // Get message if we use remote PoW, because the node will change parents and nonce
         let msg = match self.get_local_pow().await {
             true => promote_message,
-            false => self.get_message_data(&message_id).await?,
+            false => self.get_message(&message_id).await?,
         };
         Ok((message_id, msg))
     }
