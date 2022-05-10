@@ -22,7 +22,7 @@ use packable::PackableExt;
 use crate::{constants::DEFAULT_API_TIMEOUT, Client, Error, NodeInfoWrapper, Result};
 
 impl Client {
-    // Node routes
+    // Node routes.
 
     /// Returns general information about the node.
     /// GET /api/v2/info
@@ -32,7 +32,7 @@ impl Client {
         self.node_manager.get_request(path, None, self.get_timeout()).await
     }
 
-    // Tangle routes
+    // Tangle routes.
 
     /// Returns tips that are ideal for attaching a message.
     /// GET /api/v2/tips
@@ -50,7 +50,7 @@ impl Client {
             .collect::<Result<Vec<_>>>()
     }
 
-    // Messages routes
+    // Messages routes.
 
     /// Returns the MessageId of the submitted message.
     /// POST /api/v2/messages
@@ -230,20 +230,20 @@ impl Client {
         Ok(Message::try_from(&resp.0)?)
     }
 
-    /// Returns the metadata of a message.
-    /// GET /api/v2/messages/{MessageId}/metadata
-    pub async fn get_message_metadata(&self, message_id: &MessageId) -> Result<MessageMetadataResponse> {
-        let path = &format!("api/v2/messages/{}/metadata", message_id);
-
-        self.node_manager.get_request(path, None, self.get_timeout()).await
-    }
-
     /// Find a message by its MessageId. This method returns the given message raw data.
     /// GET /api/v2/messages/{MessageId}
     pub async fn get_message_raw(&self, message_id: &MessageId) -> Result<String> {
         let path = &format!("api/v2/messages/{}", message_id);
 
         self.node_manager.get_request_text(path, None, self.get_timeout()).await
+    }
+
+    /// Returns the metadata of a message.
+    /// GET /api/v2/messages/{MessageId}/metadata
+    pub async fn get_message_metadata(&self, message_id: &MessageId) -> Result<MessageMetadataResponse> {
+        let path = &format!("api/v2/messages/{}/metadata", message_id);
+
+        self.node_manager.get_request(path, None, self.get_timeout()).await
     }
 
     /// Returns the list of message IDs that reference a message by its identifier.
@@ -266,36 +266,7 @@ impl Client {
             .collect::<Result<Box<[MessageId]>>>()
     }
 
-    // UTXO routes
-
-    /// Returns the message that was included in the ledger for a given TransactionId
-    /// GET /api/v2/transactions/{transactionId}/included-message
-    pub async fn get_included_message(&self, transaction_id: &TransactionId) -> Result<Message> {
-        let path = &format!("api/v2/transactions/{}/included-message", transaction_id);
-
-        let resp = self
-            .node_manager
-            .get_request::<MessageResponse>(path, None, self.get_timeout())
-            .await?;
-
-        Ok(Message::try_from(&resp.0)?)
-    }
-
-    /// Gets all UTXO changes of a milestone by its milestone id
-    /// GET /api/v2/milestones/{milestoneId}/utxo-changes
-    pub async fn get_utxo_changes_by_milestone_id(&self, milestone_id: MilestoneId) -> Result<UtxoChangesResponse> {
-        let path = &format!("api/v2/milestones/{}/utxo-changes", milestone_id);
-
-        self.node_manager.get_request(path, None, self.get_timeout()).await
-    }
-
-    /// Gets all UTXO changes of a milestone by its milestone index
-    /// GET /api/v2/milestones/by-index/{index}/utxo-changes
-    pub async fn get_utxo_changes_by_milestone_index(&self, index: u32) -> Result<UtxoChangesResponse> {
-        let path = &format!("api/v2/milestones/by-index/{}/utxo-changes", index);
-
-        self.node_manager.get_request(path, None, self.get_timeout()).await
-    }
+    // UTXO routes.
 
     /// Find an output by its OutputId (TransactionId + output_index).
     /// GET /api/v2/outputs/{outputId}
@@ -303,14 +274,6 @@ impl Client {
         let path = &format!("api/v2/outputs/{}", output_id);
 
         self.node_manager.get_request(path, None, self.get_timeout()).await
-    }
-
-    /// Get the current treasury output.
-    /// GET /api/v2/treasury
-    pub async fn get_treasury(&self) -> Result<TreasuryResponse> {
-        let path = "api/v2/treasury";
-
-        self.node_manager.get_request(path, None, DEFAULT_API_TIMEOUT).await
     }
 
     /// Get all stored receipts.
@@ -339,12 +302,41 @@ impl Client {
         Ok(resp.receipts)
     }
 
-    // Milestones routes
+    /// Get the current treasury output.
+    /// GET /api/v2/treasury
+    pub async fn get_treasury(&self) -> Result<TreasuryResponse> {
+        let path = "api/v2/treasury";
+
+        self.node_manager.get_request(path, None, DEFAULT_API_TIMEOUT).await
+    }
+
+    /// Returns the message that was included in the ledger for a given TransactionId.
+    /// GET /api/v2/transactions/{transactionId}/included-message
+    pub async fn get_included_message(&self, transaction_id: &TransactionId) -> Result<Message> {
+        let path = &format!("api/v2/transactions/{}/included-message", transaction_id);
+
+        let resp = self
+            .node_manager
+            .get_request::<MessageResponse>(path, None, self.get_timeout())
+            .await?;
+
+        Ok(Message::try_from(&resp.0)?)
+    }
+
+    // Milestones routes.
 
     /// Get the milestone by the given milestone id.
     /// GET /api/v2/milestones/{milestoneId}
     pub async fn get_milestone_by_milestone_id(&self, milestone_id: MilestoneId) -> Result<MilestoneResponse> {
         let path = &format!("api/v2/milestones/{}", milestone_id);
+
+        self.node_manager.get_request(path, None, self.get_timeout()).await
+    }
+
+    /// Gets all UTXO changes of a milestone by its milestone id.
+    /// GET /api/v2/milestones/{milestoneId}/utxo-changes
+    pub async fn get_utxo_changes_by_milestone_id(&self, milestone_id: MilestoneId) -> Result<UtxoChangesResponse> {
+        let path = &format!("api/v2/milestones/{}/utxo-changes", milestone_id);
 
         self.node_manager.get_request(path, None, self.get_timeout()).await
     }
@@ -357,17 +349,15 @@ impl Client {
         self.node_manager.get_request(path, None, self.get_timeout()).await
     }
 
-    // Peers routes
+    /// Gets all UTXO changes of a milestone by its milestone index.
+    /// GET /api/v2/milestones/by-index/{index}/utxo-changes
+    pub async fn get_utxo_changes_by_milestone_index(&self, index: u32) -> Result<UtxoChangesResponse> {
+        let path = &format!("api/v2/milestones/by-index/{}/utxo-changes", index);
 
-    // // RoutePeer is the route for getting peers by their peerID.
-    // // GET returns the peer
-    // // DELETE deletes the peer.
-    // RoutePeer = "/peers/:" + restapipkg.ParameterPeerID
+        self.node_manager.get_request(path, None, self.get_timeout()).await
+    }
 
-    // // RoutePeers is the route for getting all peers of the node.
-    // // GET returns a list of all peers.
-    // // POST adds a new peer.
-    // RoutePeers = "/peers"
+    // Peers routes.
 
     /// GET /api/v2/peers
     pub async fn get_peers(&self) -> Result<Vec<PeerDto>> {
@@ -381,7 +371,17 @@ impl Client {
         Ok(resp.0)
     }
 
-    // Control routes
+    // // RoutePeer is the route for getting peers by their peerID.
+    // // GET returns the peer
+    // // DELETE deletes the peer.
+    // RoutePeer = "/peers/:" + restapipkg.ParameterPeerID
+
+    // // RoutePeers is the route for getting all peers of the node.
+    // // GET returns a list of all peers.
+    // // POST adds a new peer.
+    // RoutePeers = "/peers"
+
+    // Control routes.
 
     // // RouteControlDatabasePrune is the control route to manually prune the database.
     // // POST prunes the database.
