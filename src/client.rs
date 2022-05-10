@@ -336,6 +336,7 @@ impl Client {
     pub(crate) fn get_timeout(&self) -> Duration {
         self.api_timeout
     }
+
     pub(crate) fn get_remote_pow_timeout(&self) -> Duration {
         self.remote_pow_timeout
     }
