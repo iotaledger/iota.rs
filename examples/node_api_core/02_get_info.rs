@@ -1,8 +1,7 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! In this example we will get information about the node.
-//! `cargo run --example node_core_api_get_info --release`.
+//! `cargo run --example node_api_core_get_info --release -- [NODE URL]`.
 
 use iota_client::{Client, Result};
 

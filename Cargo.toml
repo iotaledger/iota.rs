@@ -84,8 +84,8 @@ message_interface = [ "backtrace" ]
 # Node core API examples
 
 [[example]]
-name = "node_core_api_get_info"
-path = "examples/node_core_api/02_get_info.rs"
+name = "node_api_core_get_info"
+path = "examples/node_api_core/02_get_info.rs"
 
 
 
