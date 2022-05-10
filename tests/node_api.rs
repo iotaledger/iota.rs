@@ -102,36 +102,42 @@ async fn setup_transaction_message() -> (MessageId, TransactionId) {
     (message_id, transaction_id)
 }
 
+#[ignore]
 #[tokio::test]
 async fn test_get_health() {
     let r = Client::get_node_health(DEFAULT_DEVNET_NODE_URL).await.unwrap();
     println!("{:#?}", r);
 }
 
+#[ignore]
 #[tokio::test]
 async fn test_get_info() {
     let r = Client::get_node_info(DEFAULT_DEVNET_NODE_URL, None).await.unwrap();
     println!("{:#?}", r);
 }
 
+#[ignore]
 #[tokio::test]
 async fn test_get_tips() {
     let r = setup_client_with_sync_disabled().await.get_tips().await.unwrap();
     println!("{:#?}", r);
 }
 
+#[ignore]
 #[tokio::test]
 async fn test_post_message_with_tagged_data() {
     let message_id = setup_tagged_data_message().await;
     println!("{}", message_id);
 }
 
+#[ignore]
 #[tokio::test]
 async fn test_post_message_with_transaction() {
     let message_id = setup_transaction_message().await;
     println!("Message ID: {:?}", message_id);
 }
 
+#[ignore]
 #[tokio::test]
 async fn test_get_message_data() {
     let client = setup_client_with_sync_disabled().await;
@@ -142,6 +148,7 @@ async fn test_get_message_data() {
     println!("{:#?}", r);
 }
 
+#[ignore]
 #[tokio::test]
 async fn test_get_message_metadata() {
     let message_id = setup_tagged_data_message().await;
@@ -155,6 +162,7 @@ async fn test_get_message_metadata() {
     println!("{:#?}", r);
 }
 
+#[ignore]
 #[tokio::test]
 async fn test_get_message_raw() {
     let message_id = setup_tagged_data_message().await;
@@ -168,6 +176,7 @@ async fn test_get_message_raw() {
     println!("{:#?}", r);
 }
 
+#[ignore]
 #[tokio::test]
 async fn test_get_message_children() {
     let message_id = setup_tagged_data_message().await;
@@ -179,6 +188,7 @@ async fn test_get_message_children() {
     println!("{:#?}", r);
 }
 
+#[ignore]
 #[tokio::test]
 async fn test_get_address_balance() {
     let client = setup_client_with_sync_disabled().await;
@@ -200,6 +210,7 @@ async fn test_get_address_balance() {
     println!("{:#?}", r);
 }
 
+#[ignore]
 #[tokio::test]
 async fn test_get_address_outputs() {
     let client = setup_client_with_sync_disabled().await;
@@ -223,6 +234,7 @@ async fn test_get_address_outputs() {
     println!("{:#?}", r);
 }
 
+#[ignore]
 #[tokio::test]
 async fn test_get_output() {
     let (_message_id, transaction_id) = setup_transaction_message().await;
@@ -236,6 +248,7 @@ async fn test_get_output() {
     println!("{:#?}", r);
 }
 
+#[ignore]
 #[tokio::test]
 async fn test_get_peers() {
     let r = setup_client_with_sync_disabled().await.get_peers().await.unwrap();
@@ -243,6 +256,7 @@ async fn test_get_peers() {
     println!("{:#?}", r);
 }
 
+#[ignore]
 #[tokio::test]
 async fn test_get_milestone_by_milestone_id() {
     let client = setup_client_with_sync_disabled().await;
@@ -257,6 +271,7 @@ async fn test_get_milestone_by_milestone_id() {
     println!("{:#?}", r);
 }
 
+#[ignore]
 #[tokio::test]
 async fn test_get_milestone_by_milestone_index() {
     let client = setup_client_with_sync_disabled().await;
@@ -271,6 +286,7 @@ async fn test_get_milestone_by_milestone_index() {
     println!("{:#?}", r);
 }
 
+#[ignore]
 #[tokio::test]
 async fn test_get_utxo_changes_by_milestone_id() {
     let client = setup_client_with_sync_disabled().await;
@@ -285,6 +301,7 @@ async fn test_get_utxo_changes_by_milestone_id() {
     println!("{:#?}", r);
 }
 
+#[ignore]
 #[tokio::test]
 async fn test_get_utxo_changes_by_milestone_index() {
     let client = setup_client_with_sync_disabled().await;
@@ -299,6 +316,7 @@ async fn test_get_utxo_changes_by_milestone_index() {
     println!("{:#?}", r);
 }
 
+#[ignore]
 #[tokio::test]
 async fn test_get_receipts() {
     let r = setup_client_with_sync_disabled().await.get_receipts().await.unwrap();
@@ -306,6 +324,7 @@ async fn test_get_receipts() {
     println!("{:#?}", r);
 }
 
+#[ignore]
 #[tokio::test]
 async fn get_receipts_migrated_at() {
     let r = setup_client_with_sync_disabled()
@@ -317,6 +336,7 @@ async fn get_receipts_migrated_at() {
     println!("{:#?}", r);
 }
 
+#[ignore]
 #[tokio::test]
 async fn test_get_treasury() {
     let r = setup_client_with_sync_disabled().await.get_treasury().await.unwrap();
@@ -324,6 +344,7 @@ async fn test_get_treasury() {
     println!("{:#?}", r);
 }
 
+#[ignore]
 #[tokio::test]
 async fn test_get_included_message() {
     let (_message_id, transaction_id) = setup_transaction_message().await;
