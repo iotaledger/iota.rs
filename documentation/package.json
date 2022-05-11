@@ -2,7 +2,8 @@
   "name": "iota-rs",
   "version": "0.0.0",
   "scripts": {
-    "start": "iota-wiki start"
+    "start": "iota-wiki start",
+    "build": "iota-wiki build"
   },
   "license": "UNLICENSED",
   "engines": {
