@@ -2,12 +2,16 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use bee_message::{
-    address::Address,
+    address::{dto::AddressDto, Address},
+    output::{dto::OutputDto, Output},
     payload::transaction::{dto::TransactionEssenceDto, TransactionEssence},
     DtoError,
 };
 
-use crate::secret::types::InputSigningData;
+use crate::{
+    crypto::keys::slip10::Chain,
+    secret::types::{InputSigningData, InputSigningDataDto},
+};
 
 /// Helper struct for offline signing
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -15,8 +19,53 @@ pub struct PreparedTransactionData {
     /// Transaction essence
     pub essence: TransactionEssence,
     /// Required address information for signing
-    #[serde(rename = "inputSigningDataEntries")]
-    pub input_signing_data_entries: Vec<InputSigningData>,
+    #[serde(rename = "inputsData")]
+    pub inputs_data: Vec<InputSigningData>,
+    /// Optional remainder output information
+    pub remainder: Option<RemainderData>,
+}
+
+/// Data for a remainder output, used for ledger nano
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RemainderData {
+    /// The remainder output
+    pub output: Output,
+    /// The chain derived from seed, for the remainder addresses
+    pub chain: Option<Chain>,
+    /// The remainder address
+    pub address: Address,
+}
+
+/// Data for a remainder output, used for ledger nano
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RemainderDataDto {
+    /// The remainder output
+    pub output: OutputDto,
+    /// The chain derived from seed, for the remainder addresses
+    pub chain: Option<Chain>,
+    /// The remainder address
+    pub address: AddressDto,
+}
+
+impl TryFrom<&RemainderDataDto> for RemainderData {
+    type Error = crate::Error;
+
+    fn try_from(remainder: &RemainderDataDto) -> crate::Result<Self> {
+        Ok(Self {
+            output: Output::try_from(&remainder.output)?,
+            chain: remainder.chain.clone(),
+            address: Address::try_from(&remainder.address)?,
+        })
+    }
+}
+impl From<&RemainderData> for RemainderDataDto {
+    fn from(remainder: &RemainderData) -> Self {
+        Self {
+            output: OutputDto::from(&remainder.output),
+            chain: remainder.chain.clone(),
+            address: AddressDto::from(&remainder.address),
+        }
+    }
 }
 
 /// PreparedTransactionData Dto
@@ -25,14 +74,17 @@ pub struct PreparedTransactionDataDto {
     /// Transaction essence
     pub essence: TransactionEssenceDto,
     /// Required address information for signing
-    pub input_signing_data_entries: Vec<InputSigningData>,
+    pub inputs_data: Vec<InputSigningDataDto>,
+    /// Optional remainder output information
+    pub remainder: Option<RemainderDataDto>,
 }
 
 impl From<&PreparedTransactionData> for PreparedTransactionDataDto {
     fn from(value: &PreparedTransactionData) -> Self {
         PreparedTransactionDataDto {
             essence: TransactionEssenceDto::from(&value.essence),
-            input_signing_data_entries: value.input_signing_data_entries.clone(),
+            inputs_data: value.inputs_data.iter().map(InputSigningDataDto::from).collect(),
+            remainder: value.remainder.as_ref().map(RemainderDataDto::from),
         }
     }
 }
@@ -42,7 +94,18 @@ impl TryFrom<&PreparedTransactionDataDto> for PreparedTransactionData {
     fn try_from(value: &PreparedTransactionDataDto) -> Result<Self, Self::Error> {
         Ok(PreparedTransactionData {
             essence: TransactionEssence::try_from(&value.essence).map_err(|_| DtoError::InvalidField("essence"))?,
-            input_signing_data_entries: value.input_signing_data_entries.clone(),
+            inputs_data: value
+                .inputs_data
+                .iter()
+                .map(InputSigningData::try_from)
+                .collect::<crate::Result<Vec<InputSigningData>>>()
+                .map_err(|_| DtoError::InvalidField("input_data"))?,
+            remainder: match &value.remainder {
+                Some(remainder) => {
+                    Some(RemainderData::try_from(remainder).map_err(|_| DtoError::InvalidField("remainder"))?)
+                }
+                None => None,
+            },
         })
     }
 }

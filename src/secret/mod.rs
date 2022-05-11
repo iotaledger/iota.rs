@@ -21,19 +21,21 @@ use async_trait::async_trait;
 use bee_message::{
     address::{Address, AliasAddress, Ed25519Address, NftAddress},
     output::Output,
-    payload::transaction::TransactionEssence,
     unlock_block::{AliasUnlockBlock, NftUnlockBlock, ReferenceUnlockBlock, UnlockBlock},
 };
-pub use types::{GenerateAddressMetadata, LedgerStatus, SignMessageMetadata};
+pub use types::{GenerateAddressMetadata, LedgerStatus};
 
 #[cfg(feature = "ledger_nano")]
 use self::ledger_nano::LedgerSecretManager;
 use self::mnemonic::MnemonicSecretManager;
 #[cfg(feature = "stronghold")]
 use self::stronghold::StrongholdSecretManager;
-use crate::secret::types::InputSigningData;
 #[cfg(feature = "stronghold")]
 use crate::secret::types::StrongholdDto;
+use crate::{
+    api::{PreparedTransactionData, RemainderData},
+    secret::types::InputSigningData,
+};
 
 /// The secret manager interface.
 #[async_trait]
@@ -51,11 +53,11 @@ pub trait SecretManage: Send + Sync {
     ) -> crate::Result<Vec<Address>>;
 
     /// Sign on `essence`, unlock `input` by returning an [UnlockBlock].
-    async fn signature_unlock<'a>(
+    async fn signature_unlock(
         &self,
         input: &InputSigningData,
         essence_hash: &[u8; 32],
-        metadata: &SignMessageMetadata<'a>,
+        remainder: &Option<RemainderData>,
     ) -> crate::Result<UnlockBlock>;
 }
 
@@ -71,27 +73,23 @@ pub trait SecretManageExt {
     /// Secret managers usually don't implement this, as the default implementation has taken care of the placement of
     /// blocks (e.g. references between them). [SecretManager::signature_unlock()] will be invoked every time a
     /// necessary signing action needs to be performed.
-    async fn sign_transaction_essence<'a>(
+    async fn sign_transaction_essence(
         &self,
-        essence: &TransactionEssence,
-        inputs: &[InputSigningData],
-        metadata: SignMessageMetadata<'a>,
+        prepared_transaction_data: &PreparedTransactionData,
     ) -> crate::Result<Vec<UnlockBlock>>;
 }
 
 // Shared implementation for MnemonicSecretManager and StrongholdSecretManager
 pub(crate) async fn default_sign_transaction_essence<'a>(
     secret_manager: &dyn SecretManage,
-    essence: &TransactionEssence,
-    inputs: &[InputSigningData],
-    metadata: SignMessageMetadata<'a>,
+    prepared_transaction_data: &PreparedTransactionData,
 ) -> crate::Result<Vec<UnlockBlock>> {
     // The hashed_essence gets signed
-    let hashed_essence = essence.hash();
+    let hashed_essence = prepared_transaction_data.essence.hash();
     let mut unlock_blocks = Vec::new();
     let mut unlock_block_indexes = HashMap::<Address, usize>::new();
 
-    for (current_block_index, input) in inputs.iter().enumerate() {
+    for (current_block_index, input) in prepared_transaction_data.inputs_data.iter().enumerate() {
         // Get the address that is required to unlock the input
         let (_, input_address) = Address::try_from_bech32(&input.bech32_address)?;
 
@@ -116,7 +114,7 @@ pub(crate) async fn default_sign_transaction_essence<'a>(
                 }
 
                 let unlock_block = secret_manager
-                    .signature_unlock(input, &hashed_essence, &metadata)
+                    .signature_unlock(input, &hashed_essence, &prepared_transaction_data.remainder)
                     .await?;
                 unlock_blocks.push(unlock_block);
 
@@ -305,11 +303,11 @@ impl SecretManage for SecretManager {
         }
     }
 
-    async fn signature_unlock<'a>(
+    async fn signature_unlock(
         &self,
         input: &InputSigningData,
         essence_hash: &[u8; 32],
-        metadata: &SignMessageMetadata<'a>,
+        metadata: &Option<RemainderData>,
     ) -> crate::Result<UnlockBlock> {
         match self {
             #[cfg(feature = "stronghold")]
@@ -333,27 +331,25 @@ impl SecretManage for SecretManager {
 
 #[async_trait]
 impl SecretManageExt for SecretManager {
-    async fn sign_transaction_essence<'a>(
+    async fn sign_transaction_essence(
         &self,
-        essence: &TransactionEssence,
-        inputs: &[InputSigningData],
-        metadata: SignMessageMetadata<'a>,
+        prepared_transaction_data: &PreparedTransactionData,
     ) -> crate::Result<Vec<UnlockBlock>> {
         match self {
             #[cfg(feature = "stronghold")]
             SecretManager::Stronghold(secret_manager) => {
-                secret_manager.sign_transaction_essence(essence, inputs, metadata).await
+                secret_manager.sign_transaction_essence(prepared_transaction_data).await
             }
             #[cfg(feature = "ledger_nano")]
             SecretManager::LedgerNano(secret_manager) => {
-                secret_manager.sign_transaction_essence(essence, inputs, metadata).await
+                secret_manager.sign_transaction_essence(prepared_transaction_data).await
             }
             #[cfg(feature = "ledger_nano")]
             SecretManager::LedgerNanoSimulator(secret_manager) => {
-                secret_manager.sign_transaction_essence(essence, inputs, metadata).await
+                secret_manager.sign_transaction_essence(prepared_transaction_data).await
             }
             SecretManager::Mnemonic(secret_manager) => {
-                secret_manager.sign_transaction_essence(essence, inputs, metadata).await
+                secret_manager.sign_transaction_essence(prepared_transaction_data).await
             }
         }
     }

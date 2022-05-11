@@ -8,7 +8,6 @@ use std::ops::Range;
 use async_trait::async_trait;
 use bee_message::{
     address::{Address, Ed25519Address},
-    payload::transaction::TransactionEssence,
     signature::{Ed25519Signature, Signature},
     unlock_block::{SignatureUnlockBlock, UnlockBlock},
 };
@@ -19,9 +18,12 @@ use crypto::{
 
 use super::{
     default_sign_transaction_essence, types::InputSigningData, GenerateAddressMetadata, SecretManage, SecretManageExt,
-    SignMessageMetadata,
 };
-use crate::{constants::HD_WALLET_TYPE, Client, Result};
+use crate::{
+    constants::HD_WALLET_TYPE,
+    secret::{PreparedTransactionData, RemainderData},
+    Client, Result,
+};
 
 /// Secret manager that uses only a mnemonic.
 ///
@@ -67,11 +69,11 @@ impl SecretManage for MnemonicSecretManager {
         Ok(addresses)
     }
 
-    async fn signature_unlock<'a>(
+    async fn signature_unlock(
         &self,
         input: &InputSigningData,
         essence_hash: &[u8; 32],
-        _: &SignMessageMetadata<'a>,
+        _: &Option<RemainderData>,
     ) -> crate::Result<UnlockBlock> {
         // Get the private and public key for this Ed25519 address
         let private_key = self
@@ -92,13 +94,11 @@ impl SecretManage for MnemonicSecretManager {
 
 #[async_trait]
 impl SecretManageExt for MnemonicSecretManager {
-    async fn sign_transaction_essence<'a>(
+    async fn sign_transaction_essence(
         &self,
-        essence: &TransactionEssence,
-        inputs: &[InputSigningData],
-        metadata: SignMessageMetadata<'a>,
+        prepared_transaction_data: &PreparedTransactionData,
     ) -> crate::Result<Vec<UnlockBlock>> {
-        default_sign_transaction_essence(self, essence, inputs, metadata).await
+        default_sign_transaction_essence(self, prepared_transaction_data).await
     }
 }
 

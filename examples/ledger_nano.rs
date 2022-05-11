@@ -4,7 +4,7 @@
 //! cargo run --example ledger_nano --features=ledger_nano --release
 
 use iota_client::{
-    secret::{ledger::LedgerSecretManager, SecretManager},
+    secret::{ledger_nano::LedgerSecretManager, SecretManager},
     Client, Result,
 };
 

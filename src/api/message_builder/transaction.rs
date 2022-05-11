@@ -21,7 +21,7 @@ use bee_message::{
 use crate::{
     api::{types::PreparedTransactionData, ClientMessageBuilder},
     bee_message::output::AliasId,
-    secret::{types::InputSigningData, SecretManageExt, SignMessageMetadata},
+    secret::{types::InputSigningData, SecretManageExt},
     Error, Result,
 };
 
@@ -91,7 +91,8 @@ pub async fn prepare_transaction(message_builder: &ClientMessageBuilder<'_>) -> 
 
     Ok(PreparedTransactionData {
         essence,
-        input_signing_data_entries: selected_transaction_data.inputs,
+        inputs_data: selected_transaction_data.inputs,
+        remainder: selected_transaction_data.remainder,
     })
 }
 
@@ -102,7 +103,7 @@ pub async fn sign_transaction(
 ) -> Result<Payload> {
     log::debug!("[sign_transaction]");
     let mut input_addresses = Vec::new();
-    for input_signing_data in &prepared_transaction_data.input_signing_data_entries {
+    for input_signing_data in &prepared_transaction_data.inputs_data {
         let (_bech32_hrp, address) = Address::try_from_bech32(&input_signing_data.bech32_address)?;
         input_addresses.push(address);
     }
@@ -113,13 +114,7 @@ pub async fn sign_transaction(
         .sign_transaction_essence(
             // IOTA_COIN_TYPE,
             // message_builder.account_index.unwrap_or(0),
-            &prepared_transaction_data.essence,
-            &prepared_transaction_data.input_signing_data_entries,
-            // todo set correct data
-            SignMessageMetadata {
-                remainder_value: 0,
-                remainder_deposit_address: None,
-            },
+            &prepared_transaction_data,
         )
         .await?;
     let unlock_blocks = UnlockBlocks::new(unlock_blocks)?;
@@ -128,7 +123,7 @@ pub async fn sign_transaction(
     let (local_time, milestone_index) = message_builder.client.get_time_and_milestone_checked().await?;
 
     let conflict = verify_semantic(
-        &prepared_transaction_data.input_signing_data_entries,
+        &prepared_transaction_data.inputs_data,
         &tx_payload,
         milestone_index,
         local_time,

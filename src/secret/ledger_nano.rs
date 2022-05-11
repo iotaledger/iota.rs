@@ -8,11 +8,11 @@
 use std::ops::Range;
 
 use async_trait::async_trait;
-use bee_message::{address::Address, payload::transaction::TransactionEssence, unlock_block::UnlockBlock};
+use bee_message::{address::Address, unlock_block::UnlockBlock};
 use tokio::sync::Mutex;
 
-use super::{types::InputSigningData, GenerateAddressMetadata, SecretManage, SecretManageExt, SignMessageMetadata};
-use crate::secret::LedgerStatus;
+use super::{types::InputSigningData, GenerateAddressMetadata, SecretManage, SecretManageExt};
+use crate::secret::{LedgerStatus, PreparedTransactionData, RemainderData};
 
 /// Hardened const for the bip path.
 ///
@@ -82,11 +82,11 @@ impl SecretManage for LedgerSecretManager {
     }
 
     // Ledger Nano will use `sign_transaction_essence`
-    async fn signature_unlock<'a>(
+    async fn signature_unlock(
         &self,
         _input: &InputSigningData,
         _essence_hash: &[u8; 32],
-        _metadata: &SignMessageMetadata<'a>,
+        _metadata: &Option<RemainderData>,
     ) -> crate::Result<UnlockBlock> {
         panic!("signature_unlock is not supported with ledger")
     }
@@ -94,17 +94,15 @@ impl SecretManage for LedgerSecretManager {
 
 #[async_trait]
 impl SecretManageExt for LedgerSecretManager {
-    async fn sign_transaction_essence<'a>(
+    async fn sign_transaction_essence(
         &self,
-        _essence: &TransactionEssence,
-        inputs: &[InputSigningData],
-        _metadata: SignMessageMetadata<'a>,
+        prepared_transaction: &PreparedTransactionData,
     ) -> crate::Result<Vec<UnlockBlock>> {
         // lock the mutex to prevent multiple simultaneous requests to a ledger
         let _lock = self.mutex.lock().await;
 
         // Get coin type and account index from first input
-        let (coin_type, account_index) = match &inputs.first() {
+        let (_coin_type, account_index) = match &prepared_transaction.inputs_data.first() {
             Some(input) => {
                 match &input.chain {
                     Some(chain) => {
@@ -132,7 +130,7 @@ impl SecretManageExt for LedgerSecretManager {
     //     // on essence finalization, inputs are sorted lexically before they are packed into bytes.
     //     // we need the correct order of the bip32 indices before we can call PrepareSigning, but
     //     // because inputs of the essence don't have bip32 indices, we need to sort it on our own too.
-    //     let mut input_signing_data_entries: Vec<AddressIndexRecorder> = Vec::new();
+    //     let mut inputs_data: Vec<AddressIndexRecorder> = Vec::new();
     //     for input_signing_data in inputs {
     //         let input = Input::Utxo(UtxoInput::new(
     //             TransactionId::from_str(&input_signing_data.output_response.transaction_id)?,
@@ -141,7 +139,7 @@ impl SecretManageExt for LedgerSecretManager {
     //         // todo validate
     //         let address_index = u32::from_be_bytes(input_signing_data.chain.clone().unwrap().segments()[3].bs());
     //         let address_internal = u32::from_be_bytes(input_signing_data.chain.clone().unwrap().segments()[4].bs());
-    //         input_signing_data_entries.push(AddressIndexRecorder {
+    //         inputs_data.push(AddressIndexRecorder {
     //             input,
     //             bip32: LedgerBIP32Index {
     //                 bip32_index: address_index | HARDENED,
@@ -149,11 +147,11 @@ impl SecretManageExt for LedgerSecretManager {
     //             },
     //         });
     //     }
-    //     // input_signing_data_entries.sort_by(|a, b| a.input.cmp(&b.input));
+    //     // inputs_data.sort_by(|a, b| a.input.cmp(&b.input));
 
     //     // now extract the bip32 indices in the right order
     //     let mut input_bip32_indices: Vec<LedgerBIP32Index> = Vec::new();
-    //     for recorder in input_signing_data_entries {
+    //     for recorder in inputs_data {
     //         input_bip32_indices.push(recorder.bip32);
     //     }
 

@@ -374,8 +374,8 @@ impl<'a> ClientMessageBuilder<'a> {
 
         let prepared = RustPreparedTransactionData {
             essence: prepared_transaction_data.essence.to_inner(),
-            input_signing_data_entries: prepared_transaction_data
-                .input_signing_data_entries
+            inputs_data: prepared_transaction_data
+                .inputs_data
                 .iter()
                 .map(|a| addres_into_rust_address_recorder(a.clone()))
                 .collect(),
