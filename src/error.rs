@@ -116,17 +116,10 @@ pub enum Error {
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
     CryptoError(#[from] crypto::Error),
-    /// ureq error
-    #[cfg(feature = "sync")]
-    #[error("{0}")]
-    #[serde(serialize_with = "display_string")]
-    UreqError(#[from] ureq::Error),
     /// Error from RestAPI calls with unexpected status code response
-    #[cfg(any(feature = "async", target_family = "wasm"))]
     #[error("Response error with status code {0}: {1}, URL: {2}")]
     ResponseError(u16, String, String),
     /// reqwest error
-    #[cfg(any(feature = "async", target_family = "wasm"))]
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
     ReqwestError(#[from] reqwest::Error),

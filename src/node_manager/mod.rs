@@ -18,8 +18,6 @@ use bee_rest_api::types::responses::InfoResponse;
 use log::warn;
 use regex::Regex;
 use serde_json::Value;
-#[cfg(all(feature = "sync", not(feature = "async")))]
-use ureq::{Agent, AgentBuilder};
 
 use self::{http_client::HttpClient, node::Node};
 use crate::{

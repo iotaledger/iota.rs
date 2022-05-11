@@ -7,43 +7,14 @@ use std::time::Duration;
 
 use serde::de::DeserializeOwned;
 use serde_json::Value;
-#[cfg(all(feature = "sync", not(feature = "async")))]
-use ureq::{Agent, AgentBuilder};
 
 use crate::{
     error::{Error, Result},
     node_manager::node::Node,
 };
 
-#[cfg(all(feature = "sync", not(feature = "async")))]
-pub(crate) struct Response(ureq::Response);
-
-#[cfg(all(feature = "sync", not(feature = "async")))]
-impl From<ureq::Response> for Response {
-    fn from(response: ureq::Response) -> Self {
-        Self(response)
-    }
-}
-
-#[cfg(all(feature = "sync", not(feature = "async")))]
-impl Response {
-    pub(crate) fn status(&self) -> u16 {
-        self.0.status()
-    }
-
-    pub(crate) async fn json<T: DeserializeOwned>(self) -> Result<T> {
-        self.0.into_json().map_err(Into::into)
-    }
-
-    pub(crate) async fn text(self) -> Result<String> {
-        self.0.into_string().map_err(Into::into)
-    }
-}
-
-#[cfg(any(feature = "async", target_family = "wasm"))]
 pub(crate) struct Response(reqwest::Response);
 
-#[cfg(any(feature = "async", target_family = "wasm"))]
 impl Response {
     pub(crate) fn status(&self) -> u16 {
         self.0.status().as_u16()
@@ -58,17 +29,11 @@ impl Response {
     }
 }
 
-#[cfg(any(feature = "async", target_family = "wasm"))]
 #[derive(Clone)]
 pub(crate) struct HttpClient {
     client: reqwest::Client,
 }
 
-#[cfg(all(feature = "sync", not(feature = "async")))]
-#[derive(Clone)]
-pub(crate) struct HttpClient;
-
-#[cfg(any(feature = "async", target_family = "wasm"))]
 impl HttpClient {
     pub(crate) fn new() -> Self {
         Self {
@@ -148,62 +113,5 @@ impl HttpClient {
             request_builder = request_builder.timeout(_timeout);
         }
         Self::parse_response(request_builder.json(&json).send().await?, &node.url).await
-    }
-}
-
-#[cfg(all(feature = "sync", not(feature = "async")))]
-impl HttpClient {
-    pub(crate) fn new() -> Self {
-        Self {}
-    }
-
-    pub(crate) fn clone(&self) -> Self {
-        Self {}
-    }
-
-    pub(crate) async fn get(&self, node: Node, timeout: Duration) -> Result<Response> {
-        let mut request_builder = Self::get_ureq_agent(timeout).get(node.url.as_str());
-        if let Some(node_auth) = node.auth {
-            if let Some(jwt) = node_auth.jwt {
-                request_builder = request_builder.set("Authorization", &format!("Bearer {}", jwt));
-            }
-        }
-        Ok(request_builder.call()?.into())
-    }
-
-    pub(crate) async fn get_raw(&self, node: Node, timeout: Duration) -> Result<Response> {
-        let mut request_builder = Self::get_ureq_agent(timeout).get(node.url.as_str());
-        if let Some(node_auth) = node.auth {
-            if let Some(jwt) = node_auth.jwt {
-                request_builder = request_builder.set("Authorization", &format!("Bearer {}", jwt));
-            }
-        }
-        request_builder = request_builder.set("Content-Type", "application/vnd.iota.serializer-v1");
-        Ok(request_builder.call()?.into())
-    }
-
-    pub(crate) async fn post_bytes(&self, node: Node, timeout: Duration, body: &[u8]) -> Result<Response> {
-        let mut request_builder = Self::get_ureq_agent(timeout).post(node.url.as_str());
-        if let Some(node_auth) = node.auth {
-            if let Some(jwt) = node_auth.jwt {
-                request_builder = request_builder.set("Authorization", &format!("Bearer {}", jwt));
-            }
-        }
-        request_builder = request_builder.set("Content-Type", "application/vnd.iota.serializer-v1");
-        Ok(request_builder.send_bytes(body)?.into())
-    }
-
-    pub(crate) async fn post_json(&self, node: Node, timeout: Duration, json: Value) -> Result<Response> {
-        let mut request_builder = Self::get_ureq_agent(timeout).post(node.url.as_str());
-        if let Some(node_auth) = node.auth {
-            if let Some(jwt) = node_auth.jwt {
-                request_builder = request_builder.set("Authorization", &format!("Bearer {}", jwt));
-            }
-        }
-        Ok(request_builder.send_json(json)?.into())
-    }
-
-    fn get_ureq_agent(timeout: Duration) -> Agent {
-        AgentBuilder::new().timeout_read(timeout).timeout_write(timeout).build()
     }
 }
