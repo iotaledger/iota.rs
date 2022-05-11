@@ -260,7 +260,7 @@ impl Client {
 
         resp.children_message_ids
             .iter()
-            .map(|s| MessageId::from_str(&s).map_err(Error::MessageError))
+            .map(|s| MessageId::from_str(s).map_err(Error::MessageError))
             .collect::<Result<Box<[MessageId]>>>()
     }
 
