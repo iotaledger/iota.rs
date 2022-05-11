@@ -156,9 +156,10 @@ Finds the metadata of a given message.
 ## Example
 
 ```rust
+let message_metadata = client.get_message_metadata(&message_id).await?;
 ```
 
-Run `cargo run --example node_api_core_ --release -- [NODE URL]`.
+Run `cargo run --example node_api_core_get_message_metadata --release -- [NODE URL]`.
 
 # `Client::get_message_children`
 
@@ -175,9 +176,10 @@ Returns the children of a message.
 ## Example
 
 ```rust
+let message_children = client.get_message_children(&message_id).await?;
 ```
 
-Run `cargo run --example node_api_core_ --release -- [NODE URL]`.
+Run `cargo run --example node_api_core_get_message_children --release -- [NODE URL]`.
 
 # `Client::`
 

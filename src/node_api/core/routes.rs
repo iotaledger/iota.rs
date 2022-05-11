@@ -260,11 +260,7 @@ impl Client {
 
         resp.children_message_ids
             .iter()
-            .map(|s| {
-                let mut message_id = [0u8; 32];
-                hex::decode_to_slice(s, &mut message_id)?;
-                Ok(MessageId::from(message_id))
-            })
+            .map(|s| MessageId::from_str(&s).map_err(Error::MessageError))
             .collect::<Result<Box<[MessageId]>>>()
     }
 

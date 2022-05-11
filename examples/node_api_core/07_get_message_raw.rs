@@ -18,7 +18,7 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
 
-    // Fetches a message ID from the node..
+    // Fetches a message ID from the node.
     let message_id = client.get_tips().await?[0];
     // Sends the request.
     let message = client.get_message_raw(&message_id).await?;
