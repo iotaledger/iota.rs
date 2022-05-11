@@ -5,6 +5,15 @@ module.exports = {
   url: '/',
   baseUrl: '/',
   themes: ['@docusaurus/theme-classic'],
+  themeConfig: {
+    navbar: {
+        // Workaround to disable broken logo href on test build
+        logo: {
+            src: 'img/logo/libraries.png.svg',
+            href: 'https://wiki.iota.org/',
+        },
+    },
+  },
   plugins: [
     [
       '@docusaurus/plugin-content-docs',
