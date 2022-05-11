@@ -32,7 +32,6 @@ pub(crate) async fn get_remainder_output<'a>(
     allow_burning: bool,
 ) -> Result<Option<RemainderData>> {
     log::debug!("[get_remainder]");
-    let mut remainder_data = None;
     let input_outputs = inputs.clone().map(|i| &i.output);
     let input_data = get_accumulated_output_amounts(std::iter::empty(), input_outputs.clone()).await?;
     let output_data = get_accumulated_output_amounts(std::iter::empty(), outputs.clone()).await?;
@@ -56,7 +55,7 @@ pub(crate) async fn get_remainder_output<'a>(
 
     let native_token_remainder = get_remainder_native_tokens(&input_native_tokens, &output_native_tokens)?;
     // Output possible remaining tokens back to the original address
-    if remainder_amount > 0 {
+    let remainder_data = if remainder_amount > 0 {
         let (remainder_addr, address_chain) = match remainder_address {
             // For provided remainder addresses we can't get the Chain
             Some(a) => (a, None),
@@ -71,18 +70,19 @@ pub(crate) async fn get_remainder_output<'a>(
         let remainder = remainder_output_builder.finish_output()?;
         // Check if output has enough amount to cover the storage deposit
         remainder.verify_storage_deposit(byte_cost_config)?;
-        remainder_data.replace(RemainderData {
+        Some(RemainderData {
             output: remainder,
             chain: address_chain,
             address: remainder_addr,
-        });
+        })
     } else {
         // if we have remaining native tokens, but no amount left, then we can't create this transaction unless we want
         // to burn them
         if native_token_remainder.is_some() && !allow_burning {
             return Err(Error::NoBalanceForNativeTokenRemainder);
         }
-    }
+        None
+    };
 
     Ok(remainder_data)
 }
