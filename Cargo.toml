@@ -99,6 +99,14 @@ path = "examples/node_api_core/04_post_message.rs"
 name = "node_api_core_post_message_raw"
 path = "examples/node_api_core/05_post_message_raw.rs"
 
+[[example]]
+name = "node_api_core_get_message"
+path = "examples/node_api_core/06_get_message.rs"
+
+[[example]]
+name = "node_api_core_get_message_raw"
+path = "examples/node_api_core/07_get_message_raw.rs"
+
 #######
 
 [[example]]

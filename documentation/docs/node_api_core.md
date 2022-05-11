@@ -101,7 +101,7 @@ let message_id = client.post_message_raw(&message).await?;
 
 Run `cargo run --example node_api_core_post_message_raw --release -- [NODE URL]`.
 
-# `Client::`
+# `Client::get_message`
 
 ## Description
 
@@ -116,9 +116,30 @@ Returns message data as JSON by its identifier.
 ## Example
 
 ```rust
+let message = client.get_message(&message_id).await?;
 ```
 
-Run `cargo run --example node_api_core_ --release -- [NODE URL]`.
+Run `cargo run --example node_api_core_get_message --release -- [NODE URL]`.
+
+# `Client::get_message_raw`
+
+## Description
+
+Calls `GET /api/v2/messages/{messageId}`.
+
+Returns message data as raw bytes by its identifier.
+
+## Request
+
+## Response
+
+## Example
+
+```rust
+let message = client.get_message_raw(&message_id).await?;
+```
+
+Run `cargo run --example node_api_core_get_message_raw --release -- [NODE URL]`.
 
 # `Client::get_message_metadata`
 

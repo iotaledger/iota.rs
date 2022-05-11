@@ -217,7 +217,7 @@ impl Client {
         Ok(MessageId::from_str(&resp.message_id)?)
     }
 
-    /// Find a message by its MessageId. This method returns the given message object.
+    /// Finds a message by its MessageId. This method returns the given message object.
     /// GET /api/v2/messages/{MessageId}
     pub async fn get_message(&self, message_id: &MessageId) -> Result<Message> {
         let path = &format!("api/v2/messages/{}", message_id);
@@ -230,7 +230,7 @@ impl Client {
         Ok(Message::try_from(&resp.0)?)
     }
 
-    /// Find a message by its MessageId. This method returns the given message raw data.
+    /// Finds a message by its MessageId. This method returns the given message raw data.
     /// GET /api/v2/messages/{MessageId}
     pub async fn get_message_raw(&self, message_id: &MessageId) -> Result<String> {
         let path = &format!("api/v2/messages/{}", message_id);
@@ -268,7 +268,7 @@ impl Client {
 
     // UTXO routes.
 
-    /// Find an output by its OutputId (TransactionId + output_index).
+    /// Finds an output by its OutputId (TransactionId + output_index).
     /// GET /api/v2/outputs/{outputId}
     pub async fn get_output(&self, output_id: &OutputId) -> Result<OutputResponse> {
         let path = &format!("api/v2/outputs/{}", output_id);
@@ -276,7 +276,7 @@ impl Client {
         self.node_manager.get_request(path, None, self.get_timeout()).await
     }
 
-    /// Get all stored receipts.
+    /// Gets all stored receipts.
     /// GET /api/v2/receipts
     pub async fn get_receipts(&self) -> Result<Vec<ReceiptDto>> {
         let path = &"api/v2/receipts";
@@ -289,7 +289,7 @@ impl Client {
         Ok(resp.receipts)
     }
 
-    /// Get the receipts by the given milestone index.
+    /// Gets the receipts by the given milestone index.
     /// GET /api/v2/receipts/{migratedAt}
     pub async fn get_receipts_migrated_at(&self, milestone_index: u32) -> Result<Vec<ReceiptDto>> {
         let path = &format!("api/v2/receipts/{}", milestone_index);
@@ -302,7 +302,7 @@ impl Client {
         Ok(resp.receipts)
     }
 
-    /// Get the current treasury output.
+    /// Gets the current treasury output.
     /// GET /api/v2/treasury
     pub async fn get_treasury(&self) -> Result<TreasuryResponse> {
         let path = "api/v2/treasury";
@@ -325,7 +325,7 @@ impl Client {
 
     // Milestones routes.
 
-    /// Get the milestone by the given milestone id.
+    /// Gets the milestone by the given milestone id.
     /// GET /api/v2/milestones/{milestoneId}
     pub async fn get_milestone_by_milestone_id(&self, milestone_id: MilestoneId) -> Result<MilestoneResponse> {
         let path = &format!("api/v2/milestones/{}", milestone_id);
@@ -341,7 +341,7 @@ impl Client {
         self.node_manager.get_request(path, None, self.get_timeout()).await
     }
 
-    /// Get the milestone by the given milestone index.
+    /// Gets the milestone by the given milestone index.
     /// GET /api/v2/milestones/{index}
     pub async fn get_milestone_by_milestone_index(&self, index: u32) -> Result<MilestoneResponse> {
         let path = &format!("api/v2/milestones/by-index/{}", index);
