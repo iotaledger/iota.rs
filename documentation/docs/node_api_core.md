@@ -81,7 +81,7 @@ let message_id = client.post_message(&message).await?;
 
 Run `cargo run --example node_api_core_post_message --release -- [NODE URL]`.
 
-# `Client::post_message`
+# `Client::post_message_raw`
 
 ## Description
 
@@ -96,9 +96,10 @@ Submits a message as raw bytes.
 ## Example
 
 ```rust
+let message_id = client.post_message_raw(&message).await?;
 ```
 
-Run `cargo run --example node_api_core_ --release -- [NODE URL]`.
+Run `cargo run --example node_api_core_post_message_raw --release -- [NODE URL]`.
 
 # `Client::`
 
