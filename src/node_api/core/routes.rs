@@ -325,15 +325,25 @@ impl Client {
 
     /// Gets the milestone by the given milestone id.
     /// GET /api/v2/milestones/{milestoneId}
-    pub async fn get_milestone_by_id(&self, milestone_id: MilestoneId) -> Result<MilestoneResponse> {
+    pub async fn get_milestone_by_id(&self, milestone_id: &MilestoneId) -> Result<MilestoneResponse> {
         let path = &format!("api/v2/milestones/{}", milestone_id);
 
         self.node_manager.get_request(path, None, self.get_timeout()).await
     }
 
+    /// Gets the milestone by the given milestone id.
+    /// GET /api/v2/milestones/{milestoneId}
+    pub async fn get_milestone_by_id_raw(&self, milestone_id: &MilestoneId) -> Result<Vec<u8>> {
+        let path = &format!("api/v2/milestones/{}", milestone_id);
+
+        self.node_manager
+            .get_request_bytes(path, None, self.get_timeout())
+            .await
+    }
+
     /// Gets all UTXO changes of a milestone by its milestone id.
     /// GET /api/v2/milestones/{milestoneId}/utxo-changes
-    pub async fn get_utxo_changes_by_id(&self, milestone_id: MilestoneId) -> Result<UtxoChangesResponse> {
+    pub async fn get_utxo_changes_by_id(&self, milestone_id: &MilestoneId) -> Result<UtxoChangesResponse> {
         let path = &format!("api/v2/milestones/{}/utxo-changes", milestone_id);
 
         self.node_manager.get_request(path, None, self.get_timeout()).await

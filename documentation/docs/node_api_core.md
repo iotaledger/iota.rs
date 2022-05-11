@@ -292,13 +292,13 @@ Returns the included message of a transaction.
 
 Run `cargo run --example node_api_core_ --release -- [NODE URL]`.
 
-# `Client::`
+# `Client::get_milestone_by_id`
 
 ## Description
 
 Calls `GET /api/v2/milestones/{milestoneId}`.
 
-Looks up a milestone by a given milestone ID.
+Returns milestone data as JSON by its identifier.
 
 ## Request
 
@@ -307,9 +307,30 @@ Looks up a milestone by a given milestone ID.
 ## Example
 
 ```rust
+let milestone = client.get_milestone_by_id(&milestone_id).await?;
 ```
 
-Run `cargo run --example node_api_core_ --release -- [NODE URL]`.
+Run `cargo run --example node_api_core_get_milestone_by_id --release -- [NODE URL]`.
+
+# `Client::get_milestone_by_id_raw`
+
+## Description
+
+Calls `GET /api/v2/milestones/{milestoneId}`.
+
+Returns milestone data as raw bytes by its identifier.
+
+## Request
+
+## Response
+
+## Example
+
+```rust
+let milestone = client.get_milestone_by_id_raw(&milestone_id).await?;
+```
+
+Run `cargo run --example node_api_core_get_milestone_by_id_raw --release -- [NODE URL]`.
 
 # `Client::`
 
