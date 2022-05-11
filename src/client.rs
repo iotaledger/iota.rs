@@ -30,7 +30,6 @@ use bee_rest_api::types::{
 use crypto::keys::slip10::Seed;
 #[cfg(target_family = "wasm")]
 use gloo_timers::future::TimeoutFuture;
-use packable::PackableExt;
 use url::Url;
 #[cfg(not(target_family = "wasm"))]
 use {
@@ -712,9 +711,7 @@ impl Client {
         let reattach_message = {
             #[cfg(target_family = "wasm")]
             {
-                let mut tips = self.get_tips().await?;
-                tips.sort_unstable_by_key(|a| a.pack_to_vec());
-                tips.dedup();
+                let tips = self.get_tips().await?;
                 let mut message_builder = MessageBuilder::<ClientMiner>::new(Parents::new(tips)?);
                 if let Some(p) = message.payload().to_owned() {
                     message_builder = message_builder.with_payload(p.clone())
@@ -754,9 +751,6 @@ impl Client {
         let mut tips = self.get_tips().await?;
         let min_pow_score = self.get_min_pow_score().await?;
         tips.push(*message_id);
-        // Sort tips/parents
-        tips.sort_unstable_by_key(|a| a.pack_to_vec());
-        tips.dedup();
 
         let promote_message = MessageBuilder::<ClientMiner>::new(Parents::new(tips)?)
             .with_nonce_provider(self.get_pow_provider().await, min_pow_score)

@@ -113,7 +113,7 @@ pub async fn finish_single_thread_pow(
     payload: Option<bee_message::payload::Payload>,
     target_score: f64,
 ) -> crate::Result<Message> {
-    let mut parent_messages = match parent_messages {
+    let parent_messages = match parent_messages {
         Some(parents) => parents,
         None => client.get_tips().await?,
     };
@@ -122,9 +122,6 @@ pub async fn finish_single_thread_pow(
     if !client.get_local_pow().await {
         let mut message_bytes: Vec<u8> = Vec::new();
         network_id.pack(&mut message_bytes).unwrap();
-        // sort parent messages
-        parent_messages.sort_unstable_by_key(|a| a.pack_to_vec());
-        parent_messages.dedup();
         Parents::new(parent_messages.clone())?.pack(&mut message_bytes).unwrap();
         OptionalPayload::pack(&OptionalPayload::from(payload.clone()), &mut message_bytes)
             .map_err(|_| crate::Error::PackableError)?;
@@ -137,9 +134,6 @@ pub async fn finish_single_thread_pow(
     loop {
         let mut message_bytes: Vec<u8> = Vec::new();
         network_id.pack(&mut message_bytes).unwrap();
-        // sort parent messages
-        parent_messages.sort_unstable_by_key(|a| a.pack_to_vec());
-        parent_messages.dedup();
         Parents::new(parent_messages.clone())?.pack(&mut message_bytes).unwrap();
         OptionalPayload::pack(&OptionalPayload::from(payload.clone()), &mut message_bytes)
             .map_err(|_| crate::Error::PackableError)?;
