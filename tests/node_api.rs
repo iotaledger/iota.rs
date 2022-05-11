@@ -258,13 +258,13 @@ async fn test_get_peers() {
 
 #[ignore]
 #[tokio::test]
-async fn test_get_milestone_by_milestone_id() {
+async fn test_get_milestone_by_id() {
     let client = setup_client_with_sync_disabled().await;
 
     let node_info = client.get_info().await.unwrap();
 
     let r = client
-        .get_milestone_by_milestone_id(node_info.nodeinfo.status.latest_milestone.milestone_id.parse().unwrap())
+        .get_milestone_by_id(node_info.nodeinfo.status.latest_milestone.milestone_id.parse().unwrap())
         .await
         .unwrap();
 
@@ -273,13 +273,13 @@ async fn test_get_milestone_by_milestone_id() {
 
 #[ignore]
 #[tokio::test]
-async fn test_get_milestone_by_milestone_index() {
+async fn test_get_milestone_by_index() {
     let client = setup_client_with_sync_disabled().await;
 
     let node_info = client.get_info().await.unwrap();
 
     let r = client
-        .get_milestone_by_milestone_index(node_info.nodeinfo.status.latest_milestone.index)
+        .get_milestone_by_index(node_info.nodeinfo.status.latest_milestone.index)
         .await
         .unwrap();
 
@@ -288,13 +288,13 @@ async fn test_get_milestone_by_milestone_index() {
 
 #[ignore]
 #[tokio::test]
-async fn test_get_utxo_changes_by_milestone_id() {
+async fn test_get_utxo_changes_by_id() {
     let client = setup_client_with_sync_disabled().await;
 
     let node_info = client.get_info().await.unwrap();
 
     let r = client
-        .get_utxo_changes_by_milestone_id(node_info.nodeinfo.status.latest_milestone.milestone_id.parse().unwrap())
+        .get_utxo_changes_by_id(node_info.nodeinfo.status.latest_milestone.milestone_id.parse().unwrap())
         .await
         .unwrap();
 
@@ -303,13 +303,13 @@ async fn test_get_utxo_changes_by_milestone_id() {
 
 #[ignore]
 #[tokio::test]
-async fn test_get_utxo_changes_by_milestone_index() {
+async fn test_get_utxo_changes_by_index() {
     let client = setup_client_with_sync_disabled().await;
 
     let node_info = client.get_info().await.unwrap();
 
     let r = client
-        .get_utxo_changes_by_milestone_index(node_info.nodeinfo.status.latest_milestone.index)
+        .get_utxo_changes_by_index(node_info.nodeinfo.status.latest_milestone.index)
         .await
         .unwrap();
 

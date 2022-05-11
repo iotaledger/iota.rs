@@ -325,7 +325,7 @@ impl Client {
 
     /// Gets the milestone by the given milestone id.
     /// GET /api/v2/milestones/{milestoneId}
-    pub async fn get_milestone_by_milestone_id(&self, milestone_id: MilestoneId) -> Result<MilestoneResponse> {
+    pub async fn get_milestone_by_id(&self, milestone_id: MilestoneId) -> Result<MilestoneResponse> {
         let path = &format!("api/v2/milestones/{}", milestone_id);
 
         self.node_manager.get_request(path, None, self.get_timeout()).await
@@ -333,7 +333,7 @@ impl Client {
 
     /// Gets all UTXO changes of a milestone by its milestone id.
     /// GET /api/v2/milestones/{milestoneId}/utxo-changes
-    pub async fn get_utxo_changes_by_milestone_id(&self, milestone_id: MilestoneId) -> Result<UtxoChangesResponse> {
+    pub async fn get_utxo_changes_by_id(&self, milestone_id: MilestoneId) -> Result<UtxoChangesResponse> {
         let path = &format!("api/v2/milestones/{}/utxo-changes", milestone_id);
 
         self.node_manager.get_request(path, None, self.get_timeout()).await
@@ -341,7 +341,7 @@ impl Client {
 
     /// Gets the milestone by the given milestone index.
     /// GET /api/v2/milestones/{index}
-    pub async fn get_milestone_by_milestone_index(&self, index: u32) -> Result<MilestoneResponse> {
+    pub async fn get_milestone_by_index(&self, index: u32) -> Result<MilestoneResponse> {
         let path = &format!("api/v2/milestones/by-index/{}", index);
 
         self.node_manager.get_request(path, None, self.get_timeout()).await
@@ -349,7 +349,7 @@ impl Client {
 
     /// Gets all UTXO changes of a milestone by its milestone index.
     /// GET /api/v2/milestones/by-index/{index}/utxo-changes
-    pub async fn get_utxo_changes_by_milestone_index(&self, index: u32) -> Result<UtxoChangesResponse> {
+    pub async fn get_utxo_changes_by_index(&self, index: u32) -> Result<UtxoChangesResponse> {
         let path = &format!("api/v2/milestones/by-index/{}/utxo-changes", index);
 
         self.node_manager.get_request(path, None, self.get_timeout()).await

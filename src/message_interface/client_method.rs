@@ -157,24 +157,24 @@ pub enum ClientMethod {
         output_id: OutputId,
     },
     /// Get the milestone by the given milestone id.
-    GetMilestoneByMilestoneId {
+    GetMilestoneById {
         /// Milestone ID
         #[serde(rename = "milestoneId")]
         milestone_id: MilestoneId,
     },
     /// Get the milestone by the given index.
-    GetMilestoneByMilestoneIndex {
+    GetMilestoneByIndex {
         /// Milestone Index
         index: u32,
     },
     /// Get the UTXO changes by the given milestone id.
-    GetUtxoChangesByMilestoneId {
+    GetUtxoChangesById {
         /// Milestone ID
         #[serde(rename = "milestoneId")]
         milestone_id: MilestoneId,
     },
     /// Get the UTXO changes by the given milestone index.
-    GetUtxoChangesByMilestoneIndex {
+    GetUtxoChangesByIndex {
         /// Milestone Index
         index: u32,
     },

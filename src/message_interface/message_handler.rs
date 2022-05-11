@@ -248,17 +248,17 @@ impl ClientMessageHandler {
                 self.client.get_message_children(message_id).await?,
             )),
             ClientMethod::GetOutput { output_id } => Ok(ResponseType::Output(self.client.get_output(output_id).await?)),
-            ClientMethod::GetMilestoneByMilestoneId { milestone_id } => Ok(ResponseType::Milestone(
-                self.client.get_milestone_by_milestone_id(*milestone_id).await?,
+            ClientMethod::GetMilestoneById { milestone_id } => Ok(ResponseType::Milestone(
+                self.client.get_milestone_by_id(*milestone_id).await?,
             )),
-            ClientMethod::GetMilestoneByMilestoneIndex { index } => Ok(ResponseType::Milestone(
-                self.client.get_milestone_by_milestone_index(*index).await?,
+            ClientMethod::GetMilestoneByIndex { index } => Ok(ResponseType::Milestone(
+                self.client.get_milestone_by_index(*index).await?,
             )),
-            ClientMethod::GetUtxoChangesByMilestoneId { milestone_id } => Ok(ResponseType::MilestoneUtxoChanges(
-                self.client.get_utxo_changes_by_milestone_id(*milestone_id).await?,
+            ClientMethod::GetUtxoChangesById { milestone_id } => Ok(ResponseType::MilestoneUtxoChanges(
+                self.client.get_utxo_changes_by_id(*milestone_id).await?,
             )),
-            ClientMethod::GetUtxoChangesByMilestoneIndex { index } => Ok(ResponseType::MilestoneUtxoChanges(
-                self.client.get_utxo_changes_by_milestone_index(*index).await?,
+            ClientMethod::GetUtxoChangesByIndex { index } => Ok(ResponseType::MilestoneUtxoChanges(
+                self.client.get_utxo_changes_by_index(*index).await?,
             )),
             ClientMethod::GetReceipts => Ok(ResponseType::Receipts(self.client.get_receipts().await?)),
             ClientMethod::GetReceiptsMigratedAt { milestone_index } => Ok(ResponseType::ReceiptsMigratedAtMilestone(
