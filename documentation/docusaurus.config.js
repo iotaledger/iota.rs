@@ -10,13 +10,13 @@ module.exports = {
       '@docusaurus/plugin-content-docs',
       {
         id: 'iota-rs',
-        path: path.resolve(__dirname, './docs'),
+        path: path.resolve(__dirname, 'docs'),
         routeBasePath: 'iota.rs',
-        sidebarPath: path.resolve(__dirname, './sidebars.js'),
-        editUrl: 'https://github.com/iotaledger/iota.rs/edit/dev/',
+        sidebarPath: path.resolve(__dirname, 'sidebars.js'),
+        editUrl: 'https://github.com/iotaledger/iota.rs/edit/production/',
         remarkPlugins: [require('remark-code-import'), require('remark-import-partial')],
       }
     ],
   ],
-  staticDirectories: [path.resolve(__dirname, './static')],
+  staticDirectories: [path.resolve(__dirname, 'static')],
 };
