@@ -249,13 +249,13 @@ impl ClientMessageHandler {
             )),
             ClientMethod::GetOutput { output_id } => Ok(ResponseType::Output(self.client.get_output(output_id).await?)),
             ClientMethod::GetMilestoneById { milestone_id } => Ok(ResponseType::Milestone(
-                self.client.get_milestone_by_id(*milestone_id).await?,
+                self.client.get_milestone_by_id(milestone_id).await?,
             )),
             ClientMethod::GetMilestoneByIndex { index } => Ok(ResponseType::Milestone(
                 self.client.get_milestone_by_index(*index).await?,
             )),
             ClientMethod::GetUtxoChangesById { milestone_id } => Ok(ResponseType::MilestoneUtxoChanges(
-                self.client.get_utxo_changes_by_id(*milestone_id).await?,
+                self.client.get_utxo_changes_by_id(milestone_id).await?,
             )),
             ClientMethod::GetUtxoChangesByIndex { index } => Ok(ResponseType::MilestoneUtxoChanges(
                 self.client.get_utxo_changes_by_index(*index).await?,
