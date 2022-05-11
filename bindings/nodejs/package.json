@@ -14,7 +14,7 @@
     "prebuild-install": "^6.1.2"
   },
   "scripts": {
-    "install": "prebuild-install --tag-prefix nodejs-binding-v || npm run rebuild",
+    "install": "prebuild-install --tag-prefix nodejs-binding-v || npm run rebuild && node scripts/create-package-json.js",
     "build:neon": "neon build --release && node scripts/move-lib.js",
     "rebuild": "npm run build:neon && node scripts/strip.js",
     "prebuild:node": "prebuild --prepack scripts/node-neon-build.js --strip",
@@ -23,6 +23,7 @@
     "test": "mocha ./tests --exclude assertions.js --timeout 0"
   },
   "devDependencies": {
+    "@iota/client": "file:./lib",
     "electron-build-env": "^0.2.0",
     "mocha": "^8.3.2",
     "prebuild": "^10.0.1"

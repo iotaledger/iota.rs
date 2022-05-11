@@ -16,6 +16,7 @@ node_modules
 # Generated files
 .docusaurus
 .cache-loader
+package-lock.json
 
 # Misc
 .DS_Store

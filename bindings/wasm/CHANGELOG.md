@@ -1,5 +1,10 @@
 # Changelog
 
+## \[0.4.0]
+
+- Added `getEssenceHash()` to calculate the hash of a transaction essence.
+  - [86259ee](https://github.com/iotaledger/iota.rs/commit/86259ee292a570cc9beb85db08aecc6153b28470) Add getEssenceHash() ([#940](https://github.com/iotaledger/iota.rs/pull/940)) on 2022-04-27
+
 ## \[0.3.1]
 
 - Updated dependencies to fix compilation.

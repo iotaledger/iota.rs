@@ -180,8 +180,47 @@ async function test() {
       }))
       assert.strictEqual(transaction_id, 'dda4d34eb0138eecd58f3a4cade9f35ea593866e69f657910cebc63297e5898c')
     })
-  })
 
+    it('essence_hash', () => {
+      const transaction_essence = {
+        "type": "Regular",
+        "data": {
+          "inputs": [
+            {
+              "type": "Utxo",
+              "data": "738ef491bdb2ac1f28368760272773644d53a8a4dbf27e34f271fb5f3e99e2780000"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "SignatureLockedSingle",
+              "data": {
+                "address": {
+                  "type": "Ed25519",
+                  "data": "96f9de0989e77d0e150e850a5a600e83045fa57419eaf3b20225b763d4e23813"
+                },
+                "amount": 880000177
+              }
+            },
+            {
+              "type": "SignatureLockedSingle",
+              "data": {
+                "address": {
+                  "type": "Ed25519",
+                  "data": "f8208cdcda8b1afc710fbcb2e822fe70661c3213172189b845d49a64dd52a7a4"
+                },
+                "amount": 1000000
+              }
+            }
+          ],
+          "payload": null
+        }
+      };
+      const essence_hash = client.getEssenceHash(JSON.stringify(transaction_essence))
+      assert.strictEqual(essence_hash, "509d0ba50e38b37d5c4e446f54c07378ad6811b32343388e7b3b02b7b86c1b09")
+    })
+
+  })
   // transaction tests disabled for workflows, because they fail if we don't have funds
   // it('sends a value transaction and checks output balance', async () => {
   //   const depositAddress = 'atoi1qpnrumvaex24dy0duulp4q07lpa00w20ze6jfd0xly422kdcjxzakzsz5kf'
