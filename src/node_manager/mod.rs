@@ -283,20 +283,28 @@ impl NodeManager {
     }
 
     // Only used for api/v2/messages/{messageID}, that's why we don't need the quorum stuff
-    pub(crate) async fn get_request_text(&self, path: &str, query: Option<&str>, timeout: Duration) -> Result<String> {
+    pub(crate) async fn get_request_bytes(
+        &self,
+        path: &str,
+        query: Option<&str>,
+        timeout: Duration,
+    ) -> Result<Vec<u8>> {
         // Get node urls and set path
         let nodes = self.get_nodes(path, query, false).await?;
         let mut error = None;
         // Send requests
         for node in nodes {
-            match self.http_client.get_raw(node, timeout).await {
+            match self.http_client.get_bytes(node, timeout).await {
                 Ok(res) => {
                     let status = res.status();
-                    if let Ok(res_text) = res.text().await {
+                    if let Ok(res_text) = res.bytes().await {
                         // Without quorum it's enough if we got one response
                         match status {
                             200 => return Ok(res_text),
-                            _ => error.replace(crate::Error::NodeError(res_text)),
+                            _ => error.replace(crate::Error::NodeError(
+                                String::from_utf8(res_text)
+                                    .map_err(|_| Error::NodeError("Non UTF8 node response".into()))?,
+                            )),
                         };
                     }
                 }

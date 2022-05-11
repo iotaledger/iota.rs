@@ -232,10 +232,12 @@ impl Client {
 
     /// Finds a message by its MessageId. This method returns the given message raw data.
     /// GET /api/v2/messages/{MessageId}
-    pub async fn get_message_raw(&self, message_id: &MessageId) -> Result<String> {
+    pub async fn get_message_raw(&self, message_id: &MessageId) -> Result<Vec<u8>> {
         let path = &format!("api/v2/messages/{}", message_id);
 
-        self.node_manager.get_request_text(path, None, self.get_timeout()).await
+        self.node_manager
+            .get_request_bytes(path, None, self.get_timeout())
+            .await
     }
 
     /// Returns the metadata of a message.

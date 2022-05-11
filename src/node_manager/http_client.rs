@@ -24,8 +24,13 @@ impl Response {
         self.0.json().await.map_err(Into::into)
     }
 
+    // TODO is this really needed ?
     pub(crate) async fn text(self) -> Result<String> {
         self.0.text().await.map_err(Into::into)
+    }
+
+    pub(crate) async fn bytes(self) -> Result<Vec<u8>> {
+        self.0.bytes().await.map(|b| b.to_vec()).map_err(Into::into)
     }
 }
 
@@ -70,7 +75,7 @@ impl HttpClient {
     }
 
     // Get with header: "accept", "application/vnd.iota.serializer-v1"
-    pub(crate) async fn get_raw(&self, node: Node, _timeout: Duration) -> Result<Response> {
+    pub(crate) async fn get_bytes(&self, node: Node, _timeout: Duration) -> Result<Response> {
         let mut request_builder = self.client.get(node.url.clone());
         if let Some(node_auth) = node.auth {
             if let Some(jwt) = node_auth.jwt {
@@ -86,6 +91,20 @@ impl HttpClient {
         Self::parse_response(resp, &node.url).await
     }
 
+    pub(crate) async fn post_json(&self, node: Node, _timeout: Duration, json: Value) -> Result<Response> {
+        let mut request_builder = self.client.post(node.url.clone());
+        if let Some(node_auth) = node.auth {
+            if let Some(jwt) = node_auth.jwt {
+                request_builder = request_builder.bearer_auth(jwt);
+            }
+        }
+        #[cfg(not(target_family = "wasm"))]
+        {
+            request_builder = request_builder.timeout(_timeout);
+        }
+        Self::parse_response(request_builder.json(&json).send().await?, &node.url).await
+    }
+
     pub(crate) async fn post_bytes(&self, node: Node, _timeout: Duration, body: &[u8]) -> Result<Response> {
         let mut request_builder = self.client.post(node.url.clone());
         if let Some(node_auth) = node.auth {
@@ -99,19 +118,5 @@ impl HttpClient {
         }
         request_builder = request_builder.header("Content-Type", "application/vnd.iota.serializer-v1");
         Self::parse_response(request_builder.body(body.to_vec()).send().await?, &node.url).await
-    }
-
-    pub(crate) async fn post_json(&self, node: Node, _timeout: Duration, json: Value) -> Result<Response> {
-        let mut request_builder = self.client.post(node.url.clone());
-        if let Some(node_auth) = node.auth {
-            if let Some(jwt) = node_auth.jwt {
-                request_builder = request_builder.bearer_auth(jwt);
-            }
-        }
-        #[cfg(not(target_family = "wasm"))]
-        {
-            request_builder = request_builder.timeout(_timeout);
-        }
-        Self::parse_response(request_builder.json(&json).send().await?, &node.url).await
     }
 }

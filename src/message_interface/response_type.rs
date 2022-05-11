@@ -72,7 +72,7 @@ pub enum ResponseType {
     /// Message metadata
     MessageMetadata(MessageMetadataResponse),
     /// Message raw
-    MessageRaw(String),
+    MessageRaw(Vec<u8>),
     /// Message children
     MessageChildren(Box<[MessageId]>),
     /// Get output successful
