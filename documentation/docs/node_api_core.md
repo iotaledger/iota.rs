@@ -253,7 +253,7 @@ Returns all stored receipts for a given migration index.
 
 Run `cargo run --example node_api_core_ --release -- [NODE URL]`.
 
-# `Client::`
+# `Client::get_treasury`
 
 Calls `GET /api/v2/treasury`.
 
@@ -261,14 +261,17 @@ Returns information about the treasury.
 
 ## Request
 
+No parameters.
+
 ## Response
 
 ## Example
 
 ```rust
+let treasury = client.get_treasury().await?;
 ```
 
-Run `cargo run --example node_api_core_ --release -- [NODE URL]`.
+Run `cargo run --example node_api_core_get_treasury --release -- [NODE URL]`.
 
 # `Client::`
 
