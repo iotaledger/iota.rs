@@ -229,14 +229,14 @@ impl ClientMessageHandler {
             ClientMethod::GetInfo => Ok(ResponseType::Info(self.client.get_info().await?)),
             ClientMethod::GetPeers => Ok(ResponseType::Peers(self.client.get_peers().await?)),
             ClientMethod::GetTips => Ok(ResponseType::Tips(self.client.get_tips().await?)),
+            ClientMethod::PostMessageRaw { message } => Ok(ResponseType::PostMessageSuccessful(
+                self.client.post_message_raw(&BeeMessage::try_from(message)?).await?,
+            )),
             ClientMethod::PostMessage { message } => Ok(ResponseType::PostMessageSuccessful(
                 self.client.post_message(&BeeMessage::try_from(message)?).await?,
             )),
-            ClientMethod::PostMessageJson { message } => Ok(ResponseType::PostMessageSuccessful(
-                self.client.post_message_json(&BeeMessage::try_from(message)?).await?,
-            )),
-            ClientMethod::GetMessageData { message_id } => Ok(ResponseType::MessageData(MessageDto::from(
-                &self.client.get_message_data(message_id).await?,
+            ClientMethod::GetMessage { message_id } => Ok(ResponseType::Message(MessageDto::from(
+                &self.client.get_message(message_id).await?,
             ))),
             ClientMethod::GetMessageMetadata { message_id } => Ok(ResponseType::MessageMetadata(
                 self.client.get_message_metadata(message_id).await?,
@@ -248,17 +248,17 @@ impl ClientMessageHandler {
                 self.client.get_message_children(message_id).await?,
             )),
             ClientMethod::GetOutput { output_id } => Ok(ResponseType::Output(self.client.get_output(output_id).await?)),
-            ClientMethod::GetMilestoneByMilestoneId { milestone_id } => Ok(ResponseType::Milestone(
-                self.client.get_milestone_by_milestone_id(*milestone_id).await?,
+            ClientMethod::GetMilestoneById { milestone_id } => Ok(ResponseType::Milestone(
+                self.client.get_milestone_by_id(milestone_id).await?,
             )),
-            ClientMethod::GetMilestoneByMilestoneIndex { index } => Ok(ResponseType::Milestone(
-                self.client.get_milestone_by_milestone_index(*index).await?,
+            ClientMethod::GetMilestoneByIndex { index } => Ok(ResponseType::Milestone(
+                self.client.get_milestone_by_index(*index).await?,
             )),
-            ClientMethod::GetUtxoChangesByMilestoneId { milestone_id } => Ok(ResponseType::MilestoneUtxoChanges(
-                self.client.get_utxo_changes_by_milestone_id(*milestone_id).await?,
+            ClientMethod::GetUtxoChangesById { milestone_id } => Ok(ResponseType::MilestoneUtxoChanges(
+                self.client.get_utxo_changes_by_id(milestone_id).await?,
             )),
-            ClientMethod::GetUtxoChangesByMilestoneIndex { index } => Ok(ResponseType::MilestoneUtxoChanges(
-                self.client.get_utxo_changes_by_milestone_index(*index).await?,
+            ClientMethod::GetUtxoChangesByIndex { index } => Ok(ResponseType::MilestoneUtxoChanges(
+                self.client.get_utxo_changes_by_index(*index).await?,
             )),
             ClientMethod::GetReceipts => Ok(ResponseType::Receipts(self.client.get_receipts().await?)),
             ClientMethod::GetReceiptsMigratedAt { milestone_index } => Ok(ResponseType::ReceiptsMigratedAtMilestone(

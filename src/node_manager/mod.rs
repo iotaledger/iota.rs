@@ -18,8 +18,6 @@ use bee_rest_api::types::responses::InfoResponse;
 use log::warn;
 use regex::Regex;
 use serde_json::Value;
-#[cfg(all(feature = "sync", not(feature = "async")))]
-use ureq::{Agent, AgentBuilder};
 
 use self::{http_client::HttpClient, node::Node};
 use crate::{
@@ -27,8 +25,8 @@ use crate::{
     node_manager::builder::NodeManagerBuilder,
 };
 
-// Nodemanger, takes care of selecting node(s) for requests until a result is returned or if quorum
-// is enabled it will send the requests for some endpoints to multiple nodes and compares the results
+// The node manager takes care of selecting node(s) for requests until a result is returned or if quorum is enabled it
+// will send the requests for some endpoints to multiple nodes and compares the results.
 #[derive(Clone)]
 pub(crate) struct NodeManager {
     pub(crate) primary_node: Option<Node>,
@@ -64,6 +62,7 @@ impl NodeManager {
     pub(crate) fn builder() -> NodeManagerBuilder {
         NodeManagerBuilder::new()
     }
+
     pub(crate) async fn get_nodes(&self, path: &str, query: Option<&str>, local_pow: bool) -> Result<Vec<Node>> {
         let mut nodes_with_modified_url = Vec::new();
 
@@ -84,6 +83,7 @@ impl NodeManager {
               Regex::new(r"milestones/[0-9]").expect("regex failed"),
             ].to_vec() => Vec<Regex>
         );
+
         if permanode_regexes.iter().any(|re| re.is_match(path)) || (path == "api/v2/messages" && query.is_some()) {
             if let Some(permanodes) = self.permanodes.clone() {
                 // remove api/v2/ since permanodes can have custom keyspaces
@@ -104,11 +104,13 @@ impl NodeManager {
                 nodes_with_modified_url.push(pow_node);
             }
         }
+
         if let Some(mut primary_node) = self.primary_node.clone() {
             primary_node.url.set_path(path);
             primary_node.url.set_query(query);
             nodes_with_modified_url.push(primary_node);
         }
+
         let nodes = if self.node_sync_enabled {
             #[cfg(not(target_family = "wasm"))]
             {
@@ -121,16 +123,19 @@ impl NodeManager {
         } else {
             self.nodes.clone()
         };
+
         for mut node in nodes {
             node.url.set_path(path);
             node.url.set_query(query);
             nodes_with_modified_url.push(node);
         }
+
         // remove disabled nodes
         nodes_with_modified_url.retain(|n| !n.disabled);
         if nodes_with_modified_url.is_empty() {
             return Err(crate::Error::SyncedNodePoolEmpty);
         }
+
         Ok(nodes_with_modified_url)
     }
 
@@ -276,21 +281,30 @@ impl NodeManager {
             Err(Error::QuorumThresholdError(res.1, self.min_quorum_size))
         }
     }
+
     // Only used for api/v2/messages/{messageID}, that's why we don't need the quorum stuff
-    pub(crate) async fn get_request_text(&self, path: &str, query: Option<&str>, timeout: Duration) -> Result<String> {
+    pub(crate) async fn get_request_bytes(
+        &self,
+        path: &str,
+        query: Option<&str>,
+        timeout: Duration,
+    ) -> Result<Vec<u8>> {
         // Get node urls and set path
         let nodes = self.get_nodes(path, query, false).await?;
         let mut error = None;
         // Send requests
         for node in nodes {
-            match self.http_client.get_raw(node, timeout).await {
+            match self.http_client.get_bytes(node, timeout).await {
                 Ok(res) => {
                     let status = res.status();
-                    if let Ok(res_text) = res.text().await {
+                    if let Ok(res_text) = res.bytes().await {
                         // Without quorum it's enough if we got one response
                         match status {
                             200 => return Ok(res_text),
-                            _ => error.replace(crate::Error::NodeError(res_text)),
+                            _ => error.replace(crate::Error::NodeError(
+                                String::from_utf8(res_text)
+                                    .map_err(|_| Error::NodeError("Non UTF8 node response".into()))?,
+                            )),
                         };
                     }
                 }
@@ -301,6 +315,7 @@ impl NodeManager {
         }
         Err(error.unwrap_or_else(|| Error::NodeError("Couldn't get a result from any node".into())))
     }
+
     pub(crate) async fn post_request_bytes<T: serde::de::DeserializeOwned>(
         &self,
         path: &str,
