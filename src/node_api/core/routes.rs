@@ -276,7 +276,7 @@ impl Client {
         let path = &format!("api/v2/outputs/{}", output_id);
 
         self.node_manager
-            .get_request(path, None, self.get_timeout(), true, true)
+            .get_request(path, None, self.get_timeout(), false, true)
             .await
     }
 
