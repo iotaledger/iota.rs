@@ -2,6 +2,8 @@ const { ClientBuilder } = require('../lib')
 const { assertAddress, assertMessageId, assertMessageWrapper } = require('./assertions')
 const assert = require('assert')
 
+const TestVectors = require('../../../tests/fixtures/test_vectors.json')
+
 const seed = '256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2'
 
 const client = new ClientBuilder()
@@ -185,4 +187,20 @@ describe('Client', () => {
   //       .finishMessage(signed_transaction);
   //   }
   // })
+
+  it('mnemonic to address conversion', async () => {
+    const mnemonic = TestVectors['general']['MNEMNONIC'];
+    const address = TestVectors['general']['MNEMNONIC_ADDRESS'];
+
+    const seed = client.mnemonicToHexSeed(mnemonic)
+
+    const generatedAddresses = await client.getAddresses(seed)
+      .accountIndex(0)
+      .bech32Hrp('iota')
+      .range(0, 1)
+      .get()
+
+
+    assert.strictEqual(address, generatedAddresses[0])
+  })
 })

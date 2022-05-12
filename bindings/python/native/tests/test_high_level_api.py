@@ -7,8 +7,10 @@ import os
 
 # Read the test vector
 tv = dict()
-with open('tests/fixtures/test_vectors.json') as json_file:
+with open('../../../tests/fixtures/test_vectors.json') as json_file:
     tv = json.load(json_file)
+general_tv = tv['general']
+tv = tv['python']
 
 client = iota_client.Client(nodes_name_password=[[tv['NODE_URL']]])
 message_id_indexation = tv['MESSAGE_ID'][0]
@@ -92,6 +94,7 @@ def test_get_message_id():
         id = client.get_message_id(json_payload)
     except ValueError as e:
         assert "invalid message" in str(e)
+
 
 def test_get_transaction_id():
     transaction_payload = tv['TRANSACTION_PAYLOAD']
@@ -243,3 +246,13 @@ def test_hex_public_key_to_bech32_address():
         hex_public_key, bech32_hrp)
 
     assert bech32_address == converted_address
+
+
+def test_mnemonic_address_generation():
+    mnemonic = general_tv['MNEMNONIC']
+    mnemonic_address = general_tv['MNEMNONIC_ADDRESS']
+    mnemonic_seed = client.mnemonic_to_hex_seed(mnemonic)
+
+    generated_address, _ = client.get_addresses(
+        seed=mnemonic_seed, account_index=0, input_range_begin=0, input_range_end=1, bech32_hrp="iota")[0]
+    assert mnemonic_address == generated_address
