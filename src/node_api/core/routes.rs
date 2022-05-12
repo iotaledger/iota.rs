@@ -372,6 +372,16 @@ impl Client {
             .await
     }
 
+    /// Gets the milestone by the given milestone index.
+    /// GET /api/v2/milestones/{index}
+    pub async fn get_milestone_by_index_raw(&self, index: u32) -> Result<Vec<u8>> {
+        let path = &format!("api/v2/milestones/by-index/{}", index);
+
+        self.node_manager
+            .get_request_bytes(path, None, self.get_timeout())
+            .await
+    }
+
     /// Gets all UTXO changes of a milestone by its milestone index.
     /// GET /api/v2/milestones/by-index/{index}/utxo-changes
     pub async fn get_utxo_changes_by_index(&self, index: u32) -> Result<UtxoChangesResponse> {
