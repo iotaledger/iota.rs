@@ -164,7 +164,7 @@ impl NodeManager {
                 for res in futures::future::try_join_all(tasks).await? {
                     match res {
                         Ok(res) => {
-                            if let Ok(res_text) = res.text().await {
+                            if let Ok(res_text) = res.into_text().await {
                                 let counters = result.entry(res_text.to_string()).or_insert(0);
                                 *counters += 1;
                                 result_counter += 1;
@@ -184,7 +184,7 @@ impl NodeManager {
                 match self.http_client.get(node.clone(), timeout).await {
                     Ok(res) => {
                         let status = res.status();
-                        if let Ok(res_text) = res.text().await {
+                        if let Ok(res_text) = res.into_text().await {
                             match status {
                                 200 => {
                                     // Handle node_info extra because we also want to return the url
@@ -272,7 +272,7 @@ impl NodeManager {
             match self.http_client.get_bytes(node, timeout).await {
                 Ok(res) => {
                     let status = res.status();
-                    if let Ok(res_text) = res.bytes().await {
+                    if let Ok(res_text) = res.into_bytes().await {
                         // Without quorum it's enough if we got one response
                         match status {
                             200 => return Ok(res_text),
@@ -308,7 +308,7 @@ impl NodeManager {
             match self.http_client.post_bytes(node, timeout, body).await {
                 Ok(res) => {
                     let status = res.status();
-                    if let Ok(res_text) = res.text().await {
+                    if let Ok(res_text) = res.into_text().await {
                         match status {
                             200 | 201 => match serde_json::from_str(&res_text) {
                                 Ok(res) => return Ok(res),
@@ -343,7 +343,7 @@ impl NodeManager {
             match self.http_client.post_json(node, timeout, json.clone()).await {
                 Ok(res) => {
                     let status = res.status();
-                    if let Ok(res_text) = res.text().await {
+                    if let Ok(res_text) = res.into_text().await {
                         match status {
                             200 | 201 => match serde_json::from_str(&res_text) {
                                 Ok(res) => return Ok(res),

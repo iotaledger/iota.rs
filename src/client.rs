@@ -443,7 +443,7 @@ impl Client {
                 DEFAULT_API_TIMEOUT,
             )
             .await?
-            .json()
+            .into_json()
             .await?;
 
         Ok(resp)
