@@ -217,7 +217,7 @@ impl SecretManage for SecretManager {
                     .await
             }
             #[cfg(feature = "ledger_nano")]
-            SecretManager::LedgerNano(secret_manager) | SecretManager::LedgerNanoSimulator(secret_manager)=> {
+            SecretManager::LedgerNano(secret_manager) | SecretManager::LedgerNanoSimulator(secret_manager) => {
                 secret_manager
                     .generate_addresses(coin_type, account_index, address_indexes, internal, metadata)
                     .await
