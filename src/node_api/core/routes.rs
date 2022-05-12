@@ -29,7 +29,9 @@ impl Client {
     pub async fn get_info(&self) -> Result<NodeInfoWrapper> {
         let path = "api/v2/info";
 
-        self.node_manager.get_request(path, None, self.get_timeout()).await
+        self.node_manager
+            .get_request(path, None, self.get_timeout(), false, false)
+            .await
     }
 
     // Tangle routes.
@@ -41,7 +43,7 @@ impl Client {
 
         let resp = self
             .node_manager
-            .get_request::<TipsResponse>(path, None, self.get_timeout())
+            .get_request::<TipsResponse>(path, None, self.get_timeout(), false, false)
             .await?;
 
         resp.tip_message_ids
@@ -224,7 +226,7 @@ impl Client {
 
         let resp = self
             .node_manager
-            .get_request::<MessageResponse>(path, None, self.get_timeout())
+            .get_request::<MessageResponse>(path, None, self.get_timeout(), false, true)
             .await?;
 
         Ok(Message::try_from(&resp.0)?)
@@ -245,7 +247,9 @@ impl Client {
     pub async fn get_message_metadata(&self, message_id: &MessageId) -> Result<MessageMetadataResponse> {
         let path = &format!("api/v2/messages/{}/metadata", message_id);
 
-        self.node_manager.get_request(path, None, self.get_timeout()).await
+        self.node_manager
+            .get_request(path, None, self.get_timeout(), true, true)
+            .await
     }
 
     /// Returns the list of message IDs that reference a message by its identifier.
@@ -255,7 +259,7 @@ impl Client {
 
         let resp = self
             .node_manager
-            .get_request::<MessageChildrenResponse>(path, None, self.get_timeout())
+            .get_request::<MessageChildrenResponse>(path, None, self.get_timeout(), false, true)
             .await?;
 
         resp.children_message_ids
@@ -271,7 +275,9 @@ impl Client {
     pub async fn get_output(&self, output_id: &OutputId) -> Result<OutputResponse> {
         let path = &format!("api/v2/outputs/{}", output_id);
 
-        self.node_manager.get_request(path, None, self.get_timeout()).await
+        self.node_manager
+            .get_request(path, None, self.get_timeout(), true, true)
+            .await
     }
 
     /// Gets all stored receipts.
@@ -281,7 +287,7 @@ impl Client {
 
         let resp = self
             .node_manager
-            .get_request::<ReceiptsResponse>(path, None, DEFAULT_API_TIMEOUT)
+            .get_request::<ReceiptsResponse>(path, None, DEFAULT_API_TIMEOUT, false, false)
             .await?;
 
         Ok(resp.receipts)
@@ -294,7 +300,7 @@ impl Client {
 
         let resp = self
             .node_manager
-            .get_request::<ReceiptsResponse>(path, None, DEFAULT_API_TIMEOUT)
+            .get_request::<ReceiptsResponse>(path, None, DEFAULT_API_TIMEOUT, false, false)
             .await?;
 
         Ok(resp.receipts)
@@ -306,7 +312,9 @@ impl Client {
     pub async fn get_treasury(&self) -> Result<TreasuryResponse> {
         let path = "api/v2/treasury";
 
-        self.node_manager.get_request(path, None, DEFAULT_API_TIMEOUT).await
+        self.node_manager
+            .get_request(path, None, DEFAULT_API_TIMEOUT, false, false)
+            .await
     }
 
     /// Returns the message that was included in the ledger for a given TransactionId.
@@ -316,7 +324,7 @@ impl Client {
 
         let resp = self
             .node_manager
-            .get_request::<MessageResponse>(path, None, self.get_timeout())
+            .get_request::<MessageResponse>(path, None, self.get_timeout(), true, true)
             .await?;
 
         Ok(Message::try_from(&resp.0)?)
@@ -329,7 +337,9 @@ impl Client {
     pub async fn get_milestone_by_id(&self, milestone_id: &MilestoneId) -> Result<MilestoneResponse> {
         let path = &format!("api/v2/milestones/{}", milestone_id);
 
-        self.node_manager.get_request(path, None, self.get_timeout()).await
+        self.node_manager
+            .get_request(path, None, self.get_timeout(), false, true)
+            .await
     }
 
     /// Gets the milestone by the given milestone id.
@@ -347,7 +357,9 @@ impl Client {
     pub async fn get_utxo_changes_by_id(&self, milestone_id: &MilestoneId) -> Result<UtxoChangesResponse> {
         let path = &format!("api/v2/milestones/{}/utxo-changes", milestone_id);
 
-        self.node_manager.get_request(path, None, self.get_timeout()).await
+        self.node_manager
+            .get_request(path, None, self.get_timeout(), false, false)
+            .await
     }
 
     /// Gets the milestone by the given milestone index.
@@ -355,7 +367,9 @@ impl Client {
     pub async fn get_milestone_by_index(&self, index: u32) -> Result<MilestoneResponse> {
         let path = &format!("api/v2/milestones/by-index/{}", index);
 
-        self.node_manager.get_request(path, None, self.get_timeout()).await
+        self.node_manager
+            .get_request(path, None, self.get_timeout(), false, true)
+            .await
     }
 
     /// Gets all UTXO changes of a milestone by its milestone index.
@@ -363,7 +377,9 @@ impl Client {
     pub async fn get_utxo_changes_by_index(&self, index: u32) -> Result<UtxoChangesResponse> {
         let path = &format!("api/v2/milestones/by-index/{}/utxo-changes", index);
 
-        self.node_manager.get_request(path, None, self.get_timeout()).await
+        self.node_manager
+            .get_request(path, None, self.get_timeout(), false, false)
+            .await
     }
 
     // Peers routes.
@@ -374,7 +390,7 @@ impl Client {
 
         let resp = self
             .node_manager
-            .get_request::<PeersResponse>(path, None, self.get_timeout())
+            .get_request::<PeersResponse>(path, None, self.get_timeout(), false, false)
             .await?;
 
         Ok(resp.0)

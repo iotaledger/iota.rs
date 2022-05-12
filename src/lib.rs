@@ -26,6 +26,7 @@
 #[macro_use]
 extern crate serde;
 
+#[cfg(feature = "mqtt")]
 macro_rules! lazy_static {
     ($init:expr => $type:ty) => {{
         static mut VALUE: Option<$type> = None;

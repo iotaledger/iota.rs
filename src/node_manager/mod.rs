@@ -16,7 +16,6 @@ use std::{
 
 use bee_rest_api::types::responses::InfoResponse;
 use log::warn;
-use regex::Regex;
 use serde_json::Value;
 
 use self::{http_client::HttpClient, node::Node};
@@ -63,28 +62,16 @@ impl NodeManager {
         NodeManagerBuilder::new()
     }
 
-    pub(crate) async fn get_nodes(&self, path: &str, query: Option<&str>, local_pow: bool) -> Result<Vec<Node>> {
+    pub(crate) async fn get_nodes(
+        &self,
+        path: &str,
+        query: Option<&str>,
+        local_pow: bool,
+        prefer_permanode: bool,
+    ) -> Result<Vec<Node>> {
         let mut nodes_with_modified_url = Vec::new();
 
-        // Endpoints for which only permanodes will be used if provided
-        let permanode_regexes = lazy_static!(
-            [
-              Regex::new(r"messages/([A-Fa-f0-9]{64})").expect("regex failed"),
-              Regex::new(r"messages/([A-Fa-f0-9]{64})/metadata").expect("regex failed"),
-              Regex::new(r"messages/([A-Fa-f0-9]{64})/children").expect("regex failed"),
-              Regex::new(r"outputs/([A-Fa-f0-9]{64})(\d{4})").expect("regex failed"),
-              // BIP-173 compliant bech32 address
-              Regex::new("addresses/[\x21-\x7E]{1,30}1[A-Za-z0-9]").expect("regex failed"),
-              Regex::new("addresses/[\x21-\x7E]{1,30}1[A-Za-z0-9]+/outputs").expect("regex failed"),
-              // ED25519 address hex
-              Regex::new("addresses/ed25519/([A-Fa-f0-9]{64})").expect("regex failed"),
-              Regex::new("addresses/ed25519/([A-Fa-f0-9]{64})/outputs").expect("regex failed"),
-              Regex::new(r"transactions/([A-Fa-f0-9]{64})/included-message").expect("regex failed"),
-              Regex::new(r"milestones/[0-9]").expect("regex failed"),
-            ].to_vec() => Vec<Regex>
-        );
-
-        if permanode_regexes.iter().any(|re| re.is_match(path)) || (path == "api/v2/messages" && query.is_some()) {
+        if prefer_permanode || (path == "api/v2/messages" && query.is_some()) {
             if let Some(permanodes) = self.permanodes.clone() {
                 // remove api/v2/ since permanodes can have custom keyspaces
                 // https://editor.swagger.io/?url=https://raw.githubusercontent.com/iotaledger/chronicle.rs/main/docs/api.yaml
@@ -144,26 +131,14 @@ impl NodeManager {
         path: &str,
         query: Option<&str>,
         timeout: Duration,
+        need_quorum: bool,
+        prefer_permanode: bool,
     ) -> Result<T> {
-        // Endpoints for which quorum will be used if enabled
-        let quorum_regexes = lazy_static!(
-            [
-              Regex::new(r"messages/([A-Fa-f0-9]{64})/metadata").expect("regex failed"),
-              Regex::new(r"outputs/([A-Fa-f0-9]{64})(\d{4})").expect("regex failed"),
-              // BIP-173 compliant bech32 address
-              Regex::new("addresses/[\x21-\x7E]{1,30}1[A-Za-z0-9]").expect("regex failed"),
-              Regex::new("addresses/[\x21-\x7E]{1,30}1[A-Za-z0-9]+/outputs").expect("regex failed"),
-              // ED25519 address hex
-              Regex::new("addresses/ed25519/([A-Fa-f0-9]{64})").expect("regex failed"),
-              Regex::new("addresses/ed25519/([A-Fa-f0-9]{64})/outputs").expect("regex failed"),
-              Regex::new(r"transactions/([A-Fa-f0-9]{64})/included-message").expect("regex failed"),
-            ].to_vec() => Vec<Regex>
-        );
         let mut result: HashMap<String, usize> = HashMap::new();
         // submit message with local PoW should use primary pow node
         // Get node urls and set path
-        let nodes = self.get_nodes(path, query, false).await?;
-        if self.quorum && quorum_regexes.iter().any(|re| re.is_match(path)) && nodes.len() < self.min_quorum_size {
+        let nodes = self.get_nodes(path, query, false, prefer_permanode).await?;
+        if self.quorum && need_quorum && nodes.len() < self.min_quorum_size {
             return Err(Error::QuorumPoolSizeError(nodes.len(), self.min_quorum_size));
         }
 
@@ -175,7 +150,7 @@ impl NodeManager {
         let wasm = true;
         #[cfg(not(target_family = "wasm"))]
         let wasm = false;
-        if !wasm && self.quorum && quorum_regexes.iter().any(|re| re.is_match(path)) && query.is_none() {
+        if !wasm && self.quorum && need_quorum && query.is_none() {
             #[cfg(not(target_family = "wasm"))]
             {
                 let mut tasks = Vec::new();
@@ -237,7 +212,7 @@ impl NodeManager {
                                             // Without quorum it's enough if we got one response
                                             if !self.quorum
                                             || result_counter >= self.min_quorum_size
-                                            || !quorum_regexes.iter().any(|re| re.is_match(path))
+                                            || !need_quorum
                                             // with query we ignore quorum because the nodes can store a different amount of history
                                             || query.is_some()
                                             {
@@ -272,7 +247,7 @@ impl NodeManager {
         // Return if quorum is false or check if quorum was reached
         if !self.quorum
             || res.1 as f64 >= self.min_quorum_size as f64 * (self.quorum_threshold as f64 / 100.0)
-            || !quorum_regexes.iter().any(|re| re.is_match(path))
+            || !need_quorum
             // with query we ignore quorum because the nodes can store a different amount of history
             || query.is_some()
         {
@@ -290,7 +265,7 @@ impl NodeManager {
         timeout: Duration,
     ) -> Result<Vec<u8>> {
         // Get node urls and set path
-        let nodes = self.get_nodes(path, query, false).await?;
+        let nodes = self.get_nodes(path, query, false, false).await?;
         let mut error = None;
         // Send requests
         for node in nodes {
@@ -323,7 +298,7 @@ impl NodeManager {
         body: &[u8],
         local_pow: bool,
     ) -> Result<T> {
-        let nodes = self.get_nodes(path, None, local_pow).await?;
+        let nodes = self.get_nodes(path, None, local_pow, false).await?;
         if nodes.is_empty() {
             return Err(Error::NodeError("No available nodes with remote PoW".into()));
         }
@@ -358,7 +333,7 @@ impl NodeManager {
         json: Value,
         local_pow: bool,
     ) -> Result<T> {
-        let nodes = self.get_nodes(path, None, local_pow).await?;
+        let nodes = self.get_nodes(path, None, local_pow, false).await?;
         if nodes.is_empty() {
             return Err(Error::NodeError("No available nodes with remote PoW".into()));
         }
