@@ -20,11 +20,8 @@ use super::{
     StrongholdAdapter,
 };
 use crate::{
-    api::{PreparedTransactionData, RemainderData},
-    secret::{
-        default_sign_transaction_essence, types::InputSigningData, GenerateAddressMetadata, SecretManage,
-        SecretManageExt,
-    },
+    api::RemainderData,
+    secret::{types::InputSigningData, GenerateAddressMetadata, SecretManage},
     Result,
 };
 
@@ -130,16 +127,6 @@ impl SecretManage for StrongholdAdapter {
         )));
 
         Ok(unlock_block)
-    }
-}
-
-#[async_trait]
-impl SecretManageExt for StrongholdAdapter {
-    async fn sign_transaction_essence(
-        &self,
-        prepared_transaction_data: &PreparedTransactionData,
-    ) -> crate::Result<Vec<UnlockBlock>> {
-        default_sign_transaction_essence(self, prepared_transaction_data).await
     }
 }
 

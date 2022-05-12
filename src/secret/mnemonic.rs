@@ -16,14 +16,8 @@ use crypto::{
     keys::slip10::{Chain, Curve, Seed},
 };
 
-use super::{
-    default_sign_transaction_essence, types::InputSigningData, GenerateAddressMetadata, SecretManage, SecretManageExt,
-};
-use crate::{
-    constants::HD_WALLET_TYPE,
-    secret::{PreparedTransactionData, RemainderData},
-    Client, Result,
-};
+use super::{types::InputSigningData, GenerateAddressMetadata, SecretManage};
+use crate::{constants::HD_WALLET_TYPE, secret::RemainderData, Client, Result};
 
 /// Secret manager that uses only a mnemonic.
 ///
@@ -89,16 +83,6 @@ impl SecretManage for MnemonicSecretManager {
         Ok(UnlockBlock::Signature(SignatureUnlockBlock::new(Signature::Ed25519(
             Ed25519Signature::new(public_key, signature),
         ))))
-    }
-}
-
-#[async_trait]
-impl SecretManageExt for MnemonicSecretManager {
-    async fn sign_transaction_essence(
-        &self,
-        prepared_transaction_data: &PreparedTransactionData,
-    ) -> crate::Result<Vec<UnlockBlock>> {
-        default_sign_transaction_essence(self, prepared_transaction_data).await
     }
 }
 
