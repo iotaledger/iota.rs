@@ -20,7 +20,7 @@ impl Client {
     pub async fn output_ids(&self, query_parameters: Vec<QueryParameter>) -> Result<Vec<OutputId>> {
         let route = "api/plugins/indexer/v1/outputs/basic";
 
-        self.get_output_ids_with_pagination(route, query_parameters, false, false)
+        self.get_output_ids_with_pagination(route, query_parameters, true, false)
             .await
     }
 
@@ -32,7 +32,7 @@ impl Client {
     pub async fn aliases_output_ids(&self, query_parameters: Vec<QueryParameter>) -> Result<Vec<OutputId>> {
         let route = "api/plugins/indexer/v1/outputs/alias";
 
-        self.get_output_ids_with_pagination(route, query_parameters, false, false)
+        self.get_output_ids_with_pagination(route, query_parameters, true, false)
             .await
     }
 
@@ -42,7 +42,7 @@ impl Client {
         let route = format!("api/plugins/indexer/v1/outputs/alias/{alias_id}");
 
         Ok(*(self
-            .get_output_ids_with_pagination(&route, Vec::new(), false, false)
+            .get_output_ids_with_pagination(&route, Vec::new(), true, false)
             .await?
             .first()
             .ok_or_else(|| crate::Error::NodeError("No output id for alias".to_string()))?))
@@ -58,7 +58,7 @@ impl Client {
     pub async fn nfts_output_ids(&self, query_parameters: Vec<QueryParameter>) -> Result<Vec<OutputId>> {
         let route = "api/plugins/indexer/v1/outputs/nft";
 
-        self.get_output_ids_with_pagination(route, query_parameters, false, false)
+        self.get_output_ids_with_pagination(route, query_parameters, true, false)
             .await
     }
 
@@ -68,7 +68,7 @@ impl Client {
         let route = format!("api/plugins/indexer/v1/outputs/nft/{nft_id}");
 
         Ok(*(self
-            .get_output_ids_with_pagination(&route, Vec::new(), false, false)
+            .get_output_ids_with_pagination(&route, Vec::new(), true, false)
             .await?
             .first()
             .ok_or_else(|| crate::Error::NodeError("No output id for nft".to_string()))?))
@@ -82,7 +82,7 @@ impl Client {
     pub async fn foundries_output_ids(&self, query_parameters: Vec<QueryParameter>) -> Result<Vec<OutputId>> {
         let route = "api/plugins/indexer/v1/outputs/foundry";
 
-        self.get_output_ids_with_pagination(route, query_parameters, false, false)
+        self.get_output_ids_with_pagination(route, query_parameters, true, false)
             .await
     }
 
@@ -92,7 +92,7 @@ impl Client {
         let route = format!("api/plugins/indexer/v1/outputs/foundry/{foundry_id}");
 
         Ok(*(self
-            .get_output_ids_with_pagination(&route, Vec::new(), false, false)
+            .get_output_ids_with_pagination(&route, Vec::new(), true, false)
             .await?
             .first()
             .ok_or_else(|| crate::Error::NodeError("No output id for foundry".to_string()))?))
