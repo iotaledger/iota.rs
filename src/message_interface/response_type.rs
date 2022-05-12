@@ -5,13 +5,16 @@
 use std::collections::HashSet;
 
 use bee_message::{
-    address::dto::AddressDto, input::dto::UtxoInputDto, output::OutputId, payload::dto::PayloadDto, MessageDto,
-    MessageId,
+    address::dto::AddressDto,
+    input::dto::UtxoInputDto,
+    output::OutputId,
+    payload::dto::{MilestonePayloadDto, PayloadDto},
+    MessageDto, MessageId,
 };
 use bee_rest_api::types::{
     dtos::{PeerDto, ReceiptDto},
     responses::{
-        InfoResponse as NodeInfo, MessageMetadataResponse, MilestoneResponse, OutputResponse, TreasuryResponse,
+        InfoResponse as NodeInfo, MessageMetadataResponse, OutputResponse, TreasuryResponse,
         UtxoChangesResponse as MilestoneUTXOChanges,
     },
 };
@@ -80,7 +83,7 @@ pub enum ResponseType {
     /// Get outputs successful
     Outputs(Vec<OutputResponse>),
     /// Get milestone successful
-    Milestone(MilestoneResponse),
+    Milestone(MilestonePayloadDto),
     /// Get milestone utxo changes
     MilestoneUtxoChanges(MilestoneUTXOChanges),
     /// Get receipts successful

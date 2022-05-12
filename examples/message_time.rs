@@ -32,7 +32,11 @@ async fn main() {
     match metadata.referenced_by_milestone_index {
         Some(ms_index) => {
             let ms = client.get_milestone_by_index(ms_index).await.unwrap();
-            println!("Message got referenced by milestone {} at {}", ms_index, ms.0.timestamp);
+            println!(
+                "Message got referenced by milestone {} at {}",
+                ms_index,
+                ms.essence().timestamp()
+            );
         }
         _ => println!("Message is not referenced by a milestone"),
     }

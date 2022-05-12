@@ -7,7 +7,10 @@ use std::str::FromStr;
 
 use bee_message::{
     output::OutputId,
-    payload::{milestone::MilestoneId, transaction::TransactionId},
+    payload::{
+        milestone::{MilestoneId, MilestonePayload},
+        transaction::TransactionId,
+    },
     Message, MessageDto, MessageId,
 };
 use bee_rest_api::types::{
@@ -334,12 +337,15 @@ impl Client {
 
     /// Gets the milestone by the given milestone id.
     /// GET /api/v2/milestones/{milestoneId}
-    pub async fn get_milestone_by_id(&self, milestone_id: &MilestoneId) -> Result<MilestoneResponse> {
+    pub async fn get_milestone_by_id(&self, milestone_id: &MilestoneId) -> Result<MilestonePayload> {
         let path = &format!("api/v2/milestones/{}", milestone_id);
 
-        self.node_manager
-            .get_request(path, None, self.get_timeout(), false, true)
-            .await
+        let resp = self
+            .node_manager
+            .get_request::<MilestoneResponse>(path, None, self.get_timeout(), false, true)
+            .await?;
+
+        Ok(MilestonePayload::try_from(&resp.0)?)
     }
 
     /// Gets the milestone by the given milestone id.
@@ -364,12 +370,15 @@ impl Client {
 
     /// Gets the milestone by the given milestone index.
     /// GET /api/v2/milestones/{index}
-    pub async fn get_milestone_by_index(&self, index: u32) -> Result<MilestoneResponse> {
+    pub async fn get_milestone_by_index(&self, index: u32) -> Result<MilestonePayload> {
         let path = &format!("api/v2/milestones/by-index/{}", index);
 
-        self.node_manager
-            .get_request(path, None, self.get_timeout(), false, true)
-            .await
+        let resp = self
+            .node_manager
+            .get_request::<MilestoneResponse>(path, None, self.get_timeout(), false, true)
+            .await?;
+
+        Ok(MilestonePayload::try_from(&resp.0)?)
     }
 
     /// Gets the milestone by the given milestone index.
