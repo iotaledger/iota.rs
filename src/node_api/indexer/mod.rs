@@ -23,6 +23,8 @@ impl Client {
         &self,
         route: &str,
         query_parameters: Vec<QueryParameter>,
+        need_quorum: bool,
+        prefer_permanode: bool,
     ) -> Result<Vec<OutputId>> {
         let mut query_parameters = QueryParameters::new(query_parameters);
         // do we need to validate the query parameters?
@@ -34,6 +36,8 @@ impl Client {
                     route,
                     query_parameters.into_query_sting().as_deref(),
                     self.get_timeout(),
+                    need_quorum,
+                    prefer_permanode,
                 )
                 .await?;
 

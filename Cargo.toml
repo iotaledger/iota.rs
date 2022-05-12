@@ -29,7 +29,7 @@ hex = { version = "0.4.3", default-features = false }
 log = { version = "0.4.14", default-features = false }
 num_cpus = { version = "1.13.0", default-features = false }
 primitive-types = { version = "0.10.1", default-features = false }
-regex = { version = "1.5.4", default-features = false, features = [ "std", "unicode-perl" ] }
+regex = { version = "1.5.4", default-features = false, features = [ "std", "unicode-perl" ], optional = true }
 reqwest = { version = "0.11.6", default-features = false, features = [ "json", "blocking" ] }
 serde = { version = "1.0.137", default-features = false, features = [ "derive" ] }
 serde_json = { version = "1.0.68", default-features = false }
@@ -69,7 +69,7 @@ dotenv = { version = "0.15.0", default-features = false }
 
 [features]
 default = [ "tls" ]
-mqtt = [ "rumqttc", "once_cell" ]
+mqtt = [ "rumqttc", "once_cell", "regex" ]
 ledger_nano = [ "iota-ledger" ]
 tls = [ "reqwest/rustls-tls" ]
 stronghold = [ "iota_stronghold", "riker", "crypto05" ]
