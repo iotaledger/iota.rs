@@ -20,7 +20,7 @@ async fn main() -> Result<()> {
 
     // Fetches the latest milestone index from the node.
     let info = client.get_info().await?;
-    let milestone_index = info.nodeinfo.status.latest_milestone.index;
+    let milestone_index = info.node_info.status.latest_milestone.index;
     // Sends the request.
     let milestone = client.get_milestone_by_index(milestone_index).await?;
 

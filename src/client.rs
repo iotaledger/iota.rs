@@ -69,7 +69,7 @@ use crate::{
 #[derive(Debug, Serialize, Deserialize)]
 pub struct NodeInfoWrapper {
     /// The returned nodeinfo
-    pub nodeinfo: NodeInfo,
+    pub node_info: NodeInfo,
     /// The url from the node which returned the nodeinfo
     pub url: String,
 }
@@ -273,7 +273,7 @@ impl Client {
         // difficulty or the byte cost could change via a milestone, so we request the nodeinfo every time, so we don't
         // create invalid transactions/messages
         if not_synced || cfg!(target_family = "wasm") {
-            let info = self.get_info().await?.nodeinfo;
+            let info = self.get_info().await?.node_info;
             let network_id = hash_network(&info.protocol.network_name).ok();
             {
                 let mut client_network_info = self.network_info.write().map_err(|_| crate::Error::PoisonError)?;
@@ -772,7 +772,7 @@ impl Client {
             .duration_since(UNIX_EPOCH)
             .expect("Time went backwards")
             .as_secs() as u32;
-        let status_response = self.get_info().await?.nodeinfo.status;
+        let status_response = self.get_info().await?.node_info.status;
         let latest_ms_timestamp = status_response.latest_milestone.timestamp;
         // Check the local time is in the range of +-5 minutes of the node to prevent locking funds by accident
         if !(latest_ms_timestamp - FIVE_MINUTES_IN_SECONDS..latest_ms_timestamp + FIVE_MINUTES_IN_SECONDS)
