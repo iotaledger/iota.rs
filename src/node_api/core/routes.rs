@@ -301,6 +301,7 @@ impl Client {
     }
 
     /// Gets the current treasury output.
+    /// The treasury outputs contains all tokens from the legacy network that have not yet been migrated.
     /// GET /api/v2/treasury
     pub async fn get_treasury(&self) -> Result<TreasuryResponse> {
         let path = "api/v2/treasury";
