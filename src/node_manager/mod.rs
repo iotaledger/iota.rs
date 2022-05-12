@@ -187,11 +187,11 @@ impl NodeManager {
                         if let Ok(res_text) = res.text().await {
                             match status {
                                 200 => {
-                                    // Handle nodeinfo extra because we also want to return the url
+                                    // Handle node_info extra because we also want to return the url
                                     if path == "api/v2/info" {
-                                        if let Ok(nodeinfo) = serde_json::from_str::<InfoResponse>(&res_text) {
+                                        if let Ok(node_info) = serde_json::from_str::<InfoResponse>(&res_text) {
                                             let wrapper = crate::client::NodeInfoWrapper {
-                                                nodeinfo,
+                                                node_info,
                                                 url: format!(
                                                     "{}://{}",
                                                     node.url.scheme(),

@@ -1,7 +1,7 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! `cargo run --example node_api_core_get_milestone_by_id --release -- [NODE URL]`.
+//! `cargo run --example node_api_core_get_utxo_changes_by_id --release -- [NODE URL]`.
 
 use std::str::FromStr;
 
@@ -24,10 +24,10 @@ async fn main() -> Result<()> {
     let info = client.get_info().await?;
     let milestone_id = MilestoneId::from_str(&info.node_info.status.latest_milestone.milestone_id)?;
     // Sends the request.
-    let milestone = client.get_milestone_by_id(&milestone_id).await?;
+    let utxo_changes = client.get_utxo_changes_by_id(&milestone_id).await?;
 
     // Prints the response.
-    println!("{:?}", milestone);
+    println!("{:?}", utxo_changes);
 
     Ok(())
 }

@@ -121,6 +121,22 @@ path = "examples/node_api_core/18_get_milestone_by_id.rs"
 name = "node_api_core_get_milestone_by_id_raw"
 path = "examples/node_api_core/19_get_milestone_by_id_raw.rs"
 
+[[example]]
+name = "node_api_core_get_utxo_changes_by_id"
+path = "examples/node_api_core/20_get_utxo_changes_by_id.rs"
+
+[[example]]
+name = "node_api_core_get_milestone_by_index"
+path = "examples/node_api_core/21_get_milestone_by_index.rs"
+
+[[example]]
+name = "node_api_core_get_milestone_by_index_raw"
+path = "examples/node_api_core/22_get_milestone_by_index_raw.rs"
+
+[[example]]
+name = "node_api_core_get_utxo_changes_by_index"
+path = "examples/node_api_core/23_get_utxo_changes_by_index.rs"
+
 #######
 
 [[example]]

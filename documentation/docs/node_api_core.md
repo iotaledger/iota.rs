@@ -332,7 +332,7 @@ let milestone = client.get_milestone_by_id_raw(&milestone_id).await?;
 
 Run `cargo run --example node_api_core_get_milestone_by_id_raw --release -- [NODE URL]`.
 
-# `Client::`
+# `Client::get_utxo_changes_by_id`
 
 ## Description
 
@@ -347,17 +347,18 @@ Gets all UTXO changes of a given milestone by Milestone ID.
 ## Example
 
 ```rust
+let utxo_changes = client.get_utxo_changes_by_id(&milestone_id).await?;
 ```
 
-Run `cargo run --example node_api_core_ --release -- [NODE URL]`.
+Run `cargo run --example node_api_core_get_utxo_changes_by_id --release -- [NODE URL]`.
 
-# `Client::`
+# `Client::get_milestone_by_index`
 
 ## Description
 
 Calls `GET /api/v2/milestones/by-index/{index}`.
 
-Looks up a milestone by a given milestone index.
+Returns milestone data as JSON by its index.
 
 ## Request
 
@@ -366,11 +367,32 @@ Looks up a milestone by a given milestone index.
 ## Example
 
 ```rust
+let milestone = client.get_milestone_by_index(milestone_index).await?;
 ```
 
-Run `cargo run --example node_api_core_ --release -- [NODE URL]`.
+Run `cargo run --example node_api_core_get_milestone_by_index --release -- [NODE URL]`.
 
-# `Client::`
+# `Client::get_milestone_by_index_raw`
+
+## Description
+
+Calls `GET /api/v2/milestones/by-index/{index}`.
+
+Returns milestone data as raw bytes by its index.
+
+## Request
+
+## Response
+
+## Example
+
+```rust
+let milestone = client.get_milestone_by_index_raw(milestone_index).await?;
+```
+
+Run `cargo run --example node_api_core_get_milestone_by_index_raw --release -- [NODE URL]`.
+
+# `Client::get_utxo_changes_by_index`
 
 ## Description
 
@@ -385,9 +407,10 @@ Gets all UTXO changes of a given milestone by milestone index.
 ## Example
 
 ```rust
+let utxo_changes = client.get_utxo_changes_by_index(milestone_index).await?;
 ```
 
-Run `cargo run --example node_api_core_ --release -- [NODE URL]`.
+Run `cargo run --example node_api_core_get_utxo_changes_by_index --release -- [NODE URL]`.
 
 # `Client::`
 

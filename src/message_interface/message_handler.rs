@@ -7,7 +7,10 @@ use backtrace::Backtrace;
 use bee_message::{
     address::dto::AddressDto,
     input::dto::UtxoInputDto,
-    payload::{dto::PayloadDto, Payload},
+    payload::{
+        dto::{MilestonePayloadDto, PayloadDto},
+        Payload,
+    },
     Message as BeeMessage, MessageDto,
 };
 use futures::{Future, FutureExt};
@@ -248,12 +251,12 @@ impl ClientMessageHandler {
                 self.client.get_message_children(message_id).await?,
             )),
             ClientMethod::GetOutput { output_id } => Ok(ResponseType::Output(self.client.get_output(output_id).await?)),
-            ClientMethod::GetMilestoneById { milestone_id } => Ok(ResponseType::Milestone(
-                self.client.get_milestone_by_id(milestone_id).await?,
-            )),
-            ClientMethod::GetMilestoneByIndex { index } => Ok(ResponseType::Milestone(
-                self.client.get_milestone_by_index(*index).await?,
-            )),
+            ClientMethod::GetMilestoneById { milestone_id } => Ok(ResponseType::Milestone(MilestonePayloadDto::from(
+                &self.client.get_milestone_by_id(milestone_id).await?,
+            ))),
+            ClientMethod::GetMilestoneByIndex { index } => Ok(ResponseType::Milestone(MilestonePayloadDto::from(
+                &self.client.get_milestone_by_index(*index).await?,
+            ))),
             ClientMethod::GetUtxoChangesById { milestone_id } => Ok(ResponseType::MilestoneUtxoChanges(
                 self.client.get_utxo_changes_by_id(milestone_id).await?,
             )),
