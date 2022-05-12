@@ -20,7 +20,7 @@ use iota_client::{
         payload::{transaction::TransactionPayload, Payload},
         unlock_block::UnlockBlocks,
     },
-    secret::{mnemonic::MnemonicSecretManager, Network, SecretManageExt, SecretManager, SignMessageMetadata},
+    secret::{mnemonic::MnemonicSecretManager, SecretManageExt, SecretManager},
     Result,
 };
 
@@ -38,24 +38,13 @@ async fn main() -> Result<()> {
     let prepared_transaction = read_prepared_transaction_from_file(PREPARED_TRANSACTION_FILE_NAME)?;
 
     let mut input_addresses = Vec::new();
-    for input_signing_data in &prepared_transaction.input_signing_data_entries {
+    for input_signing_data in &prepared_transaction.inputs_data {
         let (_bech32_hrp, address) = Address::try_from_bech32(&input_signing_data.bech32_address)?;
         input_addresses.push(address);
     }
 
     // Signs prepared transaction offline.
-    let unlock_blocks = secret_manager
-        .sign_transaction_essence(
-            &prepared_transaction.essence,
-            &prepared_transaction.input_signing_data_entries,
-            // TODO set correct data
-            SignMessageMetadata {
-                remainder_value: 0,
-                remainder_deposit_address: None,
-                network: Network::Testnet,
-            },
-        )
-        .await?;
+    let unlock_blocks = secret_manager.sign_transaction_essence(&prepared_transaction).await?;
     let unlock_blocks = UnlockBlocks::new(unlock_blocks)?;
     let signed_transaction = TransactionPayload::new(prepared_transaction.essence.clone(), unlock_blocks)?;
 

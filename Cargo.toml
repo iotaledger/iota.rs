@@ -76,7 +76,7 @@ default = [ "async", "tls" ]
 sync = [ "ureq", "tokio", "futures" ]
 async = [ "reqwest", "futures", "tokio" ]
 mqtt = [ "rumqttc", "once_cell", "futures" ]
-ledger = [ "iota-ledger" ]
+ledger_nano = [ "iota-ledger" ]
 tls = [ "reqwest/rustls-tls", "ureq/tls" ]
 stronghold = [ "iota_stronghold", "riker", "crypto05" ]
 message_interface = [ "backtrace" ]
@@ -86,8 +86,8 @@ name = "10_mqtt"
 required-features = [ "mqtt" ]
 
 [[example]]
-name = "ledger"
-required-features = [ "ledger" ]
+name = "ledger_nano"
+required-features = [ "ledger_nano" ]
 
 [[example]]
 name = "stronghold"

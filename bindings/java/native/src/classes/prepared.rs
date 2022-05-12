@@ -19,7 +19,7 @@ pub struct PreparedTransactionData {
     /// Transaction essence
     pub essence: Essence,
     /// Required address information for signing
-    pub input_signing_data_entries: Vec<InputSigningData>,
+    pub inputs_data: Vec<InputSigningData>,
 }
 
 impl PreparedTransactionData {
@@ -36,8 +36,8 @@ impl PreparedTransactionData {
         self.essence.clone()
     }
 
-    pub fn input_signing_data_entries(&self) -> Vec<InputSigningData> {
-        self.input_signing_data_entries.iter().cloned().collect()
+    pub fn inputs_data(&self) -> Vec<InputSigningData> {
+        self.inputs_data.iter().cloned().collect()
     }
 
     pub fn serialize(&self) -> Result<String> {
@@ -54,8 +54,8 @@ impl core::fmt::Display for PreparedTransactionData {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
         write!(
             f,
-            "essence={}, input_signing_data_entries=({:?})",
-            self.essence, self.input_signing_data_entries
+            "essence={}, inputs_data=({:?})",
+            self.essence, self.inputs_data
         )
     }
 }
@@ -70,8 +70,8 @@ impl From<RustPreparedTransactionData> for PreparedTransactionData {
     fn from(prepared: RustPreparedTransactionData) -> Self {
         Self {
             essence: prepared.essence.into(),
-            input_signing_data_entries: prepared
-                .input_signing_data_entries
+            inputs_data: prepared
+                .inputs_data
                 .iter()
                 .map(|rec| rec.into())
                 .collect(),

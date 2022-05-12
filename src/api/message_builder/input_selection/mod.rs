@@ -47,28 +47,28 @@ pub async fn try_select_inputs(
         return Err(Error::ConsolidationRequired(inputs.len()));
     }
 
-    let input_outputs = inputs.iter().map(|i| &i.output);
-
     // Validate and only create a remainder if necessary
     if force_use_all_inputs {
-        let remainder_output = get_remainder_output(
-            input_outputs,
+        let remainder_data = get_remainder_output(
+            inputs.iter(),
             outputs.iter(),
             remainder_address,
             byte_cost_config,
             allow_burning,
         )
         .await?;
-        if let Some(remainder_output) = &remainder_output {
-            outputs.push(remainder_output.clone());
+        if let Some(remainder_data) = &remainder_data {
+            outputs.push(remainder_data.output.clone());
         }
         return Ok(SelectedTransactionData {
             inputs,
             outputs,
-            remainder_output,
+            remainder: remainder_data,
         });
     }
     // else: only select inputs that are necessary for the provided outputs
+
+    let input_outputs = inputs.iter().map(|i| &i.output);
 
     let required = get_accumulated_output_amounts(input_outputs, outputs.iter()).await?;
     let mut selected_input_native_tokens = required.minted_native_tokens.clone();
@@ -227,19 +227,17 @@ pub async fn try_select_inputs(
     }
 
     // create remainder output if necessary
-    let selected_input_outputs = selected_inputs.iter().map(|i| &i.output);
-
     // get_remainder also checks for amounts and returns an error if we don't have enough
-    let remainder_output = get_remainder_output(
-        selected_input_outputs,
+    let remainder_data = get_remainder_output(
+        selected_inputs.iter(),
         outputs.iter(),
         remainder_address,
         byte_cost_config,
         allow_burning,
     )
     .await?;
-    if let Some(remainder_output) = &remainder_output {
-        outputs.push(remainder_output.clone());
+    if let Some(remainder_data) = &remainder_data {
+        outputs.push(remainder_data.output.clone());
     }
 
     // sort inputs so ed25519 address unlocks will be first, safe to unwrap since we encoded it before
@@ -247,7 +245,7 @@ pub async fn try_select_inputs(
     Ok(SelectedTransactionData {
         inputs: selected_inputs,
         outputs,
-        remainder_output,
+        remainder: remainder_data,
     })
 }
 

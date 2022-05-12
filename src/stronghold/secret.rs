@@ -20,7 +20,8 @@ use super::{
     StrongholdAdapter,
 };
 use crate::{
-    secret::{types::InputSigningData, GenerateAddressMetadata, SecretManage, SignMessageMetadata},
+    api::RemainderData,
+    secret::{types::InputSigningData, GenerateAddressMetadata, SecretManage},
     Result,
 };
 
@@ -78,11 +79,11 @@ impl SecretManage for StrongholdAdapter {
         Ok(addresses)
     }
 
-    async fn signature_unlock<'a>(
+    async fn signature_unlock(
         &self,
         input: &InputSigningData,
         essence_hash: &[u8; 32],
-        _: &SignMessageMetadata<'a>,
+        _: &Option<RemainderData>,
     ) -> Result<UnlockBlock> {
         // Stronghold arguments.
         let seed_location = SLIP10DeriveInput::Seed(Location::Generic {
@@ -308,7 +309,7 @@ mod tests {
     use std::path::PathBuf;
 
     use super::*;
-    use crate::{constants::IOTA_COIN_TYPE, secret::Network};
+    use crate::constants::IOTA_COIN_TYPE;
 
     #[tokio::test]
     async fn test_address_generation() {
@@ -332,10 +333,7 @@ mod tests {
                 0,
                 0..1,
                 false,
-                GenerateAddressMetadata {
-                    syncing: false,
-                    network: Network::Testnet,
-                },
+                GenerateAddressMetadata { syncing: false },
             )
             .await
             .unwrap();

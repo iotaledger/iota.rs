@@ -39,7 +39,7 @@
             }
         ]
     },
-    "input_signing_data_entries": [
+    "inputs_data": [
         {
             "output": {
                 "type": "Basic",

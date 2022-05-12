@@ -16,8 +16,8 @@ use crypto::{
     keys::slip10::{Chain, Curve, Seed},
 };
 
-use super::{types::InputSigningData, GenerateAddressMetadata, SecretManage, SignMessageMetadata};
-use crate::{constants::HD_WALLET_TYPE, Client, Result};
+use super::{types::InputSigningData, GenerateAddressMetadata, SecretManage};
+use crate::{constants::HD_WALLET_TYPE, secret::RemainderData, Client, Result};
 
 /// Secret manager that uses only a mnemonic.
 ///
@@ -63,11 +63,11 @@ impl SecretManage for MnemonicSecretManager {
         Ok(addresses)
     }
 
-    async fn signature_unlock<'a>(
+    async fn signature_unlock(
         &self,
         input: &InputSigningData,
         essence_hash: &[u8; 32],
-        _: &SignMessageMetadata<'a>,
+        _: &Option<RemainderData>,
     ) -> crate::Result<UnlockBlock> {
         // Get the private and public key for this Ed25519 address
         let private_key = self
@@ -106,10 +106,7 @@ mod tests {
 
     #[tokio::test]
     async fn address() {
-        use crate::{
-            constants::IOTA_COIN_TYPE,
-            secret::{GenerateAddressMetadata, Network},
-        };
+        use crate::{constants::IOTA_COIN_TYPE, secret::GenerateAddressMetadata};
 
         let mnemonic = "giant dynamic museum toddler six deny defense ostrich bomb access mercy blood explain muscle shoot shallow glad autumn author calm heavy hawk abuse rally";
         let secret_manager = MnemonicSecretManager::try_from_mnemonic(mnemonic).unwrap();
@@ -120,10 +117,7 @@ mod tests {
                 0,
                 0..1,
                 false,
-                GenerateAddressMetadata {
-                    syncing: false,
-                    network: Network::Testnet,
-                },
+                GenerateAddressMetadata { syncing: false },
             )
             .await
             .unwrap();
@@ -136,10 +130,7 @@ mod tests {
 
     #[tokio::test]
     async fn seed_address() {
-        use crate::{
-            constants::IOTA_COIN_TYPE,
-            secret::{GenerateAddressMetadata, Network},
-        };
+        use crate::{constants::IOTA_COIN_TYPE, secret::GenerateAddressMetadata};
 
         let seed = "256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2";
         let secret_manager = MnemonicSecretManager::try_from_hex_seed(seed).unwrap();
@@ -150,10 +141,7 @@ mod tests {
                 0,
                 0..1,
                 false,
-                GenerateAddressMetadata {
-                    syncing: false,
-                    network: Network::Testnet,
-                },
+                GenerateAddressMetadata { syncing: false },
             )
             .await
             .unwrap();

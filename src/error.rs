@@ -180,31 +180,31 @@ pub enum Error {
     #[error("No input with matching ed25519 unlock condition provided")]
     MissingInputWithEd25519UnlockCondition,
     /// Ledger transport error
-    #[cfg(feature = "ledger")]
+    #[cfg(feature = "ledger_nano")]
     #[error("ledger transport error")]
     LedgerMiscError,
     /// Dongle Locked
-    #[cfg(feature = "ledger")]
+    #[cfg(feature = "ledger_nano")]
     #[error("ledger locked")]
     LedgerDongleLocked,
     /// Denied by User
-    #[cfg(feature = "ledger")]
+    #[cfg(feature = "ledger_nano")]
     #[error("denied by user")]
     LedgerDeniedByUser,
     /// Ledger Device not found
-    #[cfg(feature = "ledger")]
+    #[cfg(feature = "ledger_nano")]
     #[error("ledger device not found")]
     LedgerDeviceNotFound,
     /// Ledger Essence Too Large
-    #[cfg(feature = "ledger")]
+    #[cfg(feature = "ledger_nano")]
     #[error("ledger essence too large")]
     LedgerEssenceTooLarge,
     /// Ledger transport error
-    #[cfg(feature = "ledger")]
+    #[cfg(feature = "ledger_nano")]
     #[error("ledger app compiled for testnet but used with mainnet or vice versa")]
     LedgerNetMismatch,
     /// Wrong ledger seed error
-    #[cfg(feature = "ledger")]
+    #[cfg(feature = "ledger_nano")]
     #[error("ledger mnemonic is mismatched")]
     LedgerMnemonicMismatch,
     /// Riker system error during Stronghold initialization
@@ -243,7 +243,7 @@ pub enum Error {
 // LedgerDeviceNotFound: No usable Ledger device was found
 // LedgerMiscError: Everything else.
 // LedgerEssenceTooLarge: Essence with bip32 input indices need more space then the internal buffer is big
-#[cfg(feature = "ledger")]
+#[cfg(feature = "ledger_nano")]
 impl From<iota_ledger::api::errors::APIError> for Error {
     fn from(error: iota_ledger::api::errors::APIError) -> Self {
         log::info!("ledger error: {}", error);
