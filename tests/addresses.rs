@@ -10,10 +10,10 @@ use iota_client::api::GetAddressesBuilderOptions;
 #[cfg(feature = "message_interface")]
 use iota_client::message_interface;
 #[cfg(feature = "message_interface")]
-use iota_client::message_interface::{ClientMethod, MessageType, ResponseType};
+use iota_client::message_interface::{ClientMethod, MessageType, Response};
 #[cfg(feature = "stronghold")]
 use iota_client::secret::stronghold::StrongholdSecretManager;
-#[cfg(feature = "message_interface")]
+#[cfg(all(feature = "message_interface", feature = "stronghold"))]
 use iota_client::secret::types::StrongholdDto;
 #[cfg(feature = "message_interface")]
 use iota_client::secret::SecretManagerDto;
@@ -244,8 +244,8 @@ async fn address_generation() {
             });
 
             let response = message_interface::send_message(&message_handler, message).await;
-            match response.response_type() {
-                ResponseType::GeneratedAddresses(addresses) => {
+            match response {
+                Response::GeneratedAddresses(addresses) => {
                     assert_eq!(addresses[0], address.bech32_address);
                     if let (_bech32_hrp, Address::Ed25519(ed25519_address)) =
                         Address::try_from_bech32(&addresses[0]).unwrap()
@@ -295,8 +295,8 @@ async fn address_generation() {
             });
 
             let response = message_interface::send_message(&message_handler, message).await;
-            match response.response_type() {
-                ResponseType::GeneratedAddresses(addresses) => {
+            match response {
+                Response::GeneratedAddresses(addresses) => {
                     assert_eq!(addresses[0], address.bech32_address);
                     if let (_bech32_hrp, Address::Ed25519(ed25519_address)) =
                         Address::try_from_bech32(&addresses[0]).unwrap()
