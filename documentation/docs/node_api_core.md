@@ -217,7 +217,7 @@ Returns metadata about an output by its identifier.
 
 Run `cargo run --example node_api_core_ --release -- [NODE URL]`.
 
-# `Client::`
+# `Client::get_receipts`
 
 Calls `GET /api/v2/receipts`.
 
@@ -230,11 +230,12 @@ Returns all stored receipts.
 ## Example
 
 ```rust
+let receipts = client.get_receipts().await?;
 ```
 
-Run `cargo run --example node_api_core_ --release -- [NODE URL]`.
+Run `cargo run --example node_api_core_get_receipts --release -- [NODE URL]`.
 
-# `Client::`
+# `Client::get_receipts_migrated_at`
 
 ## Description
 
@@ -249,9 +250,10 @@ Returns all stored receipts for a given migration index.
 ## Example
 
 ```rust
+let receipts = client.get_receipts_migrated_at(1_000_000).await?;
 ```
 
-Run `cargo run --example node_api_core_ --release -- [NODE URL]`.
+Run `cargo run --example node_api_core_get_receipts_migrated_at --release -- [NODE URL]`.
 
 # `Client::get_treasury`
 

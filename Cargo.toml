@@ -110,6 +110,14 @@ name = "node_api_core_get_message_children"
 path = "examples/node_api_core/09_get_message_children.rs"
 
 [[example]]
+name = "node_api_core_get_receipts"
+path = "examples/node_api_core/13_get_receipts.rs"
+
+[[example]]
+name = "node_api_core_get_receipts_migrated_at"
+path = "examples/node_api_core/14_get_receipts_migrated_at.rs"
+
+[[example]]
 name = "node_api_core_get_treasury"
 path = "examples/node_api_core/15_get_treasury.rs"
 
