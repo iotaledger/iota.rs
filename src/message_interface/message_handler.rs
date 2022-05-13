@@ -14,6 +14,7 @@ use bee_message::{
     Message as BeeMessage, MessageDto,
 };
 use futures::{Future, FutureExt};
+use zeroize::Zeroize;
 
 use crate::{
     api::{PreparedTransactionData, PreparedTransactionDataDto},
@@ -66,10 +67,20 @@ impl ClientMessageHandler {
 
     /// Handle messages
     pub async fn handle(&self, mut message: Message) {
-        let result: Result<Response> = match message.message_type_mut() {
+        let result: Result<Response> = match message.message_type() {
             MessageType::CallClientMethod(method) => {
                 convert_async_panics(|| async { self.call_client_method(method).await }).await
             }
+        };
+
+        // Zeroize secrets as soon as their missions are finished.
+        match &mut message.message_type {
+            #[cfg(feature = "stronghold")]
+            MessageType::CallClientMethod(ClientMethod::StoreMnemonic { mnemonic, .. }) => mnemonic.zeroize(),
+            MessageType::CallClientMethod(ClientMethod::MnemonicToHexSeed { mnemonic }) => mnemonic.zeroize(),
+
+            // SecretManagerDto impl ZeroizeOnDrop, so we don't have to call zeroize() here.
+            _ => (),
         };
 
         let response = match result {

@@ -24,6 +24,7 @@ use bee_message::{
     unlock_block::{AliasUnlockBlock, NftUnlockBlock, ReferenceUnlockBlock, UnlockBlock},
 };
 pub use types::{GenerateAddressMetadata, LedgerStatus};
+use zeroize::ZeroizeOnDrop;
 
 #[cfg(feature = "ledger_nano")]
 use self::ledger_nano::LedgerSecretManager;
@@ -127,7 +128,7 @@ impl FromStr for SecretManager {
 }
 
 /// DTO for secret manager types with required data.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, ZeroizeOnDrop)]
 pub enum SecretManagerDto {
     /// Stronghold
     #[cfg(feature = "stronghold")]

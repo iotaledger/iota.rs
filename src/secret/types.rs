@@ -14,11 +14,13 @@ use bee_message::{
 use bee_rest_api::types::responses::OutputResponse;
 use crypto::keys::slip10::Chain;
 use serde::{Deserialize, Serialize};
+#[cfg(feature = "stronghold")]
+use zeroize::ZeroizeOnDrop;
 
 use crate::{Error, Result};
 
 /// Stronghold DTO to allow the creation of a Stronghold secret manager from bindings
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, ZeroizeOnDrop)]
 #[cfg(feature = "stronghold")]
 pub struct StrongholdDto {
     /// The Stronghold password
