@@ -62,7 +62,7 @@ impl NodeManager {
         NodeManagerBuilder::new()
     }
 
-    pub(crate) async fn get_nodes(
+    async fn get_nodes(
         &self,
         path: &str,
         query: Option<&str>,
@@ -154,8 +154,7 @@ impl NodeManager {
             #[cfg(not(target_family = "wasm"))]
             {
                 let mut tasks = Vec::new();
-                let nodes_ = nodes.clone();
-                for (index, node) in nodes_.into_iter().enumerate() {
+                for (index, node) in nodes.into_iter().enumerate() {
                     if index < self.min_quorum_size {
                         let client_ = self.http_client.clone();
                         tasks.push(async move { tokio::spawn(async move { client_.get(node, timeout).await }).await });
