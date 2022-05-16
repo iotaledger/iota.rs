@@ -120,7 +120,7 @@ impl std::fmt::Debug for SecretManager {
             #[cfg(feature = "ledger_nano")]
             Self::LedgerNanoSimulator(_) => f.debug_tuple("LedgerNanoSimulator").field(&"...").finish(),
             Self::Mnemonic(_) => f.debug_tuple("Mnemonic").field(&"...").finish(),
-            Self::Placeholder(_) => f.debug_tuple("Placeholder").finish(),
+            Self::Placeholder(_) => f.debug_struct("Placeholder").finish(),
         }
     }
 }
@@ -178,6 +178,7 @@ impl TryFrom<&SecretManagerDto> for SecretManager {
             SecretManagerDto::LedgerNanoSimulator => Self::LedgerNanoSimulator(LedgerSecretManager::new(true)),
 
             SecretManagerDto::Mnemonic(mnemonic) => Self::Mnemonic(MnemonicSecretManager::try_from_mnemonic(mnemonic)?),
+
             SecretManagerDto::Placeholder => Self::Placeholder(PlaceholderSecretManager),
         })
     }
