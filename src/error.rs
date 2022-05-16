@@ -46,6 +46,9 @@ pub enum Error {
     /// Missing required parameters
     #[error("Must provide required parameter: {0}")]
     MissingParameter(&'static str),
+    /// PlaceholderSecretManager can't be used for address generation or signing
+    #[error("PlaceholderSecretManager can't be used for address generation or signing")]
+    PlaceholderSecretManager,
     /// Invalid parameters
     #[error("Parameter is invalid:{0}")]
     InvalidParameter(&'static str),
