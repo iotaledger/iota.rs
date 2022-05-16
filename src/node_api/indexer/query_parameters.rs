@@ -31,14 +31,14 @@ impl QueryParameters {
     }
 
     /// Converts parameters to a single String
-    pub fn into_query_sting(&self) -> Option<String> {
+    pub fn to_query_string(&self) -> Option<String> {
         if self.0.is_empty() {
             None
         } else {
             Some(
                 self.0
                     .iter()
-                    .map(|q| q.as_query_string())
+                    .map(|q| q.to_query_string())
                     .collect::<Vec<String>>()
                     .join("&"),
             )
@@ -123,7 +123,7 @@ impl Hash for QueryParameter {
 }
 
 impl QueryParameter {
-    fn as_query_string(&self) -> String {
+    fn to_query_string(&self) -> String {
         match self {
             QueryParameter::Address(v) => format!("address={}", v),
             QueryParameter::AliasAddress(v) => format!("aliasAddress={}", v),

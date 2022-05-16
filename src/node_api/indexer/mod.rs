@@ -18,7 +18,7 @@ use self::{
 use crate::{Client, Result};
 
 impl Client {
-    /// Get all output ids for a provided URL route and query parameters
+    /// Get all output ids for a provided URL route and query parameters.
     pub async fn get_output_ids_with_pagination(
         &self,
         route: &str,
@@ -34,7 +34,7 @@ impl Client {
                 .node_manager
                 .get_request(
                     route,
-                    query_parameters.into_query_sting().as_deref(),
+                    query_parameters.to_query_string().as_deref(),
                     self.get_timeout(),
                     need_quorum,
                     prefer_permanode,
