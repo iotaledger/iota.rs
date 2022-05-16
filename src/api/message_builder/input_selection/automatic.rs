@@ -86,7 +86,7 @@ pub(crate) async fn get_inputs(
                     QueryParameter::Address(str_address.to_string()),
                     QueryParameter::HasExpirationCondition(false),
                     QueryParameter::HasTimelockCondition(false),
-                    QueryParameter::HasStorageDepositReturnCondition(false),
+                    QueryParameter::HasStorageReturnCondition(false),
                 ])
                 .await?;
 
@@ -232,7 +232,7 @@ async fn get_inputs_for_sender_and_issuer(
                     QueryParameter::Address(Address::Ed25519(*address).to_bech32(&bech32_hrp)),
                     QueryParameter::HasExpirationCondition(false),
                     QueryParameter::HasTimelockCondition(false),
-                    QueryParameter::HasStorageDepositReturnCondition(false),
+                    QueryParameter::HasStorageReturnCondition(false),
                 ])
                 .await?;
 

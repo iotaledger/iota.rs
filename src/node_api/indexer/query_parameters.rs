@@ -52,52 +52,58 @@ pub enum QueryParameter {
     Address(String),
     /// Bech32-encoded alias address that should be searched for.
     AliasAddress(String),
-    /// Filters outputs based on the presence of storage deposit return unlockcondition.
-    HasStorageDepositReturnCondition(bool),
-    /// Filter outputs based on the presence of a specific Bech32-encoded return address in the storage deposit return
-    /// unlock condition.
-    StorageDepositReturnAddress(String),
+    /// Filters outputs based on the presence of storage return unlock condition.
+    HasStorageReturnCondition(bool),
+    /// Filters outputs based on the presence of a specific return address in the storage return unlock condition.
+    StorageReturnAddress(String),
     /// Filters outputs based on the presence of timelock unlock condition.
     HasTimelockCondition(bool),
-    /// Return outputs that are timelocked before a certain Unix timestamp.
+    /// Returns outputs that are timelocked before a certain Unix timestamp.
     TimelockedBefore(u32),
-    /// Return outputs that are timelocked after a certain Unix timestamp.
+    /// Returns outputs that are timelocked after a certain Unix timestamp.
     TimelockedAfter(u32),
-    /// Return outputs that are timelocked before a certain milestone index.
+    /// Returns outputs that are timelocked before a certain milestone index.
     TimelockedBeforeMilestone(u32),
-    /// Return outputs that are timelocked ater a certain milestone index.
+    /// Returns outputs that are timelocked ater a certain milestone index.
     TimelockedAfterMilestone(u32),
     /// Filters outputs based on the presence of expiration unlock condition.
     HasExpirationCondition(bool),
-    /// Return outputs that expire before a certain Unix timestamp.
+    /// Returns outputs that expire before a certain Unix timestamp.
     ExpiresBefore(u32),
-    /// Return outputs that expire after a certain Unix timestamp.
+    /// Returns outputs that expire after a certain Unix timestamp.
     ExpiresAfter(u32),
-    /// Return outputs that expire before a certain milestone index.
+    /// Returns outputs that expire before a certain milestone index.
     ExpiresBeforeMilestone(u32),
-    /// Return outputs that expire after a certain milestone index.
+    /// Returns outputs that expire after a certain milestone index.
     ExpiresAfterMilestone(u32),
-    /// Filter outputs based on the presence of a specific Bech32-encoded return address in the expiration unlock
+    /// Filters outputs based on the presence of a specific Bech32-encoded return address in the expiration unlock
     /// condition.
     ExpirationReturnAddress(String),
-    /// Filter for a certain sender
+    /// Filters outputs based on the presence of validated Sender (bech32 encoded).
     Sender(String),
-    /// Filter for a certain tags
+    /// Filters outputs based on matching Tag Block.
     Tag(String),
-    /// Return outputs that were created before a certain Unix timestamp.
+    /// Returns outputs that were created before a certain Unix timestamp.
     CreatedBefore(u32),
-    /// Return outputs that were created after a certain Unix timestamp.
+    /// Returns outputs that were created after a certain Unix timestamp.
     CreatedAfter(u32),
-    /// Pass the cursor(confirmationMS+outputId.pageSize) to start the results from
+    /// Starts the search from the cursor (confirmationMS+outputId.pageSize).
     Cursor(String),
-    /// Filter for a certain issuer
+    /// Filters for a certain issuer
     Issuer(String),
-    /// Filter for a certain state controller address
+    /// Filters for a certain state controller address
     StateController(String),
-    /// Filter for a certain governance controller address
+    /// Filters for a certain governance controller address
     Governor(String),
-    /// Define the page size for the results
+    /// The maximum amount of items returned in one call. If there are more items, a cursor to the next page is
+    /// returned too. The parameter is ignored when pageSize is defined via the cursor parameter.
     PageSize(usize),
+    /// Filters outputs based on the presence of native tokens.
+    HasNativeTokens(bool),
+    /// Filters outputs that have at least a certain number of distinct native tokens.
+    MinNativeTokenCount(u32),
+    /// Filters outputs that have at most a certain number of distinct native tokens.
+    MaxNativeTokenCount(u32),
 }
 
 // Custom impl because we only want a single query of each enum variant in the HashSet
@@ -118,8 +124,8 @@ impl QueryParameter {
         match self {
             QueryParameter::Address(v) => format!("address={}", v),
             QueryParameter::AliasAddress(v) => format!("aliasAddress={}", v),
-            QueryParameter::HasStorageDepositReturnCondition(v) => format!("hasStorageDepositReturnCondition={}", v),
-            QueryParameter::StorageDepositReturnAddress(v) => format!("storageReturnAddress={}", v),
+            QueryParameter::HasStorageReturnCondition(v) => format!("hasStorageReturnCondition={}", v),
+            QueryParameter::StorageReturnAddress(v) => format!("storageReturnAddress={}", v),
             QueryParameter::HasTimelockCondition(v) => format!("hasTimelockCondition={}", v),
             QueryParameter::TimelockedBefore(v) => format!("timelockedBefore={}", v),
             QueryParameter::TimelockedAfter(v) => format!("timelockedAfter={}", v),
@@ -140,6 +146,9 @@ impl QueryParameter {
             QueryParameter::StateController(v) => format!("stateController={}", v),
             QueryParameter::Governor(v) => format!("governor={}", v),
             QueryParameter::PageSize(v) => format!("pageSize={}", v),
+            QueryParameter::HasNativeTokens(v) => format!("hasNativeTokens={}", v),
+            QueryParameter::MinNativeTokenCount(v) => format!("minNativeTokenCount={}", v),
+            QueryParameter::MaxNativeTokenCount(v) => format!("maxNativeTokenCount={}", v),
         }
     }
 }

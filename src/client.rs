@@ -626,7 +626,7 @@ impl Client {
                         QueryParameter::Address(address.to_string()),
                         QueryParameter::HasExpirationCondition(false),
                         QueryParameter::HasTimelockCondition(false),
-                        QueryParameter::HasStorageDepositReturnCondition(false),
+                        QueryParameter::HasStorageReturnCondition(false),
                     ])
                     .await?,
             );
@@ -684,7 +684,7 @@ impl Client {
                     QueryParameter::Address(address.to_string()),
                     QueryParameter::HasExpirationCondition(false),
                     QueryParameter::HasTimelockCondition(false),
-                    QueryParameter::HasStorageDepositReturnCondition(false),
+                    QueryParameter::HasStorageReturnCondition(false),
                 ])
                 .await?;
             output_metadata.extend(address_outputs.into_iter());

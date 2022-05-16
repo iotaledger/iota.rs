@@ -45,7 +45,7 @@ async fn main() -> Result<()> {
             QueryParameter::Address(addresses[0].clone()),
             QueryParameter::HasExpirationCondition(false),
             QueryParameter::HasTimelockCondition(false),
-            QueryParameter::HasStorageDepositReturnCondition(false),
+            QueryParameter::HasStorageReturnCondition(false),
         ])
         .await?;
 

@@ -51,7 +51,7 @@ async fn main() -> Result<()> {
             ),
             QueryParameter::HasExpirationCondition(false),
             QueryParameter::HasTimelockCondition(false),
-            QueryParameter::HasStorageDepositReturnCondition(false),
+            QueryParameter::HasStorageReturnCondition(false),
         ])
         .await?;
 
