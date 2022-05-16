@@ -27,8 +27,8 @@ impl Client {
         prefer_permanode: bool,
     ) -> Result<Vec<OutputId>> {
         let mut query_parameters = QueryParameters::new(query_parameters);
-        // do we need to validate the query parameters?
         let mut all_output_ids: Vec<OutputId> = Vec::new();
+
         while let Some(cursor) = {
             let outputs_response: OutputIdsResponse = self
                 .node_manager

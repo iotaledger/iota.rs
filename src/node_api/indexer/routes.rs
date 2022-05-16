@@ -186,6 +186,4 @@ impl Client {
             .first()
             .ok_or_else(|| crate::Error::NodeError("No output id for nft".to_string()))?))
     }
-
-
 }
