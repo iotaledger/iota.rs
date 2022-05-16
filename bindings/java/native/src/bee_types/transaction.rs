@@ -62,6 +62,24 @@ impl TransactionPayload {
     pub fn id(&self) -> TransactionId {
         self.id
     }
+
+    pub fn deserialize(serialised_data: &str) -> Result<TransactionPayload> {
+        let res: Result<RustTransactionPayload, _> = serde_json::from_str(serialised_data);
+
+        match res {
+            Ok(s) => Ok(s.into()),
+            Err(e) => Err(anyhow::anyhow!(e.to_string())),
+        }
+    }
+
+    pub fn serialize(&self) -> Result<String> {
+        let res = serde_json::to_string(&self.rust_payload);
+
+        match res {
+            Ok(s) => Ok(s),
+            Err(e) => Err(anyhow::anyhow!(e.to_string())),
+        }
+    }
 }
 
 impl Display for TransactionPayload {

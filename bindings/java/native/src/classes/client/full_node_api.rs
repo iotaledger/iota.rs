@@ -366,6 +366,14 @@ impl Client {
         }
     }
 
+    pub fn hex_public_key_to_bech32_address(&self, hex: &str, bech32_hrp: Option<&str>) -> Result<String> {
+        let res = crate::block_on(async { self.0.hex_public_key_to_bech32_address(hex, bech32_hrp).await });
+        match res {
+            Ok(s) => Ok(s),
+            Err(e) => Err(anyhow!(e.to_string())),
+        }
+    }
+
     /// Returns a valid Address parsed from a String.
     pub fn parse_bech32_address(address: &str) -> Result<Address> {
         let res = iota_client::Client::parse_bech32_address(address);

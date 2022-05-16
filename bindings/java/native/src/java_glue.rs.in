@@ -379,10 +379,14 @@ foreign_class!(
         /// Returns a parsed hex String from bech32.
         /// @param bech32 The address Bech32 string
         fn Client::bech32_to_hex(bech32: &str) -> Result<String>;
-        /// Transforms hex to bech32
+        /// Transforms a hex encoded address to a bech32 encoded address
         /// @param hex The address Bech32 string
         /// @param bech32_hrp The Bech32 hrp string 
         fn Client::hex_to_bech32(&self, hex: &str, bech32_hrp: Option<&str>) -> Result<String>;
+        /// Transforms a hex encoded public key to a bech32 encoded address
+        /// @param hex hex encoded public key
+        /// @param bech32_hrp The Bech32 hrp string 
+        fn Client::hex_public_key_to_bech32_address(&self, hex: &str, bech32_hrp: Option<&str>) -> Result<String>;
         /// Checks if a str is a valid bech32 encoded address.
         /// @param address The addresss string to check
         fn Client::is_address_valid(address: &str) -> bool;
@@ -947,6 +951,10 @@ foreign_class!(
         private constructor = empty;
         private fn Message::to_string(&self) -> String; alias to_string;
         private fn Message::eq(&self, o: &Message) -> bool; alias rustEq;
+        /// Serializes the receipt payload into a json string
+        fn Message::serialize(&self) -> Result<String>;
+        /// Turns a serialized receipt payload string back into its class 
+        fn Message::deserialize(serialised_data: &str) -> Result<Message>;
         /// Creates a new `MessageBuilder` to construct an instance of a `Message`.
         fn Message::builder() -> MessageBuilder;
         /// Returns the network id of a `Message`.
@@ -1171,7 +1179,7 @@ foreign_class!(
         private constructor = empty;
         private fn AddressStringPublicWrapper::to_string(&self) -> String; alias to_string;
         private fn AddressStringPublicWrapper::eq(&self, o: &AddressStringPublicWrapper) -> bool; alias rustEq;
-        /// If this is a publci address
+        /// If this is a public address
         fn AddressStringPublicWrapper::public(&self) -> bool; alias isPublic;
         /// The address itself
         fn AddressStringPublicWrapper::address(&self) -> &str;
@@ -1381,7 +1389,7 @@ foreign_class!(
         fn MqttTopicManager::unsubscribe(&mut self) -> Result<()>;
 
         // Subscribe to the given topics with the callback.
-        //fn MqttTopicManager::subscribe(&mut self, cb: Box<dyn MqttListener + Send + 'static>) -> Result<()>;
+        fn MqttTopicManager::subscribe(&mut self, cb: Box<dyn MqttListener + Send + Sync + 'static>) -> Result<()>;
     }
 );
 
@@ -1530,6 +1538,10 @@ foreign_class!(
         self_type IndexationPayload;
         private constructor = empty;
         private fn IndexationPayload::to_string(&self) -> String; alias to_string;
+        /// Serializes the indexation payload into a json string
+        fn IndexationPayload::serialize(&self) -> Result<String>;
+        /// Turns a serialized indexation payload string back into its class 
+        fn IndexationPayload::deserialize(serialised_data: &str) -> Result<IndexationPayload>;
         /// Creates a new `IndexationPayload`.
         /// @param index The index
         /// @param data The data linked ot this index
@@ -1540,8 +1552,10 @@ foreign_class!(
         fn IndexationPayload::new_from_string(index: &str, data: &str) -> Result<IndexationPayload>; alias fromStrings;
         /// Returns the index of an `IndexationPayload`.
         fn IndexationPayload::index(&self) -> &[u8];
+        fn IndexationPayload::index_string(&self) -> Result<String>;
         /// Returns the data of an `IndexationPayload`.
         fn IndexationPayload::data(&self) -> &[u8];
+        fn IndexationPayload::data_string(&self) -> Result<String>;
     }
 );
 
@@ -1611,6 +1625,10 @@ foreign_class!(
         /// Creates a new `ReceiptPayload`.
         fn ReceiptPayload::from(migrated_at: u32, last: bool, funds: Vec<MigratedFundsEntry>, transaction: MessagePayload) -> Result<ReceiptPayload>;
         private fn ReceiptPayload::to_string(&self) -> String; alias to_string;
+        /// Serializes the receipt payload into a json string
+        fn ReceiptPayload::serialize(&self) -> Result<String>;
+        /// Turns a serialized receipt payload string back into its class 
+        fn ReceiptPayload::deserialize(serialised_data: &str) -> Result<ReceiptPayload>;
         /// Returns the milestone index at which the funds of a `ReceiptPayload` were migrated at in the legacy network.
         fn ReceiptPayload::migrated_at(&self) -> u32;
         /// Returns whether a `ReceiptPayload` is the final one for a given migrated at index.
@@ -1647,6 +1665,10 @@ foreign_class!(
         self_type TransactionPayload;
         private constructor = empty;
         private fn TransactionPayload::to_string(&self) -> String; alias to_string;
+        /// Serializes the transaction payload into a json string
+        fn TransactionPayload::serialize(&self) -> Result<String>;
+        /// Turns a serialized transaction payload string back into its class 
+        fn TransactionPayload::deserialize(serialised_data: &str) -> Result<TransactionPayload>;
         /// Return a new `TransactionPayloadBuilder` to build a `TransactionPayload`.
         fn TransactionPayload::builder() -> TransactionPayloadBuilder;
         /// Return the essence of a `TransactionPayload`.
@@ -1828,6 +1850,11 @@ foreign_class!(
         self_type TreasuryPayload;
         constructor TreasuryPayload::new(input: TreasuryInput, output: TreasuryOutput) -> TreasuryPayload;
         private fn TreasuryPayload::to_string(&self) -> String; alias to_string;
+        
+        /// Serializes the treasury payload into a json string
+        fn TreasuryPayload::serialize(&self) -> Result<String>;
+        /// Turns a serialized treasury payload string back into its class 
+        fn TreasuryPayload::deserialize(serialised_data: &str) -> Result<TreasuryPayload>;
         fn TreasuryPayload::output(&self) -> TreasuryOutput;
         fn TreasuryPayload::input(&self) -> TreasuryInput;
     }
