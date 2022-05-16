@@ -14,18 +14,16 @@ use bee_message::{
     Message as BeeMessage, MessageDto,
 };
 use futures::{Future, FutureExt};
+use zeroize::Zeroize;
 
 use crate::{
     api::{PreparedTransactionData, PreparedTransactionDataDto},
-    message_interface::{
-        client_method::ClientMethod, message::Message, message_type::MessageType, response::Response,
-        response_type::ResponseType,
-    },
+    message_interface::{client_method::ClientMethod, message::Message, message_type::MessageType, response::Response},
     secret::SecretManager,
     Client, Result,
 };
 
-fn panic_to_response_message(panic: Box<dyn Any>) -> ResponseType {
+fn panic_to_response_message(panic: Box<dyn Any>) -> Response {
     let msg = if let Some(message) = panic.downcast_ref::<String>() {
         format!("Internal error: {}", message)
     } else if let Some(message) = panic.downcast_ref::<&str>() {
@@ -34,12 +32,12 @@ fn panic_to_response_message(panic: Box<dyn Any>) -> ResponseType {
         "Internal error".to_string()
     };
     let current_backtrace = Backtrace::new();
-    ResponseType::Panic(format!("{}\n\n{:?}", msg, current_backtrace))
+    Response::Panic(format!("{}\n\n{:?}", msg, current_backtrace))
 }
 
-async fn convert_async_panics<F>(f: impl FnOnce() -> F) -> Result<ResponseType>
+async fn convert_async_panics<F>(f: impl FnOnce() -> F) -> Result<Response>
 where
-    F: Future<Output = Result<ResponseType>>,
+    F: Future<Output = Result<Response>>,
 {
     match AssertUnwindSafe(f()).catch_unwind().await {
         Ok(result) => result,
@@ -69,22 +67,34 @@ impl ClientMessageHandler {
 
     /// Handle messages
     pub async fn handle(&self, mut message: Message) {
-        let response: Result<ResponseType> = match message.message_type_mut() {
+        let result: Result<Response> = match message.message_type() {
             MessageType::CallClientMethod(method) => {
                 convert_async_panics(|| async { self.call_client_method(method).await }).await
             }
         };
 
-        let response = match response {
-            Ok(r) => r,
-            Err(e) => ResponseType::Error(e),
+        // Zeroize secrets as soon as their missions are finished.
+        match &mut message.message_type {
+            #[cfg(feature = "stronghold")]
+            MessageType::CallClientMethod(ClientMethod::StoreMnemonic { mnemonic, .. }) => mnemonic.zeroize(),
+            MessageType::CallClientMethod(ClientMethod::MnemonicToHexSeed { mnemonic }) => mnemonic.zeroize(),
+
+            // SecretManagerDto impl ZeroizeOnDrop, so we don't have to call zeroize() here.
+            _ => (),
         };
-        let _ = message.response_tx.send(Response::new(message.message_type, response));
+
+        let response = match result {
+            Ok(r) => r,
+            Err(e) => Response::Error(e),
+        };
+
+        let _ = message.response_tx.send(response);
     }
 
-    // secret_manager needs to be mutable for Stronghold
+    // If cfg(not(feature = "stronghold")) then secret_manager doesn't necessarily to be mutable, but otherwise it has
+    // to be. Instead of rendering the code messy just because of this, we just allow unused mutable variables.
     #[allow(unused_mut)]
-    async fn call_client_method(&self, method: &ClientMethod) -> Result<ResponseType> {
+    async fn call_client_method(&self, method: &ClientMethod) -> Result<Response> {
         match method {
             ClientMethod::GenerateAddresses {
                 secret_manager,
@@ -102,7 +112,7 @@ impl ClientMessageHandler {
                     .set_options(options.clone())?
                     .finish()
                     .await?;
-                Ok(ResponseType::GeneratedAddresses(addresses))
+                Ok(Response::GeneratedAddresses(addresses))
             }
             ClientMethod::GenerateMessage {
                 secret_manager,
@@ -132,18 +142,18 @@ impl ClientMessageHandler {
                     transaction_builder = transaction_builder.set_options(options.clone())?;
                 }
 
-                Ok(ResponseType::GeneratedMessage(MessageDto::from(
+                Ok(Response::GeneratedMessage(MessageDto::from(
                     &transaction_builder.finish().await?,
                 )))
             }
-            ClientMethod::GetNode => Ok(ResponseType::Node(self.client.get_node().await?)),
-            ClientMethod::GetNetworkInfo => Ok(ResponseType::NetworkInfo(self.client.get_network_info().await?)),
-            ClientMethod::GetNetworkId => Ok(ResponseType::NetworkId(self.client.get_network_id().await?)),
-            ClientMethod::GetBech32Hrp => Ok(ResponseType::Bech32Hrp(self.client.get_bech32_hrp().await?)),
-            ClientMethod::GetMinPoWScore => Ok(ResponseType::MinPoWScore(self.client.get_min_pow_score().await?)),
-            ClientMethod::GetTipsInterval => Ok(ResponseType::TipsInterval(self.client.get_tips_interval().await)),
-            ClientMethod::GetLocalPoW => Ok(ResponseType::LocalPoW(self.client.get_local_pow().await)),
-            ClientMethod::GetFallbackToLocalPoW => Ok(ResponseType::FallbackToLocalPoW(
+            ClientMethod::GetNode => Ok(Response::Node(self.client.get_node().await?)),
+            ClientMethod::GetNetworkInfo => Ok(Response::NetworkInfo(self.client.get_network_info().await?)),
+            ClientMethod::GetNetworkId => Ok(Response::NetworkId(self.client.get_network_id().await?)),
+            ClientMethod::GetBech32Hrp => Ok(Response::Bech32Hrp(self.client.get_bech32_hrp().await?)),
+            ClientMethod::GetMinPoWScore => Ok(Response::MinPoWScore(self.client.get_min_pow_score().await?)),
+            ClientMethod::GetTipsInterval => Ok(Response::TipsInterval(self.client.get_tips_interval().await)),
+            ClientMethod::GetLocalPoW => Ok(Response::LocalPoW(self.client.get_local_pow().await)),
+            ClientMethod::GetFallbackToLocalPoW => Ok(Response::FallbackToLocalPoW(
                 self.client.get_fallback_to_local_pow().await,
             )),
             ClientMethod::PrepareTransaction {
@@ -173,7 +183,7 @@ impl ClientMessageHandler {
                     message_builder = message_builder.set_options(options.clone())?;
                 }
 
-                Ok(ResponseType::PreparedTransactionData(PreparedTransactionDataDto::from(
+                Ok(Response::PreparedTransactionData(PreparedTransactionDataDto::from(
                     &message_builder.prepare_transaction().await?,
                 )))
             }
@@ -192,7 +202,7 @@ impl ClientMessageHandler {
 
                 message_builder = message_builder.with_secret_manager(&secret_manager);
 
-                Ok(ResponseType::SignedTransaction(PayloadDto::from(
+                Ok(Response::SignedTransaction(PayloadDto::from(
                     &message_builder
                         .sign_transaction(PreparedTransactionData::try_from(prepared_transaction_data)?)
                         .await?,
@@ -209,96 +219,94 @@ impl ClientMessageHandler {
                 } else {
                     return Err(crate::Error::SecretManagerMismatch);
                 }
-                Ok(ResponseType::Ok(()))
+                Ok(Response::Ok(()))
             }
             ClientMethod::SubmitPayload { payload_dto } => {
                 let message_builder = self.client.message();
 
-                Ok(ResponseType::GeneratedMessage(MessageDto::from(
+                Ok(Response::GeneratedMessage(MessageDto::from(
                     &message_builder
                         .finish_message(Some(Payload::try_from(payload_dto)?))
                         .await?,
                 )))
             }
             #[cfg(not(feature = "wasm"))]
-            ClientMethod::UnsyncedNodes => Ok(ResponseType::UnsyncedNodes(
+            ClientMethod::UnsyncedNodes => Ok(Response::UnsyncedNodes(
                 self.client.unsynced_nodes().await.into_iter().cloned().collect(),
             )),
-            ClientMethod::GetNodeHealth { url } => Ok(ResponseType::NodeHealth(Client::get_node_health(url).await?)),
-            ClientMethod::GetHealth => Ok(ResponseType::NodeHealth(self.client.get_health().await?)),
+            ClientMethod::GetNodeHealth { url } => Ok(Response::NodeHealth(Client::get_node_health(url).await?)),
+            ClientMethod::GetHealth => Ok(Response::NodeHealth(self.client.get_health().await?)),
             ClientMethod::GetNodeInfo { url, auth } => {
-                Ok(ResponseType::NodeInfo(Client::get_node_info(url, auth.clone()).await?))
+                Ok(Response::NodeInfo(Client::get_node_info(url, auth.clone()).await?))
             }
-            ClientMethod::GetInfo => Ok(ResponseType::Info(self.client.get_info().await?)),
-            ClientMethod::GetPeers => Ok(ResponseType::Peers(self.client.get_peers().await?)),
-            ClientMethod::GetTips => Ok(ResponseType::Tips(self.client.get_tips().await?)),
-            ClientMethod::PostMessageRaw { message } => Ok(ResponseType::PostMessageSuccessful(
+            ClientMethod::GetInfo => Ok(Response::Info(self.client.get_info().await?)),
+            ClientMethod::GetPeers => Ok(Response::Peers(self.client.get_peers().await?)),
+            ClientMethod::GetTips => Ok(Response::Tips(self.client.get_tips().await?)),
+            ClientMethod::PostMessageRaw { message } => Ok(Response::PostMessageSuccessful(
                 self.client.post_message_raw(&BeeMessage::try_from(message)?).await?,
             )),
-            ClientMethod::PostMessage { message } => Ok(ResponseType::PostMessageSuccessful(
+            ClientMethod::PostMessage { message } => Ok(Response::PostMessageSuccessful(
                 self.client.post_message(&BeeMessage::try_from(message)?).await?,
             )),
-            ClientMethod::GetMessage { message_id } => Ok(ResponseType::Message(MessageDto::from(
+            ClientMethod::GetMessage { message_id } => Ok(Response::Message(MessageDto::from(
                 &self.client.get_message(message_id).await?,
             ))),
-            ClientMethod::GetMessageMetadata { message_id } => Ok(ResponseType::MessageMetadata(
+            ClientMethod::GetMessageMetadata { message_id } => Ok(Response::MessageMetadata(
                 self.client.get_message_metadata(message_id).await?,
             )),
             ClientMethod::GetMessageRaw { message_id } => {
-                Ok(ResponseType::MessageRaw(self.client.get_message_raw(message_id).await?))
+                Ok(Response::MessageRaw(self.client.get_message_raw(message_id).await?))
             }
-            ClientMethod::GetMessageChildren { message_id } => Ok(ResponseType::MessageChildren(
+            ClientMethod::GetMessageChildren { message_id } => Ok(Response::MessageChildren(
                 self.client.get_message_children(message_id).await?,
             )),
-            ClientMethod::GetOutput { output_id } => Ok(ResponseType::Output(self.client.get_output(output_id).await?)),
-            ClientMethod::GetMilestoneById { milestone_id } => Ok(ResponseType::Milestone(MilestonePayloadDto::from(
+            ClientMethod::GetOutput { output_id } => Ok(Response::Output(self.client.get_output(output_id).await?)),
+            ClientMethod::GetMilestoneById { milestone_id } => Ok(Response::Milestone(MilestonePayloadDto::from(
                 &self.client.get_milestone_by_id(milestone_id).await?,
             ))),
-            ClientMethod::GetMilestoneByIndex { index } => Ok(ResponseType::Milestone(MilestonePayloadDto::from(
+            ClientMethod::GetMilestoneByIndex { index } => Ok(Response::Milestone(MilestonePayloadDto::from(
                 &self.client.get_milestone_by_index(*index).await?,
             ))),
-            ClientMethod::GetUtxoChangesById { milestone_id } => Ok(ResponseType::MilestoneUtxoChanges(
+            ClientMethod::GetUtxoChangesById { milestone_id } => Ok(Response::MilestoneUtxoChanges(
                 self.client.get_utxo_changes_by_id(milestone_id).await?,
             )),
-            ClientMethod::GetUtxoChangesByIndex { index } => Ok(ResponseType::MilestoneUtxoChanges(
+            ClientMethod::GetUtxoChangesByIndex { index } => Ok(Response::MilestoneUtxoChanges(
                 self.client.get_utxo_changes_by_index(*index).await?,
             )),
-            ClientMethod::GetReceipts => Ok(ResponseType::Receipts(self.client.get_receipts().await?)),
-            ClientMethod::GetReceiptsMigratedAt { milestone_index } => Ok(ResponseType::ReceiptsMigratedAtMilestone(
+            ClientMethod::GetReceipts => Ok(Response::Receipts(self.client.get_receipts().await?)),
+            ClientMethod::GetReceiptsMigratedAt { milestone_index } => Ok(Response::ReceiptsMigratedAtMilestone(
                 self.client.get_receipts_migrated_at(*milestone_index).await?,
             )),
-            ClientMethod::GetTreasury => Ok(ResponseType::Treasury(self.client.get_treasury().await?)),
-            ClientMethod::GetIncludedMessage { transaction_id } => Ok(ResponseType::IncludedMessage(MessageDto::from(
+            ClientMethod::GetTreasury => Ok(Response::Treasury(self.client.get_treasury().await?)),
+            ClientMethod::GetIncludedMessage { transaction_id } => Ok(Response::IncludedMessage(MessageDto::from(
                 &self.client.get_included_message(transaction_id).await?,
             ))),
-            ClientMethod::OutputIds { query_parameters } => Ok(ResponseType::OutputIds(
+            ClientMethod::OutputIds { query_parameters } => Ok(Response::OutputIds(
                 self.client.output_ids(query_parameters.clone()).await?,
             )),
-            ClientMethod::AliasesOutputIds { query_parameters } => Ok(ResponseType::OutputIds(
+            ClientMethod::AliasesOutputIds { query_parameters } => Ok(Response::OutputIds(
                 self.client.aliases_output_ids(query_parameters.clone()).await?,
             )),
             ClientMethod::AliasOutputId { alias_id } => {
-                Ok(ResponseType::OutputId(self.client.alias_output_id(*alias_id).await?))
+                Ok(Response::OutputId(self.client.alias_output_id(*alias_id).await?))
             }
-            ClientMethod::NftsOutputIds { query_parameters } => Ok(ResponseType::OutputIds(
+            ClientMethod::NftsOutputIds { query_parameters } => Ok(Response::OutputIds(
                 self.client.nfts_output_ids(query_parameters.clone()).await?,
             )),
-            ClientMethod::NftOutputId { nft_id } => {
-                Ok(ResponseType::OutputId(self.client.nft_output_id(*nft_id).await?))
-            }
-            ClientMethod::FoundriesOutputIds { query_parameters } => Ok(ResponseType::OutputIds(
+            ClientMethod::NftOutputId { nft_id } => Ok(Response::OutputId(self.client.nft_output_id(*nft_id).await?)),
+            ClientMethod::FoundriesOutputIds { query_parameters } => Ok(Response::OutputIds(
                 self.client.foundries_output_ids(query_parameters.clone()).await?,
             )),
-            ClientMethod::FoundryOutputId { foundry_id } => Ok(ResponseType::OutputId(
-                self.client.foundry_output_id(*foundry_id).await?,
-            )),
-            ClientMethod::GetOutputs { output_ids } => Ok(ResponseType::Outputs(
-                self.client.get_outputs(output_ids.clone()).await?,
-            )),
-            ClientMethod::TryGetOutputs { output_ids } => Ok(ResponseType::Outputs(
+            ClientMethod::FoundryOutputId { foundry_id } => {
+                Ok(Response::OutputId(self.client.foundry_output_id(*foundry_id).await?))
+            }
+            ClientMethod::GetOutputs { output_ids } => {
+                Ok(Response::Outputs(self.client.get_outputs(output_ids.clone()).await?))
+            }
+            ClientMethod::TryGetOutputs { output_ids } => Ok(Response::Outputs(
                 self.client.try_get_outputs(output_ids.clone()).await?,
             )),
-            ClientMethod::FindMessages { message_ids } => Ok(ResponseType::Messages(
+            ClientMethod::FindMessages { message_ids } => Ok(Response::Messages(
                 self.client
                     .find_messages(message_ids)
                     .await?
@@ -308,7 +316,7 @@ impl ClientMessageHandler {
             )),
             ClientMethod::Retry { message_id } => {
                 let (message_id, message) = self.client.retry(message_id).await?;
-                Ok(ResponseType::RetrySuccessful((message_id, MessageDto::from(&message))))
+                Ok(Response::RetrySuccessful((message_id, MessageDto::from(&message))))
             }
             ClientMethod::RetryUntilIncluded {
                 message_id,
@@ -323,7 +331,7 @@ impl ClientMessageHandler {
                     .into_iter()
                     .map(|(message_id, message)| (message_id, MessageDto::from(&message)))
                     .collect();
-                Ok(ResponseType::RetryUntilIncludedSuccessful(res))
+                Ok(Response::RetryUntilIncludedSuccessful(res))
             }
             ClientMethod::ConsolidateFunds {
                 secret_manager,
@@ -336,13 +344,13 @@ impl ClientMessageHandler {
                 if let SecretManager::Stronghold(stronghold_secret_manager) = &mut secret_manager {
                     stronghold_secret_manager.read_stronghold_snapshot().await?;
                 }
-                Ok(ResponseType::ConsolidatedFunds(
+                Ok(Response::ConsolidatedFunds(
                     self.client
                         .consolidate_funds(&secret_manager, *account_index, address_range.clone())
                         .await?,
                 ))
             }
-            ClientMethod::FindInputs { addresses, amount } => Ok(ResponseType::Inputs(
+            ClientMethod::FindInputs { addresses, amount } => Ok(Response::Inputs(
                 self.client
                     .find_inputs(addresses.clone(), *amount)
                     .await?
@@ -350,48 +358,46 @@ impl ClientMessageHandler {
                     .map(UtxoInputDto::from)
                     .collect(),
             )),
-            ClientMethod::FindOutputs { output_ids, addresses } => Ok(ResponseType::Outputs(
+            ClientMethod::FindOutputs { output_ids, addresses } => Ok(Response::Outputs(
                 self.client.find_outputs(output_ids, addresses).await?,
             )),
             ClientMethod::Reattach { message_id } => {
                 let (message_id, message) = self.client.reattach(message_id).await?;
-                Ok(ResponseType::Reattached((message_id, MessageDto::from(&message))))
+                Ok(Response::Reattached((message_id, MessageDto::from(&message))))
             }
             ClientMethod::ReattachUnchecked { message_id } => {
                 let (message_id, message) = self.client.reattach_unchecked(message_id).await?;
-                Ok(ResponseType::Reattached((message_id, MessageDto::from(&message))))
+                Ok(Response::Reattached((message_id, MessageDto::from(&message))))
             }
             ClientMethod::Promote { message_id } => {
                 let (message_id, message) = self.client.promote(message_id).await?;
-                Ok(ResponseType::Promoted((message_id, MessageDto::from(&message))))
+                Ok(Response::Promoted((message_id, MessageDto::from(&message))))
             }
             ClientMethod::PromoteUnchecked { message_id } => {
                 let (message_id, message) = self.client.promote_unchecked(message_id).await?;
-                Ok(ResponseType::Promoted((message_id, MessageDto::from(&message))))
+                Ok(Response::Promoted((message_id, MessageDto::from(&message))))
             }
-            ClientMethod::Bech32ToHex { bech32 } => Ok(ResponseType::Bech32ToHex(Client::bech32_to_hex(bech32)?)),
-            ClientMethod::HexToBech32 { hex, bech32_hrp } => Ok(ResponseType::HexToBech32(
+            ClientMethod::Bech32ToHex { bech32 } => Ok(Response::Bech32ToHex(Client::bech32_to_hex(bech32)?)),
+            ClientMethod::HexToBech32 { hex, bech32_hrp } => Ok(Response::HexToBech32(
                 self.client.hex_to_bech32(hex, bech32_hrp.as_deref()).await?,
             )),
-            ClientMethod::HexPublicKeyToBech32Address { hex, bech32_hrp } => Ok(ResponseType::HexToBech32(
+            ClientMethod::HexPublicKeyToBech32Address { hex, bech32_hrp } => Ok(Response::HexToBech32(
                 self.client
                     .hex_public_key_to_bech32_address(hex, bech32_hrp.as_deref())
                     .await?,
             )),
-            ClientMethod::ParseBech32Address { address } => Ok(ResponseType::ParsedBech32Address(AddressDto::from(
+            ClientMethod::ParseBech32Address { address } => Ok(Response::ParsedBech32Address(AddressDto::from(
                 &Client::parse_bech32_address(address)?,
             ))),
-            ClientMethod::IsAddressValid { address } => {
-                Ok(ResponseType::IsAddressValid(Client::is_address_valid(address)))
-            }
-            ClientMethod::GenerateMnemonic => Ok(ResponseType::GeneratedMnemonic(Client::generate_mnemonic()?)),
+            ClientMethod::IsAddressValid { address } => Ok(Response::IsAddressValid(Client::is_address_valid(address))),
+            ClientMethod::GenerateMnemonic => Ok(Response::GeneratedMnemonic(Client::generate_mnemonic()?)),
             ClientMethod::MnemonicToHexSeed { mnemonic } => {
-                Ok(ResponseType::MnemonicHexSeed(Client::mnemonic_to_hex_seed(mnemonic)?))
+                Ok(Response::MnemonicHexSeed(Client::mnemonic_to_hex_seed(mnemonic)?))
             }
             ClientMethod::MessageId { message } => {
                 let message = BeeMessage::try_from(message)?;
 
-                Ok(ResponseType::MessageId(message.id()))
+                Ok(Response::MessageId(message.id()))
             }
         }
     }

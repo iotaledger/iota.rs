@@ -229,6 +229,11 @@ impl StrongholdAdapter {
         StrongholdAdapterBuilder::default()
     }
 
+    /// Test if the key hasn't been cleared.
+    pub async fn is_key_available(&self) -> bool {
+        self.key.lock().await.is_some()
+    }
+
     /// Use an user-input password string to derive a key to use Stronghold.
     ///
     /// This function will also spawn an asynchronous task in Tokio to automatically purge the derived key from

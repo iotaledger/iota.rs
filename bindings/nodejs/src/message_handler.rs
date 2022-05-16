@@ -7,7 +7,7 @@ use iota_client::{
         MessageDto,
     },
     message_interface::{
-        create_message_handler, ClientMessageHandler, Message as ClientMessage, MessageType, Response, ResponseType,
+        create_message_handler, ClientMessageHandler, Message as ClientMessage, MessageType, Response,
     },
     MqttPayload, Topic, TopicEvent,
 };
@@ -48,13 +48,13 @@ impl MessageHandler {
                 self.client_message_handler.handle(client_message).await;
                 let response = response_rx.recv().await;
                 if let Some(res) = response {
-                    let mut is_err = matches!(res.response_type(), ResponseType::Error(_) | ResponseType::Panic(_));
+                    let mut is_err = matches!(res, Response::Error(_) | Response::Panic(_));
 
                     let msg = match serde_json::to_string(&res) {
                         Ok(msg) => msg,
                         Err(e) => {
                             is_err = true;
-                            serde_json::to_string(&Response::new(message, ResponseType::Error(e.into())))
+                            serde_json::to_string(&Response::Error(e.into()))
                                 .expect("The response is generated manually, so unwrap is safe.")
                         }
                     };
