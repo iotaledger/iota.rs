@@ -20,16 +20,16 @@ impl Response {
         self.0.status().as_u16()
     }
 
-    pub(crate) async fn json<T: DeserializeOwned>(self) -> Result<T> {
+    pub(crate) async fn into_json<T: DeserializeOwned>(self) -> Result<T> {
         self.0.json().await.map_err(Into::into)
     }
 
     // TODO is this really needed ?
-    pub(crate) async fn text(self) -> Result<String> {
+    pub(crate) async fn into_text(self) -> Result<String> {
         self.0.text().await.map_err(Into::into)
     }
 
-    pub(crate) async fn bytes(self) -> Result<Vec<u8>> {
+    pub(crate) async fn into_bytes(self) -> Result<Vec<u8>> {
         self.0.bytes().await.map(|b| b.to_vec()).map_err(Into::into)
     }
 }
