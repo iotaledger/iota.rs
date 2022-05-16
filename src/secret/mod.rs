@@ -7,6 +7,8 @@
 pub mod ledger_nano;
 /// Module for signing with a mnemonic or seed
 pub mod mnemonic;
+/// Module for the PlaceholderSecretManager
+pub mod placeholder;
 /// Module for signing with a Stronghold vault
 #[cfg(feature = "stronghold")]
 pub mod stronghold;
@@ -27,9 +29,9 @@ pub use types::{GenerateAddressMetadata, LedgerStatus};
 
 #[cfg(feature = "ledger_nano")]
 use self::ledger_nano::LedgerSecretManager;
-use self::mnemonic::MnemonicSecretManager;
 #[cfg(feature = "stronghold")]
 use self::stronghold::StrongholdSecretManager;
+use self::{mnemonic::MnemonicSecretManager, placeholder::PlaceholderSecretManager};
 #[cfg(feature = "stronghold")]
 use crate::secret::types::StrongholdDto;
 use crate::{
@@ -102,6 +104,10 @@ pub enum SecretManager {
 
     /// Secret manager that uses only a mnemonic.
     Mnemonic(MnemonicSecretManager),
+
+    /// Secret manager that's just a placeholder, so it can be provided to an online wallet, but can't be used for
+    /// signing.
+    Placeholder(PlaceholderSecretManager),
 }
 
 impl std::fmt::Debug for SecretManager {
@@ -114,6 +120,7 @@ impl std::fmt::Debug for SecretManager {
             #[cfg(feature = "ledger_nano")]
             Self::LedgerNanoSimulator(_) => f.debug_tuple("LedgerNanoSimulator").field(&"...").finish(),
             Self::Mnemonic(_) => f.debug_tuple("Mnemonic").field(&"...").finish(),
+            Self::Placeholder(_) => f.debug_tuple("Placeholder").finish(),
         }
     }
 }
@@ -141,6 +148,8 @@ pub enum SecretManagerDto {
     LedgerNanoSimulator,
     /// Mnemonic
     Mnemonic(String),
+    /// Placeholder
+    Placeholder,
 }
 
 impl TryFrom<&SecretManagerDto> for SecretManager {
@@ -169,6 +178,7 @@ impl TryFrom<&SecretManagerDto> for SecretManager {
             SecretManagerDto::LedgerNanoSimulator => Self::LedgerNanoSimulator(LedgerSecretManager::new(true)),
 
             SecretManagerDto::Mnemonic(mnemonic) => Self::Mnemonic(MnemonicSecretManager::try_from_mnemonic(mnemonic)?),
+            SecretManagerDto::Placeholder => Self::Placeholder(PlaceholderSecretManager),
         })
     }
 }
@@ -195,6 +205,7 @@ impl From<&SecretManager> for SecretManagerDto {
             // the client/wallet we also don't need to convert it in this direction with the mnemonic/seed, we only need
             // to know the type
             SecretManager::Mnemonic(_mnemonic) => Self::Mnemonic("...".to_string()),
+            SecretManager::Placeholder(_) => Self::Placeholder,
         }
     }
 }
@@ -227,6 +238,11 @@ impl SecretManage for SecretManager {
                     .generate_addresses(coin_type, account_index, address_indexes, internal, metadata)
                     .await
             }
+            SecretManager::Placeholder(secret_manager) => {
+                secret_manager
+                    .generate_addresses(coin_type, account_index, address_indexes, internal, metadata)
+                    .await
+            }
         }
     }
 
@@ -248,6 +264,9 @@ impl SecretManage for SecretManager {
             SecretManager::Mnemonic(secret_manager) => {
                 secret_manager.signature_unlock(input, essence_hash, metadata).await
             }
+            SecretManager::Placeholder(secret_manager) => {
+                secret_manager.signature_unlock(input, essence_hash, metadata).await
+            }
         }
     }
 }
@@ -266,6 +285,7 @@ impl SecretManageExt for SecretManager {
                 secret_manager.sign_transaction_essence(prepared_transaction_data).await
             }
             SecretManager::Mnemonic(_) => self.default_sign_transaction_essence(prepared_transaction_data).await,
+            SecretManager::Placeholder(_) => self.sign_transaction_essence(prepared_transaction_data).await,
         }
     }
 }
