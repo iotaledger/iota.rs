@@ -50,7 +50,7 @@ impl QueryParameters {
 pub enum QueryParameter {
     /// Bech32-encoded address that should be searched for.
     Address(String),
-    /// Bech32-encoded alias address that should be searched for.
+    /// Filter foundry outputs based on bech32-encoded address of the controlling alias.
     AliasAddress(String),
     /// Filters outputs based on the presence of storage return unlock condition.
     HasStorageReturnCondition(bool),
@@ -89,11 +89,11 @@ pub enum QueryParameter {
     CreatedAfter(u32),
     /// Starts the search from the cursor (confirmationMS+outputId.pageSize).
     Cursor(String),
-    /// Filters for a certain issuer
+    /// Filters outputs based on bech32-encoded issuer address.
     Issuer(String),
-    /// Filters for a certain state controller address
+    /// Filters outputs based on bech32-encoded state controller address.
     StateController(String),
-    /// Filters for a certain governance controller address
+    /// Filters outputs based on bech32-encoded governor (governance controller) address.
     Governor(String),
     /// The maximum amount of items returned in one call. If there are more items, a cursor to the next page is
     /// returned too. The parameter is ignored when pageSize is defined via the cursor parameter.
