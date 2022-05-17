@@ -10,12 +10,24 @@ public class Client {
         nodeApi = new NodeApi(config);
     }
 
-    public String getNodeHealth(String nodeUrl) {
-        return nodeApi.getNodeHealth(nodeUrl);
+    public String getHealth(String nodeUrl) {
+        return nodeApi.getHealth(nodeUrl);
     }
 
     public String getNodeInfo() {
         return nodeApi.getNodeInfo();
+    }
+
+    public String getTips() {
+        return nodeApi.getTips();
+    }
+
+    public String getMessage(String messageId) {
+        return nodeApi.getMessage(messageId);
+    }
+
+    public String getMessageMetadata(String messageId) {
+        return nodeApi.getMessageMetadata(messageId);
     }
 
 }
