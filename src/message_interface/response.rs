@@ -58,8 +58,8 @@ pub enum Response {
     /// returns the unsynced nodes.
     #[cfg(not(target_family = "wasm"))]
     UnsyncedNodes(HashSet<Node>),
-    /// Node health
-    NodeHealth(bool),
+    /// Health
+    Health(bool),
     /// Node info
     NodeInfo(NodeInfo),
     /// Info
