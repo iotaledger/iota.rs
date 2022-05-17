@@ -75,10 +75,10 @@ async fn setup_transaction_message() -> (MessageId, TransactionId) {
         .message()
         .with_secret_manager(&secret_manager)
         .with_output_hex(
-            &bech32_to_hex(&addresses[1].to_bech32(client.get_bech32_hrp().await.unwrap())).unwrap(), /* Send funds
-                                                                                                       * back to the
-                                                                                                       * sender. */
-            1_000_000, // The amount to spend, cannot be zero.
+            // Send funds back to the sender.
+            &bech32_to_hex(&addresses[1].to_bech32(client.get_bech32_hrp().await.unwrap())).unwrap(),
+            // The amount to spend, cannot be zero.
+            1_000_000,
         )
         .unwrap()
         .finish()
@@ -105,7 +105,11 @@ async fn setup_transaction_message() -> (MessageId, TransactionId) {
 #[ignore]
 #[tokio::test]
 async fn test_get_health() {
-    let r = Client::get_node_health(DEFAULT_DEVNET_NODE_URL).await.unwrap();
+    let r = setup_client_with_sync_disabled()
+        .await
+        .get_health(DEFAULT_DEVNET_NODE_URL)
+        .await
+        .unwrap();
     println!("{:#?}", r);
 }
 

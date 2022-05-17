@@ -96,13 +96,11 @@ pub enum ClientMethod {
     //////////////////////////////////////////////////////////////////////
     // Node core API
     //////////////////////////////////////////////////////////////////////
-    /// Get node health
-    GetNodeHealth {
+    /// Get health
+    GetHealth {
         /// Url
         url: String,
     },
-    /// Get health
-    GetHealth,
     /// Get node info
     GetNodeInfo {
         /// Url

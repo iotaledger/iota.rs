@@ -381,43 +381,6 @@ impl Client {
     // Node core API
     //////////////////////////////////////////////////////////////////////
 
-    /// GET /health endpoint
-    pub async fn get_node_health(url: &str) -> Result<bool> {
-        let mut url = Url::parse(url)?;
-        url.set_path("health");
-        let status = crate::node_manager::http_client::HttpClient::new()
-            .get(
-                Node {
-                    url,
-                    auth: None,
-                    disabled: false,
-                },
-                DEFAULT_API_TIMEOUT,
-            )
-            .await?
-            .status();
-        match status {
-            200 => Ok(true),
-            _ => Ok(false),
-        }
-    }
-
-    /// GET /health endpoint
-    pub async fn get_health(&self) -> Result<bool> {
-        let mut node = self.get_node().await?;
-        node.url.set_path("health");
-        let status = self
-            .node_manager
-            .http_client
-            .get(node, DEFAULT_API_TIMEOUT)
-            .await?
-            .status();
-        match status {
-            200 => Ok(true),
-            _ => Ok(false),
-        }
-    }
-
     // todo: only used during syncing, can it be replaced with the other node info function?
     /// GET /api/v2/info endpoint
     pub async fn get_node_info(url: &str, auth: Option<NodeAuth>) -> Result<NodeInfo> {

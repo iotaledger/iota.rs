@@ -21,11 +21,37 @@ use bee_rest_api::types::{
     },
 };
 use packable::PackableExt;
+use url::Url;
 
-use crate::{constants::DEFAULT_API_TIMEOUT, Client, Error, NodeInfoWrapper, Result};
+use crate::{constants::DEFAULT_API_TIMEOUT, node_manager::node::Node, Client, Error, NodeInfoWrapper, Result};
 
 impl Client {
     // Node routes.
+
+    /// Returns the health of the node.
+    /// GET /health
+    pub async fn get_health(&self, url: &str) -> Result<bool> {
+        let path = "health";
+
+        let mut url = Url::parse(url)?;
+        url.set_path(path);
+        let status = crate::node_manager::http_client::HttpClient::new()
+            .get(
+                Node {
+                    url,
+                    auth: None,
+                    disabled: false,
+                },
+                DEFAULT_API_TIMEOUT,
+            )
+            .await?
+            .status();
+
+        match status {
+            200 => Ok(true),
+            _ => Ok(false),
+        }
+    }
 
     /// Returns general information about the node.
     /// GET /api/v2/info

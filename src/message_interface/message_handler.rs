@@ -234,8 +234,7 @@ impl ClientMessageHandler {
             ClientMethod::UnsyncedNodes => Ok(Response::UnsyncedNodes(
                 self.client.unsynced_nodes().await.into_iter().cloned().collect(),
             )),
-            ClientMethod::GetNodeHealth { url } => Ok(Response::NodeHealth(Client::get_node_health(url).await?)),
-            ClientMethod::GetHealth => Ok(Response::NodeHealth(self.client.get_health().await?)),
+            ClientMethod::GetHealth { url } => Ok(Response::Health(self.client.get_health(url).await?)),
             ClientMethod::GetNodeInfo { url, auth } => {
                 Ok(Response::NodeInfo(Client::get_node_info(url, auth.clone()).await?))
             }

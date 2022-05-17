@@ -13,9 +13,10 @@ Returns the health of the node.
 ## Example
 
 ```rust
+let health = client.get_health(&node).await?;
 ```
 
-Run `cargo run --example node_api_core_ --release -- [NODE URL]`.
+Run `cargo run --example node_api_core_get_health --release -- [NODE URL]`.
 
 # `Client::get_info`
 
