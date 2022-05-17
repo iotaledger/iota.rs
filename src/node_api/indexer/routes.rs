@@ -8,6 +8,18 @@ use crate::{node_api::indexer::query_parameters::QueryParameter, Client, Error, 
 
 // hornet: https://github.com/gohornet/hornet/blob/develop/plugins/indexer/routes.go
 
+macro_rules! verify_query_parameters {
+    ($query_parameters:ident, $first:path $(, $rest:path)*) => {
+        if $query_parameters.iter().any(|qp| {
+            !matches!(qp, $first(_) $(| $rest(_))*)
+        }) {
+            Err(Error::UnsupportedQueryParameter)
+        } else {
+            Ok(())
+        }
+    };
+}
+
 impl Client {
     /// Get outputs filtered by the given parameters.
     /// GET with query parameter returns all outputIDs that fit these filter criteria.
@@ -20,36 +32,32 @@ impl Client {
     pub async fn output_ids(&self, query_parameters: Vec<QueryParameter>) -> Result<Vec<OutputId>> {
         let route = "api/plugins/indexer/v1/outputs/basic";
 
-        if query_parameters.iter().any(|qp| {
-            !matches!(
-                qp,
-                QueryParameter::Address(_)
-                    | QueryParameter::HasNativeTokens(_)
-                    | QueryParameter::MinNativeTokenCount(_)
-                    | QueryParameter::MaxNativeTokenCount(_)
-                    | QueryParameter::HasStorageReturnCondition(_)
-                    | QueryParameter::StorageReturnAddress(_)
-                    | QueryParameter::HasTimelockCondition(_)
-                    | QueryParameter::TimelockedBefore(_)
-                    | QueryParameter::TimelockedAfter(_)
-                    | QueryParameter::TimelockedBeforeMilestone(_)
-                    | QueryParameter::TimelockedAfterMilestone(_)
-                    | QueryParameter::HasExpirationCondition(_)
-                    | QueryParameter::ExpiresBefore(_)
-                    | QueryParameter::ExpiresAfter(_)
-                    | QueryParameter::ExpiresBeforeMilestone(_)
-                    | QueryParameter::ExpiresAfterMilestone(_)
-                    | QueryParameter::ExpirationReturnAddress(_)
-                    | QueryParameter::Sender(_)
-                    | QueryParameter::Tag(_)
-                    | QueryParameter::CreatedBefore(_)
-                    | QueryParameter::CreatedAfter(_)
-                    | QueryParameter::PageSize(_)
-                    | QueryParameter::Cursor(_)
-            )
-        }) {
-            return Err(Error::UnsupportedQueryParameter);
-        }
+        verify_query_parameters!(
+            query_parameters,
+            QueryParameter::Address,
+            QueryParameter::HasNativeTokens,
+            QueryParameter::MinNativeTokenCount,
+            QueryParameter::MaxNativeTokenCount,
+            QueryParameter::HasStorageReturnCondition,
+            QueryParameter::StorageReturnAddress,
+            QueryParameter::HasTimelockCondition,
+            QueryParameter::TimelockedBefore,
+            QueryParameter::TimelockedAfter,
+            QueryParameter::TimelockedBeforeMilestone,
+            QueryParameter::TimelockedAfterMilestone,
+            QueryParameter::HasExpirationCondition,
+            QueryParameter::ExpiresBefore,
+            QueryParameter::ExpiresAfter,
+            QueryParameter::ExpiresBeforeMilestone,
+            QueryParameter::ExpiresAfterMilestone,
+            QueryParameter::ExpirationReturnAddress,
+            QueryParameter::Sender,
+            QueryParameter::Tag,
+            QueryParameter::CreatedBefore,
+            QueryParameter::CreatedAfter,
+            QueryParameter::PageSize,
+            QueryParameter::Cursor
+        )?;
 
         self.get_output_ids_with_pagination(route, query_parameters, true, false)
             .await
@@ -63,24 +71,20 @@ impl Client {
     pub async fn aliases_output_ids(&self, query_parameters: Vec<QueryParameter>) -> Result<Vec<OutputId>> {
         let route = "api/plugins/indexer/v1/outputs/alias";
 
-        if query_parameters.iter().any(|qp| {
-            !matches!(
-                qp,
-                QueryParameter::StateController(_)
-                    | QueryParameter::Governor(_)
-                    | QueryParameter::Issuer(_)
-                    | QueryParameter::Sender(_)
-                    | QueryParameter::HasNativeTokens(_)
-                    | QueryParameter::MinNativeTokenCount(_)
-                    | QueryParameter::MaxNativeTokenCount(_)
-                    | QueryParameter::CreatedBefore(_)
-                    | QueryParameter::CreatedAfter(_)
-                    | QueryParameter::PageSize(_)
-                    | QueryParameter::Cursor(_)
-            )
-        }) {
-            return Err(Error::UnsupportedQueryParameter);
-        }
+        verify_query_parameters!(
+            query_parameters,
+            QueryParameter::StateController,
+            QueryParameter::Governor,
+            QueryParameter::Issuer,
+            QueryParameter::Sender,
+            QueryParameter::HasNativeTokens,
+            QueryParameter::MinNativeTokenCount,
+            QueryParameter::MaxNativeTokenCount,
+            QueryParameter::CreatedBefore,
+            QueryParameter::CreatedAfter,
+            QueryParameter::PageSize,
+            QueryParameter::Cursor
+        )?;
 
         self.get_output_ids_with_pagination(route, query_parameters, true, false)
             .await
@@ -106,21 +110,17 @@ impl Client {
     pub async fn foundries_output_ids(&self, query_parameters: Vec<QueryParameter>) -> Result<Vec<OutputId>> {
         let route = "api/plugins/indexer/v1/outputs/foundry";
 
-        if query_parameters.iter().any(|qp| {
-            !matches!(
-                qp,
-                QueryParameter::AliasAddress(_)
-                    | QueryParameter::HasNativeTokens(_)
-                    | QueryParameter::MinNativeTokenCount(_)
-                    | QueryParameter::MaxNativeTokenCount(_)
-                    | QueryParameter::CreatedBefore(_)
-                    | QueryParameter::CreatedAfter(_)
-                    | QueryParameter::PageSize(_)
-                    | QueryParameter::Cursor(_)
-            )
-        }) {
-            return Err(Error::UnsupportedQueryParameter);
-        }
+        verify_query_parameters!(
+            query_parameters,
+            QueryParameter::AliasAddress,
+            QueryParameter::HasNativeTokens,
+            QueryParameter::MinNativeTokenCount,
+            QueryParameter::MaxNativeTokenCount,
+            QueryParameter::CreatedBefore,
+            QueryParameter::CreatedAfter,
+            QueryParameter::PageSize,
+            QueryParameter::Cursor
+        )?;
 
         self.get_output_ids_with_pagination(route, query_parameters, true, false)
             .await
@@ -148,36 +148,32 @@ impl Client {
     pub async fn nfts_output_ids(&self, query_parameters: Vec<QueryParameter>) -> Result<Vec<OutputId>> {
         let route = "api/plugins/indexer/v1/outputs/nft";
 
-        if query_parameters.iter().any(|qp| {
-            !matches!(
-                qp,
-                QueryParameter::Address(_)
-                    | QueryParameter::HasNativeTokens(_)
-                    | QueryParameter::MinNativeTokenCount(_)
-                    | QueryParameter::MaxNativeTokenCount(_)
-                    | QueryParameter::HasStorageReturnCondition(_)
-                    | QueryParameter::StorageReturnAddress(_)
-                    | QueryParameter::HasTimelockCondition(_)
-                    | QueryParameter::TimelockedBefore(_)
-                    | QueryParameter::TimelockedAfter(_)
-                    | QueryParameter::TimelockedBeforeMilestone(_)
-                    | QueryParameter::TimelockedAfterMilestone(_)
-                    | QueryParameter::HasExpirationCondition(_)
-                    | QueryParameter::ExpiresBefore(_)
-                    | QueryParameter::ExpiresAfter(_)
-                    | QueryParameter::ExpiresBeforeMilestone(_)
-                    | QueryParameter::ExpiresAfterMilestone(_)
-                    | QueryParameter::ExpirationReturnAddress(_)
-                    | QueryParameter::Sender(_)
-                    | QueryParameter::Tag(_)
-                    | QueryParameter::CreatedBefore(_)
-                    | QueryParameter::CreatedAfter(_)
-                    | QueryParameter::PageSize(_)
-                    | QueryParameter::Cursor(_)
-            )
-        }) {
-            return Err(Error::UnsupportedQueryParameter);
-        }
+        verify_query_parameters!(
+            query_parameters,
+            QueryParameter::Address,
+            QueryParameter::HasNativeTokens,
+            QueryParameter::MinNativeTokenCount,
+            QueryParameter::MaxNativeTokenCount,
+            QueryParameter::HasStorageReturnCondition,
+            QueryParameter::StorageReturnAddress,
+            QueryParameter::HasTimelockCondition,
+            QueryParameter::TimelockedBefore,
+            QueryParameter::TimelockedAfter,
+            QueryParameter::TimelockedBeforeMilestone,
+            QueryParameter::TimelockedAfterMilestone,
+            QueryParameter::HasExpirationCondition,
+            QueryParameter::ExpiresBefore,
+            QueryParameter::ExpiresAfter,
+            QueryParameter::ExpiresBeforeMilestone,
+            QueryParameter::ExpiresAfterMilestone,
+            QueryParameter::ExpirationReturnAddress,
+            QueryParameter::Sender,
+            QueryParameter::Tag,
+            QueryParameter::CreatedBefore,
+            QueryParameter::CreatedAfter,
+            QueryParameter::PageSize,
+            QueryParameter::Cursor
+        )?;
 
         self.get_output_ids_with_pagination(route, query_parameters, true, false)
             .await
