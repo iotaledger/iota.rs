@@ -281,21 +281,21 @@ impl ClientMessageHandler {
             ClientMethod::GetIncludedMessage { transaction_id } => Ok(Response::IncludedMessage(MessageDto::from(
                 &self.client.get_included_message(transaction_id).await?,
             ))),
-            ClientMethod::OutputIds { query_parameters } => Ok(Response::OutputIds(
-                self.client.output_ids(query_parameters.clone()).await?,
+            ClientMethod::BasicOutputIds { query_parameters } => Ok(Response::OutputIds(
+                self.client.basic_output_ids(query_parameters.clone()).await?,
             )),
-            ClientMethod::AliasesOutputIds { query_parameters } => Ok(Response::OutputIds(
-                self.client.aliases_output_ids(query_parameters.clone()).await?,
+            ClientMethod::AliasOutputIds { query_parameters } => Ok(Response::OutputIds(
+                self.client.alias_output_ids(query_parameters.clone()).await?,
             )),
             ClientMethod::AliasOutputId { alias_id } => {
                 Ok(Response::OutputId(self.client.alias_output_id(*alias_id).await?))
             }
-            ClientMethod::NftsOutputIds { query_parameters } => Ok(Response::OutputIds(
-                self.client.nfts_output_ids(query_parameters.clone()).await?,
+            ClientMethod::NftOutputIds { query_parameters } => Ok(Response::OutputIds(
+                self.client.nft_output_ids(query_parameters.clone()).await?,
             )),
             ClientMethod::NftOutputId { nft_id } => Ok(Response::OutputId(self.client.nft_output_id(*nft_id).await?)),
-            ClientMethod::FoundriesOutputIds { query_parameters } => Ok(Response::OutputIds(
-                self.client.foundries_output_ids(query_parameters.clone()).await?,
+            ClientMethod::FoundryOutputIds { query_parameters } => Ok(Response::OutputIds(
+                self.client.foundry_output_ids(query_parameters.clone()).await?,
             )),
             ClientMethod::FoundryOutputId { foundry_id } => {
                 Ok(Response::OutputId(self.client.foundry_output_id(*foundry_id).await?))

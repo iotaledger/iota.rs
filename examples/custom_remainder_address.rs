@@ -53,7 +53,7 @@ async fn main() -> Result<()> {
     tokio::time::sleep(std::time::Duration::from_secs(15)).await;
 
     let output_ids = client
-        .output_ids(vec![QueryParameter::Address(sender_address.clone())])
+        .basic_output_ids(vec![QueryParameter::Address(sender_address.clone())])
         .await?;
     println!("{:?}", output_ids);
 
