@@ -11,7 +11,7 @@ use std::str::FromStr;
 
 use bee_message::output::OutputId;
 
-use self::{
+pub(crate) use self::{
     query_parameters::{QueryParameter, QueryParameters},
     responses::OutputIdsResponse,
 };

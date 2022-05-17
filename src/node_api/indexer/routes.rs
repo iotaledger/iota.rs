@@ -10,10 +10,10 @@ use crate::{node_api::indexer::query_parameters::QueryParameter, Client, Error, 
 
 macro_rules! verify_query_parameters {
     ($query_parameters:ident, $first:path $(, $rest:path)*) => {
-        if $query_parameters.iter().any(|qp| {
+        if let Some(qp) = $query_parameters.iter().find(|qp| {
             !matches!(qp, $first(_) $(| $rest(_))*)
         }) {
-            Err(Error::UnsupportedQueryParameter)
+            Err(Error::UnsupportedQueryParameter(qp.clone()))
         } else {
             Ok(())
         }
