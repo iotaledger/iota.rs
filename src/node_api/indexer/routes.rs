@@ -4,7 +4,7 @@
 //! IOTA node indexer routes
 use bee_message::output::{AliasId, FoundryId, NftId, OutputId};
 
-use crate::{node_api::indexer::query_parameters::QueryParameter, Client, Result};
+use crate::{node_api::indexer::query_parameters::QueryParameter, Client, Error, Result};
 
 // hornet: https://github.com/gohornet/hornet/blob/develop/plugins/indexer/routes.go
 
@@ -20,7 +20,7 @@ impl Client {
     pub async fn output_ids(&self, query_parameters: Vec<QueryParameter>) -> Result<Vec<OutputId>> {
         let route = "api/plugins/indexer/v1/outputs/basic";
 
-        query_parameters.iter().any(|qp| {
+        if query_parameters.iter().any(|qp| {
             !matches!(
                 qp,
                 QueryParameter::Address(_)
@@ -47,7 +47,9 @@ impl Client {
                     | QueryParameter::PageSize(_)
                     | QueryParameter::Cursor(_)
             )
-        });
+        }) {
+            return Err(Error::UnsupportedQueryParameter);
+        }
 
         self.get_output_ids_with_pagination(route, query_parameters, true, false)
             .await
@@ -61,7 +63,7 @@ impl Client {
     pub async fn aliases_output_ids(&self, query_parameters: Vec<QueryParameter>) -> Result<Vec<OutputId>> {
         let route = "api/plugins/indexer/v1/outputs/alias";
 
-        query_parameters.iter().any(|qp| {
+        if query_parameters.iter().any(|qp| {
             !matches!(
                 qp,
                 QueryParameter::StateController(_)
@@ -76,7 +78,9 @@ impl Client {
                     | QueryParameter::PageSize(_)
                     | QueryParameter::Cursor(_)
             )
-        });
+        }) {
+            return Err(Error::UnsupportedQueryParameter);
+        }
 
         self.get_output_ids_with_pagination(route, query_parameters, true, false)
             .await
@@ -102,7 +106,7 @@ impl Client {
     pub async fn foundries_output_ids(&self, query_parameters: Vec<QueryParameter>) -> Result<Vec<OutputId>> {
         let route = "api/plugins/indexer/v1/outputs/foundry";
 
-        query_parameters.iter().any(|qp| {
+        if query_parameters.iter().any(|qp| {
             !matches!(
                 qp,
                 QueryParameter::AliasAddress(_)
@@ -114,7 +118,9 @@ impl Client {
                     | QueryParameter::PageSize(_)
                     | QueryParameter::Cursor(_)
             )
-        });
+        }) {
+            return Err(Error::UnsupportedQueryParameter);
+        }
 
         self.get_output_ids_with_pagination(route, query_parameters, true, false)
             .await
@@ -142,7 +148,7 @@ impl Client {
     pub async fn nfts_output_ids(&self, query_parameters: Vec<QueryParameter>) -> Result<Vec<OutputId>> {
         let route = "api/plugins/indexer/v1/outputs/nft";
 
-        query_parameters.iter().any(|qp| {
+        if query_parameters.iter().any(|qp| {
             !matches!(
                 qp,
                 QueryParameter::Address(_)
@@ -169,7 +175,9 @@ impl Client {
                     | QueryParameter::PageSize(_)
                     | QueryParameter::Cursor(_)
             )
-        });
+        }) {
+            return Err(Error::UnsupportedQueryParameter);
+        }
 
         self.get_output_ids_with_pagination(route, query_parameters, true, false)
             .await
