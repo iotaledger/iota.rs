@@ -3,7 +3,7 @@ package org.iota;
 public class RustApi {
 
     static {
-        System.loadLibrary("iota_java");
+        System.loadLibrary("iota_client");
     }
 
     private static native String nativeCall(String clientConfig, String clientCommand);
