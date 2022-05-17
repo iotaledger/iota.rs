@@ -1,7 +1,7 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! Indexer responses
+//! Node indexer responses.
 
 /// Response of GET /api/plugins/indexer/v1/*
 /// Returns the output_ids for the provided query parameters.

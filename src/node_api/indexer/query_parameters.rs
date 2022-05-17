@@ -11,12 +11,12 @@ use std::{
 
 // https://github.com/gohornet/hornet/blob/bb1271be9f3a638f6acdeb6de74eab64515f27f1/plugins/indexer/v1/routes.go#L54
 
-/// Query parameters for output_id requests
+/// Query parameters for output_id requests.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct QueryParameters(pub HashSet<QueryParameter>);
 
 impl QueryParameters {
-    /// Creates a hashset from a provided vec of query parameters
+    /// Creates a hashset from a provided vec of query parameters.
     pub fn new(query_parameters: Vec<QueryParameter>) -> Self {
         let mut params = HashSet::new();
         for param in query_parameters {
@@ -25,12 +25,12 @@ impl QueryParameters {
         Self(params)
     }
 
-    /// Replaces or insert an enum variant in the HashSet
+    /// Replaces or insert an enum variant in the HashSet.
     pub fn replace(&mut self, query_parameter: QueryParameter) {
         self.0.replace(query_parameter);
     }
 
-    /// Converts parameters to a single String
+    /// Converts parameters to a single String.
     pub fn to_query_string(&self) -> Option<String> {
         if self.0.is_empty() {
             None
@@ -46,7 +46,7 @@ impl QueryParameters {
     }
 }
 
-/// Query parameter for output requests
+/// Query parameter for output requests.
 #[derive(Debug, Clone, Serialize, Deserialize, Eq)]
 #[serde(rename_all = "camelCase")]
 pub enum QueryParameter {
@@ -108,14 +108,14 @@ pub enum QueryParameter {
     TimelockedBeforeMilestone(u32),
 }
 
-// Custom impl because we only want a single query of each enum variant in the HashSet
+// Custom impl because we only want a single query of each enum variant in the HashSet.
 impl PartialEq for QueryParameter {
     fn eq(&self, other: &Self) -> bool {
         mem::discriminant(self) == mem::discriminant(other)
     }
 }
 
-// Custom impl because we only want a single query of each enum variant in the HashSet
+// Custom impl because we only want a single query of each enum variant in the HashSet.
 impl Hash for QueryParameter {
     fn hash<H: Hasher>(&self, state: &mut H) {
         0.hash(state);

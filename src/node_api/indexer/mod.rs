@@ -1,7 +1,7 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! IOTA node indexer API
+//! Node indexer API.
 
 pub mod query_parameters;
 pub mod responses;
@@ -27,12 +27,12 @@ impl Client {
         prefer_permanode: bool,
     ) -> Result<Vec<OutputId>> {
         let mut query_parameters = QueryParameters::new(query_parameters);
-        let mut all_output_ids: Vec<OutputId> = Vec::new();
+        let mut output_ids = Vec::new();
 
         while let Some(cursor) = {
-            let outputs_response: OutputIdsResponse = self
+            let outputs_response = self
                 .node_manager
-                .get_request(
+                .get_request::<OutputIdsResponse>(
                     route,
                     query_parameters.to_query_string().as_deref(),
                     self.get_timeout(),
@@ -42,7 +42,7 @@ impl Client {
                 .await?;
 
             for output_id in outputs_response.items {
-                all_output_ids.push(OutputId::from_str(&output_id)?);
+                output_ids.push(OutputId::from_str(&output_id)?);
             }
 
             outputs_response.cursor
@@ -50,6 +50,6 @@ impl Client {
             query_parameters.replace(QueryParameter::Cursor(cursor));
         }
 
-        Ok(all_output_ids)
+        Ok(output_ids)
     }
 }
