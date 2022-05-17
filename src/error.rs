@@ -233,7 +233,7 @@ pub enum Error {
     #[error("Local time {0} doesn't match the time of the latest milestone timestamp: {1}")]
     TimeNotSynced(u32, u32),
     /// An indexer API request contains a query parameter not supported by the endpoint.
-    #[error("An indexer API request contains a query parameter not supported by the endpoint.")]
+    #[error("An indexer API request contains a query parameter not supported by the endpoint: {0}.")]
     UnsupportedQueryParameter(QueryParameter),
 }
 

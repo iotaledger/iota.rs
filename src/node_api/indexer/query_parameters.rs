@@ -5,6 +5,7 @@
 
 use std::{
     collections::HashSet,
+    fmt,
     hash::{Hash, Hasher},
     mem,
 };
@@ -153,6 +154,12 @@ impl QueryParameter {
             QueryParameter::TimelockedBefore(v) => format!("timelockedBefore={}", v),
             QueryParameter::TimelockedBeforeMilestone(v) => format!("timelockedBeforeMilestone={}", v),
         }
+    }
+}
+
+impl fmt::Display for QueryParameter {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.to_query_string())
     }
 }
 
