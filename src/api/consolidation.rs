@@ -47,7 +47,7 @@ pub async fn consolidate_funds(
                     QueryParameter::Address(address.to_string()),
                     QueryParameter::HasExpirationCondition(false),
                     QueryParameter::HasTimelockCondition(false),
-                    QueryParameter::HasStorageDepositReturnCondition(false),
+                    QueryParameter::HasStorageReturnCondition(false),
                 ])
                 .await?;
 

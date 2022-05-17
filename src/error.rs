@@ -8,6 +8,8 @@ use std::fmt::{Debug, Display};
 use bee_message::{output::NativeTokens, semantic::ConflictReason};
 use serde::{ser::Serializer, Serialize};
 
+use crate::node_api::indexer::QueryParameter;
+
 /// Type alias of `Result` in iota-client
 pub type Result<T> = std::result::Result<T, Error>;
 
@@ -230,6 +232,9 @@ pub enum Error {
     /// Local time doesn't match the time of the latest milestone timestamp
     #[error("Local time {0} doesn't match the time of the latest milestone timestamp: {1}")]
     TimeNotSynced(u32, u32),
+    /// An indexer API request contains a query parameter not supported by the endpoint.
+    #[error("An indexer API request contains a query parameter not supported by the endpoint: {0}.")]
+    UnsupportedQueryParameter(QueryParameter),
 }
 
 // map most errors to a single error but there are some errors that

@@ -228,7 +228,7 @@ async fn test_get_address_outputs() {
         .unwrap()[0];
 
     let address = client
-        .output_ids(vec![QueryParameter::Address(
+        .basic_output_ids(vec![QueryParameter::Address(
             address.to_bech32(&client.get_bech32_hrp().await.unwrap()),
         )])
         .await

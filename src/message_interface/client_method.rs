@@ -196,14 +196,14 @@ pub enum ClientMethod {
     //////////////////////////////////////////////////////////////////////
     // Node indexer API
     //////////////////////////////////////////////////////////////////////
-    /// Fetch output IDs
-    OutputIds {
+    /// Fetch basic output IDs
+    BasicOutputIds {
         /// Query parameters for output requests
         #[serde(rename = "queryParameters")]
         query_parameters: Vec<QueryParameter>,
     },
-    /// Fetch aliases output IDs
-    AliasesOutputIds {
+    /// Fetch alias output IDs
+    AliasOutputIds {
         /// Query parameters for output requests
         #[serde(rename = "queryParameters")]
         query_parameters: Vec<QueryParameter>,
@@ -214,8 +214,8 @@ pub enum ClientMethod {
         #[serde(rename = "aliasId")]
         alias_id: AliasId,
     },
-    /// Fetch NFTs output IDs
-    NftsOutputIds {
+    /// Fetch NFT output IDs
+    NftOutputIds {
         /// Query parameters for output requests
         #[serde(rename = "queryParameters")]
         query_parameters: Vec<QueryParameter>,
@@ -226,13 +226,13 @@ pub enum ClientMethod {
         #[serde(rename = "nftId")]
         nft_id: NftId,
     },
-    /// Fetch Foundries Output IDs
-    FoundriesOutputIds {
+    /// Fetch foundry Output IDs
+    FoundryOutputIds {
         /// Query parameters for output requests
         #[serde(rename = "queryParameters")]
         query_parameters: Vec<QueryParameter>,
     },
-    /// Fetch Foundry Output ID
+    /// Fetch foundry Output ID
     FoundryOutputId {
         /// Foundry ID
         #[serde(rename = "foundryId")]

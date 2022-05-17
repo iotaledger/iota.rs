@@ -6,7 +6,7 @@
  */
 export type QueryParameter =
     | Address
-    | HasStorageDepositReturnCondition
+    | HasStorageReturnCondition
     | StorageDepositReturnAddress
     | HasTimelockCondition
     | TimelockedBefore
@@ -33,8 +33,8 @@ export type QueryParameter =
 interface Address {
     address: string;
 }
-/** Filters outputs based on the presence of storage deposit return unlockcondition. */
-interface HasStorageDepositReturnCondition {
+/** Filters outputs based on the presence of storage return unlockcondition. */
+interface HasStorageReturnCondition {
     hasStorageDepositReturnCondition: boolean;
 }
 /** Filter outputs based on the presence of a specific Bech32-encoded return address
