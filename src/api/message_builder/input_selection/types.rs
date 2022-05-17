@@ -5,7 +5,7 @@
 
 use bee_message::output::{NativeTokensBuilder, Output};
 
-use crate::api::message_builder::input_selection::InputSigningData;
+use crate::api::{message_builder::input_selection::InputSigningData, RemainderData};
 
 /// Transaction data with selected inputs, input data for signing and outputs, with remainder output if required
 #[derive(Debug, Clone)]
@@ -15,7 +15,7 @@ pub struct SelectedTransactionData {
     /// All outputs for the transaction, including remainder output if required
     pub outputs: Vec<Output>,
     /// Optional remainder output, also already parts of the outputs
-    pub remainder_output: Option<Output>,
+    pub remainder: Option<RemainderData>,
 }
 
 /// Required things from the to be created outputs

@@ -40,7 +40,7 @@ async fn main() -> Result<()> {
 
     // Get output ids of outputs that can be controlled by this address without further unlock constraints
     let output_ids = client
-        .output_ids(vec![
+        .basic_output_ids(vec![
             QueryParameter::Address(
                 client
                     .get_addresses(&secret_manager_1)
@@ -51,7 +51,7 @@ async fn main() -> Result<()> {
             ),
             QueryParameter::HasExpirationCondition(false),
             QueryParameter::HasTimelockCondition(false),
-            QueryParameter::HasStorageDepositReturnCondition(false),
+            QueryParameter::HasStorageReturnCondition(false),
         ])
         .await?;
 

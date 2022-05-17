@@ -7,18 +7,20 @@ use std::str::FromStr;
 
 use bee_message::{
     address::Address,
-    output::{Output, OutputId},
+    output::{dto::OutputDto, Output, OutputId},
     payload::transaction::TransactionId,
     MessageId,
 };
 use bee_rest_api::types::responses::OutputResponse;
 use crypto::keys::slip10::Chain;
 use serde::{Deserialize, Serialize};
+#[cfg(feature = "stronghold")]
+use zeroize::ZeroizeOnDrop;
 
 use crate::{Error, Result};
 
 /// Stronghold DTO to allow the creation of a Stronghold secret manager from bindings
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, ZeroizeOnDrop)]
 #[cfg(feature = "stronghold")]
 pub struct StrongholdDto {
     /// The Stronghold password
@@ -27,23 +29,10 @@ pub struct StrongholdDto {
     #[serde(rename = "snapshotPath")]
     pub snapshot_path: Option<String>,
 }
-
-/// Metadata provided to [SecretManager::signature_unlock()](super::SecretManager::signature_unlock()).
-pub struct SignMessageMetadata<'a> {
-    /// The transfer's remainder value.
-    pub remainder_value: u64,
-    /// The transfer's deposit address for the remainder value if any.
-    pub remainder_deposit_address: Option<&'a AccountAddress>,
-    /// The network which is used so the correct BIP32 path is used for the ledger. Debug mode starts with 44'/1' and
-    /// in mainnet-mode it's 44'/4218'
-    pub network: Network,
-}
-
 /// An account address.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AccountAddress {
     /// The address.
-    // todo: should we also use an address wrapper like in wallet.rs or the bech32 representation?
     pub address: Address,
     /// The address key index.
     #[serde(rename = "keyIndex")]
@@ -59,18 +48,6 @@ pub struct GenerateAddressMetadata {
     /// This means that the account might not be saved.
     /// If it is false, the prompt will be displayed on ledger devices.
     pub syncing: bool,
-    /// The network which is used so the correct BIP32 path is used for the ledger. Debug mode starts with 44'/1' and
-    /// in mainnet-mode it's 44'/4218'
-    pub network: Network,
-}
-
-/// Network enum for ledger metadata
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub enum Network {
-    /// Mainnet
-    Mainnet,
-    /// Testnet
-    Testnet,
 }
 
 /// The Ledger device status.
@@ -181,5 +158,44 @@ impl PartialEq for InputSigningData {
     fn eq(&self, other: &Self) -> bool {
         self.output_metadata.transaction_id == other.output_metadata.transaction_id
             && self.output_metadata.output_index == other.output_metadata.output_index
+    }
+}
+
+/// Dto for data for transaction inputs for signing and ordering of unlock blocks
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct InputSigningDataDto {
+    /// The output
+    pub output: OutputDto,
+    /// The output metadata
+    #[serde(rename = "outputMetadata")]
+    pub output_metadata: OutputMetadata,
+    /// The chain derived from seed, only for ed25519 addresses
+    pub chain: Option<Chain>,
+    /// The bech32 encoded address, required because of alias outputs where we have multiple possible unlock
+    /// conditions, because we otherwise don't know which one we need
+    #[serde(rename = "bech32Address")]
+    pub bech32_address: String,
+}
+
+impl TryFrom<&InputSigningDataDto> for InputSigningData {
+    type Error = Error;
+
+    fn try_from(input: &InputSigningDataDto) -> Result<Self> {
+        Ok(Self {
+            output: Output::try_from(&input.output)?,
+            output_metadata: input.output_metadata.clone(),
+            chain: input.chain.clone(),
+            bech32_address: input.bech32_address.clone(),
+        })
+    }
+}
+impl From<&InputSigningData> for InputSigningDataDto {
+    fn from(input: &InputSigningData) -> Self {
+        Self {
+            output: OutputDto::from(&input.output),
+            output_metadata: input.output_metadata.clone(),
+            chain: input.chain.clone(),
+            bech32_address: input.bech32_address.clone(),
+        }
     }
 }

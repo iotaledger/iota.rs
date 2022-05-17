@@ -8,13 +8,12 @@ mod message;
 mod message_handler;
 mod message_type;
 mod response;
-mod response_type;
 
 use tokio::sync::mpsc::unbounded_channel;
 
 pub use self::{
     client_method::ClientMethod, message::Message, message_handler::ClientMessageHandler, message_type::MessageType,
-    response::Response, response_type::ResponseType,
+    response::Response,
 };
 use crate::{ClientBuilder, Result};
 
@@ -44,8 +43,8 @@ mod tests {
 
     use crate::{
         api::GetAddressesBuilderOptions as GenerateAddressesOptions,
-        message_interface::{self, ClientMethod, MessageType, ResponseType},
-        secret::{types::Network, GenerateAddressMetadata, SecretManagerDto},
+        message_interface::{self, ClientMethod, MessageType, Response},
+        secret::{GenerateAddressMetadata, SecretManagerDto},
     };
 
     #[tokio::test]
@@ -71,10 +70,7 @@ mod tests {
             range: Some(std::ops::Range { start: 0, end: 10 }),
             internal: None,
             bech32_hrp: Some("atoi".to_string()),
-            metadata: Some(GenerateAddressMetadata {
-                syncing: false,
-                network: Network::Testnet,
-            }),
+            metadata: Some(GenerateAddressMetadata { syncing: false }),
         };
         let message = MessageType::CallClientMethod(ClientMethod::GenerateAddresses {
             secret_manager: serde_json::from_str::<SecretManagerDto>(&secret_manager).unwrap(),
@@ -82,10 +78,10 @@ mod tests {
         });
 
         let response = message_interface::send_message(&message_handler, message).await;
-        match response.response_type() {
-            ResponseType::GeneratedAddresses(addresses) => println!("{:?}", serde_json::to_string(addresses).unwrap()),
+        match response {
+            Response::GeneratedAddresses(addresses) => println!("{:?}", serde_json::to_string(&addresses).unwrap()),
             _ => panic!("Unexpected response type"),
-        }
+        };
     }
 
     #[tokio::test]
@@ -124,10 +120,7 @@ mod tests {
             range: Some(std::ops::Range { start: 0, end: 10 }),
             internal: None,
             bech32_hrp: Some("atoi".to_string()),
-            metadata: Some(GenerateAddressMetadata {
-                syncing: false,
-                network: Network::Testnet,
-            }),
+            metadata: Some(GenerateAddressMetadata { syncing: false }),
         };
 
         let generate_addresses_message = MessageType::CallClientMethod(ClientMethod::GenerateAddresses {
@@ -136,8 +129,8 @@ mod tests {
         });
 
         let response = message_interface::send_message(&message_handler, generate_addresses_message).await;
-        let addresses = match response.response_type() {
-            ResponseType::GeneratedAddresses(addresses) => addresses,
+        let addresses = match response {
+            Response::GeneratedAddresses(addresses) => addresses,
             _ => panic!("Unexpected response type"),
         };
 
@@ -152,13 +145,13 @@ mod tests {
         });
 
         let response = message_interface::send_message(&message_handler, find_inputs_message).await;
-        let inputs = match response.response_type() {
-            ResponseType::Inputs(inputs) => inputs,
+        let inputs = match response {
+            Response::Inputs(inputs) => inputs,
             response_type => panic!("Unexpected response type: {:?}", response_type),
         };
 
         // Generate message payload
-        let inputs = serde_json::to_string(inputs).unwrap();
+        let inputs = serde_json::to_string(&inputs).unwrap();
         let output = format!("{{\"address\":\"{}\", \"amount\":{}}}", address, amount);
 
         let options = format!("{{\"inputs\": {inputs},\"output\": {output}}}");
@@ -170,9 +163,9 @@ mod tests {
         });
 
         let response = message_interface::send_message(&message_handler, generate_message).await;
-        match response.response_type() {
-            ResponseType::GeneratedMessage(message_data) => {
-                println!("{}", serde_json::to_string(message_data).unwrap())
+        match response {
+            Response::GeneratedMessage(message_data) => {
+                println!("{}", serde_json::to_string(&message_data).unwrap())
             }
             response_type => panic!("Unexpected response type: {:?}", response_type),
         }
@@ -209,10 +202,10 @@ mod tests {
 
         let response = message_interface::send_message(&message_handler, message_type).await;
 
-        match response.response_type() {
-            ResponseType::MessageId(message_id) => {
+        match response {
+            Response::MessageId(message_id) => {
                 assert_eq!(
-                    *message_id,
+                    message_id,
                     MessageId::from_str("0xbcd2b9feed097a7aa8b894cae5eaeb1d8f516a14af25aa6f7d8aa7e2604c406c").unwrap()
                 );
             }
@@ -254,8 +247,8 @@ mod tests {
         });
         let response = message_interface::send_message(&message_handler, message).await;
 
-        match response.response_type() {
-            ResponseType::GeneratedAddresses(addresses) => {
+        match response {
+            Response::GeneratedAddresses(addresses) => {
                 assert_eq!(
                     addresses[0],
                     "rms1qzev36lk0gzld0k28fd2fauz26qqzh4hd4cwymlqlv96x7phjxcw6v3ea5a".to_string(),

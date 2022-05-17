@@ -42,7 +42,7 @@ async fn main() -> Result<()> {
     );
 
     let output_ids = client
-        .output_ids(vec![QueryParameter::Address(address.to_bech32("atoi"))])
+        .basic_output_ids(vec![QueryParameter::Address(address.to_bech32("atoi"))])
         .await?;
     println!("output ids {:?}", output_ids);
 

@@ -8,6 +8,8 @@ use std::fmt::{Debug, Display};
 use bee_message::{output::NativeTokens, semantic::ConflictReason};
 use serde::{ser::Serializer, Serialize};
 
+use crate::node_api::indexer::QueryParameter;
+
 /// Type alias of `Result` in iota-client
 pub type Result<T> = std::result::Result<T, Error>;
 
@@ -46,6 +48,9 @@ pub enum Error {
     /// Missing required parameters
     #[error("Must provide required parameter: {0}")]
     MissingParameter(&'static str),
+    /// PlaceholderSecretManager can't be used for address generation or signing
+    #[error("PlaceholderSecretManager can't be used for address generation or signing")]
+    PlaceholderSecretManager,
     /// Invalid parameters
     #[error("Parameter is invalid:{0}")]
     InvalidParameter(&'static str),
@@ -116,17 +121,10 @@ pub enum Error {
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
     CryptoError(#[from] crypto::Error),
-    /// ureq error
-    #[cfg(feature = "sync")]
-    #[error("{0}")]
-    #[serde(serialize_with = "display_string")]
-    UreqError(#[from] ureq::Error),
     /// Error from RestAPI calls with unexpected status code response
-    #[cfg(any(feature = "async", target_family = "wasm"))]
     #[error("Response error with status code {0}: {1}, URL: {2}")]
     ResponseError(u16, String, String),
     /// reqwest error
-    #[cfg(any(feature = "async", target_family = "wasm"))]
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
     ReqwestError(#[from] reqwest::Error),
@@ -180,31 +178,31 @@ pub enum Error {
     #[error("No input with matching ed25519 unlock condition provided")]
     MissingInputWithEd25519UnlockCondition,
     /// Ledger transport error
-    #[cfg(feature = "ledger")]
+    #[cfg(feature = "ledger_nano")]
     #[error("ledger transport error")]
     LedgerMiscError,
     /// Dongle Locked
-    #[cfg(feature = "ledger")]
+    #[cfg(feature = "ledger_nano")]
     #[error("ledger locked")]
     LedgerDongleLocked,
     /// Denied by User
-    #[cfg(feature = "ledger")]
+    #[cfg(feature = "ledger_nano")]
     #[error("denied by user")]
     LedgerDeniedByUser,
     /// Ledger Device not found
-    #[cfg(feature = "ledger")]
+    #[cfg(feature = "ledger_nano")]
     #[error("ledger device not found")]
     LedgerDeviceNotFound,
     /// Ledger Essence Too Large
-    #[cfg(feature = "ledger")]
+    #[cfg(feature = "ledger_nano")]
     #[error("ledger essence too large")]
     LedgerEssenceTooLarge,
     /// Ledger transport error
-    #[cfg(feature = "ledger")]
+    #[cfg(feature = "ledger_nano")]
     #[error("ledger app compiled for testnet but used with mainnet or vice versa")]
     LedgerNetMismatch,
     /// Wrong ledger seed error
-    #[cfg(feature = "ledger")]
+    #[cfg(feature = "ledger_nano")]
     #[error("ledger mnemonic is mismatched")]
     LedgerMnemonicMismatch,
     /// Riker system error during Stronghold initialization
@@ -234,6 +232,9 @@ pub enum Error {
     /// Local time doesn't match the time of the latest milestone timestamp
     #[error("Local time {0} doesn't match the time of the latest milestone timestamp: {1}")]
     TimeNotSynced(u32, u32),
+    /// An indexer API request contains a query parameter not supported by the endpoint.
+    #[error("An indexer API request contains a query parameter not supported by the endpoint: {0}.")]
+    UnsupportedQueryParameter(QueryParameter),
 }
 
 // map most errors to a single error but there are some errors that
@@ -243,7 +244,7 @@ pub enum Error {
 // LedgerDeviceNotFound: No usable Ledger device was found
 // LedgerMiscError: Everything else.
 // LedgerEssenceTooLarge: Essence with bip32 input indices need more space then the internal buffer is big
-#[cfg(feature = "ledger")]
+#[cfg(feature = "ledger_nano")]
 impl From<iota_ledger::api::errors::APIError> for Error {
     fn from(error: iota_ledger::api::errors::APIError) -> Self {
         log::info!("ledger error: {}", error);

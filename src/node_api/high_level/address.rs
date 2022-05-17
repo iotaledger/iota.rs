@@ -36,11 +36,11 @@ impl<'a> GetAddressBuilder<'a> {
     pub async fn balance(self, address: &str) -> Result<AddressBalance> {
         let output_ids = self
             .client
-            .output_ids(vec![
+            .basic_output_ids(vec![
                 QueryParameter::Address(address.to_string()),
                 QueryParameter::HasExpirationCondition(false),
                 QueryParameter::HasTimelockCondition(false),
-                QueryParameter::HasStorageDepositReturnCondition(false),
+                QueryParameter::HasStorageReturnCondition(false),
             ])
             .await?;
 
@@ -76,7 +76,7 @@ impl<'a> GetAddressBuilder<'a> {
 
     /// Get outputs
     pub async fn outputs(self, query_parameters: Vec<QueryParameter>) -> Result<Vec<OutputResponse>> {
-        let output_ids = self.client.output_ids(query_parameters).await?;
+        let output_ids = self.client.basic_output_ids(query_parameters).await?;
 
         self.client.get_outputs(output_ids).await
     }

@@ -28,7 +28,7 @@ async fn main() -> Result<()> {
         message.id()
     );
 
-    let fetched_msg = client.get_message_data(&message.id()).await?;
+    let fetched_msg = client.get_message(&message.id()).await?;
     println!("{:#?}\n", fetched_msg);
 
     if let Payload::TaggedData(payload) = fetched_msg.payload().as_ref().unwrap() {

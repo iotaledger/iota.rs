@@ -96,13 +96,11 @@ pub enum ClientMethod {
     //////////////////////////////////////////////////////////////////////
     // Node core API
     //////////////////////////////////////////////////////////////////////
-    /// Get node health
-    GetNodeHealth {
+    /// Get health
+    GetHealth {
         /// Url
         url: String,
     },
-    /// Get health
-    GetHealth,
     /// Get node info
     GetNodeInfo {
         /// Url
@@ -116,18 +114,18 @@ pub enum ClientMethod {
     GetPeers,
     /// Get tips
     GetTips,
-    /// Post message
+    /// Post message (JSON)
     PostMessage {
         /// Message
         message: MessageDto,
     },
-    /// Post message json
-    PostMessageJson {
+    /// Post message (raw)
+    PostMessageRaw {
         /// Message
         message: MessageDto,
     },
-    /// Get message data
-    GetMessageData {
+    /// Get message
+    GetMessage {
         /// Message ID
         #[serde(rename = "messageId")]
         message_id: MessageId,
@@ -157,24 +155,24 @@ pub enum ClientMethod {
         output_id: OutputId,
     },
     /// Get the milestone by the given milestone id.
-    GetMilestoneByMilestoneId {
+    GetMilestoneById {
         /// Milestone ID
         #[serde(rename = "milestoneId")]
         milestone_id: MilestoneId,
     },
     /// Get the milestone by the given index.
-    GetMilestoneByMilestoneIndex {
+    GetMilestoneByIndex {
         /// Milestone Index
         index: u32,
     },
     /// Get the UTXO changes by the given milestone id.
-    GetUtxoChangesByMilestoneId {
+    GetUtxoChangesById {
         /// Milestone ID
         #[serde(rename = "milestoneId")]
         milestone_id: MilestoneId,
     },
     /// Get the UTXO changes by the given milestone index.
-    GetUtxoChangesByMilestoneIndex {
+    GetUtxoChangesByIndex {
         /// Milestone Index
         index: u32,
     },
@@ -198,14 +196,14 @@ pub enum ClientMethod {
     //////////////////////////////////////////////////////////////////////
     // Node indexer API
     //////////////////////////////////////////////////////////////////////
-    /// Fetch output IDs
-    OutputIds {
+    /// Fetch basic output IDs
+    BasicOutputIds {
         /// Query parameters for output requests
         #[serde(rename = "queryParameters")]
         query_parameters: Vec<QueryParameter>,
     },
-    /// Fetch aliases output IDs
-    AliasesOutputIds {
+    /// Fetch alias output IDs
+    AliasOutputIds {
         /// Query parameters for output requests
         #[serde(rename = "queryParameters")]
         query_parameters: Vec<QueryParameter>,
@@ -216,8 +214,8 @@ pub enum ClientMethod {
         #[serde(rename = "aliasId")]
         alias_id: AliasId,
     },
-    /// Fetch NFTs output IDs
-    NftsOutputIds {
+    /// Fetch NFT output IDs
+    NftOutputIds {
         /// Query parameters for output requests
         #[serde(rename = "queryParameters")]
         query_parameters: Vec<QueryParameter>,
@@ -228,13 +226,13 @@ pub enum ClientMethod {
         #[serde(rename = "nftId")]
         nft_id: NftId,
     },
-    /// Fetch Foundries Output IDs
-    FoundriesOutputIds {
+    /// Fetch foundry Output IDs
+    FoundryOutputIds {
         /// Query parameters for output requests
         #[serde(rename = "queryParameters")]
         query_parameters: Vec<QueryParameter>,
     },
-    /// Fetch Foundry Output ID
+    /// Fetch foundry Output ID
     FoundryOutputId {
         /// Foundry ID
         #[serde(rename = "foundryId")]

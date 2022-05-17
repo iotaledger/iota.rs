@@ -13,7 +13,7 @@ pub struct Message {
 }
 
 impl Message {
-    /// Creates a new instance of a Message.
+    /// Create a new instance of Message.
     pub fn new(message_type: MessageType, response_tx: UnboundedSender<Response>) -> Self {
         Self {
             message_type,
@@ -21,18 +21,8 @@ impl Message {
         }
     }
 
-    /// The message type.
+    /// Get the message type.
     pub fn message_type(&self) -> &MessageType {
         &self.message_type
-    }
-
-    /// The message type.
-    pub(crate) fn message_type_mut(&mut self) -> &mut MessageType {
-        &mut self.message_type
-    }
-
-    /// The response sender.
-    pub fn response_tx(&self) -> &UnboundedSender<Response> {
-        &self.response_tx
     }
 }

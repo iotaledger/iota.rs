@@ -527,7 +527,7 @@ impl<'a> ClientMessageBuilder<'a> {
             None => finish_pow(self.client, payload).await?,
         };
 
-        let msg_id = self.client.post_message(&final_message).await?;
+        let msg_id = self.client.post_message_raw(&final_message).await?;
         // Get message if we use remote PoW, because the node will change parents and nonce
         match self.client.get_local_pow().await {
             true => Ok(final_message),
@@ -535,7 +535,7 @@ impl<'a> ClientMessageBuilder<'a> {
                 // Request message multiple times because the node maybe didn't process it completely in this time
                 // or a node balancer could be used which forwards the request to different node than we published
                 for time in 1..3 {
-                    if let Ok(message) = self.client.get_message_data(&msg_id).await {
+                    if let Ok(message) = self.client.get_message(&msg_id).await {
                         return Ok(message);
                     }
                     #[cfg(not(target_family = "wasm"))]
@@ -545,7 +545,7 @@ impl<'a> ClientMessageBuilder<'a> {
                         TimeoutFuture::new((time * 50).try_into().unwrap()).await;
                     }
                 }
-                self.client.get_message_data(&msg_id).await
+                self.client.get_message(&msg_id).await
             }
         }
     }

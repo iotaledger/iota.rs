@@ -75,10 +75,10 @@ async fn setup_transaction_message() -> (MessageId, TransactionId) {
         .message()
         .with_secret_manager(&secret_manager)
         .with_output_hex(
-            &bech32_to_hex(&addresses[1].to_bech32(client.get_bech32_hrp().await.unwrap())).unwrap(), /* Send funds
-                                                                                                       * back to the
-                                                                                                       * sender. */
-            1_000_000, // The amount to spend, cannot be zero.
+            // Send funds back to the sender.
+            &bech32_to_hex(&addresses[1].to_bech32(client.get_bech32_hrp().await.unwrap())).unwrap(),
+            // The amount to spend, cannot be zero.
+            1_000_000,
         )
         .unwrap()
         .finish()
@@ -88,7 +88,7 @@ async fn setup_transaction_message() -> (MessageId, TransactionId) {
 
     let message = setup_client_with_sync_disabled()
         .await
-        .get_message_data(&message_id)
+        .get_message(&message_id)
         .await
         .unwrap();
 
@@ -105,7 +105,11 @@ async fn setup_transaction_message() -> (MessageId, TransactionId) {
 #[ignore]
 #[tokio::test]
 async fn test_get_health() {
-    let r = Client::get_node_health(DEFAULT_DEVNET_NODE_URL).await.unwrap();
+    let r = setup_client_with_sync_disabled()
+        .await
+        .get_health(DEFAULT_DEVNET_NODE_URL)
+        .await
+        .unwrap();
     println!("{:#?}", r);
 }
 
@@ -143,7 +147,7 @@ async fn test_get_message_data() {
     let client = setup_client_with_sync_disabled().await;
 
     let message_id = setup_tagged_data_message().await;
-    let r = client.get_message_data(&message_id).await.unwrap();
+    let r = client.get_message(&message_id).await.unwrap();
 
     println!("{:#?}", r);
 }
@@ -224,7 +228,7 @@ async fn test_get_address_outputs() {
         .unwrap()[0];
 
     let address = client
-        .output_ids(vec![QueryParameter::Address(
+        .basic_output_ids(vec![QueryParameter::Address(
             address.to_bech32(&client.get_bech32_hrp().await.unwrap()),
         )])
         .await
@@ -258,13 +262,21 @@ async fn test_get_peers() {
 
 #[ignore]
 #[tokio::test]
-async fn test_get_milestone_by_milestone_id() {
+async fn test_get_milestone_by_id() {
     let client = setup_client_with_sync_disabled().await;
 
     let node_info = client.get_info().await.unwrap();
 
     let r = client
-        .get_milestone_by_milestone_id(node_info.nodeinfo.status.latest_milestone.milestone_id.parse().unwrap())
+        .get_milestone_by_id(
+            &node_info
+                .node_info
+                .status
+                .latest_milestone
+                .milestone_id
+                .parse()
+                .unwrap(),
+        )
         .await
         .unwrap();
 
@@ -273,13 +285,13 @@ async fn test_get_milestone_by_milestone_id() {
 
 #[ignore]
 #[tokio::test]
-async fn test_get_milestone_by_milestone_index() {
+async fn test_get_milestone_by_index() {
     let client = setup_client_with_sync_disabled().await;
 
     let node_info = client.get_info().await.unwrap();
 
     let r = client
-        .get_milestone_by_milestone_index(node_info.nodeinfo.status.latest_milestone.index)
+        .get_milestone_by_index(node_info.node_info.status.latest_milestone.index)
         .await
         .unwrap();
 
@@ -288,13 +300,21 @@ async fn test_get_milestone_by_milestone_index() {
 
 #[ignore]
 #[tokio::test]
-async fn test_get_utxo_changes_by_milestone_id() {
+async fn test_get_utxo_changes_by_id() {
     let client = setup_client_with_sync_disabled().await;
 
     let node_info = client.get_info().await.unwrap();
 
     let r = client
-        .get_utxo_changes_by_milestone_id(node_info.nodeinfo.status.latest_milestone.milestone_id.parse().unwrap())
+        .get_utxo_changes_by_id(
+            &node_info
+                .node_info
+                .status
+                .latest_milestone
+                .milestone_id
+                .parse()
+                .unwrap(),
+        )
         .await
         .unwrap();
 
@@ -303,13 +323,13 @@ async fn test_get_utxo_changes_by_milestone_id() {
 
 #[ignore]
 #[tokio::test]
-async fn test_get_utxo_changes_by_milestone_index() {
+async fn test_get_utxo_changes_by_index() {
     let client = setup_client_with_sync_disabled().await;
 
     let node_info = client.get_info().await.unwrap();
 
     let r = client
-        .get_utxo_changes_by_milestone_index(node_info.nodeinfo.status.latest_milestone.index)
+        .get_utxo_changes_by_index(node_info.node_info.status.latest_milestone.index)
         .await
         .unwrap();
 

@@ -75,6 +75,7 @@ impl NodeManagerBuilder {
     pub(crate) fn new() -> Self {
         Default::default()
     }
+
     pub(crate) fn with_node(mut self, url: &str) -> Result<Self> {
         let url = validate_url(Url::parse(url)?)?;
         self.nodes.insert(NodeDto::Node(Node {
@@ -84,6 +85,7 @@ impl NodeManagerBuilder {
         }));
         Ok(self)
     }
+
     pub(crate) fn with_primary_node(mut self, url: &str, auth: Option<NodeAuth>) -> Result<Self> {
         let mut url = validate_url(Url::parse(url)?)?;
         if let Some(auth) = &auth {
@@ -101,6 +103,7 @@ impl NodeManagerBuilder {
         }));
         Ok(self)
     }
+
     pub(crate) fn with_primary_pow_node(mut self, url: &str, auth: Option<NodeAuth>) -> Result<Self> {
         let mut url = validate_url(Url::parse(url)?)?;
         if let Some(auth) = &auth {
@@ -118,6 +121,7 @@ impl NodeManagerBuilder {
         }));
         Ok(self)
     }
+
     pub(crate) fn with_permanode(mut self, url: &str, auth: Option<NodeAuth>) -> Result<Self> {
         let mut url = validate_url(Url::parse(url)?)?;
         if let Some(auth) = &auth {
@@ -148,10 +152,12 @@ impl NodeManagerBuilder {
         }
         Ok(self)
     }
+
     pub(crate) fn with_node_sync_disabled(mut self) -> Self {
         self.node_sync_enabled = false;
         self
     }
+
     pub(crate) fn with_node_auth(mut self, url: &str, auth: Option<NodeAuth>) -> Result<Self> {
         let mut url = validate_url(Url::parse(url)?)?;
         if let Some(auth) = &auth {
@@ -169,6 +175,7 @@ impl NodeManagerBuilder {
         }));
         Ok(self)
     }
+
     pub(crate) fn with_nodes(mut self, urls: &[&str]) -> Result<Self> {
         for url in urls {
             let url = validate_url(Url::parse(url)?)?;
@@ -180,6 +187,7 @@ impl NodeManagerBuilder {
         }
         Ok(self)
     }
+
     /// Get node list from the node_pool_urls
     pub(crate) async fn with_node_pool_urls(mut self, node_pool_urls: &[String]) -> Result<Self> {
         for pool_url in node_pool_urls {
@@ -194,7 +202,7 @@ impl NodeManagerBuilder {
                     DEFAULT_API_TIMEOUT,
                 )
                 .await?
-                .json()
+                .into_json()
                 .await?;
             for node_detail in nodes_details {
                 let url = validate_url(Url::parse(&node_detail.node)?)?;
@@ -207,22 +215,27 @@ impl NodeManagerBuilder {
         }
         Ok(self)
     }
+
     pub(crate) fn with_node_sync_interval(mut self, node_sync_interval: Duration) -> Self {
         self.node_sync_interval = node_sync_interval;
         self
     }
+
     pub(crate) fn with_quorum(mut self, quorum: bool) -> Self {
         self.quorum = quorum;
         self
     }
+
     pub(crate) fn with_min_quorum_size(mut self, min_quorum_size: usize) -> Self {
         self.min_quorum_size = min_quorum_size;
         self
     }
+
     pub(crate) fn with_quorum_threshold(mut self, threshold: usize) -> Self {
         self.quorum_threshold = threshold;
         self
     }
+
     pub(crate) async fn add_default_nodes(mut self, network_info: &NetworkInfo) -> Result<Self> {
         // todo update with new node pool
         // let default_testnet_node_pools = vec!["https://giftiota.com/nodes.json".to_string()];
@@ -244,6 +257,7 @@ impl NodeManagerBuilder {
         }
         Ok(self)
     }
+
     pub(crate) fn build(self, synced_nodes: Arc<RwLock<HashSet<Node>>>) -> NodeManager {
         NodeManager {
             primary_node: self.primary_node.map(|node| node.into()),

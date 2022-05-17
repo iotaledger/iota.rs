@@ -30,7 +30,6 @@ use bee_rest_api::types::{
 use crypto::keys::slip10::Seed;
 #[cfg(target_family = "wasm")]
 use gloo_timers::future::TimeoutFuture;
-use packable::PackableExt;
 use url::Url;
 #[cfg(not(target_family = "wasm"))]
 use {
@@ -70,7 +69,7 @@ use crate::{
 #[derive(Debug, Serialize, Deserialize)]
 pub struct NodeInfoWrapper {
     /// The returned nodeinfo
-    pub nodeinfo: NodeInfo,
+    pub node_info: NodeInfo,
     /// The url from the node which returned the nodeinfo
     pub url: String,
 }
@@ -274,7 +273,7 @@ impl Client {
         // difficulty or the byte cost could change via a milestone, so we request the nodeinfo every time, so we don't
         // create invalid transactions/messages
         if not_synced || cfg!(target_family = "wasm") {
-            let info = self.get_info().await?.nodeinfo;
+            let info = self.get_info().await?.node_info;
             let network_id = hash_network(&info.protocol.network_name).ok();
             {
                 let mut client_network_info = self.network_info.write().map_err(|_| crate::Error::PoisonError)?;
@@ -336,6 +335,7 @@ impl Client {
     pub(crate) fn get_timeout(&self) -> Duration {
         self.api_timeout
     }
+
     pub(crate) fn get_remote_pow_timeout(&self) -> Duration {
         self.remote_pow_timeout
     }
@@ -381,43 +381,6 @@ impl Client {
     // Node core API
     //////////////////////////////////////////////////////////////////////
 
-    /// GET /health endpoint
-    pub async fn get_node_health(url: &str) -> Result<bool> {
-        let mut url = Url::parse(url)?;
-        url.set_path("health");
-        let status = crate::node_manager::http_client::HttpClient::new()
-            .get(
-                Node {
-                    url,
-                    auth: None,
-                    disabled: false,
-                },
-                DEFAULT_API_TIMEOUT,
-            )
-            .await?
-            .status();
-        match status {
-            200 => Ok(true),
-            _ => Ok(false),
-        }
-    }
-
-    /// GET /health endpoint
-    pub async fn get_health(&self) -> Result<bool> {
-        let mut node = self.get_node().await?;
-        node.url.set_path("health");
-        let status = self
-            .node_manager
-            .http_client
-            .get(node, DEFAULT_API_TIMEOUT)
-            .await?
-            .status();
-        match status {
-            200 => Ok(true),
-            _ => Ok(false),
-        }
-    }
-
     // todo: only used during syncing, can it be replaced with the other node info function?
     /// GET /api/v2/info endpoint
     pub async fn get_node_info(url: &str, auth: Option<NodeAuth>) -> Result<NodeInfo> {
@@ -443,7 +406,7 @@ impl Client {
                 DEFAULT_API_TIMEOUT,
             )
             .await?
-            .json()
+            .into_json()
             .await?;
 
         Ok(resp)
@@ -506,9 +469,9 @@ impl Client {
             message_ids_to_query.insert(message_id.to_owned());
         }
 
-        // Use `get_message_data()` API to get the `Message`.
+        // Use `get_message()` API to get the `Message`.
         for message_id in message_ids_to_query {
-            let message = self.get_message_data(&message_id).await?;
+            let message = self.get_message(&message_id).await?;
             messages.push(message);
         }
         Ok(messages)
@@ -560,7 +523,7 @@ impl Client {
                             // if original message, request it so we can return it on first position
                             if message_id == msg_id {
                                 let mut included_and_reattached_messages =
-                                    vec![(*message_id, self.get_message_data(message_id).await?)];
+                                    vec![(*message_id, self.get_message(message_id).await?)];
                                 included_and_reattached_messages.extend(messages_with_id);
                                 return Ok(included_and_reattached_messages);
                             } else {
@@ -590,7 +553,7 @@ impl Client {
             // After we checked all our reattached messages, check if the transaction got reattached in another message
             // and confirmed
             if conflicting {
-                let message = self.get_message_data(message_id).await?;
+                let message = self.get_message(message_id).await?;
                 if let Some(Payload::Transaction(transaction_payload)) = message.payload() {
                     let included_message = self.get_included_message(&transaction_payload.id()).await?;
                     let mut included_and_reattached_messages = vec![(included_message.id(), included_message)];
@@ -626,7 +589,7 @@ impl Client {
                         QueryParameter::Address(address.to_string()),
                         QueryParameter::HasExpirationCondition(false),
                         QueryParameter::HasTimelockCondition(false),
-                        QueryParameter::HasStorageDepositReturnCondition(false),
+                        QueryParameter::HasStorageReturnCondition(false),
                     ])
                     .await?,
             );
@@ -684,7 +647,7 @@ impl Client {
                     QueryParameter::Address(address.to_string()),
                     QueryParameter::HasExpirationCondition(false),
                     QueryParameter::HasTimelockCondition(false),
-                    QueryParameter::HasStorageDepositReturnCondition(false),
+                    QueryParameter::HasStorageReturnCondition(false),
                 ])
                 .await?;
             output_metadata.extend(address_outputs.into_iter());
@@ -707,13 +670,11 @@ impl Client {
     /// Reattach a message without checking if it should be reattached
     pub async fn reattach_unchecked(&self, message_id: &MessageId) -> Result<(MessageId, Message)> {
         // Get the Message object by the MessageID.
-        let message = self.get_message_data(message_id).await?;
+        let message = self.get_message(message_id).await?;
         let reattach_message = {
             #[cfg(target_family = "wasm")]
             {
-                let mut tips = self.get_tips().await?;
-                tips.sort_unstable_by_key(|a| a.pack_to_vec());
-                tips.dedup();
+                let tips = self.get_tips().await?;
                 let mut message_builder = MessageBuilder::<ClientMiner>::new(Parents::new(tips)?);
                 if let Some(p) = message.payload().to_owned() {
                     message_builder = message_builder.with_payload(p.clone())
@@ -727,11 +688,11 @@ impl Client {
         };
 
         // Post the modified
-        let message_id = self.post_message(&reattach_message).await?;
+        let message_id = self.post_message_raw(&reattach_message).await?;
         // Get message if we use remote PoW, because the node will change parents and nonce
         let msg = match self.get_local_pow().await {
             true => reattach_message,
-            false => self.get_message_data(&message_id).await?,
+            false => self.get_message(&message_id).await?,
         };
         Ok((message_id, msg))
     }
@@ -753,20 +714,17 @@ impl Client {
         let mut tips = self.get_tips().await?;
         let min_pow_score = self.get_min_pow_score().await?;
         tips.push(*message_id);
-        // Sort tips/parents
-        tips.sort_unstable_by_key(|a| a.pack_to_vec());
-        tips.dedup();
 
         let promote_message = MessageBuilder::<ClientMiner>::new(Parents::new(tips)?)
             .with_nonce_provider(self.get_pow_provider().await, min_pow_score)
             .finish()
             .map_err(|_| Error::TransactionError)?;
 
-        let message_id = self.post_message(&promote_message).await?;
+        let message_id = self.post_message_raw(&promote_message).await?;
         // Get message if we use remote PoW, because the node will change parents and nonce
         let msg = match self.get_local_pow().await {
             true => promote_message,
-            false => self.get_message_data(&message_id).await?,
+            false => self.get_message(&message_id).await?,
         };
         Ok((message_id, msg))
     }
@@ -777,7 +735,7 @@ impl Client {
             .duration_since(UNIX_EPOCH)
             .expect("Time went backwards")
             .as_secs() as u32;
-        let status_response = self.get_info().await?.nodeinfo.status;
+        let status_response = self.get_info().await?.node_info.status;
         let latest_ms_timestamp = status_response.latest_milestone.timestamp;
         // Check the local time is in the range of +-5 minutes of the node to prevent locking funds by accident
         if !(latest_ms_timestamp - FIVE_MINUTES_IN_SECONDS..latest_ms_timestamp + FIVE_MINUTES_IN_SECONDS)
