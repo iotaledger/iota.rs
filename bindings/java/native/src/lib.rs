@@ -1,14 +1,16 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use jni::JNIEnv;
-use jni::objects::{JClass, JString};
-use jni::sys::{ jstring};
 use std::sync::Mutex;
-use iota_client::message_interface::{Message, ClientMessageHandler};
+
+use iota_client::message_interface::Message;
+use jni::{
+    objects::{JClass, JString},
+    sys::jstring,
+    JNIEnv,
+};
 use once_cell::sync::OnceCell;
-use tokio::runtime::Runtime;
-use  tokio::sync::mpsc::unbounded_channel;
+use tokio::{runtime::Runtime, sync::mpsc::unbounded_channel};
 
 // This keeps rust from "mangling" the name and making it unique for this crate.
 #[no_mangle]
@@ -24,17 +26,17 @@ pub extern "system" fn Java_org_iota_RustApi_nativeCall(
 ) -> jstring {
     // First, we have to get the string out of java. Check out the `strings`
     // module for more info on how this works.
-    let client_config: String = env
-        .get_string(client_config)
-        .expect("Couldn't get java string!")
-        .into();
+    let client_config: String = env.get_string(client_config).expect("Couldn't get java string!").into();
 
     let client_command: String = env
         .get_string(client_command)
         .expect("Couldn't get java string!")
         .into();
 
-    let message_handler = create_message_handler(client_config);
+    let message_handler = crate::block_on(async {
+        iota_client::message_interface::create_message_handler(Some(client_config.to_string())).await
+    })
+    .unwrap();
 
     let (sender, mut receiver) = unbounded_channel();
     let message = Message::new(serde_json::from_str(&client_command).unwrap(), sender);
@@ -54,10 +56,4 @@ pub(crate) fn block_on<C: futures::Future>(cb: C) -> C::Output {
     static INSTANCE: OnceCell<Mutex<Runtime>> = OnceCell::new();
     let runtime = INSTANCE.get_or_init(|| Mutex::new(Runtime::new().unwrap()));
     runtime.lock().unwrap().block_on(cb)
-}
-
-pub fn create_message_handler(client_config: String) -> ClientMessageHandler {
-    let message_handler =
-        crate::block_on(async { iota_client::message_interface::create_message_handler(Some(client_config.to_string())).await }).unwrap();
-    message_handler
 }

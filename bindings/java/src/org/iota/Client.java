@@ -8,7 +8,6 @@ public class Client {
         this.config = config;
     }
 
-    // Node API
 
     public String getNodeHealth(String nodeUrl) {
         return RustApi.call(config, new ClientCommand(Command.CallClientMethod, "{ \"name\": \"GetNodeHealth\", \"data\": { \"url\": \"" + nodeUrl + "\" }}"));
