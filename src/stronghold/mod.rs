@@ -271,6 +271,44 @@ impl StrongholdAdapter {
         }
     }
 
+    /// Get timeout for the key clearing task.
+    pub fn get_timeout(&self) -> Option<Duration> {
+        self.timeout
+    }
+
+    /// Set timeout for the key clearing task.
+    ///
+    /// If there has been a key clearing task running, then it will be terminated before a new one is spawned. If
+    /// `new_timeout` is `None`, or the key has been purged, then no new task will be spawned (the current running task
+    /// will be terminated).
+    ///
+    /// The key won't be cleared.
+    pub async fn set_timeout(&mut self, new_timeout: Option<Duration>) {
+        // In any case we terminate the current task (if there is) first.
+        if let Some(timeout_task) = self.timeout_task.lock().await.take() {
+            timeout_task.abort();
+        }
+
+        // Keep the new timeout.
+        self.timeout = new_timeout;
+
+        // If a new timeout is set and the key is still in the memory, spawn a new task; otherwise we do nothing.
+        if let (Some(_), Some(timeout)) = (self.key.lock().await.as_ref(), self.timeout) {
+            // The key clearing task, with the data it owns.
+            let key = self.key.clone();
+            let task_self = self.timeout_task.clone();
+
+            *self.timeout_task.lock().await = Some(tokio::spawn(task_key_clear(task_self, key, timeout)));
+        }
+    }
+
+    /// Restart the key clearing task.
+    ///
+    /// This is equivalent to calling `set_timeout()` with the currently set `timeout`.
+    pub async fn restart_key_clearing_task(&mut self) {
+        self.set_timeout(self.get_timeout()).await;
+    }
+
     /// Load Stronghold from a snapshot at `snapshot_path`, if it hasn't been loaded yet.
     pub async fn read_stronghold_snapshot(&mut self) -> Result<()> {
         if self.snapshot_loaded {
@@ -374,34 +412,45 @@ mod tests {
 
     #[tokio::test]
     async fn test_clear_key() {
+        let timeout = Duration::from_millis(100);
+
         let mut client = StrongholdAdapter::builder()
             .password("drowssap")
-            .timeout(Duration::from_millis(100))
+            .timeout(timeout)
             .build();
 
         // There is a small delay between `build()` and the key clearing task being actually spawned and kept.
-        tokio::time::sleep(Duration::from_millis(20)).await;
+        tokio::time::sleep(Duration::from_millis(10)).await;
 
         // Setting a password would spawn a task to automatically clear the key.
         assert!(matches!(*client.key.lock().await, Some(_)));
-        assert!(matches!(client.timeout, Some(_)));
+        assert_eq!(client.get_timeout(), Some(timeout));
         assert!(matches!(*client.timeout_task.lock().await, Some(_)));
 
         // After the timeout, the key should be purged.
-        tokio::time::sleep(Duration::from_millis(150)).await;
+        tokio::time::sleep(Duration::from_millis(110)).await;
         assert!(matches!(*client.key.lock().await, None));
-        assert!(matches!(client.timeout, Some(_)));
+        assert_eq!(client.get_timeout(), Some(timeout));
         assert!(matches!(*client.timeout_task.lock().await, None));
 
         // Set the key again, but this time we manually purge the key.
+        let timeout = None;
+        client.set_timeout(timeout).await;
+
         client.set_password("password").await;
         assert!(matches!(*client.key.lock().await, Some(_)));
-        assert!(matches!(client.timeout, Some(_)));
-        assert!(matches!(*client.timeout_task.lock().await, Some(_)));
+        assert_eq!(client.get_timeout(), timeout);
+        assert!(matches!(*client.timeout_task.lock().await, None));
 
         client.clear_key().await;
         assert!(matches!(*client.key.lock().await, None));
-        assert!(matches!(client.timeout, Some(_)));
+        assert_eq!(client.get_timeout(), timeout);
+        assert!(matches!(*client.timeout_task.lock().await, None));
+
+        // Even if we attempt to restart the task, it won't.
+        client.restart_key_clearing_task().await;
+        assert!(matches!(*client.key.lock().await, None));
+        assert_eq!(client.get_timeout(), timeout);
         assert!(matches!(*client.timeout_task.lock().await, None));
     }
 }
