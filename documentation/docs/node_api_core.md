@@ -8,8 +8,6 @@ Returns the health of the node.
 
 ## Request
 
-No parameters.
-
 ## Response
 
 ## Example
