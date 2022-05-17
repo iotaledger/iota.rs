@@ -30,7 +30,7 @@ impl Client {
 
     /// Returns the health of the node.
     /// GET /health
-    pub async fn get_health(url: &str) -> Result<bool> {
+    pub async fn get_health(&self, url: &str) -> Result<bool> {
         let path = "health";
 
         let mut url = Url::parse(url)?;

@@ -105,7 +105,11 @@ async fn setup_transaction_message() -> (MessageId, TransactionId) {
 #[ignore]
 #[tokio::test]
 async fn test_get_health() {
-    let r = Client::get_health(DEFAULT_DEVNET_NODE_URL).await.unwrap();
+    let r = setup_client_with_sync_disabled()
+        .await
+        .get_health(DEFAULT_DEVNET_NODE_URL)
+        .await
+        .unwrap();
     println!("{:#?}", r);
 }
 
