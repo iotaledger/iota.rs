@@ -9,7 +9,7 @@ use std::fmt;
 
 /// Query parameters for output_id requests.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct QueryParameters(pub Vec<QueryParameter>);
+pub struct QueryParameters(Vec<QueryParameter>);
 
 impl QueryParameters {
     /// Creates a hashset from a provided vec of query parameters.
