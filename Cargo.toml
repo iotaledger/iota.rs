@@ -79,75 +79,75 @@ message_interface = [ "backtrace" ]
 
 [[example]]
 name = "node_api_core_get_health"
-path = "examples/node_api_core/01_get_health.rs"
+path = "examples/node_api_core/00_get_health.rs"
 
 [[example]]
 name = "node_api_core_get_info"
-path = "examples/node_api_core/02_get_info.rs"
+path = "examples/node_api_core/01_get_info.rs"
 
 [[example]]
 name = "node_api_core_get_tips"
-path = "examples/node_api_core/03_get_tips.rs"
+path = "examples/node_api_core/02_get_tips.rs"
 
 [[example]]
 name = "node_api_core_post_message"
-path = "examples/node_api_core/04_post_message.rs"
+path = "examples/node_api_core/03_post_message.rs"
 
 [[example]]
 name = "node_api_core_post_message_raw"
-path = "examples/node_api_core/05_post_message_raw.rs"
+path = "examples/node_api_core/04_post_message_raw.rs"
 
 [[example]]
 name = "node_api_core_get_message"
-path = "examples/node_api_core/06_get_message.rs"
+path = "examples/node_api_core/05_get_message.rs"
 
 [[example]]
 name = "node_api_core_get_message_raw"
-path = "examples/node_api_core/07_get_message_raw.rs"
+path = "examples/node_api_core/06_get_message_raw.rs"
 
 [[example]]
 name = "node_api_core_get_message_metadata"
-path = "examples/node_api_core/08_get_message_metadata.rs"
+path = "examples/node_api_core/07_get_message_metadata.rs"
 
 [[example]]
 name = "node_api_core_get_message_children"
-path = "examples/node_api_core/09_get_message_children.rs"
+path = "examples/node_api_core/08_get_message_children.rs"
 
 [[example]]
 name = "node_api_core_get_receipts"
-path = "examples/node_api_core/13_get_receipts.rs"
+path = "examples/node_api_core/12_get_receipts.rs"
 
 [[example]]
 name = "node_api_core_get_receipts_migrated_at"
-path = "examples/node_api_core/14_get_receipts_migrated_at.rs"
+path = "examples/node_api_core/13_get_receipts_migrated_at.rs"
 
 [[example]]
 name = "node_api_core_get_treasury"
-path = "examples/node_api_core/15_get_treasury.rs"
+path = "examples/node_api_core/14_get_treasury.rs"
 
 [[example]]
 name = "node_api_core_get_milestone_by_id"
-path = "examples/node_api_core/18_get_milestone_by_id.rs"
+path = "examples/node_api_core/17_get_milestone_by_id.rs"
 
 [[example]]
 name = "node_api_core_get_milestone_by_id_raw"
-path = "examples/node_api_core/19_get_milestone_by_id_raw.rs"
+path = "examples/node_api_core/18_get_milestone_by_id_raw.rs"
 
 [[example]]
 name = "node_api_core_get_utxo_changes_by_id"
-path = "examples/node_api_core/20_get_utxo_changes_by_id.rs"
+path = "examples/node_api_core/19_get_utxo_changes_by_id.rs"
 
 [[example]]
 name = "node_api_core_get_milestone_by_index"
-path = "examples/node_api_core/21_get_milestone_by_index.rs"
+path = "examples/node_api_core/20_get_milestone_by_index.rs"
 
 [[example]]
 name = "node_api_core_get_milestone_by_index_raw"
-path = "examples/node_api_core/22_get_milestone_by_index_raw.rs"
+path = "examples/node_api_core/21_get_milestone_by_index_raw.rs"
 
 [[example]]
 name = "node_api_core_get_utxo_changes_by_index"
-path = "examples/node_api_core/23_get_utxo_changes_by_index.rs"
+path = "examples/node_api_core/22_get_utxo_changes_by_index.rs"
 
 #######
 
