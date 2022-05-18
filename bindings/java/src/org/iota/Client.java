@@ -1,6 +1,5 @@
 package org.iota;
 
-import org.iota.apis.IndexerQueryParams;
 import org.iota.apis.NodeCoreApi;
 import org.iota.apis.NodeIndexerApi;
 
@@ -90,11 +89,11 @@ public class Client {
 
     // Node Indexer APIs
 
-    public String getBasicOutputIds(IndexerQueryParams params) {
+    public String getBasicOutputIds(NodeIndexerApi.QueryParams params) {
         return nodeIndexerApi.getBasicOutputIds(params);
     }
 
-    public String getAliasOutputIds(IndexerQueryParams params) {
+    public String getAliasOutputIds(NodeIndexerApi.QueryParams params) {
         return nodeIndexerApi.getAliasOutputIds(params);
     }
 
@@ -102,7 +101,7 @@ public class Client {
         return nodeIndexerApi.getAliasOutputId(aliasId);
     }
 
-    public String getNftOutputIds(IndexerQueryParams params) {
+    public String getNftOutputIds(NodeIndexerApi.QueryParams params) {
         return nodeIndexerApi.getNftOutputIds(params);
     }
 
@@ -110,7 +109,7 @@ public class Client {
         return nodeIndexerApi.getNftOutputId(nftId);
     }
 
-    public String getFoundryOutputIds(IndexerQueryParams params) {
+    public String getFoundryOutputIds(NodeIndexerApi.QueryParams params) {
         return nodeIndexerApi.getFoundryOutputIds(params);
     }
 

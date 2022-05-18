@@ -1,6 +1,6 @@
 package org.iota;
 
-import org.iota.apis.IndexerQueryParams;
+import org.iota.apis.NodeIndexerApi;
 
 public class Main {
 
@@ -28,6 +28,6 @@ public class Main {
         //System.out.println(c.getMilestoneByIdRaw("0x6832742bb65e05b5b4a469a8e89f9dd551199f4316538f37b4b39d83043029a3"));
         System.out.println(c.getPeers());
 
-        System.out.println(c.getBasicOutputIds(new IndexerQueryParams("[]")));
+        System.out.println(c.getBasicOutputIds(new NodeIndexerApi.QueryParams()));
     }
 }
