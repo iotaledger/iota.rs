@@ -171,7 +171,7 @@ pub enum ClientMethod {
         /// Milestone Index
         index: u32,
     },
-    /// Get the milestone by the given index.
+    /// Get the raw milestone by the given index.
     GetMilestoneByIndexRaw {
         /// Milestone Index
         index: u32,
