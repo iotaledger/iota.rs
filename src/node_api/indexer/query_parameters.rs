@@ -3,32 +3,32 @@
 
 //! Query parameters for output_id requests
 
-use std::{
-    collections::HashSet,
-    fmt,
-    hash::{Hash, Hasher},
-    mem,
-};
+use std::fmt;
 
 // https://github.com/gohornet/hornet/blob/bb1271be9f3a638f6acdeb6de74eab64515f27f1/plugins/indexer/v1/routes.go#L54
 
 /// Query parameters for output_id requests.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct QueryParameters(pub HashSet<QueryParameter>);
+pub struct QueryParameters(pub Vec<QueryParameter>);
 
 impl QueryParameters {
     /// Creates a hashset from a provided vec of query parameters.
-    pub fn new(query_parameters: Vec<QueryParameter>) -> Self {
-        let mut params = HashSet::new();
-        for param in query_parameters {
-            params.replace(param);
-        }
-        Self(params)
+    pub fn new(mut query_parameters: Vec<QueryParameter>) -> Self {
+        query_parameters.sort_unstable_by(|a, b| a.kind().cmp(&b.kind()));
+        query_parameters.dedup_by(|a, b| a == b);
+
+        Self(query_parameters)
     }
 
-    /// Replaces or insert an enum variant in the HashSet.
+    /// Replaces or inserts an enum variant in the QueryParameters.
     pub fn replace(&mut self, query_parameter: QueryParameter) {
-        self.0.replace(query_parameter);
+        match self
+            .0
+            .binary_search_by(|probe| probe.kind().cmp(&query_parameter.kind()))
+        {
+            Ok(pos) => self.0[pos] = query_parameter,
+            Err(pos) => self.0.insert(pos, query_parameter),
+        }
     }
 
     /// Converts parameters to a single String.
@@ -48,7 +48,7 @@ impl QueryParameters {
 }
 
 /// Query parameter for output requests.
-#[derive(Debug, Clone, Serialize, Deserialize, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub enum QueryParameter {
     /// Bech32-encoded address that should be searched for.
@@ -109,20 +109,6 @@ pub enum QueryParameter {
     TimelockedBeforeMilestone(u32),
 }
 
-// Custom impl because we only want a single query of each enum variant in the HashSet.
-impl PartialEq for QueryParameter {
-    fn eq(&self, other: &Self) -> bool {
-        mem::discriminant(self) == mem::discriminant(other)
-    }
-}
-
-// Custom impl because we only want a single query of each enum variant in the HashSet.
-impl Hash for QueryParameter {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        0.hash(state);
-    }
-}
-
 impl QueryParameter {
     fn to_query_string(&self) -> String {
         match self {
@@ -153,6 +139,38 @@ impl QueryParameter {
             QueryParameter::TimelockedAfterMilestone(v) => format!("timelockedAfterMilestone={}", v),
             QueryParameter::TimelockedBefore(v) => format!("timelockedBefore={}", v),
             QueryParameter::TimelockedBeforeMilestone(v) => format!("timelockedBeforeMilestone={}", v),
+        }
+    }
+
+    fn kind(&self) -> u8 {
+        match self {
+            QueryParameter::Address(_) => 0,
+            QueryParameter::AliasAddress(_) => 1,
+            QueryParameter::CreatedAfter(_) => 2,
+            QueryParameter::CreatedBefore(_) => 3,
+            QueryParameter::Cursor(_) => 4,
+            QueryParameter::ExpirationReturnAddress(_) => 5,
+            QueryParameter::ExpiresAfter(_) => 6,
+            QueryParameter::ExpiresAfterMilestone(_) => 7,
+            QueryParameter::ExpiresBefore(_) => 8,
+            QueryParameter::ExpiresBeforeMilestone(_) => 9,
+            QueryParameter::Governor(_) => 10,
+            QueryParameter::HasExpirationCondition(_) => 11,
+            QueryParameter::HasNativeTokens(_) => 12,
+            QueryParameter::HasStorageReturnCondition(_) => 13,
+            QueryParameter::HasTimelockCondition(_) => 14,
+            QueryParameter::Issuer(_) => 15,
+            QueryParameter::MaxNativeTokenCount(_) => 16,
+            QueryParameter::MinNativeTokenCount(_) => 17,
+            QueryParameter::PageSize(_) => 18,
+            QueryParameter::Sender(_) => 19,
+            QueryParameter::StateController(_) => 20,
+            QueryParameter::StorageReturnAddress(_) => 21,
+            QueryParameter::Tag(_) => 22,
+            QueryParameter::TimelockedAfter(_) => 23,
+            QueryParameter::TimelockedAfterMilestone(_) => 24,
+            QueryParameter::TimelockedBefore(_) => 25,
+            QueryParameter::TimelockedBeforeMilestone(_) => 26,
         }
     }
 }
