@@ -270,6 +270,7 @@ async fn address_generation() {
             let stronghold_filename = format!("{}.stronghold", address.bech32_address);
             let secret_manager_dto = StrongholdDto {
                 password: Some("some_hopefully_secure_password".to_string()),
+                timeout: None,
                 snapshot_path: Some(stronghold_filename.clone()),
             };
             let message_type = MessageType::CallClientMethod(ClientMethod::StoreMnemonic {

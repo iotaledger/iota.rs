@@ -17,7 +17,7 @@ pub mod types;
 
 #[cfg(feature = "stronghold")]
 use std::path::PathBuf;
-use std::{collections::HashMap, ops::Range, str::FromStr};
+use std::{collections::HashMap, ops::Range, str::FromStr, time::Duration};
 
 use async_trait::async_trait;
 use bee_block::{
@@ -165,6 +165,10 @@ impl TryFrom<&SecretManagerDto> for SecretManager {
                     builder = builder.password(password);
                 }
 
+                if let Some(timeout) = &stronghold_dto.timeout {
+                    builder = builder.timeout(Duration::from_secs(*timeout));
+                }
+
                 if let Some(snapshot_path) = &stronghold_dto.snapshot_path {
                     builder = builder.snapshot_path(PathBuf::from(snapshot_path));
                 }
@@ -191,6 +195,7 @@ impl From<&SecretManager> for SecretManagerDto {
             #[cfg(feature = "stronghold")]
             SecretManager::Stronghold(stronghold_dto) => Self::Stronghold(StrongholdDto {
                 password: None,
+                timeout: stronghold_dto.get_timeout().map(|duration| duration.as_secs()),
                 snapshot_path: stronghold_dto
                     .snapshot_path
                     .as_ref()
