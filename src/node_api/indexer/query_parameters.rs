@@ -14,8 +14,8 @@ pub struct QueryParameters(pub Vec<QueryParameter>);
 impl QueryParameters {
     /// Creates a hashset from a provided vec of query parameters.
     pub fn new(mut query_parameters: Vec<QueryParameter>) -> Self {
-        query_parameters.sort_unstable_by(|a, b| a.kind().cmp(&b.kind()));
-        query_parameters.dedup_by(|a, b| a == b);
+        query_parameters.sort_unstable_by_key(|a| a.kind());
+        query_parameters.dedup_by_key(|a| a.kind());
 
         Self(query_parameters)
     }
