@@ -22,7 +22,7 @@ use super::{
 use crate::{
     api::RemainderData,
     secret::{types::InputSigningData, GenerateAddressMetadata, SecretManage},
-    Result,
+    Error, Result,
 };
 
 #[async_trait]
@@ -35,6 +35,15 @@ impl SecretManage for StrongholdAdapter {
         internal: bool,
         _metadata: GenerateAddressMetadata,
     ) -> Result<Vec<Address>> {
+        // Prevent the method from being invoked when the key has been cleared from the memory. Do note that Stronghold
+        // only asks for a key for reading / writing a snapshot, so without our cached key this method is invocable, but
+        // it doesn't make sense when it comes to our user (signing transactions / generating addresses without a key).
+        // Thus, we put an extra guard here to prevent this methods from being invoked when our cached key has
+        // been cleared.
+        if !self.is_key_available().await {
+            return Err(Error::StrongholdKeyCleared);
+        }
+
         // Stronghold arguments.
         let seed_location = SLIP10DeriveInput::Seed(Location::Generic {
             vault_path: SECRET_VAULT_PATH.to_vec(),
@@ -85,6 +94,15 @@ impl SecretManage for StrongholdAdapter {
         essence_hash: &[u8; 32],
         _: &Option<RemainderData>,
     ) -> Result<Unlock> {
+        // Prevent the method from being invoked when the key has been cleared from the memory. Do note that Stronghold
+        // only asks for a key for reading / writing a snapshot, so without our cached key this method is invocable, but
+        // it doesn't make sense when it comes to our user (signing transactions / generating addresses without a key).
+        // Thus, we put an extra guard here to prevent this methods from being invoked when our cached key has
+        // been cleared.
+        if !self.is_key_available().await {
+            return Err(Error::StrongholdKeyCleared);
+        }
+
         // Stronghold arguments.
         let seed_location = SLIP10DeriveInput::Seed(Location::Generic {
             vault_path: SECRET_VAULT_PATH.to_vec(),
