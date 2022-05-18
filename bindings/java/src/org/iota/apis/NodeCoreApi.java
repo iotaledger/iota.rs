@@ -2,14 +2,14 @@ package org.iota.apis;
 
 import org.iota.*;
 
-public class NodeApi extends BaseApi {
+public class NodeCoreApi extends BaseApi {
 
-    public NodeApi(ClientConfig config) {
+    public NodeCoreApi(ClientConfig config) {
         super(config);
     }
 
     public String getHealth(String nodeUrl) {
-        return RustApi.call(super.config, new ClientCommand(ClientCommandType.CallClientMethod, "{ \"name\": \"GetHealth\", \"data\": { \"url\": \"" + nodeUrl + "\" }}"));
+        return RustApi.call(config, new ClientCommand(ClientCommandType.CallClientMethod, "{ \"name\": \"GetHealth\", \"data\": { \"url\": \"" + nodeUrl + "\" }}"));
     }
 
     public String getNodeInfo() {
@@ -66,6 +66,18 @@ public class NodeApi extends BaseApi {
 
     public String getMilestoneByIdRaw(String milestoneId) {
         return RustApi.call(config, new ClientCommand(ClientCommandType.CallClientMethod, "{ \"name\": \"GetMilestoneByIdRaw\", \"data\": { \"milestoneId\": " + milestoneId + " }}"));
+    }
+
+    public String getUtxoChangesById(String milestoneId) {
+        return RustApi.call(config, new ClientCommand(ClientCommandType.CallClientMethod, "{ \"name\": \"GetUtxoChangesById\", \"data\": { \"milestoneId\": " + milestoneId + " }}"));
+    }
+
+    public String getUtxoChangesByIndex(int milestoneIndex) {
+        return RustApi.call(config, new ClientCommand(ClientCommandType.CallClientMethod, "{ \"name\": \"GetUtxoChangesByIndex\", \"data\": { \"index\": " + milestoneIndex + " }}"));
+    }
+
+    public String getPeers() {
+        return RustApi.call(config, new ClientCommand(ClientCommandType.CallClientMethod, "{ \"name\": \"GetPeers\" }"));
     }
 
 }

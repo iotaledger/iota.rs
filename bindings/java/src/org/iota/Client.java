@@ -1,74 +1,121 @@
 package org.iota;
 
-import org.iota.apis.NodeApi;
+import org.iota.apis.IndexerQueryParams;
+import org.iota.apis.NodeCoreApi;
+import org.iota.apis.NodeIndexerApi;
 
 public class Client {
 
-    private NodeApi nodeApi;
+    private NodeCoreApi nodeCoreApi;
+    private NodeIndexerApi nodeIndexerApi;
 
     public Client(ClientConfig config) {
-        nodeApi = new NodeApi(config);
+        nodeCoreApi = new NodeCoreApi(config);
+        nodeIndexerApi = new NodeIndexerApi(config);
     }
 
+    // Node Core APIs
+
     public String getHealth(String nodeUrl) {
-        return nodeApi.getHealth(nodeUrl);
+        return nodeCoreApi.getHealth(nodeUrl);
     }
 
     public String getNodeInfo() {
-        return nodeApi.getNodeInfo();
+        return nodeCoreApi.getNodeInfo();
     }
 
     public String getTips() {
-        return nodeApi.getTips();
+        return nodeCoreApi.getTips();
     }
 
     public String getMessage(String messageId) {
-        return nodeApi.getMessage(messageId);
+        return nodeCoreApi.getMessage(messageId);
     }
 
     public String getMessageRaw(String messageId) {
-        return nodeApi.getMessageRaw(messageId);
+        return nodeCoreApi.getMessageRaw(messageId);
     }
 
     public String getMessageMetadata(String messageId) {
-        return nodeApi.getMessageMetadata(messageId);
+        return nodeCoreApi.getMessageMetadata(messageId);
     }
 
     public String getMessageChildren(String messageId) {
-        return nodeApi.getMessageChildren(messageId);
+        return nodeCoreApi.getMessageChildren(messageId);
     }
 
     public String getOutput(String outputId) {
-        return nodeApi.getOutput(outputId);
+        return nodeCoreApi.getOutput(outputId);
     }
 
     public String getReceiptsMigratedAt(int milestoneIndex) {
-        return nodeApi.getReceiptsMigratedAt(milestoneIndex);
+        return nodeCoreApi.getReceiptsMigratedAt(milestoneIndex);
     }
 
     public String getReceipts() {
-        return nodeApi.getReceipts();
+        return nodeCoreApi.getReceipts();
     }
 
     public String getTreasury() {
-        return nodeApi.getTreasury();
+        return nodeCoreApi.getTreasury();
     }
 
     public String getIncludedMessage(String transactionId) {
-        return nodeApi.getIncludedMessage(transactionId);
+        return nodeCoreApi.getIncludedMessage(transactionId);
     }
 
     public String getMilestoneById(String milestoneId) {
-        return nodeApi.getMilestoneById(milestoneId);
+        return nodeCoreApi.getMilestoneById(milestoneId);
     }
 
     public String getMilestoneByIndex(int milestoneIndex) {
-        return nodeApi.getMilestoneByIndex(milestoneIndex);
+        return nodeCoreApi.getMilestoneByIndex(milestoneIndex);
     }
 
     public String getMilestoneByIdRaw(String milestoneId) {
-        return nodeApi.getMilestoneByIdRaw(milestoneId);
+        return nodeCoreApi.getMilestoneByIdRaw(milestoneId);
     }
 
+    public String getUtxoChangesById(String milestoneId) {
+        return nodeCoreApi.getMilestoneById(milestoneId);
+    }
+
+    public String getUtxoChangesByIndex(int milestoneIndex) {
+        return nodeCoreApi.getMilestoneByIndex(milestoneIndex);
+    }
+
+    public String getPeers() {
+        return nodeCoreApi.getPeers();
+    }
+
+    // Node Indexer APIs
+
+    public String getBasicOutputIds(IndexerQueryParams params) {
+        return nodeIndexerApi.getBasicOutputIds(params);
+    }
+
+    public String getAliasOutputIds(IndexerQueryParams params) {
+        return nodeIndexerApi.getAliasOutputIds(params);
+    }
+
+    public String getAliasOutputId(String aliasId) {
+        return nodeIndexerApi.getAliasOutputId(aliasId);
+    }
+
+    public String getNftOutputIds(IndexerQueryParams params) {
+        return nodeIndexerApi.getNftOutputIds(params);
+    }
+
+    public String getNftOutputId(String nftId) {
+        return nodeIndexerApi.getNftOutputId(nftId);
+    }
+
+    public String getFoundryOutputIds(IndexerQueryParams params) {
+        return nodeIndexerApi.getFoundryOutputIds(params);
+    }
+
+    public String getFoundryOutputId(String foundryId) {
+        return nodeIndexerApi.getFoundryOutputId(foundryId);
+    }
 
 }
