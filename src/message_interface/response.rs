@@ -84,7 +84,7 @@ pub enum Response {
     Outputs(Vec<OutputResponse>),
     /// Get milestone successful
     Milestone(MilestonePayloadDto),
-    /// Get the raw milestone
+    /// Get the milestone in raw bytes
     MilestoneRaw(Vec<u8>),
     /// Get milestone utxo changes
     MilestoneUtxoChanges(MilestoneUTXOChanges),
