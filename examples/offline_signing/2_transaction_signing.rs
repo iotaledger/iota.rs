@@ -14,12 +14,8 @@ use std::{
 
 use dotenv::dotenv;
 use iota_client::{
-    api::{PreparedTransactionData, PreparedTransactionDataDto},
-    bee_message::{
-        address::Address,
-        payload::{transaction::TransactionPayload, Payload},
-        unlock_block::UnlockBlocks,
-    },
+    api::{PreparedTransactionData, PreparedTransactionDataDto, SignedTransactionData, SignedTransactionDataDto},
+    bee_message::{payload::transaction::TransactionPayload, unlock_block::UnlockBlocks},
     secret::{mnemonic::MnemonicSecretManager, SecretManageExt, SecretManager},
     Result,
 };
@@ -35,25 +31,23 @@ async fn main() -> Result<()> {
         &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
     )?);
 
-    let prepared_transaction = read_prepared_transaction_from_file(PREPARED_TRANSACTION_FILE_NAME)?;
-
-    let mut input_addresses = Vec::new();
-    for input_signing_data in &prepared_transaction.inputs_data {
-        let (_bech32_hrp, address) = Address::try_from_bech32(&input_signing_data.bech32_address)?;
-        input_addresses.push(address);
-    }
+    let prepared_transaction_data = read_prepared_transaction_from_file(PREPARED_TRANSACTION_FILE_NAME)?;
 
     // Signs prepared transaction offline.
-    let unlock_blocks = secret_manager.sign_transaction_essence(&prepared_transaction).await?;
+    let unlock_blocks = secret_manager
+        .sign_transaction_essence(&prepared_transaction_data)
+        .await?;
     let unlock_blocks = UnlockBlocks::new(unlock_blocks)?;
-    let signed_transaction = TransactionPayload::new(prepared_transaction.essence.clone(), unlock_blocks)?;
+    let signed_transaction = TransactionPayload::new(prepared_transaction_data.essence.clone(), unlock_blocks)?;
+
+    let signed_transaction_data = SignedTransactionData {
+        transaction_payload: signed_transaction,
+        inputs_data: prepared_transaction_data.inputs_data,
+    };
 
     println!("Signed transaction.");
 
-    write_signed_transaction_to_file(
-        SIGNED_TRANSACTION_FILE_NAME,
-        Payload::Transaction(Box::new(signed_transaction)),
-    )?;
+    write_signed_transaction_to_file(SIGNED_TRANSACTION_FILE_NAME, &signed_transaction_data)?;
 
     Ok(())
 }
@@ -68,8 +62,12 @@ fn read_prepared_transaction_from_file<P: AsRef<Path>>(path: P) -> Result<Prepar
     >(&json)?)?)
 }
 
-fn write_signed_transaction_to_file<P: AsRef<Path>>(path: P, signed_transaction: Payload) -> Result<()> {
-    let json = serde_json::to_string_pretty(&signed_transaction)?;
+fn write_signed_transaction_to_file<P: AsRef<Path>>(
+    path: P,
+    signed_transaction_data: &SignedTransactionData,
+) -> Result<()> {
+    let dto = SignedTransactionDataDto::from(signed_transaction_data);
+    let json = serde_json::to_string_pretty(&dto)?;
     let mut file = BufWriter::new(File::create(path)?);
 
     println!("{}", json);
