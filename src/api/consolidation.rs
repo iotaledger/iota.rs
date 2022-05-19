@@ -77,8 +77,8 @@ pub async fn consolidate_funds(
                 let mut total_amount = 0;
                 for (input, amount) in chunk {
                     block_builder = block_builder.with_input(UtxoInput::from(OutputId::new(
-                        TransactionId::from_str(&input.transaction_id)?,
-                        input.output_index,
+                        TransactionId::from_str(&input.metadata.transaction_id)?,
+                        input.metadata.output_index,
                     )?))?;
                     total_amount += amount;
                 }

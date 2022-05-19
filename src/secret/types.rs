@@ -110,20 +110,21 @@ impl TryFrom<&OutputResponse> for OutputMetadata {
 
     fn try_from(response: &OutputResponse) -> Result<Self> {
         Ok(OutputMetadata {
-            block_id: BlockId::from_str(&response.block_id)?,
-            transaction_id: TransactionId::from_str(&response.transaction_id)?,
-            output_index: response.output_index,
-            is_spent: response.is_spent,
-            milestone_index_spent: response.milestone_index_spent,
-            milestone_timestamp_spent: response.milestone_timestamp_spent,
+            block_id: BlockId::from_str(&response.metadata.block_id)?,
+            transaction_id: TransactionId::from_str(&response.metadata.transaction_id)?,
+            output_index: response.metadata.output_index,
+            is_spent: response.metadata.is_spent,
+            milestone_index_spent: response.metadata.milestone_index_spent,
+            milestone_timestamp_spent: response.metadata.milestone_timestamp_spent,
             transaction_id_spent: response
+                .metadata
                 .transaction_id_spent
                 .as_ref()
                 .map(|s| TransactionId::from_str(s))
                 .transpose()?,
-            milestone_index_booked: response.milestone_index_booked,
-            milestone_timestamp_booked: response.milestone_timestamp_booked,
-            ledger_index: response.ledger_index,
+            milestone_index_booked: response.metadata.milestone_index_booked,
+            milestone_timestamp_booked: response.metadata.milestone_timestamp_booked,
+            ledger_index: response.metadata.ledger_index,
         })
     }
 }

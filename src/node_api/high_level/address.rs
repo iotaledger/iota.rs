@@ -62,7 +62,7 @@ impl<'a> GetAddressBuilder<'a> {
             if outputs_responses.is_empty() {
                 0
             } else {
-                outputs_responses[0].ledger_index
+                outputs_responses[0].metadata.ledger_index
             }
         };
 

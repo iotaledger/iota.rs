@@ -601,8 +601,8 @@ impl Client {
             let (amount, _) = ClientBlockBuilder::get_output_amount_and_address(&output_resp.output, None)?;
             basic_outputs.push((
                 UtxoInput::new(
-                    TransactionId::from_str(&output_resp.transaction_id)?,
-                    output_resp.output_index,
+                    TransactionId::from_str(&output_resp.metadata.transaction_id)?,
+                    output_resp.metadata.output_index,
                 )?,
                 amount,
             ));

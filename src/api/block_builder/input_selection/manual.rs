@@ -39,7 +39,7 @@ pub(crate) async fn get_custom_inputs(
         for input in inputs {
             let output_response = block_builder.client.get_output(input.output_id()).await?;
 
-            if !output_response.is_spent {
+            if !output_response.metadata.is_spent {
                 let (_output_amount, output_address) = ClientBlockBuilder::get_output_amount_and_address(
                     &output_response.output,
                     governance_transition.clone(),
