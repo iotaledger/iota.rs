@@ -4,80 +4,80 @@ import org.iota.*;
 
 public class NodeCoreApi extends BaseApi {
 
-    public NodeCoreApi(ClientConfig config) {
-        super(config);
+    public NodeCoreApi(ClientConfig clientConfig) {
+        super(clientConfig);
     }
 
     public String getHealth(String nodeUrl) {
-        return RustApi.call(config, new ClientCommand(ClientCommandType.CallClientMethod, "{ \"name\": \"GetHealth\", \"data\": { \"url\": \"" + nodeUrl + "\" }}"));
+        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "{ \"name\": \"GetHealth\", \"data\": { \"url\": \"" + nodeUrl + "\" }}"));
     }
 
     public String getNodeInfo() {
-        return RustApi.call(config, new ClientCommand(ClientCommandType.CallClientMethod, "{ \"name\": \"GetInfo\" }"));
+        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "{ \"name\": \"GetInfo\" }"));
     }
 
     public String getTips() {
-        return RustApi.call(config, new ClientCommand(ClientCommandType.CallClientMethod, "{ \"name\": \"GetTips\" }"));
+        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "{ \"name\": \"GetTips\" }"));
     }
 
     public String getMessage(String messageId) {
-        return RustApi.call(config, new ClientCommand(ClientCommandType.CallClientMethod, "{ \"name\": \"GetMessage\", \"data\": { \"messageId\": \"" + messageId + "\" }}"));
+        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "{ \"name\": \"GetMessage\", \"data\": { \"messageId\": \"" + messageId + "\" }}"));
     }
 
     public String getMessageRaw(String messageId) {
-        return RustApi.call(config, new ClientCommand(ClientCommandType.CallClientMethod, "{ \"name\": \"GetMessageRaw\", \"data\": { \"messageId\": \"" + messageId + "\" }}"));
+        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "{ \"name\": \"GetMessageRaw\", \"data\": { \"messageId\": \"" + messageId + "\" }}"));
     }
 
     public String getMessageMetadata(String messageId) {
-        return RustApi.call(config, new ClientCommand(ClientCommandType.CallClientMethod, "{ \"name\": \"GetMessageMetadata\", \"data\": { \"messageId\": \"" + messageId + "\" }}"));
+        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "{ \"name\": \"GetMessageMetadata\", \"data\": { \"messageId\": \"" + messageId + "\" }}"));
     }
 
     public String getMessageChildren(String messageId) {
-        return RustApi.call(config, new ClientCommand(ClientCommandType.CallClientMethod, "{ \"name\": \"GetMessageChildren\", \"data\": { \"messageId\": \"" + messageId + "\" }}"));
+        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "{ \"name\": \"GetMessageChildren\", \"data\": { \"messageId\": \"" + messageId + "\" }}"));
     }
 
     public String getOutput(String outputId) {
-        return RustApi.call(config, new ClientCommand(ClientCommandType.CallClientMethod, "{ \"name\": \"GetOutput\", \"data\": { \"outputId\": \"" + outputId + "\" }}"));
+        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "{ \"name\": \"GetOutput\", \"data\": { \"outputId\": \"" + outputId + "\" }}"));
     }
 
     public String getReceiptsMigratedAt(int milestoneIndex) {
-        return RustApi.call(config, new ClientCommand(ClientCommandType.CallClientMethod, "{ \"name\": \"GetReceiptsMigratedAt\", \"data\": { \"milestoneIndex\": " + milestoneIndex + " }}"));
+        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "{ \"name\": \"GetReceiptsMigratedAt\", \"data\": { \"milestoneIndex\": " + milestoneIndex + " }}"));
     }
 
     public String getReceipts() {
-        return RustApi.call(config, new ClientCommand(ClientCommandType.CallClientMethod, "{ \"name\": \"GetReceipts\" }"));
+        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "{ \"name\": \"GetReceipts\" }"));
     }
 
     public String getTreasury() {
-        return RustApi.call(config, new ClientCommand(ClientCommandType.CallClientMethod, "{ \"name\": \"GetTreasury\" }"));
+        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "{ \"name\": \"GetTreasury\" }"));
     }
 
     public String getIncludedMessage(String transactionId) {
-        return RustApi.call(config, new ClientCommand(ClientCommandType.CallClientMethod, "{ \"name\": \"GetIncludedMessage\", \"data\": { \"transactionId\": \"" + transactionId + "\" }}"));
+        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "{ \"name\": \"GetIncludedMessage\", \"data\": { \"transactionId\": \"" + transactionId + "\" }}"));
     }
 
     public String getMilestoneById(String milestoneId) {
-        return RustApi.call(config, new ClientCommand(ClientCommandType.CallClientMethod, "{ \"name\": \"GetMilestoneById\", \"data\": { \"milestoneId\": \"" + milestoneId + "\" }}"));
+        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "{ \"name\": \"GetMilestoneById\", \"data\": { \"milestoneId\": \"" + milestoneId + "\" }}"));
     }
 
     public String getMilestoneByIndex(int milestoneIndex) {
-        return RustApi.call(config, new ClientCommand(ClientCommandType.CallClientMethod, "{ \"name\": \"GetMilestoneByIndex\", \"data\": { \"index\": " + milestoneIndex + " }}"));
+        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "{ \"name\": \"GetMilestoneByIndex\", \"data\": { \"index\": " + milestoneIndex + " }}"));
     }
 
     public String getMilestoneByIdRaw(String milestoneId) {
-        return RustApi.call(config, new ClientCommand(ClientCommandType.CallClientMethod, "{ \"name\": \"GetMilestoneByIdRaw\", \"data\": { \"milestoneId\": " + milestoneId + " }}"));
+        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "{ \"name\": \"GetMilestoneByIdRaw\", \"data\": { \"milestoneId\": " + milestoneId + " }}"));
     }
 
     public String getUtxoChangesById(String milestoneId) {
-        return RustApi.call(config, new ClientCommand(ClientCommandType.CallClientMethod, "{ \"name\": \"GetUtxoChangesById\", \"data\": { \"milestoneId\": " + milestoneId + " }}"));
+        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "{ \"name\": \"GetUtxoChangesById\", \"data\": { \"milestoneId\": " + milestoneId + " }}"));
     }
 
     public String getUtxoChangesByIndex(int milestoneIndex) {
-        return RustApi.call(config, new ClientCommand(ClientCommandType.CallClientMethod, "{ \"name\": \"GetUtxoChangesByIndex\", \"data\": { \"index\": " + milestoneIndex + " }}"));
+        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "{ \"name\": \"GetUtxoChangesByIndex\", \"data\": { \"index\": " + milestoneIndex + " }}"));
     }
 
     public String getPeers() {
-        return RustApi.call(config, new ClientCommand(ClientCommandType.CallClientMethod, "{ \"name\": \"GetPeers\" }"));
+        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "{ \"name\": \"GetPeers\" }"));
     }
 
 }
