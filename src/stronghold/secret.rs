@@ -1,7 +1,7 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! The [SecretManager] implementation for [StrongholdAdapter].
+//! The [SecretManage] implementation for [StrongholdAdapter].
 
 use std::ops::Range;
 
@@ -151,6 +151,8 @@ impl StrongholdAdapter {
     ) -> Result<()> {
         match self
             .stronghold
+            .lock()
+            .await
             .runtime_exec(Procedure::BIP39Recover {
                 mnemonic,
                 passphrase,
@@ -188,6 +190,8 @@ impl StrongholdAdapter {
     ) -> Result<()> {
         match self
             .stronghold
+            .lock()
+            .await
             .runtime_exec(Procedure::SLIP10Derive {
                 chain,
                 input,
@@ -220,6 +224,8 @@ impl StrongholdAdapter {
     async fn ed25519_public_key(&self, private_key: Location) -> Result<[u8; 32]> {
         match self
             .stronghold
+            .lock()
+            .await
             .runtime_exec(Procedure::Ed25519PublicKey { private_key })
             .await
         {
@@ -245,6 +251,8 @@ impl StrongholdAdapter {
     async fn ed25519_sign(&self, private_key: Location, msg: &[u8]) -> Result<[u8; 64]> {
         match self
             .stronghold
+            .lock()
+            .await
             .runtime_exec(Procedure::Ed25519Sign {
                 private_key,
                 msg: msg.to_vec(),
@@ -294,7 +302,7 @@ impl StrongholdAdapter {
 
         // If the snapshot has successfully been loaded, then we need to check if there has been a
         // mnemonic stored in Stronghold or not to prevent overwriting it.
-        if self.snapshot_loaded && self.stronghold.record_exists(output.clone()).await {
+        if self.snapshot_loaded && self.stronghold.lock().await.record_exists(output.clone()).await {
             return Err(crate::Error::StrongholdMnemonicAlreadyStored);
         }
 

@@ -31,7 +31,7 @@ impl DatabaseProvider for StrongholdAdapter {
         }
 
         let location = location_from_key(k);
-        let (data, status) = self.stronghold.read_from_store(location).await;
+        let (data, status) = self.stronghold.lock().await.read_from_store(location).await;
 
         // XXX: this theoretically indicates a non-existent key, but what about other errors?
         if let ResultMessage::Error(err) = status {
@@ -69,7 +69,12 @@ impl DatabaseProvider for StrongholdAdapter {
         };
 
         let location = location_from_key(k);
-        let status = self.stronghold.write_to_store(location, encrypted_value, None).await;
+        let status = self
+            .stronghold
+            .lock()
+            .await
+            .write_to_store(location, encrypted_value, None)
+            .await;
 
         if let ResultMessage::Error(err) = status {
             return Err(Error::StrongholdProcedureError(err));
@@ -87,7 +92,7 @@ impl DatabaseProvider for StrongholdAdapter {
         let old_value = self.get(k).await?;
 
         let location = location_from_key(k);
-        let status = self.stronghold.delete_from_store(location).await;
+        let status = self.stronghold.lock().await.delete_from_store(location).await;
 
         if let ResultMessage::Error(err) = status {
             return Err(Error::StrongholdProcedureError(err));
