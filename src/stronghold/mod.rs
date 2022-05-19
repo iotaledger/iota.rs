@@ -430,7 +430,11 @@ impl StrongholdAdapter {
         {
             ResultMessage::Ok(_) => Ok(()),
             ResultMessage::Error(err) => Err(crate::Error::StrongholdProcedureError(err)),
-        }
+        }?;
+
+        self.snapshot_loaded = false;
+
+        Ok(())
     }
 }
 
