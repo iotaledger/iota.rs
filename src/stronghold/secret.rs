@@ -6,10 +6,10 @@
 use std::ops::Range;
 
 use async_trait::async_trait;
-use bee_message::{
+use bee_block::{
     address::{Address, Ed25519Address},
     signature::{Ed25519Signature, Signature},
-    unlock_block::{SignatureUnlockBlock, UnlockBlock},
+    unlock::{SignatureUnlock, Unlock},
 };
 use crypto::hashes::{blake2b::Blake2b256, Digest};
 use iota_stronghold::{Location, ProcResult, Procedure, RecordHint, ResultMessage, SLIP10DeriveInput};
@@ -84,7 +84,7 @@ impl SecretManage for StrongholdAdapter {
         input: &InputSigningData,
         essence_hash: &[u8; 32],
         _: &Option<RemainderData>,
-    ) -> Result<UnlockBlock> {
+    ) -> Result<Unlock> {
         // Stronghold arguments.
         let seed_location = SLIP10DeriveInput::Seed(Location::Generic {
             vault_path: SECRET_VAULT_PATH.to_vec(),
@@ -118,15 +118,15 @@ impl SecretManage for StrongholdAdapter {
         // Get the Ed25519 public key from the derived SLIP-10 private key in the vault.
         let public_key = self.ed25519_public_key(derive_location.clone()).await?;
 
-        // Sign the message with the derived SLIP-10 private key in the vault.
+        // Sign the essence hash with the derived SLIP-10 private key in the vault.
         let signature = self.ed25519_sign(derive_location.clone(), essence_hash).await?;
 
-        // Convert the raw bytes into [UnlockBlock].
-        let unlock_block = UnlockBlock::Signature(SignatureUnlockBlock::new(Signature::Ed25519(
-            Ed25519Signature::new(public_key, signature),
-        )));
+        // Convert the raw bytes into [Unlock].
+        let unlock = Unlock::Signature(SignatureUnlock::new(Signature::Ed25519(Ed25519Signature::new(
+            public_key, signature,
+        ))));
 
-        Ok(unlock_block)
+        Ok(unlock)
     }
 }
 

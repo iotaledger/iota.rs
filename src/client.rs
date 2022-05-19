@@ -11,7 +11,7 @@ use std::{
     time::{Duration, SystemTime, UNIX_EPOCH},
 };
 
-use bee_message::{
+use bee_block::{
     address::Address,
     input::{Input, UtxoInput, INPUT_COUNT_MAX},
     output::{ByteCostConfig, ByteCostConfigBuilder, OutputId},
@@ -20,7 +20,7 @@ use bee_message::{
         transaction::{TransactionEssence, TransactionId},
         Payload, TaggedDataPayload,
     },
-    Message, MessageBuilder, MessageId,
+    Block, BlockBuilder, BlockId,
 };
 use bee_pow::providers::NonceProviderBuilder;
 use bee_rest_api::types::{
@@ -51,7 +51,7 @@ use {
 use crate::{
     api::{
         miner::{ClientMiner, ClientMinerBuilder},
-        ClientMessageBuilder, GetAddressesBuilder,
+        ClientBlockBuilder, GetAddressesBuilder,
     },
     builder::{ClientBuilder, NetworkInfo},
     constants::{DEFAULT_API_TIMEOUT, DEFAULT_TIPS_INTERVAL, FIVE_MINUTES_IN_SECONDS},
@@ -271,7 +271,7 @@ impl Client {
 
         // For WASM we don't have the node syncing process, which updates the network_info every 60 seconds, but the PoW
         // difficulty or the byte cost could change via a milestone, so we request the nodeinfo every time, so we don't
-        // create invalid transactions/messages
+        // create invalid transactions/blocks
         if not_synced || cfg!(target_family = "wasm") {
             let info = self.get_info().await?.node_info;
             let network_id = hash_network(&info.protocol.network_name).ok();
@@ -423,9 +423,9 @@ impl Client {
 
     /// Get the inputs of a transaction for the given transaction id.
     pub async fn inputs_from_transaction_id(&self, transaction_id: &TransactionId) -> Result<Vec<OutputResponse>> {
-        let message = self.get_included_message(transaction_id).await?;
+        let block = self.get_included_block(transaction_id).await?;
 
-        let inputs = match message.payload() {
+        let inputs = match block.payload() {
             Some(Payload::Transaction(t)) => match t.essence() {
                 TransactionEssence::Regular(e) => e.inputs(),
             },
@@ -447,9 +447,9 @@ impl Client {
         self.get_outputs(input_ids).await
     }
 
-    /// A generic send function for easily sending transaction or tagged data messages.
-    pub fn message(&self) -> ClientMessageBuilder<'_> {
-        ClientMessageBuilder::new(self)
+    /// A generic send function for easily sending transaction or tagged data blocks.
+    pub fn block(&self) -> ClientBlockBuilder<'_> {
+        ClientBlockBuilder::new(self)
     }
 
     /// Return a list of addresses from a secret manager regardless of their validity.
@@ -457,54 +457,54 @@ impl Client {
         GetAddressesBuilder::new(secret_manager).with_client(self)
     }
 
-    /// Find all messages by provided message IDs.
-    pub async fn find_messages(&self, message_ids: &[MessageId]) -> Result<Vec<Message>> {
-        let mut messages = Vec::new();
+    /// Find all blocks by provided block IDs.
+    pub async fn find_blocks(&self, block_ids: &[BlockId]) -> Result<Vec<Block>> {
+        let mut blocks = Vec::new();
 
-        // Use a `HashSet` to prevent duplicate message_ids.
-        let mut message_ids_to_query = HashSet::<MessageId>::new();
+        // Use a `HashSet` to prevent duplicate block_ids.
+        let mut block_ids_to_query = HashSet::<BlockId>::new();
 
-        // Collect the `MessageId` in the HashSet.
-        for message_id in message_ids {
-            message_ids_to_query.insert(message_id.to_owned());
+        // Collect the `BlockId` in the HashSet.
+        for block_id in block_ids {
+            block_ids_to_query.insert(block_id.to_owned());
         }
 
-        // Use `get_message()` API to get the `Message`.
-        for message_id in message_ids_to_query {
-            let message = self.get_message(&message_id).await?;
-            messages.push(message);
+        // Use `get_block()` API to get the `Block`.
+        for block_id in block_ids_to_query {
+            let block = self.get_block(&block_id).await?;
+            blocks.push(block);
         }
-        Ok(messages)
+        Ok(blocks)
     }
 
-    /// Retries (promotes or reattaches) a message for provided message id. Message should only be
+    /// Retries (promotes or reattaches) a block for provided block id. Block should only be
     /// retried only if they are valid and haven't been confirmed for a while.
-    pub async fn retry(&self, message_id: &MessageId) -> Result<(MessageId, Message)> {
+    pub async fn retry(&self, block_id: &BlockId) -> Result<(BlockId, Block)> {
         // Get the metadata to check if it needs to promote or reattach
-        let message_metadata = self.get_message_metadata(message_id).await?;
-        if message_metadata.should_promote.unwrap_or(false) {
-            self.promote_unchecked(message_id).await
-        } else if message_metadata.should_reattach.unwrap_or(false) {
-            self.reattach_unchecked(message_id).await
+        let block_metadata = self.get_block_metadata(block_id).await?;
+        if block_metadata.should_promote.unwrap_or(false) {
+            self.promote_unchecked(block_id).await
+        } else if block_metadata.should_reattach.unwrap_or(false) {
+            self.reattach_unchecked(block_id).await
         } else {
-            Err(Error::NoNeedPromoteOrReattach(message_id.to_string()))
+            Err(Error::NoNeedPromoteOrReattach(block_id.to_string()))
         }
     }
 
-    /// Retries (promotes or reattaches) a message for provided message id until it's included (referenced by a
-    /// milestone). Default interval is 5 seconds and max attempts is 40. Returns the included message at first position
-    /// and additional reattached messages
+    /// Retries (promotes or reattaches) a block for provided block id until it's included (referenced by a
+    /// milestone). Default interval is 5 seconds and max attempts is 40. Returns the included block at first position
+    /// and additional reattached blocks
     pub async fn retry_until_included(
         &self,
-        message_id: &MessageId,
+        block_id: &BlockId,
         interval: Option<u64>,
         max_attempts: Option<u64>,
-    ) -> Result<Vec<(MessageId, Message)>> {
+    ) -> Result<Vec<(BlockId, Block)>> {
         log::debug!("[retry_until_included]");
-        // Attachments of the Message to check inclusion state
-        let mut message_ids = vec![*message_id];
-        // Reattached Messages that get returned
-        let mut messages_with_id = Vec::new();
+        // Attachments of the Block to check inclusion state
+        let mut block_ids = vec![*block_id];
+        // Reattached Blocks that get returned
+        let mut blocks_with_id = Vec::new();
         for _ in 0..max_attempts.unwrap_or(40) {
             #[cfg(target_family = "wasm")]
             {
@@ -513,56 +513,56 @@ impl Client {
             #[cfg(not(target_family = "wasm"))]
             sleep(Duration::from_secs(interval.unwrap_or(5))).await;
             // Check inclusion state for each attachment
-            let message_ids_len = message_ids.len();
+            let block_ids_len = block_ids.len();
             let mut conflicting = false;
-            for (index, msg_id) in message_ids.clone().iter().enumerate() {
-                let message_metadata = self.get_message_metadata(msg_id).await?;
-                if let Some(inclusion_state) = message_metadata.ledger_inclusion_state {
+            for (index, block_id_) in block_ids.clone().iter().enumerate() {
+                let block_metadata = self.get_block_metadata(block_id_).await?;
+                if let Some(inclusion_state) = block_metadata.ledger_inclusion_state {
                     match inclusion_state {
                         LedgerInclusionStateDto::Included | LedgerInclusionStateDto::NoTransaction => {
-                            // if original message, request it so we can return it on first position
-                            if message_id == msg_id {
-                                let mut included_and_reattached_messages =
-                                    vec![(*message_id, self.get_message(message_id).await?)];
-                                included_and_reattached_messages.extend(messages_with_id);
-                                return Ok(included_and_reattached_messages);
+                            // if original block, request it so we can return it on first position
+                            if block_id == block_id_ {
+                                let mut included_and_reattached_blocks =
+                                    vec![(*block_id, self.get_block(block_id).await?)];
+                                included_and_reattached_blocks.extend(blocks_with_id);
+                                return Ok(included_and_reattached_blocks);
                             } else {
-                                // Move included message to first position
-                                messages_with_id.rotate_left(index);
-                                return Ok(messages_with_id);
+                                // Move included block to first position
+                                blocks_with_id.rotate_left(index);
+                                return Ok(blocks_with_id);
                             }
                         }
-                        // only set it as conflicting here and don't return, because another reattached message could
+                        // only set it as conflicting here and don't return, because another reattached block could
                         // have the included transaction
                         LedgerInclusionStateDto::Conflicting => conflicting = true,
                     };
                 }
-                // Only reattach or promote latest attachment of the message
-                if index == message_ids_len - 1 {
-                    if message_metadata.should_promote.unwrap_or(false) {
+                // Only reattach or promote latest attachment of the block
+                if index == block_ids_len - 1 {
+                    if block_metadata.should_promote.unwrap_or(false) {
                         // Safe to unwrap since we iterate over it
-                        self.promote_unchecked(message_ids.last().unwrap()).await?;
-                    } else if message_metadata.should_reattach.unwrap_or(false) {
+                        self.promote_unchecked(block_ids.last().unwrap()).await?;
+                    } else if block_metadata.should_reattach.unwrap_or(false) {
                         // Safe to unwrap since we iterate over it
-                        let reattached = self.reattach_unchecked(message_ids.last().unwrap()).await?;
-                        message_ids.push(reattached.0);
-                        messages_with_id.push(reattached);
+                        let reattached = self.reattach_unchecked(block_ids.last().unwrap()).await?;
+                        block_ids.push(reattached.0);
+                        blocks_with_id.push(reattached);
                     }
                 }
             }
-            // After we checked all our reattached messages, check if the transaction got reattached in another message
+            // After we checked all our reattached blocks, check if the transaction got reattached in another block
             // and confirmed
             if conflicting {
-                let message = self.get_message(message_id).await?;
-                if let Some(Payload::Transaction(transaction_payload)) = message.payload() {
-                    let included_message = self.get_included_message(&transaction_payload.id()).await?;
-                    let mut included_and_reattached_messages = vec![(included_message.id(), included_message)];
-                    included_and_reattached_messages.extend(messages_with_id);
-                    return Ok(included_and_reattached_messages);
+                let block = self.get_block(block_id).await?;
+                if let Some(Payload::Transaction(transaction_payload)) = block.payload() {
+                    let included_block = self.get_included_block(&transaction_payload.id()).await?;
+                    let mut included_and_reattached_blocks = vec![(included_block.id(), included_block)];
+                    included_and_reattached_blocks.extend(blocks_with_id);
+                    return Ok(included_and_reattached_blocks);
                 }
             }
         }
-        Err(Error::TangleInclusionError(message_id.to_string()))
+        Err(Error::TangleInclusionError(block_id.to_string()))
     }
 
     /// Function to consolidate all funds from a range of addresses to the address with the lowest index in that range
@@ -598,7 +598,7 @@ impl Client {
         let mut basic_outputs = Vec::new();
 
         for output_resp in available_outputs.into_iter() {
-            let (amount, _) = ClientMessageBuilder::get_output_amount_and_address(&output_resp.output, None)?;
+            let (amount, _) = ClientBlockBuilder::get_output_amount_and_address(&output_resp.output, None)?;
             basic_outputs.push((
                 UtxoInput::new(
                     TransactionId::from_str(&output_resp.transaction_id)?,
@@ -656,77 +656,77 @@ impl Client {
         Ok(output_metadata.to_vec())
     }
 
-    /// Reattaches messages for provided message id. Messages can be reattached only if they are valid and haven't been
+    /// Reattaches blocks for provided block id. Blocks can be reattached only if they are valid and haven't been
     /// confirmed for a while.
-    pub async fn reattach(&self, message_id: &MessageId) -> Result<(MessageId, Message)> {
-        let metadata = self.get_message_metadata(message_id).await?;
+    pub async fn reattach(&self, block_id: &BlockId) -> Result<(BlockId, Block)> {
+        let metadata = self.get_block_metadata(block_id).await?;
         if metadata.should_reattach.unwrap_or(false) {
-            self.reattach_unchecked(message_id).await
+            self.reattach_unchecked(block_id).await
         } else {
-            Err(Error::NoNeedPromoteOrReattach(message_id.to_string()))
+            Err(Error::NoNeedPromoteOrReattach(block_id.to_string()))
         }
     }
 
-    /// Reattach a message without checking if it should be reattached
-    pub async fn reattach_unchecked(&self, message_id: &MessageId) -> Result<(MessageId, Message)> {
-        // Get the Message object by the MessageID.
-        let message = self.get_message(message_id).await?;
-        let reattach_message = {
+    /// Reattach a block without checking if it should be reattached
+    pub async fn reattach_unchecked(&self, block_id: &BlockId) -> Result<(BlockId, Block)> {
+        // Get the Block object by the BlockID.
+        let block = self.get_block(block_id).await?;
+        let reattach_block = {
             #[cfg(target_family = "wasm")]
             {
                 let tips = self.get_tips().await?;
-                let mut message_builder = MessageBuilder::<ClientMiner>::new(Parents::new(tips)?);
-                if let Some(p) = message.payload().to_owned() {
-                    message_builder = message_builder.with_payload(p.clone())
+                let mut block_builder = BlockBuilder::<ClientMiner>::new(Parents::new(tips)?);
+                if let Some(p) = block.payload().to_owned() {
+                    block_builder = block_builder.with_payload(p.clone())
                 }
-                message_builder.finish().map_err(Error::MessageError)?
+                block_builder.finish().map_err(Error::BlockError)?
             }
             #[cfg(not(target_family = "wasm"))]
             {
-                finish_pow(self, message.payload().cloned()).await?
+                finish_pow(self, block.payload().cloned()).await?
             }
         };
 
         // Post the modified
-        let message_id = self.post_message_raw(&reattach_message).await?;
-        // Get message if we use remote PoW, because the node will change parents and nonce
-        let msg = match self.get_local_pow().await {
-            true => reattach_message,
-            false => self.get_message(&message_id).await?,
+        let block_id = self.post_block_raw(&reattach_block).await?;
+        // Get block if we use remote PoW, because the node will change parents and nonce
+        let block = match self.get_local_pow().await {
+            true => reattach_block,
+            false => self.get_block(&block_id).await?,
         };
-        Ok((message_id, msg))
+        Ok((block_id, block))
     }
 
-    /// Promotes a message. The method should validate if a promotion is necessary through get_message. If not, the
+    /// Promotes a block. The method should validate if a promotion is necessary through get_block. If not, the
     /// method should error out and should not allow unnecessary promotions.
-    pub async fn promote(&self, message_id: &MessageId) -> Result<(MessageId, Message)> {
-        let metadata = self.get_message_metadata(message_id).await?;
+    pub async fn promote(&self, block_id: &BlockId) -> Result<(BlockId, Block)> {
+        let metadata = self.get_block_metadata(block_id).await?;
         if metadata.should_promote.unwrap_or(false) {
-            self.promote_unchecked(message_id).await
+            self.promote_unchecked(block_id).await
         } else {
-            Err(Error::NoNeedPromoteOrReattach(message_id.to_string()))
+            Err(Error::NoNeedPromoteOrReattach(block_id.to_string()))
         }
     }
 
-    /// Promote a message without checking if it should be promoted
-    pub async fn promote_unchecked(&self, message_id: &MessageId) -> Result<(MessageId, Message)> {
-        // Create a new message (zero value message) for which one tip would be the actual message
+    /// Promote a block without checking if it should be promoted
+    pub async fn promote_unchecked(&self, block_id: &BlockId) -> Result<(BlockId, Block)> {
+        // Create a new block (zero value block) for which one tip would be the actual block
         let mut tips = self.get_tips().await?;
         let min_pow_score = self.get_min_pow_score().await?;
-        tips.push(*message_id);
+        tips.push(*block_id);
 
-        let promote_message = MessageBuilder::<ClientMiner>::new(Parents::new(tips)?)
+        let promote_block = BlockBuilder::<ClientMiner>::new(Parents::new(tips)?)
             .with_nonce_provider(self.get_pow_provider().await, min_pow_score)
             .finish()
             .map_err(|_| Error::TransactionError)?;
 
-        let message_id = self.post_message_raw(&promote_message).await?;
-        // Get message if we use remote PoW, because the node will change parents and nonce
-        let msg = match self.get_local_pow().await {
-            true => promote_message,
-            false => self.get_message(&message_id).await?,
+        let block_id = self.post_block_raw(&promote_block).await?;
+        // Get block if we use remote PoW, because the node will change parents and nonce
+        let block = match self.get_local_pow().await {
+            true => promote_block,
+            false => self.get_block(&block_id).await?,
         };
-        Ok((message_id, msg))
+        Ok((block_id, block))
     }
 
     /// Returns checked local time and milestone index.

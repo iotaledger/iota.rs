@@ -1,16 +1,16 @@
-from iota_client.common import send_message_routine
+from iota_client.common import send_block_routine
 
 
 class BaseAPI():
 
-    @send_message_routine
+    @send_block_routine
     def call_client_method(self, name, data=None):
-        message = {
+        block = {
             'cmd': 'CallClientMethod',
             'payload': {
                 'name': name
             }
         }
         if data:
-            message['payload']['data'] = data
-        return message
+            block['payload']['data'] = data
+        return block

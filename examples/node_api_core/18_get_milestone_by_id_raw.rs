@@ -5,7 +5,7 @@
 
 use std::str::FromStr;
 
-use iota_client::{bee_message::payload::milestone::MilestoneId, Client, Result};
+use iota_client::{bee_block::payload::milestone::MilestoneId, Client, Result};
 
 #[tokio::main]
 async fn main() -> Result<()> {

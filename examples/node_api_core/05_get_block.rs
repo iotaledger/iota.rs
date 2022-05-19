@@ -1,7 +1,7 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! `cargo run --example node_api_core_get_message --release -- [NODE URL]`.
+//! `cargo run --example node_api_core_get_block --release -- [NODE URL]`.
 
 use iota_client::{Client, Result};
 
@@ -18,13 +18,13 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
 
-    // Fetches a message ID from the node.
-    let message_id = client.get_tips().await?[0];
+    // Fetches a block ID from the node.
+    let block_id = client.get_tips().await?[0];
     // Sends the request.
-    let message = client.get_message(&message_id).await?;
+    let block = client.get_block(&block_id).await?;
 
     // Prints the response.
-    println!("{:?}", message);
+    println!("{:?}", block);
 
     Ok(())
 }

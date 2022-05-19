@@ -30,7 +30,7 @@ export interface IClientOptions {
     brokerOptions?: IMqttBrokerOptions;
     /** Timeout for API requests */
     apiTimeout?: IDuration;
-    /** Timeout when sending a message that requires remote proof of work */
+    /** Timeout when sending a block that requires remote proof of work */
     remotePowTimeout?: IDuration;
     /** The amount of threads to be used for proof of work */
     powWorkerCount?: number;

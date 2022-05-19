@@ -7,7 +7,7 @@ use std::env;
 
 use dotenv::dotenv;
 use iota_client::{
-    bee_message::output::{
+    bee_block::output::{
         unlock_condition::{AddressUnlockCondition, UnlockCondition},
         BasicOutputBuilder, NativeToken, TokenId,
     },
@@ -55,20 +55,17 @@ async fn main() -> Result<()> {
             .finish_output()?,
     ];
 
-    let message = client
-        .message()
+    let block = client
+        .block()
         .with_secret_manager(&secret_manager)
         .with_outputs(outputs)?
         .finish()
         .await?;
 
+    println!("Transaction sent: http://localhost:14265/api/v2/blocks/{}", block.id());
     println!(
-        "Transaction sent: http://localhost:14265/api/v2/messages/{}",
-        message.id()
-    );
-    println!(
-        "Message metadata: http://localhost:14265/api/v2/messages/{}/metadata",
-        message.id()
+        "Block metadata: http://localhost:14265/api/v2/blocks/{}/metadata",
+        block.id()
     );
 
     Ok(())

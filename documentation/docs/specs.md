@@ -3,7 +3,7 @@ description: IOTA Client Library user-friendly API specifications.
 image: /img/logo/iota_mark_light.png
 keywords:
 - definition
-- message
+- block
 - return
 - types
 - parameters
@@ -27,7 +27,7 @@ The data structure to initialize the instance of the Higher level client library
 | **network**             | ✘        | Testnet                                                                                                                                                                                                                                                                                                                                                                             | &str                                        | Optional, the network type can be "testnet" or "mainnet". If no node url is provided, some default nodes are used for the specified network. Nodes that aren't in this network will be ignored.                                                                                                       |
 | **node**                | ✘        | None                                                                                                                                                                                                                                                                                                                                                                                | &str                                        | The URL of a node to connect to; format: `https://node:port`                                                                                                                                                                                                                                          |
 | **primary_node**        | ✘        | None                                                                                                                                                                                                                                                                                                                                                                                | &str, auth_name_pwd: Option<(&str, &str)>   | The URL of a node to always connect first to, if multiple nodes are available. Optional JWT and or name and password for basic authentication; format: `https://node:port`, Some("JWT"), Some("name", "password")                                                                                     |
-| **primary_pow_node**    | ✘        | None                                                                                                                                                                                                                                                                                                                                                                                | &str, auth_name_pwd: Option<(&str, &str)>   | The URL of a node to always connect first to when submitting a message with remote PoW, if multiple nodes are available. Will override primary_node in that case. With optional JWT or name and password for basic authentication; format: `https://node:port`, Some("JWT"), Some("name", "password") |
+| **primary_pow_node**    | ✘        | None                                                                                                                                                                                                                                                                                                                                                                                | &str, auth_name_pwd: Option<(&str, &str)>   | The URL of a node to always connect first to when submitting a block with remote PoW, if multiple nodes are available. Will override primary_node in that case. With optional JWT or name and password for basic authentication; format: `https://node:port`, Some("JWT"), Some("name", "password") |
 | **permanode**           | ✘        | None                                                                                                                                                                                                                                                                                                                                                                                | &str, auth_name_pwd: Option<(&str, &str)>   | The URL of a permanode. With optional JWT or name and password for basic authentication; format: `https://node:port`, Some("JWT"), Some("name", "password")                                                                                                                                           |
 | **node_auth**           | ✘        | None                                                                                                                                                                                                                                                                                                                                                                                | &str, Option<String/>, Option<(&str, &str)> | The URL of a node to connect to with optional JWT and or name and password for basic authentication; format: `https://node:port`, Some("JWT"), Some("name", "password")                                                                                                                               |
 | **nodes**               | ✘        | None                                                                                                                                                                                                                                                                                                                                                                                | &[&str]                                     | A list of nodes to connect to; nodes are added with the `https://node:port` format. The amount of nodes specified in min_quorum_size are randomly selected from this node list to check for quorum based on the quorum threshold. If min_quorum_size is not given the full list of nodes is checked.          |
@@ -38,7 +38,7 @@ The data structure to initialize the instance of the Higher level client library
 | **min_quorum_size**         | ✘        | 3                                                                                                                                                                                                                                                                                                                                                                                   | usize                                       | Define how many nodes should be used for quorum                                                                                                                                                                                                                                                       |
 | **quorum_threshold**    | ✘        | 66                                                                                                                                                                                                                                                                                                                                                                                  | usize                                       | Define the % of nodes that need to return the same response to accept it                                                                                                                                                                                                                              |
 | **api_timeout**     | ✘        | Duration::from_secs(30)                                                                                                                                                                                                                                                                                                                                                             | std::time::Duration                         | The amount of seconds a request can be outstanding to a node before it's considered timed out                                                                                                                                                                                                         |
-| **api_timeout**         | ✘        | Api::GetInfo: Duration::from_secs(2)),<br /> Api::GetHealth: Duration::from_secs(2),<br />Api::GetPeers: Duration::from_secs(2),<br />Api::GetMilestone: Duration::from_secs(2),<br />Api::GetTips: Duration::from_secs(2),<br />Api::PostMessage: Duration::from_secs(2),<br />Api::PostMessageWithRemotePow: Duration::from_secs(30),<br />Api::GetOutput: Duration::from_secs(2) | HashMap<[Api],<br /> std::time::Duration>   | The amount of milliseconds a request to a specific Api endpoint can be outstanding to a node before it's considered timed out.                                                                                                                                                                        |
+| **api_timeout**         | ✘        | Api::GetInfo: Duration::from_secs(2)),<br /> Api::GetHealth: Duration::from_secs(2),<br />Api::GetPeers: Duration::from_secs(2),<br />Api::GetMilestone: Duration::from_secs(2),<br />Api::GetTips: Duration::from_secs(2),<br />Api::PostBlock: Duration::from_secs(2),<br />Api::PostBlockWithRemotePow: Duration::from_secs(30),<br />Api::GetOutput: Duration::from_secs(2) | HashMap<[Api],<br /> std::time::Duration>   | The amount of milliseconds a request to a specific Api endpoint can be outstanding to a node before it's considered timed out.                                                                                                                                                                        |
 | **local_pow**           | ✘        | True                                                                                                                                                                                                                                                                                                                                                                                | bool                                        | If not defined it defaults to local PoW to offload node load times                                                                                                                                                                                                                                    |
 | **tips_interval**       | ✘        | 15                                                                                                                                                                                                                                                                                                                                                                                  | u64                                         | Time interval during PoW when new tips get requested.                                                                                                                                                                                                                                                 |
 | **mqtt_broker_options** | ✘        | True,<br />Duration::from_secs(30),<br />True                                                                                                                                                                                                                                                                                                                                       | [BrokerOptions]                             | If not defined the default values will be used                                                                                                                                                                                                                                                        |
@@ -76,9 +76,9 @@ for node in node_pool_urls{
 
 Here is the high level abstraction API collection with sensible default values for users easy to use.
 
-## `message()`
+## `block()`
 
-A generic send function for easily sending a message.
+A generic send function for easily sending a block.
 
 ### Parameters
 
@@ -93,9 +93,9 @@ A generic send function for easily sending a message.
 | **output_hex**            | ✘        | None    | address: &str,<br />amount: u64      | Address to send to and amount to send. Address needs to be hex encoded.                                                   |
 | **index**                 | ✘        | None    | &[u8] / &str                         | An optional indexation key for an indexation payload. 1-64 bytes long.                                                    |
 | **data**                  | ✘        | None    | Vec&lt;u8>                              | Optional data for the indexation payload.                                                                                 |
-| **parents**               | ✘        | None    | [MessageId]                          | 1-8 optional parents [MessageId] to be used.                                                                              |
+| **parents**               | ✘        | None    | [BlockId]                          | 1-8 optional parents [BlockId] to be used.                                                                              |
 
-Depending on the provided values this function will create a message with:
+Depending on the provided values this function will create a block with:
 
 * no payload
 * an indexation payload
@@ -104,54 +104,54 @@ Depending on the provided values this function will create a message with:
 
 ### Return
 
-The [Message] object we build.
+The [Block] object we build.
 
 ### Implementation Details
 
 * Validate inputs, such as address and seed to check if they are correct.
 * Check if account balance is bigger or equal to the value using method similar to [`get_balance()`](#get_balance);
-* Build and validate the message with signed transaction payload accordingly;
+* Build and validate the block with signed transaction payload accordingly;
 * Get tips using [`get_tips()`](#get_tips);
 * Perform proof-of-work locally (if not set to remote);
-* Send the message using [`post_messages()`](#post_messages);
+* Send the block using [`post_blocks()`](#post_blocks);
 
-## `get_message()`
+## `get_block()`
 
-(`GET /api/v2/messages`)
+(`GET /api/v2/blocks`)
 
-Endpoint collection all about GET messages.
+Endpoint collection all about GET blocks.
 
 ### Parameters
 
 | Parameter      | Required | Type         | Definition                 |
 | -------------- | -------- | ------------ | -------------------------- |
-| **message_id** | ✔        | [MessageId]  | The identifier of message. |
+| **block_id** | ✔        | [BlockId]  | The identifier of block. |
 | **index**      | ✔        | &[u8] / &str | An indexation key.         |
 
 ### Returns
 
 Depend on the final calling method, users could get different results they need:
 
-- `metadata(&MessageId)`: Return [MessageMetadata](#MessageMetadata) of the message.
-- `data(&MessageId)`: Return a [Message] object.
-- `raw(&MessageId)`: Return the raw data of given message.
-- `children(&MessageId)`: Return the list of [MessageId]s that reference a message by its identifier.
-- `index(&[u8] | &str)` : Return the list of [MessageId]s that have this str as indexation key
+- `metadata(&BlockId)`: Return [BlockMetadata](#BlockMetadata) of the block.
+- `data(&BlockId)`: Return a [Block] object.
+- `raw(&BlockId)`: Return the raw data of given block.
+- `children(&BlockId)`: Return the list of [BlockId]s that reference a block by its identifier.
+- `index(&[u8] | &str)` : Return the list of [BlockId]s that have this str as indexation key
 
-## `find_messages()`
+## `find_blocks()`
 
-Find all messages by provided message IDs.
+Find all blocks by provided block IDs.
 
 ### Parameters
 
 | Parameter           | Required | Type           | Definition                               |
 | ------------------- | -------- | -------------- | ---------------------------------------- |
 | **indexation_keys** | ✘        | [&[u8] / &str] | The index key of the indexation payload. |
-| **message_ids**     | ✘        | [[MessageId]]  | The identifier of message.               |
+| **block_ids**     | ✘        | [[BlockId]]  | The identifier of block.               |
 
 ### Returns
 
-A vector of [Message] Object.
+A vector of [Block] Object.
 
 ## `get_unspent_address()`
 
@@ -339,40 +339,40 @@ Nothing apart from a Ok(()) result if successful
 
 ## `retry()`
 
-Retries (promotes or reattaches) a message for provided [MessageId] if the node suggests it. The need to use this function should be low, because the confirmation throughput of the node is expected to be quite high.
+Retries (promotes or reattaches) a block for provided [BlockId] if the node suggests it. The need to use this function should be low, because the confirmation throughput of the node is expected to be quite high.
 
 ### Parameters
 
 | Parameter      | Required | Type        | Definition                 |
 | -------------- | -------- | ----------- | -------------------------- |
-| **message_id** | ✔        | [MessageId] | The identifier of message. |
+| **block_id** | ✔        | [BlockId] | The identifier of block. |
 
 ### Returns:
 
-A tuple with the newly promoted or reattached `(MessageId,  Message)`.
+A tuple with the newly promoted or reattached `(BlockId,  Block)`.
 
 ### Implementation Details
 
 Following are the steps for implementing this method:
 
-* Only unconfirmed messages should be allowed to retry. The method should validate the confirmation state of the provided messages. If a message id of a confirmed message is provided, the method should error out;
-* The method should also validate if a retry is necessary. This can be done by leveraging the `/messages/{messageId}/metadata` endpoint (already available through [get_message](#get_message)). See [this](https://github.com/iotaledger/trinity-wallet/blob/develop/src/shared/libs/iota/transfers.js#L105-L131) implementation for reference;
+* Only unconfirmed blocks should be allowed to retry. The method should validate the confirmation state of the provided blocks. If a block id of a confirmed block is provided, the method should error out;
+* The method should also validate if a retry is necessary. This can be done by leveraging the `/blocks/{blockId}/metadata` endpoint (already available through [get_block](#get_block)). See [this](https://github.com/iotaledger/trinity-wallet/blob/develop/src/shared/libs/iota/transfers.js#L105-L131) implementation for reference;
 * Use [reattach](#reattach) or [promote](#promote) accordingly.
 
 ## `retry_until_included()`
 
-Retries (promotes or reattaches) a message for provided [MessageId] until it's included (referenced by a milestone). Default interval is 5 seconds and max attempts is 40. The need to use this function should be low, because the confirmation throughput of the node is expected to be quite high.
+Retries (promotes or reattaches) a block for provided [BlockId] until it's included (referenced by a milestone). Default interval is 5 seconds and max attempts is 40. The need to use this function should be low, because the confirmation throughput of the node is expected to be quite high.
 ### Parameters
 
 | Parameter        | Required | Type         | Definition                                    |
 | ---------------- | -------- | ------------ | --------------------------------------------- |
-| **message_id**   | ✔        | [&MessageId] | The identifier of message.                    |
-| **interval**     | ✘        | Option&lt;u64>  | The interval in which we retry the message.   |
-| **max_attempts** | ✘        | Option&lt;u64>  | The maximum of attempts we retry the message. |
+| **block_id**   | ✔        | [&BlockId] | The identifier of block.                    |
+| **interval**     | ✘        | Option&lt;u64>  | The interval in which we retry the block.   |
+| **max_attempts** | ✘        | Option&lt;u64>  | The maximum of attempts we retry the block. |
 
 ### Returns:
 
-An array of tuples with the newly reattached `(MessageId,  Message)`.
+An array of tuples with the newly reattached `(BlockId,  Block)`.
 
 ## `consolidate_funds()`
 
@@ -391,35 +391,35 @@ The address to which the funds got consolidated.
 
 ## `reattach()`
 
-Depends on [find_messages](#find_messages), [get_message](#get_message) and [post_message](#post_message).
+Depends on [find_blocks](#find_blocks), [get_block](#get_block) and [post_block](#post_block).
 
-Reattaches a message. The method should validate if a reattachment is necessary through [get_message](#get_message). If not, the method should error out and should not allow unnecessary reattachments.
+Reattaches a block. The method should validate if a reattachment is necessary through [get_block](#get_block). If not, the method should error out and should not allow unnecessary reattachments.
 
 ### Parameters
 
 | Parameter      | Required | Type        | Definition                 |
 | -------------- | -------- | ----------- | -------------------------- |
-| **message_id** | ✔        | [MessageId] | The identifier of message. |
+| **block_id** | ✔        | [BlockId] | The identifier of block. |
 
 ### Returns
 
-A tuple with the newly reattached `(MessageId,  Message)`.
+A tuple with the newly reattached `(BlockId,  Block)`.
 
 ## `promote()`
 
-Depends on [find_messages](#find_messages), [get_message](#get_message) and [post_message](#post_message).
+Depends on [find_blocks](#find_blocks), [get_block](#get_block) and [post_block](#post_block).
 
-Promotes a message. The method should validate if a promotion is necessary through [get_message](#get_message). If not, the method should error out and should not allow unnecessary promotions.
+Promotes a block. The method should validate if a promotion is necessary through [get_block](#get_block). If not, the method should error out and should not allow unnecessary promotions.
 
 ### Parameters
 
 | Parameter      | Required | Type        | Definition                 |
 | -------------- | -------- | ----------- | -------------------------- |
-| **message_id** | ✔        | [MessageId] | The identifier of message. |
+| **block_id** | ✔        | [BlockId] | The identifier of block. |
 
 ### Returns
 
-A tuple with the newly promoted `(MessageId,  Message)`.
+A tuple with the newly promoted `(BlockId,  Block)`.
 
 # Full node API
 
@@ -489,8 +489,8 @@ pub struct NodeInfo {
     pub network_id: String,
     pub latest_milestone_index: usize,
     pub min_pow_score: f64,
-    pub messages_per_second: f64,
-    pub referenced_messages_per_second: f64,
+    pub blocks_per_second: f64,
+    pub referenced_blocks_per_second: f64,
     pub referenced_rate: f64,
     pub latest_milestone_timestamp: u64,
     pub confirmed_milestone_index: usize,
@@ -511,27 +511,27 @@ None
 
 ### Returns
 
-A tuple with two [MessageId]:
+A tuple with two [BlockId]:
 
 ```rust
-(MessageId, MessageId)
+(BlockId, BlockId)
 ```
 
-## `post_message()`
+## `post_block()`
 
-(`POST /message`)
+(`POST /block`)
 
-Submit a message. The node takes care of missing fields and tries to build the message. On success, the message will be stored in the Tangle. This endpoint will return the identifier of the message.
+Submit a block. The node takes care of missing fields and tries to build the block. On success, the block will be stored in the Tangle. This endpoint will return the identifier of the block.
 
 ### Parameters
 
 | Parameter   | Required | Type      | Definition          |
 | ----------- | -------- | --------- | ------------------- |
-| **message** | ✔        | [Message] | The message object. |
+| **block** | ✔        | [Block] | The block object. |
 
 ### Returns
 
-The [MessageId] of the message object.
+The [BlockId] of the block object.
 
 ## `get_output()`
 
@@ -659,11 +659,11 @@ pub struct TreasuryResponse {
 }
 ```
 
-## `get_included_message()`
+## `get_included_block()`
 
-(`GET /transactions/{transactionId}/included-message`)
+(`GET /transactions/{transactionId}/included-block`)
 
-Get the included message of the transaction.
+Get the included block of the transaction.
 
 ### Parameters
 
@@ -674,8 +674,8 @@ Get the included message of the transaction.
 ### Returns
 
 ```Rust
-struct Message {
-    parents: Vec<MessageId/>,
+struct Block {
+    parents: Vec<BlockId/>,
     payload: Option<Payload/>,
     nonce: u64,
 }
@@ -685,14 +685,14 @@ struct Message {
 
 Here are the objects used in the API above. They aim to provide a secure way to handle certain data structures specified in the Iota stack.
 
-## `MessageId`
+## `BlockId`
 
-[MessageId]: #MessageId
+[BlockId]: #BlockId
 
-MessageId is a 32 bytes array which can represent as hex string.
+BlockId is a 32 bytes array which can represent as hex string.
 
 ```rust
-struct MessageId([u8; MESSAGE_ID_LENGTH]);
+struct BlockId([u8; BLOCK_ID_LENGTH]);
 ```
 
 ## `Seed`
@@ -708,15 +708,15 @@ pub enum Seed {
 
 An IOTA seed that inner structure is omitted. Users can create this type by passing a String. It will verify and return an error if it’s not valid. |
 
-## `Message`
+## `Block`
 
-[Message]: #Message
+[Block]: #Block
 
-The message object returned by various functions; based on the [RFC](https://github.com/GalRogozinski/protocol-rfcs/blob/message/text/0017-message/0017-message.md) for the Message object. Here's the brief overview of each components in Message type would look like:
+The block object returned by various functions; based on the [RFC](https://github.com/GalRogozinski/protocol-rfcs/blob/block/text/0017-block/0017-block.md) for the Block object. Here's the brief overview of each components in Block type would look like:
 
 ```rust
-struct Message {
-    parents: Vec<MessageId/>,
+struct Block {
+    parents: Vec<BlockId/>,
     payload: Option<Payload/>,
     nonce: u64,
 }
@@ -729,7 +729,7 @@ enum Payload {
 
 struct Transaction {
     pub essence: TransactionPayloadEssence,
-    pub unlock_blocks: Vec<UnlockBlock/>,
+    pub blocks: Vec<Block/>,
 }
 
 struct Milestone {
@@ -766,7 +766,7 @@ struct SignatureLockedSingleOutput {
     amount: u64,
 }
 
-enum UnlockBlock {
+enum Block {
     Signature(SignatureUnlock),
     Reference(ReferenceUnlock),
 }
@@ -783,15 +783,15 @@ struct Ed25519Signature {
 struct ReferenceUnlock(u16);
 ```
 
-## `MessageMetadata`
+## `BlockMetadata`
 
-[`MessageMetadata`]: #MessageMetadata
+[`BlockMetadata`]: #BlockMetadata
 
 ```rust
-pub struct MessageMetadata {
-    /// Message ID
-    pub message_id: String,
-    /// Message IDs of parents
+pub struct BlockMetadata {
+    /// Block ID
+    pub block_id: String,
+    /// Block IDs of parents
     pub parents: Vec<String/>,
     /// Solid status
     pub is_solid: bool,
@@ -814,8 +814,8 @@ The metadata of an output:
 
 ```rust
 pub struct OutputMetadata {
-    /// Message ID of the output
-    pub message_id: Vec<u8>,
+    /// Block ID of the output
+    pub block_id: Vec<u8>,
     /// Transaction ID of the output
     pub transaction_id: Vec<u8>,
     /// Output index.
@@ -867,7 +867,7 @@ pub struct MilestoneMetadata {
     /// Milestone index
     pub milestone_index: u32,
     /// Milestone ID
-    pub message_id: String,
+    pub block_id: String,
     /// Timestamp
     pub timestamp: u64,
 }
@@ -885,10 +885,10 @@ pub enum Api {
     GetInfo,
     /// `get_tips` API
     GetTips,
-    /// `post_message` API
-    PostMessage,
-    /// `post_message` API with remote pow
-    PostMessageWithRemotePow,
+    /// `post_block` API
+    PostBlock,
+    /// `post_block` API with remote pow
+    PostBlockWithRemotePow,
     /// `get_output` API
     GetOutput,
     /// `get_milestone` API
@@ -921,11 +921,11 @@ A string with the exact MQTT topic to monitor, can have one of the following var
 milestones/latest
 milestones/confirmed
 
-messages
-messages/referenced
-messages/indexation/{index}
-messages/{messageId}/metadata
-transactions/{transactionId}/included-message
+blocks
+blocks/referenced
+blocks/indexation/{index}
+blocks/{blockId}/metadata
+transactions/{transactionId}/included-block
 
 outputs/{outputId}
 

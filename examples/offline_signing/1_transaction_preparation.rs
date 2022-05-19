@@ -39,7 +39,7 @@ async fn main() -> Result<()> {
     let inputs = online_client.find_inputs(addresses, amount).await?;
 
     // Prepares the transaction.
-    let mut transaction_builder = online_client.message();
+    let mut transaction_builder = online_client.block();
     for input in inputs {
         transaction_builder = transaction_builder.with_input(input)?;
     }

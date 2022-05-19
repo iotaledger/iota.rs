@@ -38,39 +38,39 @@ class NodeCoreAPI(BaseAPI):
         """
         return self.call_client_method('GetTips')
 
-    def post_message(self, message):
-        """Post message.
+    def post_block(self, block):
+        """Post block.
         """
-        return self.call_client_method('PostMessageJson', {
-            'message': message
+        return self.call_client_method('PostBlockJson', {
+            'block': block
         })
 
-    def get_message_data(self, message_id):
-        """Post message.
+    def get_block_data(self, block_id):
+        """Post block.
         """
-        return self.call_client_method('GetMessageData', {
-            'message_id': message_id
+        return self.call_client_method('GetBlockData', {
+            'block_id': block_id
         })
 
-    def get_message_metadata(self, message_id):
-        """Get message metadata with message_id.
+    def get_block_metadata(self, block_id):
+        """Get block metadata with block_id.
         """
-        return self.call_client_method('GetMessageMetadata', {
-            'message_id': message_id
+        return self.call_client_method('GetBlockMetadata', {
+            'block_id': block_id
         })
 
-    def get_message_raw(self, message_id):
-        """Get message raw.
+    def get_block_raw(self, block_id):
+        """Get block raw.
         """
-        return self.call_client_method('GetMessageRaw', {
-            'message_id': message_id
+        return self.call_client_method('GetBlockRaw', {
+            'block_id': block_id
         })
 
-    def get_message_children(self, message_id):
-        """Get message children.
+    def get_block_children(self, block_id):
+        """Get block children.
         """
-        return self.call_client_method('GetMessageChildren', {
-            'message_id': message_id
+        return self.call_client_method('GetBlockChildren', {
+            'block_id': block_id
         })
 
     def get_output(self, output_id):
@@ -111,9 +111,9 @@ class NodeCoreAPI(BaseAPI):
         """
         return self.call_client_method('GetTreasury')
 
-    def get_included_message(self, transaction_id):
-        """Returns the included message of the transaction.
+    def get_included_block(self, transaction_id):
+        """Returns the included block of the transaction.
         """
-        return self.call_client_method('GetIncludedMessage', {
+        return self.call_client_method('GetIncludedBlock', {
             'transaction_id': transaction_id
         })

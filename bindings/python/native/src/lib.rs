@@ -11,8 +11,8 @@ pub mod types;
 use std::sync::Mutex;
 
 use iota_client::{
-    bee_message::output::{
-        dto::OutputDto, AliasId, AliasOutputBuilder, BasicOutputBuilder, ByteCostConfigBuilder, FeatureBlock,
+    bee_block::output::{
+        dto::OutputDto, AliasId, AliasOutputBuilder, BasicOutputBuilder, ByteCostConfigBuilder, Feature,
         FoundryOutputBuilder, NativeToken, NftId, NftOutputBuilder, TokenScheme, TokenTag, UnlockCondition,
     },
     message_interface::MessageType,
@@ -64,7 +64,7 @@ pub fn create_basic_output(
     data_factor: Option<u64>,
     native_tokens: Option<Vec<String>>,
     unlock_conditions: Option<Vec<String>>,
-    feature_blocks: Option<Vec<String>>,
+    features: Option<Vec<String>>,
 ) -> Result<String> {
     let mut builder: BasicOutputBuilder;
     if let Some(amount) = amount {
@@ -104,15 +104,14 @@ pub fn create_basic_output(
             .collect();
         builder = builder.with_unlock_conditions(conditions);
     }
-    if let Some(feature_blocks) = feature_blocks {
-        let blocks: Vec<FeatureBlock> = feature_blocks
+    if let Some(features) = features {
+        let blocks: Vec<Feature> = features
             .iter()
-            .map(|feature_block| {
-                serde_json::from_str::<FeatureBlock>(feature_block)
-                    .unwrap_or_else(|_| panic!("Invalid FeatureBlock: {:?}", feature_block))
+            .map(|feature| {
+                serde_json::from_str::<Feature>(feature).unwrap_or_else(|_| panic!("Invalid Feature: {:?}", feature))
             })
             .collect();
-        builder = builder.with_feature_blocks(blocks);
+        builder = builder.with_features(blocks);
     }
     let basic_output = &builder.finish_output()?;
     // Convert to Dto
@@ -134,8 +133,8 @@ pub fn create_alias_output(
     state_metadata: Option<Vec<u8>>,
     foundry_counter: Option<u32>,
     unlock_conditions: Option<Vec<String>>,
-    feature_blocks: Option<Vec<String>>,
-    immutable_feature_blocks: Option<Vec<String>>,
+    features: Option<Vec<String>>,
+    immutable_features: Option<Vec<String>>,
 ) -> Result<String> {
     let id = serde_json::from_str::<AliasId>(&alias_id).unwrap_or_else(|_| panic!("Invalid AliasId: {:?}", alias_id));
     let mut builder: AliasOutputBuilder;
@@ -185,25 +184,24 @@ pub fn create_alias_output(
             .collect();
         builder = builder.with_unlock_conditions(conditions);
     }
-    if let Some(feature_blocks) = feature_blocks {
-        let blocks: Vec<FeatureBlock> = feature_blocks
+    if let Some(features) = features {
+        let blocks: Vec<Feature> = features
             .iter()
-            .map(|feature_block| {
-                serde_json::from_str::<FeatureBlock>(feature_block)
-                    .unwrap_or_else(|_| panic!("Invalid FeatureBlock: {:?}", feature_block))
+            .map(|feature| {
+                serde_json::from_str::<Feature>(feature).unwrap_or_else(|_| panic!("Invalid Feature: {:?}", feature))
             })
             .collect();
-        builder = builder.with_feature_blocks(blocks);
+        builder = builder.with_features(blocks);
     }
-    if let Some(immutable_feature_blocks) = immutable_feature_blocks {
-        let blocks: Vec<FeatureBlock> = immutable_feature_blocks
+    if let Some(immutable_features) = immutable_features {
+        let blocks: Vec<Feature> = immutable_features
             .iter()
-            .map(|immutable_feature_block| {
-                serde_json::from_str::<FeatureBlock>(immutable_feature_block)
-                    .unwrap_or_else(|_| panic!("Invalid immutable FeatureBlock: {:?}", immutable_feature_block))
+            .map(|immutable_feature| {
+                serde_json::from_str::<Feature>(immutable_feature)
+                    .unwrap_or_else(|_| panic!("Invalid immutable Feature: {:?}", immutable_feature))
             })
             .collect();
-        builder = builder.with_immutable_feature_blocks(blocks);
+        builder = builder.with_immutable_features(blocks);
     }
     let alias_output = &builder.finish_output()?;
     // Convert to Dto
@@ -224,8 +222,8 @@ pub fn create_foundry_output(
     data_factor: Option<u64>,
     native_tokens: Option<Vec<String>>,
     unlock_conditions: Option<Vec<String>>,
-    feature_blocks: Option<Vec<String>>,
-    immutable_feature_blocks: Option<Vec<String>>,
+    features: Option<Vec<String>>,
+    immutable_features: Option<Vec<String>>,
 ) -> Result<String> {
     let tag =
         serde_json::from_str::<TokenTag>(&token_tag).unwrap_or_else(|_| panic!("Invalid TokenTag: {:?}", token_tag));
@@ -269,25 +267,24 @@ pub fn create_foundry_output(
             .collect();
         builder = builder.with_unlock_conditions(conditions);
     }
-    if let Some(feature_blocks) = feature_blocks {
-        let blocks: Vec<FeatureBlock> = feature_blocks
+    if let Some(features) = features {
+        let blocks: Vec<Feature> = features
             .iter()
-            .map(|feature_block| {
-                serde_json::from_str::<FeatureBlock>(feature_block)
-                    .unwrap_or_else(|_| panic!("Invalid FeatureBlock: {:?}", feature_block))
+            .map(|feature| {
+                serde_json::from_str::<Feature>(feature).unwrap_or_else(|_| panic!("Invalid Feature: {:?}", feature))
             })
             .collect();
-        builder = builder.with_feature_blocks(blocks);
+        builder = builder.with_features(blocks);
     }
-    if let Some(immutable_feature_blocks) = immutable_feature_blocks {
-        let blocks: Vec<FeatureBlock> = immutable_feature_blocks
+    if let Some(immutable_features) = immutable_features {
+        let blocks: Vec<Feature> = immutable_features
             .iter()
-            .map(|immutable_feature_block| {
-                serde_json::from_str::<FeatureBlock>(immutable_feature_block)
-                    .unwrap_or_else(|_| panic!("Invalid immutable FeatureBlock: {:?}", immutable_feature_block))
+            .map(|immutable_feature| {
+                serde_json::from_str::<Feature>(immutable_feature)
+                    .unwrap_or_else(|_| panic!("Invalid immutable Feature: {:?}", immutable_feature))
             })
             .collect();
-        builder = builder.with_immutable_feature_blocks(blocks);
+        builder = builder.with_immutable_features(blocks);
     }
     let foundry_output = &builder.finish_output()?;
     // Convert to Dto
@@ -306,8 +303,8 @@ pub fn create_nft_output(
     data_factor: Option<u64>,
     native_tokens: Option<Vec<String>>,
     unlock_conditions: Option<Vec<String>>,
-    feature_blocks: Option<Vec<String>>,
-    immutable_feature_blocks: Option<Vec<String>>,
+    features: Option<Vec<String>>,
+    immutable_features: Option<Vec<String>>,
 ) -> Result<String> {
     let id = serde_json::from_str::<NftId>(&nft_id).unwrap_or_else(|_| panic!("Invalid NftId: {:?}", nft_id));
     let mut builder: NftOutputBuilder;
@@ -348,25 +345,24 @@ pub fn create_nft_output(
             .collect();
         builder = builder.with_unlock_conditions(conditions);
     }
-    if let Some(feature_blocks) = feature_blocks {
-        let blocks: Vec<FeatureBlock> = feature_blocks
+    if let Some(features) = features {
+        let blocks: Vec<Feature> = features
             .iter()
-            .map(|feature_block| {
-                serde_json::from_str::<FeatureBlock>(feature_block)
-                    .unwrap_or_else(|_| panic!("Invalid FeatureBlock: {:?}", feature_block))
+            .map(|feature| {
+                serde_json::from_str::<Feature>(feature).unwrap_or_else(|_| panic!("Invalid Feature: {:?}", feature))
             })
             .collect();
-        builder = builder.with_feature_blocks(blocks);
+        builder = builder.with_features(blocks);
     }
-    if let Some(immutable_feature_blocks) = immutable_feature_blocks {
-        let blocks: Vec<FeatureBlock> = immutable_feature_blocks
+    if let Some(immutable_features) = immutable_features {
+        let blocks: Vec<Feature> = immutable_features
             .iter()
-            .map(|immutable_feature_block| {
-                serde_json::from_str::<FeatureBlock>(immutable_feature_block)
-                    .unwrap_or_else(|_| panic!("Invalid immutable FeatureBlock: {:?}", immutable_feature_block))
+            .map(|immutable_feature| {
+                serde_json::from_str::<Feature>(immutable_feature)
+                    .unwrap_or_else(|_| panic!("Invalid immutable Feature: {:?}", immutable_feature))
             })
             .collect();
-        builder = builder.with_immutable_feature_blocks(blocks);
+        builder = builder.with_immutable_features(blocks);
     }
     let nft_output = &builder.finish_output()?;
     // Convert to Dto

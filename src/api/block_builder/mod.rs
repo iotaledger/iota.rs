@@ -7,7 +7,7 @@ pub mod transaction;
 
 use std::{collections::HashSet, ops::Range};
 
-use bee_message::{
+use bee_block::{
     address::{Address, Ed25519Address},
     input::{UtxoInput, INPUT_COUNT_MAX},
     output::{
@@ -16,7 +16,7 @@ use bee_message::{
         AliasId, ByteCostConfig, Output, OUTPUT_COUNT_RANGE,
     },
     payload::{Payload, TaggedDataPayload},
-    Message, MessageId,
+    Block, BlockId,
 };
 #[cfg(target_family = "wasm")]
 use gloo_timers::future::TimeoutFuture;
@@ -37,14 +37,14 @@ use self::{
 };
 use crate::{
     api::{input_selection::types::SelectedTransactionData, types::PreparedTransactionData},
-    bee_message::{input::dto::UtxoInputDto, output::BasicOutputBuilder},
+    bee_block::{input::dto::UtxoInputDto, output::BasicOutputBuilder},
     constants::SHIMMER_COIN_TYPE,
     secret::SecretManager,
     Client, Error, Result,
 };
 
-/// Builder of the message API
-pub struct ClientMessageBuilder<'a> {
+/// Builder of the block API
+pub struct ClientBlockBuilder<'a> {
     client: &'a Client,
     secret_manager: Option<&'a SecretManager>,
     coin_type: u32,
@@ -56,14 +56,14 @@ pub struct ClientMessageBuilder<'a> {
     custom_remainder_address: Option<Address>,
     tag: Option<Box<[u8]>>,
     data: Option<Vec<u8>>,
-    parents: Option<Vec<MessageId>>,
+    parents: Option<Vec<BlockId>>,
     allow_burning: bool,
 }
 
-/// Message output address
+/// Block output address
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ClientMessageBuilderOutputAddress {
+pub struct ClientBlockBuilderOutputAddress {
     /// Address
     pub address: String,
     /// Amount
@@ -71,10 +71,10 @@ pub struct ClientMessageBuilderOutputAddress {
     pub amount: String,
 }
 
-/// Options for generating message
+/// Options for generating block
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ClientMessageBuilderOptions {
+pub struct ClientBlockBuilderOptions {
     /// Coin type
     pub coin_type: Option<u32>,
     /// Account index
@@ -86,9 +86,9 @@ pub struct ClientMessageBuilderOptions {
     /// Input range
     pub input_range: Option<Range<u32>>,
     /// Bech32 encoded output address and amount
-    pub output: Option<ClientMessageBuilderOutputAddress>,
+    pub output: Option<ClientBlockBuilderOutputAddress>,
     /// Hex encoded output address and amount
-    pub output_hex: Option<ClientMessageBuilderOutputAddress>,
+    pub output_hex: Option<ClientBlockBuilderOutputAddress>,
     /// Outputs
     pub outputs: Option<Vec<OutputDto>>,
     /// Custom remainder address
@@ -98,13 +98,13 @@ pub struct ClientMessageBuilderOptions {
     /// Data
     pub data: Option<Vec<u8>>,
     /// Parents
-    pub parents: Option<Vec<MessageId>>,
+    pub parents: Option<Vec<BlockId>>,
     /// Allow burning of native tokens
     pub allow_burning: Option<bool>,
 }
 
-impl<'a> ClientMessageBuilder<'a> {
-    /// Create message builder
+impl<'a> ClientBlockBuilder<'a> {
+    /// Create block builder
     pub fn new(client: &'a Client) -> Self {
         Self {
             client,
@@ -184,7 +184,7 @@ impl<'a> ClientMessageBuilder<'a> {
             .finish_output()?;
         self.outputs.push(output);
         if !OUTPUT_COUNT_RANGE.contains(&(self.outputs.len() as u16)) {
-            return Err(crate::Error::MessageError(bee_message::Error::InvalidOutputCount(
+            return Err(crate::Error::BlockError(bee_block::Error::InvalidOutputCount(
                 TryIntoBoundedU16Error::Truncated(self.outputs.len()),
             )));
         }
@@ -195,7 +195,7 @@ impl<'a> ClientMessageBuilder<'a> {
     pub fn with_outputs(mut self, outputs: Vec<Output>) -> Result<Self> {
         self.outputs.extend(outputs);
         if !OUTPUT_COUNT_RANGE.contains(&(self.outputs.len() as u16)) {
-            return Err(crate::Error::MessageError(bee_message::Error::InvalidOutputCount(
+            return Err(crate::Error::BlockError(bee_block::Error::InvalidOutputCount(
                 TryIntoBoundedU16Error::Truncated(self.outputs.len()),
             )));
         }
@@ -211,7 +211,7 @@ impl<'a> ClientMessageBuilder<'a> {
             .finish_output()?;
         self.outputs.push(output);
         if !OUTPUT_COUNT_RANGE.contains(&(self.outputs.len() as u16)) {
-            return Err(crate::Error::MessageError(bee_message::Error::InvalidOutputCount(
+            return Err(crate::Error::BlockError(bee_block::Error::InvalidOutputCount(
                 TryIntoBoundedU16Error::Truncated(self.outputs.len()),
             )));
         }
@@ -237,10 +237,10 @@ impl<'a> ClientMessageBuilder<'a> {
         self
     }
 
-    /// Set 1-8 custom parent message ids
-    pub fn with_parents(mut self, parent_ids: Vec<MessageId>) -> Result<Self> {
+    /// Set 1-8 custom parent block ids
+    pub fn with_parents(mut self, parent_ids: Vec<BlockId>) -> Result<Self> {
         if !(1..=8).contains(&parent_ids.len()) {
-            return Err(crate::Error::MessageError(bee_message::Error::InvalidParentCount(
+            return Err(crate::Error::BlockError(bee_block::Error::InvalidParentCount(
                 TryIntoBoundedU8Error::Truncated(parent_ids.len()),
             )));
         }
@@ -248,9 +248,9 @@ impl<'a> ClientMessageBuilder<'a> {
         Ok(self)
     }
 
-    /// Set multiple options from client message builder options type
+    /// Set multiple options from client block builder options type
     /// Useful for bindings
-    pub fn set_options(mut self, options: ClientMessageBuilderOptions) -> Result<Self> {
+    pub fn set_options(mut self, options: ClientBlockBuilderOptions) -> Result<Self> {
         if let Some(coin_type) = options.coin_type {
             self = self.with_coin_type(coin_type);
         }
@@ -325,7 +325,7 @@ impl<'a> ClientMessageBuilder<'a> {
     }
 
     /// Consume the builder and get the API result
-    pub async fn finish(self) -> Result<Message> {
+    pub async fn finish(self) -> Result<Block> {
         // tagged_data payload requires an tagged_data tag
         if self.data.is_some() && self.tag.is_none() {
             return Err(Error::MissingParameter("tag"));
@@ -337,16 +337,16 @@ impl<'a> ClientMessageBuilder<'a> {
             if self.secret_manager.is_none() && self.inputs.is_none() {
                 return Err(Error::MissingParameter("Seed"));
             }
-            // Send message with transaction
+            // Send block with transaction
             let prepared_transaction_data = self.prepare_transaction().await?;
             let tx_payload = self.sign_transaction(prepared_transaction_data).await?;
-            self.finish_message(Some(tx_payload)).await
+            self.finish_block(Some(tx_payload)).await
         } else if self.tag.is_some() {
-            // Send message with tagged_data payload
+            // Send block with tagged_data payload
             self.finish_tagged_data().await
         } else {
-            // Send message without payload
-            self.finish_message(None).await
+            // Send block without payload
+            self.finish_block(None).await
         }
     }
 
@@ -472,7 +472,7 @@ impl<'a> ClientMessageBuilder<'a> {
     }
 
     /// Consume the builder and get the API result
-    pub async fn finish_tagged_data(self) -> Result<Message> {
+    pub async fn finish_tagged_data(self) -> Result<Block> {
         let payload: Payload;
         {
             let index = &self.tag.as_ref();
@@ -485,15 +485,15 @@ impl<'a> ClientMessageBuilder<'a> {
             payload = Payload::TaggedData(Box::new(index));
         }
 
-        // building message
-        self.finish_message(Some(payload)).await
+        // building block
+        self.finish_block(Some(payload)).await
     }
 
-    /// Builds the final message and posts it to the node
-    pub async fn finish_message(self, payload: Option<Payload>) -> Result<Message> {
+    /// Builds the final block and posts it to the node
+    pub async fn finish_block(self, payload: Option<Payload>) -> Result<Block> {
         #[cfg(target_family = "wasm")]
-        let final_message = {
-            let parent_message_ids = match self.parents {
+        let final_block = {
+            let parent_block_ids = match self.parents {
                 Some(parents) => parents,
                 _ => self.client.get_tips().await?,
             };
@@ -502,14 +502,14 @@ impl<'a> ClientMessageBuilder<'a> {
             crate::api::pow::finish_single_thread_pow(
                 self.client,
                 network_id,
-                Some(parent_message_ids),
+                Some(parent_block_ids),
                 payload,
                 min_pow_score,
             )
             .await?
         };
         #[cfg(not(target_family = "wasm"))]
-        let final_message = match self.parents {
+        let final_block = match self.parents {
             Some(mut parents) => {
                 // Sort parents
                 parents.sort_unstable_by_key(|a| a.pack_to_vec());
@@ -522,21 +522,21 @@ impl<'a> ClientMessageBuilder<'a> {
                 }
                 do_pow(client_miner.finish(), min_pow_score, payload, parents)?
                     .1
-                    .ok_or_else(|| Error::Pow("final message pow failed.".to_string()))?
+                    .ok_or_else(|| Error::Pow("final block pow failed.".to_string()))?
             }
             None => finish_pow(self.client, payload).await?,
         };
 
-        let msg_id = self.client.post_message_raw(&final_message).await?;
-        // Get message if we use remote PoW, because the node will change parents and nonce
+        let block_id = self.client.post_block_raw(&final_block).await?;
+        // Get block if we use remote PoW, because the node will change parents and nonce
         match self.client.get_local_pow().await {
-            true => Ok(final_message),
+            true => Ok(final_block),
             false => {
-                // Request message multiple times because the node maybe didn't process it completely in this time
+                // Request block multiple times because the node maybe didn't process it completely in this time
                 // or a node balancer could be used which forwards the request to different node than we published
                 for time in 1..3 {
-                    if let Ok(message) = self.client.get_message(&msg_id).await {
-                        return Ok(message);
+                    if let Ok(block) = self.client.get_block(&block_id).await {
+                        return Ok(block);
                     }
                     #[cfg(not(target_family = "wasm"))]
                     sleep(Duration::from_millis(time * 50)).await;
@@ -545,7 +545,7 @@ impl<'a> ClientMessageBuilder<'a> {
                         TimeoutFuture::new((time * 50).try_into().unwrap()).await;
                     }
                 }
-                self.client.get_message(&msg_id).await
+                self.client.get_block(&block_id).await
             }
         }
     }

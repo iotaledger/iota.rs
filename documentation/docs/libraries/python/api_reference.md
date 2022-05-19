@@ -99,54 +99,54 @@ def main():
     print(f'get_address_outputs() for address {EMPTY_ADDRESS}')
     print(f'outputs(): {client.get_address_outputs(EMPTY_ADDRESS)}')
 
-    print(f'message() 100 tokens to address {EMPTY_ADDRESS}')
-    message_id = client.message(
-        seed=SEED, outputs=[{'address': EMPTY_ADDRESS, 'amount': 100}])['message_id']
-    print(f'Token sent with message_id: {message_id}')
-    print(f'Please check http://127.0.0.1:14265/api/v2/messages/{message_id}')
+    print(f'block() 100 tokens to address {EMPTY_ADDRESS}')
+    block_id = client.block(
+        seed=SEED, outputs=[{'address': EMPTY_ADDRESS, 'amount': 100}])['block_id']
+    print(f'Token sent with block_id: {block_id}')
+    print(f'Please check http://127.0.0.1:14265/api/v2/blocks/{block_id}')
 
-    print(f'get_message_metadata() for message_id {message_id}')
-    message_metadata = client.get_message_metadata(message_id)
-    print(f'message_metadata: {message_metadata}')
+    print(f'get_block_metadata() for block_id {block_id}')
+    block_metadata = client.get_block_metadata(block_id)
+    print(f'block_metadata: {block_metadata}')
 
-    print(f'get_message_data() for message_id {message_id}')
-    message_data = client.get_message_data(message_id)
-    print(f'message_data: {message_data}')
+    print(f'get_block_data() for block_id {block_id}')
+    block_data = client.get_block_data(block_id)
+    print(f'block_data: {block_data}')
 
-    print(f'get_message_raw() for message_id {message_id}')
-    message_raw = client.get_message_raw(message_id)
-    print(f"raw_data = {message_raw.encode('utf-8')}")
+    print(f'get_block_raw() for block_id {block_id}')
+    block_raw = client.get_block_raw(block_id)
+    print(f"raw_data = {block_raw.encode('utf-8')}")
     print(
-        f"Note the raw data is exactly the same from http://127.0.0.1:14265/api/v2/messages/{message_id}")
+        f"Note the raw data is exactly the same from http://127.0.0.1:14265/api/v2/blocks/{block_id}")
     print(', which is not utf-8 format. The utf-8 format here is just for ease of demonstration')
 
-    print(f'get_message_children() for message_id {message_id}')
-    children = client.get_message_children(message_id)
+    print(f'get_block_children() for block_id {block_id}')
+    children = client.get_block_children(block_id)
     print(f"children: {children}")
 
-    print(f'message() Indexation')
-    message_id_indexation = client.message(
+    print(f'block() Indexation')
+    block_id_indexation = client.block(
         index="Hello", data=[84, 97, 110, 103, 108, 101])
-    print(f'Indexation sent with message_id: {message_id_indexation}')
+    print(f'Indexation sent with block_id: {block_id_indexation}')
     print(
-        f'Please check http://127.0.0.1:14265/api/v2/messages/{message_id_indexation}')
+        f'Please check http://127.0.0.1:14265/api/v2/blocks/{block_id_indexation}')
 
     # Note that in rust we need to specify the parameter type explicitly, so if the user wants
     # to use the utf-8 string as the data, then the `data_str` field can be used.
-    print(f'message() Indexation')
-    message_id_indexation = client.message(
+    print(f'block() Indexation')
+    block_id_indexation = client.block(
         index="Hi", data_str="Tangle")
-    print(f'Indexation sent with message_id: {message_id_indexation}')
+    print(f'Indexation sent with block_id: {block_id_indexation}')
     print(
-        f'Please check http://127.0.0.1:14265/api/v2/messages/{message_id_indexation}')
+        f'Please check http://127.0.0.1:14265/api/v2/blocks/{block_id_indexation}')
 
-    print(f"get_message_index() for index 'Hello'")
-    message_id_indexation_queried = client.get_message_index("Hello")
-    print(f'Indexation: {message_id_indexation_queried}')
+    print(f"get_block_index() for index 'Hello'")
+    block_id_indexation_queried = client.get_block_index("Hello")
+    print(f'Indexation: {block_id_indexation_queried}')
 
-    print(f"find_messages() for indexation_keys = ['Hello']")
-    messages = client.find_messages(indexation_keys=["Hello"])
-    print(f'Messages: {messages}')
+    print(f"find_blocks() for indexation_keys = ['Hello']")
+    blocks = client.find_blocks(indexation_keys=["Hello"])
+    print(f'Blocks: {blocks}')
 
     print(f"get_unspent_address()")
     unspent_addresses = client.get_unspent_address(seed=SEED)
@@ -194,7 +194,7 @@ Creates a new instance of the Client.
 | [min_quorum_size]                        | `int`                             | `3`         | An int that defines how many nodes should be used for quorum                                                                                                                                                                                             |
 | [quorum_threshold]                   | `int`                             | `66`        | Define the % of nodes that need to return the same response to accept it                                                                                                                                                                                 |
 | [api_timeout]                    | `int`                             | `undefined` | Sets the default HTTP request timeout                                                                                                                                                                                                                    |
-| [api_timeout]                        | `dict`                            | `undefined` | The API to set the request timeout. Key: 'GetHealth', 'GetInfo', 'GetPeers', 'GetTips', 'PostMessage', 'GetOutput', 'GetMilestone' Value: timeout in milliseconds                                                                                        |
+| [api_timeout]                        | `dict`                            | `undefined` | The API to set the request timeout. Key: 'GetHealth', 'GetInfo', 'GetPeers', 'GetTips', 'PostBlock', 'GetOutput', 'GetMilestone' Value: timeout in milliseconds                                                                                        |
 | [local_pow]                          | `bool`                            | `undefined` | Flag determining if PoW should be done locally or remotely                                                                                                                                                                                               |
 | [tips_interval]                      | `int`                             | `undefined` | Time between requests for new tips during PoW                                                                                                                                                                                                            |
 | [mqtt_broker_options]                | `[BrokerOptions](#brokeroptions)` | `undefined` | Sets the options for the MQTT connection with the node                                                                                                                                                                                                   |
@@ -225,17 +225,17 @@ Gets peers of the node.
 
 Gets non-lazy tips.
 
-**Returns** two non-lazy tips' message ids in list.
+**Returns** two non-lazy tips' block ids in list.
 
-#### post_message(msg): str
+#### post_block(block): str
 
-Submits a message.
+Submits a block.
 
 | Param | Type                  | Default     | Description           |
 | ----- | --------------------- | ----------- | --------------------- |
-| [msg] | `[Message](#message)` | `undefined` | The message to submit |
+| [block] | `[Block](#block)` | `undefined` | The block to submit |
 
-**Returns** the message id of the submitted message.
+**Returns** the block id of the submitted block.
 
 #### get_output(output_id): OutputResponse
 
@@ -321,22 +321,22 @@ Get the treasury amount.
 
 **Returns** the [TreasuryResponse](#TreasuryResponse).
 
-#### get_included_message(): Message
+#### get_included_block(): Block
 
-Get the included message of a transaction.
+Get the included block of a transaction.
 
 | Param   | Type  | Description               |
 | ------- | ----- | ------------------------- |
 | [index] | `str` | The id of the transaction |
 
-**Returns** the new [Message](#message).
+**Returns** the new [Block](#block).
 
 
 ### High-Level APIs
 
-#### message(seed (optional), account_index (optional), initial_address_index (optional), inputs (optional), input_range_begin (optional), input_range_end (optional), outputs (optional), dust_allowance_outputs (optional), index (optional), index_raw (optional), data (optional), data_str (optional), parents (optional)): Message
+#### block(seed (optional), account_index (optional), initial_address_index (optional), inputs (optional), input_range_begin (optional), input_range_end (optional), outputs (optional), dust_allowance_outputs (optional), index (optional), index_raw (optional), data (optional), data_str (optional), parents (optional)): Block
 
-Build a message.
+Build a block.
 
 | Param                    | Type                                       | Default                | Description                                  |
 | ------------------------ | ------------------------------------------ | ---------------------- | -------------------------------------------- |
@@ -352,78 +352,78 @@ Build a message.
 | [index_raw]              | `list[int]`                                | `undefined`            | The indexation byte array                    |
 | [data]                   | `list[int]`                                | `undefined`            | The data in bytes                            |
 | [data_str]               | `str`                                      | `undefined`            | The data string                              |
-| [parents]                | `list[str]`                                | `undefined`            | The message ids of the parents               |
+| [parents]                | `list[str]`                                | `undefined`            | The block ids of the parents               |
 
-**Returns** the built [Message](#message).
+**Returns** the built [Block](#block).
 
-#### get_message_metadata(message_id): MessageMetadataResponse
-
-| Param        | Type  | Default     | Description    |
-| ------------ | ----- | ----------- | -------------- |
-| [message_id] | `str` | `undefined` | The message id |
-
-**Returns** the [MessageMetadataResponse](#messagemetadataresponse).
-
-#### get_message_data(message_id): Message
-
-Gets the message data from the message id.
+#### get_block_metadata(block_id): BlockMetadataResponse
 
 | Param        | Type  | Default     | Description    |
 | ------------ | ----- | ----------- | -------------- |
-| [message_id] | `str` | `undefined` | The message id |
+| [block_id] | `str` | `undefined` | The block id |
 
-**Returns** the [Message](#message).
+**Returns** the [BlockMetadataResponse](#blockmetadataresponse).
 
-#### get_message_raw(message_id): str
+#### get_block_data(block_id): Block
 
-Gets the raw message string from the message id.
-
-| Param        | Type  | Default     | Description    |
-| ------------ | ----- | ----------- | -------------- |
-| [message_id] | `str` | `undefined` | The message id |
-
-**Returns** the raw message string.
-
-#### get_message_children(message_id): list[str]
-
-Gets the children of the given message.
+Gets the block data from the block id.
 
 | Param        | Type  | Default     | Description    |
 | ------------ | ----- | ----------- | -------------- |
-| [message_id] | `str` | `undefined` | The message id |
+| [block_id] | `str` | `undefined` | The block id |
+
+**Returns** the [Block](#block).
+
+#### get_block_raw(block_id): str
+
+Gets the raw block string from the block id.
+
+| Param        | Type  | Default     | Description    |
+| ------------ | ----- | ----------- | -------------- |
+| [block_id] | `str` | `undefined` | The block id |
+
+**Returns** the raw block string.
+
+#### get_block_children(block_id): list[str]
+
+Gets the children of the given block.
+
+| Param        | Type  | Default     | Description    |
+| ------------ | ----- | ----------- | -------------- |
+| [block_id] | `str` | `undefined` | The block id |
 
 **Returns** the list of children strings.
 
-#### get_message_id(payload_str): str
+#### get_block_id(payload_str): str
 
-Get the message id from the payload string.
+Get the block id from the payload string.
 
 | Param       | Type  | Default     | Description                                    |
 | ----------- | ----- | ----------- | ---------------------------------------------- |
-| payload_str | `str` | `undefined` | The payload string from the mqtt message event |
+| payload_str | `str` | `undefined` | The payload string from the mqtt block event |
 
-**Returns** The identifier of message.
+**Returns** The identifier of block.
 
-#### get_message_index(index): list[str]
+#### get_block_index(index): list[str]
 
-Gets the list of message indices from the message_id.
+Gets the list of block indices from the block_id.
 
 | Param   | Type  | Default     | Description               |
 | ------- | ----- | ----------- | ------------------------- |
-| [index] | `str` | `undefined` | The identifier of message |
+| [index] | `str` | `undefined` | The identifier of block |
 
-**Returns** the list of message ids.
+**Returns** the list of block ids.
 
-#### find_messages(indexation_keys (optional), message_ids (optional)): list[Message]
+#### find_blocks(indexation_keys (optional), block_ids (optional)): list[Block]
 
-Finds all messages associated with the given indexation keys and message ids.
+Finds all blocks associated with the given indexation keys and block ids.
 
 | Param             | Type        | Default     | Description                             |
 | ----------------- | ----------- | ----------- | --------------------------------------- |
 | [indexation_keys] | `list[str]` | `undefined` | The list of indexations keys too search |
-| [message_ids]     | `list[str]` | `undefined` | The list of message ids to search       |
+| [block_ids]     | `list[str]` | `undefined` | The list of block ids to search       |
 
-**Returns** the list of the found messages.
+**Returns** the list of the found blocks.
 
 #### get_unspent_address(seed, account_index (optional), initial_address_index(optional)): (str, int)
 
@@ -544,27 +544,27 @@ Checks if a given address is valid.
 
 **Returns** A boolean.
 
-#### retry(message_id): (str, Message)
+#### retry(block_id): (str, Block)
 
-Retries (promotes or reattaches) the message associated with the given id.
+Retries (promotes or reattaches) the block associated with the given id.
 
 | Param        | Type  | Default     | Description    |
 | ------------ | ----- | ----------- | -------------- |
-| [message_id] | `str` | `undefined` | The message id |
+| [block_id] | `str` | `undefined` | The block id |
 
-**Returns** the message id and the retried [Message](#message).
+**Returns** the block id and the retried [Block](#block).
 
-#### retry_until_included(message_id, interval (optional), max_attempts (optional)): list[(str, Message)]
+#### retry_until_included(block_id, interval (optional), max_attempts (optional)): list[(str, Block)]
 
-Retries (promotes or reattaches) the message associated with the given id.
+Retries (promotes or reattaches) the block associated with the given id.
 
 | Param        | Type  | Default     | Description                                            |
 | ------------ | ----- | ----------- | ------------------------------------------------------ |
-| [message_id] | `str` | `undefined` | The message id                                         |
-| interval     | `int` | `5`         | The interval in seconds in which we retry the message. |
-| max_attempts | `int` | `40`        | The maximum of attempts we retry the message.          |
+| [block_id] | `str` | `undefined` | The block id                                         |
+| interval     | `int` | `5`         | The interval in seconds in which we retry the block. |
+| max_attempts | `int` | `40`        | The maximum of attempts we retry the block.          |
 
-**Returns** the message ids and [Message](#message) of reattached messages.
+**Returns** the block ids and [Block](#block) of reattached blocks.
 
 #### consolidate_funds(seed, account_index, start_index, end_index): str
 
@@ -594,25 +594,25 @@ Function to find the index and address type of an address
 
 **Returns** index and address type of an address.
 
-#### reattach(message_id): (str, Message)
+#### reattach(block_id): (str, Block)
 
-Reattaches the message associated with the given id.
-
-| Param        | Type  | Default     | Description    |
-| ------------ | ----- | ----------- | -------------- |
-| [message_id] | `str` | `undefined` | The message id |
-
-**Returns** the message id and the reattached [Message](#message).
-
-#### promote(message_id): (str, Message)
-
-Promotes the message associated with the given id.
+Reattaches the block associated with the given id.
 
 | Param        | Type  | Default     | Description    |
 | ------------ | ----- | ----------- | -------------- |
-| [message_id] | `str` | `undefined` | The message id |
+| [block_id] | `str` | `undefined` | The block id |
 
-**Returns** the message id and the promoted [Message](#message).
+**Returns** the block id and the reattached [Block](#block).
+
+#### promote(block_id): (str, Block)
+
+Promotes the block associated with the given id.
+
+| Param        | Type  | Default     | Description    |
+| ------------ | ----- | ----------- | -------------- |
+| [block_id] | `str` | `undefined` | The block id |
+
+**Returns** the block id and the promoted [Block](#block).
 
 ### MQTT APIs
 
@@ -647,9 +647,9 @@ Disconnect the mqtt broker.
 A dict with the following key/value pairs.
 
 ```python
-message_metadata_response = {
-    'message_id': str,
-    'parent_message_ids': list[str],
+block_metadata_response = {
+    'block_id': str,
+    'parent_block_ids': list[str],
     'is_solid': bool,
     'referenced_by_milestone_index': int, # (optional)
     'milestone_index': int,  # (optional)
@@ -694,7 +694,7 @@ A dict with the following key/value pairs.
 milestoned_to = {
     'index': int,
     'timestamp': int,
-    'message_id':  str
+    'block_id':  str
 }
 ```
 
@@ -749,7 +749,7 @@ A dict with the following key/value pairs.
 
 ```python
 output_response = {
-    'message_id': str,
+    'block_id': str,
     'transaction_id': str,
     'output_index': int,
     'is_spent': bool,
@@ -836,13 +836,13 @@ ed25519_address_dto = {
 }
 ```
 
-#### Message
+#### Block
 
 A dict with the following key/value pairs.
 
 ```python
-message = {
-    'message_id': str,
+block = {
+    'block_id': str,
     'network_id': int,
     'parents': list[str],
     'payload': Payload, # (optional)
@@ -873,11 +873,11 @@ A dict with the following key/value pairs.
 ```python
 transaction = {
     'essence': RegularEssence,
-    'unlock_blocks': list[UnlockBlock]
+    'blocks': list[Block]
 }
 ```
 
-Please refer to [RegularEssence](#regularessence), and [UnlockBlock](#unlockblock) for the details of these types.
+Please refer to [RegularEssence](#regularessence), and [Block](#unlockblock) for the details of these types.
 
 #### Milestone
 
@@ -955,12 +955,12 @@ input = {
 }
 ```
 
-#### UnlockBlock
+#### Block
 
 A dict with the following key/value pairs.
 
 ```python
-unlock_block = {
+block = {
     'signature': Ed25519Signature, # (optional)
     'reference': int # (optional)
 }
@@ -1017,8 +1017,8 @@ info_response = {
     'network_id': str,
     'bech32_hrp': str,
     'min_pow_score': float,
-    'messages_per_second': float,
-    'referenced_messages_per_second': float,
+    'blocks_per_second': float,
+    'referenced_blocks_per_second': float,
     'referenced_rate': float,
     'latest_milestone_timestamp': u64,
     'latest_milestone_index': int,
@@ -1104,13 +1104,13 @@ A dict with the following key/value pairs.
 
 ```python
 metrics_dto = {
-    'received_messages': int,
-    'known_messages': int,
-    'received_message_requests': int,
+    'received_blocks': int,
+    'known_blocks': int,
+    'received_block_requests': int,
     'received_milestone_requests': int,
     'received_heartbeats': int,
-    'sent_messages': int,
-    'sent_message_requests': int,
+    'sent_blocks': int,
+    'sent_block_requests': int,
     'sent_milestone_requests': int,
     'sent_heartbeats': int,
     'dropped_packets': int,

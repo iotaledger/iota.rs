@@ -18,26 +18,26 @@ class HighLevelAPI(BaseAPI):
             'output_ids': output_ids
         })
 
-    def find_messages(self, message_ids):
-        """Find all messages by provided message IDs.
+    def find_blocks(self, block_ids):
+        """Find all blocks by provided block IDs.
         """
-        return self.call_client_method('FindMessages', {
-            'message_ids': message_ids
+        return self.call_client_method('FindBlocks', {
+            'block_ids': block_ids
         })
 
-    def retry(self, message_id):
-        """Retries (promotes or reattaches) a message for provided message id. Message should only be
+    def retry(self, block_id):
+        """Retries (promotes or reattaches) a block for provided block id. Block should only be
            retried only if they are valid and haven't been confirmed for a while.
         """
-        return self.call_client_method('Retry', {'message_id': message_id})
+        return self.call_client_method('Retry', {'block_id': block_id})
 
-    def retry_until_included(self, message_id, interval=None, max_attempts=None):
-        """Retries (promotes or reattaches) a message for provided message id until it's included (referenced by a
-           milestone). Default interval is 5 seconds and max attempts is 40. Returns the included message at first
-           position and additional reattached messages.
+    def retry_until_included(self, block_id, interval=None, max_attempts=None):
+        """Retries (promotes or reattaches) a block for provided block id until it's included (referenced by a
+           milestone). Default interval is 5 seconds and max attempts is 40. Returns the included block at first
+           position and additional reattached blocks.
         """
         return self.call_client_method('RetryUntilIncluded', {
-            'message_id': message_id,
+            'block_id': block_id,
             'interval': interval,
             'max_attempts': max_attempts
         })
@@ -69,32 +69,32 @@ class HighLevelAPI(BaseAPI):
             'addresses': addresses
         })
 
-    def reattach(self, message_id):
-        """Reattaches messages for provided message id. Messages can be reattached only if they are valid and haven't been
+    def reattach(self, block_id):
+        """Reattaches blocks for provided block id. Blocks can be reattached only if they are valid and haven't been
            confirmed for a while.
         """
         return self.call_client_method('Reattach', {
-            'message_id': message_id
+            'block_id': block_id
         })
 
-    def reattach_unchecked(self, message_id):
-        """Reattach a message without checking if it should be reattached.
+    def reattach_unchecked(self, block_id):
+        """Reattach a block without checking if it should be reattached.
         """
         return self.call_client_method('ReattachUnchecked', {
-            'message_id': message_id
+            'block_id': block_id
         })
 
-    def promote(self, message_id):
-        """Promotes a message. The method should validate if a promotion is necessary through get_message. If not, the
+    def promote(self, block_id):
+        """Promotes a block. The method should validate if a promotion is necessary through get_block. If not, the
            method should error out and should not allow unnecessary promotions.
         """
         return self.call_client_method('Promote', {
-            'message_id': message_id
+            'block_id': block_id
         })
 
-    def promote_unchecked(self, message_id):
-        """Promote a message without checking if it should be promoted.
+    def promote_unchecked(self, block_id):
+        """Promote a block without checking if it should be promoted.
         """
         return self.call_client_method('PromoteUnchecked', {
-            'message_id': message_id
+            'block_id': block_id
         })

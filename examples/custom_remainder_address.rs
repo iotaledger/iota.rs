@@ -57,8 +57,8 @@ async fn main() -> Result<()> {
         .await?;
     println!("{:?}", output_ids);
 
-    let message = client
-        .message()
+    let block = client
+        .block()
         .with_secret_manager(&secret_manager)
         .with_output(
             // We generate an address from our seed so that we send the funds to ourselves
@@ -71,8 +71,8 @@ async fn main() -> Result<()> {
         .await?;
 
     println!(
-        "Transaction sent: https://explorer.iota.org/devnet/message/{}",
-        message.id()
+        "Transaction sent: https://explorer.iota.org/devnet/block/{}",
+        block.id()
     );
     Ok(())
 }

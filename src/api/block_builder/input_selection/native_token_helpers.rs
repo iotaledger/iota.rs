@@ -3,7 +3,7 @@
 
 use std::cmp::Ordering;
 
-use bee_message::output::{NativeToken, NativeTokens, NativeTokensBuilder, Output, TokenId, TokenScheme};
+use bee_block::output::{NativeToken, NativeTokens, NativeTokensBuilder, Output, TokenId, TokenScheme};
 use primitive_types::U256;
 
 use crate::Result;
@@ -104,7 +104,7 @@ pub(crate) fn get_minted_and_melted_native_tokens<'a>(
 
 #[cfg(test)]
 mod tests {
-    use bee_message::output::TokenId;
+    use bee_block::output::TokenId;
 
     use super::*;
 

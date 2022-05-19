@@ -46,7 +46,7 @@ Run `cargo run --example node_api_core_get_info --release -- [NODE URL]`.
 
 Calls `GET /api/v2/tips`.
 
-Returns tips that are ideal for attaching a message.
+Returns tips that are ideal for attaching a block.
 
 ## Request
 
@@ -62,13 +62,13 @@ let tips = client.get_tips().await?;
 
 Run `cargo run --example node_api_core_get_tips --release -- [NODE URL]`.
 
-# `Client::post_message`
+# `Client::post_block`
 
 ## Description
 
-Calls `POST /api/v2/messages`.
+Calls `POST /api/v2/blocks`.
 
-Submits a message as a JSON payload.
+Submits a block as a JSON payload.
 
 ## Request
 
@@ -77,18 +77,18 @@ Submits a message as a JSON payload.
 ## Example
 
 ```rust
-let message_id = client.post_message(&message).await?;
+let block_id = client.post_block(&block).await?;
 ```
 
-Run `cargo run --example node_api_core_post_message --release -- [NODE URL]`.
+Run `cargo run --example node_api_core_post_block --release -- [NODE URL]`.
 
-# `Client::post_message_raw`
+# `Client::post_block_raw`
 
 ## Description
 
-Calls `POST /api/v2/messages`.
+Calls `POST /api/v2/blocks`.
 
-Submits a message as raw bytes.
+Submits a block as raw bytes.
 
 ## Request
 
@@ -97,18 +97,18 @@ Submits a message as raw bytes.
 ## Example
 
 ```rust
-let message_id = client.post_message_raw(&message).await?;
+let block_id = client.post_block_raw(&block).await?;
 ```
 
-Run `cargo run --example node_api_core_post_message_raw --release -- [NODE URL]`.
+Run `cargo run --example node_api_core_post_block_raw --release -- [NODE URL]`.
 
-# `Client::get_message`
+# `Client::get_block`
 
 ## Description
 
-Calls `GET /api/v2/messages/{messageId}`.
+Calls `GET /api/v2/blocks/{blockId}`.
 
-Returns message data as JSON by its identifier.
+Returns block data as JSON by its identifier.
 
 ## Request
 
@@ -117,18 +117,18 @@ Returns message data as JSON by its identifier.
 ## Example
 
 ```rust
-let message = client.get_message(&message_id).await?;
+let block = client.get_block(&block_id).await?;
 ```
 
-Run `cargo run --example node_api_core_get_message --release -- [NODE URL]`.
+Run `cargo run --example node_api_core_get_block --release -- [NODE URL]`.
 
-# `Client::get_message_raw`
+# `Client::get_block_raw`
 
 ## Description
 
-Calls `GET /api/v2/messages/{messageId}`.
+Calls `GET /api/v2/blocks/{blockId}`.
 
-Returns message data as raw bytes by its identifier.
+Returns block data as raw bytes by its identifier.
 
 ## Request
 
@@ -137,18 +137,18 @@ Returns message data as raw bytes by its identifier.
 ## Example
 
 ```rust
-let message = client.get_message_raw(&message_id).await?;
+let block = client.get_block_raw(&block_id).await?;
 ```
 
-Run `cargo run --example node_api_core_get_message_raw --release -- [NODE URL]`.
+Run `cargo run --example node_api_core_get_block_raw --release -- [NODE URL]`.
 
-# `Client::get_message_metadata`
+# `Client::get_block_metadata`
 
 ## Description
 
-Calls `GET /api/v2/messages/{messageId}/metadata`.
+Calls `GET /api/v2/blocks/{blockId}/metadata`.
 
-Finds the metadata of a given message.
+Finds the metadata of a given block.
 
 ## Request
 
@@ -157,18 +157,18 @@ Finds the metadata of a given message.
 ## Example
 
 ```rust
-let message_metadata = client.get_message_metadata(&message_id).await?;
+let block_metadata = client.get_block_metadata(&block_id).await?;
 ```
 
-Run `cargo run --example node_api_core_get_message_metadata --release -- [NODE URL]`.
+Run `cargo run --example node_api_core_get_block_metadata --release -- [NODE URL]`.
 
-# `Client::get_message_children`
+# `Client::get_block_children`
 
 ## Description
 
-Calls `GET /api/v2/messages/{messageId}/children`.
+Calls `GET /api/v2/blocks/{blockId}/children`.
 
-Returns the children of a message.
+Returns the children of a block.
 
 ## Request
 
@@ -177,10 +177,10 @@ Returns the children of a message.
 ## Example
 
 ```rust
-let message_children = client.get_message_children(&message_id).await?;
+let block_children = client.get_block_children(&block_id).await?;
 ```
 
-Run `cargo run --example node_api_core_get_message_children --release -- [NODE URL]`.
+Run `cargo run --example node_api_core_get_block_children --release -- [NODE URL]`.
 
 # `Client::`
 
@@ -280,9 +280,9 @@ Run `cargo run --example node_api_core_get_treasury --release -- [NODE URL]`.
 
 ## Description
 
-Calls `GET /api/v2/transactions/{transactionId}/included-message`.
+Calls `GET /api/v2/transactions/{transactionId}/included-block`.
 
-Returns the included message of a transaction.
+Returns the included block of a transaction.
 
 ## Request
 

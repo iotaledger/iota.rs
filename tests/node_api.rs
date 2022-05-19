@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // These are E2E test samples, so they are ignored by default.
-use bee_message::{
+use bee_block::{
     output::OutputId,
     payload::{transaction::TransactionId, Payload},
-    MessageId,
+    BlockId,
 };
 use iota_client::{
     bech32_to_hex,
@@ -31,12 +31,12 @@ async fn setup_client_with_sync_disabled() -> Client {
         .unwrap()
 }
 
-// Sends a tagged data message to the node to test against it.
-async fn setup_tagged_data_message() -> MessageId {
+// Sends a tagged data block to the node to test against it.
+async fn setup_tagged_data_block() -> BlockId {
     let client = setup_client_with_sync_disabled().await;
 
     client
-        .message()
+        .block()
         .with_tag("Hello")
         .with_data("Tangle".as_bytes().to_vec())
         .finish()
@@ -49,8 +49,8 @@ async fn setup_secret_manager() -> SecretManager {
     SecretManager::Mnemonic(MnemonicSecretManager::try_from_hex_seed(DEFAULT_DEVELOPMENT_SEED).unwrap())
 }
 
-// Sends a transaction message to the node to test against it.
-async fn setup_transaction_message() -> (MessageId, TransactionId) {
+// Sends a transaction block to the node to test against it.
+async fn setup_transaction_block() -> (BlockId, TransactionId) {
     let client = setup_client_with_sync_disabled().await;
     let secret_manager = setup_secret_manager().await;
 
@@ -71,8 +71,8 @@ async fn setup_transaction_message() -> (MessageId, TransactionId) {
     );
     tokio::time::sleep(std::time::Duration::from_secs(20)).await;
 
-    let message_id = client
-        .message()
+    let block_id = client
+        .block()
         .with_secret_manager(&secret_manager)
         .with_output_hex(
             // Send funds back to the sender.
@@ -86,20 +86,20 @@ async fn setup_transaction_message() -> (MessageId, TransactionId) {
         .unwrap()
         .id();
 
-    let message = setup_client_with_sync_disabled()
+    let block = setup_client_with_sync_disabled()
         .await
-        .get_message(&message_id)
+        .get_block(&block_id)
         .await
         .unwrap();
 
-    let transaction_id = match message.payload() {
+    let transaction_id = match block.payload() {
         Some(Payload::Transaction(t)) => t.id(),
         _ => unreachable!(),
     };
 
-    let _ = client.retry_until_included(&message.id(), None, None).await.unwrap();
+    let _ = client.retry_until_included(&block.id(), None, None).await.unwrap();
 
-    (message_id, transaction_id)
+    (block_id, transaction_id)
 }
 
 #[ignore]
@@ -129,37 +129,37 @@ async fn test_get_tips() {
 
 #[ignore]
 #[tokio::test]
-async fn test_post_message_with_tagged_data() {
-    let message_id = setup_tagged_data_message().await;
-    println!("{}", message_id);
+async fn test_post_block_with_tagged_data() {
+    let block_id = setup_tagged_data_block().await;
+    println!("{}", block_id);
 }
 
 #[ignore]
 #[tokio::test]
-async fn test_post_message_with_transaction() {
-    let message_id = setup_transaction_message().await;
-    println!("Message ID: {:?}", message_id);
+async fn test_post_block_with_transaction() {
+    let block_id = setup_transaction_block().await;
+    println!("Block ID: {:?}", block_id);
 }
 
 #[ignore]
 #[tokio::test]
-async fn test_get_message_data() {
+async fn test_get_block_data() {
     let client = setup_client_with_sync_disabled().await;
 
-    let message_id = setup_tagged_data_message().await;
-    let r = client.get_message(&message_id).await.unwrap();
+    let block_id = setup_tagged_data_block().await;
+    let r = client.get_block(&block_id).await.unwrap();
 
     println!("{:#?}", r);
 }
 
 #[ignore]
 #[tokio::test]
-async fn test_get_message_metadata() {
-    let message_id = setup_tagged_data_message().await;
+async fn test_get_block_metadata() {
+    let block_id = setup_tagged_data_block().await;
 
     let r = setup_client_with_sync_disabled()
         .await
-        .get_message_metadata(&message_id)
+        .get_block_metadata(&block_id)
         .await
         .unwrap();
 
@@ -168,12 +168,12 @@ async fn test_get_message_metadata() {
 
 #[ignore]
 #[tokio::test]
-async fn test_get_message_raw() {
-    let message_id = setup_tagged_data_message().await;
+async fn test_get_block_raw() {
+    let block_id = setup_tagged_data_block().await;
 
     let r = setup_client_with_sync_disabled()
         .await
-        .get_message_raw(&message_id)
+        .get_block_raw(&block_id)
         .await
         .unwrap();
 
@@ -182,11 +182,11 @@ async fn test_get_message_raw() {
 
 #[ignore]
 #[tokio::test]
-async fn test_get_message_children() {
-    let message_id = setup_tagged_data_message().await;
+async fn test_get_block_children() {
+    let block_id = setup_tagged_data_block().await;
     let r = setup_client_with_sync_disabled()
         .await
-        .get_message_children(&message_id)
+        .get_block_children(&block_id)
         .await
         .unwrap();
     println!("{:#?}", r);
@@ -241,7 +241,7 @@ async fn test_get_address_outputs() {
 #[ignore]
 #[tokio::test]
 async fn test_get_output() {
-    let (_message_id, transaction_id) = setup_transaction_message().await;
+    let (_block_id, transaction_id) = setup_transaction_block().await;
 
     let r = setup_client_with_sync_disabled()
         .await
@@ -366,12 +366,12 @@ async fn test_get_treasury() {
 
 #[ignore]
 #[tokio::test]
-async fn test_get_included_message() {
-    let (_message_id, transaction_id) = setup_transaction_message().await;
+async fn test_get_included_block() {
+    let (_block_id, transaction_id) = setup_transaction_block().await;
 
     let r = setup_client_with_sync_disabled()
         .await
-        .get_included_message(&transaction_id)
+        .get_included_block(&transaction_id)
         .await
         .unwrap();
 

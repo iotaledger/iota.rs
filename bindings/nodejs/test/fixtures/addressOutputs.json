@@ -1,6 +1,6 @@
 [
     {
-        "messageId": "0x8aceaf425efdb7539d530b4f06e864ae0e01ec191a16c6c4f313dd1989ae52b6",
+        "blockId": "0x8aceaf425efdb7539d530b4f06e864ae0e01ec191a16c6c4f313dd1989ae52b6",
         "transactionId": "0x8b93603c717f46cba38d0bd82e4859f08fb969d8ecd1662626a335ae7be7d75a",
         "outputIndex": 2,
         "isSpent": false,
@@ -28,7 +28,7 @@
         }
     },
     {
-        "messageId": "0x3b327b8792c37e67bbfe6b9e7eefe50fed5f6b7c1a67ceaf41900476edb96a56",
+        "blockId": "0x3b327b8792c37e67bbfe6b9e7eefe50fed5f6b7c1a67ceaf41900476edb96a56",
         "transactionId": "0x879e74c17be69a59282ee83567e9229479e87dbbcdbd3c13a91df976ef4635d4",
         "outputIndex": 2,
         "isSpent": false,
@@ -56,7 +56,7 @@
         }
     },
     {
-        "messageId": "0x4bae2c7eb18749e875096d5263cd568d366bcad66446aaea9d71cb4505f421a6",
+        "blockId": "0x4bae2c7eb18749e875096d5263cd568d366bcad66446aaea9d71cb4505f421a6",
         "transactionId": "0x2a50277500da7df871f0488d18a4e3ec50293ee7569cb2cb0b071ef5f9282c89",
         "outputIndex": 1,
         "isSpent": false,

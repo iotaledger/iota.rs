@@ -42,7 +42,7 @@
     "input_signing_data_entries": [
         {
             "output_response": {
-                "messageId": "0xd5792a6869343be1ff96034de0ffa40a7427cbef4473117350aa3d02dc5a75b2",
+                "blockId": "0xd5792a6869343be1ff96034de0ffa40a7427cbef4473117350aa3d02dc5a75b2",
                 "transactionId": "0x60740e02678a6e29cad19e5df4ac367897c88904d9c137a88b7b37c473df9ba4",
                 "outputIndex": 1,
                 "isSpent": false,

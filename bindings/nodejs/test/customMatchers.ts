@@ -2,7 +2,7 @@ import { printExpected, printReceived, matcherHint } from 'jest-matcher-utils';
 
 interface CustomMatchers<R = unknown> {
     toBeValidAddress(): R;
-    toBeValidMessageId(): R;
+    toBeValidBlockId(): R;
     toBeValidOutputId(): R;
 }
 
@@ -15,7 +15,7 @@ declare global {
     }
 }
 
-const failMessage =
+const failBlock =
     (received: string, length: number, prefix: string, not: boolean) => () =>
         `${matcherHint(
             `${not ? '.not' : ''}.toHaveLengthAndPrefix`,
@@ -32,7 +32,7 @@ Received:
 const idMatcher = (received: string, length: number, prefix: string) => {
     const pass = received.length === length && received.startsWith(prefix);
     return {
-        message: failMessage(received, length, prefix, pass),
+        block: failBlock(received, length, prefix, pass),
         pass,
     };
 };
@@ -41,7 +41,7 @@ expect.extend({
     toBeValidAddress(received: string) {
         return idMatcher(received, 63, 'rms');
     },
-    toBeValidMessageId(received: string) {
+    toBeValidBlockId(received: string) {
         return idMatcher(received, 66, '0x');
     },
     toBeValidOutputId(received: string) {

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! IOTA node indexer routes
-use bee_message::output::{AliasId, FoundryId, NftId, OutputId};
+use bee_block::output::{AliasId, FoundryId, NftId, OutputId};
 
 use crate::{node_api::indexer::query_parameters::QueryParameter, Client, Error, Result};
 

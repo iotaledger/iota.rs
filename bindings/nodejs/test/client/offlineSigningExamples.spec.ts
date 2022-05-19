@@ -77,16 +77,16 @@ describe('Offline signing examples', () => {
 
     // transaction tests disabled for workflows, because they fail if we don't have funds
     it.skip('sends a transaction', async () => {
-        // Send message with the signed transaction as a payload
-        const message = await onlineClient.submitPayload(
+        // Send block with the signed transaction as a payload
+        const block = await onlineClient.submitPayload(
             // Imported JSON is typed with literal types
             signedTransactionJson as unknown as PayloadTypes,
         );
 
-        expect(message.payload).toBeDefined();
+        expect(block.payload).toBeDefined();
 
-        const messageId = await onlineClient.messageId(message);
+        const blockId = await onlineClient.blockId(block);
 
-        expect(messageId).toBeValidMessageId;
+        expect(blockId).toBeValidBlockId;
     });
 });

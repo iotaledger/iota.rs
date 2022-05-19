@@ -4,7 +4,7 @@
 #[cfg(feature = "stronghold")]
 use std::path::PathBuf;
 
-use bee_message::address::Address;
+use bee_block::address::Address;
 #[cfg(feature = "message_interface")]
 use iota_client::api::GetAddressesBuilderOptions;
 #[cfg(feature = "message_interface")]

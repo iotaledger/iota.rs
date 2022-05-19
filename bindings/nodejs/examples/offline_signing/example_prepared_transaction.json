@@ -58,11 +58,11 @@
                         ],
                         "bounded": null
                     },
-                    "feature_blocks": { "inner": [], "bounded": null }
+                    "features": { "inner": [], "bounded": null }
                 }
             },
             "outputMetadata": {
-                "messageId": "0x560a69e4079e4b510ab9c495d585d418fd1c22cb1003d1e503989e02e26664d2",
+                "blockId": "0x560a69e4079e4b510ab9c495d585d418fd1c22cb1003d1e503989e02e26664d2",
                 "transactionId": "0xdddb6f40a3d442f54b74acbe140655056b0bd37641ff0153596ecafa806cf035",
                 "outputIndex": 1,
                 "isSpent": false,

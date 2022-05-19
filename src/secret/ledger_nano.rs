@@ -8,7 +8,7 @@
 use std::ops::Range;
 
 use async_trait::async_trait;
-use bee_message::{address::Address, unlock_block::UnlockBlock};
+use bee_block::{address::Address, unlock::Unlock};
 use tokio::sync::Mutex;
 
 use super::{types::InputSigningData, GenerateAddressMetadata, SecretManage, SecretManageExt};
@@ -33,7 +33,7 @@ pub struct LedgerSecretManager {
 // #[derive(Debug)]
 // struct AddressIndexRecorder {
 //     /// the input
-//     pub(crate) input: bee_message::input::Input,
+//     pub(crate) input: bee_block::input::Input,
 
 //     /// bip32 index
 //     pub(crate) bip32: LedgerBIP32Index,
@@ -74,8 +74,8 @@ impl SecretManage for LedgerSecretManager {
 
         let mut ed25519_addresses = Vec::new();
         for address in addresses {
-            ed25519_addresses.push(bee_message::address::Address::Ed25519(
-                bee_message::address::Ed25519Address::new(address),
+            ed25519_addresses.push(bee_block::address::Address::Ed25519(
+                bee_block::address::Ed25519Address::new(address),
             ));
         }
         Ok(ed25519_addresses)
@@ -87,7 +87,7 @@ impl SecretManage for LedgerSecretManager {
         _input: &InputSigningData,
         _essence_hash: &[u8; 32],
         _metadata: &Option<RemainderData>,
-    ) -> crate::Result<UnlockBlock> {
+    ) -> crate::Result<Unlock> {
         panic!("signature_unlock is not supported with ledger")
     }
 }
@@ -97,7 +97,7 @@ impl SecretManageExt for LedgerSecretManager {
     async fn sign_transaction_essence(
         &self,
         prepared_transaction: &PreparedTransactionData,
-    ) -> crate::Result<Vec<UnlockBlock>> {
+    ) -> crate::Result<Vec<Unlock>> {
         // lock the mutex to prevent multiple simultaneous requests to a ledger
         let _lock = self.mutex.lock().await;
 
@@ -158,7 +158,7 @@ impl SecretManageExt for LedgerSecretManager {
     //     // figure out the remainder address and bip32 index (if there is one)
     //     let (has_remainder, remainder_address, remainder_bip32): (
     //         bool,
-    //         Option<&bee_message::address::Address>,
+    //         Option<&bee_block::address::Address>,
     //         LedgerBIP32Index,
     //     ) = match meta.remainder_deposit_address {
     //         Some(a) => (
@@ -175,7 +175,7 @@ impl SecretManageExt for LedgerSecretManager {
     //     let mut remainder_index = 0u16;
     //     if has_remainder {
     //         match essence {
-    //             bee_message::payload::transaction::TransactionEssence::Regular(essence) => {
+    //             bee_block::payload::transaction::TransactionEssence::Regular(essence) => {
     //                 // find the index of the remainder in the essence
     //                 // this has to be done because outputs in essences are sorted
     //                 // lexically and therefore the remainder is not always the last output.
@@ -185,10 +185,10 @@ impl SecretManageExt for LedgerSecretManager {
     //                 // at this place, so we can rely on their order and don't have to sort it again.
     //                 for output in essence.outputs().iter() {
     //                     match output {
-    //                         bee_message::output::Output::Basic(s) => {
+    //                         bee_block::output::Output::Basic(s) => {
     //                             // todo verify if that's the correct expected behaviour
     //                             for block in s.unlock_conditions() {
-    //                                 if let bee_message::output::UnlockCondition::Address(e) = block {
+    //                                 if let bee_block::output::UnlockCondition::Address(e) = block {
     //                                     if *remainder_address.unwrap() == *e.address() {
     //                                         break;
     //                                     }
@@ -242,12 +242,12 @@ impl SecretManageExt for LedgerSecretManager {
     //     let signature_bytes = ledger.sign(input_len as u16)?;
     //     let mut readable = &mut &*signature_bytes;
     //     // unpack signature to unlockblocks
-    //     let mut unlock_blocks = Vec::new();
+    //     let mut unlocks = Vec::new();
     //     for _ in 0..input_len {
-    //         let unlock_block = UnlockBlock::unpack_verified(&mut readable).map_err(|_| crate::Error::PackableError)?;
-    //         unlock_blocks.push(unlock_block);
+    //         let unlock = Unlock::unpack_verified(&mut readable).map_err(|_| crate::Error::PackableError)?;
+    //         unlocks.push(unlock);
     //     }
-    //     Ok(unlock_blocks)
+    //     Ok(unlocks)
     // }
 }
 

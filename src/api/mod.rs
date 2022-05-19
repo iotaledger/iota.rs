@@ -4,14 +4,14 @@
 //! High level APIs
 
 mod address;
+mod block_builder;
 mod consolidation;
-mod message_builder;
 mod types;
 
 pub use self::{
     address::*,
+    block_builder::{pow::*, *},
     consolidation::*,
-    message_builder::{pow::*, *},
     types::*,
 };
 

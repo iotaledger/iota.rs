@@ -5,7 +5,7 @@
 
 pub mod miner;
 
-use bee_message::{parent::Parents, payload::Payload, Message, MessageBuilder, MessageId};
+use bee_block::{parent::Parents, payload::Payload, Block, BlockBuilder, BlockId};
 use packable::PackableExt;
 #[cfg(not(target_family = "wasm"))]
 use {
@@ -13,13 +13,13 @@ use {
     bee_pow::providers::{miner::MinerCancel, NonceProviderBuilder},
 };
 #[cfg(target_family = "wasm")]
-use {bee_message::payload::OptionalPayload, packable::Packable};
+use {bee_block::payload::OptionalPayload, packable::Packable};
 
 use crate::{api::miner::ClientMiner, Client, Error, Result};
 
 /// Does PoW with always new tips
 #[cfg(not(target_family = "wasm"))]
-pub async fn finish_pow(client: &Client, payload: Option<Payload>) -> Result<Message> {
+pub async fn finish_pow(client: &Client, payload: Option<Payload>) -> Result<Block> {
     let local_pow = client.get_local_pow().await;
     let pow_worker_count = client.pow_worker_count;
     let min_pow_score = client.get_min_pow_score().await?;
@@ -28,9 +28,9 @@ pub async fn finish_pow(client: &Client, payload: Option<Payload>) -> Result<Mes
         let cancel = MinerCancel::new();
         let cancel_2 = cancel.clone();
         let payload_ = payload.clone();
-        let mut parent_messages = client.get_tips().await?;
-        parent_messages.sort_unstable_by_key(|a| a.pack_to_vec());
-        parent_messages.dedup();
+        let mut parent_blocks = client.get_tips().await?;
+        parent_blocks.sort_unstable_by_key(|a| a.pack_to_vec());
+        parent_blocks.dedup();
         let time_thread = std::thread::spawn(move || Ok(pow_timeout(tips_interval, cancel)));
         let pow_thread = std::thread::spawn(move || {
             let mut client_miner = ClientMinerBuilder::new()
@@ -39,7 +39,7 @@ pub async fn finish_pow(client: &Client, payload: Option<Payload>) -> Result<Mes
             if let Some(worker_count) = pow_worker_count {
                 client_miner = client_miner.with_worker_count(worker_count);
             }
-            do_pow(client_miner.finish(), min_pow_score, payload_, parent_messages)
+            do_pow(client_miner.finish(), min_pow_score, payload_, parent_blocks)
         });
 
         let threads = vec![pow_thread, time_thread];
@@ -47,8 +47,8 @@ pub async fn finish_pow(client: &Client, payload: Option<Payload>) -> Result<Mes
             match t.join().expect("Failed to join threads.") {
                 Ok(res) => {
                     if res.0 != 0 || !local_pow {
-                        if let Some(message) = res.1 {
-                            return Ok(message);
+                        if let Some(block) = res.1 {
+                            return Ok(block);
                         }
                     }
                 }
@@ -60,9 +60,9 @@ pub async fn finish_pow(client: &Client, payload: Option<Payload>) -> Result<Mes
     }
 }
 
-// PoW timeout, if we reach this we will restart the PoW with new tips, so the final message will never be lazy
+// PoW timeout, if we reach this we will restart the PoW with new tips, so the final block will never be lazy
 #[cfg(not(target_family = "wasm"))]
-fn pow_timeout(after_seconds: u64, cancel: MinerCancel) -> (u64, Option<Message>) {
+fn pow_timeout(after_seconds: u64, cancel: MinerCancel) -> (u64, Option<Block>) {
     std::thread::sleep(std::time::Duration::from_secs(after_seconds));
     cancel.trigger();
     (0, None)
@@ -73,17 +73,17 @@ pub fn do_pow(
     client_miner: ClientMiner,
     min_pow_score: f64,
     payload: Option<Payload>,
-    parent_messages: Vec<MessageId>,
-) -> Result<(u64, Option<Message>)> {
-    let mut message = MessageBuilder::<ClientMiner>::new(Parents::new(parent_messages)?);
+    parent_blocks: Vec<BlockId>,
+) -> Result<(u64, Option<Block>)> {
+    let mut block = BlockBuilder::<ClientMiner>::new(Parents::new(parent_blocks)?);
     if let Some(p) = payload {
-        message = message.with_payload(p);
+        block = block.with_payload(p);
     }
-    let message = message
+    let block = block
         .with_nonce_provider(client_miner, min_pow_score)
         .finish()
-        .map_err(Error::MessageError)?;
-    Ok((message.nonce(), Some(message)))
+        .map_err(Error::BlockError)?;
+    Ok((block.nonce(), Some(block)))
 }
 
 // Single threaded PoW for wasm
@@ -109,44 +109,44 @@ const POW_ROUNDS_BEFORE_INTERVAL_CHECK: usize = 3000;
 pub async fn finish_single_thread_pow(
     client: &Client,
     network_id: u64,
-    parent_messages: Option<Vec<MessageId>>,
-    payload: Option<bee_message::payload::Payload>,
+    parent_blocks: Option<Vec<BlockId>>,
+    payload: Option<bee_block::payload::Payload>,
     target_score: f64,
-) -> crate::Result<Message> {
-    let parent_messages = match parent_messages {
+) -> crate::Result<Block> {
+    let parent_blocks = match parent_blocks {
         Some(parents) => parents,
         None => client.get_tips().await?,
     };
 
     // return with 0 as nonce if remote PoW should be used
     if !client.get_local_pow().await {
-        let mut message_bytes: Vec<u8> = Vec::new();
-        network_id.pack(&mut message_bytes).unwrap();
-        Parents::new(parent_messages.clone())?.pack(&mut message_bytes).unwrap();
-        OptionalPayload::pack(&OptionalPayload::from(payload.clone()), &mut message_bytes)
+        let mut block_bytes: Vec<u8> = Vec::new();
+        network_id.pack(&mut block_bytes).unwrap();
+        Parents::new(parent_blocks.clone())?.pack(&mut block_bytes).unwrap();
+        OptionalPayload::pack(&OptionalPayload::from(payload.clone()), &mut block_bytes)
             .map_err(|_| crate::Error::PackableError)?;
-        (0_u64).pack(&mut message_bytes).unwrap();
-        return Message::unpack_verified(&mut message_bytes.as_slice()).map_err(|_| crate::Error::PackableError);
+        (0_u64).pack(&mut block_bytes).unwrap();
+        return Block::unpack_verified(&mut block_bytes.as_slice()).map_err(|_| crate::Error::PackableError);
     }
 
     let tips_interval = client.get_tips_interval().await;
 
     loop {
-        let mut message_bytes: Vec<u8> = Vec::new();
-        network_id.pack(&mut message_bytes).unwrap();
-        Parents::new(parent_messages.clone())?.pack(&mut message_bytes).unwrap();
-        OptionalPayload::pack(&OptionalPayload::from(payload.clone()), &mut message_bytes)
+        let mut block_bytes: Vec<u8> = Vec::new();
+        network_id.pack(&mut block_bytes).unwrap();
+        Parents::new(parent_blocks.clone())?.pack(&mut block_bytes).unwrap();
+        OptionalPayload::pack(&OptionalPayload::from(payload.clone()), &mut block_bytes)
             .map_err(|_| crate::Error::PackableError)?;
 
         let mut pow_digest = TritBuf::<T1B1Buf>::new();
         let target_zeros =
-            (((message_bytes.len() + std::mem::size_of::<u64>()) as f64 * target_score).ln() / LN_3).ceil() as usize;
+            (((block_bytes.len() + std::mem::size_of::<u64>()) as f64 * target_score).ln() / LN_3).ceil() as usize;
 
         if target_zeros > HASH_LENGTH {
             return Err(bee_pow::providers::miner::Error::InvalidPowScore(target_score, target_zeros).into());
         }
 
-        let hash = Blake2b256::digest(&message_bytes);
+        let hash = Blake2b256::digest(&block_bytes);
 
         b1t6::encode::<T1B1Buf>(&hash).iter().for_each(|t| pow_digest.push(t));
 
@@ -166,7 +166,7 @@ pub async fn finish_single_thread_pow(
                 && mining_start.elapsed() > std::time::Duration::from_secs(tips_interval)
             {
                 // update parents
-                parent_messages = client.get_tips().await?;
+                parent_blocks = client.get_tips().await?;
                 break;
             }
             for (i, buffer) in buffers.iter_mut().enumerate() {
@@ -177,8 +177,8 @@ pub async fn finish_single_thread_pow(
             for (i, hash) in hasher.hash().enumerate() {
                 let trailing_zeros = hash.iter().rev().take_while(|t| *t == Btrit::Zero).count();
                 if trailing_zeros >= target_zeros {
-                    Box::new(nonce + i as u64).pack(&mut message_bytes).unwrap();
-                    return Message::unpack_verified(&mut message_bytes.as_slice())
+                    Box::new(nonce + i as u64).pack(&mut block_bytes).unwrap();
+                    return Block::unpack_verified(&mut block_bytes.as_slice())
                         .map_err(|_| crate::Error::PackableError);
                 }
             }

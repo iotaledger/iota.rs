@@ -6,10 +6,10 @@
 use std::ops::Range;
 
 use async_trait::async_trait;
-use bee_message::{
+use bee_block::{
     address::{Address, Ed25519Address},
     signature::{Ed25519Signature, Signature},
-    unlock_block::{SignatureUnlockBlock, UnlockBlock},
+    unlock::{SignatureUnlock, Unlock},
 };
 use crypto::{
     hashes::{blake2b::Blake2b256, Digest},
@@ -68,7 +68,7 @@ impl SecretManage for MnemonicSecretManager {
         input: &InputSigningData,
         essence_hash: &[u8; 32],
         _: &Option<RemainderData>,
-    ) -> crate::Result<UnlockBlock> {
+    ) -> crate::Result<Unlock> {
         // Get the private and public key for this Ed25519 address
         let private_key = self
             .0
@@ -80,7 +80,7 @@ impl SecretManage for MnemonicSecretManager {
         // transaction payload
         let signature = private_key.sign(essence_hash).to_bytes();
 
-        Ok(UnlockBlock::Signature(SignatureUnlockBlock::new(Signature::Ed25519(
+        Ok(Unlock::Signature(SignatureUnlock::new(Signature::Ed25519(
             Ed25519Signature::new(public_key, signature),
         ))))
     }

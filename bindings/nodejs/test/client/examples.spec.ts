@@ -1,5 +1,5 @@
 import type {
-    IMessage,
+    IBlock,
     IOutputResponse,
     ITaggedDataPayload,
 } from '@iota/types';
@@ -72,7 +72,7 @@ describe.skip('Main examples', () => {
         expect(addressOutputs).toBeDefined();
 
         addressOutputs.forEach((output) => {
-            expect(output.messageId).toBeValidMessageId();
+            expect(output.blockId).toBeValidBlockId();
         });
     });
 
@@ -81,7 +81,7 @@ describe.skip('Main examples', () => {
             '0xee8255ece109f4d460fa85d34f2a5f152014633db571220c84d6ebb944f129c00000',
         );
 
-        expect(output.messageId).toBeValidMessageId();
+        expect(output.blockId).toBeValidBlockId();
     });
 
     it('gets the balance of an address', async () => {
@@ -139,39 +139,39 @@ describe.skip('Main examples', () => {
         ).toBe(200);
     });
 
-    it('sends a message', async () => {
-        const message = await client.generateMessage();
+    it('sends a block', async () => {
+        const block = await client.generateBlock();
 
-        const messageId = await client.postMessage(message);
+        const blockId = await client.postBlock(block);
 
-        expect(messageId).toBeValidMessageId();
+        expect(blockId).toBeValidBlockId();
     });
 
-    it('gets message data', async () => {
-        const message = await client.generateMessage();
+    it('gets block data', async () => {
+        const block = await client.generateBlock();
 
-        // Send message
-        const messageId = await client.postMessage(message);
+        // Send block
+        const blockId = await client.postBlock(block);
 
-        const messageData = await client.getMessageData(messageId);
-        const messageMetadata = await client.getMessageMetadata(messageId);
+        const blockData = await client.getBlockData(blockId);
+        const blockMetadata = await client.getBlockMetadata(blockId);
 
-        expect(messageData).toStrictEqual<IMessage>(message);
-        expect(messageMetadata.messageId).toBeValidMessageId();
+        expect(blockData).toStrictEqual<IBlock>(block);
+        expect(blockMetadata.blockId).toBeValidBlockId();
     });
 
-    it('sends a message with a tagged data payload', async () => {
-        const message = await client.generateMessage(secretManager, {
+    it('sends a block with a tagged data payload', async () => {
+        const block = await client.generateBlock(secretManager, {
             tag: utf8ToBytes('Hello'),
             data: utf8ToBytes('Tangle'),
         });
 
-        // Send message
-        const messageId = await client.postMessage(message);
+        // Send block
+        const blockId = await client.postBlock(block);
 
-        const fetchedMessage = await client.getMessageData(messageId);
+        const fetchedBlock = await client.getBlockData(blockId);
 
-        expect(fetchedMessage.payload).toStrictEqual<ITaggedDataPayload>({
+        expect(fetchedBlock.payload).toStrictEqual<ITaggedDataPayload>({
             type: 5,
             tag: utf8ToHex('Hello'),
             data: utf8ToHex('Tangle'),
@@ -186,7 +186,7 @@ describe.skip('Main examples', () => {
             },
         });
 
-        const message = await client.generateMessage(secretManager, {
+        const block = await client.generateBlock(secretManager, {
             output: {
                 address: addresses[0],
                 amount: '1000000',
@@ -194,8 +194,8 @@ describe.skip('Main examples', () => {
         });
 
         // Send transaction
-        const messageId = await client.postMessage(message);
+        const blockId = await client.postBlock(block);
 
-        expect(messageId).toBeValidMessageId();
+        expect(blockId).toBeValidBlockId();
     });
 });

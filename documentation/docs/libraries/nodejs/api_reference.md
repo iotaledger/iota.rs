@@ -207,7 +207,7 @@ Sets the HTTP request timeout for the specified API.
 
 | Param   | Type                                                                                      | Description                        |
 | ------- | ----------------------------------------------------------------------------------------- | ---------------------------------- |
-| api     | `GetHealth` \| `GetInfo` \| `GetTips` \| `PostMessage` \| `GetOutput` \| `GetMilestone` | The API to set the request timeout |
+| api     | `GetHealth` \| `GetInfo` \| `GetTips` \| `PostBlock` \| `GetOutput` \| `GetMilestone` | The API to set the request timeout |
 | timeout | `number`                                                                                  | The timeout in milliseconds        |
 
 **Returns** the client builder instance for chained calls.
@@ -242,11 +242,11 @@ Gets a handle to the MQTT topic subscriber.
 
 **Returns** a [TopicSubscriber](#topicsubscriber) instance.
 
-#### message(): MessageSender
+#### block(): BlockSender
 
-Initiates the builder to send messages.
+Initiates the builder to send blocks.
 
-**Returns** a [MessageSender](#messagesender) instance.
+**Returns** a [BlockSender](#blocksender) instance.
 
 #### getUnspentAddress(seed): UnspentAddressGetter
 
@@ -268,16 +268,16 @@ Find addresses from the seed regardless of their validity.
 
 **Returns** a [AddressGetter](#addressgetter) instance.
 
-#### findMessages(indexationKeys, messageIds): Promise<Message[]>
+#### findBlocks(indexationKeys, blockIds): Promise<Block[]>
 
-Finds all messages associated with the given indexation keys and message ids.
+Finds all blocks associated with the given indexation keys and block ids.
 
 | Param          | Type       | Description                             |
 | -------------- | ---------- | --------------------------------------- |
 | indexationKeys | `string[]` | The list of indexations keys too search |
-| messageIds     | `string[]` | The list of message ids to search       |
+| blockIds     | `string[]` | The list of block ids to search       |
 
-**Returns** a promise resolving to the list of the found messages.
+**Returns** a promise resolving to the list of the found blocks.
 
 #### getBalance(seed: string): BalanceGetter
 
@@ -346,38 +346,38 @@ Checks if a given address is valid.
 
 **Returns** A boolean.
 
-#### getMessageId(message: string): boolean
+#### getBlockId(block: string): boolean
 
-Returns the message id from a message.
+Returns the block id from a block.
 
 | Param   | Type     | Description    |
 | ------- | -------- | -------------- |
-| message | `string` | The message id |
+| block | `string` | The block id |
 
-**Returns** the message id.
+**Returns** the block id.
 
-#### retry(messageId: string): Promise<Message/>
+#### retry(blockId: string): Promise<Block/>
 
-Retries (promotes or reattaches) the message associated with the given id.
+Retries (promotes or reattaches) the block associated with the given id.
 
 | Param     | Type     | Description                    |
 | --------- | -------- | ------------------------------ |
-| messageId | `string` | The id of the message to retry |
+| blockId | `string` | The id of the block to retry |
 
-**Returns** A promise resolving to the new [Message](#message) instance.
+**Returns** A promise resolving to the new [Block](#block) instance.
 
-#### retryUntilIncluded(messageId: string[, interval: int, maxAttempts: int]): Promise<Message/>
+#### retryUntilIncluded(blockId: string[, interval: int, maxAttempts: int]): Promise<Block/>
 
-Retries (promotes or reattaches) the message associated with the given id until it's included in the Tangle.
+Retries (promotes or reattaches) the block associated with the given id until it's included in the Tangle.
 Default interval is 5 seconds and max_attempts is 10.
 
 | Param                 | Type     | Description                                            |
 | --------------------- | -------- | ------------------------------------------------------ |
-| messageId             | `string` | The id of the message to retry                         |
-| [options.interval]    | `int`    | The interval in seconds in which we retry the message. |
-| [options.maxAttempts] | `int`    | The maximum of attempts we retry the message.          |
+| blockId             | `string` | The id of the block to retry                         |
+| [options.interval]    | `int`    | The interval in seconds in which we retry the block. |
+| [options.maxAttempts] | `int`    | The maximum of attempts we retry the block.          |
 
-**Returns** the message ids and [Message](#message) of reattached messages.
+**Returns** the block ids and [Block](#block) of reattached blocks.
 
 #### consolidateFunds(seed: string, accountIndex: int, startIndex: int, endIndex: int): Promise<string/>
 
@@ -402,23 +402,23 @@ Gets information about the node.
 
 Gets two non-lazy tips.
 
-**Returns** a promise resolving to an array of length 2 containing the message ids of the tips.
+**Returns** a promise resolving to an array of length 2 containing the block ids of the tips.
 
-#### postMessage(message): Promise<string/>
+#### postBlock(block): Promise<string/>
 
-Submits a message.
+Submits a block.
 
 | Param   | Type                        | Description           |
 | ------- | --------------------------- | --------------------- |
-| message | `[MessageDto](#messagedto)` | The message to submit |
+| block | `[BlockDto](#blockdto)` | The block to submit |
 
-**Returns** the message identifier.
+**Returns** the block identifier.
 
-#### getMessage(): MessageFinder
+#### getBlock(): BlockFinder
 
-Gets a message from its identifier.
+Gets a block from its identifier.
 
-**Returns** an instance of the [MessageFinder](#messagefinder) for choices of response.
+**Returns** an instance of the [BlockFinder](#blockfinder) for choices of response.
 
 #### getOutput(outputId): Promise<Metadata/>
 
@@ -503,35 +503,35 @@ Get the treasury amount.
 
 **Returns** a promise resolving to the [Treasury](#Treasury).
 
-#### getIncludedMessage(): Promise<Message/>
+#### getIncludedBlock(): Promise<Block/>
 
-Get the included message of a transaction.
+Get the included block of a transaction.
 
 | Param | Type     | Description               |
 | ----- | -------- | ------------------------- |
 | index | `string` | The id of the transaction |
 
-**Returns** A promise resolving to the new [Message](#message) instance.
+**Returns** A promise resolving to the new [Block](#block) instance.
 
-#### reattach(messageId): Promise<Message/>
+#### reattach(blockId): Promise<Block/>
 
-Reattaches the message associated with the given id.
+Reattaches the block associated with the given id.
 
 | Param     | Type     | Description                       |
 | --------- | -------- | --------------------------------- |
-| messageId | `string` | The id of the message to reattach |
+| blockId | `string` | The id of the block to reattach |
 
-**Returns** A promise resolving to the new [Message](#message) instance.
+**Returns** A promise resolving to the new [Block](#block) instance.
 
-#### promote(messageId): Promise<Message/>
+#### promote(blockId): Promise<Block/>
 
-Promotes the message associated with the given id.
+Promotes the block associated with the given id.
 
 | Param     | Type     | Description                      |
 | --------- | -------- | -------------------------------- |
-| messageId | `string` | The id of the message to promote |
+| blockId | `string` | The id of the block to promote |
 
-**Returns** A promise resolving to the new [Message](#message) instance.
+**Returns** A promise resolving to the new [Block](#block) instance.
 
 ### NetworkInfo
 
@@ -551,11 +551,11 @@ Possible topics:
 milestones/latest
 milestones/confirmed
 
-messages
-messages/referenced
-messages/indexation/{index}
-messages/{messageId}/metadata
-transactions/{transactionId}/included-message
+blocks
+blocks/referenced
+blocks/indexation/{index}
+blocks/{blockId}/metadata
+transactions/{transactionId}/included-block
 
 outputs/{outputId}
 
@@ -589,7 +589,7 @@ Subscribe to the provided topics.
 
 | Param | Type       | Description                                                      |
 | ----- | ---------- | ---------------------------------------------------------------- |
-| cb    | `function` | The topic handler callback in the form of `(err, message) => {}` |
+| cb    | `function` | The topic handler callback in the form of `(err, block) => {}` |
 
 **Returns** the topic subscriber instance for chained calls.
 
@@ -599,35 +599,35 @@ Unsubscribes from the provided topics.
 
 | Param | Type       | Description                                                                                |
 | ----- | ---------- | ------------------------------------------------------------------------------------------ |
-| cb    | `function` | A callback executed when the unsubscribe is finished in the form of `(err, message) => {}` |
+| cb    | `function` | A callback executed when the unsubscribe is finished in the form of `(err, block) => {}` |
 
 **Returns** the topic subscriber instance for chained calls.
 
-### MessageSender
+### BlockSender
 
-Builder to create and submit messages to the Tangle.
+Builder to create and submit blocks to the Tangle.
 
-#### index(index): MessageSender
+#### index(index): BlockSender
 
-Sets the message indexation. This field is required for indexation payloads.
+Sets the block indexation. This field is required for indexation payloads.
 
 | Param | Type                               | Description    |
 | ----- | ---------------------------------- | -------------- |
 | index | `string` \| `number[]` \| `Uint8Array` | The indexation |
 
-**Returns** the message submit instance for chained calls.
+**Returns** the block submit instance for chained calls.
 
-#### data(data): MessageSender
+#### data(data): BlockSender
 
 Sets the indexation data.
 
 | Param | Type                   | Description        |
 | ----- | ---------------------- | ------------------ |
-| data  | `string` \| `Uint8Array` | The message's data |
+| data  | `string` \| `Uint8Array` | The block's data |
 
-**Returns** the message submit instance for chained calls.
+**Returns** the block submit instance for chained calls.
 
-#### seed(seed): MessageSender
+#### seed(seed): BlockSender
 
 Sets the transaction account seed. This field is required for transaction payloads.
 
@@ -635,19 +635,19 @@ Sets the transaction account seed. This field is required for transaction payloa
 | ----- | -------- | -------------------------------------------- |
 | seed  | `string` | The hex-encoded seed of the account to spend |
 
-**Returns** the message submit instance for chained calls.
+**Returns** the block submit instance for chained calls.
 
-#### parents(messageId): MessageSender
+#### parents(blockId): BlockSender
 
-Sets 1-8 custom parent message ids.
+Sets 1-8 custom parent block ids.
 
 | Param     | Type       | Description             |
 | --------- | ---------- | ----------------------- |
-| messageId | `string[]` | The parents message ids |
+| blockId | `string[]` | The parents block ids |
 
-**Returns** the message submit instance for chained calls.
+**Returns** the block submit instance for chained calls.
 
-#### accountIndex(index): MessageSender
+#### accountIndex(index): BlockSender
 
 Sets the account index. This field is required for transactions.
 
@@ -655,9 +655,9 @@ Sets the account index. This field is required for transactions.
 | ----- | -------- | ----------------- |
 | index | `number` | The account index |
 
-**Returns** the message submit instance for chained calls.
+**Returns** the block submit instance for chained calls.
 
-#### input(transactionId, index): MessageSender
+#### input(transactionId, index): BlockSender
 
 Adds an output to the transaction.
 
@@ -666,9 +666,9 @@ Adds an output to the transaction.
 | transactionId | `string` | The transaction id |
 | index         | `number` | The input index    |
 
-**Returns** the message submit instance for chained calls.
+**Returns** the block submit instance for chained calls.
 
-#### inputRange(start, end): MessageSender
+#### inputRange(start, end): BlockSender
 
 Defines the range in which to search for addresses fro custom inputs.
 
@@ -677,9 +677,9 @@ Defines the range in which to search for addresses fro custom inputs.
 | start | `number` | The start index |
 | end   | `number` | The end index   |
 
-**Returns** the message submit instance for chained calls.
+**Returns** the block submit instance for chained calls.
 
-#### output(address, amount): MessageSender
+#### output(address, amount): BlockSender
 
 Adds an output to the transaction.
 
@@ -688,9 +688,9 @@ Adds an output to the transaction.
 | address | `string` | The output address |
 | amount  | `number` | The output amount  |
 
-**Returns** the message submit instance for chained calls.
+**Returns** the block submit instance for chained calls.
 
-#### dustAllowanceOutput(address, amount): MessageSender
+#### dustAllowanceOutput(address, amount): BlockSender
 
 Adds a dust allowance output to the transaction.
 
@@ -699,9 +699,9 @@ Adds a dust allowance output to the transaction.
 | address | `string` | The output address |
 | amount  | `number` | The output amount  |
 
-**Returns** the message submit instance for chained calls.
+**Returns** the block submit instance for chained calls.
 
-#### initialAddressIndex(index): MessageSender
+#### initialAddressIndex(index): BlockSender
 
 Sets the initial address index to search for balance. Defaults to 0 if the function isn't called.
 
@@ -709,13 +709,13 @@ Sets the initial address index to search for balance. Defaults to 0 if the funct
 | ----- | -------- | ------------------------- |
 | index | `number` | The initial address index |
 
-**Returns** the message submit instance for chained calls.
+**Returns** the block submit instance for chained calls.
 
 #### submit(): Promise<Wrapper/>
 
-Submits the message.
+Submits the block.
 
-**Returns** a promise resolving to the message identifier.
+**Returns** a promise resolving to the block identifier.
 
 ### UnspentAddressGetter
 
@@ -836,9 +836,9 @@ Performs the operation.
 
 **Returns** a promise resolving to the account balance.
 
-### MessageFinder
+### BlockFinder
 
-Gets a message by indexation key or identifier.
+Gets a block by indexation key or identifier.
 
 #### initialAddressIndex(index): Promise<string[]/>
 
@@ -846,49 +846,49 @@ Gets a message by indexation key or identifier.
 | ----- | -------- | ------------------ |
 | index | `string` | The indexation key |
 
-Gets a list of message identifiers associated with the given indexation key.
+Gets a list of block identifiers associated with the given indexation key.
 
 **Returns** a promise resolving to the list of associated ids.
 
-#### data(id): Promise<Message/>
+#### data(id): Promise<Block/>
 
-Gets the message object associated with the given identifier.
+Gets the block object associated with the given identifier.
 
 | Param | Type     | Description            |
 | ----- | -------- | ---------------------- |
-| id    | `string` | The message identifier |
+| id    | `string` | The block identifier |
 
-**Returns** a [Message](#message) object.
+**Returns** a [Block](#block) object.
 
 #### raw(id): Promise<string/>
 
-Gets the message raw data.
+Gets the block raw data.
 
 | Param | Type     | Description            |
 | ----- | -------- | ---------------------- |
-| id    | `string` | The message identifier |
+| id    | `string` | The block identifier |
 
-**Returns** the message raw data as string.
+**Returns** the block raw data as string.
 
 #### children(id): Promise<string[]>
 
-Gets the children of the given message.
+Gets the children of the given block.
 
 | Param | Type     | Description            |
 | ----- | -------- | ---------------------- |
-| id    | `string` | The message identifier |
+| id    | `string` | The block identifier |
 
-**Returns** the list of message ids of the message children.
+**Returns** the list of block ids of the block children.
 
 #### metadata(id): Promise<Metadata/>
 
-Gets the metadata of the given message.
+Gets the metadata of the given block.
 
 | Param | Type     | Description            |
 | ----- | -------- | ---------------------- |
-| id    | `string` | The message identifier |
+| id    | `string` | The block identifier |
 
-**Returns** a [MessageMetadata](#messagemetadata) object.
+**Returns** a [BlockMetadata](#blockmetadata) object.
 
 ### BrokerOptions
 
@@ -916,21 +916,21 @@ All fields are optional.
 | ----- | -------- | -------------------------- |
 | data  | `string` | Address as a Bech32 string |
 
-### Message
+### Block
 
 | Field     | Type                  | Description                           |
 | --------- | --------------------- | ------------------------------------- |
 | networkId | `number`              | Network identifier                    |
-| parents   | `string[]`            | Message ids of the message references |
-| payload   | `[Payload](#payload)` | Message payload                       |
-| nonce     | `number`              | Message nonce                         |
+| parents   | `string[]`            | Block ids of the block references |
+| payload   | `[Payload](#payload)` | Block payload                       |
+| nonce     | `number`              | Block nonce                         |
 
-### MessageWrapper
+### BlockWrapper
 
 | Field     | Type      | Description    |
 | --------- | --------- | -------------- |
-| message   | `Message` | Message        |
-| messageId | `string`  | The message id |
+| block   | `Block` | Block        |
+| blockId | `string`  | The block id |
 
 #### Payload
 
@@ -943,7 +943,7 @@ All fields are optional.
 | Field         | Type                        | Description         |
 | ------------- | --------------------------- | ------------------- |
 | essence       | `TransactionPayloadEssence` | Transaction essence |
-| unlock_blocks | `UnlockBlock[]`             | Unlock blocks       |
+| blocks | `Block[]`             | Unlock blocks       |
 
 - TransactionPayloadEssence
 
@@ -967,14 +967,14 @@ All fields are optional.
 | type  | `SignatureLockedSingle`             | Output type identifier |
 | data  | `{ address: string, amount: number }` | The output definition  |
 
-- UnlockBlock
+- Block
 
 | Field | Type                                    | Description                                           |
 | ----- | --------------------------------------- | ----------------------------------------------------- |
 | type  | `'Signature' \| 'Reference'`            | Unlock block type identifier                          |
-| data  | `Ed25519SignatureUnlockBlock` \| `number` | Unlock block data (signature type or reference index) |
+| data  | `Ed25519SignatureUnlock` \| `number` | Unlock block data (signature type or reference index) |
 
-- Ed25519SignatureUnlockBlock
+- Ed25519SignatureUnlock
 
 | Field      | Type       | Description        |
 | ---------- | ---------- | ------------------ |
@@ -1001,18 +1001,18 @@ All fields are optional.
 | -------------------------- | ------------ | ------------------------------------------------------ |
 | index                      | `number`     | Milestone index                                        |
 | timestamp                  | `number`     | Timestamp                                              |
-| parents                    | `string[]`   | Message ids of the messages the milestone references   |
+| parents                    | `string[]`   | Block ids of the blocks the milestone references   |
 | merkleProof                | `number[]`   | Merkle proof                                           |
 | nextPoWScore               | `number`     | Next PoW score                                         |
 | nextPoWScoreMilestoneIndex | `number`     | Milestone index at which the nextPoWScore will be used |
 | publicKeys                 | `number[][]` | public keys                                            |
 
-### MessageDto
+### BlockDto
 
 | Field   | Type                        | Description                                                             |
 | ------- | --------------------------- | ----------------------------------------------------------------------- |
-| parents | `string[]` \| `undefined`     | Message ids of the messages it references. `getTips` is used by default |
-| payload | `[PayloadDto](#payloaddto)` | Message payload                                                         |
+| parents | `string[]` \| `undefined`     | Block ids of the blocks it references. `getTips` is used by default |
+| payload | `[PayloadDto](#payloaddto)` | Block payload                                                         |
 
 #### PayloadDto
 
@@ -1025,7 +1025,7 @@ All fields are optional.
 | Field        | Type                           | Description         |
 | ------------ | ------------------------------ | ------------------- |
 | essence      | `TransactionPayloadEssenceDto` | Transaction essence |
-| unlockBlocks | `UnlockBlockDto[]`             | Unlock blocks       |
+| blocks | `BlockDto[]`             | Unlock blocks       |
 
 - TransactionPayloadEssenceDto
 
@@ -1042,13 +1042,13 @@ All fields are optional.
 | address | `string` | Output address |
 | amount  | `amount` | Output amount  |
 
-- UnlockBlockDto
+- BlockDto
 
 | Field | Type                                       | Description                                           |
 | ----- | ------------------------------------------ | ----------------------------------------------------- |
-| data  | `Ed25519SignatureUnlockBlockDto` \| `number` | Unlock block data (signature type or reference index) |
+| data  | `Ed25519SignatureUnlockDto` \| `number` | Unlock block data (signature type or reference index) |
 
-- Ed25519SignatureUnlockBlockDto
+- Ed25519SignatureUnlockDto
 
 | Field     | Type       | Description        |
 | --------- | ---------- | ------------------ |
@@ -1070,16 +1070,16 @@ All fields are optional.
 | balance     | `number`  | Address balance        |
 | dustAllowed | `boolean` | Dust allowed           |
 
-### MessageMetadata
+### BlockMetadata
 
 | Field                      | Type                   | Description                                               |
 | -------------------------- | ---------------------- | --------------------------------------------------------- |
-| messageId                  | `string`               | Message identifier                                        |
-| parents                    | `string[]`             | Message id of the messages it references                  |
-| isSolid                    | `boolean`              | Message solid state                                       |
-| shouldPromote              | `boolean` \| `undefined` | Indicates whether the message should be promoted or not   |
-| shouldReattach             | `boolean` \| `undefined` | Indicates whether the message should be reattached or not |
-| referencedByMilestoneIndex | `number` \| `undefined`  | Index of the milestone that references this message       |
+| blockId                  | `string`               | Block identifier                                        |
+| parents                    | `string[]`             | Block id of the blocks it references                  |
+| isSolid                    | `boolean`              | Block solid state                                       |
+| shouldPromote              | `boolean` \| `undefined` | Indicates whether the block should be promoted or not   |
+| shouldReattach             | `boolean` \| `undefined` | Indicates whether the block should be reattached or not |
+| referencedByMilestoneIndex | `number` \| `undefined`  | Index of the milestone that references this block       |
 | ledgerInclusionState       | `string` \| `undefined`  | Ledger inclusion state                                    |
 
 ### NodeInfoWrapper
@@ -1099,8 +1099,8 @@ All fields are optional.
 | networkId                   | `string`   | Node network identifier                           |
 | bech32HRP                   | `string`   | Bech32 HRP for this network                       |
 | minPoWScore                 | `number`   | Min PoW score                                     |
-| messagesPerSecond           | `number`   | Network stats: Messages per second in the network |
-| referencedMessagesPerSecond | `number`   | Network stats: Referenced messages per second     |
+| blocksPerSecond           | `number`   | Network stats: Blocks per second in the network |
+| referencedBlocksPerSecond | `number`   | Network stats: Referenced blocks per second     |
 | referencedRate              | `number`   | Network stats: referenced rate                    |
 | latestMilestoneTimestamp    | `number`   | Timestamp of the latest milestone                 |
 | latestMilestoneIndex        | `number`   | Index of the latest milestone                     |
@@ -1112,7 +1112,7 @@ All fields are optional.
 
 | Field         | Type      | Description                                      |
 | ------------- | --------- | ------------------------------------------------ |
-| messageId     | `string`  | Id of the message associated with the output     |
+| blockId     | `string`  | Id of the block associated with the output     |
 | transactionId | `string`  | Id of the transaction associated with the output |
 | outputIndex   | `number`  | Output index                                     |
 | isSpent       | `boolean` | Output spent state                               |
@@ -1124,7 +1124,7 @@ All fields are optional.
 | Field          | Type     | Description                                     |
 | -------------- | -------- | ----------------------------------------------- |
 | milestoneIndex | `number` | Milestone index                                 |
-| messageId      | `string` | Id of the message associated with the milestone |
+| blockId      | `string` | Id of the block associated with the milestone |
 | timestamp      | `number` | Milestone timestamp                             |
 
 ### MilestoneUTXOChanges
