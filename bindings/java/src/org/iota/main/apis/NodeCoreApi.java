@@ -1,6 +1,6 @@
-package org.iota.apis;
+package org.iota.main.apis;
 
-import org.iota.*;
+import org.iota.main.ClientConfig;
 
 public class NodeCoreApi extends BaseApi {
 

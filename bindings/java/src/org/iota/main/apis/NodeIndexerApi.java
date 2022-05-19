@@ -1,6 +1,6 @@
-package org.iota.apis;
+package org.iota.main.apis;
 
-import org.iota.ClientConfig;
+import org.iota.main.ClientConfig;
 
 public class NodeIndexerApi extends BaseApi {
 

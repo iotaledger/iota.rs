@@ -1,12 +1,12 @@
-package org.iota;
+package org.iota.main;
 
-import org.iota.apis.NodeIndexerApi;
+import org.iota.main.Client;
+import org.iota.main.ClientConfig;
 
 public class Main {
 
     public static void main(String[] args) {
         Client c = new Client(new ClientConfig("{ \"nodes\": [\"https://api.alphanet.iotaledger.net\" ]}"));
-
         System.out.println(c.getNodeInfo());
         System.out.println(c.getHealth("https://api.alphanet.iotaledger.net"));
         System.out.println(c.getTips());
@@ -26,6 +26,6 @@ public class Main {
         //System.out.println(c.getMilestoneByIdRaw("0x6832742bb65e05b5b4a469a8e89f9dd551199f4316538f37b4b39d83043029a3"));
         System.out.println(c.getPeers());
 
-        System.out.println(c.getBasicOutputIds(new NodeIndexerApi.QueryParams()));
+        c.getOutputs(new String[] {"0x0d6f9fa4260ca292c737e45335e3d6d4098424854b1c01f02b20ce50618bd7910200","0x0d6f9fa4260ca292c737e45335e3d6d4098424854b1c01f02b20ce50618bd7910300"});
     }
 }

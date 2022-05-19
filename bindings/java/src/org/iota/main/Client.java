@@ -1,16 +1,20 @@
-package org.iota;
+package org.iota.main;
 
-import org.iota.apis.NodeCoreApi;
-import org.iota.apis.NodeIndexerApi;
+import org.iota.main.apis.BaseApi;
+import org.iota.main.apis.HighLevelApi;
+import org.iota.main.apis.NodeCoreApi;
+import org.iota.main.apis.NodeIndexerApi;
 
 public class Client {
 
     private NodeCoreApi nodeCoreApi;
     private NodeIndexerApi nodeIndexerApi;
+    private HighLevelApi highLevelApi;
 
     public Client(ClientConfig config) {
         nodeCoreApi = new NodeCoreApi(config);
         nodeIndexerApi = new NodeIndexerApi(config);
+        highLevelApi = new HighLevelApi(config);
     }
 
     // Node Core APIs
@@ -115,6 +119,12 @@ public class Client {
 
     public String getFoundryOutputId(String foundryId) {
         return nodeIndexerApi.getFoundryOutputId(foundryId);
+    }
+
+    // High level APIs
+
+    public String getOutputs(String[] outputIds) {
+        return highLevelApi.getOutputs(outputIds);
     }
 
 }

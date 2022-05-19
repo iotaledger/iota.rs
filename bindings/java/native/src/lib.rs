@@ -14,7 +14,7 @@ use tokio::{runtime::Runtime, sync::mpsc::unbounded_channel};
 
 // This keeps rust from "mangling" the name and making it unique for this crate.
 #[no_mangle]
-pub extern "system" fn Java_org_iota_apis_BaseApi_callNativeLibrary(
+pub extern "system" fn Java_org_iota_main_apis_BaseApi_callNativeLibrary(
     env: JNIEnv,
     // this is the class that owns our
     // static method. Not going to be
