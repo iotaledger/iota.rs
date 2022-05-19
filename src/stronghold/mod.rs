@@ -481,7 +481,7 @@ mod tests {
         assert!(matches!(*client.timeout_task.lock().await, Some(_)));
 
         // After the timeout, the key should be purged.
-        tokio::time::sleep(Duration::from_millis(110)).await;
+        tokio::time::sleep(Duration::from_millis(200)).await;
         assert!(matches!(*client.key.lock().await, None));
         assert_eq!(client.get_timeout(), Some(timeout));
         assert!(matches!(*client.timeout_task.lock().await, None));
