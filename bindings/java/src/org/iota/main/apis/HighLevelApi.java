@@ -1,7 +1,8 @@
 package org.iota.main.apis;
 
 import com.google.gson.GsonBuilder;
-import org.iota.main.ClientConfig;
+import org.iota.main.types.ClientConfig;
+import org.iota.main.types.SecretManager;
 
 public class HighLevelApi extends BaseApi {
 
@@ -30,6 +31,10 @@ public class HighLevelApi extends BaseApi {
 
     public String retryUntilIncluded(String messageId, int interval, int maxAttempts) {
         return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "RetryUntilIncluded", "{\"messageId\": \"" + messageId + "\", \"interval\": " + interval + ", \"maxAttempts\": " + maxAttempts + "}"));
+    }
+
+    public String consolidateFunds(SecretManager secretManager, int accountIndex, int addressRange) {
+        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "ConsolidateFunds", "{\"secretManager\": \"" + secretManager.toString() + "\", \"accountIndex\": " + accountIndex + ", \"addressRange\": " + addressRange + "}"));
     }
 
     public String findInputs(String[] addresses, int amount) {

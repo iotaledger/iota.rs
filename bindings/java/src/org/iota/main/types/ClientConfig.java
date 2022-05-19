@@ -1,8 +1,12 @@
-package org.iota.main;
+package org.iota.main.types;
 
 public class ClientConfig {
 
     private String json;
+
+    private ClientConfig() {
+        ;
+    }
 
     public ClientConfig(String json) {
         this.json = json;

@@ -3,6 +3,8 @@ package org.iota.main;
 import org.iota.main.apis.HighLevelApi;
 import org.iota.main.apis.NodeCoreApi;
 import org.iota.main.apis.NodeIndexerApi;
+import org.iota.main.types.ClientConfig;
+import org.iota.main.types.SecretManager;
 
 public class Client {
 
@@ -140,6 +142,10 @@ public class Client {
 
     public String retryUntilIncluded(String messageId, int interval, int maxAttempts) {
         return highLevelApi.retryUntilIncluded(messageId, interval, maxAttempts);
+    }
+
+    public String consolidateFunds(SecretManager secretManager, int accountIndex, int addressRange) {
+        return highLevelApi.consolidateFunds(secretManager, accountIndex, addressRange);
     }
 
     public String findInputs(String[] addresses, int amount) {
