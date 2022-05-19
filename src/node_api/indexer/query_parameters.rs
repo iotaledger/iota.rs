@@ -14,18 +14,15 @@ pub struct QueryParameters(Vec<QueryParameter>);
 impl QueryParameters {
     /// Creates a hashset from a provided vec of query parameters.
     pub fn new(mut query_parameters: Vec<QueryParameter>) -> Self {
-        query_parameters.sort_unstable_by_key(|a| a.kind());
-        query_parameters.dedup_by_key(|a| a.kind());
+        query_parameters.sort_unstable_by_key(|qp| qp.kind());
+        query_parameters.dedup_by_key(|qp| qp.kind());
 
         Self(query_parameters)
     }
 
     /// Replaces or inserts an enum variant in the QueryParameters.
     pub fn replace(&mut self, query_parameter: QueryParameter) {
-        match self
-            .0
-            .binary_search_by(|probe| probe.kind().cmp(&query_parameter.kind()))
-        {
+        match self.0.binary_search_by_key(&query_parameter.kind(), |qp| qp.kind()) {
             Ok(pos) => self.0[pos] = query_parameter,
             Err(pos) => self.0.insert(pos, query_parameter),
         }
