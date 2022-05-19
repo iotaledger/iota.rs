@@ -1,6 +1,5 @@
 package org.iota.main;
 
-import org.iota.main.apis.BaseApi;
 import org.iota.main.apis.HighLevelApi;
 import org.iota.main.apis.NodeCoreApi;
 import org.iota.main.apis.NodeIndexerApi;
@@ -125,6 +124,46 @@ public class Client {
 
     public String getOutputs(String[] outputIds) {
         return highLevelApi.getOutputs(outputIds);
+    }
+
+    public String tryGetOutputs(String[] outputIds) {
+        return highLevelApi.tryGetOutputs(outputIds);
+    }
+
+    public String findMessages(String[] messageIds) {
+        return highLevelApi.findMessages(messageIds);
+    }
+
+    public String retry(String messageId) {
+        return highLevelApi.retry(messageId);
+    }
+
+    public String retryUntilIncluded(String messageId, int interval, int maxAttempts) {
+        return highLevelApi.retryUntilIncluded(messageId, interval, maxAttempts);
+    }
+
+    public String findInputs(String[] addresses, int amount) {
+        return highLevelApi.findInputs(addresses, amount);
+    }
+
+    public String findOutputs(String[] outputs, String[] addresses) {
+        return highLevelApi.findOutputs(outputs, addresses);
+    }
+
+    public String reattach(String messageId) {
+        return highLevelApi.reattach(messageId);
+    }
+
+    public String reattachUnchecked(String messageId) {
+        return highLevelApi.reattachUnchecked(messageId);
+    }
+
+    public String promote(String messageId) {
+        return highLevelApi.promote(messageId);
+    }
+
+    public String promoteUnchecked(String messageId) {
+        return highLevelApi.promoteUnchecked(messageId);
     }
 
 }
