@@ -72,9 +72,6 @@ tls = [ "reqwest/rustls-tls" ]
 stronghold = [ "iota_stronghold", "riker", "crypto05" ]
 message_interface = [ "backtrace" ]
 
-[profile.dev]
-panic = "abort"
-
 [profile.release]
 panic = "abort"
 
@@ -82,7 +79,6 @@ panic = "abort"
 codegen-units = 1
 inherits = "release"
 lto = true
-panic = "abort"
 strip = "symbols"
 
 [package.metadata.cargo-udeps.ignore]
