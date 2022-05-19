@@ -16,7 +16,7 @@ use iota_client::{
                 StateControllerAddressUnlockCondition, UnlockCondition,
             },
             AliasId, AliasOutputBuilder, BasicOutputBuilder, Feature, FoundryId, FoundryOutputBuilder, NativeToken,
-            Output, OutputId, SimpleTokenScheme, TokenId, TokenScheme, TokenTag,
+            Output, OutputId, SimpleTokenScheme, TokenId, TokenScheme,
         },
         payload::{transaction::TransactionEssence, Payload},
     },
@@ -98,7 +98,7 @@ async fn main() -> Result<()> {
         1,
         token_scheme.kind(),
     );
-    let token_id = TokenId::build(&foundry_id, &TokenTag::new([0u8; 12]));
+    let token_id = TokenId::from(foundry_id);
     let outputs = vec![
         AliasOutputBuilder::new_with_amount(1_000_000, alias_id)?
             .with_state_index(1)
@@ -113,7 +113,7 @@ async fn main() -> Result<()> {
                 address,
             )))
             .finish_output()?,
-        FoundryOutputBuilder::new_with_amount(1_000_000, 1, TokenTag::new([0u8; 12]), token_scheme)?
+        FoundryOutputBuilder::new_with_amount(1_000_000, 1, token_scheme)?
             .add_native_token(NativeToken::new(token_id, U256::from(70))?)
             .add_unlock_condition(UnlockCondition::ImmutableAliasAddress(
                 ImmutableAliasAddressUnlockCondition::new(AliasAddress::from(alias_id)),
@@ -156,7 +156,6 @@ async fn main() -> Result<()> {
         FoundryOutputBuilder::new_with_amount(
             1_000_000,
             1,
-            TokenTag::new([0u8; 12]),
             TokenScheme::Simple(SimpleTokenScheme::new(U256::from(70), U256::from(20), U256::from(100))?),
         )?
         .add_native_token(NativeToken::new(token_id, U256::from(50))?)
@@ -202,7 +201,6 @@ async fn main() -> Result<()> {
         FoundryOutputBuilder::new_with_amount(
             1_000_000,
             1,
-            TokenTag::new([0u8; 12]),
             TokenScheme::Simple(SimpleTokenScheme::new(U256::from(70), U256::from(20), U256::from(100))?),
         )?
         .add_unlock_condition(UnlockCondition::ImmutableAliasAddress(
