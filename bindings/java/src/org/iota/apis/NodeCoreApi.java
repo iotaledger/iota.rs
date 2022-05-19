@@ -9,75 +9,74 @@ public class NodeCoreApi extends BaseApi {
     }
 
     public String getHealth(String nodeUrl) {
-        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "{ \"name\": \"GetHealth\", \"data\": { \"url\": \"" + nodeUrl + "\" }}"));
+        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetHealth", "{\"url\":\"" + nodeUrl + "\"}"));
     }
 
     public String getNodeInfo() {
-        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "{ \"name\": \"GetInfo\" }"));
+        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetInfo"));
     }
 
     public String getTips() {
-        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "{ \"name\": \"GetTips\" }"));
+        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetTips"));
     }
 
     public String getMessage(String messageId) {
-        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "{ \"name\": \"GetMessage\", \"data\": { \"messageId\": \"" + messageId + "\" }}"));
+        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetMessage", "{\"messageId\":\"" + messageId + "\"}"));
     }
 
     public String getMessageRaw(String messageId) {
-        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "{ \"name\": \"GetMessageRaw\", \"data\": { \"messageId\": \"" + messageId + "\" }}"));
+        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetMessageRaw", "{\"messageId\":\"" + messageId + "\"}"));
     }
 
     public String getMessageMetadata(String messageId) {
-        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "{ \"name\": \"GetMessageMetadata\", \"data\": { \"messageId\": \"" + messageId + "\" }}"));
+        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetMessageMetadata", "{\"messageId\":\"" + messageId + "\"}"));
     }
 
     public String getMessageChildren(String messageId) {
-        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "{ \"name\": \"GetMessageChildren\", \"data\": { \"messageId\": \"" + messageId + "\" }}"));
+        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetMessageChildren", "{\"messageId\":\"" + messageId + "\"}"));
     }
 
     public String getOutput(String outputId) {
-        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "{ \"name\": \"GetOutput\", \"data\": { \"outputId\": \"" + outputId + "\" }}"));
+        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetOutput", "{\"outputId\":\"" + outputId + "\"}"));
     }
 
     public String getReceiptsMigratedAt(int milestoneIndex) {
-        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "{ \"name\": \"GetReceiptsMigratedAt\", \"data\": { \"milestoneIndex\": " + milestoneIndex + " }}"));
+        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetReceiptsMigratedAt", "{\"milestoneIndex\":" + milestoneIndex + "}"));
     }
 
     public String getReceipts() {
-        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "{ \"name\": \"GetReceipts\" }"));
+        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetReceipts"));
     }
 
     public String getTreasury() {
-        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "{ \"name\": \"GetTreasury\" }"));
+        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetTreasury"));
     }
 
     public String getIncludedMessage(String transactionId) {
-        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "{ \"name\": \"GetIncludedMessage\", \"data\": { \"transactionId\": \"" + transactionId + "\" }}"));
+        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetIncludedMessage", "{\"transactionId\":\"" + transactionId + "\"}"));
     }
 
     public String getMilestoneById(String milestoneId) {
-        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "{ \"name\": \"GetMilestoneById\", \"data\": { \"milestoneId\": \"" + milestoneId + "\" }}"));
+        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetMilestoneById", "{\"milestoneId\":\"" + milestoneId + "\"}"));
     }
 
     public String getMilestoneByIndex(int milestoneIndex) {
-        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "{ \"name\": \"GetMilestoneByIndex\", \"data\": { \"index\": " + milestoneIndex + " }}"));
+        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetMilestoneByIndex", "{\"index\":" + milestoneIndex + "}"));
     }
 
     public String getMilestoneByIdRaw(String milestoneId) {
-        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "{ \"name\": \"GetMilestoneByIdRaw\", \"data\": { \"milestoneId\": " + milestoneId + " }}"));
+        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetMilestoneByIdRaw", "{\"milestoneId\":" + milestoneId + "}"));
     }
 
     public String getUtxoChangesById(String milestoneId) {
-        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "{ \"name\": \"GetUtxoChangesById\", \"data\": { \"milestoneId\": " + milestoneId + " }}"));
+        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetUtxoChangesById", "{\"milestoneId\":" + milestoneId + "}"));
     }
 
     public String getUtxoChangesByIndex(int milestoneIndex) {
-        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "{ \"name\": \"GetUtxoChangesByIndex\", \"data\": { \"index\": " + milestoneIndex + " }}"));
+        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetUtxoChangesByIndex", "{\"index\":" + milestoneIndex + "}"));
     }
 
     public String getPeers() {
-        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "{ \"name\": \"GetPeers\" }"));
+        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetPeers"));
     }
-
 }

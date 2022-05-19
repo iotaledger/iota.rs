@@ -23,16 +23,24 @@ public class BaseApi {
     protected static class ClientCommand {
 
         private CommandType commandType;
-        private String payload;
+        private String methodName;
+        private String methodParams;
 
-        public ClientCommand(CommandType commandType, String payload) {
+
+        public ClientCommand(CommandType commandType, String methodName) {
             this.commandType = commandType;
-            this.payload = payload;
+            this.methodName = methodName;
+        }
+
+        public ClientCommand(CommandType commandType, String methodName, String methodParams) {
+            this.commandType = commandType;
+            this.methodName = methodName;
+            this.methodParams = methodParams;
         }
 
         @Override
         public String toString() {
-            return "{ \"cmd\": \"" + commandType.toString() + "\", \"payload\" :" + payload + "}";
+            return "{\"cmd\":\"" + commandType.toString() + "\",\"payload\":{\"name\":\"" + methodName + "\"" + (methodParams != null ? ",\"data\":" + methodParams : "") + "}}";
         }
 
         protected enum CommandType {

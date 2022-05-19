@@ -9,31 +9,31 @@ public class NodeIndexerApi extends BaseApi {
     }
 
     public String getBasicOutputIds(QueryParams params) {
-        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "{ \"name\": \"BasicOutputIds\", \"data\": { \"queryParameters\": " + params + " }}"));
+        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "BasicOutputIds", "{\"queryParameters\":" + params + "}"));
     }
 
     public String getAliasOutputIds(QueryParams params) {
-        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "{ \"name\": \"AliasOutputIds\", \"data\": { \"queryParameters\": " + params + " }}"));
+        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "AliasOutputIds", "{\"queryParameters\":" + params + "}"));
     }
 
     public String getAliasOutputId(String aliasId) {
-        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "{ \"name\": \"AliasOutputId\", \"data\": { \"aliasId\": \"" + aliasId + "\" }}"));
+        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "AliasOutputId", "{\"aliasId\":\"" + aliasId + "\"}"));
     }
 
     public String getNftOutputIds(QueryParams params) {
-        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "{ \"name\": \"NftOutputIds\", \"data\": { \"queryParameters\": " + params + " }}"));
+        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "NftOutputIds", "{\"queryParameters\":" + params + "}"));
     }
 
     public String getNftOutputId(String nftId) {
-        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "{ \"name\": \"NftOutputId\", \"data\": { \"nftId\": \"" + nftId + "\" }}"));
+        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "NftOutputId", "{\"nftId\":\"" + nftId + "\"}"));
     }
 
     public String getFoundryOutputIds(QueryParams params) {
-        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "{ \"name\": \"FoundryOutputIds\", \"data\": { \"queryParameters\": " + params + " }}"));
+        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "FoundryOutputIds", "{\"queryParameters\":" + params + "}"));
     }
 
     public String getFoundryOutputId(String foundryId) {
-        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "{ \"name\": \"FoundryOutputId\", \"data\": { \"foundryId\": \"" + foundryId + "\" }}"));
+        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "FoundryOutputId", "{\"foundryId\":\"" + foundryId + "\"}"));
     }
 
     public static class QueryParams {
