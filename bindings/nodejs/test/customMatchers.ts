@@ -15,7 +15,7 @@ declare global {
     }
 }
 
-const failBlock =
+const failMessage =
     (received: string, length: number, prefix: string, not: boolean) => () =>
         `${matcherHint(
             `${not ? '.not' : ''}.toHaveLengthAndPrefix`,
@@ -32,7 +32,7 @@ Received:
 const idMatcher = (received: string, length: number, prefix: string) => {
     const pass = received.length === length && received.startsWith(prefix);
     return {
-        message: failBlock(received, length, prefix, pass),
+        message: failMessage(received, length, prefix, pass),
         pass,
     };
 };
