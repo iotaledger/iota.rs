@@ -23,7 +23,7 @@ import type {
     IBlockMetadata,
     PayloadTypes,
     IPeer,
-    // IMilestoneResponse,
+    IMilestonePayload,
     IMilestoneUtxoChangesResponse,
     IReceiptsResponse,
     ITreasury,
@@ -514,8 +514,7 @@ export class Client {
      */
     async getMilestoneByMilestoneId(
         milestoneId: string,
-        // TODO: use correct type
-    ): Promise<any> {
+    ): Promise<IMilestonePayload> {
         const response = await this.messageHandler.callClientMethod({
             name: 'GetMilestoneByMilestoneId',
             data: {
@@ -546,8 +545,7 @@ export class Client {
      */
     async getMilestoneByMilestoneIndex(
         index: number,
-        // TODO: use correct type
-        ): Promise<any> {
+        ): Promise<IMilestonePayload> {
         const response = await this.messageHandler.callClientMethod({
             name: 'GetMilestoneByMilestoneIndex',
             data: {

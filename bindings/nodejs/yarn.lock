@@ -315,10 +315,10 @@
   resolved "https://registry.yarnpkg.com/@humanwhocodes/object-schema/-/object-schema-1.2.1.tgz#b520529ec21d8e5945a1851dfd1c32e94e39ff45"
   integrity sha512-ZnQMnLV4e7hDlUvw8H+U8ASL02SS2Gn6+9Ac3wGGLIe7+je2AeAOxPY+izIPJDfFDb7eDjev0Us8MO1iFRN8hA==
 
-"@iota/types@^1.0.0-beta.5":
-  version "1.0.0-beta.5"
-  resolved "https://registry.yarnpkg.com/@iota/types/-/types-1.0.0-beta.5.tgz#c2e0a5d1d5f43db81865c3e3ea3cc8fb974a9dcb"
-  integrity sha512-CeLQ83qZhwqwmoa+al3RePDf8Dlke2/s37T9aiuv6JZ3QlB9AnZREsQfvKFl8nhSdXQNODkBjsX4F8F+PMJiDg==
+"@iota/types@^1.0.0-beta.6":
+  version "1.0.0-beta.6"
+  resolved "https://registry.yarnpkg.com/@iota/types/-/types-1.0.0-beta.6.tgz#8d76f676ee36e059e2b5b2d18aec0f66cbb1b600"
+  integrity sha512-FTBINxg52/tkEjvGoXm4KxmY4Pljy9FYdVDErVZoGh/F/uJmoM03vr9d+aoCzW/3DTHIfMrRXc05q2GPH7AQWA==
 
 "@istanbuljs/load-nyc-config@^1.0.0":
   version "1.1.0"
