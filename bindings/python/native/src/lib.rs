@@ -13,7 +13,7 @@ use std::sync::Mutex;
 use iota_client::{
     bee_block::output::{
         dto::OutputDto, AliasId, AliasOutputBuilder, BasicOutputBuilder, ByteCostConfigBuilder, Feature,
-        FoundryOutputBuilder, NativeToken, NftId, NftOutputBuilder, TokenScheme, TokenTag, UnlockCondition,
+        FoundryOutputBuilder, NativeToken, NftId, NftOutputBuilder, TokenScheme, UnlockCondition,
     },
     message_interface::MessageType,
 };
@@ -214,7 +214,6 @@ pub fn create_alias_output(
 /// Create OutputDto::Foundry JSON string
 pub fn create_foundry_output(
     serial_number: u32,
-    token_tag: String,
     token_scheme: String,
     amount: Option<u64>,
     byte_cost: Option<u64>,
@@ -225,13 +224,11 @@ pub fn create_foundry_output(
     features: Option<Vec<String>>,
     immutable_features: Option<Vec<String>>,
 ) -> Result<String> {
-    let tag =
-        serde_json::from_str::<TokenTag>(&token_tag).unwrap_or_else(|_| panic!("Invalid TokenTag: {:?}", token_tag));
     let scheme = serde_json::from_str::<TokenScheme>(&token_scheme)
         .unwrap_or_else(|_| panic!("Invalid TokenScheme: {:?}", token_scheme));
     let mut builder: FoundryOutputBuilder;
     if let Some(amount) = amount {
-        builder = FoundryOutputBuilder::new_with_amount(amount, serial_number, tag, scheme)?;
+        builder = FoundryOutputBuilder::new_with_amount(amount, serial_number, scheme)?;
     } else {
         // Config Builder
         let mut config_builder = ByteCostConfigBuilder::new();
@@ -245,7 +242,7 @@ pub fn create_foundry_output(
             config_builder = config_builder.data_factor(data_factor)
         }
         let config = config_builder.finish();
-        builder = FoundryOutputBuilder::new_with_minimum_storage_deposit(config, serial_number, tag, scheme)?;
+        builder = FoundryOutputBuilder::new_with_minimum_storage_deposit(config, serial_number, scheme)?;
     }
     if let Some(native_tokens) = native_tokens {
         let tokens: Vec<NativeToken> = native_tokens
