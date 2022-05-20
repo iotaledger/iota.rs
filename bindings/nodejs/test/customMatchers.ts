@@ -32,7 +32,7 @@ Received:
 const idMatcher = (received: string, length: number, prefix: string) => {
     const pass = received.length === length && received.startsWith(prefix);
     return {
-        block: failBlock(received, length, prefix, pass),
+        message: failBlock(received, length, prefix, pass),
         pass,
     };
 };

@@ -72,7 +72,7 @@ describe.skip('Main examples', () => {
         expect(addressOutputs).toBeDefined();
 
         addressOutputs.forEach((output) => {
-            expect(output.blockId).toBeValidBlockId();
+            expect(output.metadata.blockId).toBeValidBlockId();
         });
     });
 
@@ -81,7 +81,7 @@ describe.skip('Main examples', () => {
             '0xee8255ece109f4d460fa85d34f2a5f152014633db571220c84d6ebb944f129c00000',
         );
 
-        expect(output.blockId).toBeValidBlockId();
+        expect(output.metadata.blockId).toBeValidBlockId();
     });
 
     it('gets the balance of an address', async () => {
