@@ -63,7 +63,7 @@ use std::{path::PathBuf, sync::Arc, time::Duration};
 
 use derive_builder::Builder;
 use iota_stronghold::{ResultMessage, Stronghold};
-use log::debug;
+use log::{debug, warn};
 use riker::actors::ActorSystem;
 use tokio::{sync::Mutex, task::JoinHandle};
 use zeroize::{Zeroize, Zeroizing};
@@ -279,6 +279,11 @@ impl StrongholdAdapter {
         // Purge the key, setting it to None then.
         if let Some(mut key) = self.key.lock().await.take() {
             key.zeroize();
+        }
+
+        // Unload Stronghold, but we can't do much about the errors.
+        if let Err(err) = self.unload_stronghold_snapshot().await {
+            warn!("failed to unload Stronghold while clearing the key: {err}");
         }
     }
 
