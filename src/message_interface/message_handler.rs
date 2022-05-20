@@ -263,9 +263,15 @@ impl ClientMessageHandler {
             ClientMethod::GetMilestoneById { milestone_id } => Ok(Response::Milestone(MilestonePayloadDto::from(
                 &self.client.get_milestone_by_id(milestone_id).await?,
             ))),
+            ClientMethod::GetMilestoneByIdRaw { milestone_id } => Ok(Response::MilestoneRaw(
+                self.client.get_milestone_by_id_raw(milestone_id).await?,
+            )),
             ClientMethod::GetMilestoneByIndex { index } => Ok(Response::Milestone(MilestonePayloadDto::from(
                 &self.client.get_milestone_by_index(*index).await?,
             ))),
+            ClientMethod::GetMilestoneByIndexRaw { index } => Ok(Response::MilestoneRaw(
+                self.client.get_milestone_by_index_raw(*index).await?,
+            )),
             ClientMethod::GetUtxoChangesById { milestone_id } => Ok(Response::MilestoneUtxoChanges(
                 self.client.get_utxo_changes_by_id(milestone_id).await?,
             )),
