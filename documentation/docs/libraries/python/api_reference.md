@@ -873,11 +873,11 @@ A dict with the following key/value pairs.
 ```python
 transaction = {
     'essence': RegularEssence,
-    'blocks': list[Block]
+    'unlocks': list[Unlock]
 }
 ```
 
-Please refer to [RegularEssence](#regularessence), and [Block](#unlockblock) for the details of these types.
+Please refer to [RegularEssence](#regularessence), and [Unlock](#unlock) for the details of these types.
 
 #### Milestone
 
@@ -955,12 +955,12 @@ input = {
 }
 ```
 
-#### Block
+#### Unlock
 
 A dict with the following key/value pairs.
 
 ```python
-block = {
+unlock = {
     'signature': Ed25519Signature, # (optional)
     'reference': int # (optional)
 }

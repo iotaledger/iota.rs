@@ -48,7 +48,7 @@ class NodeCoreAPI(BaseAPI):
     def get_block_data(self, block_id):
         """Post block.
         """
-        return self.call_client_method('GetBlockData', {
+        return self.call_client_method('GetBlock', {
             'block_id': block_id
         })
 

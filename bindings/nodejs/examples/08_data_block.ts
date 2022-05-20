@@ -40,7 +40,7 @@ async function run() {
             `Block sent: https://explorer.iota.org/devnet/block/${blockId}\n`,
         );
 
-        const fetchedBlock = await client.getBlockData(blockId);
+        const fetchedBlock = await client.getBlock(blockId);
         console.log('Block data: ', fetchedBlock);
 
         const payload = fetchedBlock.payload;

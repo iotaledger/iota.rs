@@ -565,7 +565,7 @@ Example of a block with `SignedTransaction` payload:
                   "treasury_transaction":"None"
                }
             },
-            "blocks":[
+            "unlocks":[
                {
                   "signature":{
                      "public_key":[
@@ -592,7 +592,7 @@ Example of a block with `SignedTransaction` payload:
 Each `transaction` includes the following set of information:
 * `inputs`: list of valid `outputs` that should be used to fund the given block. Those `outputs` will be spent and once the block is confirmed, those outputs are not valid anymore. Outputs are uniquely referenced via `transaction_id` and inner `index`. At least one output has to be given with enough balance to source all `outputs` of the given block
 * `outputs`: list of IOTA address(es) and related amount(s) the input `outputs` should be split among. Based on this information, new `UTXO` entities (outputs) are being created
-* `blocks`: it includes a transaction signature(s) (currently based on `Ed25519` scheme) that proofs token ownership based on a valid seed. Needless to say, only valid seed owner is able to correctly sign the given transaction and proofs the ownership of tokens under the given output(s). Each input `output` has to have a corresponding `unblock_block` entry in case more `outputs` are used to fund the operation either using the given signature or as a reference to existing signature
+* `unlocks`: it includes a transaction signature(s) (currently based on `Ed25519` scheme) that proofs token ownership based on a valid seed. Needless to say, only valid seed owner is able to correctly sign the given transaction and proofs the ownership of tokens under the given output(s). Each input `output` has to have a corresponding `unblock_block` entry in case more `outputs` are used to fund the operation either using the given signature or as a reference to existing signature
 * `payload`: each `SignedTransaction` can include additional payload(s) such as `TaggedPayload`, etc. Meaning, any value-based blocks can also contain arbitrary data and its key index. It is also an example how individual payloads can be encapsulated on different levels of concern
 
 Sending value-based blocks is also very straightforward process.
@@ -636,7 +636,7 @@ Output example:
                ],
                "payload":"None"
             },
-            "blocks":[
+            "unlocks":[
                {
                   "signature":{
                      "public_key":[

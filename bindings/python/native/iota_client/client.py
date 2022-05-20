@@ -13,7 +13,7 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
         if client_config:
             client_config = dumps(client_config)
 
-        # Create the block handler
+        # Create the message handler
         self.handle = iota_client.create_message_handler(client_config)
 
     def get_handle(self):

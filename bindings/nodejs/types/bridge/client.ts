@@ -75,8 +75,8 @@ export interface __GetNetworkInfoPayloadMethod__ {
     name: 'GetNetworkInfo';
 }
 
-export interface __GetBlockDataPayloadMethod__ {
-    name: 'GetBlockData';
+export interface __GetBlockPayloadMethod__ {
+    name: 'GetBlock';
     data: {
         blockId: BlockId;
     };

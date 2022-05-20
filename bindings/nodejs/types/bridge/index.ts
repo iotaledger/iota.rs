@@ -10,7 +10,7 @@ import type {
     __GenerateBlockPayloadMethod__,
     __GetTipsPayloadMethod__,
     __GetNetworkInfoPayloadMethod__,
-    __GetBlockDataPayloadMethod__,
+    __GetBlockPayloadMethod__,
     __GetBlockMetadataPayloadMethod__,
     __FindInputsPayloadMethod__,
     __FindOutputsPayloadMethod__,
@@ -76,7 +76,7 @@ export type __ClientPayloadMethods__ =
     | __GenerateBlockPayloadMethod__
     | __GetTipsPayloadMethod__
     | __GetNetworkInfoPayloadMethod__
-    | __GetBlockDataPayloadMethod__
+    | __GetBlockPayloadMethod__
     | __GetBlockMetadataPayloadMethod__
     | __FindInputsPayloadMethod__
     | __FindOutputsPayloadMethod__

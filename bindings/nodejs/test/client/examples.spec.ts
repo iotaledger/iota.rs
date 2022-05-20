@@ -153,7 +153,7 @@ describe.skip('Main examples', () => {
         // Send block
         const blockId = await client.postBlock(block);
 
-        const blockData = await client.getBlockData(blockId);
+        const blockData = await client.getBlock(blockId);
         const blockMetadata = await client.getBlockMetadata(blockId);
 
         expect(blockData).toStrictEqual<IBlock>(block);
@@ -169,7 +169,7 @@ describe.skip('Main examples', () => {
         // Send block
         const blockId = await client.postBlock(block);
 
-        const fetchedBlock = await client.getBlockData(blockId);
+        const fetchedBlock = await client.getBlock(blockId);
 
         expect(fetchedBlock.payload).toStrictEqual<ITaggedDataPayload>({
             type: 5,

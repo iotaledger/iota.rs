@@ -29,7 +29,7 @@ async function run() {
         // Send block
         const blockId = await client.postBlock(block);
 
-        const blockData = await client.getBlockData(blockId);
+        const blockData = await client.getBlock(blockId);
         const blockMetadata = await client.getBlockMetadata(blockId);
 
         console.log('Block data: ', blockData, '\n');

@@ -967,7 +967,7 @@ All fields are optional.
 | type  | `SignatureLockedSingle`             | Output type identifier |
 | data  | `{ address: string, amount: number }` | The output definition  |
 
-- Block
+- Unlocks
 
 | Field | Type                                    | Description                                           |
 | ----- | --------------------------------------- | ----------------------------------------------------- |
@@ -1022,10 +1022,10 @@ All fields are optional.
 
 ##### TransactionPayloadDto
 
-| Field        | Type                           | Description         |
-| ------------ | ------------------------------ | ------------------- |
-| essence      | `TransactionPayloadEssenceDto` | Transaction essence |
-| blocks | `BlockDto[]`             | Unlock blocks       |
+| Field   | Type                           | Description         |
+| ------- | ------------------------------ | ------------------- |
+| essence | `TransactionPayloadEssenceDto` | Transaction essence |
+| unlocks | `UnlockDto[]`                  | Unlocks             |
 
 - TransactionPayloadEssenceDto
 
@@ -1042,11 +1042,11 @@ All fields are optional.
 | address | `string` | Output address |
 | amount  | `amount` | Output amount  |
 
-- BlockDto
+- UnlockDto
 
-| Field | Type                                       | Description                                           |
-| ----- | ------------------------------------------ | ----------------------------------------------------- |
-| data  | `Ed25519SignatureUnlockDto` \| `number` | Unlock block data (signature type or reference index) |
+| Field | Type                                    | Description                                     |
+| ----- | --------------------------------------- | ----------------------------------------------- |
+| data  | `Ed25519SignatureUnlockDto` \| `number` | Unlock data (signature type or reference index) |
 
 - Ed25519SignatureUnlockDto
 

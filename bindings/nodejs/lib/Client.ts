@@ -181,9 +181,9 @@ export class Client {
     /**
      * Get block data with block ID
      */
-    async getBlockData(blockId: BlockId): Promise<IBlock> {
+    async getBlock(blockId: BlockId): Promise<IBlock> {
         const response = await this.messageHandler.callClientMethod({
-            name: 'GetBlockData',
+            name: 'GetBlock',
             data: {
                 blockId,
             },

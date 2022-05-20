@@ -8,7 +8,7 @@ For value transfers we recommend using [wallet.rs](https://github.com/iotaledger
 
 This library allows you to do the following:
 
-* Create blocks with indexation and transaction payloads
+* Create blocks with tagged data and transaction payloads
 * Get blocks and outputs
 * Sign transactions
 * Generate addresses
