@@ -1,8 +1,4 @@
-import type {
-    IBlock,
-    IOutputResponse,
-    ITaggedDataPayload,
-} from '@iota/types';
+import type { IBlock, IOutputResponse, ITaggedDataPayload } from '@iota/types';
 import { Client, utf8ToBytes, utf8ToHex } from '../../lib';
 import '../customMatchers';
 import 'dotenv/config';

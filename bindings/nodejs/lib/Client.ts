@@ -545,7 +545,7 @@ export class Client {
      */
     async getMilestoneByMilestoneIndex(
         index: number,
-        ): Promise<IMilestonePayload> {
+    ): Promise<IMilestonePayload> {
         const response = await this.messageHandler.callClientMethod({
             name: 'GetMilestoneByMilestoneIndex',
             data: {
@@ -878,9 +878,7 @@ export class Client {
     /**
      * Reattach a block without checking if it should be reattached
      */
-    async reattachUnchecked(
-        blockId: BlockId,
-    ): Promise<[BlockId, IBlock]> {
+    async reattachUnchecked(blockId: BlockId): Promise<[BlockId, IBlock]> {
         const response = await this.messageHandler.callClientMethod({
             name: 'ReattachUnchecked',
             data: {
@@ -908,9 +906,7 @@ export class Client {
     /**
      * Promote a block without checking if it should be promoted
      */
-    async promoteUnchecked(
-        blockId: BlockId,
-    ): Promise<[BlockId, IBlock]> {
+    async promoteUnchecked(blockId: BlockId): Promise<[BlockId, IBlock]> {
         const response = await this.messageHandler.callClientMethod({
             name: 'PromoteUnchecked',
             data: {
