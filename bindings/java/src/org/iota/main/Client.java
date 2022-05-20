@@ -1,8 +1,7 @@
 package org.iota.main;
 
 import org.iota.main.apis.*;
-import org.iota.main.types.ClientConfig;
-import org.iota.main.types.SecretManager;
+import org.iota.main.types.*;
 
 public class Client {
 
@@ -10,12 +9,14 @@ public class Client {
     private NodeIndexerApi nodeIndexerApi;
     private HighLevelApi highLevelApi;
     private UtilsApi utilsApi;
+    private MiscellaneousApi miscellaneousApi;
 
     public Client(ClientConfig config) {
         nodeCoreApi = new NodeCoreApi(config);
         nodeIndexerApi = new NodeIndexerApi(config);
         highLevelApi = new HighLevelApi(config);
         utilsApi = new UtilsApi(config);
+        miscellaneousApi = new MiscellaneousApi(config);
     }
 
     // Node Core APIs
@@ -204,6 +205,69 @@ public class Client {
 
     public String messageId(String message) {
         return utilsApi.messageId(message);
+    }
+
+    // Miscellaneous APIs
+
+    public String generateAddresses(SecretManager secretManager, GenerateAddressesOptions generateAddressesOptions) {
+        return miscellaneousApi.generateAddresses(secretManager, generateAddressesOptions);
+    }
+
+    public String generateMessage(SecretManager secretManager, GenerateAddressesOptions generateAddressesOptions) {
+        return miscellaneousApi.generateMessage(secretManager, generateAddressesOptions);
+    }
+
+
+    public String getNode() {
+        return miscellaneousApi.getNode();
+    }
+
+    public String getNetworkInfo() {
+        return miscellaneousApi.getNetworkInfo();
+    }
+
+    public String getNetworkId() {
+        return miscellaneousApi.getNetworkId();
+    }
+
+    public String getBech32Hrp() {
+        return miscellaneousApi.getBech32Hrp();
+    }
+
+    public String getMinPoWScore() {
+        return miscellaneousApi.getMinPoWScore();
+    }
+
+    public String getTipsInterval() {
+        return miscellaneousApi.getTipsInterval();
+    }
+
+    public String getLocalPoW() {
+        return miscellaneousApi.getLocalPoW();
+    }
+
+    public String getFallbackToLocalPoW() {
+        return miscellaneousApi.getFallbackToLocalPoW();
+    }
+
+    public String getUsyncedNodes() {
+        return miscellaneousApi.getUnsyncedNodes();
+    }
+
+    public String prepareTransaction(SecretManager secretManager, GenerateAddressesOptions generateAddressesOptions) {
+        return miscellaneousApi.prepareTransaction(secretManager, generateAddressesOptions);
+    }
+
+    public String signTransaction(SecretManager secretManager, PreparedTransactionData preparedTransactionData) {
+        return miscellaneousApi.signTransaction(secretManager, preparedTransactionData);
+    }
+
+    public String storeMnemonic(SecretManager secretManager, String mnemonic) {
+        return miscellaneousApi.storeMnemonic(secretManager, mnemonic);
+    }
+
+    public String submitPayload(Payload payload) {
+        return miscellaneousApi.submitPayload(payload);
     }
 
 }

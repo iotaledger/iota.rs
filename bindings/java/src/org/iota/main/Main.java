@@ -5,7 +5,7 @@ import org.iota.main.types.ClientConfig;
 public class Main {
 
     public static void main(String[] args) {
-        Client c = new Client(new ClientConfig("{ \"nodes\": [\"https://api.alphanet.iotaledger.net\" ]}"));
+        Client c = new Client(new ClientConfig("{ \"nodes\": [\"https://api.alphanet.iotaledger.net\" ], \"nodeSyncEnabled\": false}"));
         System.out.println(c.getNodeInfo());
         System.out.println(c.getHealth("https://api.alphanet.iotaledger.net"));
         System.out.println(c.getTips());
