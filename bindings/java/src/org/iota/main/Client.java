@@ -1,8 +1,6 @@
 package org.iota.main;
 
-import org.iota.main.apis.HighLevelApi;
-import org.iota.main.apis.NodeCoreApi;
-import org.iota.main.apis.NodeIndexerApi;
+import org.iota.main.apis.*;
 import org.iota.main.types.ClientConfig;
 import org.iota.main.types.SecretManager;
 
@@ -11,11 +9,13 @@ public class Client {
     private NodeCoreApi nodeCoreApi;
     private NodeIndexerApi nodeIndexerApi;
     private HighLevelApi highLevelApi;
+    private UtilsApi utilsApi;
 
     public Client(ClientConfig config) {
         nodeCoreApi = new NodeCoreApi(config);
         nodeIndexerApi = new NodeIndexerApi(config);
         highLevelApi = new HighLevelApi(config);
+        utilsApi = new UtilsApi(config);
     }
 
     // Node Core APIs
@@ -170,6 +170,40 @@ public class Client {
 
     public String promoteUnchecked(String messageId) {
         return highLevelApi.promoteUnchecked(messageId);
+    }
+
+    // Utils APIs
+
+    public String bech32ToHex(String bech32) {
+        return utilsApi.bech32ToHex(bech32);
+    }
+
+    public String hexToBech32(String hex, String bech32) {
+        return utilsApi.hexToBech32(hex, bech32);
+    }
+
+    public String hexPublicKeyToBech32Address(String hex, String bech32) {
+        return utilsApi.hexPublicKeyToBech32Address(hex, bech32);
+    }
+
+    public String parseBech32Address(String address) {
+        return utilsApi.parseBech32Address(address);
+    }
+
+    public String isAddressValid(String address) {
+        return utilsApi.isAddressValid(address);
+    }
+
+    public String generateMnemonic() {
+        return utilsApi.generateMnemonic();
+    }
+
+    public String mnemonicToHexSeed(String mnemonic) {
+        return utilsApi.mnemonicToHexSeed(mnemonic);
+    }
+
+    public String messageId(String message) {
+        return utilsApi.messageId(message);
     }
 
 }
