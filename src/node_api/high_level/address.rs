@@ -1,7 +1,7 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use bee_message::output::{NativeTokens, NativeTokensBuilder, Output};
+use bee_block::output::{NativeTokens, NativeTokensBuilder, Output};
 use bee_rest_api::types::responses::OutputResponse;
 
 use crate::{node_api::indexer::query_parameters::QueryParameter, Client, Result};
@@ -62,7 +62,7 @@ impl<'a> GetAddressBuilder<'a> {
             if outputs_responses.is_empty() {
                 0
             } else {
-                outputs_responses[0].ledger_index
+                outputs_responses[0].metadata.ledger_index
             }
         };
 

@@ -27,10 +27,10 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
             'options': options
         })
 
-    def generate_message(self, signer=None, options=None):
-        """Generate client message.
+    def generate_block(self, signer=None, options=None):
+        """Generate client block.
         """
-        return self.call_client_method('GenerateMessage', {
+        return self.call_client_method('GenerateBlock', {
             'signer': signer,
             'options': options
         })

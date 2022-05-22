@@ -7,14 +7,14 @@ use std::env;
 
 use dotenv::dotenv;
 use iota_client::{
-    bee_message::{
+    bee_block::{
         output::{
-            feature_block::MetadataFeatureBlock,
+            feature::MetadataFeature,
             unlock_condition::{
                 AddressUnlockCondition, ExpirationUnlockCondition, StorageDepositReturnUnlockCondition,
                 TimelockUnlockCondition, UnlockCondition,
             },
-            BasicOutputBuilder, FeatureBlock,
+            BasicOutputBuilder, Feature,
         },
         payload::milestone::MilestoneIndex,
     },
@@ -58,7 +58,7 @@ async fn main() -> Result<()> {
         // with metadata feature block
         BasicOutputBuilder::new_with_amount(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-            .add_feature_block(FeatureBlock::Metadata(MetadataFeatureBlock::new(vec![13, 37])?))
+            .add_feature(Feature::Metadata(MetadataFeature::new(vec![13, 37])?))
             .finish_output()?,
         // with storage deposit return
         BasicOutputBuilder::new_with_amount(234100)?
@@ -86,21 +86,18 @@ async fn main() -> Result<()> {
             .finish_output()?,
     ];
 
-    let message = client
-        .message()
+    let block = client
+        .block()
         .with_secret_manager(&secret_manager)
         .with_outputs(outputs)?
         .finish()
         .await?;
 
+    println!("Transaction sent: http://localhost:14265/api/v2/blocks/{}", block.id());
     println!(
-        "Transaction sent: http://localhost:14265/api/v2/messages/{}",
-        message.id()
+        "Block metadata: http://localhost:14265/api/v2/blocks/{}/metadata",
+        block.id()
     );
-    println!(
-        "Message metadata: http://localhost:14265/api/v2/messages/{}/metadata",
-        message.id()
-    );
-    let _ = client.retry_until_included(&message.id(), None, None).await?;
+    let _ = client.retry_until_included(&block.id(), None, None).await?;
     Ok(())
 }

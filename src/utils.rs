@@ -5,7 +5,7 @@
 
 use std::collections::HashMap;
 
-use bee_message::address::{Address, Ed25519Address};
+use bee_block::address::{Address, Ed25519Address};
 use crypto::{
     hashes::{blake2b::Blake2b256, Digest},
     keys::{bip39::wordlist, slip10::Seed},
@@ -17,7 +17,7 @@ use zeroize::Zeroize;
 
 use crate::error::*;
 
-/// Hash the network id str from the nodeinfo to an u64 (used in messages)
+/// Hash the network id str from the nodeinfo to an u64 (used in blocks)
 pub fn hash_network(network_id_string: &str) -> Result<u64> {
     let bytes = Blake2b256::digest(network_id_string.as_bytes())[0..8]
         .try_into()

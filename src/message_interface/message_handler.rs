@@ -4,14 +4,14 @@
 use std::{any::Any, panic::AssertUnwindSafe};
 
 use backtrace::Backtrace;
-use bee_message::{
+use bee_block::{
     address::dto::AddressDto,
     input::dto::UtxoInputDto,
     payload::{
         dto::{MilestonePayloadDto, PayloadDto},
         Payload,
     },
-    Message as BeeMessage, MessageDto,
+    Block as BeeBlock, BlockDto,
 };
 use futures::{Future, FutureExt};
 use zeroize::Zeroize;
@@ -114,12 +114,12 @@ impl ClientMessageHandler {
                     .await?;
                 Ok(Response::GeneratedAddresses(addresses))
             }
-            ClientMethod::GenerateMessage {
+            ClientMethod::GenerateBlock {
                 secret_manager,
                 options,
             } => {
                 // Prepare transaction
-                let mut transaction_builder = self.client.message();
+                let mut transaction_builder = self.client.block();
 
                 let secret_manager: Option<SecretManager> = match secret_manager {
                     Some(secret_manager) => {
@@ -142,7 +142,7 @@ impl ClientMessageHandler {
                     transaction_builder = transaction_builder.set_options(options.clone())?;
                 }
 
-                Ok(Response::GeneratedMessage(MessageDto::from(
+                Ok(Response::GeneratedBlock(BlockDto::from(
                     &transaction_builder.finish().await?,
                 )))
             }
@@ -160,7 +160,7 @@ impl ClientMessageHandler {
                 secret_manager,
                 options,
             } => {
-                let mut message_builder = self.client.message();
+                let mut block_builder = self.client.block();
 
                 let secret_manager = match secret_manager {
                     Some(secret_manager) => {
@@ -176,22 +176,22 @@ impl ClientMessageHandler {
                 };
 
                 if let Some(secret_manager) = &secret_manager {
-                    message_builder = message_builder.with_secret_manager(secret_manager);
+                    block_builder = block_builder.with_secret_manager(secret_manager);
                 }
 
                 if let Some(options) = options {
-                    message_builder = message_builder.set_options(options.clone())?;
+                    block_builder = block_builder.set_options(options.clone())?;
                 }
 
                 Ok(Response::PreparedTransactionData(PreparedTransactionDataDto::from(
-                    &message_builder.prepare_transaction().await?,
+                    &block_builder.prepare_transaction().await?,
                 )))
             }
             ClientMethod::SignTransaction {
                 secret_manager,
                 prepared_transaction_data,
             } => {
-                let mut message_builder = self.client.message();
+                let mut block_builder = self.client.block();
 
                 let mut secret_manager: SecretManager = secret_manager.try_into()?;
                 // If we use stronghold we need to read the snapshot in case it hasn't been done already
@@ -200,10 +200,10 @@ impl ClientMessageHandler {
                     stronghold_secret_manager.read_stronghold_snapshot().await?;
                 }
 
-                message_builder = message_builder.with_secret_manager(&secret_manager);
+                block_builder = block_builder.with_secret_manager(&secret_manager);
 
                 Ok(Response::SignedTransaction(PayloadDto::from(
-                    &message_builder
+                    &block_builder
                         .sign_transaction(PreparedTransactionData::try_from(prepared_transaction_data)?)
                         .await?,
                 )))
@@ -222,11 +222,11 @@ impl ClientMessageHandler {
                 Ok(Response::Ok(()))
             }
             ClientMethod::SubmitPayload { payload_dto } => {
-                let message_builder = self.client.message();
+                let block_builder = self.client.block();
 
-                Ok(Response::GeneratedMessage(MessageDto::from(
-                    &message_builder
-                        .finish_message(Some(Payload::try_from(payload_dto)?))
+                Ok(Response::GeneratedBlock(BlockDto::from(
+                    &block_builder
+                        .finish_block(Some(Payload::try_from(payload_dto)?))
                         .await?,
                 )))
             }
@@ -241,24 +241,24 @@ impl ClientMessageHandler {
             ClientMethod::GetInfo => Ok(Response::Info(self.client.get_info().await?)),
             ClientMethod::GetPeers => Ok(Response::Peers(self.client.get_peers().await?)),
             ClientMethod::GetTips => Ok(Response::Tips(self.client.get_tips().await?)),
-            ClientMethod::PostMessageRaw { message } => Ok(Response::PostMessageSuccessful(
-                self.client.post_message_raw(&BeeMessage::try_from(message)?).await?,
+            ClientMethod::PostBlockRaw { block } => Ok(Response::PostBlockSuccessful(
+                self.client.post_block_raw(&BeeBlock::try_from(block)?).await?,
             )),
-            ClientMethod::PostMessage { message } => Ok(Response::PostMessageSuccessful(
-                self.client.post_message(&BeeMessage::try_from(message)?).await?,
+            ClientMethod::PostBlock { block } => Ok(Response::PostBlockSuccessful(
+                self.client.post_block(&BeeBlock::try_from(block)?).await?,
             )),
-            ClientMethod::GetMessage { message_id } => Ok(Response::Message(MessageDto::from(
-                &self.client.get_message(message_id).await?,
-            ))),
-            ClientMethod::GetMessageMetadata { message_id } => Ok(Response::MessageMetadata(
-                self.client.get_message_metadata(message_id).await?,
-            )),
-            ClientMethod::GetMessageRaw { message_id } => {
-                Ok(Response::MessageRaw(self.client.get_message_raw(message_id).await?))
+            ClientMethod::GetBlock { block_id } => {
+                Ok(Response::Block(BlockDto::from(&self.client.get_block(block_id).await?)))
             }
-            ClientMethod::GetMessageChildren { message_id } => Ok(Response::MessageChildren(
-                self.client.get_message_children(message_id).await?,
-            )),
+            ClientMethod::GetBlockMetadata { block_id } => {
+                Ok(Response::BlockMetadata(self.client.get_block_metadata(block_id).await?))
+            }
+            ClientMethod::GetBlockRaw { block_id } => {
+                Ok(Response::BlockRaw(self.client.get_block_raw(block_id).await?))
+            }
+            ClientMethod::GetBlockChildren { block_id } => {
+                Ok(Response::BlockChildren(self.client.get_block_children(block_id).await?))
+            }
             ClientMethod::GetOutput { output_id } => Ok(Response::Output(self.client.get_output(output_id).await?)),
             ClientMethod::GetMilestoneById { milestone_id } => Ok(Response::Milestone(MilestonePayloadDto::from(
                 &self.client.get_milestone_by_id(milestone_id).await?,
@@ -283,8 +283,8 @@ impl ClientMessageHandler {
                 self.client.get_receipts_migrated_at(*milestone_index).await?,
             )),
             ClientMethod::GetTreasury => Ok(Response::Treasury(self.client.get_treasury().await?)),
-            ClientMethod::GetIncludedMessage { transaction_id } => Ok(Response::IncludedMessage(MessageDto::from(
-                &self.client.get_included_message(transaction_id).await?,
+            ClientMethod::GetIncludedBlock { transaction_id } => Ok(Response::IncludedBlock(BlockDto::from(
+                &self.client.get_included_block(transaction_id).await?,
             ))),
             ClientMethod::BasicOutputIds { query_parameters } => Ok(Response::OutputIds(
                 self.client.basic_output_ids(query_parameters.clone()).await?,
@@ -311,30 +311,30 @@ impl ClientMessageHandler {
             ClientMethod::TryGetOutputs { output_ids } => Ok(Response::Outputs(
                 self.client.try_get_outputs(output_ids.clone()).await?,
             )),
-            ClientMethod::FindMessages { message_ids } => Ok(Response::Messages(
+            ClientMethod::FindBlocks { block_ids } => Ok(Response::Blocks(
                 self.client
-                    .find_messages(message_ids)
+                    .find_blocks(block_ids)
                     .await?
                     .iter()
-                    .map(MessageDto::from)
+                    .map(BlockDto::from)
                     .collect(),
             )),
-            ClientMethod::Retry { message_id } => {
-                let (message_id, message) = self.client.retry(message_id).await?;
-                Ok(Response::RetrySuccessful((message_id, MessageDto::from(&message))))
+            ClientMethod::Retry { block_id } => {
+                let (block_id, block) = self.client.retry(block_id).await?;
+                Ok(Response::RetrySuccessful((block_id, BlockDto::from(&block))))
             }
             ClientMethod::RetryUntilIncluded {
-                message_id,
+                block_id,
                 interval,
                 max_attempts,
             } => {
                 let res = self
                     .client
-                    .retry_until_included(message_id, *interval, *max_attempts)
+                    .retry_until_included(block_id, *interval, *max_attempts)
                     .await?;
                 let res = res
                     .into_iter()
-                    .map(|(message_id, message)| (message_id, MessageDto::from(&message)))
+                    .map(|(block_id, block)| (block_id, BlockDto::from(&block)))
                     .collect();
                 Ok(Response::RetryUntilIncludedSuccessful(res))
             }
@@ -366,21 +366,21 @@ impl ClientMessageHandler {
             ClientMethod::FindOutputs { output_ids, addresses } => Ok(Response::Outputs(
                 self.client.find_outputs(output_ids, addresses).await?,
             )),
-            ClientMethod::Reattach { message_id } => {
-                let (message_id, message) = self.client.reattach(message_id).await?;
-                Ok(Response::Reattached((message_id, MessageDto::from(&message))))
+            ClientMethod::Reattach { block_id } => {
+                let (block_id, block) = self.client.reattach(block_id).await?;
+                Ok(Response::Reattached((block_id, BlockDto::from(&block))))
             }
-            ClientMethod::ReattachUnchecked { message_id } => {
-                let (message_id, message) = self.client.reattach_unchecked(message_id).await?;
-                Ok(Response::Reattached((message_id, MessageDto::from(&message))))
+            ClientMethod::ReattachUnchecked { block_id } => {
+                let (block_id, block) = self.client.reattach_unchecked(block_id).await?;
+                Ok(Response::Reattached((block_id, BlockDto::from(&block))))
             }
-            ClientMethod::Promote { message_id } => {
-                let (message_id, message) = self.client.promote(message_id).await?;
-                Ok(Response::Promoted((message_id, MessageDto::from(&message))))
+            ClientMethod::Promote { block_id } => {
+                let (block_id, block) = self.client.promote(block_id).await?;
+                Ok(Response::Promoted((block_id, BlockDto::from(&block))))
             }
-            ClientMethod::PromoteUnchecked { message_id } => {
-                let (message_id, message) = self.client.promote_unchecked(message_id).await?;
-                Ok(Response::Promoted((message_id, MessageDto::from(&message))))
+            ClientMethod::PromoteUnchecked { block_id } => {
+                let (block_id, block) = self.client.promote_unchecked(block_id).await?;
+                Ok(Response::Promoted((block_id, BlockDto::from(&block))))
             }
             ClientMethod::Bech32ToHex { bech32 } => Ok(Response::Bech32ToHex(Client::bech32_to_hex(bech32)?)),
             ClientMethod::HexToBech32 { hex, bech32_hrp } => Ok(Response::HexToBech32(
@@ -399,10 +399,10 @@ impl ClientMessageHandler {
             ClientMethod::MnemonicToHexSeed { mnemonic } => {
                 Ok(Response::MnemonicHexSeed(Client::mnemonic_to_hex_seed(mnemonic)?))
             }
-            ClientMethod::MessageId { message } => {
-                let message = BeeMessage::try_from(message)?;
+            ClientMethod::BlockId { block } => {
+                let block = BeeBlock::try_from(block)?;
 
-                Ok(Response::MessageId(message.id()))
+                Ok(Response::BlockId(block.id()))
             }
         }
     }

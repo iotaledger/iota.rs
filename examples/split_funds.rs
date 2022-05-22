@@ -42,20 +42,17 @@ async fn main() -> Result<()> {
     // wait so the faucet can send the funds
     // tokio::time::sleep(std::time::Duration::from_secs(20)).await;
 
-    let mut message_builder = client.message().with_secret_manager(&secret_manager);
+    let mut block_builder = client.block().with_secret_manager(&secret_manager);
     // Insert the output address and amount to spent. The amount cannot be zero.
     for _ in 0..100 {
-        message_builder = message_builder.with_output(
+        block_builder = block_builder.with_output(
             // We generate an address from our seed so that we send the funds to ourselves
             &client.get_addresses(&secret_manager).with_range(0..1).finish().await?[0],
             1_000_000,
         )?
     }
-    let message = message_builder.finish().await?;
+    let block = block_builder.finish().await?;
 
-    println!(
-        "Transaction sent: http://localhost:14265/api/v2/messages/{}",
-        message.id()
-    );
+    println!("Transaction sent: http://localhost:14265/api/v2/blocks/{}", block.id());
     Ok(())
 }

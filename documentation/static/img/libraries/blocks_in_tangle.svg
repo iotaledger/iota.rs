@@ -336,7 +336,7 @@
    <rect id="svg_61" fill="#FFFFFF" height="720" width="1280" y="0" x="0"/>
    <rect id="svg_62" fill="none" stroke-dasharray="12 9" stroke-miterlimit="10" stroke-linejoin="round" stroke-width="3" stroke="#968C8C" height="383" width="320" y="30.5001" x="718.5"/>
    <rect id="svg_63" fill="#FFFFFF" height="33" width="87" y="12" x="737"/>
-   <text id="svg_64" x="746.96698" y="34" font-size="19" font-weight="700" font-family="Calibri,Calibri_MSFontService,sans-serif" fill="#726868">Message</text>
+   <text id="svg_64" x="746.96698" y="34" font-size="19" font-weight="700" font-family="Calibri,Calibri_MSFontService,sans-serif" fill="#726868">Block</text>
    <rect id="svg_65" fill="none" stroke-dasharray="2 2" stroke-miterlimit="10" stroke-linejoin="round" stroke-width="2" stroke="#A6A6A6" height="221" width="244" y="169" x="755"/>
    <rect id="svg_66" fill="#FFFFFF" height="27" width="73" y="155" x="763"/>
    <text id="svg_67" x="772.62201" y="173" font-size="15" font-weight="400" font-style="italic" font-family="Calibri,Calibri_MSFontService,sans-serif" fill="#726868">Payloads</text>
@@ -524,7 +524,7 @@
     </g>
    </g>
    <path id="svg_193" fill="#D8B25C" d="m582.32448,287.14493l-77.14208,46.77937l1.037,1.7101l77.14212,-46.77933l-1.03704,-1.71014zm-77.55748,43.52277l-4.7665,7.5684l8.9146,-0.7279l-4.1481,-6.8405z"/>
-   <text id="svg_194" x="21.4974" y="343" font-size="37" font-weight="700" font-family="Calibri,Calibri_MSFontService,sans-serif">Messages in Tangle</text>
+   <text id="svg_194" x="21.4974" y="343" font-size="37" font-weight="700" font-family="Calibri,Calibri_MSFontService,sans-serif">Blocks in Tangle</text>
   </g>
  </g>
 </svg>

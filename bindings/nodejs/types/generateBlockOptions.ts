@@ -3,27 +3,27 @@
 import type { IUTXOInput, OutputTypes } from '@iota/types';
 import type { IRange } from './range';
 
-export interface IGenerateMessageOptions {
+export interface IGenerateBlockOptions {
     coinType?: number;
     accountIndex?: number;
     initialAddressIndex?: number;
     inputs?: IUTXOInput[];
     inputRange?: IRange;
     /** Bech32 encoded output address and amount */
-    output?: IClientMessageBuilderOutputAddress;
+    output?: IClientBlockBuilderOutputAddress;
     /** Hex encoded output address and amount */
-    outputHex?: IClientMessageBuilderOutputAddress;
+    outputHex?: IClientBlockBuilderOutputAddress;
     outputs?: OutputTypes[];
     customRemainderAddress?: string;
     tag?: number[];
     data?: number[];
-    /** Parent message IDs */
+    /** Parent block IDs */
     parents?: string[];
     /** Allow burning of native tokens */
     allowBurning?: boolean;
 }
 
-export interface IClientMessageBuilderOutputAddress {
+export interface IClientBlockBuilderOutputAddress {
     address: string;
     amount: string;
 }

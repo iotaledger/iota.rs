@@ -3,9 +3,9 @@
 import { Client, utf8ToBytes, hexToUtf8, initLogger } from '@iota/client';
 
 // Run with command:
-// node ./dist/08_data_message.js
+// node ./dist/08_data_block.js
 
-// In this example we will send a message with a tagged data payload
+// In this example we will send a block with a tagged data payload
 async function run() {
     initLogger();
 
@@ -29,21 +29,21 @@ async function run() {
         const mnemonic = await client.generateMnemonic();
         const secretManager = { Mnemonic: mnemonic };
 
-        // Create message with tagged payload
-        const message = await client.generateMessage(secretManager, options);
-        console.log('Message:', message, '\n');
+        // Create block with tagged payload
+        const block = await client.generateBlock(secretManager, options);
+        console.log('Block:', block, '\n');
 
-        // Send message
-        const messageId = await client.postMessage(message);
+        // Send block
+        const blockId = await client.postBlock(block);
 
         console.log(
-            `Message sent: https://explorer.iota.org/devnet/message/${messageId}\n`,
+            `Block sent: https://explorer.iota.org/devnet/block/${blockId}\n`,
         );
 
-        const fetchedMessage = await client.getMessageData(messageId);
-        console.log('Message data: ', fetchedMessage);
+        const fetchedBlock = await client.getBlock(blockId);
+        console.log('Block data: ', fetchedBlock);
 
-        const payload = fetchedMessage.payload;
+        const payload = fetchedBlock.payload;
         if (payload && 'data' in payload && payload.data) {
             console.log('Decoded data:', hexToUtf8(payload.data));
         }

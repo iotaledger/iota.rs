@@ -6,7 +6,7 @@ use std::env;
 
 use dotenv::dotenv;
 use iota_client::{
-    bee_message::input::UtxoInput,
+    bee_block::input::UtxoInput,
     node_api::indexer::query_parameters::QueryParameter,
     request_funds_from_faucet,
     secret::{mnemonic::MnemonicSecretManager, SecretManager},
@@ -47,8 +47,8 @@ async fn main() -> Result<()> {
         .await?;
     println!("{:?}", output_ids);
 
-    let message = client
-        .message()
+    let block = client
+        .block()
         .with_secret_manager(&secret_manager)
         .with_input(UtxoInput::from(output_ids[0]))?
         //.with_input_range(20..25)
@@ -60,8 +60,8 @@ async fn main() -> Result<()> {
         .await?;
 
     println!(
-        "Transaction sent: https://explorer.iota.org/devnet/message/{}",
-        message.id()
+        "Transaction sent: https://explorer.iota.org/devnet/block/{}",
+        block.id()
     );
     Ok(())
 }

@@ -26,7 +26,7 @@ use iota_client::{
 /// "atoi1qz4sfmp605vnj6fxt0sf0cwclffw5hpxjqkf6fthyd74r9nmmu337m3lwl2" (index 2), and check the ledger
 /// inclusion state, which should be "Some(Included)".
 
-const EXPLORER_URL: &str = "https://explorer.iota.org/devnet/message/";
+const EXPLORER_URL: &str = "https://explorer.iota.org/devnet/block/";
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -48,8 +48,8 @@ async fn main() -> Result<()> {
         &env::var("NON_SECURE_USE_OF_DEVELOPMENT_SEED_2").unwrap(),
     )?);
 
-    let message = client
-        .message()
+    let block = client
+        .block()
         .with_secret_manager(&secret_manager_1)
         // Insert the output address and amount to spent. The amount cannot be zero.
         .with_output(
@@ -63,11 +63,11 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
 
-    println!("First transaction sent: {}{}", EXPLORER_URL, message.id());
-    let _ = client.retry_until_included(&message.id(), None, None).await?;
+    println!("First transaction sent: {}{}", EXPLORER_URL, block.id());
+    let _ = client.retry_until_included(&block.id(), None, None).await?;
 
-    let message = client
-        .message()
+    let block = client
+        .block()
         .with_secret_manager(&secret_manager_1)
         .with_output(
             &client
@@ -80,11 +80,11 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
 
-    println!("Second transaction sent: {}{}", EXPLORER_URL, message.id());
-    let _ = client.retry_until_included(&message.id(), None, None).await?;
+    println!("Second transaction sent: {}{}", EXPLORER_URL, block.id());
+    let _ = client.retry_until_included(&block.id(), None, None).await?;
 
-    let message = client
-        .message()
+    let block = client
+        .block()
         .with_secret_manager(&secret_manager_1)
         .with_output(
             &client
@@ -97,11 +97,11 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
 
-    println!("Third transaction sent: {}{}", EXPLORER_URL, message.id());
-    let _ = client.retry_until_included(&message.id(), None, None).await?;
+    println!("Third transaction sent: {}{}", EXPLORER_URL, block.id());
+    let _ = client.retry_until_included(&block.id(), None, None).await?;
 
-    let message = client
-        .message()
+    let block = client
+        .block()
         .with_secret_manager(&secret_manager_2)
         // Note that we can transfer to multiple outputs by using the `SendTransactionBuilder`
         .with_output(
@@ -123,11 +123,11 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
 
-    println!("Last transaction sent: {}{}", EXPLORER_URL, message.id());
-    let _ = client.retry_until_included(&message.id(), None, None).await?;
+    println!("Last transaction sent: {}{}", EXPLORER_URL, block.id());
+    let _ = client.retry_until_included(&block.id(), None, None).await?;
 
-    let message_metadata = client.get_message_metadata(&message.id()).await;
-    println!("Ledger Inclusion State: {:?}", message_metadata?.ledger_inclusion_state);
+    let block_metadata = client.get_block_metadata(&block.id()).await;
+    println!("Ledger Inclusion State: {:?}", block_metadata?.ledger_inclusion_state);
 
     Ok(())
 }

@@ -1,7 +1,7 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! `cargo run --example node_api_core_get_get_message_children --release -- [NODE URL]`.
+//! `cargo run --example node_api_core_get_block_raw --release -- [NODE URL]`.
 
 use iota_client::{Client, Result};
 
@@ -18,16 +18,13 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
 
-    // Fetches a tip message ID from the node.
-    let tip_message_id = client.get_tips().await?[0];
-    // Tips have, by definition, no children so this gets the children of a tip parent.
-    let tip = client.get_message(&tip_message_id).await?;
-    let message_id = tip.parents()[0];
+    // Fetches a block ID from the node.
+    let block_id = client.get_tips().await?[0];
     // Sends the request.
-    let message_children = client.get_message_children(&message_id).await?;
+    let block = client.get_block_raw(&block_id).await?;
 
     // Prints the response.
-    println!("{:?}", message_children);
+    println!("{:?}", block);
 
     Ok(())
 }

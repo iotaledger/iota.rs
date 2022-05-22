@@ -3,18 +3,18 @@
 
 //! Automatic input selection for transactions
 
-use bee_message::{
+use bee_block::{
     address::Address,
-    output::{feature_block::FeatureBlock, ByteCostConfig, Output},
+    output::{feature::Feature, ByteCostConfig, Output},
 };
 use crypto::keys::slip10::Chain;
 
 use crate::{
     api::{
         address::search_address,
+        block_builder::input_selection::{output_data::get_utxo_chains_inputs, types::SelectedTransactionData},
         input_selection::try_select_inputs,
-        message_builder::input_selection::{output_data::get_utxo_chains_inputs, types::SelectedTransactionData},
-        ClientMessageBuilder, ADDRESS_GAP_RANGE,
+        ClientBlockBuilder, ADDRESS_GAP_RANGE,
     },
     constants::HD_WALLET_TYPE,
     node_api::indexer::query_parameters::QueryParameter,
@@ -25,26 +25,26 @@ use crate::{
 /// Searches inputs for provided outputs, by requesting the outputs from the account addresses or for alias/foundry/nft
 /// outputs get the latest state with their alias/nft id. Forwards to [try_select_inputs()]
 pub(crate) async fn get_inputs(
-    message_builder: &ClientMessageBuilder<'_>,
+    block_builder: &ClientBlockBuilder<'_>,
     byte_cost_config: &ByteCostConfig,
 ) -> Result<SelectedTransactionData> {
     log::debug!("[get_inputs]");
-    let account_index = message_builder.account_index;
-    let mut gap_index = message_builder.initial_address_index;
+    let account_index = block_builder.account_index;
+    let mut gap_index = block_builder.initial_address_index;
     let mut empty_address_count: u64 = 0;
     let mut cached_error = None;
 
     // First get inputs for utxo chains (alias, foundry, nft outputs)
-    let mut available_inputs = get_utxo_chains_inputs(message_builder, &message_builder.outputs).await?;
-    let (force_use_all_inputs, required_ed25519_inputs) = get_inputs_for_sender_and_issuer(message_builder).await?;
+    let mut available_inputs = get_utxo_chains_inputs(block_builder, &block_builder.outputs).await?;
+    let (force_use_all_inputs, required_ed25519_inputs) = get_inputs_for_sender_and_issuer(block_builder).await?;
     available_inputs.extend(required_ed25519_inputs.into_iter());
 
     // Try to select inputs with required inputs for utxo chains alone before requesting more inputs from addresses
     if let Ok(selected_transaction_data) = try_select_inputs(
         available_inputs.clone(),
-        message_builder.outputs.clone(),
+        block_builder.outputs.clone(),
         force_use_all_inputs,
-        message_builder.custom_remainder_address,
+        block_builder.custom_remainder_address,
         byte_cost_config,
         // Don't allow burning of native tokens during automatic input selection, because otherwise it
         // could lead to burned native tokens by accident
@@ -59,10 +59,10 @@ pub(crate) async fn get_inputs(
     // then select inputs with outputs from addresses
     let selected_transaction_data = 'input_selection: loop {
         // Get the addresses in the BIP path/index ~ path/index+20
-        let addresses = message_builder
+        let addresses = block_builder
             .client
             .get_addresses(
-                message_builder
+                block_builder
                     .secret_manager
                     .ok_or(crate::Error::MissingParameter("secret manager"))?,
             )
@@ -80,7 +80,7 @@ pub(crate) async fn get_inputs(
         // For each address, get the address outputs
         let mut address_index = gap_index;
         for (index, (str_address, internal)) in public_and_internal_addresses.iter().enumerate() {
-            let output_ids = message_builder
+            let output_ids = block_builder
                 .client
                 .basic_output_ids(vec![
                     QueryParameter::Address(str_address.to_string()),
@@ -90,7 +90,7 @@ pub(crate) async fn get_inputs(
                 ])
                 .await?;
 
-            let address_outputs = message_builder.client.get_outputs(output_ids).await?;
+            let address_outputs = block_builder.client.get_outputs(output_ids).await?;
 
             // If there are more than 20 (ADDRESS_GAP_RANGE) consecutive empty addresses, then we stop
             // looking up the addresses belonging to the seed. Note that we don't
@@ -111,7 +111,7 @@ pub(crate) async fn get_inputs(
                         output_metadata: OutputMetadata::try_from(&output_response)?,
                         chain: Some(Chain::from_u32_hardened(vec![
                             HD_WALLET_TYPE,
-                            message_builder.coin_type,
+                            block_builder.coin_type,
                             account_index,
                             *internal as u32,
                             address_index,
@@ -121,9 +121,9 @@ pub(crate) async fn get_inputs(
                 }
                 let selected_transaction_data = match try_select_inputs(
                     available_inputs.clone(),
-                    message_builder.outputs.clone(),
+                    block_builder.outputs.clone(),
                     force_use_all_inputs,
-                    message_builder.custom_remainder_address,
+                    block_builder.custom_remainder_address,
                     byte_cost_config,
                     // Don't allow burning of native tokens during automatic input selection, because otherwise it
                     // could lead to burned native tokens by accident
@@ -153,12 +153,12 @@ pub(crate) async fn get_inputs(
                         continue;
                     }
                     // Not enough balance for a remainder
-                    Err(crate::Error::MessageError(message_error)) => match message_error {
-                        bee_message::Error::InvalidStorageDepositAmount(v) => {
-                            cached_error.replace(bee_message::Error::InvalidStorageDepositAmount(v).into());
+                    Err(crate::Error::BlockError(block_error)) => match block_error {
+                        bee_block::Error::InvalidStorageDepositAmount(v) => {
+                            cached_error.replace(bee_block::Error::InvalidStorageDepositAmount(v).into());
                             continue;
                         }
-                        _ => return Err(message_error.into()),
+                        _ => return Err(block_error.into()),
                     },
                     Err(e) => return Err(e),
                 };
@@ -184,28 +184,28 @@ pub(crate) async fn get_inputs(
 }
 
 async fn get_inputs_for_sender_and_issuer(
-    message_builder: &ClientMessageBuilder<'_>,
+    block_builder: &ClientBlockBuilder<'_>,
 ) -> Result<(bool, Vec<InputSigningData>)> {
     log::debug!("[get_inputs_for_sender_and_issuer]");
     let mut force_use_all_inputs = false;
     let mut required_ed25519_inputs = Vec::new();
-    let bech32_hrp = message_builder.client.get_bech32_hrp().await?;
+    let bech32_hrp = block_builder.client.get_bech32_hrp().await?;
 
     // get Ed25519 address if there is a Sender or Issuer block, because we then need to unlock an output with this
     // address
     let mut required_ed25519_addresses = Vec::new();
-    for output in &message_builder.outputs {
-        if let Some(features_blocks) = output.feature_blocks() {
-            for feature_block in features_blocks.iter() {
-                if let FeatureBlock::Sender(sender_feature_block) = feature_block {
-                    required_ed25519_addresses.push(sender_feature_block.address());
+    for output in &block_builder.outputs {
+        if let Some(features_blocks) = output.features() {
+            for feature in features_blocks.iter() {
+                if let Feature::Sender(sender_feature) = feature {
+                    required_ed25519_addresses.push(sender_feature.address());
                 }
             }
         }
-        if let Some(features_blocks) = output.immutable_feature_blocks() {
-            for feature_block in features_blocks.iter() {
-                if let FeatureBlock::Issuer(issuer_feature_block) = feature_block {
-                    required_ed25519_addresses.push(issuer_feature_block.address());
+        if let Some(features_blocks) = output.immutable_features() {
+            for feature in features_blocks.iter() {
+                if let Feature::Issuer(issuer_feature) = feature {
+                    required_ed25519_addresses.push(issuer_feature.address());
                 }
             }
         }
@@ -214,19 +214,19 @@ async fn get_inputs_for_sender_and_issuer(
     for address in required_ed25519_addresses {
         if let Address::Ed25519(address) = address {
             let (address_index, internal) = search_address(
-                message_builder
+                block_builder
                     .secret_manager
                     .ok_or(Error::MissingParameter("secret manager"))?,
                 &bech32_hrp,
-                message_builder.coin_type,
-                message_builder.account_index,
-                message_builder.input_range.clone(),
+                block_builder.coin_type,
+                block_builder.account_index,
+                block_builder.input_range.clone(),
                 &Address::Ed25519(*address),
             )
             .await?;
             // if we didn't return with an error, then the address was found
 
-            let output_ids = message_builder
+            let output_ids = block_builder
                 .client
                 .basic_output_ids(vec![
                     QueryParameter::Address(Address::Ed25519(*address).to_bech32(&bech32_hrp)),
@@ -236,7 +236,7 @@ async fn get_inputs_for_sender_and_issuer(
                 ])
                 .await?;
 
-            let address_outputs = message_builder.client.get_outputs(output_ids).await?;
+            let address_outputs = block_builder.client.get_outputs(output_ids).await?;
 
             match address_outputs.first() {
                 Some(output_response) => {
@@ -245,8 +245,8 @@ async fn get_inputs_for_sender_and_issuer(
                         output_metadata: OutputMetadata::try_from(output_response)?,
                         chain: Some(Chain::from_u32_hardened(vec![
                             HD_WALLET_TYPE,
-                            message_builder.coin_type,
-                            message_builder.account_index,
+                            block_builder.coin_type,
+                            block_builder.account_index,
                             internal as u32,
                             address_index,
                         ])),

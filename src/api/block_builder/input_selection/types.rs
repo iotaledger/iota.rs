@@ -3,9 +3,9 @@
 
 //! Types used during transaction creation
 
-use bee_message::output::{NativeTokensBuilder, Output};
+use bee_block::output::{NativeTokensBuilder, Output};
 
-use crate::api::{message_builder::input_selection::InputSigningData, RemainderData};
+use crate::api::{block_builder::input_selection::InputSigningData, RemainderData};
 
 /// Transaction data with selected inputs, input data for signing and outputs, with remainder output if required
 #[derive(Debug, Clone)]

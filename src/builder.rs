@@ -108,7 +108,7 @@ pub struct ClientBuilder {
     /// Timeout for API requests
     #[serde(rename = "apiTimeout", default = "default_api_timeout")]
     pub api_timeout: Duration,
-    /// Timeout when sending a message that requires remote proof of work
+    /// Timeout when sending a block that requires remote proof of work
     #[serde(rename = "remotePowTimeout", default = "default_remote_pow_timeout")]
     pub remote_pow_timeout: Duration,
     /// If the Client should be able to use without a node connection

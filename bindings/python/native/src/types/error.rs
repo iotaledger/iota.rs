@@ -46,8 +46,8 @@ impl From<std::io::Error> for Error {
     }
 }
 
-impl From<iota_client::bee_message::Error> for Error {
-    fn from(err: iota_client::bee_message::Error) -> Self {
+impl From<iota_client::bee_block::Error> for Error {
+    fn from(err: iota_client::bee_block::Error) -> Self {
         Error {
             error: PyErr::new::<exceptions::PyValueError, _>(err.to_string()),
         }

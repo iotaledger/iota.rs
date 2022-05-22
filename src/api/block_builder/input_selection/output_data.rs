@@ -1,7 +1,7 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use bee_message::{
+use bee_block::{
     address::Address,
     output::{dto::OutputDto, unlock_condition::dto::UnlockConditionDto, NativeTokensBuilder, Output},
 };
@@ -10,8 +10,8 @@ use crypto::keys::slip10::Chain;
 
 use crate::{
     api::{
+        block_builder::ClientBlockBuilder,
         input_selection::{get_minted_and_melted_native_tokens, types::AccumulatedOutputAmounts},
-        message_builder::ClientMessageBuilder,
         search_address,
     },
     constants::HD_WALLET_TYPE,
@@ -50,11 +50,11 @@ pub(crate) async fn get_accumulated_output_amounts<'a>(
 
 /// Get inputs for utxo chains
 pub(crate) async fn get_utxo_chains_inputs(
-    message_builder: &ClientMessageBuilder<'_>,
+    block_builder: &ClientBlockBuilder<'_>,
     outputs: &[Output],
 ) -> Result<Vec<InputSigningData>> {
     log::debug!("[get_utxo_chains_inputs]");
-    let client = message_builder.client;
+    let client = block_builder.client;
     let bech32_hrp = client.get_bech32_hrp().await?;
     let mut utxo_chains: Vec<(Address, OutputResponse)> = Vec::new();
     for output in outputs {
@@ -129,16 +129,16 @@ pub(crate) async fn get_utxo_chains_inputs(
 
     let mut utxo_chain_inputs = Vec::new();
     for (unlock_address, output_response) in utxo_chains {
-        let (address_index, internal) = match message_builder.secret_manager {
+        let (address_index, internal) = match block_builder.secret_manager {
             Some(secret_manager) => {
                 match unlock_address {
                     Address::Ed25519(_) => {
                         search_address(
                             secret_manager,
                             &bech32_hrp,
-                            message_builder.coin_type,
-                            message_builder.account_index,
-                            message_builder.input_range.clone(),
+                            block_builder.coin_type,
+                            block_builder.account_index,
+                            block_builder.input_range.clone(),
                             &unlock_address,
                         )
                         .await?
@@ -155,8 +155,8 @@ pub(crate) async fn get_utxo_chains_inputs(
             output_metadata: OutputMetadata::try_from(&output_response)?,
             chain: Some(Chain::from_u32_hardened(vec![
                 HD_WALLET_TYPE,
-                message_builder.coin_type,
-                message_builder.account_index,
+                block_builder.coin_type,
+                block_builder.account_index,
                 internal as u32,
                 address_index,
             ])),

@@ -3,16 +3,16 @@
 
 use std::ops::Range;
 
-use bee_message::{
+use bee_block::{
     output::{AliasId, FoundryId, NftId, OutputId},
     payload::{dto::PayloadDto, milestone::MilestoneId, transaction::TransactionId},
-    MessageDto, MessageId,
+    BlockDto, BlockId,
 };
 use serde::Deserialize;
 
 use crate::{
     api::{
-        ClientMessageBuilderOptions as GenerateMessageOptions, GetAddressesBuilderOptions as GenerateAddressesOptions,
+        ClientBlockBuilderOptions as GenerateBlockOptions, GetAddressesBuilderOptions as GenerateAddressesOptions,
         PreparedTransactionDataDto,
     },
     node_api::indexer::query_parameters::QueryParameter,
@@ -32,13 +32,13 @@ pub enum ClientMethod {
         /// Addresses generation options
         options: GenerateAddressesOptions,
     },
-    /// Generate client message
-    GenerateMessage {
+    /// Generate client block
+    GenerateBlock {
         /// Secret manager
         #[serde(rename = "secretManager")]
         secret_manager: Option<SecretManagerDto>,
         /// Options
-        options: Option<GenerateMessageOptions>,
+        options: Option<GenerateBlockOptions>,
     },
     /// Get a node candidate from the synced node pool.
     GetNode,
@@ -67,7 +67,7 @@ pub enum ClientMethod {
         #[serde(rename = "secretManager")]
         secret_manager: Option<SecretManagerDto>,
         /// Options
-        options: Option<GenerateMessageOptions>,
+        options: Option<GenerateBlockOptions>,
     },
     /// Sign a transaction
     SignTransaction {
@@ -87,7 +87,7 @@ pub enum ClientMethod {
         /// Mnemonic
         mnemonic: String,
     },
-    /// Submit a payload in a message
+    /// Submit a payload in a block
     SubmitPayload {
         /// The payload to send
         #[serde(rename = "payload")]
@@ -114,39 +114,39 @@ pub enum ClientMethod {
     GetPeers,
     /// Get tips
     GetTips,
-    /// Post message (JSON)
-    PostMessage {
-        /// Message
-        message: MessageDto,
+    /// Post block (JSON)
+    PostBlock {
+        /// Block
+        block: BlockDto,
     },
-    /// Post message (raw)
-    PostMessageRaw {
-        /// Message
-        message: MessageDto,
+    /// Post block (raw)
+    PostBlockRaw {
+        /// Block
+        block: BlockDto,
     },
-    /// Get message
-    GetMessage {
-        /// Message ID
-        #[serde(rename = "messageId")]
-        message_id: MessageId,
+    /// Get block
+    GetBlock {
+        /// Block ID
+        #[serde(rename = "blockId")]
+        block_id: BlockId,
     },
-    /// Get message metadata with message_id
-    GetMessageMetadata {
-        /// Message ID
-        #[serde(rename = "messageId")]
-        message_id: MessageId,
+    /// Get block metadata with block_id
+    GetBlockMetadata {
+        /// Block ID
+        #[serde(rename = "blockId")]
+        block_id: BlockId,
     },
-    /// Get message raw
-    GetMessageRaw {
-        /// Message ID
-        #[serde(rename = "messageId")]
-        message_id: MessageId,
+    /// Get block raw
+    GetBlockRaw {
+        /// Block ID
+        #[serde(rename = "blockId")]
+        block_id: BlockId,
     },
-    /// Get message children
-    GetMessageChildren {
-        /// Message ID
-        #[serde(rename = "messageId")]
-        message_id: MessageId,
+    /// Get block children
+    GetBlockChildren {
+        /// Block ID
+        #[serde(rename = "blockId")]
+        block_id: BlockId,
     },
     /// Get output
     GetOutput {
@@ -197,8 +197,8 @@ pub enum ClientMethod {
     },
     /// Get the treasury output.
     GetTreasury,
-    /// Returns the included message of the transaction.
-    GetIncludedMessage {
+    /// Returns the included block of the transaction.
+    GetIncludedBlock {
         /// Transaction ID
         #[serde(rename = "transactionId")]
         transaction_id: TransactionId,
@@ -266,26 +266,26 @@ pub enum ClientMethod {
         #[serde(rename = "outputIds")]
         output_ids: Vec<OutputId>,
     },
-    /// Find all messages by provided message IDs.
-    FindMessages {
-        /// MessageIDs
-        #[serde(rename = "messageIds")]
-        message_ids: Vec<MessageId>,
+    /// Find all blocks by provided block IDs.
+    FindBlocks {
+        /// BlockIDs
+        #[serde(rename = "blockIds")]
+        block_ids: Vec<BlockId>,
     },
-    /// Retries (promotes or reattaches) a message for provided message id. Message should only be
+    /// Retries (promotes or reattaches) a block for provided block id. Block should only be
     /// retried only if they are valid and haven't been confirmed for a while.
     Retry {
-        /// Message ID
-        #[serde(rename = "messageId")]
-        message_id: MessageId,
+        /// Block ID
+        #[serde(rename = "blockId")]
+        block_id: BlockId,
     },
-    /// Retries (promotes or reattaches) a message for provided message id until it's included (referenced by a
-    /// milestone). Default interval is 5 seconds and max attempts is 40. Returns the included message at first
-    /// position and additional reattached messages
+    /// Retries (promotes or reattaches) a block for provided block id until it's included (referenced by a
+    /// milestone). Default interval is 5 seconds and max attempts is 40. Returns the included block at first
+    /// position and additional reattached blocks
     RetryUntilIncluded {
-        /// Message ID
-        #[serde(rename = "messageId")]
-        message_id: MessageId,
+        /// Block ID
+        #[serde(rename = "blockId")]
+        block_id: BlockId,
         /// Interval
         interval: Option<u64>,
         /// Maximum attempts
@@ -321,31 +321,31 @@ pub enum ClientMethod {
         /// Addresses
         addresses: Vec<String>,
     },
-    /// Reattaches messages for provided message id. Messages can be reattached only if they are valid and haven't been
+    /// Reattaches blocks for provided block id. Blocks can be reattached only if they are valid and haven't been
     /// confirmed for a while.
     Reattach {
-        /// Message ID
-        #[serde(rename = "messageId")]
-        message_id: MessageId,
+        /// Block ID
+        #[serde(rename = "blockId")]
+        block_id: BlockId,
     },
-    /// Reattach a message without checking if it should be reattached
+    /// Reattach a block without checking if it should be reattached
     ReattachUnchecked {
-        /// Message ID
-        #[serde(rename = "messageId")]
-        message_id: MessageId,
+        /// Block ID
+        #[serde(rename = "blockId")]
+        block_id: BlockId,
     },
-    /// Promotes a message. The method should validate if a promotion is necessary through get_message. If not, the
+    /// Promotes a block. The method should validate if a promotion is necessary through get_block. If not, the
     /// method should error out and should not allow unnecessary promotions.
     Promote {
-        /// Message ID
-        #[serde(rename = "messageId")]
-        message_id: MessageId,
+        /// Block ID
+        #[serde(rename = "blockId")]
+        block_id: BlockId,
     },
-    /// Promote a message without checking if it should be promoted
+    /// Promote a block without checking if it should be promoted
     PromoteUnchecked {
-        /// Message ID
-        #[serde(rename = "messageId")]
-        message_id: MessageId,
+        /// Block ID
+        #[serde(rename = "blockId")]
+        block_id: BlockId,
     },
 
     //////////////////////////////////////////////////////////////////////
@@ -389,9 +389,9 @@ pub enum ClientMethod {
         /// Mnemonic
         mnemonic: String,
     },
-    /// Returns a message ID (Blake2b256 hash of message bytes) from a message
-    MessageId {
-        /// Message
-        message: MessageDto,
+    /// Returns a block ID (Blake2b256 hash of block bytes) from a block
+    BlockId {
+        /// Block
+        block: BlockDto,
     },
 }

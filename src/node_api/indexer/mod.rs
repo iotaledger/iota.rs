@@ -9,7 +9,7 @@ pub mod routes;
 
 use std::str::FromStr;
 
-use bee_message::output::OutputId;
+use bee_block::output::OutputId;
 
 pub(crate) use self::{
     query_parameters::{QueryParameter, QueryParameters},

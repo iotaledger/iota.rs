@@ -4,9 +4,9 @@ import { Client, initLogger } from '@iota/client';
 import { readFile } from 'fs/promises';
 
 // From examples directory, run with:
-// node ./dist/offline_signing/3_send_message.js
+// node ./dist/offline_signing/3_send_block.js
 
-// In this example we will send the signed transaction in a message
+// In this example we will send the signed transaction in a block
 const SIGNED_TRANSACTION_FILE_NAME =
     __dirname + '/../../offline_signing/signed_transaction.json';
 
@@ -30,15 +30,15 @@ async function run() {
             await readFile(SIGNED_TRANSACTION_FILE_NAME, 'utf8'),
         );
 
-        // Send message with the signed transaction as a payload
-        const message = await onlineClient.submitPayload(signedTransaction);
+        // Send block with the signed transaction as a payload
+        const block = await onlineClient.submitPayload(signedTransaction);
 
-        // Get the message ID from the message (Blake2b256 hash of the message bytes)
-        const messageId = await onlineClient.messageId(message);
+        // Get the block ID from the block (Blake2b256 hash of the block bytes)
+        const blockId = await onlineClient.blockId(block);
 
         console.log(
-            'Transaction sent: https://explorer.iota.org/devnet/message/' +
-                messageId,
+            'Transaction sent: https://explorer.iota.org/devnet/block/' +
+                blockId,
         );
     } catch (error) {
         console.error(error);

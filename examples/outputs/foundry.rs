@@ -7,16 +7,16 @@ use std::env;
 
 use dotenv::dotenv;
 use iota_client::{
-    bee_message::{
+    bee_block::{
         address::AliasAddress,
         output::{
-            feature_block::{IssuerFeatureBlock, MetadataFeatureBlock, SenderFeatureBlock},
+            feature::{IssuerFeature, MetadataFeature, SenderFeature},
             unlock_condition::{
                 AddressUnlockCondition, GovernorAddressUnlockCondition, ImmutableAliasAddressUnlockCondition,
                 StateControllerAddressUnlockCondition, UnlockCondition,
             },
-            AliasId, AliasOutputBuilder, BasicOutputBuilder, FeatureBlock, FoundryId, FoundryOutputBuilder,
-            NativeToken, Output, OutputId, SimpleTokenScheme, TokenId, TokenScheme, TokenTag,
+            AliasId, AliasOutputBuilder, BasicOutputBuilder, Feature, FoundryId, FoundryOutputBuilder, NativeToken,
+            Output, OutputId, SimpleTokenScheme, TokenId, TokenScheme,
         },
         payload::{transaction::TransactionEssence, Payload},
     },
@@ -62,9 +62,9 @@ async fn main() -> Result<()> {
         AliasOutputBuilder::new_with_amount(2_000_000, AliasId::null())?
             .with_state_index(0)
             .with_foundry_counter(0)
-            .add_feature_block(FeatureBlock::Sender(SenderFeatureBlock::new(address)))
-            .add_feature_block(FeatureBlock::Metadata(MetadataFeatureBlock::new(vec![1, 2, 3])?))
-            .add_immutable_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
+            .add_feature(Feature::Sender(SenderFeature::new(address)))
+            .add_feature(Feature::Metadata(MetadataFeature::new(vec![1, 2, 3])?))
+            .add_immutable_feature(Feature::Issuer(IssuerFeature::new(address)))
             .add_unlock_condition(UnlockCondition::StateControllerAddress(
                 StateControllerAddressUnlockCondition::new(address),
             ))
@@ -74,23 +74,23 @@ async fn main() -> Result<()> {
             .finish_output()?,
     ];
 
-    let message = client
-        .message()
+    let block = client
+        .block()
         .with_secret_manager(&secret_manager)
         .with_outputs(outputs)?
         .finish()
         .await?;
 
     println!(
-        "Transaction with new alias output sent: http://localhost:14265/api/v2/messages/{}",
-        message.id()
+        "Transaction with new alias output sent: http://localhost:14265/api/v2/blocks/{}",
+        block.id()
     );
-    let _ = client.retry_until_included(&message.id(), None, None).await?;
+    let _ = client.retry_until_included(&block.id(), None, None).await?;
 
     //////////////////////////////////////////////////
     // create foundry output and mint 70 native tokens
     //////////////////////////////////////////////////
-    let alias_output_id = get_alias_output_id(message.payload().unwrap());
+    let alias_output_id = get_alias_output_id(block.payload().unwrap());
     let alias_id = AliasId::from(alias_output_id);
     let token_scheme = TokenScheme::Simple(SimpleTokenScheme::new(U256::from(70), U256::from(0), U256::from(100))?);
     let foundry_id = FoundryId::build(
@@ -98,14 +98,14 @@ async fn main() -> Result<()> {
         1,
         token_scheme.kind(),
     );
-    let token_id = TokenId::build(&foundry_id, &TokenTag::new([0u8; 12]));
+    let token_id = TokenId::from(foundry_id);
     let outputs = vec![
         AliasOutputBuilder::new_with_amount(1_000_000, alias_id)?
             .with_state_index(1)
             .with_foundry_counter(1)
-            .add_feature_block(FeatureBlock::Sender(SenderFeatureBlock::new(address)))
-            .add_feature_block(FeatureBlock::Metadata(MetadataFeatureBlock::new(vec![1, 2, 3])?))
-            .add_immutable_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
+            .add_feature(Feature::Sender(SenderFeature::new(address)))
+            .add_feature(Feature::Metadata(MetadataFeature::new(vec![1, 2, 3])?))
+            .add_immutable_feature(Feature::Issuer(IssuerFeature::new(address)))
             .add_unlock_condition(UnlockCondition::StateControllerAddress(
                 StateControllerAddressUnlockCondition::new(address),
             ))
@@ -113,7 +113,7 @@ async fn main() -> Result<()> {
                 address,
             )))
             .finish_output()?,
-        FoundryOutputBuilder::new_with_amount(1_000_000, 1, TokenTag::new([0u8; 12]), token_scheme)?
+        FoundryOutputBuilder::new_with_amount(1_000_000, 1, token_scheme)?
             .add_native_token(NativeToken::new(token_id, U256::from(70))?)
             .add_unlock_condition(UnlockCondition::ImmutableAliasAddress(
                 ImmutableAliasAddressUnlockCondition::new(AliasAddress::from(alias_id)),
@@ -121,31 +121,31 @@ async fn main() -> Result<()> {
             .finish_output()?,
     ];
 
-    let message = client
-        .message()
+    let block = client
+        .block()
         .with_secret_manager(&secret_manager)
         .with_input(alias_output_id.into())?
         .with_outputs(outputs)?
         .finish()
         .await?;
     println!(
-        "Transaction with foundry output sent: http://localhost:14265/api/v2/messages/{}",
-        message.id()
+        "Transaction with foundry output sent: http://localhost:14265/api/v2/blocks/{}",
+        block.id()
     );
-    let _ = client.retry_until_included(&message.id(), None, None).await?;
+    let _ = client.retry_until_included(&block.id(), None, None).await?;
 
     //////////////////////////////////
     // melt 20 native token
     //////////////////////////////////
-    let alias_output_id = get_alias_output_id(message.payload().unwrap());
-    let foundry_output_id = get_foundry_output_id(message.payload().unwrap());
+    let alias_output_id = get_alias_output_id(block.payload().unwrap());
+    let foundry_output_id = get_foundry_output_id(block.payload().unwrap());
     let outputs = vec![
         AliasOutputBuilder::new_with_amount(1_000_000, alias_id)?
             .with_state_index(2)
             .with_foundry_counter(1)
-            .add_feature_block(FeatureBlock::Sender(SenderFeatureBlock::new(address)))
-            .add_feature_block(FeatureBlock::Metadata(MetadataFeatureBlock::new(vec![1, 2, 3])?))
-            .add_immutable_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
+            .add_feature(Feature::Sender(SenderFeature::new(address)))
+            .add_feature(Feature::Metadata(MetadataFeature::new(vec![1, 2, 3])?))
+            .add_immutable_feature(Feature::Issuer(IssuerFeature::new(address)))
             .add_unlock_condition(UnlockCondition::StateControllerAddress(
                 StateControllerAddressUnlockCondition::new(address),
             ))
@@ -156,7 +156,6 @@ async fn main() -> Result<()> {
         FoundryOutputBuilder::new_with_amount(
             1_000_000,
             1,
-            TokenTag::new([0u8; 12]),
             TokenScheme::Simple(SimpleTokenScheme::new(U256::from(70), U256::from(20), U256::from(100))?),
         )?
         .add_native_token(NativeToken::new(token_id, U256::from(50))?)
@@ -166,8 +165,8 @@ async fn main() -> Result<()> {
         .finish_output()?,
     ];
 
-    let message = client
-        .message()
+    let block = client
+        .block()
         .with_secret_manager(&secret_manager)
         .with_input(alias_output_id.into())?
         .with_input(foundry_output_id.into())?
@@ -175,23 +174,23 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
     println!(
-        "Transaction with native tokens burnt sent: http://localhost:14265/api/v2/messages/{}",
-        message.id()
+        "Transaction with native tokens burnt sent: http://localhost:14265/api/v2/blocks/{}",
+        block.id()
     );
-    let _ = client.retry_until_included(&message.id(), None, None).await?;
+    let _ = client.retry_until_included(&block.id(), None, None).await?;
 
     //////////////////////////////////
     // send native token
     //////////////////////////////////
-    let alias_output_id = get_alias_output_id(message.payload().unwrap());
-    let foundry_output_id = get_foundry_output_id(message.payload().unwrap());
+    let alias_output_id = get_alias_output_id(block.payload().unwrap());
+    let foundry_output_id = get_foundry_output_id(block.payload().unwrap());
     let outputs = vec![
         AliasOutputBuilder::new_with_amount(1_000_000, alias_id)?
             .with_state_index(3)
             .with_foundry_counter(1)
-            .add_feature_block(FeatureBlock::Sender(SenderFeatureBlock::new(address)))
-            .add_feature_block(FeatureBlock::Metadata(MetadataFeatureBlock::new(vec![1, 2, 3])?))
-            .add_immutable_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
+            .add_feature(Feature::Sender(SenderFeature::new(address)))
+            .add_feature(Feature::Metadata(MetadataFeature::new(vec![1, 2, 3])?))
+            .add_immutable_feature(Feature::Issuer(IssuerFeature::new(address)))
             .add_unlock_condition(UnlockCondition::StateControllerAddress(
                 StateControllerAddressUnlockCondition::new(address),
             ))
@@ -202,7 +201,6 @@ async fn main() -> Result<()> {
         FoundryOutputBuilder::new_with_amount(
             1_000_000,
             1,
-            TokenTag::new([0u8; 12]),
             TokenScheme::Simple(SimpleTokenScheme::new(U256::from(70), U256::from(20), U256::from(100))?),
         )?
         .add_unlock_condition(UnlockCondition::ImmutableAliasAddress(
@@ -220,8 +218,8 @@ async fn main() -> Result<()> {
         .basic_output_ids(vec![QueryParameter::Address(address.to_bech32("atoi"))])
         .await?;
 
-    let message = client
-        .message()
+    let block = client
+        .block()
         .with_secret_manager(&secret_manager)
         .with_input(output_ids[0].into())?
         .with_input(alias_output_id.into())?
@@ -230,15 +228,15 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
     println!(
-        "Transaction with native tokens sent: http://localhost:14265/api/v2/messages/{}",
-        message.id()
+        "Transaction with native tokens sent: http://localhost:14265/api/v2/blocks/{}",
+        block.id()
     );
-    let _ = client.retry_until_included(&message.id(), None, None).await?;
+    let _ = client.retry_until_included(&block.id(), None, None).await?;
 
     //////////////////////////////////
     // send native token without foundry
     //////////////////////////////////
-    let basic_output_id = get_basic_output_id_with_native_tokens(message.payload().unwrap());
+    let basic_output_id = get_basic_output_id_with_native_tokens(block.payload().unwrap());
     let outputs = vec![
         BasicOutputBuilder::new_with_amount(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
@@ -246,23 +244,23 @@ async fn main() -> Result<()> {
             .finish_output()?,
     ];
 
-    let message = client
-        .message()
+    let block = client
+        .block()
         .with_secret_manager(&secret_manager)
         .with_input(basic_output_id.into())?
         .with_outputs(outputs)?
         .finish()
         .await?;
     println!(
-        "Second transaction with native tokens sent: http://localhost:14265/api/v2/messages/{}",
-        message.id()
+        "Second transaction with native tokens sent: http://localhost:14265/api/v2/blocks/{}",
+        block.id()
     );
-    let _ = client.retry_until_included(&message.id(), None, None).await?;
+    let _ = client.retry_until_included(&block.id(), None, None).await?;
 
     //////////////////////////////////
     // burn native token without foundry
     //////////////////////////////////
-    let basic_output_id = get_basic_output_id_with_native_tokens(message.payload().unwrap());
+    let basic_output_id = get_basic_output_id_with_native_tokens(block.payload().unwrap());
     let outputs = vec![
         BasicOutputBuilder::new_with_amount(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
@@ -270,8 +268,8 @@ async fn main() -> Result<()> {
             .finish_output()?,
     ];
 
-    let message = client
-        .message()
+    let block = client
+        .block()
         .with_secret_manager(&secret_manager)
         .with_burning_allowed(true)
         .with_input(basic_output_id.into())?
@@ -279,10 +277,10 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
     println!(
-        "Third transaction with native tokens burned sent: http://localhost:14265/api/v2/messages/{}",
-        message.id()
+        "Third transaction with native tokens burned sent: http://localhost:14265/api/v2/blocks/{}",
+        block.id()
     );
-    let _ = client.retry_until_included(&message.id(), None, None).await?;
+    let _ = client.retry_until_included(&block.id(), None, None).await?;
 
     Ok(())
 }

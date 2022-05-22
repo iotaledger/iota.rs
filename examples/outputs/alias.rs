@@ -7,13 +7,13 @@ use std::env;
 
 use dotenv::dotenv;
 use iota_client::{
-    bee_message::{
+    bee_block::{
         output::{
-            feature_block::{IssuerFeatureBlock, MetadataFeatureBlock, SenderFeatureBlock},
+            feature::{IssuerFeature, MetadataFeature, SenderFeature},
             unlock_condition::{
                 GovernorAddressUnlockCondition, StateControllerAddressUnlockCondition, UnlockCondition,
             },
-            AliasId, AliasOutputBuilder, FeatureBlock, Output, OutputId,
+            AliasId, AliasOutputBuilder, Feature, Output, OutputId,
         },
         payload::{transaction::TransactionEssence, Payload},
     },
@@ -54,9 +54,9 @@ async fn main() -> Result<()> {
         AliasOutputBuilder::new_with_amount(1_000_000, AliasId::null())?
             .with_state_index(0)
             .with_foundry_counter(0)
-            .add_feature_block(FeatureBlock::Sender(SenderFeatureBlock::new(address)))
-            .add_feature_block(FeatureBlock::Metadata(MetadataFeatureBlock::new(vec![1, 2, 3])?))
-            .add_immutable_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
+            .add_feature(Feature::Sender(SenderFeature::new(address)))
+            .add_feature(Feature::Metadata(MetadataFeature::new(vec![1, 2, 3])?))
+            .add_immutable_feature(Feature::Issuer(IssuerFeature::new(address)))
             .add_unlock_condition(UnlockCondition::StateControllerAddress(
                 StateControllerAddressUnlockCondition::new(address),
             ))
@@ -66,31 +66,31 @@ async fn main() -> Result<()> {
             .finish_output()?,
     ];
 
-    let message = client
-        .message()
+    let block = client
+        .block()
         .with_secret_manager(&secret_manager)
         .with_outputs(outputs)?
         .finish()
         .await?;
 
     println!(
-        "Transaction with new alias output sent: http://localhost:14265/api/v2/messages/{}",
-        message.id()
+        "Transaction with new alias output sent: http://localhost:14265/api/v2/blocks/{}",
+        block.id()
     );
-    let _ = client.retry_until_included(&message.id(), None, None).await?;
+    let _ = client.retry_until_included(&block.id(), None, None).await?;
 
     //////////////////////////////////
     // create second transaction with the actual AliasId (BLAKE2b-160 hash of the Output ID that created the alias)
     //////////////////////////////////
-    let alias_output_id = get_alias_output_id(message.payload().unwrap());
+    let alias_output_id = get_alias_output_id(block.payload().unwrap());
     let alias_id = AliasId::from(alias_output_id);
     let outputs = vec![
         AliasOutputBuilder::new_with_amount(1_000_000, alias_id)?
             .with_state_index(1)
             .with_foundry_counter(0)
-            .add_feature_block(FeatureBlock::Sender(SenderFeatureBlock::new(address)))
-            .add_feature_block(FeatureBlock::Metadata(MetadataFeatureBlock::new(vec![1, 2, 3])?))
-            .add_immutable_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
+            .add_feature(Feature::Sender(SenderFeature::new(address)))
+            .add_feature(Feature::Metadata(MetadataFeature::new(vec![1, 2, 3])?))
+            .add_immutable_feature(Feature::Issuer(IssuerFeature::new(address)))
             .add_unlock_condition(UnlockCondition::StateControllerAddress(
                 StateControllerAddressUnlockCondition::new(address),
             ))
@@ -100,18 +100,18 @@ async fn main() -> Result<()> {
             .finish_output()?,
     ];
 
-    let message = client
-        .message()
+    let block = client
+        .block()
         .with_secret_manager(&secret_manager)
         .with_input(alias_output_id.into())?
         .with_outputs(outputs)?
         .finish()
         .await?;
     println!(
-        "Transaction with alias id set sent: http://localhost:14265/api/v2/messages/{}",
-        message.id()
+        "Transaction with alias id set sent: http://localhost:14265/api/v2/blocks/{}",
+        block.id()
     );
-    let _ = client.retry_until_included(&message.id(), None, None).await?;
+    let _ = client.retry_until_included(&block.id(), None, None).await?;
     Ok(())
 }
 
