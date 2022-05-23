@@ -193,10 +193,10 @@ impl From<&SecretManager> for SecretManagerDto {
     fn from(value: &SecretManager) -> Self {
         match value {
             #[cfg(feature = "stronghold")]
-            SecretManager::Stronghold(stronghold_dto) => Self::Stronghold(StrongholdDto {
+            SecretManager::Stronghold(stronghold_adapter) => Self::Stronghold(StrongholdDto {
                 password: None,
-                timeout: stronghold_dto.get_timeout().map(|duration| duration.as_secs()),
-                snapshot_path: stronghold_dto
+                timeout: stronghold_adapter.get_timeout().map(|duration| duration.as_secs()),
+                snapshot_path: stronghold_adapter
                     .snapshot_path
                     .as_ref()
                     .map(|s| s.clone().into_os_string().to_string_lossy().into()),
