@@ -312,7 +312,7 @@ impl Client {
 
     /// Get the metadata for a given `OutputId` (TransactionId + output_index).
     /// GET /api/v2/outputs/{outputId}/metadata endpoint
-    pub async fn get_output_metadata(client: &Client, output_id: &OutputId) -> Result<OutputMetadataResponse> {
+    pub async fn get_output_metadata(&self, output_id: &OutputId) -> Result<OutputMetadataResponse> {
         let path = &format!("api/v2/outputs/{}/metadata", output_id);
 
         let resp: OutputMetadataResponse = client
