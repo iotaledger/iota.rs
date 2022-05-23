@@ -5,10 +5,10 @@
 
 use std::env;
 
-use bee_message::output::NativeTokensBuilder;
+use bee_block::output::NativeTokensBuilder;
 use dotenv::dotenv;
 use iota_client::{
-    bee_message::output::Output,
+    bee_block::output::Output,
     node_api::indexer::query_parameters::QueryParameter,
     secret::{mnemonic::MnemonicSecretManager, SecretManager},
     Client, Result,

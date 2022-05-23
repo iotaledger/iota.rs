@@ -20,10 +20,10 @@ use std::path::PathBuf;
 use std::{collections::HashMap, ops::Range, str::FromStr};
 
 use async_trait::async_trait;
-use bee_message::{
+use bee_block::{
     address::{Address, AliasAddress, Ed25519Address, NftAddress},
     output::Output,
-    unlock_block::{AliasUnlockBlock, NftUnlockBlock, ReferenceUnlockBlock, UnlockBlock},
+    unlock::{AliasUnlock, NftUnlock, ReferenceUnlock, Unlock},
 };
 pub use types::{GenerateAddressMetadata, LedgerStatus};
 use zeroize::ZeroizeOnDrop;
@@ -55,13 +55,13 @@ pub trait SecretManage: Send + Sync {
         metadata: GenerateAddressMetadata,
     ) -> crate::Result<Vec<Address>>;
 
-    /// Sign on `essence`, unlock `input` by returning an [UnlockBlock].
+    /// Sign on `essence`, unlock `input` by returning an [Unlock].
     async fn signature_unlock(
         &self,
         input: &InputSigningData,
         essence_hash: &[u8; 32],
         remainder: &Option<RemainderData>,
-    ) -> crate::Result<UnlockBlock>;
+    ) -> crate::Result<Unlock>;
 }
 
 /// An extension to [`SecretManager`].
@@ -79,7 +79,7 @@ pub trait SecretManageExt {
     async fn sign_transaction_essence(
         &self,
         prepared_transaction_data: &PreparedTransactionData,
-    ) -> crate::Result<Vec<UnlockBlock>>;
+    ) -> crate::Result<Vec<Unlock>>;
 }
 
 /// Supported secret managers
@@ -253,7 +253,7 @@ impl SecretManage for SecretManager {
         input: &InputSigningData,
         essence_hash: &[u8; 32],
         metadata: &Option<RemainderData>,
-    ) -> crate::Result<UnlockBlock> {
+    ) -> crate::Result<Unlock> {
         match self {
             #[cfg(feature = "stronghold")]
             SecretManager::Stronghold(secret_manager) => {
@@ -278,7 +278,7 @@ impl SecretManageExt for SecretManager {
     async fn sign_transaction_essence(
         &self,
         prepared_transaction_data: &PreparedTransactionData,
-    ) -> crate::Result<Vec<UnlockBlock>> {
+    ) -> crate::Result<Vec<Unlock>> {
         match self {
             #[cfg(feature = "stronghold")]
             SecretManager::Stronghold(_) => self.default_sign_transaction_essence(prepared_transaction_data).await,
@@ -297,60 +297,56 @@ impl SecretManager {
     async fn default_sign_transaction_essence<'a>(
         &self,
         prepared_transaction_data: &PreparedTransactionData,
-    ) -> crate::Result<Vec<UnlockBlock>> {
+    ) -> crate::Result<Vec<Unlock>> {
         // The hashed_essence gets signed
         let hashed_essence = prepared_transaction_data.essence.hash();
-        let mut unlock_blocks = Vec::new();
-        let mut unlock_block_indexes = HashMap::<Address, usize>::new();
+        let mut blocks = Vec::new();
+        let mut block_indexes = HashMap::<Address, usize>::new();
 
         for (current_block_index, input) in prepared_transaction_data.inputs_data.iter().enumerate() {
             // Get the address that is required to unlock the input
             let (_, input_address) = Address::try_from_bech32(&input.bech32_address)?;
 
-            // Check if we already added an [UnlockBlock] for this address
-            match unlock_block_indexes.get(&input_address) {
-                // If we already have an [UnlockBlock] for this address, add a [UnlockBlock] based on the address type
+            // Check if we already added an [Unlock] for this address
+            match block_indexes.get(&input_address) {
+                // If we already have an [Unlock] for this address, add a [Unlock] based on the address type
                 Some(block_index) => match input_address {
-                    Address::Alias(_alias) => {
-                        unlock_blocks.push(UnlockBlock::Alias(AliasUnlockBlock::new(*block_index as u16)?))
-                    }
+                    Address::Alias(_alias) => blocks.push(Unlock::Alias(AliasUnlock::new(*block_index as u16)?)),
                     Address::Ed25519(_ed25519) => {
-                        unlock_blocks.push(UnlockBlock::Reference(ReferenceUnlockBlock::new(*block_index as u16)?))
+                        blocks.push(Unlock::Reference(ReferenceUnlock::new(*block_index as u16)?))
                     }
-                    Address::Nft(_nft) => {
-                        unlock_blocks.push(UnlockBlock::Nft(NftUnlockBlock::new(*block_index as u16)?))
-                    }
+                    Address::Nft(_nft) => blocks.push(Unlock::Nft(NftUnlock::new(*block_index as u16)?)),
                 },
                 None => {
-                    // We can only sign ed25519 addresses and unlock_block_indexes needs to contain the alias or nft
+                    // We can only sign ed25519 addresses and block_indexes needs to contain the alias or nft
                     // address already at this point, because the reference index needs to be lower
                     // than the current block index
                     if input_address.kind() != Ed25519Address::KIND {
                         return Err(crate::Error::MissingInputWithEd25519UnlockCondition);
                     }
 
-                    let unlock_block = self
+                    let block = self
                         .signature_unlock(input, &hashed_essence, &prepared_transaction_data.remainder)
                         .await?;
-                    unlock_blocks.push(unlock_block);
+                    blocks.push(block);
 
-                    // Add the ed25519 address to the unlock_block_indexes, so it gets referenced if further inputs have
+                    // Add the ed25519 address to the block_indexes, so it gets referenced if further inputs have
                     // the same address in their unlock condition
-                    unlock_block_indexes.insert(input_address, current_block_index);
+                    block_indexes.insert(input_address, current_block_index);
                 }
             }
 
-            // When we have an alias or Nft output, we will add their alias or nft address to unlock_block_indexes,
-            // because they can be used to unlock outputs via [UnlockBlock::Alias] or [UnlockBlock::Nft],
+            // When we have an alias or Nft output, we will add their alias or nft address to block_indexes,
+            // because they can be used to unlock outputs via [Unlock::Alias] or [Unlock::Nft],
             // that have the corresponding alias or nft address in their unlock condition
             match &input.output {
-                Output::Alias(alias_output) => unlock_block_indexes.insert(
+                Output::Alias(alias_output) => block_indexes.insert(
                     Address::Alias(AliasAddress::new(
                         alias_output.alias_id().or_from_output_id(input.output_id()?),
                     )),
                     current_block_index,
                 ),
-                Output::Nft(nft_output) => unlock_block_indexes.insert(
+                Output::Nft(nft_output) => block_indexes.insert(
                     Address::Nft(NftAddress::new(
                         nft_output.nft_id().or_from_output_id(input.output_id()?),
                     )),
@@ -359,6 +355,6 @@ impl SecretManager {
                 _ => None,
             };
         }
-        Ok(unlock_blocks)
+        Ok(blocks)
     }
 }

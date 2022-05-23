@@ -3,15 +3,15 @@
 
 use std::{ops::Range, str::FromStr};
 
-use bee_message::{
+use bee_block::{
     input::{UtxoInput, INPUT_COUNT_MAX},
     output::OutputId,
     payload::transaction::TransactionId,
 };
 
 use crate::{
-    api::message_builder::ClientMessageBuilder, node_api::indexer::query_parameters::QueryParameter,
-    secret::SecretManager, Client, Result,
+    api::block_builder::ClientBlockBuilder, node_api::indexer::query_parameters::QueryParameter, secret::SecretManager,
+    Client, Result,
 };
 
 /// Function to consolidate all funds from a range of addresses to the address with the lowest index in that range
@@ -33,7 +33,7 @@ pub async fn consolidate_funds(
     let mut last_transfer_index = address_range.start;
     let offset = address_range.start;
     'consolidation: loop {
-        let mut message_ids = Vec::new();
+        let mut block_ids = Vec::new();
         // Iterate over addresses reversed so the funds end up on the first address in the range
         for (index, address) in addresses.iter().enumerate().rev() {
             let index = index as u32;
@@ -55,7 +55,7 @@ pub async fn consolidate_funds(
 
             for output in basic_outputs.iter() {
                 let (amount, _output_address) =
-                    ClientMessageBuilder::get_output_amount_and_address(&output.output, None)?;
+                    ClientBlockBuilder::get_output_amount_and_address(&output.output, None)?;
                 output_with_metadata.push((output.clone(), amount));
             }
 
@@ -73,32 +73,32 @@ pub async fn consolidate_funds(
             let outputs_chunks = output_with_metadata.chunks(INPUT_COUNT_MAX.into());
 
             for chunk in outputs_chunks {
-                let mut message_builder = client.message().with_secret_manager(secret_manager);
+                let mut block_builder = client.block().with_secret_manager(secret_manager);
                 let mut total_amount = 0;
                 for (input, amount) in chunk {
-                    message_builder = message_builder.with_input(UtxoInput::from(OutputId::new(
-                        TransactionId::from_str(&input.transaction_id)?,
-                        input.output_index,
+                    block_builder = block_builder.with_input(UtxoInput::from(OutputId::new(
+                        TransactionId::from_str(&input.metadata.transaction_id)?,
+                        input.metadata.output_index,
                     )?))?;
                     total_amount += amount;
                 }
 
-                let message = message_builder
+                let block = block_builder
                     .with_input_range(index..index + 1)
                     .with_output(&consolidation_address, total_amount)?
                     .with_initial_address_index(0)
                     .finish()
                     .await?;
-                message_ids.push(message.id());
+                block_ids.push(block.id());
             }
         }
 
-        if message_ids.is_empty() {
+        if block_ids.is_empty() {
             break 'consolidation;
         }
         // Wait for txs to get confirmed so we don't create conflicting txs
-        for message_id in message_ids {
-            let _ = client.retry_until_included(&message_id, None, None).await?;
+        for block_id in block_ids {
+            let _ = client.retry_until_included(&block_id, None, None).await?;
         }
     }
     Ok(consolidation_address)

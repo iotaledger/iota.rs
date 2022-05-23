@@ -1,14 +1,14 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! In this example we send the signed transaction in a message.
-//! `cargo run --example 3_send_message --release`.
+//! In this example we send the signed transaction in a block.
+//! `cargo run --example 3_send_block --release`.
 
 use std::{fs::File, io::prelude::*, path::Path};
 
 use iota_client::{
     api::{verify_semantic, SignedTransactionData, SignedTransactionDataDto},
-    bee_message::{payload::Payload, semantic::ConflictReason},
+    bee_block::{payload::Payload, semantic::ConflictReason},
     Client, Error, Result,
 };
 
@@ -40,16 +40,16 @@ async fn main() -> Result<()> {
     }
 
     // Sends offline signed transaction online.
-    let message = online_client
-        .message()
-        .finish_message(Some(Payload::Transaction(Box::new(
+    let block = online_client
+        .block()
+        .finish_block(Some(Payload::Transaction(Box::new(
             signed_transaction_payload.transaction_payload,
         ))))
         .await?;
 
     println!(
-        "Transaction sent: https://explorer.iota.org/devnet/message/{}",
-        message.id()
+        "Transaction sent: https://explorer.iota.org/devnet/block/{}",
+        block.id()
     );
 
     Ok(())

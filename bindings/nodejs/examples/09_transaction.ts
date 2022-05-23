@@ -41,19 +41,19 @@ async function run() {
 
         // We prepare the transaction
         // Insert the output address and amount to spend. The amount cannot be zero.
-        const message = await client.generateMessage(secretManager, {
+        const block = await client.generateBlock(secretManager, {
             output: {
                 address: addresses[0],
                 amount: '1000000',
             },
         });
-        console.log('Message: ', message, '\n');
+        console.log('Block: ', block, '\n');
 
         // Send transaction
-        const messageId = await client.postMessage(message);
+        const blockId = await client.postBlock(block);
 
         console.log(
-            `Transaction sent: https://explorer.iota.org/devnet/message/${messageId}`,
+            `Transaction sent: https://explorer.iota.org/devnet/block/${blockId}`,
         );
     } catch (error) {
         console.error('Error: ', error);

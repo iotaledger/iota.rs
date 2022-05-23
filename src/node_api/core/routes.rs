@@ -5,19 +5,19 @@
 
 use std::str::FromStr;
 
-use bee_message::{
+use bee_block::{
     output::OutputId,
     payload::{
         milestone::{MilestoneId, MilestonePayload},
         transaction::TransactionId,
     },
-    Message, MessageDto, MessageId,
+    Block, BlockDto, BlockId,
 };
 use bee_rest_api::types::{
     dtos::{PeerDto, ReceiptDto},
     responses::{
-        MessageChildrenResponse, MessageMetadataResponse, MessageResponse, MilestoneResponse, OutputResponse,
-        PeersResponse, ReceiptsResponse, SubmitMessageResponse, TipsResponse, TreasuryResponse, UtxoChangesResponse,
+        BlockChildrenResponse, BlockMetadataResponse, BlockResponse, MilestoneResponse, OutputResponse, PeersResponse,
+        ReceiptsResponse, SubmitBlockResponse, TipsResponse, TreasuryResponse, UtxoChangesResponse,
     },
 };
 use packable::PackableExt;
@@ -65,9 +65,9 @@ impl Client {
 
     // Tangle routes.
 
-    /// Returns tips that are ideal for attaching a message.
+    /// Returns tips that are ideal for attaching a block.
     /// GET /api/v2/tips
-    pub async fn get_tips(&self) -> Result<Vec<MessageId>> {
+    pub async fn get_tips(&self) -> Result<Vec<BlockId>> {
         let path = "api/v2/tips";
 
         let resp = self
@@ -75,37 +75,37 @@ impl Client {
             .get_request::<TipsResponse>(path, None, self.get_timeout(), false, false)
             .await?;
 
-        resp.tip_message_ids
+        resp.tips
             .iter()
-            .map(|tip| MessageId::from_str(tip).map_err(Error::MessageError))
+            .map(|tip| BlockId::from_str(tip).map_err(Error::BlockError))
             .collect::<Result<Vec<_>>>()
     }
 
-    // Messages routes.
+    // Blocks routes.
 
-    /// Returns the MessageId of the submitted message.
-    /// POST JSON to /api/v2/messages
-    pub async fn post_message(&self, message: &Message) -> Result<MessageId> {
-        let path = "api/v2/messages";
+    /// Returns the BlockId of the submitted block.
+    /// POST JSON to /api/v2/blocks
+    pub async fn post_block(&self, block: &Block) -> Result<BlockId> {
+        let path = "api/v2/blocks";
         let local_pow = self.get_local_pow().await;
         let timeout = if local_pow {
             self.get_timeout()
         } else {
             self.get_remote_pow_timeout()
         };
-        let message_dto = MessageDto::from(message);
+        let block_dto = BlockDto::from(block);
 
         // fallback to local PoW if remote PoW fails
         let resp = match self
             .node_manager
-            .post_request_json::<SubmitMessageResponse>(path, timeout, serde_json::to_value(message_dto)?, local_pow)
+            .post_request_json::<SubmitBlockResponse>(path, timeout, serde_json::to_value(block_dto)?, local_pow)
             .await
         {
             Ok(res) => res,
             Err(e) => {
                 if let Error::NodeError(e) = e {
                     let fallback_to_local_pow = self.get_fallback_to_local_pow().await;
-                    // hornet and bee return different error messages
+                    // hornet and bee return different error blocks
                     if (e == *"No available nodes with remote PoW"
                         || e.contains("proof of work is not enabled")
                         || e.contains("`PoW` not enabled"))
@@ -120,27 +120,27 @@ impl Client {
                             client_network_info.local_pow = true;
                         }
                         #[cfg(not(target_family = "wasm"))]
-                        let msg_res = crate::api::finish_pow(self, message.payload().cloned()).await;
+                        let block_res = crate::api::finish_pow(self, block.payload().cloned()).await;
                         #[cfg(target_family = "wasm")]
-                        let msg_res = {
+                        let block_res = {
                             let min_pow_score = self.get_min_pow_score().await?;
                             let network_id = self.get_network_id().await?;
                             crate::api::finish_single_thread_pow(
                                 client,
                                 network_id,
                                 None,
-                                message.payload().cloned(),
+                                block.payload().cloned(),
                                 min_pow_score,
                             )
                             .await
                         };
-                        let message_with_local_pow = match msg_res {
-                            Ok(msg) => {
+                        let block_with_local_pow = match block_res {
+                            Ok(block) => {
                                 // reset local PoW state
                                 let mut client_network_info =
                                     self.network_info.write().map_err(|_| crate::Error::PoisonError)?;
                                 client_network_info.local_pow = false;
-                                msg
+                                block
                             }
                             Err(e) => {
                                 // reset local PoW state
@@ -150,10 +150,10 @@ impl Client {
                                 return Err(e);
                             }
                         };
-                        let message_dto = MessageDto::from(&message_with_local_pow);
+                        let block_dto = BlockDto::from(&block_with_local_pow);
 
                         self.node_manager
-                            .post_request_json(path, timeout, serde_json::to_value(message_dto)?, true)
+                            .post_request_json(path, timeout, serde_json::to_value(block_dto)?, true)
                             .await?
                     } else {
                         return Err(Error::NodeError(e));
@@ -164,13 +164,13 @@ impl Client {
             }
         };
 
-        Ok(MessageId::from_str(&resp.message_id)?)
+        Ok(BlockId::from_str(&resp.block_id)?)
     }
 
-    /// Returns the MessageId of the submitted message.
-    /// POST /api/v2/messages
-    pub async fn post_message_raw(&self, message: &Message) -> Result<MessageId> {
-        let path = "api/v2/messages";
+    /// Returns the BlockId of the submitted block.
+    /// POST /api/v2/blocks
+    pub async fn post_block_raw(&self, block: &Block) -> Result<BlockId> {
+        let path = "api/v2/blocks";
         let local_pow = self.get_local_pow().await;
         let timeout = if local_pow {
             self.get_timeout()
@@ -181,14 +181,14 @@ impl Client {
         // fallback to local PoW if remote PoW fails
         let resp = match self
             .node_manager
-            .post_request_bytes::<SubmitMessageResponse>(path, timeout, &message.pack_to_vec(), local_pow)
+            .post_request_bytes::<SubmitBlockResponse>(path, timeout, &block.pack_to_vec(), local_pow)
             .await
         {
             Ok(res) => res,
             Err(e) => {
                 if let Error::NodeError(e) = e {
                     let fallback_to_local_pow = self.get_fallback_to_local_pow().await;
-                    // hornet and bee return different error messages
+                    // hornet and bee return different error blocks
                     if (e == *"No available nodes with remote PoW"
                         || e.contains("proof of work is not enabled")
                         || e.contains("`PoW` not enabled"))
@@ -203,27 +203,27 @@ impl Client {
                             client_network_info.local_pow = true;
                         }
                         #[cfg(not(target_family = "wasm"))]
-                        let msg_res = crate::api::finish_pow(self, message.payload().cloned()).await;
+                        let block_res = crate::api::finish_pow(self, block.payload().cloned()).await;
                         #[cfg(target_family = "wasm")]
-                        let msg_res = {
+                        let block_res = {
                             let min_pow_score = self.get_min_pow_score().await?;
                             let network_id = self.get_network_id().await?;
                             crate::api::finish_single_thread_pow(
                                 client,
                                 network_id,
                                 None,
-                                message.payload().cloned(),
+                                block.payload().cloned(),
                                 min_pow_score,
                             )
                             .await
                         };
-                        let message_with_local_pow = match msg_res {
-                            Ok(msg) => {
+                        let block_with_local_pow = match block_res {
+                            Ok(block) => {
                                 // reset local PoW state
                                 let mut client_network_info =
                                     self.network_info.write().map_err(|_| crate::Error::PoisonError)?;
                                 client_network_info.local_pow = false;
-                                msg
+                                block
                             }
                             Err(e) => {
                                 // reset local PoW state
@@ -234,7 +234,7 @@ impl Client {
                             }
                         };
                         self.node_manager
-                            .post_request_bytes(path, timeout, &message_with_local_pow.pack_to_vec(), true)
+                            .post_request_bytes(path, timeout, &block_with_local_pow.pack_to_vec(), true)
                             .await?
                     } else {
                         return Err(Error::NodeError(e));
@@ -245,56 +245,56 @@ impl Client {
             }
         };
 
-        Ok(MessageId::from_str(&resp.message_id)?)
+        Ok(BlockId::from_str(&resp.block_id)?)
     }
 
-    /// Finds a message by its MessageId. This method returns the given message object.
-    /// GET /api/v2/messages/{MessageId}
-    pub async fn get_message(&self, message_id: &MessageId) -> Result<Message> {
-        let path = &format!("api/v2/messages/{}", message_id);
+    /// Finds a block by its BlockId. This method returns the given block object.
+    /// GET /api/v2/blocks/{BlockId}
+    pub async fn get_block(&self, block_id: &BlockId) -> Result<Block> {
+        let path = &format!("api/v2/blocks/{}", block_id);
 
         let resp = self
             .node_manager
-            .get_request::<MessageResponse>(path, None, self.get_timeout(), false, true)
+            .get_request::<BlockResponse>(path, None, self.get_timeout(), false, true)
             .await?;
 
-        Ok(Message::try_from(&resp.0)?)
+        Ok(Block::try_from(&resp.0)?)
     }
 
-    /// Finds a message by its MessageId. This method returns the given message raw data.
-    /// GET /api/v2/messages/{MessageId}
-    pub async fn get_message_raw(&self, message_id: &MessageId) -> Result<Vec<u8>> {
-        let path = &format!("api/v2/messages/{}", message_id);
+    /// Finds a block by its BlockId. This method returns the given block raw data.
+    /// GET /api/v2/blocks/{BlockId}
+    pub async fn get_block_raw(&self, block_id: &BlockId) -> Result<Vec<u8>> {
+        let path = &format!("api/v2/blocks/{}", block_id);
 
         self.node_manager
             .get_request_bytes(path, None, self.get_timeout())
             .await
     }
 
-    /// Returns the metadata of a message.
-    /// GET /api/v2/messages/{MessageId}/metadata
-    pub async fn get_message_metadata(&self, message_id: &MessageId) -> Result<MessageMetadataResponse> {
-        let path = &format!("api/v2/messages/{}/metadata", message_id);
+    /// Returns the metadata of a block.
+    /// GET /api/v2/blocks/{BlockId}/metadata
+    pub async fn get_block_metadata(&self, block_id: &BlockId) -> Result<BlockMetadataResponse> {
+        let path = &format!("api/v2/blocks/{}/metadata", block_id);
 
         self.node_manager
             .get_request(path, None, self.get_timeout(), true, true)
             .await
     }
 
-    /// Returns the list of message IDs that reference a message by its identifier.
-    /// GET /api/v2/messages/{messageID}/children
-    pub async fn get_message_children(&self, message_id: &MessageId) -> Result<Box<[MessageId]>> {
-        let path = &format!("api/v2/messages/{}/children", message_id);
+    /// Returns the list of block IDs that reference a block by its identifier.
+    /// GET /api/v2/blocks/{blockID}/children
+    pub async fn get_block_children(&self, block_id: &BlockId) -> Result<Box<[BlockId]>> {
+        let path = &format!("api/v2/blocks/{}/children", block_id);
 
         let resp = self
             .node_manager
-            .get_request::<MessageChildrenResponse>(path, None, self.get_timeout(), false, true)
+            .get_request::<BlockChildrenResponse>(path, None, self.get_timeout(), false, true)
             .await?;
 
-        resp.children_message_ids
+        resp.children
             .iter()
-            .map(|s| MessageId::from_str(s).map_err(Error::MessageError))
-            .collect::<Result<Box<[MessageId]>>>()
+            .map(|s| BlockId::from_str(s).map_err(Error::BlockError))
+            .collect::<Result<Box<[BlockId]>>>()
     }
 
     // UTXO routes.
@@ -346,17 +346,17 @@ impl Client {
             .await
     }
 
-    /// Returns the message that was included in the ledger for a given TransactionId.
-    /// GET /api/v2/transactions/{transactionId}/included-message
-    pub async fn get_included_message(&self, transaction_id: &TransactionId) -> Result<Message> {
-        let path = &format!("api/v2/transactions/{}/included-message", transaction_id);
+    /// Returns the block that was included in the ledger for a given TransactionId.
+    /// GET /api/v2/transactions/{transactionId}/included-block
+    pub async fn get_included_block(&self, transaction_id: &TransactionId) -> Result<Block> {
+        let path = &format!("api/v2/transactions/{}/included-block", transaction_id);
 
         let resp = self
             .node_manager
-            .get_request::<MessageResponse>(path, None, self.get_timeout(), true, true)
+            .get_request::<BlockResponse>(path, None, self.get_timeout(), true, true)
             .await?;
 
-        Ok(Message::try_from(&resp.0)?)
+        Ok(Block::try_from(&resp.0)?)
     }
 
     // Milestones routes.

@@ -5,19 +5,19 @@
 //!
 //! High-level functions are accessible via the [`Client`][client::Client].
 //!
-//! ## Sending a message without a payload
+//! ## Sending a block without a payload
 //!  ```compile_fail
 //! let client = Client::builder()
 //!    .with_node("http://localhost:14265")?
 //!    .finish()
 //!    .await?;
 //!
-//! let message = iota
-//!    .message()
+//! let block = iota
+//!    .block()
 //!    .finish()
 //!    .await?;
 //!
-//! println!("Message sent {}", message.id());
+//! println!("Block sent {}", block.id());
 //! ```
 
 #![deny(unused_extern_crates)]
@@ -52,7 +52,7 @@ pub mod secret;
 pub mod stronghold;
 pub mod utils;
 
-pub use bee_message;
+pub use bee_block;
 pub use bee_pow as pow;
 pub use bee_rest_api;
 pub use crypto::{self, keys::slip10::Seed};

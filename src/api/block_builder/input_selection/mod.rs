@@ -10,7 +10,7 @@ mod output_data;
 mod remainder;
 pub mod types;
 
-use bee_message::{
+use bee_block::{
     address::Address,
     input::INPUT_COUNT_MAX,
     output::{

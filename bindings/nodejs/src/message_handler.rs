@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use iota_client::{
-    bee_message::{
+    bee_block::{
         payload::milestone::{dto::MilestonePayloadDto, option::dto::ReceiptMilestoneOptionDto},
-        MessageDto,
+        BlockDto,
     },
     message_interface::{
         create_message_handler, ClientMessageHandler, Message as ClientMessage, MessageType, Response,
@@ -79,7 +79,7 @@ impl MessageHandler {
             }
             let payload = match &event.payload {
                 MqttPayload::Json(val) => serde_json::to_string(&val).unwrap(),
-                MqttPayload::Message(msg) => serde_json::to_string(&MessageDto::from(msg)).unwrap(),
+                MqttPayload::Block(block) => serde_json::to_string(&BlockDto::from(block)).unwrap(),
                 MqttPayload::MilestonePayload(ms) => serde_json::to_string(&MilestonePayloadDto::from(ms)).unwrap(),
                 MqttPayload::Receipt(receipt) => {
                     serde_json::to_string(&ReceiptMilestoneOptionDto::from(receipt)).unwrap()

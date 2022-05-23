@@ -14,89 +14,89 @@ const client = new Client({
 });
 
 // Skip for CI
-describe.skip('Message methods', () => {
-    it('sends a message json', async () => {
-        const message = await client.generateMessage();
+describe.skip('Block methods', () => {
+    it('sends a block json', async () => {
+        const block = await client.generateBlock();
 
-        const jsonMessageId = await client.postMessageJson(message);
+        const jsonBlockId = await client.postBlockJson(block);
 
-        expect(jsonMessageId).toBeValidMessageId();
+        expect(jsonBlockId).toBeValidBlockId();
     });
 
-    it('gets message children', async () => {
-        const message = await client.generateMessage();
-        const messageId = await client.postMessage(message);
+    it('gets block children', async () => {
+        const block = await client.generateBlock();
+        const blockId = await client.postBlock(block);
 
-        const messageChildren = await client.getMessageChildren(messageId);
+        const blockChildren = await client.getBlockChildren(blockId);
 
-        messageChildren.forEach((id) => expect(id).toBeValidMessageId);
+        blockChildren.forEach((id) => expect(id).toBeValidBlockId);
     });
 
-    it('finds messages by message IDs', async () => {
-        const messageIds = await client.getTips();
-        const messages = await client.findMessages(messageIds);
+    it('finds blocks by block IDs', async () => {
+        const blockIds = await client.getTips();
+        const blocks = await client.findBlocks(blockIds);
 
-        expect(messages.length).toBe(messageIds.length);
+        expect(blocks.length).toBe(blockIds.length);
     });
 
-    // TODO: Error: 404 message not found. Fixed in https://github.com/iotaledger/iota.rs/pull/983
-    it.skip('gets raw message', async () => {
-        const message = await client.generateMessage();
-        const messageId = await client.postMessage(message);
+    // TODO: Error: 404 block not found. Fixed in https://github.com/iotaledger/iota.rs/pull/983
+    it.skip('gets raw block', async () => {
+        const block = await client.generateBlock();
+        const blockId = await client.postBlock(block);
 
-        const messageRaw = await client.getMessageRaw(messageId);
+        const blockRaw = await client.getBlockRaw(blockId);
 
-        expect(messageRaw).toBeDefined();
+        expect(blockRaw).toBeDefined();
     });
 
-    it('promotes a message', async () => {
-        const message = await client.generateMessage();
-        const messageId = await client.postMessage(message);
+    it('promotes a block', async () => {
+        const block = await client.generateBlock();
+        const blockId = await client.postBlock(block);
 
-        // Promote a message without checking if it should be promoted
-        const promoteUnchecked = await client.promoteUnchecked(messageId);
+        // Promote a block without checking if it should be promoted
+        const promoteUnchecked = await client.promoteUnchecked(blockId);
 
-        expect(promoteUnchecked[1].parentMessageIds).toContain(messageId);
+        expect(promoteUnchecked[1].parents).toContain(blockId);
 
         // Returns expected error: no need to promote or reattach.
-        await expect(client.promote(messageId)).rejects.toMatch(
+        await expect(client.promote(blockId)).rejects.toMatch(
             'NoNeedPromoteOrReattach',
         );
     });
 
-    it('reattaches a message', async () => {
-        const message = await client.generateMessage();
-        const messageId = await client.postMessage(message);
+    it('reattaches a block', async () => {
+        const block = await client.generateBlock();
+        const blockId = await client.postBlock(block);
 
-        // Reattach a message without checking if it should be reattached
-        const reattachUnchecked = await client.reattachUnchecked(messageId);
+        // Reattach a block without checking if it should be reattached
+        const reattachUnchecked = await client.reattachUnchecked(blockId);
 
-        expect(reattachUnchecked[0]).toBeValidMessageId();
+        expect(reattachUnchecked[0]).toBeValidBlockId();
         expect(reattachUnchecked[1]).toBeDefined();
 
         // Returns expected error: no need to promote or reattach.
-        await expect(client.reattach(messageId)).rejects.toMatch(
+        await expect(client.reattach(blockId)).rejects.toMatch(
             'NoNeedPromoteOrReattach',
         );
     });
 
     // Skip by default, retryUntilIncluded can be slow
-    it.skip('retries a message', async () => {
-        const message = await client.generateMessage();
-        const messageId = await client.postMessage(message);
+    it.skip('retries a block', async () => {
+        const block = await client.generateBlock();
+        const blockId = await client.postBlock(block);
 
-        // Retries (promotes or reattaches) a message for provided message id until it's included
+        // Retries (promotes or reattaches) a block for provided block id until it's included
         // (referenced by a milestone). Default interval is 5 seconds and max attempts is 40.
         const retryUntilIncluded = await client.retryUntilIncluded(
-            messageId,
+            blockId,
             2,
             5,
         );
-        //Returns the included message at first position and additional reattached messages
-        expect(retryUntilIncluded[0][0]).toBe(messageId);
+        //Returns the included block at first position and additional reattached blocks
+        expect(retryUntilIncluded[0][0]).toBe(blockId);
 
         // Returns expected error: no need to promote or reattach.
-        await expect(client.retry(messageId)).rejects.toMatch(
+        await expect(client.retry(blockId)).rejects.toMatch(
             'NoNeedPromoteOrReattach',
         );
     });

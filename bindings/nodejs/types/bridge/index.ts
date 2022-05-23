@@ -6,19 +6,19 @@ import type {
     __GenerateMnemonicPayloadMethod__,
     __MnemonicToHexSeedPayloadMethod__,
     __GenerateAddressesPayloadMethod__,
-    __PostMessagePayloadMethod__,
-    __GenerateMessagePayloadMethod__,
+    __PostBlockPayloadMethod__,
+    __GenerateBlockPayloadMethod__,
     __GetTipsPayloadMethod__,
     __GetNetworkInfoPayloadMethod__,
-    __GetMessageDataPayloadMethod__,
-    __GetMessageMetadataPayloadMethod__,
+    __GetBlockPayloadMethod__,
+    __GetBlockMetadataPayloadMethod__,
     __FindInputsPayloadMethod__,
     __FindOutputsPayloadMethod__,
     __PrepareTransactionPayloadMethod__,
     __SignTransactionPayloadMethod__,
     __SubmitPayloadPayloadMethod__,
     __ParseBech32AddressPayloadMethod__,
-    __MessageIdPayloadMethod__,
+    __BlockIdPayloadMethod__,
     __GetNodePayloadMethod__,
     __GetNetworkIdPayloadMethod__,
     __GetBech32HrpPayloadMethod__,
@@ -30,13 +30,13 @@ import type {
     __GetHealthPayloadMethod__,
     __GetNodeInfoPayloadMethod__,
     __GetPeersPayloadMethod__,
-    __PostMessageJsonPayloadMethod__,
-    __GetMessageRawPayloadMethod__,
-    __GetMessageChildrenPayloadMethod__,
+    __PostBlockJsonPayloadMethod__,
+    __GetBlockRawPayloadMethod__,
+    __GetBlockChildrenPayloadMethod__,
     __GetReceiptsPayloadMethod__,
     __GetReceiptsMigratedAtPayloadMethod__,
     __GetTreasuryPayloadMethod__,
-    __GetIncludedMessagePayloadMethod__,
+    __GetIncludedBlockPayloadMethod__,
     __Bech32ToHexPayloadMethod__,
     __HexToBech32PayloadMethod__,
     __HexPublicKeyToBech32AddressPayloadMethod__,
@@ -48,7 +48,7 @@ import type {
     __FoundriesOutputIdsPayloadMethod__,
     __FoundryOutputIdPayloadMethod__,
     __TryGetOutputsPayloadMethod__,
-    __FindMessagesPayloadMethod__,
+    __FindBlocksPayloadMethod__,
     __RetryPayloadMethod__,
     __RetryUntilIncludedPayloadMethod__,
     __ConsolidateFundsPayloadMethod__,
@@ -72,12 +72,12 @@ export type __ClientPayloadMethods__ =
     | __GenerateMnemonicPayloadMethod__
     | __MnemonicToHexSeedPayloadMethod__
     | __GenerateAddressesPayloadMethod__
-    | __PostMessagePayloadMethod__
-    | __GenerateMessagePayloadMethod__
+    | __PostBlockPayloadMethod__
+    | __GenerateBlockPayloadMethod__
     | __GetTipsPayloadMethod__
     | __GetNetworkInfoPayloadMethod__
-    | __GetMessageDataPayloadMethod__
-    | __GetMessageMetadataPayloadMethod__
+    | __GetBlockPayloadMethod__
+    | __GetBlockMetadataPayloadMethod__
     | __FindInputsPayloadMethod__
     | __FindOutputsPayloadMethod__
     | __PrepareTransactionPayloadMethod__
@@ -85,7 +85,7 @@ export type __ClientPayloadMethods__ =
     | __StoreMnemonicPayloadMethod__
     | __SubmitPayloadPayloadMethod__
     | __ParseBech32AddressPayloadMethod__
-    | __MessageIdPayloadMethod__
+    | __BlockIdPayloadMethod__
     | __GetNodePayloadMethod__
     | __GetNetworkIdPayloadMethod__
     | __GetBech32HrpPayloadMethod__
@@ -97,9 +97,9 @@ export type __ClientPayloadMethods__ =
     | __GetHealthPayloadMethod__
     | __GetNodeInfoPayloadMethod__
     | __GetPeersPayloadMethod__
-    | __PostMessageJsonPayloadMethod__
-    | __GetMessageRawPayloadMethod__
-    | __GetMessageChildrenPayloadMethod__
+    | __PostBlockJsonPayloadMethod__
+    | __GetBlockRawPayloadMethod__
+    | __GetBlockChildrenPayloadMethod__
     | __GetMilestoneByMilestoneIdPayloadMethod__
     | __GetUtxoChangesByMilestoneIdPayloadMethod__
     | __GetMilestoneByMilestoneIndexPayloadMethod__
@@ -107,7 +107,7 @@ export type __ClientPayloadMethods__ =
     | __GetReceiptsPayloadMethod__
     | __GetReceiptsMigratedAtPayloadMethod__
     | __GetTreasuryPayloadMethod__
-    | __GetIncludedMessagePayloadMethod__
+    | __GetIncludedBlockPayloadMethod__
     | __Bech32ToHexPayloadMethod__
     | __HexToBech32PayloadMethod__
     | __HexPublicKeyToBech32AddressPayloadMethod__
@@ -119,7 +119,7 @@ export type __ClientPayloadMethods__ =
     | __FoundriesOutputIdsPayloadMethod__
     | __FoundryOutputIdPayloadMethod__
     | __TryGetOutputsPayloadMethod__
-    | __FindMessagesPayloadMethod__
+    | __FindBlocksPayloadMethod__
     | __RetryPayloadMethod__
     | __RetryUntilIncludedPayloadMethod__
     | __ConsolidateFundsPayloadMethod__

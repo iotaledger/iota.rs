@@ -5,7 +5,7 @@
 
 use std::fmt::{Debug, Display};
 
-use bee_message::{output::NativeTokens, semantic::ConflictReason};
+use bee_block::{output::NativeTokens, semantic::ConflictReason};
 use serde::{ser::Serializer, Serialize};
 
 use crate::node_api::indexer::QueryParameter;
@@ -18,14 +18,14 @@ pub type Result<T> = std::result::Result<T, Error>;
 #[allow(clippy::large_enum_variant)]
 #[serde(tag = "type", content = "error")]
 pub enum Error {
-    /// Error when building tagged_data messages
-    #[error("Error when building tagged_data message: {0}")]
+    /// Error when building tagged_data blocks
+    #[error("Error when building tagged_data block: {0}")]
     TaggedDataError(String),
     /// Invalid amount in API response
     #[error("Invalid amount in API response: {0}")]
     InvalidAmount(String),
-    /// Error when building transaction messages
-    #[error("Error when building transaction message")]
+    /// Error when building transaction blocks
+    #[error("Error when building transaction block")]
     TransactionError,
     /// The wallet account doesn't have enough balance
     #[error("The wallet account doesn't have enough balance. It only has {0}, required is {1}")]
@@ -74,23 +74,23 @@ pub enum Error {
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
     LoggerError(#[from] fern_logger::Error),
-    /// Message types error
+    /// Block types error
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
-    MessageError(#[from] bee_message::Error),
-    /// Message dtos error
+    BlockError(#[from] bee_block::Error),
+    /// Block dtos error
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
-    MessageDtoError(#[from] bee_message::DtoError),
+    BlockDtoError(#[from] bee_block::DtoError),
     /// Bee rest api error
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
     BeeRestApiError(#[from] bee_rest_api::types::error::Error),
-    /// The message doensn't need to be promoted or reattached
-    #[error("Message ID `{0}` doesn't need to be promoted or reattached")]
+    /// The block doensn't need to be promoted or reattached
+    #[error("Block ID `{0}` doesn't need to be promoted or reattached")]
     NoNeedPromoteOrReattach(String),
-    /// The message cannot be included into the Tangle
-    #[error("Message ID `{0}` couldn't get included into the Tangle")]
+    /// The block cannot be included into the Tangle
+    #[error("Block ID `{0}` couldn't get included into the Tangle")]
     TangleInclusionError(String),
     /// Mqtt client error
     #[cfg(feature = "mqtt")]
@@ -173,7 +173,7 @@ pub enum Error {
     SecretManagerMismatch,
     /// Missing unlock block error
     #[error("missing unlock block")]
-    MissingUnlockBlock,
+    MissingBlock,
     /// No input with matching ed25519 unlock condition provided
     #[error("No input with matching ed25519 unlock condition provided")]
     MissingInputWithEd25519UnlockCondition,

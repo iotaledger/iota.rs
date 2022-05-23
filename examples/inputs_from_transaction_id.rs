@@ -3,7 +3,7 @@
 
 //! cargo run --example inputs_from_transaction_id --release
 
-use iota_client::{bee_message::payload::transaction::TransactionId, Client, Result};
+use iota_client::{bee_block::payload::transaction::TransactionId, Client, Result};
 
 /// In this example we will fetch all inputs from a given transaction id.
 

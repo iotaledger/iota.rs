@@ -5,7 +5,7 @@
 
 use std::collections::HashSet;
 
-use bee_message::{
+use bee_block::{
     address::Address,
     input::{Input, UtxoInput},
     output::{dto::OutputDto, InputsCommitment, Output, OutputId},
@@ -15,31 +15,31 @@ use bee_message::{
         Payload, TaggedDataPayload,
     },
     semantic::{semantic_validation, ConflictReason, ValidationContext},
-    unlock_block::UnlockBlocks,
+    unlock::Unlocks,
 };
 
 use crate::{
-    api::{types::PreparedTransactionData, ClientMessageBuilder},
-    bee_message::output::AliasId,
+    api::{types::PreparedTransactionData, ClientBlockBuilder},
+    bee_block::output::AliasId,
     secret::{types::InputSigningData, SecretManageExt},
     Error, Result,
 };
 
 /// Prepare a transaction
-pub async fn prepare_transaction(message_builder: &ClientMessageBuilder<'_>) -> Result<PreparedTransactionData> {
+pub async fn prepare_transaction(block_builder: &ClientBlockBuilder<'_>) -> Result<PreparedTransactionData> {
     log::debug!("[prepare_transaction]");
-    let byte_cost_config = message_builder.client.get_byte_cost_config().await?;
+    let byte_cost_config = block_builder.client.get_byte_cost_config().await?;
 
     let mut governance_transition: Option<HashSet<AliasId>> = None;
-    for output in &message_builder.outputs {
+    for output in &block_builder.outputs {
         // Check if the outputs have enough amount to cover the storage deposit
         output.verify_storage_deposit(&byte_cost_config)?;
         if let Output::Alias(x) = output {
             if x.state_index() > 0 {
                 // Check if the transaction is a governance_transition, by checking if the new index is the same as
                 // the previous index
-                let output_id = message_builder.client.alias_output_id(*x.alias_id()).await?;
-                let output_response = message_builder.client.get_output(&output_id).await?;
+                let output_id = block_builder.client.alias_output_id(*x.alias_id()).await?;
+                let output_response = block_builder.client.get_output(&output_id).await?;
                 if let OutputDto::Alias(output) = output_response.output {
                     // A governance transition is identified by an unchanged State Index in next state.
                     if x.state_index() == output.state_index {
@@ -53,19 +53,19 @@ pub async fn prepare_transaction(message_builder: &ClientMessageBuilder<'_>) -> 
     }
 
     // Inputselection
-    let selected_transaction_data = if message_builder.inputs.is_some() {
-        message_builder
-            .get_custom_inputs(governance_transition, &byte_cost_config, message_builder.allow_burning)
+    let selected_transaction_data = if block_builder.inputs.is_some() {
+        block_builder
+            .get_custom_inputs(governance_transition, &byte_cost_config, block_builder.allow_burning)
             .await?
     } else {
-        message_builder.get_inputs(&byte_cost_config).await?
+        block_builder.get_inputs(&byte_cost_config).await?
     };
 
     // Build transaction payload
     let inputs_commitment = InputsCommitment::new(selected_transaction_data.inputs.iter().map(|i| &i.output));
 
     let mut essence =
-        RegularTransactionEssence::builder(message_builder.client.get_network_id().await?, inputs_commitment);
+        RegularTransactionEssence::builder(block_builder.client.get_network_id().await?, inputs_commitment);
     let inputs = selected_transaction_data
         .inputs
         .iter()
@@ -81,9 +81,9 @@ pub async fn prepare_transaction(message_builder: &ClientMessageBuilder<'_>) -> 
     essence = essence.with_outputs(selected_transaction_data.outputs);
 
     // Add tagged data payload if tag set
-    if let Some(index) = message_builder.tag.clone() {
+    if let Some(index) = block_builder.tag.clone() {
         let tagged_data_payload =
-            TaggedDataPayload::new((&index).to_vec(), message_builder.data.clone().unwrap_or_default())?;
+            TaggedDataPayload::new((&index).to_vec(), block_builder.data.clone().unwrap_or_default())?;
         essence = essence.with_payload(Payload::TaggedData(Box::new(tagged_data_payload)))
     }
     let regular_essence = essence.finish()?;
@@ -98,7 +98,7 @@ pub async fn prepare_transaction(message_builder: &ClientMessageBuilder<'_>) -> 
 
 /// Sign the transaction
 pub async fn sign_transaction(
-    message_builder: &ClientMessageBuilder<'_>,
+    block_builder: &ClientBlockBuilder<'_>,
     prepared_transaction_data: PreparedTransactionData,
 ) -> Result<Payload> {
     log::debug!("[sign_transaction]");
@@ -107,20 +107,20 @@ pub async fn sign_transaction(
         let (_bech32_hrp, address) = Address::try_from_bech32(&input_signing_data.bech32_address)?;
         input_addresses.push(address);
     }
-    let secret_manager = message_builder
+    let secret_manager = block_builder
         .secret_manager
         .ok_or(Error::MissingParameter("secret manager"))?;
-    let unlock_blocks = secret_manager
+    let unlocks = secret_manager
         .sign_transaction_essence(
             // IOTA_COIN_TYPE,
-            // message_builder.account_index.unwrap_or(0),
+            // block_builder.account_index.unwrap_or(0),
             &prepared_transaction_data,
         )
         .await?;
-    let unlock_blocks = UnlockBlocks::new(unlock_blocks)?;
-    let tx_payload = TransactionPayload::new(prepared_transaction_data.essence.clone(), unlock_blocks)?;
+    let unlocks = Unlocks::new(unlocks)?;
+    let tx_payload = TransactionPayload::new(prepared_transaction_data.essence.clone(), unlocks)?;
 
-    let (local_time, milestone_index) = message_builder.client.get_time_and_milestone_checked().await?;
+    let (local_time, milestone_index) = block_builder.client.get_time_and_milestone_checked().await?;
 
     let conflict = verify_semantic(
         &prepared_transaction_data.inputs_data,
@@ -163,10 +163,10 @@ pub fn verify_semantic(
         &transaction_id,
         essence,
         inputs.iter().map(|(id, input)| (id, *input)),
-        transaction.unlock_blocks(),
+        transaction.unlocks(),
         MilestoneIndex(milestone_index),
         local_time,
     );
 
-    semantic_validation(context, inputs.as_slice(), transaction.unlock_blocks()).map_err(Error::MessageError)
+    semantic_validation(context, inputs.as_slice(), transaction.unlocks()).map_err(Error::BlockError)
 }

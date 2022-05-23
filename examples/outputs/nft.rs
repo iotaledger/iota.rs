@@ -7,7 +7,7 @@ use std::env;
 
 use dotenv::dotenv;
 use iota_client::{
-    bee_message::{
+    bee_block::{
         address::{Address, NftAddress},
         output::{
             unlock_condition::{AddressUnlockCondition, UnlockCondition},
@@ -54,27 +54,27 @@ async fn main() -> Result<()> {
         NftOutputBuilder::new_with_amount(1_000_000, NftId::null())?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             // address of the minter of the NFT
-            // .add_feature_block(FeatureBlock::Issuer(IssuerFeatureBlock::new(address)))
+            // .add_feature(Feature::Issuer(IssuerFeature::new(address)))
             .finish_output()?,
     ];
 
-    let message = client
-        .message()
+    let block = client
+        .block()
         .with_secret_manager(&secret_manager)
         .with_outputs(outputs)?
         .finish()
         .await?;
 
     println!(
-        "Transaction with new NFT output sent: http://localhost:14265/api/v2/messages/{}",
-        message.id()
+        "Transaction with new NFT output sent: http://localhost:14265/api/v2/blocks/{}",
+        block.id()
     );
-    let _ = client.retry_until_included(&message.id(), None, None).await?;
+    let _ = client.retry_until_included(&block.id(), None, None).await?;
 
     //////////////////////////////////
     // move funds from an NFT address
     //////////////////////////////////
-    let nft_output_id = get_nft_output_id(message.payload().unwrap());
+    let nft_output_id = get_nft_output_id(block.payload().unwrap());
     let nft_id = NftId::from(nft_output_id);
 
     let nft_address = NftAddress::new(nft_id);
@@ -96,8 +96,8 @@ async fn main() -> Result<()> {
     let output_response = client.get_output(&output_ids[0]).await?;
     let output = Output::try_from(&output_response.output)?;
 
-    let message = client
-        .message()
+    let block = client
+        .block()
         .with_secret_manager(&secret_manager)
         .with_input(nft_output_id.into())?
         .with_input(output_ids[0].into())?
@@ -110,16 +110,16 @@ async fn main() -> Result<()> {
         .await?;
 
     println!(
-        "Transaction with input(basic output) to NFT output sent: http://localhost:14265/api/v2/messages/{}",
-        message.id()
+        "Transaction with input(basic output) to NFT output sent: http://localhost:14265/api/v2/blocks/{}",
+        block.id()
     );
 
-    let _ = client.retry_until_included(&message.id(), None, None).await?;
+    let _ = client.retry_until_included(&block.id(), None, None).await?;
 
     //////////////////////////////////
     // burn NFT
     //////////////////////////////////
-    let nft_output_id = get_nft_output_id(message.payload().unwrap());
+    let nft_output_id = get_nft_output_id(block.payload().unwrap());
     let output_response = client.get_output(&nft_output_id).await?;
     let output = Output::try_from(&output_response.output)?;
     let outputs = vec![
@@ -128,18 +128,18 @@ async fn main() -> Result<()> {
             .finish_output()?,
     ];
 
-    let message = client
-        .message()
+    let block = client
+        .block()
         .with_secret_manager(&secret_manager)
         .with_input(nft_output_id.into())?
         .with_outputs(outputs)?
         .finish()
         .await?;
     println!(
-        "Burn transaction sent: http://localhost:14265/api/v2/messages/{}",
-        message.id()
+        "Burn transaction sent: http://localhost:14265/api/v2/blocks/{}",
+        block.id()
     );
-    let _ = client.retry_until_included(&message.id(), None, None).await?;
+    let _ = client.retry_until_included(&block.id(), None, None).await?;
     Ok(())
 }
 

@@ -5,9 +5,9 @@
 
 use std::{collections::HashMap, sync::Arc, time::Duration};
 
-use bee_message::{
+use bee_block::{
     payload::{milestone::ReceiptMilestoneOption, MilestonePayload},
-    Message,
+    Block,
 };
 use regex::RegexSet;
 use serde_json::Value;
@@ -34,8 +34,8 @@ pub struct TopicEvent {
 pub enum MqttPayload {
     /// In case it contains JSON.
     Json(Value),
-    /// In case it contains a `Message` object.
-    Message(Message),
+    /// In case it contains a `Block` object.
+    Block(Block),
     /// In case it contains a `Milestone` object.
     MilestonePayload(MilestonePayload),
     /// In case it contains a `Receipt` object.
@@ -158,17 +158,17 @@ impl Topic {
             r"^milestone-info/latest$",
             r"^milestone-info/confirmed$",
             r"^milestones$",
-            // Message topics
-            r"^messages$",
-            r"^messages/transaction$",
-            r"^messages/transaction/tagged-data$",
-            r"^messages/transaction/tagged-data/0x([a-f0-9]{128})$",
-            r"^messages/tagged-data$",
-            r"^messages/tagged-data/0x([a-f0-9]{64})$",
-            r"^message-metadata/0x([a-f0-9]{64})",
-            r"^message-metadata/referenced$",
+            // Block topics
+            r"^blocks$",
+            r"^blocks/transaction$",
+            r"^blocks/transaction/tagged-data$",
+            r"^blocks/transaction/tagged-data/0x([a-f0-9]{128})$",
+            r"^blocks/tagged-data$",
+            r"^blocks/tagged-data/0x([a-f0-9]{64})$",
+            r"^block-metadata/0x([a-f0-9]{64})",
+            r"^block-metadata/referenced$",
             // Transaction topics
-            r"^transactions/0x([a-f0-9]{64})/included-message$",
+            r"^transactions/0x([a-f0-9]{64})/included-block$",
             // Output topics
             r"^outputs/([a-f0-9]{64})(\d{4})$",
             r"^outputs/aliases/0x([a-f0-9]{40})$",

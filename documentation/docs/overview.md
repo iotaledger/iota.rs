@@ -10,7 +10,7 @@ keywords:
 ---
 # Overview
 
-To communicate with the IOTA network, you have to connect and interact with a [node](https://wiki.iota.org/chrysalis-docs/node_software), the task that the iota.rs library is designed to simplify. It will generate addresses for you, send messages, sign and send transactions, and more.
+To communicate with the IOTA network, you have to connect and interact with a [node](https://wiki.iota.org/chrysalis-docs/node_software), the task that the iota.rs library is designed to simplify. It will generate addresses for you, send blocks, sign and send transactions, and more.
 
 Beyond establishing the initial connection to a node, iota.rs has no state. Operations use only the data that you pass during a call and have no effect on your software beyond returning a value. You are in full control of the data flow in your application.
 

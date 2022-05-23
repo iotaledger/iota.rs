@@ -37,7 +37,7 @@ async fn main() -> Result<()> {
         .subscriber()
         .with_topics(vec![
             Topic::try_from("milestones/latest".to_string())?,
-            Topic::try_from("messages".to_string())?,
+            Topic::try_from("blocks".to_string())?,
             Topic::try_from(
                 "outputs/unlock/address/atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r".to_string(),
             )?,
@@ -46,7 +46,7 @@ async fn main() -> Result<()> {
             println!("Topic: {}", event.topic);
             match &event.payload {
                 MqttPayload::Json(val) => println!("{}", serde_json::to_string(&val).unwrap()),
-                MqttPayload::Message(msg) => println!("{:?}", msg),
+                MqttPayload::Block(block) => println!("{:?}", block),
                 MqttPayload::MilestonePayload(ms) => println!("{:?}", ms),
                 MqttPayload::Receipt(receipt) => println!("{:?}", receipt),
             }
@@ -58,10 +58,10 @@ async fn main() -> Result<()> {
     for i in 0..10 {
         rx.recv().unwrap();
         if i == 7 {
-            // unsubscribe from topic "messages", will continue to receive events for "milestones/latest"
+            // unsubscribe from topic "blocks", will continue to receive events for "milestones/latest"
             client
                 .subscriber()
-                .with_topics(vec![Topic::try_from("messages".to_string())?])
+                .with_topics(vec![Topic::try_from("blocks".to_string())?])
                 .unsubscribe()
                 .await?;
         }

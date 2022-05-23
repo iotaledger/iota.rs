@@ -6,9 +6,9 @@ pub mod types;
 
 use std::{sync::Arc, time::Instant};
 
-use bee_message::{
+use bee_block::{
     payload::{milestone::ReceiptMilestoneOption, MilestonePayload},
-    Message,
+    Block,
 };
 use crypto::utils;
 use log::warn;
@@ -142,15 +142,15 @@ fn poll_mqtt(
                             let mqtt_topic_handlers = mqtt_topic_handlers_guard.read().await;
                             if let Some(handlers) = mqtt_topic_handlers.get(&Topic::new_unchecked(topic.clone())) {
                                 let event = {
-                                    if topic.contains("messages") || topic.contains("included-message") {
+                                    if topic.contains("blocks") || topic.contains("included-block") {
                                         let mut payload = &*p.payload;
-                                        match Message::unpack_verified(&mut payload) {
-                                            Ok(message) => Ok(TopicEvent {
+                                        match Block::unpack_verified(&mut payload) {
+                                            Ok(block) => Ok(TopicEvent {
                                                 topic,
-                                                payload: MqttPayload::Message(message),
+                                                payload: MqttPayload::Block(block),
                                             }),
                                             Err(e) => {
-                                                warn!("Message unpacking failed: {:?}", e);
+                                                warn!("Block unpacking failed: {:?}", e);
                                                 Err(())
                                             }
                                         }

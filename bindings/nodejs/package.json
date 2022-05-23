@@ -28,7 +28,7 @@
         "test": "jest --forceExit"
     },
     "devDependencies": {
-        "@iota/types": "^1.0.0-beta.4",
+        "@iota/types": "^1.0.0-beta.6",
         "@types/jest": "^27.4.1",
         "@typescript-eslint/eslint-plugin": "^5.19.0",
         "@typescript-eslint/parser": "^5.19.0",

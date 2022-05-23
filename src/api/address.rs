@@ -3,7 +3,7 @@
 
 use std::ops::Range;
 
-use bee_message::address::Address;
+use bee_block::address::Address;
 use serde::Deserialize;
 
 use crate::{

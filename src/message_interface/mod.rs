@@ -38,7 +38,7 @@ pub async fn send_message(handle: &ClientMessageHandler, message_type: MessageTy
 mod tests {
     use std::{env, str::FromStr};
 
-    use bee_message::{MessageDto, MessageId};
+    use bee_block::{BlockDto, BlockId};
     use dotenv::dotenv;
 
     use crate::{
@@ -86,7 +86,7 @@ mod tests {
 
     #[tokio::test]
     #[should_panic]
-    async fn generate_message() {
+    async fn generate_block() {
         // This test uses dotenv, which is not safe for use in production
         dotenv().ok();
 
@@ -150,38 +150,38 @@ mod tests {
             response_type => panic!("Unexpected response type: {:?}", response_type),
         };
 
-        // Generate message payload
+        // Generate block payload
         let inputs = serde_json::to_string(&inputs).unwrap();
         let output = format!("{{\"address\":\"{}\", \"amount\":{}}}", address, amount);
 
         let options = format!("{{\"inputs\": {inputs},\"output\": {output}}}");
 
         let options = serde_json::from_str(&options).unwrap();
-        let generate_message = MessageType::CallClientMethod(ClientMethod::GenerateMessage {
+        let generate_block = MessageType::CallClientMethod(ClientMethod::GenerateBlock {
             secret_manager: Some(serde_json::from_str(&secret_manager).unwrap()),
             options: Some(options),
         });
 
-        let response = message_interface::send_message(&message_handler, generate_message).await;
+        let response = message_interface::send_message(&message_handler, generate_block).await;
         match response {
-            Response::GeneratedMessage(message_data) => {
-                println!("{}", serde_json::to_string(&message_data).unwrap())
+            Response::GeneratedBlock(block_data) => {
+                println!("{}", serde_json::to_string(&block_data).unwrap())
             }
             response_type => panic!("Unexpected response type: {:?}", response_type),
         }
     }
 
     #[tokio::test]
-    async fn get_message_id() {
+    async fn get_block_id() {
         let client_config = r#"{"offline": true}"#.to_string();
         let message_handler = message_interface::create_message_handler(Some(client_config))
             .await
             .unwrap();
 
-        let message = r#"
+        let block = r#"
         {
             "protocolVersion":2,
-            "parentMessageIds":
+            "parents":
                 [
                     "0x2881c4781c4126f2413a704ebdf8cd375b46007f8df0e32ee9158684ac7e307b",
                     "0xe1956a33d608cb2bcfd6adeb67fe56ed0f33fc5ffd157e28a71047ecc52b0314",
@@ -197,16 +197,16 @@ mod tests {
             "nonce":"22897"
         }"#;
 
-        let message_dto: MessageDto = serde_json::from_str(message).unwrap();
-        let message_type = MessageType::CallClientMethod(ClientMethod::MessageId { message: message_dto });
+        let block_dto: BlockDto = serde_json::from_str(block).unwrap();
+        let message_type = MessageType::CallClientMethod(ClientMethod::BlockId { block: block_dto });
 
         let response = message_interface::send_message(&message_handler, message_type).await;
 
         match response {
-            Response::MessageId(message_id) => {
+            Response::BlockId(block_id) => {
                 assert_eq!(
-                    message_id,
-                    MessageId::from_str("0xbcd2b9feed097a7aa8b894cae5eaeb1d8f516a14af25aa6f7d8aa7e2604c406c").unwrap()
+                    block_id,
+                    BlockId::from_str("0xbcd2b9feed097a7aa8b894cae5eaeb1d8f516a14af25aa6f7d8aa7e2604c406c").unwrap()
                 );
             }
             response_type => panic!("Unexpected response type: {:?}", response_type),

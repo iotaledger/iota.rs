@@ -15,7 +15,7 @@ use std::{
 use dotenv::dotenv;
 use iota_client::{
     api::{PreparedTransactionData, PreparedTransactionDataDto, SignedTransactionData, SignedTransactionDataDto},
-    bee_message::{payload::transaction::TransactionPayload, unlock_block::UnlockBlocks},
+    bee_block::{payload::transaction::TransactionPayload, unlock::Unlocks},
     secret::{mnemonic::MnemonicSecretManager, SecretManageExt, SecretManager},
     Result,
 };
@@ -34,11 +34,11 @@ async fn main() -> Result<()> {
     let prepared_transaction_data = read_prepared_transaction_from_file(PREPARED_TRANSACTION_FILE_NAME)?;
 
     // Signs prepared transaction offline.
-    let unlock_blocks = secret_manager
+    let unlocks = secret_manager
         .sign_transaction_essence(&prepared_transaction_data)
         .await?;
-    let unlock_blocks = UnlockBlocks::new(unlock_blocks)?;
-    let signed_transaction = TransactionPayload::new(prepared_transaction_data.essence.clone(), unlock_blocks)?;
+    let unlocks = Unlocks::new(unlocks)?;
+    let signed_transaction = TransactionPayload::new(prepared_transaction_data.essence.clone(), unlocks)?;
 
     let signed_transaction_data = SignedTransactionData {
         transaction_payload: signed_transaction,

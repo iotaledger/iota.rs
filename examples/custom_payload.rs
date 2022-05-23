@@ -4,7 +4,7 @@
 //! cargo run --example custom_payload --release
 
 use iota_client::{
-    bee_message::payload::{Payload, TaggedDataPayload},
+    bee_block::payload::{Payload, TaggedDataPayload},
     Client, Result,
 };
 
@@ -20,12 +20,12 @@ async fn main() -> Result<()> {
     let tagged_data_payload =
         TaggedDataPayload::new("Your tag".as_bytes().to_vec(), "Your data".as_bytes().to_vec()).unwrap();
 
-    let message = client
-        .message()
-        .finish_message(Some(Payload::TaggedData(Box::new(tagged_data_payload))))
+    let block = client
+        .block()
+        .finish_block(Some(Payload::TaggedData(Box::new(tagged_data_payload))))
         .await
         .unwrap();
 
-    println!("Message ID: {}", message.id());
+    println!("Block ID: {}", block.id());
     Ok(())
 }

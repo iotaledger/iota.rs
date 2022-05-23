@@ -7,7 +7,7 @@ use std::env;
 
 use dotenv::dotenv;
 use iota_client::{
-    bee_message::output::{
+    bee_block::output::{
         unlock_condition::{AddressUnlockCondition, UnlockCondition},
         BasicOutputBuilder, NativeToken, TokenId,
     },
@@ -42,11 +42,10 @@ async fn main() -> Result<()> {
     .await?;
 
     // Replace with the token ID of native tokens you own.
-    let token_id: [u8; 50] = hex::decode(
-        "08e68f7616cd4948efebc6a77c4f93aed770ac53869cba56d104f2b472a8836d0100000000000000000000000000000000",
-    )?
-    .try_into()
-    .unwrap();
+    let token_id: [u8; 38] =
+        hex::decode("08e68f7616cd4948efebc6a77c4f935eaed770ac53869cba56d104f2b472a8836d0100000000")?
+            .try_into()
+            .unwrap();
     let outputs = vec![
         // most simple output
         BasicOutputBuilder::new_with_amount(1_000_000)?
@@ -55,20 +54,17 @@ async fn main() -> Result<()> {
             .finish_output()?,
     ];
 
-    let message = client
-        .message()
+    let block = client
+        .block()
         .with_secret_manager(&secret_manager)
         .with_outputs(outputs)?
         .finish()
         .await?;
 
+    println!("Transaction sent: http://localhost:14265/api/v2/blocks/{}", block.id());
     println!(
-        "Transaction sent: http://localhost:14265/api/v2/messages/{}",
-        message.id()
-    );
-    println!(
-        "Message metadata: http://localhost:14265/api/v2/messages/{}/metadata",
-        message.id()
+        "Block metadata: http://localhost:14265/api/v2/blocks/{}/metadata",
+        block.id()
     );
 
     Ok(())

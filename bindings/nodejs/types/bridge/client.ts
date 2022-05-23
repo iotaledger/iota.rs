@@ -1,8 +1,8 @@
-import type { IMessage, PayloadTypes } from '@iota/types';
+import type { IBlock, PayloadTypes } from '@iota/types';
 import type { SecretManager } from '../secretManager';
 import type { IGenerateAddressesOptions } from '../generateAddressesOptions';
-import type { IGenerateMessageOptions } from '../generateMessageOptions';
-import type { MessageId } from '../messageId';
+import type { IGenerateBlockOptions } from '../generateBlockOptions';
+import type { BlockId } from '../blockId';
 import type { IPreparedTransactionData } from '../preparedTransactionData';
 import type { QueryParameter } from '../queryParameters';
 import type { IAuth } from '../network';
@@ -52,18 +52,18 @@ export interface __GenerateAddressesPayloadMethod__ {
     };
 }
 
-export interface __PostMessagePayloadMethod__ {
-    name: 'PostMessage';
+export interface __PostBlockPayloadMethod__ {
+    name: 'PostBlock';
     data: {
-        message: IMessage;
+        block: IBlock;
     };
 }
 
-export interface __GenerateMessagePayloadMethod__ {
-    name: 'GenerateMessage';
+export interface __GenerateBlockPayloadMethod__ {
+    name: 'GenerateBlock';
     data: {
         secretManager?: SecretManager;
-        options?: IGenerateMessageOptions;
+        options?: IGenerateBlockOptions;
     };
 }
 
@@ -75,17 +75,17 @@ export interface __GetNetworkInfoPayloadMethod__ {
     name: 'GetNetworkInfo';
 }
 
-export interface __GetMessageDataPayloadMethod__ {
-    name: 'GetMessageData';
+export interface __GetBlockPayloadMethod__ {
+    name: 'GetBlock';
     data: {
-        messageId: MessageId;
+        blockId: BlockId;
     };
 }
 
-export interface __GetMessageMetadataPayloadMethod__ {
-    name: 'GetMessageMetadata';
+export interface __GetBlockMetadataPayloadMethod__ {
+    name: 'GetBlockMetadata';
     data: {
-        messageId: MessageId;
+        blockId: BlockId;
     };
 }
 
@@ -109,7 +109,7 @@ export interface __PrepareTransactionPayloadMethod__ {
     name: 'PrepareTransaction';
     data: {
         secretManager?: SecretManager;
-        options?: IGenerateMessageOptions;
+        options?: IGenerateBlockOptions;
     };
 }
 
@@ -143,10 +143,10 @@ export interface __ParseBech32AddressPayloadMethod__ {
     };
 }
 
-export interface __MessageIdPayloadMethod__ {
-    name: 'MessageId';
+export interface __BlockIdPayloadMethod__ {
+    name: 'BlockId';
     data: {
-        message: IMessage;
+        block: IBlock;
     };
 }
 
@@ -201,24 +201,24 @@ export interface __GetPeersPayloadMethod__ {
     name: 'GetPeers';
 }
 
-export interface __PostMessageJsonPayloadMethod__ {
-    name: 'PostMessageJson';
+export interface __PostBlockJsonPayloadMethod__ {
+    name: 'PostBlockJson';
     data: {
-        message: IMessage;
+        block: IBlock;
     };
 }
 
-export interface __GetMessageRawPayloadMethod__ {
-    name: 'GetMessageRaw';
+export interface __GetBlockRawPayloadMethod__ {
+    name: 'GetBlockRaw';
     data: {
-        messageId: MessageId;
+        blockId: BlockId;
     };
 }
 
-export interface __GetMessageChildrenPayloadMethod__ {
-    name: 'GetMessageChildren';
+export interface __GetBlockChildrenPayloadMethod__ {
+    name: 'GetBlockChildren';
     data: {
-        messageId: MessageId;
+        blockId: BlockId;
     };
 }
 
@@ -264,8 +264,8 @@ export interface __GetTreasuryPayloadMethod__ {
     name: 'GetTreasury';
 }
 
-export interface __GetIncludedMessagePayloadMethod__ {
-    name: 'GetIncludedMessage';
+export interface __GetIncludedBlockPayloadMethod__ {
+    name: 'GetIncludedBlock';
     data: {
         transactionId: string;
     };
@@ -350,24 +350,24 @@ export interface __TryGetOutputsPayloadMethod__ {
     };
 }
 
-export interface __FindMessagesPayloadMethod__ {
-    name: 'FindMessages';
+export interface __FindBlocksPayloadMethod__ {
+    name: 'FindBlocks';
     data: {
-        messageIds: string[];
+        blockIds: string[];
     };
 }
 
 export interface __RetryPayloadMethod__ {
     name: 'Retry';
     data: {
-        messageId: string;
+        blockId: string;
     };
 }
 
 export interface __RetryUntilIncludedPayloadMethod__ {
     name: 'RetryUntilIncluded';
     data: {
-        messageId: string;
+        blockId: string;
         interval?: number;
         maxAttempts?: number;
     };
@@ -385,28 +385,28 @@ export interface __ConsolidateFundsPayloadMethod__ {
 export interface __ReattachPayloadMethod__ {
     name: 'Reattach';
     data: {
-        messageId: MessageId;
+        blockId: BlockId;
     };
 }
 
 export interface __ReattachUncheckedPayloadMethod__ {
     name: 'ReattachUnchecked';
     data: {
-        messageId: MessageId;
+        blockId: BlockId;
     };
 }
 
 export interface __PromotePayloadMethod__ {
     name: 'Promote';
     data: {
-        messageId: MessageId;
+        blockId: BlockId;
     };
 }
 
 export interface __PromoteUncheckedPayloadMethod__ {
     name: 'PromoteUnchecked';
     data: {
-        messageId: MessageId;
+        blockId: BlockId;
     };
 }
 

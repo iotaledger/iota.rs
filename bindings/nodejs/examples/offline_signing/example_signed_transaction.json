@@ -40,7 +40,7 @@
             }
         ]
     },
-    "unlockBlocks": [
+    "unlocks": [
         {
             "type": 0,
             "signature": {

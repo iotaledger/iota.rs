@@ -4,10 +4,10 @@ import { MessageHandler } from './MessageHandler';
 import type {
     IClientOptions,
     IGenerateAddressesOptions,
-    IGenerateMessageOptions,
+    IGenerateBlockOptions,
     QueryParameter,
     IPreparedTransactionData,
-    MessageId,
+    BlockId,
     INetworkInfo,
     SecretManager,
     INode,
@@ -19,11 +19,11 @@ import type {
     IUTXOInput,
     AddressTypes,
     IOutputResponse,
-    IMessage,
-    IMessageMetadata,
+    IBlock,
+    IBlockMetadata,
     PayloadTypes,
     IPeer,
-    IMilestoneResponse,
+    IMilestonePayload,
     IMilestoneUtxoChangesResponse,
     IReceiptsResponse,
     ITreasury,
@@ -136,13 +136,13 @@ export class Client {
         return JSON.parse(response).payload;
     }
 
-    /** Generate client message */
-    async generateMessage(
+    /** Generate client block */
+    async generateBlock(
         secretManager?: SecretManager,
-        options?: IGenerateMessageOptions,
-    ): Promise<IMessage> {
+        options?: IGenerateBlockOptions,
+    ): Promise<IBlock> {
         const response = await this.messageHandler.callClientMethod({
-            name: 'GenerateMessage',
+            name: 'GenerateBlock',
             data: {
                 secretManager,
                 options,
@@ -153,10 +153,10 @@ export class Client {
     }
 
     /**
-     * Returns tips that are ideal for attaching a message.
-     * The tips can be considered as non-lazy and are therefore ideal for attaching a message.
+     * Returns tips that are ideal for attaching a block.
+     * The tips can be considered as non-lazy and are therefore ideal for attaching a block.
      */
-    async getTips(): Promise<MessageId[]> {
+    async getTips(): Promise<BlockId[]> {
         const response = await this.messageHandler.callClientMethod({
             name: 'GetTips',
         });
@@ -165,13 +165,13 @@ export class Client {
     }
 
     /**
-     * Send message, returns the message ID.
+     * Send block, returns the block ID.
      */
-    async postMessage(message: IMessage): Promise<MessageId> {
+    async postBlock(block: IBlock): Promise<BlockId> {
         const response = await this.messageHandler.callClientMethod({
-            name: 'PostMessage',
+            name: 'PostBlock',
             data: {
-                message,
+                block,
             },
         });
 
@@ -179,13 +179,13 @@ export class Client {
     }
 
     /**
-     * Get message data with message ID
+     * Get block data with block ID
      */
-    async getMessageData(messageId: MessageId): Promise<IMessage> {
+    async getBlock(blockId: BlockId): Promise<IBlock> {
         const response = await this.messageHandler.callClientMethod({
-            name: 'GetMessageData',
+            name: 'GetBlock',
             data: {
-                messageId,
+                blockId,
             },
         });
 
@@ -193,13 +193,13 @@ export class Client {
     }
 
     /**
-     * Get message metadata with message ID
+     * Get block metadata with block ID
      */
-    async getMessageMetadata(messageId: MessageId): Promise<IMessageMetadata> {
+    async getBlockMetadata(blockId: BlockId): Promise<IBlockMetadata> {
         const response = await this.messageHandler.callClientMethod({
-            name: 'GetMessageMetadata',
+            name: 'GetBlockMetadata',
             data: {
-                messageId,
+                blockId,
             },
         });
 
@@ -248,7 +248,7 @@ export class Client {
      */
     async prepareTransaction(
         secretManager?: SecretManager,
-        options?: IGenerateMessageOptions,
+        options?: IGenerateBlockOptions,
     ): Promise<IPreparedTransactionData> {
         const response = await this.messageHandler.callClientMethod({
             name: 'PrepareTransaction',
@@ -298,9 +298,9 @@ export class Client {
     }
 
     /**
-     * Submit a payload in a message
+     * Submit a payload in a block
      */
-    async submitPayload(payload: PayloadTypes): Promise<IMessage> {
+    async submitPayload(payload: PayloadTypes): Promise<IBlock> {
         const response = await this.messageHandler.callClientMethod({
             name: 'SubmitPayload',
             data: {
@@ -326,13 +326,13 @@ export class Client {
     }
 
     /**
-     * Returns a message ID (Blake2b256 hash of the message bytes)
+     * Returns a block ID (Blake2b256 hash of the block bytes)
      */
-    async messageId(message: IMessage): Promise<MessageId> {
+    async blockId(block: IBlock): Promise<BlockId> {
         const response = await this.messageHandler.callClientMethod({
-            name: 'MessageId',
+            name: 'BlockId',
             data: {
-                message,
+                block,
             },
         });
 
@@ -468,13 +468,13 @@ export class Client {
     }
 
     /**
-     * Post message json.
+     * Post block json.
      */
-    async postMessageJson(message: IMessage): Promise<MessageId> {
+    async postBlockJson(block: IBlock): Promise<BlockId> {
         const response = await this.messageHandler.callClientMethod({
-            name: 'PostMessageJson',
+            name: 'PostBlockJson',
             data: {
-                message,
+                block,
             },
         });
 
@@ -482,13 +482,13 @@ export class Client {
     }
 
     /**
-     * Get message raw.
+     * Get block raw.
      */
-    async getMessageRaw(messageId: MessageId): Promise<string> {
+    async getBlockRaw(blockId: BlockId): Promise<string> {
         const response = await this.messageHandler.callClientMethod({
-            name: 'GetMessageRaw',
+            name: 'GetBlockRaw',
             data: {
-                messageId,
+                blockId,
             },
         });
 
@@ -496,13 +496,13 @@ export class Client {
     }
 
     /**
-     * Get message children.
+     * Get block children.
      */
-    async getMessageChildren(messageId: MessageId): Promise<MessageId[]> {
+    async getBlockChildren(blockId: BlockId): Promise<BlockId[]> {
         const response = await this.messageHandler.callClientMethod({
-            name: 'GetMessageChildren',
+            name: 'GetBlockChildren',
             data: {
-                messageId,
+                blockId,
             },
         });
 
@@ -514,7 +514,7 @@ export class Client {
      */
     async getMilestoneByMilestoneId(
         milestoneId: string,
-    ): Promise<IMilestoneResponse> {
+    ): Promise<IMilestonePayload> {
         const response = await this.messageHandler.callClientMethod({
             name: 'GetMilestoneByMilestoneId',
             data: {
@@ -545,7 +545,7 @@ export class Client {
      */
     async getMilestoneByMilestoneIndex(
         index: number,
-    ): Promise<IMilestoneResponse> {
+    ): Promise<IMilestonePayload> {
         const response = await this.messageHandler.callClientMethod({
             name: 'GetMilestoneByMilestoneIndex',
             data: {
@@ -611,11 +611,11 @@ export class Client {
     }
 
     /**
-     * Returns the included message of the transaction.
+     * Returns the included block of the transaction.
      */
-    async getIncludedMessage(transactionId: string): Promise<IMessage> {
+    async getIncludedBlock(transactionId: string): Promise<IBlock> {
         const response = await this.messageHandler.callClientMethod({
-            name: 'GetIncludedMessage',
+            name: 'GetIncludedBlock',
             data: {
                 transactionId,
             },
@@ -789,13 +789,13 @@ export class Client {
     }
 
     /**
-     * Find all messages by provided message IDs.
+     * Find all blocks by provided block IDs.
      */
-    async findMessages(messageIds: MessageId[]): Promise<IMessage[]> {
+    async findBlocks(blockIds: BlockId[]): Promise<IBlock[]> {
         const response = await this.messageHandler.callClientMethod({
-            name: 'FindMessages',
+            name: 'FindBlocks',
             data: {
-                messageIds,
+                blockIds,
             },
         });
 
@@ -803,14 +803,14 @@ export class Client {
     }
 
     /**
-     * Retries (promotes or reattaches) a message for provided message id. Message should be
+     * Retries (promotes or reattaches) a block for provided block id. Block should be
      * retried only if they are valid and haven't been confirmed for a while.
      */
-    async retry(messageId: MessageId): Promise<[MessageId, IMessage]> {
+    async retry(blockId: BlockId): Promise<[BlockId, IBlock]> {
         const response = await this.messageHandler.callClientMethod({
             name: 'Retry',
             data: {
-                messageId,
+                blockId,
             },
         });
 
@@ -818,19 +818,19 @@ export class Client {
     }
 
     /**
-     * Retries (promotes or reattaches) a message for provided message id until it's included (referenced by a
-     * milestone). Default interval is 5 seconds and max attempts is 40. Returns the included message at first
-     * position and additional reattached messages
+     * Retries (promotes or reattaches) a block for provided block id until it's included (referenced by a
+     * milestone). Default interval is 5 seconds and max attempts is 40. Returns the included block at first
+     * position and additional reattached blocks
      */
     async retryUntilIncluded(
-        messageId: MessageId,
+        blockId: BlockId,
         interval?: number,
         maxAttempts?: number,
-    ): Promise<[MessageId, IMessage][]> {
+    ): Promise<[BlockId, IBlock][]> {
         const response = await this.messageHandler.callClientMethod({
             name: 'RetryUntilIncluded',
             data: {
-                messageId,
+                blockId,
                 interval,
                 maxAttempts,
             },
@@ -861,14 +861,14 @@ export class Client {
     }
 
     /**
-     * Reattaches messages for provided message id. Messages can be reattached only if they are valid and haven't been
+     * Reattaches blocks for provided block id. Blocks can be reattached only if they are valid and haven't been
      * confirmed for a while.
      */
-    async reattach(messageId: MessageId): Promise<[MessageId, IMessage]> {
+    async reattach(blockId: BlockId): Promise<[BlockId, IBlock]> {
         const response = await this.messageHandler.callClientMethod({
             name: 'Reattach',
             data: {
-                messageId,
+                blockId,
             },
         });
 
@@ -876,15 +876,13 @@ export class Client {
     }
 
     /**
-     * Reattach a message without checking if it should be reattached
+     * Reattach a block without checking if it should be reattached
      */
-    async reattachUnchecked(
-        messageId: MessageId,
-    ): Promise<[MessageId, IMessage]> {
+    async reattachUnchecked(blockId: BlockId): Promise<[BlockId, IBlock]> {
         const response = await this.messageHandler.callClientMethod({
             name: 'ReattachUnchecked',
             data: {
-                messageId,
+                blockId,
             },
         });
 
@@ -892,29 +890,27 @@ export class Client {
     }
 
     /**
-     * Promotes a message. The method should validate if a promotion is necessary through get_message. If not, the
+     * Promotes a block. The method should validate if a promotion is necessary through get_block. If not, the
      * method should error out and should not allow unnecessary promotions.
      */
-    async promote(messageId: MessageId): Promise<[MessageId, IMessage]> {
+    async promote(blockId: BlockId): Promise<[BlockId, IBlock]> {
         const response = await this.messageHandler.callClientMethod({
             name: 'Promote',
             data: {
-                messageId,
+                blockId,
             },
         });
 
         return JSON.parse(response).payload;
     }
     /**
-     * Promote a message without checking if it should be promoted
+     * Promote a block without checking if it should be promoted
      */
-    async promoteUnchecked(
-        messageId: MessageId,
-    ): Promise<[MessageId, IMessage]> {
+    async promoteUnchecked(blockId: BlockId): Promise<[BlockId, IBlock]> {
         const response = await this.messageHandler.callClientMethod({
             name: 'PromoteUnchecked',
             data: {
-                messageId,
+                blockId,
             },
         });
 

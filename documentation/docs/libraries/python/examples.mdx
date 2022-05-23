@@ -17,9 +17,9 @@ import get_balance from '!!raw-loader!./../../../../bindings/python/examples/04_
 import a_get_address_outputs from '!!raw-loader!./../../../../bindings/python/examples/05a_get_address_outputs.py';
 import get_output from '!!raw-loader!./../../../../bindings/python/examples/05b_get_output.py';
 import find_outputs from '!!raw-loader!./../../../../bindings/python/examples/05c_find_outputs.py';
-import simple_message from '!!raw-loader!./../../../../bindings/python/examples/06_simple_message.py';
-import get_message_data from '!!raw-loader!./../../../../bindings/python/examples/07_get_message_data.py';
-import data_message from '!!raw-loader!./../../../../bindings/python/examples/08_data_message.py';
+import simple_block from '!!raw-loader!./../../../../bindings/python/examples/06_simple_block.py';
+import get_block_data from '!!raw-loader!./../../../../bindings/python/examples/07_get_block_data.py';
+import data_block from '!!raw-loader!./../../../../bindings/python/examples/08_data_block.py';
 import transaction from '!!raw-loader!./../../../../bindings/python/examples/09_transaction.py';
 
 
@@ -46,8 +46,8 @@ Output example of `get_info()` function of the `Client` instance:
       "network_id":"testnet7",
       "bech32_hrp":"atoi",
       "min_pow_score":4000.0,
-      "messages_per_second":27.3,
-      "referenced_messages_per_second":34.5,
+      "blocks_per_second":27.3,
+      "referenced_blocks_per_second":34.5,
       "referenced_rate":126.37362637362637,
       "latest_milestone_timestamp":1618133322,
       "latest_milestone_index":33602,
@@ -222,25 +222,25 @@ Return balance for the given seed and account_index:
 `Client.get_balance()` performs a several tasks under the hood.
 It starts generating addresses for the provided `seed` and `account_index` from `initial_address_index`, and checks for a balance of each of the generated addresses. Since it does not know how many addresses are used in fact, there is a condition set by `gap_limit` argument when to stop searching. If `gap_limit` amount of addresses in a row have no balance the function returns result and searching does not continue.
 
-## Messages, payload and transactions
-Before we continue, let's introduce some additional terms that describe a unit that is actually broadcasted in IOTA network. IOTA is based on a concept of `messages` and `payloads`.
+## Blocks, payload and transactions
+Before we continue, let's introduce some additional terms that describe a unit that is actually broadcasted in IOTA network. IOTA is based on a concept of `blocks` and `payloads`.
 
-`Message` is a data structure that is actually being broadcasted in IOTA network and represent a node (vertex) in the Tangle graph. It can refer to up to 8 previous messages and once a message was attached to the Tangle and approved by a milestone, the Tangle structure ensures the content of the message is unaltered. Every message is referenced by `message_id` which is based on a hash algorithm of binary content of the message. `Message` is an atomic unit that is confirmed by network as a whole.
+`Block` is a data structure that is actually being broadcasted in IOTA network and represent a node (vertex) in the Tangle graph. It can refer to up to 8 previous blocks and once a block was attached to the Tangle and approved by a milestone, the Tangle structure ensures the content of the block is unaltered. Every block is referenced by `block_id` which is based on a hash algorithm of binary content of the block. `Block` is an atomic unit that is confirmed by network as a whole.
 
-`Message` is broadcasted using a binary format, is arbitrary size (up to 35 kB) and it can hold a variable sets of information so called `payloads`. Number of payloads a single message can encapsulate is not given (even a message without any `payload` at all is completely valid).
+`Block` is broadcasted using a binary format, is arbitrary size (up to 35 kB) and it can hold a variable sets of information so called `payloads`. Number of payloads a single block can encapsulate is not given (even a block without any `payload` at all is completely valid).
 
 `Payload` represents a layer of concern. Some payloads may change a state of the ledger (ex. `transactions`) and some may provide extra features to some specific applications and business use cases (ex. `indexed data`).
 
-There are already implemented core payloads, such as `SignedTransaction`, `MilestonePayload` and `TaggedPayload` but the message and payload definition is generic enough to incorporate any future payload(s) the community agrees upon.
+There are already implemented core payloads, such as `SignedTransaction`, `MilestonePayload` and `TaggedPayload` but the block and payload definition is generic enough to incorporate any future payload(s) the community agrees upon.
 
-Needless to say, IOTA network ensures the outer structure of message itself is valid and definitely aligned with a network consensus protocol, however the inner structure is very flexible, future-proof, and offer an unmatched network extensibility.
+Needless to say, IOTA network ensures the outer structure of block itself is valid and definitely aligned with a network consensus protocol, however the inner structure is very flexible, future-proof, and offer an unmatched network extensibility.
 
-![messages_in_tangle](/img/libraries/messages_in_tangle.svg)
+![blocks_in_tangle](/img/libraries/blocks_in_tangle.svg)
 
 The current IOTA network incorporates the following core payloads:
-* `SignedTransaction`: payload that describes `UTXO` transactions that are cornerstone of value-based transfers in IOTA network. Via this payload, `message` can be also cryptographically signed
+* `SignedTransaction`: payload that describes `UTXO` transactions that are cornerstone of value-based transfers in IOTA network. Via this payload, `block` can be also cryptographically signed
 * `MilestonePayload`: payload that is emitted by Coordinator
-* `TaggedPayload`: payload that enables addition of an index to the encapsulating message, as well as some arbitrary data. The given index can be later used to search the message(s)
+* `TaggedPayload`: payload that enables addition of an index to the encapsulating block, as well as some arbitrary data. The given index can be later used to search the block(s)
 
 ### Unspent Transaction Output (UTXO)
 IOTA uses `unspent transaction output` model, so called `UTXO`. It is based on an idea to track unspent amount of tokens via data structure called `output`.
@@ -263,7 +263,7 @@ So even if Alice still wants to keep remaining tokens at her fingertips, those t
 Every `output` stores also information about an IOTA address to which it is coupled with. So addresses and tokens are indirectly coupled via `outputs`.
 So basically sum of outputs and their amounts under the given address is a balance of the given address, ie. the number of tokens the given address can spend. And sum of all unspent outputs and theirs amounts is equal to the total supply.
 
-Before the chapter is wrapped up, one thing was left unexplained: _"how outputs are being sent and broadcasted to network?"_ `Outputs` are being sent encapsulated in a `message` as a part of `SignedTransaction` payload.
+Before the chapter is wrapped up, one thing was left unexplained: _"how outputs are being sent and broadcasted to network?"_ `Outputs` are being sent encapsulated in a `block` as a part of `SignedTransaction` payload.
 
 ## Outputs
 
@@ -298,7 +298,7 @@ Output example:
 
 ```json
 {
-   "message_id":"f51fb2839e0a24d5b4a97f1f5721fdac0f1eeafd77645968927f7c2f4b46565b",
+   "block_id":"f51fb2839e0a24d5b4a97f1f5721fdac0f1eeafd77645968927f7c2f4b46565b",
    "transaction_id":"a22cba0667c922cbb1f8bdcaf970b2a881ccd6e88e2fcce50374de2aac7c3772",
    "output_index":0,
    "is_spent":false,
@@ -331,7 +331,7 @@ Output example:
 ```json
 [
    {
-      "message_id":"7c47db1c4555348c260d91e90cc10fd66c2e73a84ec24bf9533e440f6d945d42",
+      "block_id":"7c47db1c4555348c260d91e90cc10fd66c2e73a84ec24bf9533e440f6d945d42",
       "transaction_id":"c3f416b4394dd6e49354444d53e3c33f1169f25889ad7bc1c2ea83e35e291d5c",
       "output_index":1,
       "is_spent":false,
@@ -353,7 +353,7 @@ Output example:
 ]
 ```
 
-* `message_id`: refer to the encapsulating message in which the transaction was sent
+* `block_id`: refer to the encapsulating block in which the transaction was sent
 * `transaction_id`, `output_index`: refer to the given output within the `SignedTransaction` payload. There may be several different `outputs` involved in a single transaction and so just `transaction_id` is not enough
 * `output`: this section provides details about the iota address to which the given `unspent transaction output` is coupled with
 * `amount`: state an amount of tokens related to the `output`
@@ -361,24 +361,24 @@ Output example:
 
 So this is quite interesting part, notice the `output_id` that was used in a function call to get output details is the same as a combination of `transaction_id` and `output index`.
 
-This way a transaction is tightly coupled with `outputs` since `SignedTransaction` payload is a main vehicle how `outputs` are being created and spent, and altogether everything is encapsulated in a `message`.
+This way a transaction is tightly coupled with `outputs` since `SignedTransaction` payload is a main vehicle how `outputs` are being created and spent, and altogether everything is encapsulated in a `block`.
 
-## Messages
+## Blocks
 
-As mentioned above, the `message` is encapsulating data structure that is being actually broadcasted across network. It is an atomic unit that is accepted/rejected as a whole.
+As mentioned above, the `block` is encapsulating data structure that is being actually broadcasted across network. It is an atomic unit that is accepted/rejected as a whole.
 
-There is a convenient function `Client.message()` that prepares a message instance and sends it over a network. It accepts wide range of input parameters and can help with any kind of message type to be broadcasted.
+There is a convenient function `Client.block()` that prepares a block instance and sends it over a network. It accepts wide range of input parameters and can help with any kind of block type to be broadcasted.
 
-The simplest message that can be broadcasted is a message without any particular payload:
+The simplest block that can be broadcasted is a block without any particular payload:
 
 <CodeBlock className="language-python" >
-  {simple_message}
+  {simple_block}
 </CodeBlock>
 
 Output example:
 ```json
 {
-   "message_id":"e2daa4c6b012b615becd6c12189b2c9e701ba0d53b31a15425b21af5105fc086",
+   "block_id":"e2daa4c6b012b615becd6c12189b2c9e701ba0d53b31a15425b21af5105fc086",
    "network_id":7712883261355838377,
    "parents":[
       "0e2705ce50fec88f896663d4b7d562e74cbcfdd951ac482b1f03cfa5f27396d7",
@@ -390,25 +390,25 @@ Output example:
    "nonce":2305843009213869242
 }
 ```
-* `message_id` is an unique id that refers to the given message in network
-* as mentioned above, every message in the Tangle should refer to up to 8 other messages, those are indicated in the section `parents`
-* no actual `payload` was given in this example message (`payload=None`)
+* `block_id` is an unique id that refers to the given block in network
+* as mentioned above, every block in the Tangle should refer to up to 8 other blocks, those are indicated in the section `parents`
+* no actual `payload` was given in this example block (`payload=None`)
 * `nonce` refer to a result of proof-of-work
 
-Once a message is broadcasted, there are two main functions that can be used to read all information about the given message from the Tangle (`Client.get_message_data()` and `Client.get_message_metadata()`):
+Once a block is broadcasted, there are two main functions that can be used to read all information about the given block from the Tangle (`Client.get_block_data()` and `Client.get_block_metadata()`):
 
 
 <CodeBlock className="language-python" >
-  {get_message_data}
+  {get_block_data}
 </CodeBlock>
 
 Output example:
 
 ```json
-Message meta data:
+Block meta data:
 {
-   "message_id":"e2daa4c6b012b615becd6c12189b2c9e701ba0d53b31a15425b21af5105fc086",
-   "parent_message_ids":[
+   "block_id":"e2daa4c6b012b615becd6c12189b2c9e701ba0d53b31a15425b21af5105fc086",
+   "parent_block_ids":[
       "0e2705ce50fec88f896663d4b7d562e74cbcfdd951ac482b1f03cfa5f27396d7",
       "0f5a0b2041766127c3f3bff2dd653b450b72e364765fcc805a40423c59ed01f9",
       "20635b30aee437575d7e6abdf6629eec80543bee30848b0abdda2200fc11a977",
@@ -425,9 +425,9 @@ Message meta data:
    "should_reattach":"None"
 }
 
-Message data:
+Block data:
 {
-   "message_id":"e2daa4c6b012b615becd6c12189b2c9e701ba0d53b31a15425b21af5105fc086",
+   "block_id":"e2daa4c6b012b615becd6c12189b2c9e701ba0d53b31a15425b21af5105fc086",
    "network_id":7712883261355838377,
    "parents":[
       "0e2705ce50fec88f896663d4b7d562e74cbcfdd951ac482b1f03cfa5f27396d7",
@@ -440,21 +440,21 @@ Message data:
 }
 ```
 
-* `Client.get_message_metadata` provides information how the given message fits to network structures such as `ledger_inclusion_state`, etc.
-* `Client.get_message_data` provides all data that relates to the given message and its payload(s)
+* `Client.get_block_metadata` provides information how the given block fits to network structures such as `ledger_inclusion_state`, etc.
+* `Client.get_block_data` provides all data that relates to the given block and its payload(s)
 
 ### TaggedPayload
 
-`TaggedPayload` is a payload type that can be used to attach an arbitrary `data` and key `index` to a message. At least `index` should be provided in order to send the given payload. Data part (as `list[bytes]`) is optional one:
+`TaggedPayload` is a payload type that can be used to attach an arbitrary `data` and key `index` to a block. At least `index` should be provided in order to send the given payload. Data part (as `list[bytes]`) is optional one:
 
 <CodeBlock className="language-python">
-  {data_message}
+  {data_block}
 </CodeBlock>
 
 Output example:
 ```json
 {
-   "message_id":"8d4fa37be3c00691131c2c3e03e7b8b956c9118a2ce4be3a8597d51d82ed2de9",
+   "block_id":"8d4fa37be3c00691131c2c3e03e7b8b956c9118a2ce4be3a8597d51d82ed2de9",
    "network_id":7712883261355838377,
    "parents":[
       "3719d308ae14b7ef1ed5a3a1604228e97587b9da487db10bc6e4a4f800083da0",
@@ -498,17 +498,17 @@ Output example:
 }
 ```
 
-* Feel free to check the given message using its `message_id` via [Tangle explorer](https://explorer.iota.org/devnet/message/8d4fa37be3c00691131c2c3e03e7b8b956c9118a2ce4be3a8597d51d82ed2de9)
-* In comparison to an empty message sent in the previous chapter, the `payload` section looks more interesting
+* Feel free to check the given block using its `block_id` via [Tangle explorer](https://explorer.iota.org/devnet/block/8d4fa37be3c00691131c2c3e03e7b8b956c9118a2ce4be3a8597d51d82ed2de9)
+* In comparison to an empty block sent in the previous chapter, the `payload` section looks more interesting
 * There are three payloads prepared (`transaction`, `milestone` and `indexation`) however only `indexation` payload is leveraged this time
-* `index` was simply encoded to `list[bytes]` in hex (no hash algorithm) and the resulting string can be leveraged as an additional way how to search for a set of indexed messages with the same key index via [Tangle explorer](https://explorer.iota.org/devnet/indexed/736f6d655f646174615f696e646578) or `Client.find_messages()` API call
+* `index` was simply encoded to `list[bytes]` in hex (no hash algorithm) and the resulting string can be leveraged as an additional way how to search for a set of indexed blocks with the same key index via [Tangle explorer](https://explorer.iota.org/devnet/indexed/736f6d655f646174615f696e646578) or `Client.find_blocks()` API call
 * `data` contains an arbitrary data encoded in bytes
-* Please note there is no IOTA address involved while sending data messages. Such messages are referenced using `message_id` or key `index`
+* Please note there is no IOTA address involved while sending data blocks. Such blocks are referenced using `block_id` or key `index`
 * IOTA addresses are part of `UTXO` data structure that is sent using `SignedTransaction` payload explained below
 
 ### SignedTransaction
 
-`SignedTransaction` is a payload type that is used to transfer value-based messages as `UTXO` (Unspent Transaction Output).
+`SignedTransaction` is a payload type that is used to transfer value-based blocks as `UTXO` (Unspent Transaction Output).
 
 As mentioned above, this core payload changes the ledger state as old `outputs` are being spent (replaced) and new `outputs` are being created:
 
@@ -516,14 +516,14 @@ As mentioned above, this core payload changes the ledger state as old `outputs` 
 import iota_client
 client = iota_client.Client()
 
-client.get_message_data("f51fb2839e0a24d5b4a97f1f5721fdac0f1eeafd77645968927f7c2f4b46565b")
+client.get_block_data("f51fb2839e0a24d5b4a97f1f5721fdac0f1eeafd77645968927f7c2f4b46565b")
 ```
 
-Example of a message with `SignedTransaction` payload:
+Example of a block with `SignedTransaction` payload:
 
 ```json
 {
-   "message_id":"f51fb2839e0a24d5b4a97f1f5721fdac0f1eeafd77645968927f7c2f4b46565b",
+   "block_id":"f51fb2839e0a24d5b4a97f1f5721fdac0f1eeafd77645968927f7c2f4b46565b",
    "network_id":7712883261355838377,
    "parents":[
       "4a84bf1d345a441cfdefd0e71d6efe820c1077e5dda9122a09cbf026132d208c",
@@ -565,7 +565,7 @@ Example of a message with `SignedTransaction` payload:
                   "treasury_transaction":"None"
                }
             },
-            "unlock_blocks":[
+            "unlocks":[
                {
                   "signature":{
                      "public_key":[
@@ -590,12 +590,12 @@ Example of a message with `SignedTransaction` payload:
 ```
 
 Each `transaction` includes the following set of information:
-* `inputs`: list of valid `outputs` that should be used to fund the given message. Those `outputs` will be spent and once the message is confirmed, those outputs are not valid anymore. Outputs are uniquely referenced via `transaction_id` and inner `index`. At least one output has to be given with enough balance to source all `outputs` of the given message
+* `inputs`: list of valid `outputs` that should be used to fund the given block. Those `outputs` will be spent and once the block is confirmed, those outputs are not valid anymore. Outputs are uniquely referenced via `transaction_id` and inner `index`. At least one output has to be given with enough balance to source all `outputs` of the given block
 * `outputs`: list of IOTA address(es) and related amount(s) the input `outputs` should be split among. Based on this information, new `UTXO` entities (outputs) are being created
-* `unlock_blocks`: it includes a transaction signature(s) (currently based on `Ed25519` scheme) that proofs token ownership based on a valid seed. Needless to say, only valid seed owner is able to correctly sign the given transaction and proofs the ownership of tokens under the given output(s). Each input `output` has to have a corresponding `unblock_block` entry in case more `outputs` are used to fund the operation either using the given signature or as a reference to existing signature
-* `payload`: each `SignedTransaction` can include additional payload(s) such as `TaggedPayload`, etc. Meaning, any value-based messages can also contain arbitrary data and its key index. It is also an example how individual payloads can be encapsulated on different levels of concern
+* `unlocks`: it includes a transaction signature(s) (currently based on `Ed25519` scheme) that proofs token ownership based on a valid seed. Needless to say, only valid seed owner is able to correctly sign the given transaction and proofs the ownership of tokens under the given output(s). Each input `output` has to have a corresponding `unblock_block` entry in case more `outputs` are used to fund the operation either using the given signature or as a reference to existing signature
+* `payload`: each `SignedTransaction` can include additional payload(s) such as `TaggedPayload`, etc. Meaning, any value-based blocks can also contain arbitrary data and its key index. It is also an example how individual payloads can be encapsulated on different levels of concern
 
-Sending value-based messages is also very straightforward process.
+Sending value-based blocks is also very straightforward process.
 
 As a minimum, it needs a valid seed, output addresses and amount. The method finds valid output(s) that can be used to fund the given amount(s) and the unspent amount is sent to the same address:
 
@@ -606,7 +606,7 @@ As a minimum, it needs a valid seed, output addresses and amount. The method fin
 Output example:
 ```json
 {
-   "message_id":"7c47db1c4555348c260d91e90cc10fd66c2e73a84ec24bf9533e440f6d945d42",
+   "block_id":"7c47db1c4555348c260d91e90cc10fd66c2e73a84ec24bf9533e440f6d945d42",
    "network_id":7712883261355838377,
    "parents":[
       "0ec0cd3c0303845980981bf7cc72371a8cd6e38c15924a2950fb15c5ecf4a53b",
@@ -636,7 +636,7 @@ Output example:
                ],
                "payload":"None"
             },
-            "unlock_blocks":[
+            "unlocks":[
                {
                   "signature":{
                      "public_key":[

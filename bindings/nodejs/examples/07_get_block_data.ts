@@ -3,9 +3,9 @@
 import { Client, initLogger } from '@iota/client';
 
 // Run with command:
-// node ./dist/06_simple_message.js
+// node ./dist/07_get_block_data.js
 
-// In this example we will send a message without a payload
+// In this example we will send a block and get the data and metadata for it
 async function run() {
     initLogger();
 
@@ -22,16 +22,18 @@ async function run() {
     });
 
     try {
-        // Create message with no payload
-        const message = await client.generateMessage();
-        console.log('Message:', message, '\n');
+        // Create block with no payload
+        const block = await client.generateBlock();
+        console.log('Block:', block, '\n');
 
-        // Send message
-        const messageId = await client.postMessage(message);
+        // Send block
+        const blockId = await client.postBlock(block);
 
-        console.log(
-            `Empty message sent: https://explorer.iota.org/devnet/message/${messageId}`,
-        );
+        const blockData = await client.getBlock(blockId);
+        const blockMetadata = await client.getBlockMetadata(blockId);
+
+        console.log('Block data: ', blockData, '\n');
+        console.log('Block metadata: ', blockMetadata, '\n');
     } catch (error) {
         console.error('Error: ', error);
     }

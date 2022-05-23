@@ -5,11 +5,11 @@
 
 use std::str::FromStr;
 
-use bee_message::{
+use bee_block::{
     address::Address,
     output::{dto::OutputDto, Output, OutputId},
     payload::transaction::TransactionId,
-    MessageId,
+    BlockId,
 };
 use bee_rest_api::types::responses::OutputResponse;
 use crypto::keys::slip10::Chain;
@@ -73,9 +73,9 @@ pub struct LedgerStatus {
 ///
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub struct OutputMetadata {
-    /// The identifier of the message in which the output was included.
-    #[serde(rename = "messageId")]
-    pub message_id: MessageId,
+    /// The identifier of the block in which the output was included.
+    #[serde(rename = "blockId")]
+    pub block_id: BlockId,
     /// The identifier of the transaction in which the output was included.
     #[serde(rename = "transactionId")]
     pub transaction_id: TransactionId,
@@ -110,20 +110,21 @@ impl TryFrom<&OutputResponse> for OutputMetadata {
 
     fn try_from(response: &OutputResponse) -> Result<Self> {
         Ok(OutputMetadata {
-            message_id: MessageId::from_str(&response.message_id)?,
-            transaction_id: TransactionId::from_str(&response.transaction_id)?,
-            output_index: response.output_index,
-            is_spent: response.is_spent,
-            milestone_index_spent: response.milestone_index_spent,
-            milestone_timestamp_spent: response.milestone_timestamp_spent,
+            block_id: BlockId::from_str(&response.metadata.block_id)?,
+            transaction_id: TransactionId::from_str(&response.metadata.transaction_id)?,
+            output_index: response.metadata.output_index,
+            is_spent: response.metadata.is_spent,
+            milestone_index_spent: response.metadata.milestone_index_spent,
+            milestone_timestamp_spent: response.metadata.milestone_timestamp_spent,
             transaction_id_spent: response
+                .metadata
                 .transaction_id_spent
                 .as_ref()
                 .map(|s| TransactionId::from_str(s))
                 .transpose()?,
-            milestone_index_booked: response.milestone_index_booked,
-            milestone_timestamp_booked: response.milestone_timestamp_booked,
-            ledger_index: response.ledger_index,
+            milestone_index_booked: response.metadata.milestone_index_booked,
+            milestone_timestamp_booked: response.metadata.milestone_timestamp_booked,
+            ledger_index: response.metadata.ledger_index,
         })
     }
 }

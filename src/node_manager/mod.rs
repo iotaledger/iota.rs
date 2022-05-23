@@ -71,7 +71,7 @@ impl NodeManager {
     ) -> Result<Vec<Node>> {
         let mut nodes_with_modified_url = Vec::new();
 
-        if prefer_permanode || (path == "api/v2/messages" && query.is_some()) {
+        if prefer_permanode || (path == "api/v2/blocks" && query.is_some()) {
             if let Some(permanodes) = self.permanodes.clone() {
                 // remove api/v2/ since permanodes can have custom keyspaces
                 // https://editor.swagger.io/?url=https://raw.githubusercontent.com/iotaledger/chronicle.rs/main/docs/api.yaml
@@ -135,7 +135,7 @@ impl NodeManager {
         prefer_permanode: bool,
     ) -> Result<T> {
         let mut result: HashMap<String, usize> = HashMap::new();
-        // submit message with local PoW should use primary pow node
+        // submit block with local PoW should use primary pow node
         // Get node urls and set path
         let nodes = self.get_nodes(path, query, false, prefer_permanode).await?;
         if self.quorum && need_quorum && nodes.len() < self.min_quorum_size {
@@ -256,7 +256,7 @@ impl NodeManager {
         }
     }
 
-    // Only used for api/v2/messages/{messageID}, that's why we don't need the quorum stuff
+    // Only used for api/v2/blocks/{blockID}, that's why we don't need the quorum stuff
     pub(crate) async fn get_request_bytes(
         &self,
         path: &str,

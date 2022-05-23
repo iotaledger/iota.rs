@@ -4,17 +4,17 @@
 #[cfg(not(target_family = "wasm"))]
 use std::collections::HashSet;
 
-use bee_message::{
+use bee_block::{
     address::dto::AddressDto,
     input::dto::UtxoInputDto,
     output::OutputId,
     payload::dto::{MilestonePayloadDto, PayloadDto},
-    MessageDto, MessageId,
+    BlockDto, BlockId,
 };
 use bee_rest_api::types::{
     dtos::{PeerDto, ReceiptDto},
     responses::{
-        InfoResponse as NodeInfo, MessageMetadataResponse, OutputResponse, TreasuryResponse,
+        BlockMetadataResponse, InfoResponse as NodeInfo, OutputResponse, TreasuryResponse,
         UtxoChangesResponse as MilestoneUTXOChanges,
     },
 };
@@ -31,8 +31,8 @@ use crate::{
 pub enum Response {
     /// GenerateAddress response.
     GeneratedAddresses(Vec<String>),
-    /// Generated message
-    GeneratedMessage(MessageDto),
+    /// Generated block
+    GeneratedBlock(BlockDto),
     /// Node
     Node(Node),
     /// Network info
@@ -67,17 +67,17 @@ pub enum Response {
     /// Peers
     Peers(Vec<PeerDto>),
     /// Tips
-    Tips(Vec<MessageId>),
-    /// Posted message
-    PostMessageSuccessful(MessageId),
-    /// Message
-    Message(MessageDto),
-    /// Message metadata
-    MessageMetadata(MessageMetadataResponse),
-    /// Message raw
-    MessageRaw(Vec<u8>),
-    /// Message children
-    MessageChildren(Box<[MessageId]>),
+    Tips(Vec<BlockId>),
+    /// Posted block
+    PostBlockSuccessful(BlockId),
+    /// Block
+    Block(BlockDto),
+    /// Block metadata
+    BlockMetadata(BlockMetadataResponse),
+    /// Block raw
+    BlockRaw(Vec<u8>),
+    /// Block children
+    BlockChildren(Box<[BlockId]>),
     /// Get output successful
     Output(OutputResponse),
     /// Get outputs successful
@@ -94,30 +94,30 @@ pub enum Response {
     ReceiptsMigratedAtMilestone(Vec<ReceiptDto>),
     /// Get treasury successful
     Treasury(TreasuryResponse),
-    /// Get included message successful
-    IncludedMessage(MessageDto),
+    /// Get included block successful
+    IncludedBlock(BlockDto),
     /// Fetched output ID
     OutputId(OutputId),
     /// Fetched output IDs
     OutputIds(Vec<OutputId>),
-    /// Messages
-    Messages(Vec<MessageDto>),
+    /// Blocks
+    Blocks(Vec<BlockDto>),
     /// Balance
     Balance(u64),
     /// Addresses balances
     AddressesBalances(Vec<AddressBalance>),
     /// Retry
-    RetrySuccessful((MessageId, MessageDto)),
+    RetrySuccessful((BlockId, BlockDto)),
     /// Retry until included
-    RetryUntilIncludedSuccessful(Vec<(MessageId, MessageDto)>),
+    RetryUntilIncludedSuccessful(Vec<(BlockId, BlockDto)>),
     /// Consolidated funds
     ConsolidatedFunds(String),
     /// Found inputs
     Inputs(Vec<UtxoInputDto>),
     /// Reattach
-    Reattached((MessageId, MessageDto)),
+    Reattached((BlockId, BlockDto)),
     /// Promoted
-    Promoted((MessageId, MessageDto)),
+    Promoted((BlockId, BlockDto)),
     /// Bech32 to hex
     Bech32ToHex(String),
     /// Hex to bech32
@@ -130,8 +130,8 @@ pub enum Response {
     GeneratedMnemonic(String),
     /// Mnemonic to hex encoded seed
     MnemonicHexSeed(String),
-    /// The BLAKE2b-256 hash of the message bytes
-    MessageId(MessageId),
+    /// The BLAKE2b-256 hash of the block bytes
+    BlockId(BlockId),
     /// An error occurred.
     Error(Error),
     /// A panic occurred.

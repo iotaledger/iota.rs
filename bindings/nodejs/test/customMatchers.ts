@@ -2,7 +2,7 @@ import { printExpected, printReceived, matcherHint } from 'jest-matcher-utils';
 
 interface CustomMatchers<R = unknown> {
     toBeValidAddress(): R;
-    toBeValidMessageId(): R;
+    toBeValidBlockId(): R;
     toBeValidOutputId(): R;
 }
 
@@ -41,7 +41,7 @@ expect.extend({
     toBeValidAddress(received: string) {
         return idMatcher(received, 63, 'rms');
     },
-    toBeValidMessageId(received: string) {
+    toBeValidBlockId(received: string) {
         return idMatcher(received, 66, '0x');
     },
     toBeValidOutputId(received: string) {

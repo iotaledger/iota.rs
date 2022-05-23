@@ -1,10 +1,10 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! `cargo run --example node_api_core_post_message --release -- [NODE URL]`.
+//! `cargo run --example node_api_core_post_block --release -- [NODE URL]`.
 
 use iota_client::{
-    bee_message::{parent::Parents, Message},
+    bee_block::{parent::Parents, Block},
     Client, Result,
 };
 
@@ -21,13 +21,13 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
 
-    // Creates a message.
-    let message = Message::build(Parents::new(client.get_tips().await?)?).finish()?;
+    // Creates a block.
+    let block = Block::build(Parents::new(client.get_tips().await?)?).finish()?;
     // Sends the request.
-    let message_id = client.post_message(&message).await?;
+    let block_id = client.post_block(&block).await?;
 
     // Prints the response.
-    println!("{:?}", message_id);
+    println!("{:?}", block_id);
 
     Ok(())
 }

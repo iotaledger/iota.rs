@@ -1,7 +1,7 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! cargo run --example message_time --release
+//! cargo run --example block_time --release
 
 use iota_client::Client;
 
@@ -15,29 +15,29 @@ async fn main() {
         .await
         .unwrap();
 
-    let message = client
-        .message()
+    let block = client
+        .block()
         .with_tag("Hello")
         .with_data("Tangle".as_bytes().to_vec())
         .finish()
         .await
         .unwrap();
 
-    let message_id = message.id();
-    println!("Message ID: {}", message_id);
+    let block_id = block.id();
+    println!("Block ID: {}", block_id);
 
-    let _ = client.retry_until_included(&message_id, None, None).await.unwrap();
+    let _ = client.retry_until_included(&block_id, None, None).await.unwrap();
 
-    let metadata = client.get_message_metadata(&message_id).await.unwrap();
+    let metadata = client.get_block_metadata(&block_id).await.unwrap();
     match metadata.referenced_by_milestone_index {
         Some(ms_index) => {
             let ms = client.get_milestone_by_index(ms_index).await.unwrap();
             println!(
-                "Message got referenced by milestone {} at {}",
+                "Block got referenced by milestone {} at {}",
                 ms_index,
                 ms.essence().timestamp()
             );
         }
-        _ => println!("Message is not referenced by a milestone"),
+        _ => println!("Block is not referenced by a milestone"),
     }
 }

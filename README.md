@@ -8,8 +8,8 @@ For value transfers we recommend using [wallet.rs](https://github.com/iotaledger
 
 This library allows you to do the following:
 
-* Create messages with indexation and transaction payloads
-* Get messages and outputs
+* Create blocks with tagged data and transaction payloads
+* Get blocks and outputs
 * Sign transactions
 * Generate addresses
 * Interact with an IOTA node

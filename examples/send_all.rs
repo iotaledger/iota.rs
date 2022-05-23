@@ -7,7 +7,7 @@ use std::env;
 
 use dotenv::dotenv;
 use iota_client::{
-    bee_message::output::{
+    bee_block::output::{
         unlock_condition::AddressUnlockCondition, BasicOutputBuilder, NativeTokensBuilder, Output, UnlockCondition,
     },
     node_api::indexer::query_parameters::QueryParameter,
@@ -90,18 +90,18 @@ async fn main() -> Result<()> {
     }
     let new_output = basic_output_builder.finish_output()?;
 
-    let message = client
-        .message()
+    let block = client
+        .block()
         .with_secret_manager(&secret_manager_1)
         .with_outputs(vec![new_output])?
         .finish()
         .await?;
 
     println!(
-        "Transaction sent: https://explorer.iota.org/devnet/message/{}",
-        message.id()
+        "Transaction sent: https://explorer.iota.org/devnet/block/{}",
+        block.id()
     );
 
-    let _ = client.retry_until_included(&message.id(), None, None).await.unwrap();
+    let _ = client.retry_until_included(&block.id(), None, None).await.unwrap();
     Ok(())
 }

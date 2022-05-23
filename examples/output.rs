@@ -7,7 +7,7 @@ use std::env;
 
 use dotenv::dotenv;
 use iota_client::{
-    bee_message::output::{
+    bee_block::output::{
         unlock_condition::{AddressUnlockCondition, UnlockCondition},
         BasicOutputBuilder,
     },
@@ -46,23 +46,20 @@ async fn main() -> Result<()> {
             .finish_output()?,
     ];
 
-    let message = client
-        .message()
+    let block = client
+        .block()
         .with_secret_manager(&secret_manager)
         .with_outputs(outputs)?
         .finish()
         .await?;
 
+    println!("Transaction sent: http://localhost:14265/api/v2/blocks/{}", block.id());
     println!(
-        "Transaction sent: http://localhost:14265/api/v2/messages/{}",
-        message.id()
-    );
-    println!(
-        "Message metadata: http://localhost:14265/api/v2/messages/{}/metadata",
-        message.id()
+        "Block metadata: http://localhost:14265/api/v2/blocks/{}/metadata",
+        block.id()
     );
 
-    // conflict reasons from https://github.com/gohornet/hornet/blob/4cd911a5aaed017c31a2093fc27bf4d06182ac67/pkg/model/storage/message_metadata.go#L31
+    // conflict reasons from https://github.com/gohornet/hornet/blob/4cd911a5aaed017c31a2093fc27bf4d06182ac67/pkg/model/storage/block_metadata.go#L31
     // 	// ConflictInputUTXOAlreadySpent the referenced UTXO was already spent.
     // ConflictInputUTXOAlreadySpent = 1
 

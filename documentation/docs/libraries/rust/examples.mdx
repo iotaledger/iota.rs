@@ -7,7 +7,7 @@ keywords:
 - Rust
 - seed
 - generate
-- message
+- block
 ---
 import CodeBlock from '@theme/CodeBlock';
 import get_info from '!!raw-loader!./../../../../examples/01_get_info.rs';
@@ -15,9 +15,9 @@ import generate_seed from '!!raw-loader!./../../../../examples/02_generate_seed.
 import generate_addresses from '!!raw-loader!./../../../../examples/03_generate_addresses.rs';
 import get_balance from '!!raw-loader!./../../../../examples/04_get_balance.rs';
 import get_address_outputs from '!!raw-loader!./../../../../examples/05_get_address_outputs.rs';
-import simple_message from '!!raw-loader!./../../../../examples/06_simple_message.rs';
-import get_message_metadata from '!!raw-loader!./../../../../examples/07_get_message_metadata.rs';
-import data_message from '!!raw-loader!./../../../../examples/08_data_message.rs';
+import simple_block from '!!raw-loader!./../../../../examples/06_simple_block.rs';
+import get_block_metadata from '!!raw-loader!./../../../../examples/07_get_block_metadata.rs';
+import data_block from '!!raw-loader!./../../../../examples/08_data_block.rs';
 import transaction from '!!raw-loader!./../../../../examples/09_transaction.rs';
 import mqtt from '!!raw-loader!./../../../../examples/10_mqtt.rs';
 
@@ -62,15 +62,15 @@ cargo run --example 01_get_info --release
 </CodeBlock>
 
 <CodeBlock className="language-rust">
-  {simple_message}
+  {simple_block}
 </CodeBlock>
 
 <CodeBlock className="language-rust">
-  {get_message_metadata}
+  {get_block_metadata}
 </CodeBlock>
 
 <CodeBlock className="language-rust">
-  {data_message}
+  {data_block}
 </CodeBlock>
 
 <CodeBlock className="language-rust">

@@ -1,11 +1,11 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! cargo run --example 08_data_message --release
+//! cargo run --example 08_data_block --release
 
-use iota_client::{bee_message::payload::Payload, Client, Result};
+use iota_client::{bee_block::payload::Payload, Client, Result};
 
-/// In this example we will send a message with a tagged data payload
+/// In this example we will send a block with a tagged data payload
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -16,22 +16,19 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
 
-    let message = client
-        .message()
+    let block = client
+        .block()
         .with_tag("Hello")
         .with_data("Tangle".as_bytes().to_vec())
         .finish()
         .await?;
 
-    println!(
-        "Message sent https://explorer.iota.org/devnet/message/{}\n",
-        message.id()
-    );
+    println!("Block sent https://explorer.iota.org/devnet/block/{}\n", block.id());
 
-    let fetched_msg = client.get_message(&message.id()).await?;
-    println!("{:#?}\n", fetched_msg);
+    let fetched_block = client.get_block(&block.id()).await?;
+    println!("{:#?}\n", fetched_block);
 
-    if let Payload::TaggedData(payload) = fetched_msg.payload().as_ref().unwrap() {
+    if let Payload::TaggedData(payload) = fetched_block.payload().as_ref().unwrap() {
         println!(
             "Data: {}",
             String::from_utf8(payload.data().to_vec()).expect("Found invalid UTF-8")

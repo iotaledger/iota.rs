@@ -5,9 +5,9 @@
 
 use std::str::FromStr;
 
-use iota_client::{bee_message::MessageId, Client};
+use iota_client::{bee_block::BlockId, Client};
 
-/// In this example we will define a custom message parent which be used for promoting
+/// In this example we will define a custom block parent which be used for promoting
 
 #[tokio::main]
 async fn main() {
@@ -19,11 +19,10 @@ async fn main() {
         .await
         .unwrap();
 
-    let custom_parent =
-        MessageId::from_str("b5634e05a7c665d7f87330a53633f001a5d1d96b346dc98dc225c4d6c204f23b").unwrap();
+    let custom_parent = BlockId::from_str("b5634e05a7c665d7f87330a53633f001a5d1d96b346dc98dc225c4d6c204f23b").unwrap();
 
-    let message = client
-        .message()
+    let block = client
+        .block()
         .with_parents(vec![custom_parent])
         .unwrap()
         .finish()
@@ -31,7 +30,7 @@ async fn main() {
         .unwrap();
 
     println!(
-        "Empty message sent: https://explorer.iota.org/devnet/message/{}",
-        message.id()
+        "Empty block sent: https://explorer.iota.org/devnet/block/{}",
+        block.id()
     );
 }

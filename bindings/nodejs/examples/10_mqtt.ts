@@ -15,7 +15,7 @@ async function run() {
     });
 
     // Array of topics to subscribe to
-    const topics = ['messages'];
+    const topics = ['blocks'];
 
     const callback = function (error: Error, data: string) {
         console.log(JSON.parse(data));
