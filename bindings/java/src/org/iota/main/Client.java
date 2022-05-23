@@ -33,24 +33,28 @@ public class Client {
         return nodeCoreApi.getTips();
     }
 
-    public String getMessage(String messageId) {
-        return nodeCoreApi.getMessage(messageId);
+    public String getBlock(String blockId) {
+        return nodeCoreApi.getBlock(blockId);
     }
 
-    public String getMessageRaw(String messageId) {
-        return nodeCoreApi.getMessageRaw(messageId);
+    public String getBlockRaw(String blockId) {
+        return nodeCoreApi.getBlockRaw(blockId);
     }
 
-    public String getMessageMetadata(String messageId) {
-        return nodeCoreApi.getMessageMetadata(messageId);
+    public String getBlockMetadata(String blockId) {
+        return nodeCoreApi.getBlockMetadata(blockId);
     }
 
-    public String getMessageChildren(String messageId) {
-        return nodeCoreApi.getMessageChildren(messageId);
+    public String getBlockChildren(String blockId) {
+        return nodeCoreApi.getBlockChildren(blockId);
     }
 
     public String getOutput(String outputId) {
         return nodeCoreApi.getOutput(outputId);
+    }
+
+    public String getOutputMetadata(String outputId) {
+        return nodeCoreApi.getOutputMetadata(outputId);
     }
 
     public String getReceiptsMigratedAt(int milestoneIndex) {
@@ -65,8 +69,8 @@ public class Client {
         return nodeCoreApi.getTreasury();
     }
 
-    public String getIncludedMessage(String transactionId) {
-        return nodeCoreApi.getIncludedMessage(transactionId);
+    public String getIncludedBlock(String transactionId) {
+        return nodeCoreApi.getIncludedBlock(transactionId);
     }
 
     public String getMilestoneById(String milestoneId) {

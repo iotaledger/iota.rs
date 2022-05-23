@@ -111,20 +111,9 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf9ff0bbfd639f15c74af777d81383cf53efb7c93613f6cab67c6c11e05bbf8b"
 
 [[package]]
-name = "bee-ledger"
-version = "0.7.0"
-source = "git+https://github.com/iotaledger/bee?rev=b64862a1f9a3d66582d34a8462668d80b3296588#b64862a1f9a3d66582d34a8462668d80b3296588"
-dependencies = [
- "bee-message",
- "packable",
- "thiserror",
- "time-helper",
-]
-
-[[package]]
-name = "bee-message"
-version = "0.2.0"
-source = "git+https://github.com/iotaledger/bee?rev=b64862a1f9a3d66582d34a8462668d80b3296588#b64862a1f9a3d66582d34a8462668d80b3296588"
+name = "bee-block"
+version = "0.1.0"
+source = "git+https://github.com/iotaledger/bee?rev=146ce1011fd76f3d9f07390b002b29dd6762daf3#146ce1011fd76f3d9f07390b002b29dd6762daf3"
 dependencies = [
  "bech32",
  "bee-pow",
@@ -146,9 +135,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "bee-ledger"
+version = "0.7.0"
+source = "git+https://github.com/iotaledger/bee?rev=146ce1011fd76f3d9f07390b002b29dd6762daf3#146ce1011fd76f3d9f07390b002b29dd6762daf3"
+dependencies = [
+ "bee-block",
+ "packable",
+ "thiserror",
+ "time-helper",
+]
+
+[[package]]
 name = "bee-pow"
 version = "0.2.0"
-source = "git+https://github.com/iotaledger/bee?rev=b64862a1f9a3d66582d34a8462668d80b3296588#b64862a1f9a3d66582d34a8462668d80b3296588"
+source = "git+https://github.com/iotaledger/bee?rev=146ce1011fd76f3d9f07390b002b29dd6762daf3#146ce1011fd76f3d9f07390b002b29dd6762daf3"
 dependencies = [
  "bee-ternary 0.6.0",
  "iota-crypto",
@@ -158,10 +158,10 @@ dependencies = [
 [[package]]
 name = "bee-rest-api"
 version = "0.2.2"
-source = "git+https://github.com/iotaledger/bee?rev=b64862a1f9a3d66582d34a8462668d80b3296588#b64862a1f9a3d66582d34a8462668d80b3296588"
+source = "git+https://github.com/iotaledger/bee?rev=146ce1011fd76f3d9f07390b002b29dd6762daf3#146ce1011fd76f3d9f07390b002b29dd6762daf3"
 dependencies = [
+ "bee-block",
  "bee-ledger",
- "bee-message",
  "bee-pow",
  "multiaddr",
  "packable",
@@ -908,7 +908,7 @@ version = "1.1.1"
 dependencies = [
  "async-trait",
  "backtrace",
- "bee-message",
+ "bee-block",
  "bee-pow",
  "bee-rest-api",
  "bee-ternary 0.5.2",

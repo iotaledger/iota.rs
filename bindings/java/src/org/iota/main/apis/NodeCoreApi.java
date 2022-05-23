@@ -20,24 +20,28 @@ public class NodeCoreApi extends BaseApi {
         return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetTips"));
     }
 
-    public String getMessage(String messageId) {
-        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetMessage", "{\"messageId\":\"" + messageId + "\"}"));
+    public String getBlock(String blockId) {
+        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetBlock", "{\"blockId\":\"" + blockId + "\"}"));
     }
 
-    public String getMessageRaw(String messageId) {
-        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetMessageRaw", "{\"messageId\":\"" + messageId + "\"}"));
+    public String getBlockRaw(String blockId) {
+        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetBlockRaw", "{\"blockId\":\"" + blockId + "\"}"));
     }
 
-    public String getMessageMetadata(String messageId) {
-        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetMessageMetadata", "{\"messageId\":\"" + messageId + "\"}"));
+    public String getBlockMetadata(String blockId) {
+        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetBlockMetadata", "{\"blockId\":\"" + blockId + "\"}"));
     }
 
-    public String getMessageChildren(String messageId) {
-        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetMessageChildren", "{\"messageId\":\"" + messageId + "\"}"));
+    public String getBlockChildren(String blockId) {
+        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetBlockChildren", "{\"blockId\":\"" + blockId + "\"}"));
     }
 
     public String getOutput(String outputId) {
         return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetOutput", "{\"outputId\":\"" + outputId + "\"}"));
+    }
+
+    public String getOutputMetadata(String outputId) {
+        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetOutputMetadata", "{\"outputId\":\"" + outputId + "\"}"));
     }
 
     public String getReceiptsMigratedAt(int milestoneIndex) {
@@ -52,8 +56,8 @@ public class NodeCoreApi extends BaseApi {
         return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetTreasury"));
     }
 
-    public String getIncludedMessage(String transactionId) {
-        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetIncludedMessage", "{\"transactionId\":\"" + transactionId + "\"}"));
+    public String getIncludedBlock(String transactionId) {
+        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetIncludedblock", "{\"transactionId\":\"" + transactionId + "\"}"));
     }
 
     public String getMilestoneById(String milestoneId) {
