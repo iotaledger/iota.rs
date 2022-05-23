@@ -315,12 +315,9 @@ impl Client {
     pub async fn get_output_metadata(&self, output_id: &OutputId) -> Result<OutputMetadataResponse> {
         let path = &format!("api/v2/outputs/{}/metadata", output_id);
 
-        let resp: OutputMetadataResponse = self
-            .node_manager
-            .get_request(path, None, self.get_timeout(), false, false)
-            .await?;
-
-        Ok(resp)
+        self.node_manager
+            .get_request::<OutputMetadataResponse>(path, None, self.get_timeout(), false, false)
+            .await
     }
 
     /// Gets all stored receipts.
