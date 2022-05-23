@@ -24,7 +24,7 @@ use crate::{
 };
 
 /// Node manager builder
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct NodeManagerBuilder {
     /// Node which will be tried first for all requests
     #[serde(rename = "primaryNode")]
