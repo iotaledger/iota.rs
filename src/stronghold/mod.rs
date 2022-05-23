@@ -13,14 +13,7 @@
 //! wants to have a more consistent naming when using any of the feature sets.
 //!
 //! Use [`builder()`] to construct a [`StrongholdAdapter`] with customized parameters; see documentation of methods of
-//! [`StrongholdAdapterBuilder`] for details. Alternatively, invoking [`new()`] (or using [`Default::default()`])
-//! creates a [`StrongholdAdapter`] with default parameters. However, the default [`StrongholdAdapter`]:
-//!
-//! - is not initialized with a password
-//! - is without a password clearing timeout
-//! - is not associated with a snapshot file on the disk (i.e. working purely in memory)
-//!
-//! These default settings limit what [`StrongholdAdapter`] can do:
+//! [`StrongholdAdapterBuilder`] for details. All fields are optional, but:
 //!
 //! - Without a password, all cryptographic operations (including database operations, as they encrypt / decrypt data)
 //!   would fail.
@@ -29,7 +22,7 @@
 //! - Without a snapshot path configured, all operations would be _transient_ (i.e. all data would be lost when
 //!   [`StrongholdAdapter`] is dropped, or the cached key has been cleared).
 //!
-//! They can also be set later using [`set_password()`], [`set_timeout()`], etc.
+//! They can also be set later on [`StrongholdAdapter`] using [`set_password()`], [`set_timeout()`], etc.
 //!
 //! With [`set_timeout()`], an automatic task can be spawned in the background to purge the key from memory using
 //! [zeroize] after the `timeout` duration. It's used to reduce the attack vector. When the key is cleared from the
@@ -48,7 +41,6 @@
 //! [`DatabaseProvider`]: crate::db::DatabaseProvider
 //! [`SecretManage`]: crate::secret::SecretManage
 //! [`builder()`]: self::StrongholdAdapter::builder()
-//! [`new()`]: self::StrongholdAdapter::new()
 //! [`set_password()`]: self::StrongholdAdapter::set_password()
 //! [`set_timeout()`]: self::StrongholdAdapter::set_timeout()
 //! [`read_stronghold_snapshot()`]: self::StrongholdAdapter::read_stronghold_snapshot()
@@ -115,28 +107,6 @@ pub struct StrongholdAdapter {
     snapshot_loaded: bool,
 }
 
-impl Default for StrongholdAdapter {
-    fn default() -> Self {
-        // XXX: we unwrap here.
-        let system = ActorSystem::new().unwrap();
-        let client_path = PRIVATE_DATA_CLIENT_PATH.to_vec();
-        let options = Vec::new();
-
-        Self {
-            stronghold: Arc::new(Mutex::new(Stronghold::init_stronghold_system(
-                system,
-                client_path,
-                options,
-            ))),
-            key: Arc::new(Mutex::new(None)),
-            timeout: None,
-            timeout_task: Arc::new(Mutex::new(None)),
-            snapshot_path: None,
-            snapshot_loaded: false,
-        }
-    }
-}
-
 /// Extra / custom builder method implementations.
 impl StrongholdAdapterBuilder {
     /// Use an user-input password string to derive a key to use Stronghold.
@@ -149,7 +119,9 @@ impl StrongholdAdapterBuilder {
         self
     }
 
-    /// Build [`StrongholdAdapter`] from the configuration.
+    /// Try to build [`StrongholdAdapter`] from the configuration.
+    ///
+    /// The only possible error comes from [riker::system::ActorSystem::new()] for communicating with Stronghold.
     ///
     /// If both `key` (via [`password()`]) and `timeout` (via [`timeout()`]) are set, then an asynchronous task would be
     /// spawned in Tokio to purge ([zeroize]) `key` after `timeout`. There is a small delay (usually a few milliseconds)
@@ -163,24 +135,25 @@ impl StrongholdAdapterBuilder {
     ///
     /// [`password()`]: Self::password()
     /// [`timeout()`]: Self::timeout()
-    pub fn build(mut self) -> StrongholdAdapter {
+    pub fn try_build(mut self) -> Result<StrongholdAdapter> {
+        // In any case, Stronghold - as a necessary component - needs to be present at this point.
+        let stronghold = if let Some(stronghold) = self.stronghold {
+            stronghold
+        } else {
+            let system = ActorSystem::new()?;
+            let client_path = PRIVATE_DATA_CLIENT_PATH.to_vec();
+            let options = Vec::new();
+
+            Arc::new(Mutex::new(Stronghold::init_stronghold_system(
+                system,
+                client_path,
+                options,
+            )))
+        };
+
         // If both `key` and `timeout` are set, then we spawn the task and keep its join handle.
         if let (Some(key), Some(Some(timeout))) = (&self.key, self.timeout) {
             let timeout_task = Arc::new(Mutex::new(None));
-
-            // Stronghold isn't optional, so we must initialize one here if it hasn't been supplied.
-            let stronghold = self.stronghold.unwrap_or_else(|| {
-                // XXX: we unwrap here.
-                let system = ActorSystem::new().unwrap();
-                let client_path = PRIVATE_DATA_CLIENT_PATH.to_vec();
-                let options = Vec::new();
-
-                Arc::new(Mutex::new(Stronghold::init_stronghold_system(
-                    system,
-                    client_path,
-                    options,
-                )))
-            });
 
             // The key clearing task, with the data it owns.
             let task_self = timeout_task.clone();
@@ -193,47 +166,30 @@ impl StrongholdAdapterBuilder {
             // spawned and set in the `struct`.
             tokio::spawn(async move {
                 *task_self.lock().await = Some(tokio::spawn(task_key_clear(
-                    task_self.clone(),
+                    task_self.clone(), // LHS moves task_self
                     stronghold_cloned,
                     key,
                     timeout,
                 )));
             });
 
-            // Keep Stronghold and the task handle in the builder; the code below checks this.
-            self.stronghold = Some(stronghold);
+            // Keep the task handle in the builder; the code below checks this.
             self.timeout_task = Some(timeout_task);
         }
 
         // Create the adapter as per configuration and return it.
-        StrongholdAdapter {
-            stronghold: self.stronghold.unwrap_or_else(|| {
-                // XXX: we unwrap here.
-                let system = ActorSystem::new().unwrap();
-                let client_path = PRIVATE_DATA_CLIENT_PATH.to_vec();
-                let options = Vec::new();
-
-                Arc::new(Mutex::new(Stronghold::init_stronghold_system(
-                    system,
-                    client_path,
-                    options,
-                )))
-            }),
+        Ok(StrongholdAdapter {
+            stronghold,
             key: self.key.unwrap_or_else(|| Arc::new(Mutex::new(None))),
             timeout: self.timeout.unwrap_or(None),
             timeout_task: self.timeout_task.unwrap_or_else(|| Arc::new(Mutex::new(None))),
             snapshot_path: self.snapshot_path.unwrap_or(None),
             snapshot_loaded: false,
-        }
+        })
     }
 }
 
 impl StrongholdAdapter {
-    /// Create a [StrongholdAdapter] with default parameters.
-    pub fn new() -> StrongholdAdapter {
-        StrongholdAdapter::default()
-    }
-
     /// Create a builder to construct a [StrongholdAdapter].
     pub fn builder() -> StrongholdAdapterBuilder {
         StrongholdAdapterBuilder::default()
@@ -479,7 +435,8 @@ mod tests {
         let mut client = StrongholdAdapter::builder()
             .password("drowssap")
             .timeout(timeout)
-            .build();
+            .try_build()
+            .unwrap();
 
         // There is a small delay between `build()` and the key clearing task being actually spawned and kept.
         tokio::time::sleep(Duration::from_millis(10)).await;

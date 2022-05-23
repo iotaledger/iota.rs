@@ -173,7 +173,7 @@ impl TryFrom<&SecretManagerDto> for SecretManager {
                     builder = builder.snapshot_path(PathBuf::from(snapshot_path));
                 }
 
-                Self::Stronghold(builder.build())
+                Self::Stronghold(builder.try_build()?)
             }
 
             #[cfg(feature = "ledger_nano")]

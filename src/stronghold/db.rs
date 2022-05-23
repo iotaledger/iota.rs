@@ -108,7 +108,7 @@ mod tests {
         use super::StrongholdAdapter;
         use crate::db::DatabaseProvider;
 
-        let mut stronghold = StrongholdAdapter::builder().password("drowssap").build();
+        let mut stronghold = StrongholdAdapter::builder().password("drowssap").try_build().unwrap();
 
         assert!(matches!(stronghold.get(b"test-0").await, Ok(None)));
         assert!(matches!(stronghold.get(b"test-1").await, Ok(None)));
