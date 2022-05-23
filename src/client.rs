@@ -191,7 +191,7 @@ impl Client {
         let mut network_nodes: HashMap<String, Vec<(NodeInfo, Node)>> = HashMap::new();
         for node in nodes {
             // Put the healthy node url into the network_nodes
-            if let Ok(info) = Client::get_node_info(&node.url.to_string(), None).await {
+            if let Ok(info) = Client::get_node_info(node.url.as_ref(), None).await {
                 if info.status.is_healthy {
                     match network_nodes.get_mut(&info.protocol.network_name) {
                         Some(network_id_entry) => {
