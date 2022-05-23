@@ -16,8 +16,9 @@ use bee_block::{
 use bee_rest_api::types::{
     dtos::{PeerDto, ReceiptDto},
     responses::{
-        BlockChildrenResponse, BlockMetadataResponse, BlockResponse, MilestoneResponse, OutputResponse, PeersResponse,
-        ReceiptsResponse, SubmitBlockResponse, TipsResponse, TreasuryResponse, UtxoChangesResponse,
+        BlockChildrenResponse, BlockMetadataResponse, BlockResponse, MilestoneResponse, OutputMetadataResponse,
+        OutputResponse, PeersResponse, ReceiptsResponse, SubmitBlockResponse, TipsResponse, TreasuryResponse,
+        UtxoChangesResponse,
     },
 };
 use packable::PackableExt;
@@ -306,6 +307,16 @@ impl Client {
 
         self.node_manager
             .get_request(path, None, self.get_timeout(), false, true)
+            .await
+    }
+
+    /// Get the metadata for a given `OutputId` (TransactionId + output_index).
+    /// GET /api/v2/outputs/{outputId}/metadata
+    pub async fn get_output_metadata(&self, output_id: &OutputId) -> Result<OutputMetadataResponse> {
+        let path = &format!("api/v2/outputs/{}/metadata", output_id);
+
+        self.node_manager
+            .get_request::<OutputMetadataResponse>(path, None, self.get_timeout(), false, true)
             .await
     }
 

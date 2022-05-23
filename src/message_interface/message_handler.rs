@@ -260,6 +260,9 @@ impl ClientMessageHandler {
                 Ok(Response::BlockChildren(self.client.get_block_children(block_id).await?))
             }
             ClientMethod::GetOutput { output_id } => Ok(Response::Output(self.client.get_output(output_id).await?)),
+            ClientMethod::GetOutputMetadata { output_id } => Ok(Response::OutputMetadata(
+                self.client.get_output_metadata(output_id).await?,
+            )),
             ClientMethod::GetMilestoneById { milestone_id } => Ok(Response::Milestone(MilestonePayloadDto::from(
                 &self.client.get_milestone_by_id(milestone_id).await?,
             ))),

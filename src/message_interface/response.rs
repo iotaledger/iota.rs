@@ -14,7 +14,7 @@ use bee_block::{
 use bee_rest_api::types::{
     dtos::{PeerDto, ReceiptDto},
     responses::{
-        BlockMetadataResponse, InfoResponse as NodeInfo, OutputResponse, TreasuryResponse,
+        BlockMetadataResponse, InfoResponse as NodeInfo, OutputMetadataResponse, OutputResponse, TreasuryResponse,
         UtxoChangesResponse as MilestoneUTXOChanges,
     },
 };
@@ -80,6 +80,8 @@ pub enum Response {
     BlockChildren(Box<[BlockId]>),
     /// Get output successful
     Output(OutputResponse),
+    /// Get the metadata of an output
+    OutputMetadata(OutputMetadataResponse),
     /// Get outputs successful
     Outputs(Vec<OutputResponse>),
     /// Get milestone successful

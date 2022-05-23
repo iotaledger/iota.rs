@@ -154,6 +154,11 @@ pub enum ClientMethod {
         #[serde(rename = "outputId")]
         output_id: OutputId,
     },
+    /// Get output metadata
+    GetOutputMetadata {
+        /// Output ID
+        output_id: OutputId,
+    },
     /// Get the milestone by the given milestone id.
     GetMilestoneById {
         /// Milestone ID

@@ -108,7 +108,7 @@ pub(crate) async fn get_inputs(
                 for output_response in address_outputs {
                     available_inputs.push(InputSigningData {
                         output: Output::try_from(&output_response.output)?,
-                        output_metadata: OutputMetadata::try_from(&output_response)?,
+                        output_metadata: OutputMetadata::try_from(&output_response.metadata)?,
                         chain: Some(Chain::from_u32_hardened(vec![
                             HD_WALLET_TYPE,
                             block_builder.coin_type,
@@ -242,7 +242,7 @@ async fn get_inputs_for_sender_and_issuer(
                 Some(output_response) => {
                     required_ed25519_inputs.push(InputSigningData {
                         output: Output::try_from(&output_response.output)?,
-                        output_metadata: OutputMetadata::try_from(output_response)?,
+                        output_metadata: OutputMetadata::try_from(&output_response.metadata)?,
                         chain: Some(Chain::from_u32_hardened(vec![
                             HD_WALLET_TYPE,
                             block_builder.coin_type,
