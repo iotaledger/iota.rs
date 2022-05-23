@@ -316,7 +316,7 @@ impl Client {
         let path = &format!("api/v2/outputs/{}/metadata", output_id);
 
         self.node_manager
-            .get_request::<OutputMetadataResponse>(path, None, self.get_timeout(), false, false)
+            .get_request::<OutputMetadataResponse>(path, None, self.get_timeout(), false, true)
             .await
     }
 
