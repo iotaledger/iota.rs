@@ -15,9 +15,9 @@ pub mod stronghold;
 /// Signing related types
 pub mod types;
 
-#[cfg(feature = "stronghold")]
-use std::path::PathBuf;
 use std::{collections::HashMap, ops::Range, str::FromStr};
+#[cfg(feature = "stronghold")]
+use std::{path::PathBuf, time::Duration};
 
 use async_trait::async_trait;
 use bee_block::{
@@ -165,11 +165,15 @@ impl TryFrom<&SecretManagerDto> for SecretManager {
                     builder = builder.password(password);
                 }
 
+                if let Some(timeout) = &stronghold_dto.timeout {
+                    builder = builder.timeout(Duration::from_secs(*timeout));
+                }
+
                 if let Some(snapshot_path) = &stronghold_dto.snapshot_path {
                     builder = builder.snapshot_path(PathBuf::from(snapshot_path));
                 }
 
-                Self::Stronghold(builder.build())
+                Self::Stronghold(builder.try_build()?)
             }
 
             #[cfg(feature = "ledger_nano")]
@@ -189,9 +193,10 @@ impl From<&SecretManager> for SecretManagerDto {
     fn from(value: &SecretManager) -> Self {
         match value {
             #[cfg(feature = "stronghold")]
-            SecretManager::Stronghold(stronghold_dto) => Self::Stronghold(StrongholdDto {
+            SecretManager::Stronghold(stronghold_adapter) => Self::Stronghold(StrongholdDto {
                 password: None,
-                snapshot_path: stronghold_dto
+                timeout: stronghold_adapter.get_timeout().map(|duration| duration.as_secs()),
+                snapshot_path: stronghold_adapter
                     .snapshot_path
                     .as_ref()
                     .map(|s| s.clone().into_os_string().to_string_lossy().into()),
