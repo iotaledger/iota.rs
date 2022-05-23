@@ -276,14 +276,14 @@ impl StrongholdAdapter {
             timeout_task.abort();
         }
 
+        // Unload Stronghold first, but we can't do much about the errors.
+        if let Err(err) = self.unload_stronghold_snapshot().await {
+            warn!("failed to unload Stronghold while clearing the key: {err}");
+        }
+
         // Purge the key, setting it to None then.
         if let Some(mut key) = self.key.lock().await.take() {
             key.zeroize();
-        }
-
-        // Unload Stronghold, but we can't do much about the errors.
-        if let Err(err) = self.unload_stronghold_snapshot().await {
-            warn!("failed to unload Stronghold while clearing the key: {err}");
         }
     }
 
