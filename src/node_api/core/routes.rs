@@ -317,7 +317,7 @@ impl Client {
 
         let resp: OutputMetadataResponse = self
             .node_manager
-            .get_request(path, None, client.get_timeout(), false, false)
+            .get_request(path, None, self.get_timeout(), false, false)
             .await?;
 
         Ok(resp)
