@@ -16,8 +16,9 @@ use bee_block::{
 use bee_rest_api::types::{
     dtos::{PeerDto, ReceiptDto},
     responses::{
-        BlockChildrenResponse, BlockMetadataResponse, BlockResponse, MilestoneResponse, OutputResponse, PeersResponse,
-        ReceiptsResponse, SubmitBlockResponse, TipsResponse, TreasuryResponse, UtxoChangesResponse,
+        BlockChildrenResponse, BlockMetadataResponse, BlockResponse, MilestoneResponse, OutputMetadataResponse,
+        OutputResponse, PeersResponse, ReceiptsResponse, SubmitBlockResponse, TipsResponse, TreasuryResponse,
+        UtxoChangesResponse,
     },
 };
 use packable::PackableExt;
@@ -316,7 +317,7 @@ impl Client {
 
         let resp: OutputMetadataResponse = client
             .node_manager
-            .get_request(path, None, client.get_timeout())
+            .get_request(path, None, client.get_timeout(), false, false)
             .await?;
 
         Ok(resp)
