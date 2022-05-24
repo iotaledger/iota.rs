@@ -6,9 +6,7 @@ use iota_client::{
         payload::milestone::{dto::MilestonePayloadDto, option::dto::ReceiptMilestoneOptionDto},
         BlockDto,
     },
-    message_interface::{
-        create_message_handler, ClientMessageHandler, Message as ClientMessage, MessageType, Response,
-    },
+    message_interface::{create_message_handler, ClientMessageHandler, Message, Response},
     MqttPayload, Topic, TopicEvent,
 };
 
@@ -40,12 +38,11 @@ impl MessageHandler {
 
     async fn send_message(&self, serialized_message: String) -> (String, bool) {
         log::debug!("{}", serialized_message);
-        match serde_json::from_str::<MessageType>(&serialized_message) {
+        match serde_json::from_str::<Message>(&serialized_message) {
             Ok(message) => {
                 let (response_tx, mut response_rx) = unbounded_channel();
-                let client_message = ClientMessage::new(message.clone(), response_tx);
 
-                self.client_message_handler.handle(client_message).await;
+                self.client_message_handler.handle(message, response_tx).await;
                 let response = response_rx.recv().await;
                 if let Some(res) = response {
                     let mut is_err = matches!(res, Response::Error(_) | Response::Panic(_));

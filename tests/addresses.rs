@@ -10,7 +10,7 @@ use iota_client::api::GetAddressesBuilderOptions;
 #[cfg(feature = "message_interface")]
 use iota_client::message_interface;
 #[cfg(feature = "message_interface")]
-use iota_client::message_interface::{ClientMethod, MessageType, Response};
+use iota_client::message_interface::{ClientMethod, Message, Response};
 #[cfg(feature = "stronghold")]
 use iota_client::secret::stronghold::StrongholdSecretManager;
 #[cfg(all(feature = "message_interface", feature = "stronghold"))]
@@ -239,7 +239,7 @@ async fn address_generation() {
                 bech32_hrp: Some(address.bech32_hrp.to_string()),
                 metadata: None,
             };
-            let message = MessageType::CallClientMethod(ClientMethod::GenerateAddresses {
+            let message = Message::CallClientMethod(ClientMethod::GenerateAddresses {
                 secret_manager: SecretManagerDto::Mnemonic(address.mnemonic.clone()),
                 options,
             });
@@ -274,11 +274,11 @@ async fn address_generation() {
                 timeout: None,
                 snapshot_path: Some(stronghold_filename.clone()),
             };
-            let message_type = MessageType::CallClientMethod(ClientMethod::StoreMnemonic {
+            let message = Message::CallClientMethod(ClientMethod::StoreMnemonic {
                 secret_manager: SecretManagerDto::Stronghold(secret_manager_dto.clone()),
                 mnemonic: address.mnemonic,
             });
-            let _response = message_interface::send_message(&message_handler, message_type).await;
+            let _response = message_interface::send_message(&message_handler, message).await;
 
             let options = GetAddressesBuilderOptions {
                 coin_type: Some(address.coin_type),
@@ -291,7 +291,7 @@ async fn address_generation() {
                 bech32_hrp: Some(address.bech32_hrp.to_string()),
                 metadata: None,
             };
-            let message = MessageType::CallClientMethod(ClientMethod::GenerateAddresses {
+            let message = Message::CallClientMethod(ClientMethod::GenerateAddresses {
                 secret_manager: SecretManagerDto::Stronghold(secret_manager_dto),
                 options,
             });

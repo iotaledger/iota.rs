@@ -1,28 +1,25 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use tokio::sync::mpsc::UnboundedSender;
+use serde::{ser::Serializer, Deserialize, Serialize};
 
-use super::{message_type::MessageType, response::Response};
+use crate::message_interface::ClientMethod;
 
-/// The message type.
-#[derive(Debug, Clone)]
-pub struct Message {
-    pub(crate) message_type: MessageType,
-    pub(crate) response_tx: UnboundedSender<Response>,
+/// The messages that can be sent to the message interface.
+#[derive(Clone, Debug, Deserialize)]
+#[serde(tag = "cmd", content = "payload")]
+pub enum Message {
+    /// Consume a client method.
+    CallClientMethod(ClientMethod),
 }
 
-impl Message {
-    /// Create a new instance of Message.
-    pub fn new(message_type: MessageType, response_tx: UnboundedSender<Response>) -> Self {
-        Self {
-            message_type,
-            response_tx,
+impl Serialize for Message {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match self {
+            Message::CallClientMethod { .. } => serializer.serialize_unit_variant("Message", 0, "CallClientMethod"),
         }
-    }
-
-    /// Get the message type.
-    pub fn message_type(&self) -> &MessageType {
-        &self.message_type
     }
 }

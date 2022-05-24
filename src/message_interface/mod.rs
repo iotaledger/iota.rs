@@ -6,14 +6,12 @@
 mod client_method;
 mod message;
 mod message_handler;
-mod message_type;
 mod response;
 
 use tokio::sync::mpsc::unbounded_channel;
 
 pub use self::{
-    client_method::ClientMethod, message::Message, message_handler::ClientMessageHandler, message_type::MessageType,
-    response::Response,
+    client_method::ClientMethod, message::Message, message_handler::ClientMessageHandler, response::Response,
 };
 use crate::{ClientBuilder, Result};
 
@@ -27,10 +25,9 @@ pub async fn create_message_handler(client_config: Option<String>) -> Result<Cli
 }
 
 /// Send message to message handler
-pub async fn send_message(handle: &ClientMessageHandler, message_type: MessageType) -> Response {
+pub async fn send_message(handle: &ClientMessageHandler, message: Message) -> Response {
     let (message_tx, mut message_rx) = unbounded_channel();
-    let message = Message::new(message_type, message_tx);
-    handle.handle(message).await;
+    handle.handle(message, message_tx).await;
     message_rx.recv().await.unwrap()
 }
 
@@ -43,7 +40,7 @@ mod tests {
 
     use crate::{
         api::GetAddressesBuilderOptions as GenerateAddressesOptions,
-        message_interface::{self, ClientMethod, MessageType, Response},
+        message_interface::{self, ClientMethod, Message, Response},
         secret::{GenerateAddressMetadata, SecretManagerDto},
     };
 
@@ -72,7 +69,7 @@ mod tests {
             bech32_hrp: Some("atoi".to_string()),
             metadata: Some(GenerateAddressMetadata { syncing: false }),
         };
-        let message = MessageType::CallClientMethod(ClientMethod::GenerateAddresses {
+        let message = Message::CallClientMethod(ClientMethod::GenerateAddresses {
             secret_manager: serde_json::from_str::<SecretManagerDto>(&secret_manager).unwrap(),
             options,
         });
@@ -123,7 +120,7 @@ mod tests {
             metadata: Some(GenerateAddressMetadata { syncing: false }),
         };
 
-        let generate_addresses_message = MessageType::CallClientMethod(ClientMethod::GenerateAddresses {
+        let generate_addresses_message = Message::CallClientMethod(ClientMethod::GenerateAddresses {
             secret_manager: serde_json::from_str(&secret_manager).unwrap(),
             options,
         });
@@ -139,7 +136,7 @@ mod tests {
         let amount = 1_000_000;
 
         // Find inputs
-        let find_inputs_message = MessageType::CallClientMethod(ClientMethod::FindInputs {
+        let find_inputs_message = Message::CallClientMethod(ClientMethod::FindInputs {
             addresses: addresses.to_vec(),
             amount,
         });
@@ -157,7 +154,7 @@ mod tests {
         let options = format!("{{\"inputs\": {inputs},\"output\": {output}}}");
 
         let options = serde_json::from_str(&options).unwrap();
-        let generate_block = MessageType::CallClientMethod(ClientMethod::GenerateBlock {
+        let generate_block = Message::CallClientMethod(ClientMethod::GenerateBlock {
             secret_manager: Some(serde_json::from_str(&secret_manager).unwrap()),
             options: Some(options),
         });
@@ -198,9 +195,9 @@ mod tests {
         }"#;
 
         let block_dto: BlockDto = serde_json::from_str(block).unwrap();
-        let message_type = MessageType::CallClientMethod(ClientMethod::BlockId { block: block_dto });
+        let message = Message::CallClientMethod(ClientMethod::BlockId { block: block_dto });
 
-        let response = message_interface::send_message(&message_handler, message_type).await;
+        let response = message_interface::send_message(&message_handler, message).await;
 
         match response {
             Response::BlockId(block_id) => {
@@ -226,11 +223,11 @@ mod tests {
             "acoustic trophy damage hint search taste love bicycle foster cradle brown govern endless depend situate athlete pudding blame question genius transfer van random vast",
         );
 
-        let message_type = MessageType::CallClientMethod(ClientMethod::StoreMnemonic {
+        let message = Message::CallClientMethod(ClientMethod::StoreMnemonic {
             secret_manager: serde_json::from_str(secret_manager_dto).unwrap(),
             mnemonic,
         });
-        let _response = message_interface::send_message(&message_handler, message_type).await;
+        let _response = message_interface::send_message(&message_handler, message).await;
 
         // Generate an address with the stored mnemonic to verify that it's usable
         let options = GenerateAddressesOptions {
@@ -241,7 +238,7 @@ mod tests {
             bech32_hrp: Some("rms".to_string()),
             metadata: None,
         };
-        let message = MessageType::CallClientMethod(ClientMethod::GenerateAddresses {
+        let message = Message::CallClientMethod(ClientMethod::GenerateAddresses {
             secret_manager: serde_json::from_str(secret_manager_dto).unwrap(),
             options,
         });
