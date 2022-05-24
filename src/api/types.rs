@@ -20,7 +20,7 @@ use crate::{
 };
 
 /// Helper struct for offline signing
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct PreparedTransactionData {
     /// Transaction essence
     pub essence: TransactionEssence,
@@ -32,7 +32,7 @@ pub struct PreparedTransactionData {
 }
 
 /// PreparedTransactionData Dto
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct PreparedTransactionDataDto {
     /// Transaction essence
     pub essence: TransactionEssenceDto,
@@ -75,7 +75,7 @@ impl TryFrom<&PreparedTransactionDataDto> for PreparedTransactionData {
 }
 
 /// Helper struct for offline signing
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct SignedTransactionData {
     /// Signed transaction payload
     #[serde(rename = "transactionPayload")]
@@ -86,7 +86,7 @@ pub struct SignedTransactionData {
 }
 
 /// SignedTransactionData Dto
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct SignedTransactionDataDto {
     /// Transaction essence
     #[serde(rename = "transactionPayload")]
@@ -122,7 +122,7 @@ impl TryFrom<&SignedTransactionDataDto> for SignedTransactionData {
 }
 
 /// Data for a remainder output, used for ledger nano
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct RemainderData {
     /// The remainder output
     pub output: Output,
@@ -133,7 +133,7 @@ pub struct RemainderData {
 }
 
 /// Data for a remainder output, used for ledger nano
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct RemainderDataDto {
     /// The remainder output
     pub output: OutputDto,
