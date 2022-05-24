@@ -8,7 +8,10 @@
 use std::ops::Range;
 
 use async_trait::async_trait;
-use bee_block::{address::Address, unlock::Unlock};
+use bee_block::{
+    address::Address,
+    unlock::{Unlock, Unlocks},
+};
 use tokio::sync::Mutex;
 
 use super::{types::InputSigningData, GenerateAddressMetadata, SecretManage, SecretManageExt};
@@ -94,10 +97,7 @@ impl SecretManage for LedgerSecretManager {
 
 #[async_trait]
 impl SecretManageExt for LedgerSecretManager {
-    async fn sign_transaction_essence(
-        &self,
-        prepared_transaction: &PreparedTransactionData,
-    ) -> crate::Result<Vec<Unlock>> {
+    async fn sign_transaction_essence(&self, prepared_transaction: &PreparedTransactionData) -> crate::Result<Unlocks> {
         // lock the mutex to prevent multiple simultaneous requests to a ledger
         let _lock = self.mutex.lock().await;
 
