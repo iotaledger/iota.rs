@@ -126,18 +126,18 @@ impl SecretManageExt for LedgerSecretManager {
                 (coin_type.is_none() || coin_type == Some(bip32_indices[0]))
                     && (account_index.is_none() || account_index == Some(bip32_indices[1]))
             );
-            coin_type = Some(bip32_indices[0]);
-            account_index = Some(bip32_indices[1]);
+            coin_type = Some(bip32_indices[1]);
+            account_index = Some(bip32_indices[2]);
             input_bip32_indices.push(iota_ledger::LedgerBIP32Index {
-                bip32_change: bip32_indices[2] | HARDENED,
-                bip32_index: bip32_indices[3] | HARDENED,
+                bip32_change: bip32_indices[3] | HARDENED,
+                bip32_index: bip32_indices[4] | HARDENED,
             });
         }
 
         assert!(coin_type.is_some() && account_index.is_some());
 
         // unwrap values
-        let coin_type = coin_type.unwrap();
+        let coin_type = coin_type.unwrap() & !HARDENED;
         let bip32_account = account_index.unwrap() | HARDENED;
 
         let ledger = iota_ledger::get_ledger(coin_type, bip32_account, self.is_simulator)?;
@@ -165,8 +165,8 @@ impl SecretManageExt for LedgerSecretManager {
                     true,
                     Some(&a.address),
                     iota_ledger::LedgerBIP32Index {
-                        bip32_index: remainder_bip32_indices[3] | HARDENED,
-                        bip32_change: remainder_bip32_indices[2] | HARDENED,
+                        bip32_change: remainder_bip32_indices[3] | HARDENED,
+                        bip32_index: remainder_bip32_indices[4] | HARDENED,
                     },
                 )
             }
@@ -184,14 +184,14 @@ impl SecretManageExt for LedgerSecretManager {
                     // by the hardware wallet.
                     // The outputs in the essence already are sorted
                     // at this place, so we can rely on their order and don't have to sort it again.
-                    for output in essence.outputs().iter() {
+                    'essence_outputs: for output in essence.outputs().iter() {
                         match output {
                             bee_block::output::Output::Basic(s) => {
                                 // todo verify if that's the correct expected behaviour
                                 for block in s.unlock_conditions().iter() {
                                     if let bee_block::output::UnlockCondition::Address(e) = block {
                                         if *remainder_address.unwrap() == *e.address() {
-                                            break;
+                                            break 'essence_outputs;
                                         }
                                     }
                                 }
