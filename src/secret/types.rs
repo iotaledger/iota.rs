@@ -25,6 +25,8 @@ use crate::{Error, Result};
 pub struct StrongholdDto {
     /// The Stronghold password
     pub password: Option<String>,
+    /// The timeout for auto key clearing, in seconds
+    pub timeout: Option<u64>,
     /// The path for the Stronghold file
     #[serde(rename = "snapshotPath")]
     pub snapshot_path: Option<String>,

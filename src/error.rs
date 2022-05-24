@@ -144,7 +144,7 @@ pub enum Error {
     /// Output Error
     #[error("Output error: {0}")]
     OutputError(&'static str),
-    /// Not implemented, specially for the default impl of [crate::secret::SecretManager::signature_unlock()].
+    /// Not implemented, specially for the default impl of [crate::secret::SecretManage::signature_unlock()].
     #[error("No mnemonic was stored! Please implement signature_unlock() :)")]
     SignatureUnlockNotImplemented,
     #[cfg(not(target_family = "wasm"))]

@@ -8,47 +8,41 @@
 //! - Smart-card-like secret vault
 //! - Generic key-value, encrypted database
 //!
-//! [`StrongholdAdapter`] respectively implements [`DatabaseProvider`] and [`SecretManager`] for the above purposes
-//! using Stronghold. Type aliases [`StrongholdDatabaseProvider`] and [`StrongholdSecretManager`] are also provided if
-//! one wants to have a more consistent naming when using any of the feature sets.
+//! [`StrongholdAdapter`] respectively implements [`DatabaseProvider`] and [`SecretManage`] for the above purposes
+//! using Stronghold. Type aliases `StrongholdDatabaseProvider` and `StrongholdSecretManager` are also provided if one
+//! wants to have a more consistent naming when using any of the feature sets.
 //!
 //! Use [`builder()`] to construct a [`StrongholdAdapter`] with customized parameters; see documentation of methods of
-//! [`StrongholdAdapterBuilder`] for details. Alternatively, invoking [`new()`] (or using [`Default::default()`])
-//! creates a [`StrongholdAdapter`] with default parameters. The default [`StrongholdAdapter`]:
-//!
-//! - is not initialized with a password
-//! - is without a password clearing timeout
-//! - is not associated with a snapshot file on the disk (i.e. working purely in memory)
-//!
-//! These default settings limit what [`StrongholdAdapter`] can do:
+//! [`StrongholdAdapterBuilder`] for details. All fields are optional, but:
 //!
 //! - Without a password, all cryptographic operations (including database operations, as they encrypt / decrypt data)
 //!   would fail.
 //! - Without a password clearing timeout, the derived key would be stored in the memory for as long as possible, and
 //!   could be used as an attack vector.
 //! - Without a snapshot path configured, all operations would be _transient_ (i.e. all data would be lost when
-//!   [`StrongholdAdapter`] is dropped).
+//!   [`StrongholdAdapter`] is dropped, or the cached key has been cleared).
 //!
-//! These configurations can also be set later using [`set_password()`], [`set_snapshot_path()`], etc.
+//! They can also be set later on [`StrongholdAdapter`] using [`set_password()`], [`set_timeout()`], etc.
 //!
-//! Stronghold is memory-based, so it's not required to use a snapshot file on the disk. Without a snapshot path set
-//! (via [`StrongholdAdapterBuilder::snapshot_path()`] or [`StrongholdAdapter::set_snapshot_path()`]),
-//! [`StrongholdAdapter`] will run purely in memory. If a snapshot path is set, then [`StrongholdAdapter`] would lazily
-//! load the file on _the first call_ that performs some actions on Stronghold. Subsequent actions are still performed
-//! in memory. If the snapshot file doesn't exist, these function calls will all fail. To load or store the Stronghold
-//! state from or to a Stronghold snapshot on disk, remember to call [`read_stronghold_snapshot()`] or
-//! [`write_stronghold_snapshot()`]; the latter can be used to create a snapshot file after creating a
-//! [`StrongholdAdapter`] with a non-existent snapshot path.
+//! With [`set_timeout()`], an automatic task can be spawned in the background to purge the key from memory using
+//! [zeroize] after the `timeout` duration. It's used to reduce the attack vector. When the key is cleared from the
+//! memory, Stronghold will be unloaded from the memory too. If no `snapshot_path` has been set at this point, then
+//! secrets stored in Stronghold will be dropped and lost.
+//!
+//! Nevertheless, Stronghold is memory-based, so it's not required to use a snapshot file on the disk. Without a
+//! snapshot path set, [`StrongholdAdapter`] will run purely in memory. If a snapshot path is set, then
+//! [`StrongholdAdapter`] would lazily load the file on _the first call_ that performs some actions on Stronghold.
+//! Subsequent actions are still performed in memory. If the snapshot file doesn't exist, these function calls will all
+//! fail. To proactively load or store the Stronghold state from or to a Stronghold snapshot on disk, use
+//! [`read_stronghold_snapshot()`] or [`write_stronghold_snapshot()`]. The latter can be used to create a snapshot file
+//! after creating a [`StrongholdAdapter`] with a non-existent snapshot path.
 //!
 //! [Stronghold]: iota_stronghold
 //! [`DatabaseProvider`]: crate::db::DatabaseProvider
-//! [`SecretManager`]: crate::secret::SecretManager
-//! [`StrongholdDatabaseProvider`]: crate::db::StrongholdDatabaseProvider
-//! [`StrongholdSecretmanager`]: crate::signing::StrongholdSecretmanager
+//! [`SecretManage`]: crate::secret::SecretManage
 //! [`builder()`]: self::StrongholdAdapter::builder()
-//! [`new()`]: self::StrongholdAdapter::new()
 //! [`set_password()`]: self::StrongholdAdapter::set_password()
-//! [`set_snapshot_path()`]: self::StrongholdAdapter::set_snapshot_path()
+//! [`set_timeout()`]: self::StrongholdAdapter::set_timeout()
 //! [`read_stronghold_snapshot()`]: self::StrongholdAdapter::read_stronghold_snapshot()
 //! [`write_stronghold_snapshot()`]: self::StrongholdAdapter::write_stronghold_snapshot()
 
@@ -61,7 +55,7 @@ use std::{path::PathBuf, sync::Arc, time::Duration};
 
 use derive_builder::Builder;
 use iota_stronghold::{ResultMessage, Stronghold};
-use log::debug;
+use log::{debug, warn};
 use riker::actors::ActorSystem;
 use tokio::{sync::Mutex, task::JoinHandle};
 use zeroize::{Zeroize, Zeroizing};
@@ -76,7 +70,7 @@ use crate::{Error, Result};
 #[builder(pattern = "owned", build_fn(skip))]
 pub struct StrongholdAdapter {
     /// A stronghold instance.
-    stronghold: Stronghold,
+    stronghold: Arc<Mutex<Stronghold>>,
 
     /// A key to open the Stronghold vault.
     ///
@@ -113,24 +107,6 @@ pub struct StrongholdAdapter {
     snapshot_loaded: bool,
 }
 
-impl Default for StrongholdAdapter {
-    fn default() -> Self {
-        // XXX: we unwrap here.
-        let system = ActorSystem::new().map_err(|err| err.to_string()).unwrap();
-        let client_path = PRIVATE_DATA_CLIENT_PATH.to_vec();
-        let options = Vec::new();
-
-        Self {
-            stronghold: Stronghold::init_stronghold_system(system, client_path, options),
-            key: Arc::new(Mutex::new(None)),
-            timeout: None,
-            timeout_task: Arc::new(Mutex::new(None)),
-            snapshot_path: None,
-            snapshot_loaded: false,
-        }
-    }
-}
-
 /// Extra / custom builder method implementations.
 impl StrongholdAdapterBuilder {
     /// Use an user-input password string to derive a key to use Stronghold.
@@ -143,7 +119,9 @@ impl StrongholdAdapterBuilder {
         self
     }
 
-    /// Build [`StrongholdAdapter`] from the configuration.
+    /// Try to build [`StrongholdAdapter`] from the configuration.
+    ///
+    /// The only possible error comes from [riker::system::ActorSystem::new()] for communicating with Stronghold.
     ///
     /// If both `key` (via [`password()`]) and `timeout` (via [`timeout()`]) are set, then an asynchronous task would be
     /// spawned in Tokio to purge ([zeroize]) `key` after `timeout`. There is a small delay (usually a few milliseconds)
@@ -157,73 +135,61 @@ impl StrongholdAdapterBuilder {
     ///
     /// [`password()`]: Self::password()
     /// [`timeout()`]: Self::timeout()
-    pub fn build(mut self) -> StrongholdAdapter {
+    pub fn try_build(mut self) -> Result<StrongholdAdapter> {
+        // In any case, Stronghold - as a necessary component - needs to be present at this point.
+        let stronghold = if let Some(stronghold) = self.stronghold {
+            stronghold
+        } else {
+            let system = ActorSystem::new()?;
+            let client_path = PRIVATE_DATA_CLIENT_PATH.to_vec();
+            let options = Vec::new();
+
+            Arc::new(Mutex::new(Stronghold::init_stronghold_system(
+                system,
+                client_path,
+                options,
+            )))
+        };
+
         // If both `key` and `timeout` are set, then we spawn the task and keep its join handle.
         if let (Some(key), Some(Some(timeout))) = (&self.key, self.timeout) {
             let timeout_task = Arc::new(Mutex::new(None));
 
             // The key clearing task, with the data it owns.
-            let key = key.clone();
             let task_self = timeout_task.clone();
+            let stronghold_cloned = stronghold.clone();
+            let key = key.clone();
 
             // To keep this function synchronous (`fn`), we spawn a task that spawns the key clearing task here. It'll
             // however panic when this function is not in a Tokio runtime context (usually in an `async fn`), albeit it
             // itself is a `fn`. There is also a small delay from the return of this function to the task actually being
             // spawned and set in the `struct`.
             tokio::spawn(async move {
-                *task_self.lock().await = Some(tokio::spawn(task_key_clear(task_self.clone(), key, timeout)));
+                *task_self.lock().await = Some(tokio::spawn(task_key_clear(
+                    task_self.clone(), // LHS moves task_self
+                    stronghold_cloned,
+                    key,
+                    timeout,
+                )));
             });
 
-            // Keep the handle in the builder; the code below checks this.
+            // Keep the task handle in the builder; the code below checks this.
             self.timeout_task = Some(timeout_task);
         }
 
-        // Create the adapter per configuration and return it.
-        //
-        // False positive: we don't throw `None`s back!
-        #[allow(clippy::question_mark)]
-        StrongholdAdapter {
-            stronghold: if let Some(stronghold) = self.stronghold {
-                stronghold
-            } else {
-                // XXX: we unwrap here.
-                let system = ActorSystem::new().map_err(|err| err.to_string()).unwrap();
-                let client_path = PRIVATE_DATA_CLIENT_PATH.to_vec();
-                let options = Vec::new();
-
-                Stronghold::init_stronghold_system(system, client_path, options)
-            },
-            key: if let Some(key) = self.key {
-                key
-            } else {
-                Arc::new(Mutex::new(None))
-            },
-            timeout: if let Some(timeout) = self.timeout {
-                timeout
-            } else {
-                None
-            },
-            timeout_task: if let Some(timeout_task) = self.timeout_task {
-                timeout_task
-            } else {
-                Arc::new(Mutex::new(None))
-            },
-            snapshot_path: if let Some(snapshot_path) = self.snapshot_path {
-                snapshot_path
-            } else {
-                None
-            },
+        // Create the adapter as per configuration and return it.
+        Ok(StrongholdAdapter {
+            stronghold,
+            key: self.key.unwrap_or_else(|| Arc::new(Mutex::new(None))),
+            timeout: self.timeout.unwrap_or(None),
+            timeout_task: self.timeout_task.unwrap_or_else(|| Arc::new(Mutex::new(None))),
+            snapshot_path: self.snapshot_path.unwrap_or(None),
             snapshot_loaded: false,
-        }
+        })
     }
 }
 
 impl StrongholdAdapter {
-    /// Create a [StrongholdAdapter] with default parameters.
-    pub fn new() -> StrongholdAdapter {
-        StrongholdAdapter::default()
-    }
-
     /// Create a builder to construct a [StrongholdAdapter].
     pub fn builder() -> StrongholdAdapterBuilder {
         StrongholdAdapterBuilder::default()
@@ -249,10 +215,11 @@ impl StrongholdAdapter {
             }
 
             // The key clearing task, with the data it owns.
-            let key = self.key.clone();
             let task_self = self.timeout_task.clone();
+            let stronghold = self.stronghold.clone();
+            let key = self.key.clone();
 
-            *self.timeout_task.lock().await = Some(tokio::spawn(task_key_clear(task_self, key, timeout)));
+            *self.timeout_task.lock().await = Some(tokio::spawn(task_key_clear(task_self, stronghold, key, timeout)));
         }
     }
 
@@ -265,10 +232,54 @@ impl StrongholdAdapter {
             timeout_task.abort();
         }
 
+        // Unload Stronghold first, but we can't do much about the errors.
+        if let Err(err) = self.unload_stronghold_snapshot().await {
+            warn!("failed to unload Stronghold while clearing the key: {err}");
+        }
+
         // Purge the key, setting it to None then.
         if let Some(mut key) = self.key.lock().await.take() {
             key.zeroize();
         }
+    }
+
+    /// Get timeout for the key clearing task.
+    pub fn get_timeout(&self) -> Option<Duration> {
+        self.timeout
+    }
+
+    /// Set timeout for the key clearing task.
+    ///
+    /// If there has been a key clearing task running, then it will be terminated before a new one is spawned. If
+    /// `new_timeout` is `None`, or the key has been purged, then no new task will be spawned (the current running task
+    /// will be terminated).
+    ///
+    /// The key won't be cleared.
+    pub async fn set_timeout(&mut self, new_timeout: Option<Duration>) {
+        // In any case we terminate the current task (if there is) first.
+        if let Some(timeout_task) = self.timeout_task.lock().await.take() {
+            timeout_task.abort();
+        }
+
+        // Keep the new timeout.
+        self.timeout = new_timeout;
+
+        // If a new timeout is set and the key is still in the memory, spawn a new task; otherwise we do nothing.
+        if let (Some(_), Some(timeout)) = (self.key.lock().await.as_ref(), self.timeout) {
+            // The key clearing task, with the data it owns.
+            let task_self = self.timeout_task.clone();
+            let stronghold = self.stronghold.clone();
+            let key = self.key.clone();
+
+            *self.timeout_task.lock().await = Some(tokio::spawn(task_key_clear(task_self, stronghold, key, timeout)));
+        }
+    }
+
+    /// Restart the key clearing task.
+    ///
+    /// This is equivalent to calling `set_timeout()` with the currently set `timeout`.
+    pub async fn restart_key_clearing_task(&mut self) {
+        self.set_timeout(self.get_timeout()).await;
     }
 
     /// Load Stronghold from a snapshot at `snapshot_path`, if it hasn't been loaded yet.
@@ -293,6 +304,8 @@ impl StrongholdAdapter {
 
         match self
             .stronghold
+            .lock()
+            .await
             .read_snapshot(
                 PRIVATE_DATA_CLIENT_PATH.to_vec(),
                 None,
@@ -313,7 +326,9 @@ impl StrongholdAdapter {
 
     /// Persist Stronghold to a snapshot at `snapshot_path`.
     ///
-    /// It doesn't unload the snapshot.
+    /// It doesn't unload the snapshot; see also [`unload_stronghold_snapshot()`].
+    ///
+    /// [`unload_stronghold_snapshot()`]: Self::unload_stronghold_snapshot()
     pub async fn write_stronghold_snapshot(&mut self) -> Result<()> {
         // The key and the snapshot path need to be supplied first.
         let locked_key = self.key.lock().await;
@@ -338,6 +353,8 @@ impl StrongholdAdapter {
 
         match self
             .stronghold
+            .lock()
+            .await
             .write_all_to_snapshot(
                 &**key,
                 Some(STRONGHOLD_FILENAME.to_string()),
@@ -349,11 +366,43 @@ impl StrongholdAdapter {
             ResultMessage::Error(err) => Err(crate::Error::StrongholdProcedureError(err)),
         }
     }
+
+    /// Unload Stronghold from memory.
+    ///
+    /// This first writes Stronghold snapshot to disk, then kills Stronghold. All secrets will be purged from the
+    /// memory, so if secrets aren't written to disk (for example, no snapshot path has been provided, i.e. running
+    /// Stronghold purely in memory) then secrets stored in Stronghold will be lost.
+    ///
+    /// To further prevent Stronghold methods to be invoked without valid key, this method will be invoked every time
+    /// the cached key is cleared from the memory. In other words, if a `timeout` is set and a `snapshot_path` is not
+    /// set for a [`StrongholdAdapter`], then after `timeout` Stronghold will be purged. See the [module-level
+    /// documentation](self) for more details.
+    pub async fn unload_stronghold_snapshot(&mut self) -> Result<()> {
+        // Flush Stronghold.
+        self.write_stronghold_snapshot().await?;
+
+        // Kill Stronghold.
+        match self
+            .stronghold
+            .lock()
+            .await
+            .kill_stronghold(PRIVATE_DATA_CLIENT_PATH.to_vec(), false)
+            .await
+        {
+            ResultMessage::Ok(_) => Ok(()),
+            ResultMessage::Error(err) => Err(crate::Error::StrongholdProcedureError(err)),
+        }?;
+
+        self.snapshot_loaded = false;
+
+        Ok(())
+    }
 }
 
 /// The asynchronous key clearing task purging `key` after `timeout` spent in Tokio.
 async fn task_key_clear(
     task_self: Arc<Mutex<Option<JoinHandle<()>>>>,
+    stronghold: Arc<Mutex<Stronghold>>,
     key: Arc<Mutex<Option<Zeroizing<Vec<u8>>>>>,
     timeout: Duration,
 ) {
@@ -363,6 +412,13 @@ async fn task_key_clear(
     if let Some(mut key) = key.lock().await.take() {
         key.zeroize();
     }
+
+    debug!("StrongholdAdapter is killing Stronghold");
+    stronghold
+        .lock()
+        .await
+        .kill_stronghold(PRIVATE_DATA_CLIENT_PATH.to_vec(), false)
+        .await;
 
     // Take self, but do nothing (we're exiting anyways).
     task_self.lock().await.take();
@@ -374,34 +430,46 @@ mod tests {
 
     #[tokio::test]
     async fn test_clear_key() {
+        let timeout = Duration::from_millis(100);
+
         let mut client = StrongholdAdapter::builder()
             .password("drowssap")
-            .timeout(Duration::from_millis(100))
-            .build();
+            .timeout(timeout)
+            .try_build()
+            .unwrap();
 
         // There is a small delay between `build()` and the key clearing task being actually spawned and kept.
-        tokio::time::sleep(Duration::from_millis(20)).await;
+        tokio::time::sleep(Duration::from_millis(10)).await;
 
         // Setting a password would spawn a task to automatically clear the key.
         assert!(matches!(*client.key.lock().await, Some(_)));
-        assert!(matches!(client.timeout, Some(_)));
+        assert_eq!(client.get_timeout(), Some(timeout));
         assert!(matches!(*client.timeout_task.lock().await, Some(_)));
 
         // After the timeout, the key should be purged.
-        tokio::time::sleep(Duration::from_millis(150)).await;
+        tokio::time::sleep(Duration::from_millis(200)).await;
         assert!(matches!(*client.key.lock().await, None));
-        assert!(matches!(client.timeout, Some(_)));
+        assert_eq!(client.get_timeout(), Some(timeout));
         assert!(matches!(*client.timeout_task.lock().await, None));
 
         // Set the key again, but this time we manually purge the key.
+        let timeout = None;
+        client.set_timeout(timeout).await;
+
         client.set_password("password").await;
         assert!(matches!(*client.key.lock().await, Some(_)));
-        assert!(matches!(client.timeout, Some(_)));
-        assert!(matches!(*client.timeout_task.lock().await, Some(_)));
+        assert_eq!(client.get_timeout(), timeout);
+        assert!(matches!(*client.timeout_task.lock().await, None));
 
         client.clear_key().await;
         assert!(matches!(*client.key.lock().await, None));
-        assert!(matches!(client.timeout, Some(_)));
+        assert_eq!(client.get_timeout(), timeout);
+        assert!(matches!(*client.timeout_task.lock().await, None));
+
+        // Even if we attempt to restart the task, it won't.
+        client.restart_key_clearing_task().await;
+        assert!(matches!(*client.key.lock().await, None));
+        assert_eq!(client.get_timeout(), timeout);
         assert!(matches!(*client.timeout_task.lock().await, None));
     }
 }
