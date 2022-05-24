@@ -15,7 +15,6 @@ use bee_block::{
         Payload, TaggedDataPayload,
     },
     semantic::{semantic_validation, ConflictReason, ValidationContext},
-    unlock::Unlocks,
 };
 
 use crate::{
@@ -117,7 +116,6 @@ pub async fn sign_transaction(
             &prepared_transaction_data,
         )
         .await?;
-    let unlocks = Unlocks::new(unlocks)?;
     let tx_payload = TransactionPayload::new(prepared_transaction_data.essence.clone(), unlocks)?;
 
     let (local_time, milestone_index) = block_builder.client.get_time_and_milestone_checked().await?;

@@ -15,7 +15,7 @@ use std::{
 use dotenv::dotenv;
 use iota_client::{
     api::{PreparedTransactionData, PreparedTransactionDataDto, SignedTransactionData, SignedTransactionDataDto},
-    bee_block::{payload::transaction::TransactionPayload, unlock::Unlocks},
+    bee_block::payload::transaction::TransactionPayload,
     secret::{mnemonic::MnemonicSecretManager, SecretManageExt, SecretManager},
     Result,
 };
@@ -37,7 +37,6 @@ async fn main() -> Result<()> {
     let unlocks = secret_manager
         .sign_transaction_essence(&prepared_transaction_data)
         .await?;
-    let unlocks = Unlocks::new(unlocks)?;
     let signed_transaction = TransactionPayload::new(prepared_transaction_data.essence.clone(), unlocks)?;
 
     let signed_transaction_data = SignedTransactionData {

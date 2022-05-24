@@ -6,7 +6,10 @@
 use std::ops::Range;
 
 use async_trait::async_trait;
-use bee_block::{address::Address, unlock::Unlock};
+use bee_block::{
+    address::Address,
+    unlock::{Unlock, Unlocks},
+};
 
 use super::{types::InputSigningData, GenerateAddressMetadata, SecretManage, SecretManageExt};
 use crate::secret::{PreparedTransactionData, RemainderData};
@@ -27,6 +30,7 @@ impl SecretManage for PlaceholderSecretManager {
     ) -> crate::Result<Vec<Address>> {
         return Err(crate::Error::PlaceholderSecretManager);
     }
+
     async fn signature_unlock(
         &self,
         _input: &InputSigningData,
@@ -42,7 +46,7 @@ impl SecretManageExt for PlaceholderSecretManager {
     async fn sign_transaction_essence(
         &self,
         _prepared_transaction_data: &PreparedTransactionData,
-    ) -> crate::Result<Vec<Unlock>> {
+    ) -> crate::Result<Unlocks> {
         return Err(crate::Error::PlaceholderSecretManager);
     }
 }
