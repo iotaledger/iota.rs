@@ -16,7 +16,9 @@ bee-block = { git = "https://github.com/iotaledger/bee", rev = "146ce1011fd76f3d
 bee-rest-api = { git = "https://github.com/iotaledger/bee", rev = "146ce1011fd76f3d9f07390b002b29dd6762daf3", default-features = false }
 bee-pow = { git = "https://github.com/iotaledger/bee", rev = "146ce1011fd76f3d9f07390b002b29dd6762daf3", default-features = false }
 fern-logger = { version = "0.5.0", default-features = false }
-iota-crypto = { version = "0.10.0", default-features = false, features = [ "std", "chacha", "blake2b", "ed25519", "random", "slip10", "bip39", "bip39-en" ] }
+# Switch back when a new version got released
+# iota-crypto = { version = "0.11.0", default-features = false, features = [ "std", "chacha", "blake2b", "ed25519", "random", "slip10", "bip39", "bip39-en" ] }
+iota-crypto = { git = "https://github.com/iotaledger/crypto.rs", rev = "c61d29253930105d0d589e54829b639427061e81",  default-features = false, features = [ "std", "chacha", "blake2b", "ed25519", "random", "slip10", "bip39", "bip39-en" ] }
 packable = { version = "0.3.2", default-features = false, features = [ "serde", "primitive-types" ] }
 
 async-trait = { version ="0.1.51", default-features = false }

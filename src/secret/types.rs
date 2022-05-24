@@ -20,7 +20,7 @@ use zeroize::ZeroizeOnDrop;
 use crate::{Error, Result};
 
 /// Stronghold DTO to allow the creation of a Stronghold secret manager from bindings
-#[derive(Debug, Clone, Serialize, Deserialize, ZeroizeOnDrop)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, ZeroizeOnDrop)]
 #[cfg(feature = "stronghold")]
 pub struct StrongholdDto {
     /// The Stronghold password
@@ -32,7 +32,7 @@ pub struct StrongholdDto {
     pub snapshot_path: Option<String>,
 }
 /// An account address.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct AccountAddress {
     /// The address.
     pub address: Address,
@@ -44,7 +44,7 @@ pub struct AccountAddress {
 }
 
 /// Metadata provided to `generate_address()`.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct GenerateAddressMetadata {
     /// Indicates that the address is being generated as part of the account syncing process.
     /// This means that the account might not be saved.
@@ -53,7 +53,7 @@ pub struct GenerateAddressMetadata {
 }
 
 /// The Ledger device status.
-#[derive(Debug, Serialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct LedgerApp {
     /// Opened app name.
     pub(crate) name: String,
@@ -62,7 +62,7 @@ pub struct LedgerApp {
 }
 
 /// The Ledger device status.
-#[derive(Debug, Serialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct LedgerStatus {
     /// Ledger is available and ready to be used.
     pub(crate) connected: bool,
@@ -73,7 +73,7 @@ pub struct LedgerStatus {
 }
 
 ///
-#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct OutputMetadata {
     /// The identifier of the block in which the output was included.
     #[serde(rename = "blockId")]
@@ -131,7 +131,7 @@ impl TryFrom<&OutputMetadataResponse> for OutputMetadata {
 }
 
 /// Data for transaction inputs for signing and ordering of unlock blocks
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct InputSigningData {
     /// The output
     pub output: Output,
@@ -156,15 +156,8 @@ impl InputSigningData {
     }
 }
 
-impl PartialEq for InputSigningData {
-    fn eq(&self, other: &Self) -> bool {
-        self.output_metadata.transaction_id == other.output_metadata.transaction_id
-            && self.output_metadata.output_index == other.output_metadata.output_index
-    }
-}
-
 /// Dto for data for transaction inputs for signing and ordering of unlock blocks
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct InputSigningDataDto {
     /// The output
     pub output: OutputDto,
