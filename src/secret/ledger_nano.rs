@@ -97,6 +97,10 @@ impl SecretManage for LedgerSecretManager {
     }
 }
 
+// needs_blindsigning
+// the Ledger Nano S(+)/X app can present the user a detailed view of the transaction before it
+// is signed but only with BasicOutputs without extra-features. For everything else,
+// blindsigning is needed. This method finds out if we have to switch to blindsigning mode.
 fn needs_blindsigning(prepared_transaction: &PreparedTransactionData) -> bool {
     match &prepared_transaction.essence {
         bee_block::payload::transaction::TransactionEssence::Regular(essence) => {
@@ -118,7 +122,7 @@ fn needs_blindsigning(prepared_transaction: &PreparedTransactionData) -> bool {
                 // not fine, return
                 return true;
             }
-        } //_ => return true
+        }
     }
     false
 }
@@ -172,7 +176,7 @@ impl SecretManageExt for LedgerSecretManager {
 
         let ledger = iota_ledger::get_ledger(coin_type, bip32_account, self.is_simulator)?;
 
-        if needs_blindsigning(&prepared_transaction) {
+        if needs_blindsigning(prepared_transaction) {
             // prepare signing
             log::debug!("[LEDGER] prepare blindsigning");
             log::debug!("[LEDGER] {:?} {:?}", input_bip32_indices, essence_hash);
@@ -275,8 +279,9 @@ impl SecretManageExt for LedgerSecretManager {
         // sign
         let signature_bytes = ledger.sign(input_len as u16)?;
         let mut readable = &mut &*signature_bytes;
-        // unpack signature to unlockblocks
+        // unpack signature to unlocks
         let mut unlock_blocks = Vec::new();
+        // TODO: merge the signature unlocks with the reference unlocks here in the correct order
         for _ in 0..input_len {
             let unlock_block = Unlock::unpack_verified(&mut readable).map_err(|_| crate::Error::PackableError)?;
             unlock_blocks.push(unlock_block);

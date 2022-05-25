@@ -1,19 +1,17 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! cargo run --example ledger_nano --features=ledger_nano --release
+//! cargo run --example ledger_nano_transaction --features=ledger_nano --release
 
 use iota_client::{
     secret::{ledger_nano::LedgerSecretManager, SecretManager},
     Client, Result,
 };
 
-/// In this example we will create addresses with a ledger nano hardware wallet
+/// In this example we will create a transaction with a ledger nano hardware wallet
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    env_logger::init();
-
     // Create a client instance
     let client = Client::builder()
         .with_node("http://localhost:14265")? // Insert your node URL here
@@ -39,14 +37,14 @@ async fn main() -> Result<()> {
         // Insert the output address and amount to spent. The amount cannot be zero.
         .with_output(
             // We generate an address from our seed so that we send the funds to ourselves
-            &client.get_addresses(&secret_manager).with_range(1..2).finish().await?[0],
+            &addresses[1],
             1_000_000,
         )?
         .finish()
         .await?;
 
     println!(
-        "Transaction sent: https://explorer.alphanet.iotaledger.net/alphanet/block/{}",
+        "Transaction sent with block-id: {}",
         block.id()
     );
 

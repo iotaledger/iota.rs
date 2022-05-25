@@ -60,7 +60,6 @@ bee-ternary = { version = "0.6.0", default-features = false }
 
 [dev-dependencies]
 dotenv = { version = "0.15.0", default-features = false }
-env_logger = { version = "0.9.0", default-features = false }
 
 [features]
 default = [ "tls" ]
@@ -179,6 +178,10 @@ required-features = [ "mqtt" ]
 
 [[example]]
 name = "ledger_nano"
+required-features = [ "ledger_nano" ]
+
+[[example]]
+name = "ledger_nano_transaction"
 required-features = [ "ledger_nano" ]
 
 [[example]]
