@@ -55,13 +55,13 @@ use std::{path::PathBuf, sync::Arc, time::Duration};
 
 use derive_builder::Builder;
 use iota_stronghold::{ResultMessage, Stronghold};
-use log::{debug, warn};
+use log::{debug, error, warn};
 use riker::actors::ActorSystem;
 use tokio::{sync::Mutex, task::JoinHandle};
 use zeroize::{Zeroize, Zeroizing};
 
 use self::common::{PRIVATE_DATA_CLIENT_PATH, STRONGHOLD_FILENAME};
-use crate::{Error, Result};
+use crate::{db::DatabaseProvider, Error, Result};
 
 /// A wrapper on [Stronghold].
 ///
@@ -221,6 +221,84 @@ impl StrongholdAdapter {
 
             *self.timeout_task.lock().await = Some(tokio::spawn(task_key_clear(task_self, stronghold, key, timeout)));
         }
+    }
+
+    /// Change the password of the currently loaded Stronghold.
+    ///
+    /// If a snapshot path has been set, then it'll be rewritten with the newly set password.
+    ///
+    /// The secrets (e.g. mnemonic) stored in the Stronghold vault will be preserved, but the data saved via the
+    /// [`DatabaseProvier`] interface won't - they'll stay encrypted with the old password. To re-encrypt these
+    /// data, provide a list of keys in `keys_to_re_encrypt`, as we have no way to list and iterate over every
+    /// key-value in the Stronghold store - we'll attempt on the ones provided instead. Set it to `None` to skip
+    /// re-encryption.
+    pub async fn change_password(&mut self, password: &str, keys_to_re_encrypt: Option<&[&[u8]]>) -> Result<()> {
+        // Stop the key clearing task, if there has been one.
+        if let Some(timeout_task) = self.timeout_task.lock().await.take() {
+            timeout_task.abort();
+        }
+
+        // Take and keep the current key - we'll need it later to re-encrypt records.
+        let old_key = match self.key.lock().await.take() {
+            Some(key) => key,
+            None => return Err(Error::StrongholdKeyCleared),
+        };
+
+        // Save the newly derived key from the new password.
+        self.set_password(password).await;
+
+        // If there are keys to re-encrypt, we iterate over the requested keys and attempt to re-encrypt the
+        // corresponding values.
+        if let Some(keys_to_re_encrypt) = keys_to_re_encrypt {
+            for key_to_re_encrypt in keys_to_re_encrypt {
+                let value_to_re_encrypt = self.get(key_to_re_encrypt).await;
+
+                // We can't reveal or pretty print the binary key.
+                match value_to_re_encrypt {
+                    Err(err) => {
+                        // Moving on is better than stopping at here.
+                        error!("failed to re-encrypt (...) from Stronghold store: {}", err);
+                        continue;
+                    }
+
+                    Ok(None) => {
+                        debug!("(...) not found, skip re-encryption");
+                        continue;
+                    }
+
+                    Ok(Some(value_to_re_encrypt)) => {
+                        debug!("re-encrypting (...) in Stronghold store...");
+
+                        // Unwrap: we're sure that the cipher parameters cannot be wrong.
+                        let decrypted_value = self::encryption::decrypt(&value_to_re_encrypt, &*old_key).unwrap();
+                        let re_encrypted_value = {
+                            let locked_key = self.key.lock().await;
+
+                            if let Some(locked_key) = &*locked_key {
+                                self::encryption::encrypt(&decrypted_value, &*locked_key).unwrap()
+                            } else {
+                                // The key is gone; we can't continue.
+                                error!("re-encryption for (...) failed: key is gone");
+                                return Err(Error::StrongholdKeyCleared);
+                            }
+                        };
+
+                        if let Err(err) = self.insert(key_to_re_encrypt, &re_encrypted_value).await {
+                            // Moving on is better than stopping at here.
+                            error!("failed to insert a re-encrypted record into Stronghold: {}", err);
+                            continue;
+                        }
+                    }
+                }
+            }
+        }
+
+        // If a snapshot path is set, then rewrite it to change its password.
+        if self.snapshot_path.is_some() {
+            self.write_stronghold_snapshot().await?;
+        }
+
+        Ok(())
     }
 
     /// Immediately clear ([zeroize]) the stored key.
