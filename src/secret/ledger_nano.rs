@@ -251,7 +251,7 @@ impl SecretManageExt for LedgerSecretManager {
             // prepare signing
             log::debug!("[LEDGER] prepare signing");
             log::debug!(
-                "[LEDGER] {:?} {:?} {} {} {:?}",
+                "[LEDGER] {:?} {:02x?} {} {} {:?}",
                 input_bip32_indices,
                 essence_bytes,
                 has_remainder,

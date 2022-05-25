@@ -12,6 +12,8 @@ use iota_client::{
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    env_logger::init();
+
     // Create a client instance
     let client = Client::builder()
         .with_node("http://localhost:14265")? // Insert your node URL here
@@ -19,7 +21,7 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
 
-    let secret_manager = SecretManager::LedgerNano(LedgerSecretManager::new(true));
+    let secret_manager = SecretManager::LedgerNano(LedgerSecretManager::new(false));
 
     // Generate addresses with custom account index and range
     let addresses = client
