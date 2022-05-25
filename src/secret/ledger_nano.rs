@@ -97,6 +97,32 @@ impl SecretManage for LedgerSecretManager {
     }
 }
 
+fn needs_blindsigning(prepared_transaction: &PreparedTransactionData) -> bool {
+    match &prepared_transaction.essence {
+        bee_block::payload::transaction::TransactionEssence::Regular(essence) => {
+            for output in essence.outputs().iter() {
+                // only basic outputs allowed
+                if let bee_block::output::Output::Basic(s) = output {
+                    // no native tokens
+                    // only one address unlock
+                    // no features
+                    if let ([], [bee_block::output::UnlockCondition::Address(_)], []) = (
+                        s.native_tokens().as_ref(),
+                        s.unlock_conditions().as_ref(),
+                        s.features().as_ref(),
+                    ) {
+                        // all fine, continue with next output
+                        continue;
+                    }
+                }
+                // not fine, return
+                return true;
+            }
+        } //_ => return true
+    }
+    false
+}
+
 #[async_trait]
 impl SecretManageExt for LedgerSecretManager {
     async fn sign_transaction_essence(&self, prepared_transaction: &PreparedTransactionData) -> crate::Result<Unlocks> {
@@ -140,99 +166,106 @@ impl SecretManageExt for LedgerSecretManager {
         let coin_type = coin_type.unwrap() & !HARDENED;
         let bip32_account = account_index.unwrap() | HARDENED;
 
+        // pack essence and hash into vec
+        let essence_bytes = prepared_transaction.essence.pack_to_vec();
+        let essence_hash = prepared_transaction.essence.hash().to_vec();
+
         let ledger = iota_ledger::get_ledger(coin_type, bip32_account, self.is_simulator)?;
 
-        // figure out the remainder address and bip32 index (if there is one)
-        let (has_remainder, remainder_address, remainder_bip32): (
-            bool,
-            Option<&bee_block::address::Address>,
-            iota_ledger::LedgerBIP32Index,
-        ) = match &prepared_transaction.remainder {
-            Some(a) => {
-                let remainder_bip32_indices: Vec<u32> = match &a.chain {
-                    Some(chain) => {
-                        chain
-                            .segments()
-                            .iter()
-                            // XXX: "ser32(i)". RTFSC: [crypto::keys::slip10::Segment::from_u32()]
-                            .map(|seg| u32::from_be_bytes(seg.bs()))
-                            .collect()
-                    }
-                    // todo error
-                    None => return Err(crate::Error::NoInputs),
-                };
-                (
-                    true,
-                    Some(&a.address),
-                    iota_ledger::LedgerBIP32Index {
-                        bip32_change: remainder_bip32_indices[3] | HARDENED,
-                        bip32_index: remainder_bip32_indices[4] | HARDENED,
-                    },
-                )
-            }
-            None => (false, None, iota_ledger::LedgerBIP32Index::default()),
-        };
+        if needs_blindsigning(&prepared_transaction) {
+            // prepare signing
+            log::debug!("[LEDGER] prepare blindsigning");
+            log::debug!("[LEDGER] {:?} {:?}", input_bip32_indices, essence_hash);
+            ledger.prepare_blindsigning(input_bip32_indices, essence_hash)?;
+        } else {
+            // figure out the remainder address and bip32 index (if there is one)
+            let (has_remainder, remainder_address, remainder_bip32): (
+                bool,
+                Option<&bee_block::address::Address>,
+                iota_ledger::LedgerBIP32Index,
+            ) = match &prepared_transaction.remainder {
+                Some(a) => {
+                    let remainder_bip32_indices: Vec<u32> = match &a.chain {
+                        Some(chain) => {
+                            chain
+                                .segments()
+                                .iter()
+                                // XXX: "ser32(i)". RTFSC: [crypto::keys::slip10::Segment::from_u32()]
+                                .map(|seg| u32::from_be_bytes(seg.bs()))
+                                .collect()
+                        }
+                        // todo error
+                        None => return Err(crate::Error::NoInputs),
+                    };
+                    (
+                        true,
+                        Some(&a.address),
+                        iota_ledger::LedgerBIP32Index {
+                            bip32_change: remainder_bip32_indices[3] | HARDENED,
+                            bip32_index: remainder_bip32_indices[4] | HARDENED,
+                        },
+                    )
+                }
+                None => (false, None, iota_ledger::LedgerBIP32Index::default()),
+            };
 
-        let mut remainder_index = 0u16;
-        if has_remainder {
-            match &prepared_transaction.essence {
-                bee_block::payload::transaction::TransactionEssence::Regular(essence) => {
-                    // find the index of the remainder in the essence
-                    // this has to be done because outputs in essences are sorted
-                    // lexically and therefore the remainder is not always the last output.
-                    // The index within the essence and the bip32 index will be validated
-                    // by the hardware wallet.
-                    // The outputs in the essence already are sorted
-                    // at this place, so we can rely on their order and don't have to sort it again.
-                    'essence_outputs: for output in essence.outputs().iter() {
-                        match output {
-                            bee_block::output::Output::Basic(s) => {
-                                // todo verify if that's the correct expected behaviour
-                                for block in s.unlock_conditions().iter() {
-                                    if let bee_block::output::UnlockCondition::Address(e) = block {
-                                        if *remainder_address.unwrap() == *e.address() {
-                                            break 'essence_outputs;
+            let mut remainder_index = 0u16;
+            if has_remainder {
+                match &prepared_transaction.essence {
+                    bee_block::payload::transaction::TransactionEssence::Regular(essence) => {
+                        // find the index of the remainder in the essence
+                        // this has to be done because outputs in essences are sorted
+                        // lexically and therefore the remainder is not always the last output.
+                        // The index within the essence and the bip32 index will be validated
+                        // by the hardware wallet.
+                        // The outputs in the essence already are sorted
+                        // at this place, so we can rely on their order and don't have to sort it again.
+                        'essence_outputs: for output in essence.outputs().iter() {
+                            match output {
+                                bee_block::output::Output::Basic(s) => {
+                                    for block in s.unlock_conditions().iter() {
+                                        if let bee_block::output::UnlockCondition::Address(e) = block {
+                                            if *remainder_address.unwrap() == *e.address() {
+                                                break 'essence_outputs;
+                                            }
                                         }
                                     }
                                 }
+                                _ => {
+                                    log::debug!("[LEDGER] unsupported output");
+                                    return Err(crate::Error::LedgerMiscError);
+                                }
                             }
-                            _ => {
-                                log::debug!("[LEDGER] unsupported output");
-                                return Err(crate::Error::LedgerMiscError);
-                            }
+                            remainder_index += 1;
                         }
-                        remainder_index += 1;
-                    }
 
-                    // was index found?
-                    if remainder_index as usize == essence.outputs().len() {
-                        log::debug!("[LEDGER] remainder_index not found");
-                        return Err(crate::Error::LedgerMiscError);
+                        // was index found?
+                        if remainder_index as usize == essence.outputs().len() {
+                            log::debug!("[LEDGER] remainder_index not found");
+                            return Err(crate::Error::LedgerMiscError);
+                        }
                     }
                 }
             }
+
+            // prepare signing
+            log::debug!("[LEDGER] prepare signing");
+            log::debug!(
+                "[LEDGER] {:?} {:?} {} {} {:?}",
+                input_bip32_indices,
+                essence_bytes,
+                has_remainder,
+                remainder_index,
+                remainder_bip32
+            );
+            ledger.prepare_signing(
+                input_bip32_indices,
+                essence_bytes,
+                has_remainder,
+                remainder_index,
+                remainder_bip32,
+            )?;
         }
-
-        // pack essence into bytes
-        let essence_bytes = prepared_transaction.essence.pack_to_vec();
-
-        // prepare signing
-        log::debug!("[LEDGER] prepare signing");
-        log::debug!(
-            "[LEDGER] {:?} {:?} {} {} {:?}",
-            input_bip32_indices,
-            essence_bytes,
-            has_remainder,
-            remainder_index,
-            remainder_bip32
-        );
-        ledger.prepare_signing(
-            input_bip32_indices,
-            essence_bytes,
-            has_remainder,
-            remainder_index,
-            remainder_bip32,
-        )?;
 
         // show essence to user
         // if denied by user, it returns with `DeniedByUser` Error
