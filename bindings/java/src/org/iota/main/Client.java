@@ -2,6 +2,7 @@ package org.iota.main;
 
 import org.iota.main.apis.*;
 import org.iota.main.types.*;
+import org.iota.main.types.responses.*;
 
 public class Client {
 
@@ -21,257 +22,261 @@ public class Client {
 
     // Node Core APIs
 
-    public String getHealth(String nodeUrl) {
+    public GetHealthResponse getHealth(String nodeUrl) throws ClientException {
         return nodeCoreApi.getHealth(nodeUrl);
     }
 
-    public String getNodeInfo() {
+    public GetNodeInfoResponse getNodeInfo() throws ClientException {
         return nodeCoreApi.getNodeInfo();
     }
 
-    public String getTips() {
+    public GetTipsResponse getTips() throws ClientException {
         return nodeCoreApi.getTips();
     }
 
-    public String getBlock(String blockId) {
+    public PostBlockResponse postBlock(Block block) throws ClientException {
+        return nodeCoreApi.postBlock(block);
+    }
+
+    public GetBlockResponse getBlock(String blockId) throws ClientException {
         return nodeCoreApi.getBlock(blockId);
     }
 
-    public String getBlockRaw(String blockId) {
+    public GetBlockRawResponse getBlockRaw(String blockId) throws ClientException {
         return nodeCoreApi.getBlockRaw(blockId);
     }
 
-    public String getBlockMetadata(String blockId) {
+    public GetBlockMetadataResponse getBlockMetadata(String blockId) throws ClientException {
         return nodeCoreApi.getBlockMetadata(blockId);
     }
 
-    public String getBlockChildren(String blockId) {
+    public GetBlockChildrenResponse getBlockChildren(String blockId) throws ClientException {
         return nodeCoreApi.getBlockChildren(blockId);
     }
 
-    public String getOutput(String outputId) {
+    public SuccessResponse getOutput(String outputId) throws ClientException {
         return nodeCoreApi.getOutput(outputId);
     }
 
-    public String getOutputMetadata(String outputId) {
+    public SuccessResponse getOutputMetadata(String outputId) throws ClientException {
         return nodeCoreApi.getOutputMetadata(outputId);
     }
 
-    public String getReceiptsMigratedAt(int milestoneIndex) {
+    public SuccessResponse getReceiptsMigratedAt(int milestoneIndex) throws ClientException {
         return nodeCoreApi.getReceiptsMigratedAt(milestoneIndex);
     }
 
-    public String getReceipts() {
+    public SuccessResponse getReceipts() throws ClientException {
         return nodeCoreApi.getReceipts();
     }
 
-    public String getTreasury() {
+    public SuccessResponse getTreasury() throws ClientException {
         return nodeCoreApi.getTreasury();
     }
 
-    public String getIncludedBlock(String transactionId) {
+    public SuccessResponse getIncludedBlock(String transactionId) throws ClientException {
         return nodeCoreApi.getIncludedBlock(transactionId);
     }
 
-    public String getMilestoneById(String milestoneId) {
+    public SuccessResponse getMilestoneById(String milestoneId) throws ClientException {
         return nodeCoreApi.getMilestoneById(milestoneId);
     }
 
-    public String getMilestoneByIndex(int milestoneIndex) {
+    public SuccessResponse getMilestoneByIndex(int milestoneIndex) throws ClientException {
         return nodeCoreApi.getMilestoneByIndex(milestoneIndex);
     }
 
-    public String getMilestoneByIdRaw(String milestoneId) {
+    public SuccessResponse getMilestoneByIdRaw(String milestoneId) throws ClientException {
         return nodeCoreApi.getMilestoneByIdRaw(milestoneId);
     }
 
-    public String getUtxoChangesById(String milestoneId) {
+    public SuccessResponse getUtxoChangesById(String milestoneId) throws ClientException {
         return nodeCoreApi.getMilestoneById(milestoneId);
     }
 
-    public String getUtxoChangesByIndex(int milestoneIndex) {
+    public SuccessResponse getUtxoChangesByIndex(int milestoneIndex) throws ClientException {
         return nodeCoreApi.getMilestoneByIndex(milestoneIndex);
     }
 
-    public String getPeers() {
+    public SuccessResponse getPeers() throws ClientException {
         return nodeCoreApi.getPeers();
     }
 
     // Node Indexer APIs
 
-    public String getBasicOutputIds(NodeIndexerApi.QueryParams params) {
+    public SuccessResponse getBasicOutputIds(NodeIndexerApi.QueryParams params) throws ClientException {
         return nodeIndexerApi.getBasicOutputIds(params);
     }
 
-    public String getAliasOutputIds(NodeIndexerApi.QueryParams params) {
+    public SuccessResponse getAliasOutputIds(NodeIndexerApi.QueryParams params) throws ClientException {
         return nodeIndexerApi.getAliasOutputIds(params);
     }
 
-    public String getAliasOutputId(String aliasId) {
+    public SuccessResponse getAliasOutputId(String aliasId) throws ClientException {
         return nodeIndexerApi.getAliasOutputId(aliasId);
     }
 
-    public String getNftOutputIds(NodeIndexerApi.QueryParams params) {
+    public SuccessResponse getNftOutputIds(NodeIndexerApi.QueryParams params) throws ClientException {
         return nodeIndexerApi.getNftOutputIds(params);
     }
 
-    public String getNftOutputId(String nftId) {
+    public SuccessResponse getNftOutputId(String nftId) throws ClientException {
         return nodeIndexerApi.getNftOutputId(nftId);
     }
 
-    public String getFoundryOutputIds(NodeIndexerApi.QueryParams params) {
+    public SuccessResponse getFoundryOutputIds(NodeIndexerApi.QueryParams params) throws ClientException {
         return nodeIndexerApi.getFoundryOutputIds(params);
     }
 
-    public String getFoundryOutputId(String foundryId) {
+    public SuccessResponse getFoundryOutputId(String foundryId) throws ClientException {
         return nodeIndexerApi.getFoundryOutputId(foundryId);
     }
 
     // High level APIs
 
-    public String getOutputs(String[] outputIds) {
+    public SuccessResponse getOutputs(String[] outputIds) throws ClientException {
         return highLevelApi.getOutputs(outputIds);
     }
 
-    public String tryGetOutputs(String[] outputIds) {
+    public SuccessResponse tryGetOutputs(String[] outputIds) throws ClientException {
         return highLevelApi.tryGetOutputs(outputIds);
     }
 
-    public String findMessages(String[] messageIds) {
+    public SuccessResponse findMessages(String[] messageIds) throws ClientException {
         return highLevelApi.findMessages(messageIds);
     }
 
-    public String retry(String messageId) {
+    public SuccessResponse retry(String messageId) throws ClientException {
         return highLevelApi.retry(messageId);
     }
 
-    public String retryUntilIncluded(String messageId, int interval, int maxAttempts) {
+    public SuccessResponse retryUntilIncluded(String messageId, int interval, int maxAttempts) throws ClientException {
         return highLevelApi.retryUntilIncluded(messageId, interval, maxAttempts);
     }
 
-    public String consolidateFunds(SecretManager secretManager, int accountIndex, int addressRange) {
+    public SuccessResponse consolidateFunds(SecretManager secretManager, int accountIndex, int addressRange) throws ClientException {
         return highLevelApi.consolidateFunds(secretManager, accountIndex, addressRange);
     }
 
-    public String findInputs(String[] addresses, int amount) {
+    public SuccessResponse findInputs(String[] addresses, int amount) throws ClientException {
         return highLevelApi.findInputs(addresses, amount);
     }
 
-    public String findOutputs(String[] outputs, String[] addresses) {
+    public SuccessResponse findOutputs(String[] outputs, String[] addresses) throws ClientException {
         return highLevelApi.findOutputs(outputs, addresses);
     }
 
-    public String reattach(String messageId) {
+    public SuccessResponse reattach(String messageId) throws ClientException {
         return highLevelApi.reattach(messageId);
     }
 
-    public String reattachUnchecked(String messageId) {
+    public SuccessResponse reattachUnchecked(String messageId) throws ClientException {
         return highLevelApi.reattachUnchecked(messageId);
     }
 
-    public String promote(String messageId) {
+    public SuccessResponse promote(String messageId) throws ClientException {
         return highLevelApi.promote(messageId);
     }
 
-    public String promoteUnchecked(String messageId) {
+    public SuccessResponse promoteUnchecked(String messageId) throws ClientException {
         return highLevelApi.promoteUnchecked(messageId);
     }
 
     // Utils APIs
 
-    public String bech32ToHex(String bech32) {
+    public SuccessResponse bech32ToHex(String bech32) throws ClientException {
         return utilsApi.bech32ToHex(bech32);
     }
 
-    public String hexToBech32(String hex, String bech32) {
+    public SuccessResponse hexToBech32(String hex, String bech32) throws ClientException {
         return utilsApi.hexToBech32(hex, bech32);
     }
 
-    public String hexPublicKeyToBech32Address(String hex, String bech32) {
+    public SuccessResponse hexPublicKeyToBech32Address(String hex, String bech32) throws ClientException {
         return utilsApi.hexPublicKeyToBech32Address(hex, bech32);
     }
 
-    public String parseBech32Address(String address) {
+    public SuccessResponse parseBech32Address(String address) throws ClientException {
         return utilsApi.parseBech32Address(address);
     }
 
-    public String isAddressValid(String address) {
+    public SuccessResponse isAddressValid(String address) throws ClientException {
         return utilsApi.isAddressValid(address);
     }
 
-    public String generateMnemonic() {
+    public SuccessResponse generateMnemonic() throws ClientException {
         return utilsApi.generateMnemonic();
     }
 
-    public String mnemonicToHexSeed(String mnemonic) {
+    public SuccessResponse mnemonicToHexSeed(String mnemonic) throws ClientException {
         return utilsApi.mnemonicToHexSeed(mnemonic);
     }
 
-    public String messageId(String message) {
-        return utilsApi.messageId(message);
+    public SuccessResponse getBlockId(String block) throws ClientException {
+        return utilsApi.getBlockId(block);
     }
 
     // Miscellaneous APIs
 
-    public String generateAddresses(SecretManager secretManager, GenerateAddressesOptions generateAddressesOptions) {
+    public SuccessResponse generateAddresses(SecretManager secretManager, GenerateAddressesOptions generateAddressesOptions) throws ClientException {
         return miscellaneousApi.generateAddresses(secretManager, generateAddressesOptions);
     }
 
-    public String generateMessage(SecretManager secretManager, GenerateAddressesOptions generateAddressesOptions) {
+    public SuccessResponse generateMessage(SecretManager secretManager, GenerateAddressesOptions generateAddressesOptions) throws ClientException {
         return miscellaneousApi.generateMessage(secretManager, generateAddressesOptions);
     }
 
 
-    public String getNode() {
+    public SuccessResponse getNode() throws ClientException {
         return miscellaneousApi.getNode();
     }
 
-    public String getNetworkInfo() {
+    public SuccessResponse getNetworkInfo() throws ClientException {
         return miscellaneousApi.getNetworkInfo();
     }
 
-    public String getNetworkId() {
+    public SuccessResponse getNetworkId() throws ClientException {
         return miscellaneousApi.getNetworkId();
     }
 
-    public String getBech32Hrp() {
+    public SuccessResponse getBech32Hrp() throws ClientException {
         return miscellaneousApi.getBech32Hrp();
     }
 
-    public String getMinPoWScore() {
+    public SuccessResponse getMinPoWScore() throws ClientException {
         return miscellaneousApi.getMinPoWScore();
     }
 
-    public String getTipsInterval() {
+    public SuccessResponse getTipsInterval() throws ClientException {
         return miscellaneousApi.getTipsInterval();
     }
 
-    public String getLocalPoW() {
+    public SuccessResponse getLocalPoW() throws ClientException {
         return miscellaneousApi.getLocalPoW();
     }
 
-    public String getFallbackToLocalPoW() {
+    public SuccessResponse getFallbackToLocalPoW() throws ClientException {
         return miscellaneousApi.getFallbackToLocalPoW();
     }
 
-    public String getUsyncedNodes() {
+    public SuccessResponse getUsyncedNodes() throws ClientException {
         return miscellaneousApi.getUnsyncedNodes();
     }
 
-    public String prepareTransaction(SecretManager secretManager, GenerateAddressesOptions generateAddressesOptions) {
+    public SuccessResponse prepareTransaction(SecretManager secretManager, GenerateAddressesOptions generateAddressesOptions) throws ClientException {
         return miscellaneousApi.prepareTransaction(secretManager, generateAddressesOptions);
     }
 
-    public String signTransaction(SecretManager secretManager, PreparedTransactionData preparedTransactionData) {
+    public SuccessResponse signTransaction(SecretManager secretManager, PreparedTransactionData preparedTransactionData) throws ClientException {
         return miscellaneousApi.signTransaction(secretManager, preparedTransactionData);
     }
 
-    public String storeMnemonic(SecretManager secretManager, String mnemonic) {
+    public SuccessResponse storeMnemonic(SecretManager secretManager, String mnemonic) throws ClientException {
         return miscellaneousApi.storeMnemonic(secretManager, mnemonic);
     }
 
-    public String submitPayload(Payload payload) {
-        return miscellaneousApi.submitPayload(payload);
+    public GetBlockResponse submitBlockPayload(BlockPayload payload) throws ClientException {
+        return miscellaneousApi.submitBlockPayload(payload);
     }
 
 }

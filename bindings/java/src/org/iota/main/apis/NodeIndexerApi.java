@@ -1,6 +1,8 @@
 package org.iota.main.apis;
 
 import org.iota.main.types.ClientConfig;
+import org.iota.main.types.ClientException;
+import org.iota.main.types.SuccessResponse;
 
 public class NodeIndexerApi extends BaseApi {
 
@@ -8,32 +10,32 @@ public class NodeIndexerApi extends BaseApi {
         super(clientConfig);
     }
 
-    public String getBasicOutputIds(QueryParams params) {
-        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "BasicOutputIds", "{\"queryParameters\":" + params + "}"));
+    public SuccessResponse getBasicOutputIds(QueryParams params) throws ClientException {
+        return (SuccessResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "BasicOutputIds", "{\"queryParameters\":" + params + "}"));
     }
 
-    public String getAliasOutputIds(QueryParams params) {
-        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "AliasOutputIds", "{\"queryParameters\":" + params + "}"));
+    public SuccessResponse getAliasOutputIds(QueryParams params) throws ClientException {
+        return (SuccessResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "AliasOutputIds", "{\"queryParameters\":" + params + "}"));
     }
 
-    public String getAliasOutputId(String aliasId) {
-        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "AliasOutputId", "{\"aliasId\":\"" + aliasId + "\"}"));
+    public SuccessResponse getAliasOutputId(String aliasId) throws ClientException {
+        return (SuccessResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "AliasOutputId", "{\"aliasId\":\"" + aliasId + "\"}"));
     }
 
-    public String getNftOutputIds(QueryParams params) {
-        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "NftOutputIds", "{\"queryParameters\":" + params + "}"));
+    public SuccessResponse getNftOutputIds(QueryParams params) throws ClientException {
+        return (SuccessResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "NftOutputIds", "{\"queryParameters\":" + params + "}"));
     }
 
-    public String getNftOutputId(String nftId) {
-        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "NftOutputId", "{\"nftId\":\"" + nftId + "\"}"));
+    public SuccessResponse getNftOutputId(String nftId) throws ClientException {
+        return (SuccessResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "NftOutputId", "{\"nftId\":\"" + nftId + "\"}"));
     }
 
-    public String getFoundryOutputIds(QueryParams params) {
-        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "FoundryOutputIds", "{\"queryParameters\":" + params + "}"));
+    public SuccessResponse getFoundryOutputIds(QueryParams params) throws ClientException {
+        return (SuccessResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "FoundryOutputIds", "{\"queryParameters\":" + params + "}"));
     }
 
-    public String getFoundryOutputId(String foundryId) {
-        return callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "FoundryOutputId", "{\"foundryId\":\"" + foundryId + "\"}"));
+    public SuccessResponse getFoundryOutputId(String foundryId) throws ClientException {
+        return (SuccessResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "FoundryOutputId", "{\"foundryId\":\"" + foundryId + "\"}"));
     }
 
     public static class QueryParams {
