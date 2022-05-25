@@ -14,7 +14,7 @@ use iota_client::{
 async fn main() -> Result<()> {
     // Create a client instance
     let client = Client::builder()
-        .with_node("https://api.alphanet.iotaledger.net:443")? // Insert your node URL here
+        .with_node("http://localhost:14265")? // Insert your node URL here
         .with_node_sync_disabled()
         .finish()
         .await?;
