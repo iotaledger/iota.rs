@@ -10,7 +10,7 @@ keywords:
 - block
 ---
 import CodeBlock from '@theme/CodeBlock';
-import generate_seed from '!!raw-loader!./../../../../examples/02_mnemonic.rs';
+import mnemonic from '!!raw-loader!./../../../../examples/02_mnemonic.rs';
 import generate_addresses from '!!raw-loader!./../../../../examples/03_generate_addresses.rs';
 import get_address_outputs from '!!raw-loader!./../../../../examples/04_get_address_outputs.rs';
 import simple_block from '!!raw-loader!./../../../../examples/06_simple_block.rs';
@@ -40,19 +40,11 @@ cargo run --example 01_get_info --release
 
 
 <CodeBlock className="language-rust">
-  {get_info}
-</CodeBlock>
-
-<CodeBlock className="language-rust">
-  {generate_seed}
+  {mnemonic}
 </CodeBlock>
 
 <CodeBlock className="language-rust">
   {generate_addresses}
-</CodeBlock>
-
-<CodeBlock className="language-rust">
-  {get_balance}
 </CodeBlock>
 
 <CodeBlock className="languag-rust">
