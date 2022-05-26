@@ -13,7 +13,7 @@ module.exports = {
         remarkPlugins: [require('remark-code-import'), require('remark-import-partial')],
         versions: {
           current: {
-            label: 'Production',
+            label: 'IOTA',
             badge: true
           },
         },
