@@ -140,11 +140,6 @@ module.exports = {
   },
   {
     type: 'doc',
-    id: 'specs',
-    label: 'Specification',
-  },
-  {
-    type: 'doc',
     id: 'troubleshooting',
     label: 'Troubleshooting'
   },
