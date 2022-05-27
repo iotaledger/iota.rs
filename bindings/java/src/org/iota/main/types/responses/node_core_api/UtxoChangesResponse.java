@@ -1,6 +1,8 @@
-package org.iota.main.types.responses;
+package org.iota.main.types.responses.node_core_api;
 
 import com.google.gson.JsonArray;
+import org.iota.main.types.responses.BaseApiResponse;
+import org.iota.main.types.responses.ClientResponse;
 
 public class UtxoChangesResponse extends ClientResponse {
 
@@ -38,10 +40,4 @@ public class UtxoChangesResponse extends ClientResponse {
         return createdOutputs;
     }
 
-    @Override
-    public String toString() {
-        return "UtxoChangesResponse{" +
-                "response=" + response +
-                '}';
-    }
 }

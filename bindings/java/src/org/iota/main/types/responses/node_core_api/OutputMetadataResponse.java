@@ -1,6 +1,8 @@
-package org.iota.main.types.responses;
+package org.iota.main.types.responses.node_core_api;
 
 import org.iota.main.types.OutputMetadata;
+import org.iota.main.types.responses.BaseApiResponse;
+import org.iota.main.types.responses.ClientResponse;
 
 public class OutputMetadataResponse extends ClientResponse {
 
@@ -16,10 +18,4 @@ public class OutputMetadataResponse extends ClientResponse {
         return outputMetadata;
     }
 
-    @Override
-    public String toString() {
-        return "OutputMetadataResponse{" +
-                "response=" + response +
-                '}';
-    }
 }

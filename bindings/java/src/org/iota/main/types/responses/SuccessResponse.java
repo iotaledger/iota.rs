@@ -1,4 +1,4 @@
-package org.iota.main.types;
+package org.iota.main.types.responses;
 
 import com.google.gson.JsonElement;
 import org.iota.main.types.responses.BaseApiResponse;

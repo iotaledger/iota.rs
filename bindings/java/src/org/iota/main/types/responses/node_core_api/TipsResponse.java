@@ -1,6 +1,8 @@
-package org.iota.main.types.responses;
+package org.iota.main.types.responses.node_core_api;
 
 import com.google.gson.JsonArray;
+import org.iota.main.types.responses.BaseApiResponse;
+import org.iota.main.types.responses.ClientResponse;
 
 public class TipsResponse extends ClientResponse {
 
@@ -20,10 +22,4 @@ public class TipsResponse extends ClientResponse {
         return tips;
     }
 
-    @Override
-    public String toString() {
-        return "GetTipsResponse{" +
-                "response=" + response +
-                '}';
-    }
 }

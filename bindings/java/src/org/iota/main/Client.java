@@ -2,7 +2,14 @@ package org.iota.main;
 
 import org.iota.main.apis.*;
 import org.iota.main.types.*;
-import org.iota.main.types.responses.*;
+import org.iota.main.types.responses.Bech32ToHexResponse;
+import org.iota.main.types.responses.GenerateAddressesResponse;
+import org.iota.main.types.responses.SuccessResponse;
+import org.iota.main.types.responses.node_core_api.*;
+import org.iota.main.types.responses.node_indexer_api.AliasOutputIdResponse;
+import org.iota.main.types.responses.node_indexer_api.FoundryOutputIdResponse;
+import org.iota.main.types.responses.node_indexer_api.NftOutputIdResponse;
+import org.iota.main.types.responses.node_indexer_api.OutputIdsResponse;
 import org.iota.main.types.secret.GenerateAddressesOptions;
 import org.iota.main.types.secret.GenerateBlockOptions;
 import org.iota.main.types.secret.SecretManager;
@@ -111,31 +118,32 @@ public class Client {
 
     // Node Indexer APIs
 
-    public SuccessResponse getBasicOutputIds(NodeIndexerApi.QueryParams params) throws ClientException {
+    public OutputIdsResponse getBasicOutputIds(NodeIndexerApi.QueryParams params) throws ClientException {
         return nodeIndexerApi.getBasicOutputIds(params);
     }
 
-    public SuccessResponse getAliasOutputIds(NodeIndexerApi.QueryParams params) throws ClientException {
+    public OutputIdsResponse getAliasOutputIds(NodeIndexerApi.QueryParams params) throws ClientException {
         return nodeIndexerApi.getAliasOutputIds(params);
     }
 
-    public SuccessResponse getAliasOutputId(String aliasId) throws ClientException {
-        return nodeIndexerApi.getAliasOutputId(aliasId);
-    }
-
-    public SuccessResponse getNftOutputIds(NodeIndexerApi.QueryParams params) throws ClientException {
+    public OutputIdsResponse getNftOutputIds(NodeIndexerApi.QueryParams params) throws ClientException {
         return nodeIndexerApi.getNftOutputIds(params);
     }
 
-    public SuccessResponse getNftOutputId(String nftId) throws ClientException {
-        return nodeIndexerApi.getNftOutputId(nftId);
-    }
-
-    public SuccessResponse getFoundryOutputIds(NodeIndexerApi.QueryParams params) throws ClientException {
+    public OutputIdsResponse getFoundryOutputIds(NodeIndexerApi.QueryParams params) throws ClientException {
         return nodeIndexerApi.getFoundryOutputIds(params);
     }
 
-    public SuccessResponse getFoundryOutputId(String foundryId) throws ClientException {
+    public AliasOutputIdResponse getAliasOutputId(String aliasId) throws ClientException {
+        return nodeIndexerApi.getAliasOutputId(aliasId);
+    }
+
+    public NftOutputIdResponse getNftOutputId(String nftId) throws ClientException {
+        return nodeIndexerApi.getNftOutputId(nftId);
+    }
+
+
+    public FoundryOutputIdResponse getFoundryOutputId(String foundryId) throws ClientException {
         return nodeIndexerApi.getFoundryOutputId(foundryId);
     }
 

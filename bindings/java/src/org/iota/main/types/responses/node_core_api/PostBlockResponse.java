@@ -1,4 +1,7 @@
-package org.iota.main.types.responses;
+package org.iota.main.types.responses.node_core_api;
+
+import org.iota.main.types.responses.BaseApiResponse;
+import org.iota.main.types.responses.ClientResponse;
 
 public class PostBlockResponse extends ClientResponse {
 
@@ -13,10 +16,4 @@ public class PostBlockResponse extends ClientResponse {
         return blockId;
     }
 
-    @Override
-    public String toString() {
-        return "PostBlockResponse{" +
-                "response=" + response +
-                '}';
-    }
 }

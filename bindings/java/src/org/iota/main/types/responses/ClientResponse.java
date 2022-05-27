@@ -1,6 +1,7 @@
 package org.iota.main.types.responses;
 
 public abstract class ClientResponse {
+
     protected BaseApiResponse response;
 
     public ClientResponse(BaseApiResponse response) {

@@ -4,7 +4,7 @@ import com.google.gson.JsonObject;
 import org.iota.main.types.Block;
 import org.iota.main.types.ClientConfig;
 import org.iota.main.types.ClientException;
-import org.iota.main.types.responses.*;
+import org.iota.main.types.responses.node_core_api.*;
 
 public class NodeCoreApi extends BaseApi {
 

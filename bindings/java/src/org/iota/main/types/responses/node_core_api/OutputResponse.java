@@ -1,6 +1,8 @@
-package org.iota.main.types.responses;
+package org.iota.main.types.responses.node_core_api;
 
 import org.iota.main.types.Output;
+import org.iota.main.types.responses.BaseApiResponse;
+import org.iota.main.types.responses.ClientResponse;
 
 public class OutputResponse extends ClientResponse {
 
@@ -15,10 +17,4 @@ public class OutputResponse extends ClientResponse {
         return output;
     }
 
-    @Override
-    public String toString() {
-        return "OutputResponse{" +
-                "response=" + response +
-                '}';
-    }
 }

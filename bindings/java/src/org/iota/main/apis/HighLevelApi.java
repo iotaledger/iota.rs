@@ -3,7 +3,7 @@ package org.iota.main.apis;
 import com.google.gson.GsonBuilder;
 import org.iota.main.types.ClientConfig;
 import org.iota.main.types.ClientException;
-import org.iota.main.types.SuccessResponse;
+import org.iota.main.types.responses.SuccessResponse;
 import org.iota.main.types.secret.SecretManager;
 
 public class HighLevelApi extends BaseApi {

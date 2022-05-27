@@ -3,6 +3,8 @@ package org.iota.main.apis;
 import com.google.gson.Gson;
 import org.iota.main.types.*;
 import org.iota.main.types.responses.*;
+import org.iota.main.types.responses.node_core_api.*;
+import org.iota.main.types.responses.node_indexer_api.OutputIdsResponse;
 
 public class BaseApi {
 
@@ -82,6 +84,11 @@ public class BaseApi {
             case "Peers": {
                 return new PeersResponse(response);
             }
+            // Node Indexer API responses
+            case "OutputIds": {
+                return new OutputIdsResponse(response);
+            }
+            // Other
             case "GeneratedAddresses": {
                 return new GenerateAddressesResponse(response);
             }

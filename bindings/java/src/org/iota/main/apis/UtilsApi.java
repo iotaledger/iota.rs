@@ -4,10 +4,10 @@ import com.google.gson.JsonObject;
 import org.iota.main.types.BlockPayload;
 import org.iota.main.types.ClientConfig;
 import org.iota.main.types.ClientException;
-import org.iota.main.types.SuccessResponse;
+import org.iota.main.types.responses.SuccessResponse;
 import org.iota.main.types.responses.Bech32ToHexResponse;
 import org.iota.main.types.responses.FaucetResponse;
-import org.iota.main.types.responses.TransactionIdResponse;
+import org.iota.main.types.responses.node_core_api.TransactionIdResponse;
 
 public class UtilsApi extends BaseApi {
 
