@@ -1,5 +1,5 @@
 {
-  "name": "iota-rs-production",
+  "name": "iota-rs",
   "version": "0.0.0",
   "scripts": {
     "start": "iota-wiki start",
