@@ -42,6 +42,7 @@ public class BaseApi {
                 return new PostBlockResponse(response);
             }
             case "Block":
+            case "IncludedBlock":
             case "GeneratedBlock": {
                 return new BlockResponse(response);
             }
@@ -62,6 +63,24 @@ public class BaseApi {
             }
             case "ReceiptsMigratedAtMilestone": {
                 return new ReceiptsMigratedAtResponse(response);
+            }
+            case "Receipts": {
+                return new ReceiptsResponse(response);
+            }
+            case "Treasury": {
+                return new TreasuryResponse(response);
+            }
+            case "Milestone": {
+                return new MilestoneResponse(response);
+            }
+            case "MilestoneRaw": {
+                return new MilestoneRawResponse(response);
+            }
+            case "MilestoneUtxoChanges": {
+                return new UtxoChangesResponse(response);
+            }
+            case "Peers": {
+                return new PeersResponse(response);
             }
             case "GeneratedAddresses": {
                 return new GenerateAddressesResponse(response);

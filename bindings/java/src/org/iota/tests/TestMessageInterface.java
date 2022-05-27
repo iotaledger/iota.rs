@@ -2,10 +2,7 @@ package org.iota.tests;
 
 import org.iota.main.Client;
 import org.iota.main.apis.UtilsApi;
-import org.iota.main.types.Block;
-import org.iota.main.types.BlockPayload;
-import org.iota.main.types.ClientConfig;
-import org.iota.main.types.ClientException;
+import org.iota.main.types.*;
 import org.iota.main.types.responses.*;
 import org.iota.main.types.secret.GenerateAddressesOptions;
 import org.iota.main.types.secret.GenerateBlockOptions;
@@ -53,12 +50,15 @@ public class TestMessageInterface {
         return b;
     }
 
-    String setupOutputId() throws ClientException {
+    String setUpTransactionId() throws ClientException {
         Block b = setUpTransactionBlock();
         String transactionId = client.getTransactionId(new BlockPayload(b.getJson().get("payload").getAsJsonObject())).getTransactionId();
-        return transactionId + "0000";
+        return transactionId;
     }
 
+    String setupOutputId() throws ClientException {
+        return setUpTransactionId() + "0000";
+    }
 
     // Node Core API tests
 
@@ -125,9 +125,83 @@ public class TestMessageInterface {
     }
 
     @Test
-    public void testReceiptsMigratedAtResponse() throws ClientException {
+    public void testGetReceiptsMigratedAt() throws ClientException {
         ReceiptsMigratedAtResponse r = client.getReceiptsMigratedAt(client.getNodeInfo().getNodeInfo().get("status").getAsJsonObject().get("latestMilestone").getAsJsonObject().get("index").getAsInt());
-        System.out.println(r);
+        for (Receipt receipt : r.getReceipts())
+            System.out.println(receipt);
+
     }
+
+    @Test
+    public void testGetReceipts() throws ClientException {
+        ReceiptsResponse r = client.getReceipts();
+        for (Receipt receipt : r.getReceipts())
+            System.out.println(receipt);
+
+    }
+
+    @Test
+    public void testGetTreasury() throws ClientException {
+        TreasuryResponse r = client.getTreasury();
+        System.out.println(r.getMilestoneId());
+        System.out.println(r.getAmount());
+    }
+
+    @Test
+    public void testGetIncludedBlock() throws ClientException {
+        BlockResponse r = client.getIncludedBlock(setUpTransactionId());
+        System.out.println(r.getBlock());
+    }
+
+    @Test
+    public void testGetMilestoneById() throws ClientException {
+        MilestoneResponse r = client.getMilestoneById(client.getNodeInfo().getNodeInfo().get("status").getAsJsonObject().get("latestMilestone").getAsJsonObject().get("milestoneId").getAsString());
+        System.out.println(r.getMilestone());
+    }
+
+    @Test
+    public void testGetMilestoneByIndex() throws ClientException {
+        MilestoneResponse r = client.getMilestoneByIndex(client.getNodeInfo().getNodeInfo().get("status").getAsJsonObject().get("latestMilestone").getAsJsonObject().get("index").getAsInt());
+        System.out.println(r.getMilestone());
+    }
+
+    @Test
+    public void testGetMilestoneByIdRaw() throws ClientException {
+        MilestoneRawResponse r = client.getMilestoneByIdRaw(client.getNodeInfo().getNodeInfo().get("status").getAsJsonObject().get("latestMilestone").getAsJsonObject().get("milestoneId").getAsString());
+        System.out.println(r.getMilestoneBytes());
+    }
+
+    @Test
+    public void testGetMilestoneByIndexRaw() throws ClientException {
+        MilestoneRawResponse r = client.getMilestoneByIndexRaw(client.getNodeInfo().getNodeInfo().get("status").getAsJsonObject().get("latestMilestone").getAsJsonObject().get("index").getAsInt());
+        System.out.println(r.getMilestoneBytes());
+    }
+
+    @Test
+    public void testGetUtxoChangesId() throws ClientException {
+        UtxoChangesResponse r = client.getUtxoChangesById(client.getNodeInfo().getNodeInfo().get("status").getAsJsonObject().get("latestMilestone").getAsJsonObject().get("milestoneId").getAsString());
+        for(String consumed: r.getConsumedOutputs())
+            System.out.println(consumed);
+        for(String created: r.getCreatedOutputs())
+            System.out.println(created);
+    }
+
+    @Test
+    public void testGetUtxoChangesIndex() throws ClientException {
+        UtxoChangesResponse r = client.getUtxoChangesByIndex(client.getNodeInfo().getNodeInfo().get("status").getAsJsonObject().get("latestMilestone").getAsJsonObject().get("index").getAsInt());
+        for(String consumed: r.getConsumedOutputs())
+            System.out.println(consumed);
+        for(String created: r.getCreatedOutputs())
+            System.out.println(created);
+    }
+
+    @Test
+    public void testGetPeers() throws ClientException {
+        PeersResponse r = client.getPeers();
+        for(Peer peer: r.getPeers())
+            System.out.println(peer);
+    }
+
+
 
 }

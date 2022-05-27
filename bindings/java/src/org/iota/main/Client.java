@@ -69,39 +69,43 @@ public class Client {
         return nodeCoreApi.getReceiptsMigratedAt(milestoneIndex);
     }
 
-    public SuccessResponse getReceipts() throws ClientException {
+    public ReceiptsResponse getReceipts() throws ClientException {
         return nodeCoreApi.getReceipts();
     }
 
-    public SuccessResponse getTreasury() throws ClientException {
+    public TreasuryResponse getTreasury() throws ClientException {
         return nodeCoreApi.getTreasury();
     }
 
-    public SuccessResponse getIncludedBlock(String transactionId) throws ClientException {
+    public BlockResponse getIncludedBlock(String transactionId) throws ClientException {
         return nodeCoreApi.getIncludedBlock(transactionId);
     }
 
-    public SuccessResponse getMilestoneById(String milestoneId) throws ClientException {
+    public MilestoneResponse getMilestoneById(String milestoneId) throws ClientException {
         return nodeCoreApi.getMilestoneById(milestoneId);
     }
 
-    public SuccessResponse getMilestoneByIndex(int milestoneIndex) throws ClientException {
+    public MilestoneResponse getMilestoneByIndex(int milestoneIndex) throws ClientException {
         return nodeCoreApi.getMilestoneByIndex(milestoneIndex);
     }
 
-    public SuccessResponse getMilestoneByIdRaw(String milestoneId) throws ClientException {
+    public MilestoneRawResponse getMilestoneByIdRaw(String milestoneId) throws ClientException {
         return nodeCoreApi.getMilestoneByIdRaw(milestoneId);
     }
 
-    public SuccessResponse getUtxoChangesById(String milestoneId) throws ClientException {
-        return nodeCoreApi.getMilestoneById(milestoneId);
+    public MilestoneRawResponse getMilestoneByIndexRaw(int milestoneIndex) throws ClientException {
+        return nodeCoreApi.getMilestoneByIndexRaw(milestoneIndex);
     }
 
-    public SuccessResponse getUtxoChangesByIndex(int milestoneIndex) throws ClientException {
-        return nodeCoreApi.getMilestoneByIndex(milestoneIndex);
+    public UtxoChangesResponse getUtxoChangesById(String milestoneId) throws ClientException {
+        return nodeCoreApi.getUtxoChangesById(milestoneId);
     }
 
-    public SuccessResponse getPeers() throws ClientException {
+    public UtxoChangesResponse getUtxoChangesByIndex(int milestoneIndex) throws ClientException {
+        return nodeCoreApi.getUtxoChangesByIndex(milestoneIndex);
+    }
+
+    public PeersResponse getPeers() throws ClientException {
         return nodeCoreApi.getPeers();
     }
 
