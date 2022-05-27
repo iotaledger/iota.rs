@@ -22,7 +22,7 @@ async fn main() -> Result<()> {
     let tips = client.get_tips().await?;
 
     // Prints the response.
-    println!("{:?}", tips);
+    println!("{:#?}", tips);
 
     Ok(())
 }

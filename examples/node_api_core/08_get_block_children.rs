@@ -27,7 +27,7 @@ async fn main() -> Result<()> {
     let block_children = client.get_block_children(&block_id).await?;
 
     // Prints the response.
-    println!("{:?}", block_children);
+    println!("{:#?}", block_children);
 
     Ok(())
 }

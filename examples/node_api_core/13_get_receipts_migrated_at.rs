@@ -22,7 +22,7 @@ async fn main() -> Result<()> {
     let receipts = client.get_receipts_migrated_at(1_000_000).await?;
 
     // Prints the response.
-    println!("{:?}", receipts);
+    println!("{:#?}", receipts);
 
     Ok(())
 }
