@@ -1,11 +1,12 @@
 package org.iota.main.types.responses;
 
-public class PostBlockResponse implements ClientResponse {
+public class PostBlockResponse extends ClientResponse {
 
     private String blockId;
 
-    public PostBlockResponse(String blockId) {
-        this.blockId = blockId;
+    public PostBlockResponse(BaseApiResponse response) {
+        super(response);
+        this.blockId = response.getPayload().getAsString();
     }
 
     public String getBlockId() {
@@ -14,6 +15,8 @@ public class PostBlockResponse implements ClientResponse {
 
     @Override
     public String toString() {
-        return blockId;
+        return "PostBlockResponse{" +
+                "response=" + response +
+                '}';
     }
 }

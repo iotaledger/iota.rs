@@ -7,9 +7,6 @@ use iota_client::{Client, Result};
 
 #[tokio::main]
 async fn main() -> Result<()> {
-
-    let json = r#"sasd"#;
-
     // Takes the node URL from command line argument or use localhost as default.
     let node = std::env::args()
         .nth(1)

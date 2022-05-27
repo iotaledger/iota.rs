@@ -1,7 +1,12 @@
 package org.iota.main.apis;
 
+import com.google.gson.JsonObject;
 import org.iota.main.types.*;
-import org.iota.main.types.responses.GetBlockResponse;
+import org.iota.main.types.responses.GenerateAddressesResponse;
+import org.iota.main.types.responses.BlockResponse;
+import org.iota.main.types.secret.GenerateAddressesOptions;
+import org.iota.main.types.secret.GenerateBlockOptions;
+import org.iota.main.types.secret.SecretManager;
 
 public class MiscellaneousApi extends BaseApi {
 
@@ -9,24 +14,18 @@ public class MiscellaneousApi extends BaseApi {
         super(clientConfig);
     }
 
-    public SuccessResponse generateAddresses(SecretManager secretManager, GenerateAddressesOptions generateAddressesOptions) throws ClientException {
-        return (SuccessResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GenerateAddresses", "{\"secretManager\": \"" + secretManager.toString() + "\", \"generateAddressesOptions\": " + generateAddressesOptions + "}"));
+    public GenerateAddressesResponse generateAddresses(SecretManager secretManager, GenerateAddressesOptions generateAddressesOptions) throws ClientException {
+        JsonObject o = new JsonObject();
+        o.add("secretManager", secretManager.getJson());
+        o.add("options", generateAddressesOptions.getJson());
+        return (GenerateAddressesResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GenerateAddresses", o.toString()));
     }
 
-    public SuccessResponse generateMessage(SecretManager secretManager, GenerateAddressesOptions generateAddressesOptions) throws ClientException {
-        String methodParams = "{";
-        if (secretManager != null) {
-            methodParams += "\"secretManager\": \"" + secretManager.toString();
-        }
-        if (generateAddressesOptions != null) {
-            if(secretManager != null) {
-                methodParams+= ",";
-            }
-            methodParams += "\"generateAddressesOptions\": \"" + generateAddressesOptions.toString();
-        }
-        methodParams += "}";
-
-        return (SuccessResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GenerateMessage", "{" + methodParams + "}"));
+    public BlockResponse generateBlock(SecretManager secretManager, GenerateBlockOptions options) throws ClientException {
+        JsonObject o = new JsonObject();
+        o.add("secretManager", secretManager.getJson());
+        o.add("options", options.getJson());
+        return (BlockResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GenerateBlock", o.toString()));
     }
 
 
@@ -72,8 +71,8 @@ public class MiscellaneousApi extends BaseApi {
             methodParams += "\"secretManager\": \"" + secretManager.toString();
         }
         if (generateAddressesOptions != null) {
-            if(secretManager != null) {
-                methodParams+= ",";
+            if (secretManager != null) {
+                methodParams += ",";
             }
             methodParams += "\"generateAddressesOptions\": \"" + generateAddressesOptions.toString();
         }
@@ -90,8 +89,8 @@ public class MiscellaneousApi extends BaseApi {
         return (SuccessResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "StoreMnemonic", "{\"secretManager\": \"" + secretManager.toString() + "\", \"mnemonic\": \"" + mnemonic + "\"}"));
     }
 
-    public GetBlockResponse submitBlockPayload(BlockPayload payload) throws ClientException {
-        return (GetBlockResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "SubmitPayload", "{\"payload\":" + payload.toString() + "}"));
+    public BlockResponse submitBlockPayload(BlockPayload payload) throws ClientException {
+        return (BlockResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "SubmitPayload", "{\"payload\":" + payload.toString() + "}"));
     }
 
 }

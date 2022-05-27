@@ -9,7 +9,7 @@ use bee_block::{
     input::dto::UtxoInputDto,
     payload::{
         dto::{MilestonePayloadDto, PayloadDto},
-        Payload,
+        Payload, TransactionPayload
     },
     Block as BeeBlock, BlockDto,
 };
@@ -22,6 +22,7 @@ use crate::{
     secret::SecretManager,
     Client, Result,
 };
+use crate::request_funds_from_faucet;
 
 fn panic_to_response_message(panic: Box<dyn Any>) -> Response {
     let msg = if let Some(message) = panic.downcast_ref::<String>() {
@@ -404,8 +405,14 @@ impl ClientMessageHandler {
             }
             ClientMethod::BlockId { block } => {
                 let block = BeeBlock::try_from(block)?;
-
                 Ok(Response::BlockId(block.id()))
+            }
+            ClientMethod::TransactionId { payload } => {
+                let payload = TransactionPayload::try_from(payload)?;
+                Ok(Response::TransactionId(payload.id()))
+            }
+            ClientMethod::Faucet { url, address } => {
+                Ok(Response::Faucet(request_funds_from_faucet(url, address).await?))
             }
         }
     }

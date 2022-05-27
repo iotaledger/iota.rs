@@ -1,8 +1,13 @@
 package org.iota.main.apis;
 
+import com.google.gson.JsonObject;
+import org.iota.main.types.BlockPayload;
 import org.iota.main.types.ClientConfig;
 import org.iota.main.types.ClientException;
 import org.iota.main.types.SuccessResponse;
+import org.iota.main.types.responses.Bech32ToHexResponse;
+import org.iota.main.types.responses.FaucetResponse;
+import org.iota.main.types.responses.TransactionIdResponse;
 
 public class UtilsApi extends BaseApi {
 
@@ -10,8 +15,10 @@ public class UtilsApi extends BaseApi {
         super(clientConfig);
     }
 
-    public SuccessResponse bech32ToHex(String bech32) throws ClientException {
-        return (SuccessResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "Bech32ToHex", "{\"bech32\":" + bech32 + "}"));
+    public Bech32ToHexResponse bech32ToHex(String bech32) throws ClientException {
+        JsonObject o = new JsonObject();
+        o.addProperty("bech32", bech32);
+        return (Bech32ToHexResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "Bech32ToHex", o.toString()));
     }
 
     public SuccessResponse hexToBech32(String hex, String bech32) throws ClientException {
@@ -40,6 +47,19 @@ public class UtilsApi extends BaseApi {
 
     public SuccessResponse getBlockId(String block) throws ClientException {
         return (SuccessResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "BlockId", "{\"block\":" + block + "}"));
+    }
+
+    public TransactionIdResponse getTransactionId(BlockPayload payload) throws ClientException {
+        JsonObject o = new JsonObject();
+        o.add("payload", payload.getAsJsonObject());
+        return (TransactionIdResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "TransactionId", o.toString()));
+    }
+
+    public FaucetResponse requestFundsFromFaucet(String faucetUrl, String address) throws ClientException {
+        JsonObject o = new JsonObject();
+        o.addProperty("url", faucetUrl);
+        o.addProperty("address", address);
+        return (FaucetResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "Faucet", o.toString()));
     }
 }
 

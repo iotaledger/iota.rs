@@ -1,10 +1,7 @@
 package org.iota.main.apis;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import org.iota.main.types.Block;
-import org.iota.main.types.ClientException;
-import org.iota.main.types.ClientConfig;
+import org.iota.main.types.*;
 import org.iota.main.types.responses.*;
 
 public class BaseApi {
@@ -25,43 +22,62 @@ public class BaseApi {
         System.out.println(command);
         BaseApiResponse response = new Gson().fromJson(callNativeLibrary(clientConfig.toString(), command.toString()), BaseApiResponse.class);
         System.out.println(response);
-        switch (response.type) {
+
+        switch (response.getType()) {
             case "Panic":
-                throw new RuntimeException(response.payload.toString());
+                throw new RuntimeException(response.toString());
             case "Error":
-                throw new ClientException(command.methodName, response.payload.getAsJsonObject());
+                throw new ClientException(command.methodName, response.getPayload().getAsJsonObject().toString());
                 // Node Core API responses
             case "Health": {
-                return new GetHealthResponse(response.payload.getAsBoolean());
+                return new HealthResponse(response);
             }
             case "Info": {
-                return new GetNodeInfoResponse(response.payload.getAsJsonObject());
+                return new NodeInfoResponse(response);
             }
             case "Tips": {
-                return new GetTipsResponse(response.payload.getAsJsonArray());
+                return new TipsResponse(response);
             }
             case "PostBlockSuccessful": {
-                return new PostBlockResponse(response.payload.getAsString());
+                return new PostBlockResponse(response);
             }
             case "Block":
             case "GeneratedBlock": {
-                return new GetBlockResponse(new Block(response.payload.getAsJsonObject()));
+                return new BlockResponse(response);
             }
             case "BlockRaw": {
-                return new GetBlockRawResponse(response.payload.getAsJsonArray());
+                return new BlockRawResponse(response);
             }
             case "BlockMetadata": {
-                return new GetBlockMetadataResponse(response.payload.getAsJsonObject());
+                return new BlockMetadataResponse(response);
             }
             case "BlockChildren": {
-                return new GetBlockChildrenResponse(response.payload.getAsJsonArray());
+                return new BlockChildrenResponse(response);
+            }
+            case "Output": {
+                return new OutputResponse(response);
+            }
+            case "OutputMetadata": {
+                return new OutputMetadataResponse(response);
+            }
+            case "ReceiptsMigratedAtMilestone": {
+                return new ReceiptsMigratedAtResponse(response);
+            }
+            case "GeneratedAddresses": {
+                return new GenerateAddressesResponse(response);
+            }
+            case "Faucet": {
+                return new FaucetResponse(response);
+            }
+            case "Bech32ToHex": {
+                return new Bech32ToHexResponse(response);
+            }
+            case "TransactionId": {
+                return new TransactionIdResponse(response);
             }
 
-
-
-            default:{
-                System.out.println(response.type);
-                throw new RuntimeException("no match");
+            default: {
+                throw new RuntimeException("no match: " + response.getType());
             }
         }
     }
@@ -92,18 +108,5 @@ public class BaseApi {
         protected enum CommandType {
             CallClientMethod
         }
-    }
-}
-
-class BaseApiResponse {
-    String type;
-    JsonElement payload;
-
-    @Override
-    public String toString() {
-        return "BaseApiResponse{" +
-                "type='" + type + '\'' +
-                ", payload=" + payload +
-                '}';
     }
 }

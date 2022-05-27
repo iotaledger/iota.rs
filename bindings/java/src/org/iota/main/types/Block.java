@@ -12,14 +12,13 @@ public class Block {
         this.jsonObject = jsonObject;
     }
 
-    public Block(String jsonString) {
+    public Block(String jsonObject) {
         Gson gson = new Gson();
-        JsonElement element = gson.fromJson (jsonString, JsonElement.class);
-        JsonObject jsonObject = element.getAsJsonObject();
-        this.jsonObject = jsonObject;
+        JsonElement element = gson.fromJson (jsonObject, JsonElement.class);
+        this.jsonObject = element.getAsJsonObject();
     }
 
-    public JsonObject getAsJsonObject() {
+    public JsonObject getJson() {
         return jsonObject;
     }
 

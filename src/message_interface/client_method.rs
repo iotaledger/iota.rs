@@ -19,6 +19,7 @@ use crate::{
     node_manager::node::NodeAuth,
     secret::SecretManagerDto,
 };
+use bee_block::payload::transaction::dto::TransactionPayloadDto;
 
 /// Each public client method.
 #[derive(Clone, Debug, Deserialize)]
@@ -400,4 +401,16 @@ pub enum ClientMethod {
         /// Block
         block: BlockDto,
     },
+    /// Returns a transaction ID
+    TransactionId {
+        /// Transaction Payload
+        payload: TransactionPayloadDto,
+    },
+    /// Requests funds for a given address from the faucet.
+    Faucet {
+        /// Faucet URL
+        url: String,
+        /// The address for requst funds
+        address: String,
+    }
 }

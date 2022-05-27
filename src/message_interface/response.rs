@@ -8,6 +8,7 @@ use bee_block::{
     address::dto::AddressDto,
     input::dto::UtxoInputDto,
     output::OutputId,
+    payload::transaction::TransactionId,
     payload::dto::{MilestonePayloadDto, PayloadDto},
     BlockDto, BlockId,
 };
@@ -134,6 +135,10 @@ pub enum Response {
     MnemonicHexSeed(String),
     /// The BLAKE2b-256 hash of the block bytes
     BlockId(BlockId),
+    /// The BLAKE2b-256 hash of the block bytes
+    TransactionId(TransactionId),
+    /// The response from the faucet
+    Faucet(String),
     /// An error occurred.
     Error(Error),
     /// A panic occurred.

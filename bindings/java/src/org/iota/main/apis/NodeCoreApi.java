@@ -12,48 +12,48 @@ public class NodeCoreApi extends BaseApi {
         super(clientConfig);
     }
 
-    public GetHealthResponse getHealth(String nodeUrl) throws ClientException {
-        return (GetHealthResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetHealth", "{\"url\":\"" + nodeUrl + "\"}"));
+    public HealthResponse getHealth(String nodeUrl) throws ClientException {
+        return (HealthResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetHealth", "{\"url\":\"" + nodeUrl + "\"}"));
     }
 
-    public GetNodeInfoResponse getNodeInfo() throws ClientException {
-        return (GetNodeInfoResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetInfo"));
+    public NodeInfoResponse getNodeInfo() throws ClientException {
+        return (NodeInfoResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetInfo"));
     }
 
-    public GetTipsResponse getTips() throws ClientException {
-        return (GetTipsResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetTips"));
+    public TipsResponse getTips() throws ClientException {
+        return (TipsResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetTips"));
     }
 
     public PostBlockResponse postBlock(Block block) throws ClientException {
         return (PostBlockResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "PostBlock", "{\"block\":" + block.toString() + "}"));
     }
 
-    public GetBlockResponse getBlock(String blockId) throws ClientException {
-        return (GetBlockResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetBlock", "{\"blockId\":\"" + blockId + "\"}"));
+    public BlockResponse getBlock(String blockId) throws ClientException {
+        return (BlockResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetBlock", "{\"blockId\":\"" + blockId + "\"}"));
     }
 
-    public GetBlockRawResponse getBlockRaw(String blockId) throws ClientException {
-        return (GetBlockRawResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetBlockRaw", "{\"blockId\":\"" + blockId + "\"}"));
+    public BlockRawResponse getBlockRaw(String blockId) throws ClientException {
+        return (BlockRawResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetBlockRaw", "{\"blockId\":\"" + blockId + "\"}"));
     }
 
-    public GetBlockMetadataResponse getBlockMetadata(String blockId) throws ClientException {
-        return (GetBlockMetadataResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetBlockMetadata", "{\"blockId\":\"" + blockId + "\"}"));
+    public BlockMetadataResponse getBlockMetadata(String blockId) throws ClientException {
+        return (BlockMetadataResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetBlockMetadata", "{\"blockId\":\"" + blockId + "\"}"));
     }
 
-    public GetBlockChildrenResponse getBlockChildren(String blockId) throws ClientException {
-        return (GetBlockChildrenResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetBlockChildren", "{\"blockId\":\"" + blockId + "\"}"));
+    public BlockChildrenResponse getBlockChildren(String blockId) throws ClientException {
+        return (BlockChildrenResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetBlockChildren", "{\"blockId\":\"" + blockId + "\"}"));
     }
 
-    public SuccessResponse getOutput(String outputId) throws ClientException {
-        return (SuccessResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetOutput", "{\"outputId\":\"" + outputId + "\"}"));
+    public OutputResponse getOutput(String outputId) throws ClientException {
+        return (OutputResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetOutput", "{\"outputId\":\"" + outputId + "\"}"));
     }
 
-    public SuccessResponse getOutputMetadata(String outputId) throws ClientException {
-        return (SuccessResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetOutputMetadata", "{\"outputId\":\"" + outputId + "\"}"));
+    public OutputMetadataResponse getOutputMetadata(String outputId) throws ClientException {
+        return (OutputMetadataResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetOutputMetadata", "{\"outputId\":\"" + outputId + "\"}"));
     }
 
-    public SuccessResponse getReceiptsMigratedAt(int milestoneIndex) throws ClientException {
-        return (SuccessResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetReceiptsMigratedAt", "{\"milestoneIndex\":" + milestoneIndex + "}"));
+    public ReceiptsMigratedAtResponse getReceiptsMigratedAt(int milestoneIndex) throws ClientException {
+        return (ReceiptsMigratedAtResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetReceiptsMigratedAt", "{\"milestoneIndex\":" + milestoneIndex + "}"));
     }
 
     public SuccessResponse getReceipts() throws ClientException {

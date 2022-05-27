@@ -3,6 +3,9 @@ package org.iota.main;
 import org.iota.main.apis.*;
 import org.iota.main.types.*;
 import org.iota.main.types.responses.*;
+import org.iota.main.types.secret.GenerateAddressesOptions;
+import org.iota.main.types.secret.GenerateBlockOptions;
+import org.iota.main.types.secret.SecretManager;
 
 public class Client {
 
@@ -22,15 +25,15 @@ public class Client {
 
     // Node Core APIs
 
-    public GetHealthResponse getHealth(String nodeUrl) throws ClientException {
+    public HealthResponse getHealth(String nodeUrl) throws ClientException {
         return nodeCoreApi.getHealth(nodeUrl);
     }
 
-    public GetNodeInfoResponse getNodeInfo() throws ClientException {
+    public NodeInfoResponse getNodeInfo() throws ClientException {
         return nodeCoreApi.getNodeInfo();
     }
 
-    public GetTipsResponse getTips() throws ClientException {
+    public TipsResponse getTips() throws ClientException {
         return nodeCoreApi.getTips();
     }
 
@@ -38,31 +41,31 @@ public class Client {
         return nodeCoreApi.postBlock(block);
     }
 
-    public GetBlockResponse getBlock(String blockId) throws ClientException {
+    public BlockResponse getBlock(String blockId) throws ClientException {
         return nodeCoreApi.getBlock(blockId);
     }
 
-    public GetBlockRawResponse getBlockRaw(String blockId) throws ClientException {
+    public BlockRawResponse getBlockRaw(String blockId) throws ClientException {
         return nodeCoreApi.getBlockRaw(blockId);
     }
 
-    public GetBlockMetadataResponse getBlockMetadata(String blockId) throws ClientException {
+    public BlockMetadataResponse getBlockMetadata(String blockId) throws ClientException {
         return nodeCoreApi.getBlockMetadata(blockId);
     }
 
-    public GetBlockChildrenResponse getBlockChildren(String blockId) throws ClientException {
+    public BlockChildrenResponse getBlockChildren(String blockId) throws ClientException {
         return nodeCoreApi.getBlockChildren(blockId);
     }
 
-    public SuccessResponse getOutput(String outputId) throws ClientException {
+    public OutputResponse getOutput(String outputId) throws ClientException {
         return nodeCoreApi.getOutput(outputId);
     }
 
-    public SuccessResponse getOutputMetadata(String outputId) throws ClientException {
+    public OutputMetadataResponse getOutputMetadata(String outputId) throws ClientException {
         return nodeCoreApi.getOutputMetadata(outputId);
     }
 
-    public SuccessResponse getReceiptsMigratedAt(int milestoneIndex) throws ClientException {
+    public ReceiptsMigratedAtResponse getReceiptsMigratedAt(int milestoneIndex) throws ClientException {
         return nodeCoreApi.getReceiptsMigratedAt(milestoneIndex);
     }
 
@@ -184,7 +187,7 @@ public class Client {
 
     // Utils APIs
 
-    public SuccessResponse bech32ToHex(String bech32) throws ClientException {
+    public Bech32ToHexResponse bech32ToHex(String bech32) throws ClientException {
         return utilsApi.bech32ToHex(bech32);
     }
 
@@ -216,14 +219,18 @@ public class Client {
         return utilsApi.getBlockId(block);
     }
 
+    public TransactionIdResponse getTransactionId(BlockPayload payload) throws ClientException {
+        return utilsApi.getTransactionId(payload);
+    }
+
     // Miscellaneous APIs
 
-    public SuccessResponse generateAddresses(SecretManager secretManager, GenerateAddressesOptions generateAddressesOptions) throws ClientException {
+    public GenerateAddressesResponse generateAddresses(SecretManager secretManager, GenerateAddressesOptions generateAddressesOptions) throws ClientException {
         return miscellaneousApi.generateAddresses(secretManager, generateAddressesOptions);
     }
 
-    public SuccessResponse generateMessage(SecretManager secretManager, GenerateAddressesOptions generateAddressesOptions) throws ClientException {
-        return miscellaneousApi.generateMessage(secretManager, generateAddressesOptions);
+    public BlockResponse generateBlock(SecretManager secretManager, GenerateBlockOptions options) throws ClientException {
+        return miscellaneousApi.generateBlock(secretManager, options);
     }
 
 
@@ -275,7 +282,7 @@ public class Client {
         return miscellaneousApi.storeMnemonic(secretManager, mnemonic);
     }
 
-    public GetBlockResponse submitBlockPayload(BlockPayload payload) throws ClientException {
+    public BlockResponse submitBlockPayload(BlockPayload payload) throws ClientException {
         return miscellaneousApi.submitBlockPayload(payload);
     }
 
