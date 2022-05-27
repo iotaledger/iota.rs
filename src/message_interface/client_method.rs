@@ -81,7 +81,7 @@ pub enum ClientMethod {
         #[serde(rename = "immutableFeatures")]
         immutable_features: Option<Vec<FeatureDto>>,
     },
-    /// Build an FoundryOutput.
+    /// Build an NftOutput.
     /// Expected response: [`BuiltOutput`](crate::message_interface::Response::BuiltOutput)
     #[allow(missing_docs)]
     BuildNftOutput {
