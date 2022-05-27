@@ -316,16 +316,14 @@ impl LedgerSecretManager {
             _ => None,
         };
 
-        log::info!("get_ledger");
-        let (connected_, locked) = match iota_ledger::get_ledger(
-            0x107a, /* FIXME */
-            crate::secret::ledger_nano::HARDENED,
-            self.is_simulator,
-        )
-        .map_err(Into::into)
-        {
-            Ok(_) => (true, false),
-            Err(crate::Error::LedgerDongleLocked) => (true, true),
+        log::info!("get_app_config");
+        // if IOTA or Shimmer app is opened, the call will always succeed, returning information like
+        // device, debug-flag, version number, lock-state but here we only are interested in a 
+        // successful call and the locked-flag
+        let (connected_, locked) = match iota_ledger::get_app_config(&transport_type) {
+            Ok(config) => {
+                (true, config.flags == 0x1)
+            },
             Err(_) => (false, false),
         };
         // We get the app info also if not the iota app is open, but another one
