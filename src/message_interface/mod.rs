@@ -6,6 +6,8 @@
 mod client_method;
 mod message;
 mod message_handler;
+/// Output builders for the message interface
+pub mod output_builder;
 mod response;
 
 use tokio::sync::mpsc::unbounded_channel;

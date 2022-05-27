@@ -4,7 +4,12 @@
 use std::ops::Range;
 
 use bee_block::{
-    output::{AliasId, FoundryId, NftId, OutputId},
+    output::{
+        dto::{AliasIdDto, NativeTokenDto, NftIdDto, TokenSchemeDto},
+        feature::dto::FeatureDto,
+        unlock_condition::dto::UnlockConditionDto,
+        AliasId, FoundryId, NftId, OutputId,
+    },
     payload::{dto::PayloadDto, milestone::MilestoneId, transaction::TransactionId},
     BlockDto, BlockId,
 };
@@ -24,6 +29,74 @@ use crate::{
 #[derive(Clone, Debug, Deserialize)]
 #[serde(tag = "name", content = "data")]
 pub enum ClientMethod {
+    /// Build an AliasOutput.
+    /// Expected response: [`BuiltOutput`](crate::message_interface::Response::BuiltOutput)
+    #[allow(missing_docs)]
+    BuildAliasOutput {
+        // If not provided, minimum storage deposit will be used
+        amount: Option<String>,
+        #[serde(rename = "nativeTokens")]
+        native_tokens: Option<Vec<NativeTokenDto>>,
+        #[serde(rename = "aliasId")]
+        alias_id: AliasIdDto,
+        #[serde(rename = "stateIndex")]
+        state_index: Option<u32>,
+        #[serde(rename = "stateMetadata")]
+        state_metadata: Option<Vec<u8>>,
+        #[serde(rename = "foundryCounter")]
+        foundry_counter: Option<u32>,
+        #[serde(rename = "unlockConditions")]
+        unlock_conditions: Vec<UnlockConditionDto>,
+        features: Option<Vec<FeatureDto>>,
+        #[serde(rename = "immutableFeatures")]
+        immutable_features: Option<Vec<FeatureDto>>,
+    },
+    /// Build a BasicOutput.
+    /// Expected response: [`BuiltOutput`](crate::message_interface::Response::BuiltOutput)
+    #[allow(missing_docs)]
+    BuildBasicOutput {
+        // If not provided, minimum storage deposit will be used
+        amount: Option<String>,
+        #[serde(rename = "nativeTokens")]
+        native_tokens: Option<Vec<NativeTokenDto>>,
+        #[serde(rename = "unlockConditions")]
+        unlock_conditions: Vec<UnlockConditionDto>,
+        features: Option<Vec<FeatureDto>>,
+    },
+    /// Build a FoundryOutput.
+    /// Expected response: [`BuiltOutput`](crate::message_interface::Response::BuiltOutput)
+    #[allow(missing_docs)]
+    BuildFoundryOutput {
+        // If not provided, minimum storage deposit will be used
+        amount: Option<String>,
+        #[serde(rename = "nativeTokens")]
+        native_tokens: Option<Vec<NativeTokenDto>>,
+        #[serde(rename = "serialNumber")]
+        serial_number: u32,
+        #[serde(rename = "tokenScheme")]
+        token_scheme: TokenSchemeDto,
+        #[serde(rename = "unlockConditions")]
+        unlock_conditions: Vec<UnlockConditionDto>,
+        features: Option<Vec<FeatureDto>>,
+        #[serde(rename = "immutableFeatures")]
+        immutable_features: Option<Vec<FeatureDto>>,
+    },
+    /// Build an FoundryOutput.
+    /// Expected response: [`BuiltOutput`](crate::message_interface::Response::BuiltOutput)
+    #[allow(missing_docs)]
+    BuildNftOutput {
+        // If not provided, minimum storage deposit will be used
+        amount: Option<String>,
+        #[serde(rename = "nativeTokens")]
+        native_tokens: Option<Vec<NativeTokenDto>>,
+        #[serde(rename = "nftId")]
+        nft_id: NftIdDto,
+        #[serde(rename = "unlockConditions")]
+        unlock_conditions: Vec<UnlockConditionDto>,
+        features: Option<Vec<FeatureDto>>,
+        #[serde(rename = "immutableFeatures")]
+        immutable_features: Option<Vec<FeatureDto>>,
+    },
     /// Generate a addresses.
     GenerateAddresses {
         /// Create secret manager from json

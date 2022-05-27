@@ -7,7 +7,7 @@ use std::collections::HashSet;
 use bee_block::{
     address::dto::AddressDto,
     input::dto::UtxoInputDto,
-    output::OutputId,
+    output::{dto::OutputDto, OutputId},
     payload::dto::{MilestonePayloadDto, PayloadDto},
     BlockDto, BlockId,
 };
@@ -29,6 +29,12 @@ use crate::{
 #[derive(Serialize, Debug)]
 #[serde(tag = "type", content = "payload")]
 pub enum Response {
+    /// Response for
+    /// [`BuildAliasOutput`](crate::message_interface::ClientMethod::BuildAliasOutput)
+    /// [`BuildBasicOutput`](crate::message_interface::ClientMethod::BuildBasicOutput)
+    /// [`BuildFoundryOutput`](crate::message_interface::ClientMethod::BuildFoundryOutput)
+    /// [`BuildNftOutput`](crate::message_interface::ClientMethod::BuildNftOutput)
+    BuiltOutput(OutputDto),
     /// GenerateAddress response.
     GeneratedAddresses(Vec<String>),
     /// Generated block
