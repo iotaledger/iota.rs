@@ -14,11 +14,12 @@ use bee_block::{
     Block as BeeBlock, BlockDto,
 };
 use futures::{Future, FutureExt};
+use tokio::sync::mpsc::UnboundedSender;
 use zeroize::Zeroize;
 
 use crate::{
     api::{PreparedTransactionData, PreparedTransactionDataDto},
-    message_interface::{client_method::ClientMethod, message::Message, message_type::MessageType, response::Response},
+    message_interface::{client_method::ClientMethod, message::Message, response::Response},
     secret::SecretManager,
     Client, Result,
 };
@@ -67,18 +68,18 @@ impl ClientMessageHandler {
     }
 
     /// Handle messages
-    pub async fn handle(&self, mut message: Message) {
-        let result: Result<Response> = match message.message_type() {
-            MessageType::CallClientMethod(method) => {
+    pub async fn handle(&self, mut message: Message, response_tx: UnboundedSender<Response>) {
+        let result: Result<Response> = match message {
+            Message::CallClientMethod(ref method) => {
                 convert_async_panics(|| async { self.call_client_method(method).await }).await
             }
         };
 
         // Zeroize secrets as soon as their missions are finished.
-        match &mut message.message_type {
+        match &mut message {
             #[cfg(feature = "stronghold")]
-            MessageType::CallClientMethod(ClientMethod::StoreMnemonic { mnemonic, .. }) => mnemonic.zeroize(),
-            MessageType::CallClientMethod(ClientMethod::MnemonicToHexSeed { mnemonic }) => mnemonic.zeroize(),
+            Message::CallClientMethod(ClientMethod::StoreMnemonic { mnemonic, .. }) => mnemonic.zeroize(),
+            Message::CallClientMethod(ClientMethod::MnemonicToHexSeed { mnemonic }) => mnemonic.zeroize(),
 
             // SecretManagerDto impl ZeroizeOnDrop, so we don't have to call zeroize() here.
             _ => (),
@@ -89,7 +90,7 @@ impl ClientMessageHandler {
             Err(e) => Response::Error(e),
         };
 
-        let _ = message.response_tx.send(response);
+        let _ = response_tx.send(response);
     }
 
     // If cfg(not(feature = "stronghold")) then secret_manager doesn't necessarily to be mutable, but otherwise it has

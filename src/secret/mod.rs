@@ -23,7 +23,7 @@ use async_trait::async_trait;
 use bee_block::{
     address::{Address, AliasAddress, Ed25519Address, NftAddress},
     output::Output,
-    unlock::{AliasUnlock, NftUnlock, ReferenceUnlock, Unlock},
+    unlock::{AliasUnlock, NftUnlock, ReferenceUnlock, Unlock, Unlocks},
 };
 pub use types::{GenerateAddressMetadata, LedgerStatus};
 use zeroize::ZeroizeOnDrop;
@@ -79,7 +79,7 @@ pub trait SecretManageExt {
     async fn sign_transaction_essence(
         &self,
         prepared_transaction_data: &PreparedTransactionData,
-    ) -> crate::Result<Vec<Unlock>>;
+    ) -> crate::Result<Unlocks>;
 }
 
 /// Supported secret managers
@@ -283,7 +283,7 @@ impl SecretManageExt for SecretManager {
     async fn sign_transaction_essence(
         &self,
         prepared_transaction_data: &PreparedTransactionData,
-    ) -> crate::Result<Vec<Unlock>> {
+    ) -> crate::Result<Unlocks> {
         match self {
             #[cfg(feature = "stronghold")]
             SecretManager::Stronghold(_) => self.default_sign_transaction_essence(prepared_transaction_data).await,
@@ -302,7 +302,7 @@ impl SecretManager {
     async fn default_sign_transaction_essence<'a>(
         &self,
         prepared_transaction_data: &PreparedTransactionData,
-    ) -> crate::Result<Vec<Unlock>> {
+    ) -> crate::Result<Unlocks> {
         // The hashed_essence gets signed
         let hashed_essence = prepared_transaction_data.essence.hash();
         let mut blocks = Vec::new();
@@ -360,6 +360,7 @@ impl SecretManager {
                 _ => None,
             };
         }
-        Ok(blocks)
+
+        Ok(Unlocks::new(blocks)?)
     }
 }

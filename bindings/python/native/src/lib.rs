@@ -15,7 +15,7 @@ use iota_client::{
         dto::OutputDto, AliasId, AliasOutputBuilder, BasicOutputBuilder, ByteCostConfigBuilder, Feature,
         FoundryOutputBuilder, NativeToken, NftId, NftOutputBuilder, TokenScheme, UnlockCondition,
     },
-    message_interface::MessageType,
+    message_interface::Message,
 };
 use once_cell::sync::OnceCell;
 use pyo3::{prelude::*, wrap_pyfunction};
@@ -41,15 +41,15 @@ pub fn create_message_handler(options: Option<String>) -> Result<ClientMessageHa
 
 #[pyfunction]
 /// Send message through handler.
-pub fn send_message(handle: &ClientMessageHandler, message_type: String) -> Result<String> {
-    let message_type = match serde_json::from_str::<MessageType>(&message_type) {
-        Ok(message_type) => message_type,
+pub fn send_message(handle: &ClientMessageHandler, message: String) -> Result<String> {
+    let message = match serde_json::from_str::<Message>(&message) {
+        Ok(message) => message,
         Err(e) => {
             panic!("Wrong message type! {:?}", e);
         }
     };
     let response = crate::block_on(async {
-        iota_client::message_interface::send_message(&handle.client_message_handler, message_type).await
+        iota_client::message_interface::send_message(&handle.client_message_handler, message).await
     });
     Ok(serde_json::to_string(&response)?)
 }
