@@ -25,7 +25,7 @@ async fn main() -> Result<()> {
     let utxo_changes = client.get_utxo_changes_by_index(milestone_index).await?;
 
     // Prints the response.
-    println!("{:?}", utxo_changes);
+    println!("{:#?}", utxo_changes);
 
     Ok(())
 }

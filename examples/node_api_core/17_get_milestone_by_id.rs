@@ -27,7 +27,7 @@ async fn main() -> Result<()> {
     let milestone = client.get_milestone_by_id(&milestone_id).await?;
 
     // Prints the response.
-    println!("{:?}", milestone);
+    println!("{:#?}", milestone);
 
     Ok(())
 }

@@ -22,7 +22,7 @@ async fn main() -> Result<()> {
     let info = client.get_info().await?;
 
     // Prints the response.
-    println!("{:?}", info);
+    println!("{:#?}", info);
 
     Ok(())
 }
