@@ -9,7 +9,7 @@ use bee_block::{
     input::dto::UtxoInputDto,
     payload::{
         dto::{MilestonePayloadDto, PayloadDto},
-        Payload, TransactionPayload
+        Payload, TransactionPayload,
     },
     Block as BeeBlock, BlockDto,
 };
@@ -20,10 +20,10 @@ use zeroize::Zeroize;
 use crate::{
     api::{PreparedTransactionData, PreparedTransactionDataDto},
     message_interface::{client_method::ClientMethod, message::Message, response::Response},
+    request_funds_from_faucet,
     secret::SecretManager,
     Client, Result,
 };
-use crate::request_funds_from_faucet;
 
 fn panic_to_response_message(panic: Box<dyn Any>) -> Response {
     let msg = if let Some(message) = panic.downcast_ref::<String>() {

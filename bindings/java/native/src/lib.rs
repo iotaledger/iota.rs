@@ -38,10 +38,10 @@ pub extern "system" fn Java_org_iota_main_apis_BaseApi_callNativeLibrary(
     })
     .unwrap();
 
-    let (sender, mut receiver) = unbounded_channel();
-    let message = Message::new(serde_json::from_str(&client_command).unwrap(), sender);
+    let message = serde_json::from_str::<Message>(&client_command).unwrap();
 
-    crate::block_on(message_handler.handle(message));
+    let (sender, mut receiver) = unbounded_channel();
+    crate::block_on(message_handler.handle(message, sender));
     let response = crate::block_on(receiver.recv()).unwrap();
 
     let output = env

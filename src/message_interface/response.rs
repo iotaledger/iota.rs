@@ -8,8 +8,10 @@ use bee_block::{
     address::dto::AddressDto,
     input::dto::UtxoInputDto,
     output::OutputId,
-    payload::transaction::TransactionId,
-    payload::dto::{MilestonePayloadDto, PayloadDto},
+    payload::{
+        dto::{MilestonePayloadDto, PayloadDto},
+        transaction::TransactionId,
+    },
     BlockDto, BlockId,
 };
 use bee_rest_api::types::{

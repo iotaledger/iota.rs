@@ -5,7 +5,11 @@ use std::ops::Range;
 
 use bee_block::{
     output::{AliasId, FoundryId, NftId, OutputId},
-    payload::{dto::PayloadDto, milestone::MilestoneId, transaction::TransactionId},
+    payload::{
+        dto::PayloadDto,
+        milestone::MilestoneId,
+        transaction::{dto::TransactionPayloadDto, TransactionId},
+    },
     BlockDto, BlockId,
 };
 use serde::Deserialize;
@@ -19,7 +23,6 @@ use crate::{
     node_manager::node::NodeAuth,
     secret::SecretManagerDto,
 };
-use bee_block::payload::transaction::dto::TransactionPayloadDto;
 
 /// Each public client method.
 #[derive(Clone, Debug, Deserialize)]
@@ -412,5 +415,5 @@ pub enum ClientMethod {
         url: String,
         /// The address for requst funds
         address: String,
-    }
+    },
 }
