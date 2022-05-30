@@ -232,68 +232,89 @@ impl StrongholdAdapter {
     /// data, provide a list of keys in `keys_to_re_encrypt`, as we have no way to list and iterate over every
     /// key-value in the Stronghold store - we'll attempt on the ones provided instead. Set it to `None` to skip
     /// re-encryption.
-    pub async fn change_password(&mut self, password: &str, keys_to_re_encrypt: Option<&[&[u8]]>) -> Result<()> {
-        // Stop the key clearing task, if there has been one.
+    pub async fn change_password(&mut self, new_password: &str, keys_to_re_encrypt: Option<&[&[u8]]>) -> Result<()> {
+        // Stop the key clearing task to prevent the key from being abrubtly cleared (largely).
         if let Some(timeout_task) = self.timeout_task.lock().await.take() {
             timeout_task.abort();
         }
 
-        // Take and keep the current key - we'll need it later to re-encrypt records.
-        let old_key = match self.key.lock().await.take() {
-            Some(key) => key,
-            None => return Err(Error::StrongholdKeyCleared),
-        };
-
-        // Save the newly derived key from the new password.
-        self.set_password(password).await;
+        // In case something goes wrong we can recover from the snapshot.
+        if self.snapshot_path.is_some() {
+            self.write_stronghold_snapshot().await?;
+        }
 
         // If there are keys to re-encrypt, we iterate over the requested keys and attempt to re-encrypt the
         // corresponding values.
+        //
+        // Note that [`DatabaseProvider`] methods will do encryption / decryption automatically, so we collect values
+        // to the memory first (decrypted with the old key), then change `self.key`, then store them back (encrypted
+        // with the new key).
+        let mut values = Vec::new();
+
         if let Some(keys_to_re_encrypt) = keys_to_re_encrypt {
-            for key_to_re_encrypt in keys_to_re_encrypt {
-                let value_to_re_encrypt = self.get(key_to_re_encrypt).await;
-
-                // We can't reveal or pretty print the binary key.
-                match value_to_re_encrypt {
+            for key in keys_to_re_encrypt {
+                let value = match self.get(key).await {
                     Err(err) => {
-                        // Moving on is better than stopping at here.
-                        error!("failed to re-encrypt (...) from Stronghold store: {}", err);
-                        continue;
-                    }
+                        error!("an error occurred during the re-encryption of Stronghold Store: {err}");
 
-                    Ok(None) => {
-                        debug!("(...) not found, skip re-encryption");
-                        continue;
-                    }
+                        // Recover: restart the key clearing task
+                        if let Some(timeout) = self.timeout {
+                            // The key clearing task, with the data it owns.
+                            let task_self = self.timeout_task.clone();
+                            let stronghold = self.stronghold.clone();
+                            let key = self.key.clone();
 
-                    Ok(Some(value_to_re_encrypt)) => {
-                        debug!("re-encrypting (...) in Stronghold store...");
-
-                        // Unwrap: we're sure that the cipher parameters cannot be wrong.
-                        let decrypted_value = self::encryption::decrypt(&value_to_re_encrypt, &*old_key).unwrap();
-                        let re_encrypted_value = {
-                            let locked_key = self.key.lock().await;
-
-                            if let Some(locked_key) = &*locked_key {
-                                self::encryption::encrypt(&decrypted_value, &*locked_key).unwrap()
-                            } else {
-                                // The key is gone; we can't continue.
-                                error!("re-encryption for (...) failed: key is gone");
-                                return Err(Error::StrongholdKeyCleared);
-                            }
-                        };
-
-                        if let Err(err) = self.insert(key_to_re_encrypt, &re_encrypted_value).await {
-                            // Moving on is better than stopping at here.
-                            error!("failed to insert a re-encrypted record into Stronghold: {}", err);
-                            continue;
+                            *self.timeout_task.lock().await =
+                                Some(tokio::spawn(task_key_clear(task_self, stronghold, key, timeout)));
                         }
+
+                        return Err(err);
                     }
-                }
+                    Ok(None) => continue,
+                    Ok(Some(value)) => Zeroizing::new(value),
+                };
+
+                values.push((key, value));
             }
         }
 
-        // If a snapshot path is set, then rewrite it to change its password.
+        // Now we put the new key in, enabling encryption with the new key. Also, take the old key out to prevent
+        // disasters.
+        let old_key = {
+            let mut lock = self.key.lock().await;
+            let old_key = lock.take();
+            *lock = Some(self::common::derive_key_from_password(new_password));
+
+            old_key
+        };
+
+        for (key, value) in values.into_iter() {
+            if let Err(err) = self.insert(key, &*value).await {
+                error!("an error occurred during the re-encryption of Stronghold store: {err}");
+
+                // Recover: put the old key back
+                *self.key.lock().await = old_key;
+
+                // Recover: forcefully reload Stronghold
+                self.snapshot_loaded = false;
+                self.read_stronghold_snapshot().await?;
+
+                // Recover: restart key clearing task
+                if let Some(timeout) = self.timeout {
+                    // The key clearing task, with the data it owns.
+                    let task_self = self.timeout_task.clone();
+                    let stronghold = self.stronghold.clone();
+                    let key = self.key.clone();
+
+                    *self.timeout_task.lock().await =
+                        Some(tokio::spawn(task_key_clear(task_self, stronghold, key, timeout)));
+                }
+
+                return Err(err);
+            }
+        }
+
+        // Rewrite the snapshot to finish the password changing process.
         if self.snapshot_path.is_some() {
             self.write_stronghold_snapshot().await?;
         }
