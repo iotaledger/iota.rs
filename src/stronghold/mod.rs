@@ -531,7 +531,7 @@ mod tests {
     async fn test_clear_key() {
         let timeout = Duration::from_millis(100);
 
-        let mut client = StrongholdAdapter::builder()
+        let mut adapter = StrongholdAdapter::builder()
             .password("drowssap")
             .timeout(timeout)
             .try_build()
@@ -541,34 +541,34 @@ mod tests {
         tokio::time::sleep(Duration::from_millis(10)).await;
 
         // Setting a password would spawn a task to automatically clear the key.
-        assert!(matches!(*client.key.lock().await, Some(_)));
-        assert_eq!(client.get_timeout(), Some(timeout));
-        assert!(matches!(*client.timeout_task.lock().await, Some(_)));
+        assert!(matches!(*adapter.key.lock().await, Some(_)));
+        assert_eq!(adapter.get_timeout(), Some(timeout));
+        assert!(matches!(*adapter.timeout_task.lock().await, Some(_)));
 
         // After the timeout, the key should be purged.
         tokio::time::sleep(Duration::from_millis(200)).await;
-        assert!(matches!(*client.key.lock().await, None));
-        assert_eq!(client.get_timeout(), Some(timeout));
-        assert!(matches!(*client.timeout_task.lock().await, None));
+        assert!(matches!(*adapter.key.lock().await, None));
+        assert_eq!(adapter.get_timeout(), Some(timeout));
+        assert!(matches!(*adapter.timeout_task.lock().await, None));
 
         // Set the key again, but this time we manually purge the key.
         let timeout = None;
-        client.set_timeout(timeout).await;
+        adapter.set_timeout(timeout).await;
 
-        client.set_password("password").await;
-        assert!(matches!(*client.key.lock().await, Some(_)));
-        assert_eq!(client.get_timeout(), timeout);
-        assert!(matches!(*client.timeout_task.lock().await, None));
+        adapter.set_password("password").await;
+        assert!(matches!(*adapter.key.lock().await, Some(_)));
+        assert_eq!(adapter.get_timeout(), timeout);
+        assert!(matches!(*adapter.timeout_task.lock().await, None));
 
-        client.clear_key().await;
-        assert!(matches!(*client.key.lock().await, None));
-        assert_eq!(client.get_timeout(), timeout);
-        assert!(matches!(*client.timeout_task.lock().await, None));
+        adapter.clear_key().await;
+        assert!(matches!(*adapter.key.lock().await, None));
+        assert_eq!(adapter.get_timeout(), timeout);
+        assert!(matches!(*adapter.timeout_task.lock().await, None));
 
         // Even if we attempt to restart the task, it won't.
-        client.restart_key_clearing_task().await;
-        assert!(matches!(*client.key.lock().await, None));
-        assert_eq!(client.get_timeout(), timeout);
-        assert!(matches!(*client.timeout_task.lock().await, None));
+        adapter.restart_key_clearing_task().await;
+        assert!(matches!(*adapter.key.lock().await, None));
+        assert_eq!(adapter.get_timeout(), timeout);
+        assert!(matches!(*adapter.timeout_task.lock().await, None));
     }
 }
