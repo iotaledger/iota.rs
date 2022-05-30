@@ -35,7 +35,7 @@ async fn main() -> Result<()> {
 
     // Get the outputs by their id
     let outputs_responses = client.get_outputs(output_ids).await?;
-    println!("Outputs: {outputs_responses:?}", );
+    println!("Outputs: {outputs_responses:?}",);
 
     Ok(())
 }

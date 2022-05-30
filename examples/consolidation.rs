@@ -21,7 +21,8 @@ async fn main() -> Result<()> {
     let client = Client::builder().with_node("http://localhost:14265")?.finish().await?;
 
     // This example uses dotenv, which is not safe for use in production
-    // Configure your own mnemonic in ".env". Since the output amount cannot be zero, the mnemonic must contain non-zero balance
+    // Configure your own mnemonic in ".env". Since the output amount cannot be zero, the mnemonic must contain non-zero
+    // balance
     dotenv().ok();
 
     let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_hex_seed(
