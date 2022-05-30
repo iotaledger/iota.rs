@@ -66,7 +66,7 @@ impl NodeManager {
         &self,
         path: &str,
         query: Option<&str>,
-        local_pow: bool,
+        use_primary_pow_node: bool,
         prefer_permanode: bool,
     ) -> Result<Vec<Node>> {
         let mut nodes_with_modified_url = Vec::new();
@@ -84,7 +84,7 @@ impl NodeManager {
             }
         }
 
-        if local_pow {
+        if use_primary_pow_node {
             if let Some(mut pow_node) = self.primary_pow_node.clone() {
                 pow_node.url.set_path(path);
                 pow_node.url.set_query(query);
@@ -135,7 +135,7 @@ impl NodeManager {
         prefer_permanode: bool,
     ) -> Result<T> {
         let mut result: HashMap<String, usize> = HashMap::new();
-        // submit block with local PoW should use primary pow node
+        // primary_pow_node should only be used for post request with remote PoW
         // Get node urls and set path
         let nodes = self.get_nodes(path, query, false, prefer_permanode).await?;
         if self.quorum && need_quorum && nodes.len() < self.min_quorum_size {
@@ -263,6 +263,7 @@ impl NodeManager {
         query: Option<&str>,
         timeout: Duration,
     ) -> Result<Vec<u8>> {
+        // primary_pow_node should only be used for post request with remote PoW
         // Get node urls and set path
         let nodes = self.get_nodes(path, query, false, false).await?;
         let mut error = None;
@@ -297,7 +298,8 @@ impl NodeManager {
         body: &[u8],
         local_pow: bool,
     ) -> Result<T> {
-        let nodes = self.get_nodes(path, None, local_pow, false).await?;
+        // primary_pow_node should only be used for post request with remote PoW
+        let nodes = self.get_nodes(path, None, !local_pow, false).await?;
         if nodes.is_empty() {
             return Err(Error::NodeError("No available nodes with remote PoW".into()));
         }
@@ -332,7 +334,8 @@ impl NodeManager {
         json: Value,
         local_pow: bool,
     ) -> Result<T> {
-        let nodes = self.get_nodes(path, None, local_pow, false).await?;
+        // primary_pow_node should only be used for post request with remote PoW
+        let nodes = self.get_nodes(path, None, !local_pow, false).await?;
         if nodes.is_empty() {
             return Err(Error::NodeError("No available nodes with remote PoW".into()));
         }
