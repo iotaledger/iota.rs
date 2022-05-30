@@ -19,8 +19,8 @@ export interface __GetOutputPayloadMethod__ {
     };
 }
 
-export interface __GetOutputIdsPayloadMethod__ {
-    name: 'OutputIds';
+export interface __GetBasicOutputIdsPayloadMethod__ {
+    name: 'BasicOutputIds';
     data: {
         queryParameters: QueryParameter[];
     };
@@ -178,15 +178,11 @@ export interface __GetFallbackToLocalPowPayloadMethod__ {
     name: 'GetFallbackToLocalPoW';
 }
 
-export interface __GetNodeHealthPayloadMethod__ {
-    name: 'GetNodeHealth';
+export interface __GetHealthPayloadMethod__ {
+    name: 'GetHealth';
     data: {
         url: string;
     };
-}
-
-export interface __GetHealthPayloadMethod__ {
-    name: 'GetHealth';
 }
 
 export interface __GetNodeInfoPayloadMethod__ {
@@ -201,8 +197,8 @@ export interface __GetPeersPayloadMethod__ {
     name: 'GetPeers';
 }
 
-export interface __PostBlockJsonPayloadMethod__ {
-    name: 'PostBlockJson';
+export interface __PostBlockRawPayloadMethod__ {
+    name: 'PostBlockRaw';
     data: {
         block: IBlock;
     };
@@ -222,28 +218,28 @@ export interface __GetBlockChildrenPayloadMethod__ {
     };
 }
 
-export interface __GetMilestoneByMilestoneIdPayloadMethod__ {
-    name: 'GetMilestoneByMilestoneId';
+export interface __GetMilestoneByIdPayloadMethod__ {
+    name: 'GetMilestoneById';
     data: {
         milestoneId: string;
     };
 }
 
-export interface __GetUtxoChangesByMilestoneIdPayloadMethod__ {
-    name: 'GetUtxoChangesByMilestoneId';
+export interface __GetUtxoChangesByIdPayloadMethod__ {
+    name: 'GetUtxoChangesById';
     data: {
         milestoneId: string;
     };
 }
-export interface __GetMilestoneByMilestoneIndexPayloadMethod__ {
-    name: 'GetMilestoneByMilestoneIndex';
+export interface __GetMilestoneByIndexPayloadMethod__ {
+    name: 'GetMilestoneByIndex';
     data: {
         index: number;
     };
 }
 
-export interface __GetUtxoChangesByMilestoneIndexPayloadMethod__ {
-    name: 'GetUtxoChangesByMilestoneIndex';
+export interface __GetUtxoChangesByIndexPayloadMethod__ {
+    name: 'GetUtxoChangesByIndex';
     data: {
         index: number;
     };
@@ -301,8 +297,8 @@ export interface __IsAddressValidPayloadMethod__ {
     };
 }
 
-export interface __AliasesOutputIdsPayloadMethod__ {
-    name: 'AliasesOutputIds';
+export interface __AliasOutputIdsPayloadMethod__ {
+    name: 'AliasOutputIds';
     data: {
         queryParameters: QueryParameter[];
     };
@@ -315,8 +311,8 @@ export interface __AliasOutputIdPayloadMethod__ {
     };
 }
 
-export interface __NftsOutputIdsPayloadMethod__ {
-    name: 'NftsOutputIds';
+export interface __NftOutputIdsPayloadMethod__ {
+    name: 'NftOutputIds';
     data: {
         queryParameters: QueryParameter[];
     };
@@ -329,8 +325,8 @@ export interface __NftOutputIdPayloadMethod__ {
     };
 }
 
-export interface __FoundriesOutputIdsPayloadMethod__ {
-    name: 'FoundriesOutputIds';
+export interface __FoundryOutputIdsPayloadMethod__ {
+    name: 'FoundryOutputIds';
     data: {
         queryParameters: QueryParameter[];
     };

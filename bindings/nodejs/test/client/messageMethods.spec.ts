@@ -15,12 +15,12 @@ const client = new Client({
 
 // Skip for CI
 describe.skip('Block methods', () => {
-    it('sends a block json', async () => {
+    it('sends a block raw', async () => {
         const block = await client.generateBlock();
 
-        const jsonBlockId = await client.postBlockJson(block);
+        const rawBlockId = await client.postBlockRaw(block);
 
-        expect(jsonBlockId).toBeValidBlockId();
+        expect(rawBlockId).toBeValidBlockId();
     });
 
     it('gets block children', async () => {

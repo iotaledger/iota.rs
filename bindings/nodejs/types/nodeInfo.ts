@@ -4,7 +4,7 @@ import type { INodeInfoMetrics, INodeInfoProtocol } from '@iota/types';
 
 /** NodeInfo wrapper which contains the nodeinfo and the url from the node (useful when multiple nodes are used) */
 export interface INodeInfoWrapper {
-    nodeinfo: INodeInfo;
+    nodeInfo: INodeInfo;
     url: string;
 }
 

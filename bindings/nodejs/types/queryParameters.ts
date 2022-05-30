@@ -6,14 +6,18 @@
  */
 export type QueryParameter =
     | Address
+    | AliasAddress
     | HasStorageReturnCondition
-    | StorageDepositReturnAddress
+    | StorageReturnAddress
     | HasTimelockCondition
     | TimelockedBefore
     | TimelockedAfter
     | TimelockedBeforeMilestone
     | TimelockedAfterMilestone
     | HasExpirationCondition
+    | HasNativeTokens
+    | MaxNativeTokenCount
+    | MinNativeTokenCount
     | ExpiresBefore
     | ExpiresAfter
     | ExpiresBeforeMilestone
@@ -33,15 +37,19 @@ export type QueryParameter =
 interface Address {
     address: string;
 }
+/** Filter foundry outputs based on bech32-encoded address of the controlling alias. */
+interface AliasAddress {
+    aliasAddress: string;
+}
 /** Filters outputs based on the presence of storage return unlockcondition. */
 interface HasStorageReturnCondition {
-    hasStorageDepositReturnCondition: boolean;
+    hasStorageReturnCondition: boolean;
 }
 /** Filter outputs based on the presence of a specific Bech32-encoded return address
- * in the storage deposit return unlock condition.
+ * in the storage return unlock condition.
  */
-interface StorageDepositReturnAddress {
-    storageDepositReturnAddress: string;
+interface StorageReturnAddress {
+    storageReturnAddress: string;
 }
 /** Filters outputs based on the presence of timelock unlock condition. */
 interface HasTimelockCondition {
@@ -66,6 +74,18 @@ interface TimelockedAfterMilestone {
 /** Filters outputs based on the presence of expiration unlock condition. */
 interface HasExpirationCondition {
     hasExpirationCondition: boolean;
+}
+/** Filters outputs based on the presence of native tokens. */
+interface HasNativeTokens {
+    hasNativeTokens: boolean;
+}
+/** Filters outputs that have at most a certain number of distinct native tokens. */
+interface MaxNativeTokenCount {
+    maxNativeTokenCount: number;
+}
+/** Filters outputs that have at least a certain number of distinct native tokens. */
+interface MinNativeTokenCount {
+    minNativeTokenCount: number;
 }
 /** Return outputs that expire before a certain Unix timestamp. */
 interface ExpiresBefore {

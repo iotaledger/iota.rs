@@ -69,6 +69,7 @@ use crate::{
 #[derive(Debug, Serialize, Deserialize)]
 pub struct NodeInfoWrapper {
     /// The returned nodeinfo
+    #[serde(rename = "nodeInfo")]
     pub node_info: NodeInfo,
     /// The url from the node which returned the nodeinfo
     pub url: String,

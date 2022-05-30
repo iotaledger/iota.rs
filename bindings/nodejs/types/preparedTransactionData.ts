@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type {
+    AddressTypes,
     IOutputMetadataResponse,
     ITransactionEssence,
     OutputTypes,
@@ -19,6 +20,10 @@ export interface IPreparedTransactionData {
      * Required address information for signing
      */
     inputsData: IInputSigningData[];
+    /**
+     * Optional remainder output information
+     */
+    remainder?: IRemainder;
 }
 
 /**
@@ -44,6 +49,20 @@ export interface IInputSigningData {
     bech32Address: string;
 }
 
+export interface IRemainder {
+    /**
+     * The remainder output
+     */
+    output: OutputTypes;
+    /**
+     * The chain derived from seed, for the remainder addresses
+     */
+    chain?: ISegment[];
+    /**
+     * The remainder address
+     */
+    address: AddressTypes;
+}
 export interface ISegment {
     hardened: boolean;
     bs: number[];

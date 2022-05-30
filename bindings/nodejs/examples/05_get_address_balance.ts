@@ -41,11 +41,11 @@ async function run() {
         });
 
         // Get output ids of outputs that can be controlled by this address without further unlock constraints
-        const outputIds = await client.outputIds([
+        const outputIds = await client.basicOutputIds([
             { address: addresses[0] },
             { hasExpirationCondition: false },
             { hasTimelockCondition: false },
-            { hasStorageDepositReturnCondition: false },
+            { hasStorageReturnCondition: false },
         ]);
 
         // Get outputs by their IDs
@@ -58,7 +58,7 @@ async function run() {
             const output = outputResponse['output'];
 
             if ('nativeTokens' in output) {
-                output.nativeTokens.forEach(
+                output.nativeTokens?.forEach(
                     (token) =>
                         (totalNativeTokens[token.id] =
                             (totalNativeTokens[token.id] || 0) +

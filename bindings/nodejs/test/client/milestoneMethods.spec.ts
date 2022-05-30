@@ -17,45 +17,44 @@ const client = new Client({
 describe.skip('Milestone methods', () => {
     it('gets milestone by given milestone ID', async () => {
         const info = await client.getInfo();
-        const milestoneId = info.nodeinfo.status.confirmedMilestone.milestoneId;
+        const milestoneId = info.nodeInfo.status.confirmedMilestone.milestoneId;
 
-        const milestone = await client.getMilestoneByMilestoneId(milestoneId);
+        const milestone = await client.getMilestoneById(milestoneId);
 
         expect(milestone.index).toEqual(
-            info.nodeinfo.status.confirmedMilestone.index,
+            info.nodeInfo.status.confirmedMilestone.index,
         );
     });
 
     it('gets all UTXO changes of a given milestone by milestone ID', async () => {
         const info = await client.getInfo();
-        const milestoneId = info.nodeinfo.status.confirmedMilestone.milestoneId;
+        const milestoneId = info.nodeInfo.status.confirmedMilestone.milestoneId;
 
-        const milestoneUtxoChanges = await client.getUtxoChangesByMilestoneId(
+        const milestoneUtxoChanges = await client.getUtxoChangesById(
             milestoneId,
         );
 
         expect(milestoneUtxoChanges.index).toEqual(
-            info.nodeinfo.status.confirmedMilestone.index,
+            info.nodeInfo.status.confirmedMilestone.index,
         );
     });
 
     it('gets milestone by given milestone index', async () => {
         const info = await client.getInfo();
-        const milestoneIndex = info.nodeinfo.status.confirmedMilestone.index;
+        const milestoneIndex = info.nodeInfo.status.confirmedMilestone.index;
 
-        const milestone = await client.getMilestoneByMilestoneIndex(
-            milestoneIndex,
-        );
+        const milestone = await client.getMilestoneByIndex(milestoneIndex);
 
         expect(milestone.index).toEqual(milestoneIndex);
     });
 
     it('gets all UTXO changes of a given milestone by milestone index', async () => {
         const info = await client.getInfo();
-        const milestoneIndex = info.nodeinfo.status.confirmedMilestone.index;
+        const milestoneIndex = info.nodeInfo.status.confirmedMilestone.index;
 
-        const milestoneUtxoChanges =
-            await client.getUtxoChangesByMilestoneIndex(milestoneIndex);
+        const milestoneUtxoChanges = await client.getUtxoChangesByIndex(
+            milestoneIndex,
+        );
 
         expect(milestoneUtxoChanges.index).toEqual(milestoneIndex);
     });
