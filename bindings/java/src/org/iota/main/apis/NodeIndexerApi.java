@@ -4,9 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.iota.main.types.ClientConfig;
 import org.iota.main.types.ClientException;
-import org.iota.main.types.responses.node_indexer_api.AliasOutputIdResponse;
-import org.iota.main.types.responses.node_indexer_api.FoundryOutputIdResponse;
-import org.iota.main.types.responses.node_indexer_api.NftOutputIdResponse;
+import org.iota.main.types.responses.node_indexer_api.OutputIdResponse;
 import org.iota.main.types.responses.node_indexer_api.OutputIdsResponse;
 
 public class NodeIndexerApi extends BaseApi {
@@ -39,22 +37,22 @@ public class NodeIndexerApi extends BaseApi {
         return (OutputIdsResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "FoundryOutputIds", o.toString()));
     }
 
-    public AliasOutputIdResponse getAliasOutputId(String aliasId) throws ClientException {
+    public OutputIdResponse getAliasOutputId(String aliasId) throws ClientException {
         JsonObject o = new JsonObject();
         o.addProperty("aliasId", aliasId);
-        return (AliasOutputIdResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "AliasOutputId", o.toString()));
+        return (OutputIdResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "AliasOutputId", o.toString()));
     }
 
-    public NftOutputIdResponse getNftOutputId(String nftId) throws ClientException {
+    public OutputIdResponse getNftOutputId(String nftId) throws ClientException {
         JsonObject o = new JsonObject();
         o.addProperty("nftId", nftId);
-        return (NftOutputIdResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "NftOutputId", o.toString()));
+        return (OutputIdResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "NftOutputId", o.toString()));
     }
 
-    public FoundryOutputIdResponse getFoundryOutputId(String foundryId) throws ClientException {
+    public OutputIdResponse getFoundryOutputId(String foundryId) throws ClientException {
         JsonObject o = new JsonObject();
         o.addProperty("foundryId", foundryId);
-        return (FoundryOutputIdResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "FoundryOutputId", o.toString()));
+        return (OutputIdResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "FoundryOutputId", o.toString()));
     }
 
     public static class QueryParams {

@@ -7,7 +7,7 @@ use std::collections::HashSet;
 use bee_block::{
     address::dto::AddressDto,
     input::dto::UtxoInputDto,
-    output::OutputId,
+    output::{AliasId, FoundryId, NftId, OutputId},
     payload::{
         dto::{MilestonePayloadDto, PayloadDto},
         transaction::TransactionId,
@@ -139,6 +139,12 @@ pub enum Response {
     BlockId(BlockId),
     /// The BLAKE2b-256 hash of the block bytes
     TransactionId(TransactionId),
+    /// The BLAKE2b-256 hash of the block bytes
+    AliasId(AliasId),
+    /// The BLAKE2b-256 hash of the block bytes
+    NftId(NftId),
+    /// The BLAKE2b-256 hash of the block bytes
+    FoundryId(FoundryId),
     /// The response from the faucet
     Faucet(String),
     /// An error occurred.

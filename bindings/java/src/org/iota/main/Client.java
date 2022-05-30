@@ -6,10 +6,11 @@ import org.iota.main.types.responses.Bech32ToHexResponse;
 import org.iota.main.types.responses.GenerateAddressesResponse;
 import org.iota.main.types.responses.SuccessResponse;
 import org.iota.main.types.responses.node_core_api.*;
-import org.iota.main.types.responses.node_indexer_api.AliasOutputIdResponse;
-import org.iota.main.types.responses.node_indexer_api.FoundryOutputIdResponse;
-import org.iota.main.types.responses.node_indexer_api.NftOutputIdResponse;
+import org.iota.main.types.responses.node_indexer_api.OutputIdResponse;
 import org.iota.main.types.responses.node_indexer_api.OutputIdsResponse;
+import org.iota.main.types.responses.utils.ComputeAliasIdResponse;
+import org.iota.main.types.responses.utils.ComputeFoundryIdResponse;
+import org.iota.main.types.responses.utils.ComputeNftIdResponse;
 import org.iota.main.types.secret.GenerateAddressesOptions;
 import org.iota.main.types.secret.GenerateBlockOptions;
 import org.iota.main.types.secret.SecretManager;
@@ -134,16 +135,16 @@ public class Client {
         return nodeIndexerApi.getFoundryOutputIds(params);
     }
 
-    public AliasOutputIdResponse getAliasOutputId(String aliasId) throws ClientException {
+    public OutputIdResponse getAliasOutputId(String aliasId) throws ClientException {
         return nodeIndexerApi.getAliasOutputId(aliasId);
     }
 
-    public NftOutputIdResponse getNftOutputId(String nftId) throws ClientException {
+    public OutputIdResponse getNftOutputId(String nftId) throws ClientException {
         return nodeIndexerApi.getNftOutputId(nftId);
     }
 
 
-    public FoundryOutputIdResponse getFoundryOutputId(String foundryId) throws ClientException {
+    public OutputIdResponse getFoundryOutputId(String foundryId) throws ClientException {
         return nodeIndexerApi.getFoundryOutputId(foundryId);
     }
 
@@ -233,6 +234,18 @@ public class Client {
 
     public TransactionIdResponse getTransactionId(BlockPayload payload) throws ClientException {
         return utilsApi.getTransactionId(payload);
+    }
+
+    public ComputeAliasIdResponse computeAliasId(String aliasOutputId) throws ClientException {
+        return utilsApi.computeAliasId(aliasOutputId);
+    }
+
+    public ComputeNftIdResponse computeNftId(String nftOutputId) throws ClientException {
+        return utilsApi.computeNftId(nftOutputId);
+    }
+
+    public ComputeFoundryIdResponse computeFoundryId(String aliasAddress, int serialNumber, int tokenSchemeKind) throws ClientException {
+        return utilsApi.computeFoundryId(aliasAddress, serialNumber, tokenSchemeKind);
     }
 
     // Miscellaneous APIs

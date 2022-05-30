@@ -7,6 +7,7 @@ use backtrace::Backtrace;
 use bee_block::{
     address::dto::AddressDto,
     input::dto::UtxoInputDto,
+    output::{AliasId, FoundryId, NftId},
     payload::{
         dto::{MilestonePayloadDto, PayloadDto},
         Payload, TransactionPayload,
@@ -412,6 +413,17 @@ impl ClientMessageHandler {
                 let payload = TransactionPayload::try_from(payload)?;
                 Ok(Response::TransactionId(payload.id()))
             }
+            ClientMethod::ComputeAliasId { output_id } => Ok(Response::AliasId(AliasId::from(*output_id))),
+            ClientMethod::ComputeNftId { output_id } => Ok(Response::NftId(NftId::from(*output_id))),
+            ClientMethod::ComputeFoundryId {
+                alias_address,
+                serial_number,
+                token_scheme_kind,
+            } => Ok(Response::FoundryId(FoundryId::build(
+                alias_address,
+                *serial_number,
+                *token_scheme_kind,
+            ))),
             ClientMethod::Faucet { url, address } => {
                 Ok(Response::Faucet(request_funds_from_faucet(url, address).await?))
             }

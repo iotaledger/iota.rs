@@ -4,7 +4,11 @@ import com.google.gson.Gson;
 import org.iota.main.types.*;
 import org.iota.main.types.responses.*;
 import org.iota.main.types.responses.node_core_api.*;
+import org.iota.main.types.responses.node_indexer_api.OutputIdResponse;
 import org.iota.main.types.responses.node_indexer_api.OutputIdsResponse;
+import org.iota.main.types.responses.utils.ComputeAliasIdResponse;
+import org.iota.main.types.responses.utils.ComputeFoundryIdResponse;
+import org.iota.main.types.responses.utils.ComputeNftIdResponse;
 
 public class BaseApi {
 
@@ -26,10 +30,6 @@ public class BaseApi {
         System.out.println(response);
 
         switch (response.getType()) {
-            case "Panic":
-                throw new RuntimeException(response.toString());
-            case "Error":
-                throw new ClientException(command.methodName, response.getPayload().getAsJsonObject().toString());
                 // Node Core API responses
             case "Health": {
                 return new HealthResponse(response);
@@ -101,6 +101,23 @@ public class BaseApi {
             case "TransactionId": {
                 return new TransactionIdResponse(response);
             }
+            case "OutputId": {
+                return new OutputIdResponse(response);
+            }
+            case "AliasId": {
+                return new ComputeAliasIdResponse(response);
+            }
+            case "NftId": {
+                return new ComputeNftIdResponse(response);
+            }
+            case "FoundryId": {
+                return new ComputeFoundryIdResponse(response);
+            }
+            // Exceptions
+            case "Panic":
+                throw new RuntimeException(response.toString());
+            case "Error":
+                throw new ClientException(command.methodName, response.getPayload().getAsJsonObject().toString());
 
             default: {
                 throw new RuntimeException("no match: " + response.getType());

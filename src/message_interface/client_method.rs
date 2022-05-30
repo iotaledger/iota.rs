@@ -4,6 +4,7 @@
 use std::ops::Range;
 
 use bee_block::{
+    address::AliasAddress,
     output::{AliasId, FoundryId, NftId, OutputId},
     payload::{
         dto::PayloadDto,
@@ -409,11 +410,35 @@ pub enum ClientMethod {
         /// Transaction Payload
         payload: TransactionPayloadDto,
     },
+    /// Computes the alias ID
+    ComputeAliasId {
+        /// Output ID
+        #[serde(rename = "outputId")]
+        output_id: OutputId,
+    },
+    /// Computes the NFT ID
+    ComputeNftId {
+        /// Output ID
+        #[serde(rename = "outputId")]
+        output_id: OutputId,
+    },
+    /// Computes the Foundry ID
+    ComputeFoundryId {
+        /// Alias address
+        #[serde(rename = "aliasAddress")]
+        alias_address: AliasAddress,
+        /// Serial number
+        #[serde(rename = "serialNumber")]
+        serial_number: u32,
+        /// Token scheme kind
+        #[serde(rename = "tokenSchemeKind")]
+        token_scheme_kind: u8,
+    },
     /// Requests funds for a given address from the faucet.
     Faucet {
         /// Faucet URL
         url: String,
-        /// The address for requst funds
+        /// The address for request funds
         address: String,
     },
 }

@@ -8,6 +8,9 @@ import org.iota.main.types.responses.SuccessResponse;
 import org.iota.main.types.responses.Bech32ToHexResponse;
 import org.iota.main.types.responses.FaucetResponse;
 import org.iota.main.types.responses.node_core_api.TransactionIdResponse;
+import org.iota.main.types.responses.utils.ComputeAliasIdResponse;
+import org.iota.main.types.responses.utils.ComputeFoundryIdResponse;
+import org.iota.main.types.responses.utils.ComputeNftIdResponse;
 
 public class UtilsApi extends BaseApi {
 
@@ -60,6 +63,26 @@ public class UtilsApi extends BaseApi {
         o.addProperty("url", faucetUrl);
         o.addProperty("address", address);
         return (FaucetResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "Faucet", o.toString()));
+    }
+
+    public ComputeAliasIdResponse computeAliasId(String outputId) throws ClientException {
+        JsonObject o = new JsonObject();
+        o.addProperty("outputId", outputId);
+        return (ComputeAliasIdResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "ComputeAliasId", o.toString()));
+    }
+
+    public ComputeNftIdResponse computeNftId(String outputId) throws ClientException {
+        JsonObject o = new JsonObject();
+        o.addProperty("outputId", outputId);
+        return (ComputeNftIdResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "ComputeNftId", o.toString()));
+    }
+
+    public ComputeFoundryIdResponse computeFoundryId(String aliasAddress, int serialNumber, int tokenSchemeKind) throws ClientException {
+        JsonObject o = new JsonObject();
+        o.addProperty("aliasAddress", aliasAddress);
+        o.addProperty("serialNumber", serialNumber);
+        o.addProperty("tokenSchemeKind", tokenSchemeKind);
+        return (ComputeFoundryIdResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "ComputeFoundryId", o.toString()));
     }
 }
 

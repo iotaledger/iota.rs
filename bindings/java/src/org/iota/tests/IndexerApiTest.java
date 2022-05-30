@@ -2,9 +2,7 @@ package org.iota.tests;
 
 import org.iota.main.apis.NodeIndexerApi;
 import org.iota.main.types.ClientException;
-import org.iota.main.types.responses.node_indexer_api.AliasOutputIdResponse;
-import org.iota.main.types.responses.node_indexer_api.FoundryOutputIdResponse;
-import org.iota.main.types.responses.node_indexer_api.NftOutputIdResponse;
+import org.iota.main.types.responses.node_indexer_api.OutputIdResponse;
 import org.iota.main.types.responses.node_indexer_api.OutputIdsResponse;
 import org.junit.jupiter.api.Test;
 
@@ -40,20 +38,20 @@ public class IndexerApiTest extends ApiTest {
 
     @Test
     public void testGetAliasOutputId() throws ClientException {
-        AliasOutputIdResponse r = client.getAliasOutputId("0x1505ec099896ab05d9e08fbc7101ae4dff0093b3943b28f789ed2ca728bcc8d6");
-        System.out.println(r.getAliasOutputId());
+        String aliasOutputId = client.getAliasOutputIds(new NodeIndexerApi.QueryParams()).getOutputIds()[0];
+        String aliasId = client.computeAliasId(aliasOutputId).getAliasId();
+        OutputIdResponse r = client.getAliasOutputId(aliasId);
+        System.out.println(r.getOutputId());
     }
 
     @Test
     public void testGetNftOutputId() throws ClientException {
-        NftOutputIdResponse r = client.getNftOutputId("0x1505ec099896ab05d9e08fbc7101ae4dff0093b3943b28f789ed2ca728bcc8d6");
-        System.out.println(r.getNftOutputId());
+        String nftOutputId = client.getNftOutputIds(new NodeIndexerApi.QueryParams()).getOutputIds()[0];
+        String nftId = client.computeNftId(nftOutputId).getNftId();
+        OutputIdResponse r = client.getNftOutputId(nftId);
+        System.out.println(r.getOutputId());
     }
 
-    @Test
-    public void testFoundryOutputId() throws ClientException {
-        FoundryOutputIdResponse r = client.getFoundryOutputId("0x081505ec099896ab05d9e08fbc7101ae4dff0093b3943b28f789ed2ca728bcc8d60100000000");
-        System.out.println(r.getFoundryOutputId());
-    }
+
 
 }
