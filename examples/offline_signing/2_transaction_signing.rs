@@ -33,7 +33,7 @@ async fn main() -> Result<()> {
 
     let prepared_transaction_data = read_prepared_transaction_from_file(PREPARED_TRANSACTION_FILE_NAME)?;
 
-    // Signs prepared transaction offline.
+    // Signs the prepared transaction offline.
     let unlocks = secret_manager
         .sign_transaction_essence(&prepared_transaction_data)
         .await?;
