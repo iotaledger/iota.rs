@@ -24,7 +24,7 @@ async fn main() -> Result<()> {
         .await?;
 
     // This example uses dotenv, which is not safe for use in production
-    // Configure your own seed in ".env". Since the output amount cannot be zero, the seed must contain non-zero balance
+    // Configure your own mnemonic in ".env". Since the output amount cannot be zero, the mnemonic must contain non-zero balance
     dotenv().ok();
     let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
         &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),

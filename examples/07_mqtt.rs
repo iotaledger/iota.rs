@@ -1,7 +1,7 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! cargo run --example 10_mqtt --features=mqtt --release
+//! cargo run --example 07_mqtt --features=mqtt --release
 
 use std::sync::{mpsc::channel, Arc, Mutex};
 

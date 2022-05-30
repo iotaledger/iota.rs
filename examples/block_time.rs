@@ -5,6 +5,8 @@
 
 use iota_client::Client;
 
+/// In this example we will send a block and return the time at which it got referenced by a milestone
+
 #[tokio::main]
 async fn main() {
     // Create a client instance

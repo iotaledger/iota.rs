@@ -1,7 +1,7 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! cargo run --example 05_get_address_balance --release
+//! cargo run --example 02_get_address_balance --release
 
 use std::env;
 
