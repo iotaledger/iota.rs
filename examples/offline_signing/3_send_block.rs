@@ -16,7 +16,7 @@ const SIGNED_TRANSACTION_FILE_NAME: &str = "examples/offline_signing/signed_tran
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    // Creates a client instance.
+    // Create a client instance.
     let online_client = Client::builder()
         // Insert your node URL here.
         .with_node("http://localhost:14265")?
@@ -39,7 +39,7 @@ async fn main() -> Result<()> {
         return Err(Error::TransactionSemantic(conflict));
     }
 
-    // Sends offline signed transaction online.
+    // Sends the offline signed transaction online.
     let block = online_client
         .block()
         .finish_block(Some(Payload::Transaction(Box::new(

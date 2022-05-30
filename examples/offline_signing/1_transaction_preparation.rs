@@ -25,7 +25,7 @@ async fn main() -> Result<()> {
     // The amount to send.
     let amount = 1_000_000;
 
-    // Creates a client instance.
+    // Create a client instance.
     let online_client = Client::builder()
         // Insert your node URL here.
         .with_node("http://localhost:14265")?
@@ -50,7 +50,7 @@ async fn main() -> Result<()> {
 
     println!("Prepared transaction sending {} to {}.", amount, address);
 
-    write_transaction_to_file(PREPARED_TRANSACTION_FILE_NAME, prepared_transaction)
+    write_prepared_transaction_to_file(PREPARED_TRANSACTION_FILE_NAME, prepared_transaction)
 }
 
 fn read_addresses_from_file<P: AsRef<Path>>(path: P) -> Result<Vec<String>> {
@@ -61,7 +61,7 @@ fn read_addresses_from_file<P: AsRef<Path>>(path: P) -> Result<Vec<String>> {
     Ok(serde_json::from_str(&json)?)
 }
 
-fn write_transaction_to_file<P: AsRef<Path>>(path: P, prepared_transaction: PreparedTransactionData) -> Result<()> {
+fn write_prepared_transaction_to_file<P: AsRef<Path>>(path: P, prepared_transaction: PreparedTransactionData) -> Result<()> {
     let json = serde_json::to_string_pretty(&PreparedTransactionDataDto::from(&prepared_transaction))?;
     let mut file = BufWriter::new(File::create(path)?);
 

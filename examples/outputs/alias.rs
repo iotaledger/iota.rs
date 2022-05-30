@@ -17,6 +17,7 @@ use iota_client::{
         },
         payload::{transaction::TransactionEssence, Payload},
     },
+    constants::SHIMMER_TESTNET_BECH32_HRP,
     request_funds_from_faucet,
     secret::{mnemonic::MnemonicSecretManager, SecretManager},
     Client, Result,
@@ -26,14 +27,15 @@ use iota_client::{
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    // Create a client instance.
     let client = Client::builder()
         .with_node("http://localhost:14265")?
         .with_node_sync_disabled()
         .finish()
         .await?;
 
-    // This example uses dotenv, which is not safe for use in production
-    // Configure your own seed in ".env". Since the output amount cannot be zero, the seed must contain non-zero balance
+    // This example uses dotenv, which is not safe for use in production!
+    // Configure your own seed in the ".env" file. Since the output amount cannot be zero, the seed must contain non-zero balance.
     dotenv().ok();
     let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
         &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
@@ -42,7 +44,7 @@ async fn main() -> Result<()> {
     let address = client.get_addresses(&secret_manager).with_range(0..1).get_raw().await?[0];
     request_funds_from_faucet(
         "http://localhost:14265/api/plugins/faucet/v1/enqueue",
-        &address.to_bech32("atoi"),
+        &address.to_bech32(SHIMMER_TESTNET_BECH32_HRP),
     )
     .await?;
     tokio::time::sleep(std::time::Duration::from_secs(15)).await;
