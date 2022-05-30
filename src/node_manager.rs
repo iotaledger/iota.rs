@@ -75,7 +75,12 @@ impl NodeManager {
     pub(crate) fn builder() -> NodeManagerBuilder {
         NodeManagerBuilder::new()
     }
-    pub(crate) async fn get_nodes(&self, path: &str, query: Option<&str>, local_pow: bool) -> Result<Vec<Node>> {
+    pub(crate) async fn get_nodes(
+        &self,
+        path: &str,
+        query: Option<&str>,
+        use_primary_pow_node: bool,
+    ) -> Result<Vec<Node>> {
         let mut nodes_with_modified_url = Vec::new();
 
         // Endpoints for which only permanodes will be used if provided
@@ -108,7 +113,7 @@ impl NodeManager {
             }
         }
 
-        if local_pow {
+        if use_primary_pow_node {
             if let Some(mut pow_node) = self.primary_pow_node.clone() {
                 pow_node.url.set_path(path);
                 pow_node.url.set_query(query);
@@ -319,7 +324,8 @@ impl NodeManager {
         body: &[u8],
         local_pow: bool,
     ) -> Result<T> {
-        let nodes = self.get_nodes(path, None, local_pow).await?;
+        // primary_pow_node should only be used when remote PoW is used
+        let nodes = self.get_nodes(path, None, !local_pow).await?;
         if nodes.is_empty() {
             return Err(Error::NodeError("No available nodes with remote PoW".into()));
         }
@@ -354,7 +360,8 @@ impl NodeManager {
         json: Value,
         local_pow: bool,
     ) -> Result<T> {
-        let nodes = self.get_nodes(path, None, local_pow).await?;
+        // primary_pow_node should only be used when remote PoW is used
+        let nodes = self.get_nodes(path, None, !local_pow).await?;
         if nodes.is_empty() {
             return Err(Error::NodeError("No available nodes with remote PoW".into()));
         }
