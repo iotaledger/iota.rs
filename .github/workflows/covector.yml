@@ -2,7 +2,8 @@ name: Covector
 on:
   push:
     branches:
-      - dev
+      - develop
+      - production
     paths-ignore:
       - 'specs/**'
       - 'documentation/**'

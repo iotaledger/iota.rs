@@ -3,9 +3,10 @@ name: Test Docs Build
 on:
   pull_request:
     branches:
+      - develop
       - production
 
-concurrency: 
+concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 

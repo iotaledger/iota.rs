@@ -2,7 +2,8 @@ name: Examine the Node.js Bindings
 on:
   push:
     branches:
-      - dev
+      - develop
+      - production
     paths:
       - '.github/workflows/examine-nodejs-bindings.yml'
       - '.github/actions/**'
@@ -13,7 +14,8 @@ on:
       - 'Cargo.lock'
   pull_request:
     branches:
-      - dev
+      - develop
+      - production
     paths:
       - '.github/workflows/examine-nodejs-bindings.yml'
       - '.github/actions/**'
