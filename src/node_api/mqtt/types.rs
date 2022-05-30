@@ -171,9 +171,9 @@ impl Topic {
             r"^transactions/0x([a-f0-9]{64})/included-block$",
             // Output topics
             r"^outputs/([a-f0-9]{64})(\d{4})$",
-            r"^outputs/aliases/0x([a-f0-9]{40})$",
-            r"^outputs/nfts/0x([a-f0-9]{40})$",
-            r"^outputs/foundries/0x([a-f0-9]{52})$",
+            r"^outputs/alias/0x([a-f0-9]{40})$",
+            r"^outputs/nft/0x([a-f0-9]{40})$",
+            r"^outputs/foundry/0x([a-f0-9]{52})$",
             // BIP-173 compliant bech32 address
             r"^outputs/unlock/(\+|address|storage-return|expiration|state-controller|governor|immutable-alias)/[\x21-\x7E]{1,30}1[A-Za-z0-9]+$",
             // BIP-173 compliant bech32 address
