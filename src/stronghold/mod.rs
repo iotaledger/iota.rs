@@ -319,6 +319,16 @@ impl StrongholdAdapter {
             self.write_stronghold_snapshot().await?;
         }
 
+        // Restart the key clearing task.
+        if let Some(timeout) = self.timeout {
+            // The key clearing task, with the data it owns.
+            let task_self = self.timeout_task.clone();
+            let stronghold = self.stronghold.clone();
+            let key = self.key.clone();
+
+            *self.timeout_task.lock().await = Some(tokio::spawn(task_key_clear(task_self, stronghold, key, timeout)));
+        }
+
         Ok(())
     }
 
