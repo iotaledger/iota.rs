@@ -18,6 +18,9 @@ import type {
     IAliasOutputBuilderOptions,
     IFoundryOutputBuilderOptions,
     INftOutputBuilderOptions,
+    FoundryQueryParameter,
+    NftQueryParameter,
+    AliasQueryParameter,
 } from '../types';
 import type {
     IUTXOInput,
@@ -681,7 +684,9 @@ export class Client {
     /**
      * Fetch alias output IDs
      */
-    async aliasOutputIds(queryParameters: QueryParameter[]): Promise<string[]> {
+    async aliasOutputIds(
+        queryParameters: AliasQueryParameter[],
+    ): Promise<string[]> {
         const response = await this.messageHandler.callClientMethod({
             name: 'AliasOutputIds',
             data: {
@@ -709,7 +714,9 @@ export class Client {
     /**
      * Fetch NFT output IDs
      */
-    async nftOutputIds(queryParameters: QueryParameter[]): Promise<string[]> {
+    async nftOutputIds(
+        queryParameters: NftQueryParameter[],
+    ): Promise<string[]> {
         const response = await this.messageHandler.callClientMethod({
             name: 'NftOutputIds',
             data: {
@@ -738,7 +745,7 @@ export class Client {
      * Fetch Foundry Output IDs
      */
     async foundryOutputIds(
-        queryParameters: QueryParameter[],
+        queryParameters: FoundryQueryParameter[],
     ): Promise<string[]> {
         const response = await this.messageHandler.callClientMethod({
             name: 'FoundryOutputIds',

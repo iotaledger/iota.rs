@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /**
- * Query parameter for output requests
+ * Query parameter for filtering output requests
  */
 export type QueryParameter =
     | Address
@@ -15,9 +15,6 @@ export type QueryParameter =
     | TimelockedBeforeMilestone
     | TimelockedAfterMilestone
     | HasExpirationCondition
-    | HasNativeTokens
-    | MaxNativeTokenCount
-    | MinNativeTokenCount
     | ExpiresBefore
     | ExpiresAfter
     | ExpiresBeforeMilestone
@@ -25,13 +22,52 @@ export type QueryParameter =
     | ExpirationReturnAddress
     | Sender
     | Tag
-    | CreatedBefore
-    | CreatedAfter
-    | Cursor
     | Issuer
     | StateController
     | Governor
-    | PageSize;
+    | CommonQueryParameters;
+
+/** Query parameters for filtering Alias Outputs */
+export type AliasQueryParameter =
+    | StateController
+    | Governor
+    | Issuer
+    | Sender
+    | CommonQueryParameters;
+
+/** Query parameters for filtering Foundry Outputs */
+export type FoundryQueryParameter = AliasAddress | CommonQueryParameters;
+
+/** Query parameters for filtering Nft Outputs */
+export type NftQueryParameter =
+    | Address
+    | AliasAddress
+    | HasStorageReturnCondition
+    | StorageReturnAddress
+    | HasTimelockCondition
+    | TimelockedBefore
+    | TimelockedAfter
+    | TimelockedBeforeMilestone
+    | TimelockedAfterMilestone
+    | HasExpirationCondition
+    | ExpiresBefore
+    | ExpiresAfter
+    | ExpiresBeforeMilestone
+    | ExpiresAfterMilestone
+    | ExpirationReturnAddress
+    | Sender
+    | Tag
+    | CommonQueryParameters;
+
+/** Shared query parameters*/
+type CommonQueryParameters =
+    | HasNativeTokens
+    | MinNativeTokenCount
+    | MaxNativeTokenCount
+    | CreatedAfter
+    | CreatedBefore
+    | PageSize
+    | Cursor;
 
 /** Bech32-encoded address that should be searched for. */
 interface Address {

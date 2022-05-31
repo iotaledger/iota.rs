@@ -54,9 +54,11 @@ describe.skip('Output builder methods', () => {
 
         const hexAddress = await client.bech32ToHex(addresses[0]);
 
+        const aliasId =
+            '0xa5c28d5baa951de05e375fb19134ea51a918f03acc2d0cee011a42b298d3effa';
         // most simple alias output
         const aliasOutput = await client.buildAliasOutput({
-            aliasId: hexAddress,
+            aliasId,
             unlockConditions: [
                 {
                     type: 4,
@@ -79,37 +81,9 @@ describe.skip('Output builder methods', () => {
     });
 
     it('builds a foundry output', async () => {
-        const addresses = await client.generateAddresses(secretManager, {
-            range: {
-                start: 0,
-                end: 1,
-            },
-        });
+        const aliasId =
+            '0xa5c28d5baa951de05e375fb19134ea51a918f03acc2d0cee011a42b298d3effa';
 
-        const hexAddress = await client.bech32ToHex(addresses[0]);
-
-        // most simple alias output
-        const aliasOutput = await client.buildAliasOutput({
-            aliasId: hexAddress,
-            unlockConditions: [
-                {
-                    type: 4,
-                    address: {
-                        type: 0,
-                        pubKeyHash: hexAddress,
-                    },
-                },
-                {
-                    type: 5,
-                    address: {
-                        type: 0,
-                        pubKeyHash: hexAddress,
-                    },
-                },
-            ],
-        });
-
-        const aliasId = aliasOutput.aliasId;
         // most simple foundry output
         const foundryOutput = await client.buildFoundryOutput({
             serialNumber: 1,

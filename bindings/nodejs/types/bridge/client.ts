@@ -4,7 +4,12 @@ import type { IGenerateAddressesOptions } from '../generateAddressesOptions';
 import type { IGenerateBlockOptions } from '../generateBlockOptions';
 import type { BlockId } from '../blockId';
 import type { IPreparedTransactionData } from '../preparedTransactionData';
-import type { QueryParameter } from '../queryParameters';
+import type {
+    AliasQueryParameter,
+    FoundryQueryParameter,
+    NftQueryParameter,
+    QueryParameter,
+} from '../queryParameters';
 import type { IAuth } from '../network';
 import type { IRange } from '../range';
 import type { IBasicOutputBuilderOptions } from '../outputBuilderOptions/basicOutputOptions';
@@ -304,7 +309,7 @@ export interface __IsAddressValidPayloadMethod__ {
 export interface __AliasOutputIdsPayloadMethod__ {
     name: 'AliasOutputIds';
     data: {
-        queryParameters: QueryParameter[];
+        queryParameters: AliasQueryParameter[];
     };
 }
 
@@ -318,7 +323,7 @@ export interface __AliasOutputIdPayloadMethod__ {
 export interface __NftOutputIdsPayloadMethod__ {
     name: 'NftOutputIds';
     data: {
-        queryParameters: QueryParameter[];
+        queryParameters: NftQueryParameter[];
     };
 }
 
@@ -332,7 +337,7 @@ export interface __NftOutputIdPayloadMethod__ {
 export interface __FoundryOutputIdsPayloadMethod__ {
     name: 'FoundryOutputIds';
     data: {
-        queryParameters: QueryParameter[];
+        queryParameters: FoundryQueryParameter[];
     };
 }
 
