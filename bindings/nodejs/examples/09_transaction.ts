@@ -16,7 +16,6 @@ async function run() {
             {
                 // Insert your node URL here.
                 url: 'http://localhost:14265',
-                disabled: false,
             },
         ],
         localPow: true,
