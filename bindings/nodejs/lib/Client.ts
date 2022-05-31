@@ -14,6 +14,10 @@ import type {
     IAuth,
     IRange,
     INodeInfo,
+    IBasicOutputBuilderOptions,
+    IAliasOutputBuilderOptions,
+    IFoundryOutputBuilderOptions,
+    INftOutputBuilderOptions,
 } from '../types';
 import type {
     IUTXOInput,
@@ -27,6 +31,10 @@ import type {
     IMilestoneUtxoChangesResponse,
     IReceiptsResponse,
     ITreasury,
+    IBasicOutput,
+    IAliasOutput,
+    IFoundryOutput,
+    INftOutput,
 } from '@iota/types';
 import type { INodeInfoWrapper } from '../types/nodeInfo';
 
@@ -906,6 +914,62 @@ export class Client {
     async unsyncedNodes(): Promise<Set<INode>> {
         const response = await this.messageHandler.callClientMethod({
             name: 'UnsyncedNodes',
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Build a Basic Output.
+     */
+    async buildBasicOutput(
+        options: IBasicOutputBuilderOptions,
+    ): Promise<IBasicOutput> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'BuildBasicOutput',
+            data: options,
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Build an Alias Output.
+     */
+    async buildAliasOutput(
+        options: IAliasOutputBuilderOptions,
+    ): Promise<IAliasOutput> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'BuildAliasOutput',
+            data: options,
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Build a Foundry Output.
+     */
+    async buildFoundryOutput(
+        options: IFoundryOutputBuilderOptions,
+    ): Promise<IFoundryOutput> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'BuildFoundryOutput',
+            data: options,
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Build a Nft Output.
+     */
+    async buildNftOutput(
+        options: INftOutputBuilderOptions,
+    ): Promise<INftOutput> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'BuildNftOutput',
+            data: options,
         });
 
         return JSON.parse(response).payload;

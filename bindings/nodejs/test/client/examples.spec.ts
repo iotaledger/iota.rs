@@ -8,7 +8,6 @@ const client = new Client({
     nodes: [
         {
             url: process.env.NODE_URL || 'http://localhost:14265',
-            disabled: false,
         },
     ],
     localPow: true,

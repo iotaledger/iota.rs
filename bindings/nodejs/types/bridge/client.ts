@@ -7,6 +7,10 @@ import type { IPreparedTransactionData } from '../preparedTransactionData';
 import type { QueryParameter } from '../queryParameters';
 import type { IAuth } from '../network';
 import type { IRange } from '../range';
+import type { IBasicOutputBuilderOptions } from '../outputBuilderOptions/basicOutputOptions';
+import type { IAliasOutputBuilderOptions } from '../outputBuilderOptions/aliasOutputOptions';
+import type { IFoundryOutputBuilderOptions } from '../outputBuilderOptions/foundryOutputOptions';
+import type { INftOutputBuilderOptions } from '../outputBuilderOptions/nftOutputOptions';
 
 export interface __GetInfoPayloadMethod__ {
     name: 'GetInfo';
@@ -408,4 +412,21 @@ export interface __PromoteUncheckedPayloadMethod__ {
 
 export interface __UnsyncedNodesPayloadMethod__ {
     name: 'UnsyncedNodes';
+}
+
+export interface __BuildBasicOutputPayloadMethod__ {
+    name: 'BuildBasicOutput';
+    data: IBasicOutputBuilderOptions;
+}
+export interface __BuildAliasOutputPayloadMethod__ {
+    name: 'BuildAliasOutput';
+    data: IAliasOutputBuilderOptions;
+}
+export interface __BuildFoundryOutputPayloadMethod__ {
+    name: 'BuildFoundryOutput';
+    data: IFoundryOutputBuilderOptions;
+}
+export interface __BuildNftOutputPayloadMethod__ {
+    name: 'BuildNftOutput';
+    data: INftOutputBuilderOptions;
 }

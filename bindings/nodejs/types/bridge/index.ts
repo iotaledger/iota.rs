@@ -61,6 +61,10 @@ import type {
     __GetMilestoneByIndexPayloadMethod__,
     __GetUtxoChangesByIndexPayloadMethod__,
     __StoreMnemonicPayloadMethod__,
+    __BuildBasicOutputPayloadMethod__,
+    __BuildAliasOutputPayloadMethod__,
+    __BuildFoundryOutputPayloadMethod__,
+    __BuildNftOutputPayloadMethod__,
 } from './client';
 
 export type __ClientPayloadMethods__ =
@@ -125,7 +129,11 @@ export type __ClientPayloadMethods__ =
     | __ReattachUncheckedPayloadMethod__
     | __PromotePayloadMethod__
     | __PromoteUncheckedPayloadMethod__
-    | __UnsyncedNodesPayloadMethod__;
+    | __UnsyncedNodesPayloadMethod__
+    | __BuildBasicOutputPayloadMethod__
+    | __BuildAliasOutputPayloadMethod__
+    | __BuildFoundryOutputPayloadMethod__
+    | __BuildNftOutputPayloadMethod__;
 
 export interface __SendMessagePayload__ {
     cmd: 'CallClientMethod';
