@@ -72,7 +72,8 @@ async function run() {
             '\n',
         );
 
-        // Generate public addresses offline with the bech32Hrp defined
+        // Generating addresses with client.generateAddresses(secretManager, {}), will by default get the bech32_hrp (Bech32
+        // human readable part) from the nodeinfo, generating it "offline" requires setting it in the generateAddressesOptions
         const offlineGeneratedAddresses = await client.generateAddresses(
             secretManager,
             {

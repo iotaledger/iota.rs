@@ -1,10 +1,11 @@
 // Copyright 2021-2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 import type { IUTXOInput, OutputTypes } from '@iota/types';
+import type { CoinType } from '../lib';
 import type { IRange } from './range';
 
 export interface IGenerateBlockOptions {
-    coinType?: number;
+    coinType?: CoinType;
     accountIndex?: number;
     initialAddressIndex?: number;
     inputs?: IUTXOInput[];
