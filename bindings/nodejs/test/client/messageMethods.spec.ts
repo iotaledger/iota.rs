@@ -16,9 +16,9 @@ describe.skip('Block methods', () => {
     it('sends a block raw', async () => {
         const block = await client.generateBlock();
 
-        const rawBlockId = await client.postBlockRaw(block);
+        const blockId = await client.postBlockRaw(block);
 
-        expect(rawBlockId).toBeValidBlockId();
+        expect(blockId).toBeValidBlockId();
     });
 
     it('gets block children', async () => {
@@ -37,8 +37,7 @@ describe.skip('Block methods', () => {
         expect(blocks.length).toBe(blockIds.length);
     });
 
-    // TODO: Error: 404 block not found. Fixed in https://github.com/iotaledger/iota.rs/pull/983
-    it.skip('gets raw block', async () => {
+    it('gets block as raw bytes', async () => {
         const block = await client.generateBlock();
         const blockId = await client.postBlock(block);
 

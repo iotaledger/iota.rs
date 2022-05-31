@@ -16,6 +16,7 @@ const secretManager = {
         'endorse answer radar about source reunion marriage tag sausage weekend frost daring base attack because joke dream slender leisure group reason prepare broken river',
 };
 
+// Skip for CI
 describe.skip('Output builder methods', () => {
     it('builds a basic output', async () => {
         const addresses = await client.generateAddresses(secretManager, {
@@ -113,11 +114,11 @@ describe.skip('Output builder methods', () => {
         expect(foundryOutput).toBeDefined();
     });
 
-    it('builds a nft output', async () => {
+    it('builds an nft output', async () => {
         const addresses = await client.generateAddresses(secretManager, {
             range: {
-                start: 100,
-                end: 101,
+                start: 0,
+                end: 1,
             },
         });
 

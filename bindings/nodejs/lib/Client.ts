@@ -176,7 +176,7 @@ export class Client {
     }
 
     /**
-     * Send block, returns the block ID.
+     * Post block in JSON format, returns the block ID.
      */
     async postBlock(block: IBlock): Promise<BlockId> {
         const response = await this.messageHandler.callClientMethod({
@@ -190,7 +190,7 @@ export class Client {
     }
 
     /**
-     * Get block data with block ID
+     * Get block as JSON.
      */
     async getBlock(blockId: BlockId): Promise<IBlock> {
         const response = await this.messageHandler.callClientMethod({
@@ -204,7 +204,7 @@ export class Client {
     }
 
     /**
-     * Get block metadata with block ID
+     * Get block metadata.
      */
     async getBlockMetadata(blockId: BlockId): Promise<IBlockMetadata> {
         const response = await this.messageHandler.callClientMethod({
@@ -468,7 +468,7 @@ export class Client {
     }
 
     /**
-     * Post block json.
+     * Post block as raw bytes, returns the block ID.
      */
     async postBlockRaw(block: IBlock): Promise<BlockId> {
         const response = await this.messageHandler.callClientMethod({
@@ -482,9 +482,9 @@ export class Client {
     }
 
     /**
-     * Get block raw.
+     * Get block as raw bytes.
      */
-    async getBlockRaw(blockId: BlockId): Promise<string> {
+    async getBlockRaw(blockId: BlockId): Promise<number[]> {
         const response = await this.messageHandler.callClientMethod({
             name: 'GetBlockRaw',
             data: {
@@ -969,7 +969,7 @@ export class Client {
     }
 
     /**
-     * Build a Nft Output.
+     * Build an Nft Output.
      */
     async buildNftOutput(
         options: INftOutputBuilderOptions,
