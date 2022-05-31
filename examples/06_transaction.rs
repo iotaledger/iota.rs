@@ -1,7 +1,7 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! cargo run --example 09_transaction --release
+//! cargo run --example 06_transaction --release
 
 use std::env;
 
@@ -22,7 +22,8 @@ async fn main() -> Result<()> {
         .await?;
 
     // This example uses dotenv, which is not safe for use in production
-    // Configure your own seed in ".env". Since the output amount cannot be zero, the seed must contain non-zero balance
+    // Configure your own mnemonic in ".env". Since the output amount cannot be zero, the mnemonic must contain non-zero
+    // balance
     dotenv().ok();
     let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
         &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
@@ -33,7 +34,7 @@ async fn main() -> Result<()> {
         .with_secret_manager(&secret_manager)
         // Insert the output address and amount to spent. The amount cannot be zero.
         .with_output(
-            // We generate an address from our seed so that we send the funds to ourselves
+            // We generate an address from our own mnemonic so that we send the funds to ourselves
             &client.get_addresses(&secret_manager).with_range(1..2).finish().await?[0],
             1_000_000,
         )?

@@ -160,10 +160,17 @@ path = "examples/node_api_core/21_get_milestone_by_index_raw.rs"
 name = "node_api_core_get_utxo_changes_by_index"
 path = "examples/node_api_core/22_get_utxo_changes_by_index.rs"
 
+# Node API indexer examples
+
+[[example]]
+name = "node_api_indexer_get_basic_outputs"
+path = "examples/node_api_indexer/00_get_basic_outputs.rs"
+
+
 #######
 
 [[example]]
-name = "10_mqtt"
+name = "07_mqtt"
 required-features = [ "mqtt" ]
 
 [[example]]

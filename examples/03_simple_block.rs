@@ -1,11 +1,11 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! cargo run --example 07_get_block_metadata --release
+//! cargo run --example 03_simple_block --release
 
 use iota_client::{Client, Result};
 
-/// In this example we will send a block and get the metadata for it
+/// In this example we will send a block without a payload
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -17,7 +17,9 @@ async fn main() -> Result<()> {
 
     let block = client.block().finish().await?;
 
-    let metadata = client.get_block_metadata(&block.id()).await?;
-    println!("Block metadata: {:?}", metadata);
+    println!(
+        "Empty block sent: https://explorer.iota.org/devnet/block/{}",
+        block.id()
+    );
     Ok(())
 }
