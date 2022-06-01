@@ -55,13 +55,13 @@ use std::{path::PathBuf, sync::Arc, time::Duration};
 
 use derive_builder::Builder;
 use iota_stronghold::{ResultMessage, Stronghold};
-use log::{debug, warn};
+use log::{debug, error, warn};
 use riker::actors::ActorSystem;
 use tokio::{sync::Mutex, task::JoinHandle};
 use zeroize::{Zeroize, Zeroizing};
 
 use self::common::{PRIVATE_DATA_CLIENT_PATH, STRONGHOLD_FILENAME};
-use crate::{Error, Result};
+use crate::{db::DatabaseProvider, Error, Result};
 
 /// A wrapper on [Stronghold].
 ///
@@ -221,6 +221,115 @@ impl StrongholdAdapter {
 
             *self.timeout_task.lock().await = Some(tokio::spawn(task_key_clear(task_self, stronghold, key, timeout)));
         }
+    }
+
+    /// Change the password of the currently loaded Stronghold.
+    ///
+    /// If a snapshot path has been set, then it'll be rewritten with the newly set password.
+    ///
+    /// The secrets (e.g. mnemonic) stored in the Stronghold vault will be preserved, but the data saved via the
+    /// [`DatabaseProvier`] interface won't - they'll stay encrypted with the old password. To re-encrypt these
+    /// data, provide a list of keys in `keys_to_re_encrypt`, as we have no way to list and iterate over every
+    /// key-value in the Stronghold store - we'll attempt on the ones provided instead. Set it to `None` to skip
+    /// re-encryption.
+    pub async fn change_password(&mut self, new_password: &str, keys_to_re_encrypt: Option<&[&[u8]]>) -> Result<()> {
+        // Stop the key clearing task to prevent the key from being abrubtly cleared (largely).
+        if let Some(timeout_task) = self.timeout_task.lock().await.take() {
+            timeout_task.abort();
+        }
+
+        // In case something goes wrong we can recover from the snapshot.
+        if self.snapshot_path.is_some() {
+            self.write_stronghold_snapshot().await?;
+        }
+
+        // If there are keys to re-encrypt, we iterate over the requested keys and attempt to re-encrypt the
+        // corresponding values.
+        //
+        // Note that [`DatabaseProvider`] methods will do encryption / decryption automatically, so we collect values
+        // to the memory first (decrypted with the old key), then change `self.key`, then store them back (encrypted
+        // with the new key).
+        let mut values = Vec::new();
+
+        if let Some(keys_to_re_encrypt) = keys_to_re_encrypt {
+            for key in keys_to_re_encrypt {
+                let value = match self.get(key).await {
+                    Err(err) => {
+                        error!("an error occurred during the re-encryption of Stronghold Store: {err}");
+
+                        // Recover: restart the key clearing task
+                        if let Some(timeout) = self.timeout {
+                            // The key clearing task, with the data it owns.
+                            let task_self = self.timeout_task.clone();
+                            let stronghold = self.stronghold.clone();
+                            let key = self.key.clone();
+
+                            *self.timeout_task.lock().await =
+                                Some(tokio::spawn(task_key_clear(task_self, stronghold, key, timeout)));
+                        }
+
+                        return Err(err);
+                    }
+                    Ok(None) => continue,
+                    Ok(Some(value)) => Zeroizing::new(value),
+                };
+
+                values.push((key, value));
+            }
+        }
+
+        // Now we put the new key in, enabling encryption with the new key. Also, take the old key out to prevent
+        // disasters.
+        let old_key = {
+            let mut lock = self.key.lock().await;
+            let old_key = lock.take();
+            *lock = Some(self::common::derive_key_from_password(new_password));
+
+            old_key
+        };
+
+        for (key, value) in values.into_iter() {
+            if let Err(err) = self.insert(key, &*value).await {
+                error!("an error occurred during the re-encryption of Stronghold store: {err}");
+
+                // Recover: put the old key back
+                *self.key.lock().await = old_key;
+
+                // Recover: forcefully reload Stronghold
+                self.snapshot_loaded = false;
+                self.read_stronghold_snapshot().await?;
+
+                // Recover: restart key clearing task
+                if let Some(timeout) = self.timeout {
+                    // The key clearing task, with the data it owns.
+                    let task_self = self.timeout_task.clone();
+                    let stronghold = self.stronghold.clone();
+                    let key = self.key.clone();
+
+                    *self.timeout_task.lock().await =
+                        Some(tokio::spawn(task_key_clear(task_self, stronghold, key, timeout)));
+                }
+
+                return Err(err);
+            }
+        }
+
+        // Rewrite the snapshot to finish the password changing process.
+        if self.snapshot_path.is_some() {
+            self.write_stronghold_snapshot().await?;
+        }
+
+        // Restart the key clearing task.
+        if let Some(timeout) = self.timeout {
+            // The key clearing task, with the data it owns.
+            let task_self = self.timeout_task.clone();
+            let stronghold = self.stronghold.clone();
+            let key = self.key.clone();
+
+            *self.timeout_task.lock().await = Some(tokio::spawn(task_key_clear(task_self, stronghold, key, timeout)));
+        }
+
+        Ok(())
     }
 
     /// Immediately clear ([zeroize]) the stored key.
@@ -432,7 +541,7 @@ mod tests {
     async fn test_clear_key() {
         let timeout = Duration::from_millis(100);
 
-        let mut client = StrongholdAdapter::builder()
+        let mut adapter = StrongholdAdapter::builder()
             .password("drowssap")
             .timeout(timeout)
             .try_build()
@@ -442,34 +551,34 @@ mod tests {
         tokio::time::sleep(Duration::from_millis(10)).await;
 
         // Setting a password would spawn a task to automatically clear the key.
-        assert!(matches!(*client.key.lock().await, Some(_)));
-        assert_eq!(client.get_timeout(), Some(timeout));
-        assert!(matches!(*client.timeout_task.lock().await, Some(_)));
+        assert!(matches!(*adapter.key.lock().await, Some(_)));
+        assert_eq!(adapter.get_timeout(), Some(timeout));
+        assert!(matches!(*adapter.timeout_task.lock().await, Some(_)));
 
         // After the timeout, the key should be purged.
         tokio::time::sleep(Duration::from_millis(200)).await;
-        assert!(matches!(*client.key.lock().await, None));
-        assert_eq!(client.get_timeout(), Some(timeout));
-        assert!(matches!(*client.timeout_task.lock().await, None));
+        assert!(matches!(*adapter.key.lock().await, None));
+        assert_eq!(adapter.get_timeout(), Some(timeout));
+        assert!(matches!(*adapter.timeout_task.lock().await, None));
 
         // Set the key again, but this time we manually purge the key.
         let timeout = None;
-        client.set_timeout(timeout).await;
+        adapter.set_timeout(timeout).await;
 
-        client.set_password("password").await;
-        assert!(matches!(*client.key.lock().await, Some(_)));
-        assert_eq!(client.get_timeout(), timeout);
-        assert!(matches!(*client.timeout_task.lock().await, None));
+        adapter.set_password("password").await;
+        assert!(matches!(*adapter.key.lock().await, Some(_)));
+        assert_eq!(adapter.get_timeout(), timeout);
+        assert!(matches!(*adapter.timeout_task.lock().await, None));
 
-        client.clear_key().await;
-        assert!(matches!(*client.key.lock().await, None));
-        assert_eq!(client.get_timeout(), timeout);
-        assert!(matches!(*client.timeout_task.lock().await, None));
+        adapter.clear_key().await;
+        assert!(matches!(*adapter.key.lock().await, None));
+        assert_eq!(adapter.get_timeout(), timeout);
+        assert!(matches!(*adapter.timeout_task.lock().await, None));
 
         // Even if we attempt to restart the task, it won't.
-        client.restart_key_clearing_task().await;
-        assert!(matches!(*client.key.lock().await, None));
-        assert_eq!(client.get_timeout(), timeout);
-        assert!(matches!(*client.timeout_task.lock().await, None));
+        adapter.restart_key_clearing_task().await;
+        assert!(matches!(*adapter.key.lock().await, None));
+        assert_eq!(adapter.get_timeout(), timeout);
+        assert!(matches!(*adapter.timeout_task.lock().await, None));
     }
 }
