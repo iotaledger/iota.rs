@@ -97,7 +97,7 @@ pub enum ClientMethod {
         #[serde(rename = "immutableFeatures")]
         immutable_features: Option<Vec<FeatureDto>>,
     },
-    /// Generate a addresses.
+    /// Generate addresses.
     GenerateAddresses {
         /// Create secret manager from json
         #[serde(rename = "secretManager")]

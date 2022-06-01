@@ -1,11 +1,12 @@
 // Copyright 2021-2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
-import { Client, initLogger } from '@iota/client';
+import { Client, CoinType, initLogger } from '@iota/client';
 
 // Run with command:
 // node ./dist/02_mnemonic.js
 
-// In this example we will generate a mnemonic and generate the first address
+// In this example we will generate a mnemonic and generate the first address with the Shimmer coin type,
+// following BIP-0044
 async function run() {
     initLogger();
 
@@ -15,7 +16,6 @@ async function run() {
             {
                 // Insert your node URL here.
                 url: 'http://localhost:14265',
-                disabled: false,
             },
         ],
         localPow: true,
@@ -28,10 +28,11 @@ async function run() {
 
         // Generate addresses with custom account index and range
         const addresses = await client.generateAddresses(secretManager, {
+            coinType: CoinType.Shimmer,
             accountIndex: 0,
             range: {
                 start: 0,
-                end: 4,
+                end: 1,
             },
         });
 

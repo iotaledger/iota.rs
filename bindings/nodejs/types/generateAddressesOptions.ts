@@ -1,5 +1,6 @@
 // Copyright 2021-2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
+import type { CoinType } from '../lib';
 import type { Network } from './network';
 import type { IRange } from './range';
 
@@ -7,7 +8,7 @@ import type { IRange } from './range';
  * Input options for GenerateAddresses
  */
 export interface IGenerateAddressesOptions {
-    coinType?: number;
+    coinType?: CoinType;
     accountIndex?: number;
     range?: IRange;
     /**

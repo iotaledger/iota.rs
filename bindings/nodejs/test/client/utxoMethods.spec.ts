@@ -5,9 +5,7 @@ import 'dotenv/config';
 const client = new Client({
     nodes: [
         {
-            // Insert your node URL here.
             url: process.env.NODE_URL || 'http://localhost:14265',
-            disabled: false,
         },
     ],
     localPow: true,
@@ -17,7 +15,7 @@ const client = new Client({
 describe.skip('UTXO methods', () => {
     it('gets receipts', async () => {
         const info = await client.getInfo();
-        const milestoneIndex = info.nodeinfo.status.confirmedMilestone.index;
+        const milestoneIndex = info.nodeInfo.status.confirmedMilestone.index;
 
         const receipts = await client.getReceipts();
         expect(receipts).toBeDefined();
@@ -35,7 +33,7 @@ describe.skip('UTXO methods', () => {
     });
 
     it('gets aliases output IDs', async () => {
-        const aliasesOutputIds = await client.aliasesOutputIds([
+        const aliasesOutputIds = await client.aliasOutputIds([
             {
                 stateController:
                     'rms1qpllaj0pyveqfkwxmnngz2c488hfdtmfrj3wfkgxtk4gtyrax0jaxzt70zy',
@@ -46,7 +44,7 @@ describe.skip('UTXO methods', () => {
     });
 
     it('gets nfts output IDs', async () => {
-        const nftsOutputIds = await client.nftsOutputIds([
+        const nftsOutputIds = await client.nftOutputIds([
             {
                 address:
                     'rms1qpllaj0pyveqfkwxmnngz2c488hfdtmfrj3wfkgxtk4gtyrax0jaxzt70zy',
@@ -57,10 +55,9 @@ describe.skip('UTXO methods', () => {
     });
 
     it('gets foundries output IDs', async () => {
-        const foundriesOutputIds = await client.foundriesOutputIds([
+        const foundriesOutputIds = await client.foundryOutputIds([
             {
-                address:
-                    'rms1qpllaj0pyveqfkwxmnngz2c488hfdtmfrj3wfkgxtk4gtyrax0jaxzt70zy',
+                hasNativeTokens: true,
             },
         ]);
 

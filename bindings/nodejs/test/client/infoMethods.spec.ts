@@ -6,7 +6,6 @@ const client = new Client({
     nodes: [
         {
             url: process.env.NODE_URL || 'http://localhost:14265',
-            disabled: false,
         },
     ],
     localPow: true,
@@ -28,16 +27,10 @@ describe.skip('Client info methods', () => {
         expect(nodeInfoByUrl).toBeDefined();
     });
 
-    it('gets health of node', async () => {
-        const health = await client.getHealth();
-
-        expect(health).toBeTruthy();
-    });
-
     it('gets health of node with input url', async () => {
         const nodeInfo = await client.getNode();
 
-        const nodeHealth = await client.getNodeHealth(nodeInfo.url);
+        const nodeHealth = await client.getHealth(nodeInfo.url);
 
         expect(nodeHealth).toBeTruthy();
     });

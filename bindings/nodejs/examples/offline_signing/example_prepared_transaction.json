@@ -1,15 +1,15 @@
 {
     "essence": {
         "type": 1,
-        "networkId": "1020014395361784349",
+        "networkId": "6983037938332331227",
         "inputs": [
             {
                 "type": 0,
-                "transactionId": "0xdddb6f40a3d442f54b74acbe140655056b0bd37641ff0153596ecafa806cf035",
+                "transactionId": "0x317841bb2f2113745cac0fdd523a7764c23eb0a3ee0b1b22e19e68cd1ca242cb",
                 "transactionOutputIndex": 1
             }
         ],
-        "inputsCommitment": "0x65aff15d2bb761f4dcb1b68df8cb655d9f25bc718d83c3f19d6281cffec02bcb",
+        "inputsCommitment": "0x0c60d55af808fb89ebb517ecc07869cf278f8fcf53f89257ddbcd3a077410e12",
         "outputs": [
             {
                 "type": 3,
@@ -26,7 +26,13 @@
             },
             {
                 "type": 3,
-                "amount": "1943952500",
+                "amount": "1064765900",
+                "nativeTokens": [
+                    {
+                        "id": "0x081e6439529b020328c08224b43172f282cb16649d50c891fa156365323667e47a0100000000",
+                        "amount": "0x32"
+                    }
+                ],
                 "unlockConditions": [
                     {
                         "type": 0,
@@ -39,36 +45,35 @@
             }
         ]
     },
-    "inputs_data": [
+    "inputsData": [
         {
             "output": {
-                "type": "Basic",
-                "data": {
-                    "amount": 1944952500,
-                    "native_tokens": { "inner": [], "bounded": null },
-                    "unlock_conditions": {
-                        "inner": [
-                            {
-                                "type": "Address",
-                                "data": {
-                                    "type": "Ed25519",
-                                    "data": "0x7ffec9e1233204d9c6dce6812b1539ee96af691ca2e4d9065daa85907d33e5d3"
-                                }
-                            }
-                        ],
-                        "bounded": null
-                    },
-                    "features": { "inner": [], "bounded": null }
-                }
+                "type": 3,
+                "amount": "1065765900",
+                "nativeTokens": [
+                    {
+                        "id": "0x081e6439529b020328c08224b43172f282cb16649d50c891fa156365323667e47a0100000000",
+                        "amount": "0x32"
+                    }
+                ],
+                "unlockConditions": [
+                    {
+                        "type": 0,
+                        "address": {
+                            "type": 0,
+                            "pubKeyHash": "0x7ffec9e1233204d9c6dce6812b1539ee96af691ca2e4d9065daa85907d33e5d3"
+                        }
+                    }
+                ]
             },
             "outputMetadata": {
-                "blockId": "0x560a69e4079e4b510ab9c495d585d418fd1c22cb1003d1e503989e02e26664d2",
-                "transactionId": "0xdddb6f40a3d442f54b74acbe140655056b0bd37641ff0153596ecafa806cf035",
+                "blockId": "0xb1eb524edd14ef7ddbfb8618c51ca97a90dbe8e83be8d71e8b040a6e13eba554",
+                "transactionId": "0x317841bb2f2113745cac0fdd523a7764c23eb0a3ee0b1b22e19e68cd1ca242cb",
                 "outputIndex": 1,
                 "isSpent": false,
-                "milestoneIndexBooked": 58123,
-                "milestoneTimestampBooked": 1651837724,
-                "ledgerIndex": 59042
+                "milestoneIndexBooked": 183395,
+                "milestoneTimestampBooked": 1653942602,
+                "ledgerIndex": 183548
             },
             "chain": [
                 { "hardened": true, "bs": [128, 0, 0, 44] },
@@ -79,5 +84,37 @@
             ],
             "bech32Address": "rms1qpllaj0pyveqfkwxmnngz2c488hfdtmfrj3wfkgxtk4gtyrax0jaxzt70zy"
         }
-    ]
+    ],
+    "remainder": {
+        "output": {
+            "type": 3,
+            "amount": "1064765900",
+            "nativeTokens": [
+                {
+                    "id": "0x081e6439529b020328c08224b43172f282cb16649d50c891fa156365323667e47a0100000000",
+                    "amount": "0x32"
+                }
+            ],
+            "unlockConditions": [
+                {
+                    "type": 0,
+                    "address": {
+                        "type": 0,
+                        "pubKeyHash": "0x7ffec9e1233204d9c6dce6812b1539ee96af691ca2e4d9065daa85907d33e5d3"
+                    }
+                }
+            ]
+        },
+        "chain": [
+            { "hardened": true, "bs": [128, 0, 0, 44] },
+            { "hardened": true, "bs": [128, 0, 16, 123] },
+            { "hardened": true, "bs": [128, 0, 0, 0] },
+            { "hardened": true, "bs": [128, 0, 0, 0] },
+            { "hardened": true, "bs": [128, 0, 0, 0] }
+        ],
+        "address": {
+            "type": 0,
+            "pubKeyHash": "0x7ffec9e1233204d9c6dce6812b1539ee96af691ca2e4d9065daa85907d33e5d3"
+        }
+    }
 }

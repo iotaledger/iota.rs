@@ -6,10 +6,10 @@ import { readFile } from 'fs/promises';
 // From examples directory, run with:
 // node ./dist/offline_signing/3_send_block.js
 
-// In this example we will send the signed transaction in a block
 const SIGNED_TRANSACTION_FILE_NAME =
     __dirname + '/../../offline_signing/signed_transaction.json';
 
+// In this example we will send the signed transaction in a block
 async function run() {
     initLogger();
 
@@ -19,7 +19,6 @@ async function run() {
             {
                 // Insert your node URL here.
                 url: 'http://localhost:14265/',
-                disabled: false,
             },
         ],
         localPow: true,
