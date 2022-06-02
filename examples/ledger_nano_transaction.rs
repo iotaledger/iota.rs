@@ -19,7 +19,7 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
 
-    let secret_manager = SecretManager::LedgerNano(LedgerSecretManager::new(false));
+    let secret_manager = SecretManager::LedgerNano(LedgerSecretManager::new(true));
 
     // Generate addresses with custom account index and range
     let addresses = client
