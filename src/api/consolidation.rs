@@ -4,8 +4,12 @@
 use std::{ops::Range, str::FromStr};
 
 use bee_block::{
+    address::Address,
     input::{UtxoInput, INPUT_COUNT_MAX},
-    output::OutputId,
+    output::{
+        unlock_condition::AddressUnlockCondition, BasicOutputBuilder, NativeTokensBuilder, Output, OutputId,
+        UnlockCondition,
+    },
     payload::transaction::TransactionId,
 };
 
@@ -14,8 +18,8 @@ use crate::{
     Client, Result,
 };
 
-/// Function to consolidate all funds from a range of addresses to the address with the lowest index in that range
-/// Returns the address to which the funds got consolidated, if any were available
+/// Function to consolidate all funds and native tokens from a range of addresses to the address with the lowest index
+/// in that range. Returns the address to which the funds got consolidated, if any were available
 pub async fn consolidate_funds(
     client: &Client,
     secret_manager: &SecretManager,
@@ -28,6 +32,7 @@ pub async fn consolidate_funds(
         .with_range(address_range.clone())
         .finish()
         .await?;
+
     let consolidation_address = addresses[0].clone();
 
     let mut last_transfer_index = address_range.start;
@@ -75,17 +80,34 @@ pub async fn consolidate_funds(
             for chunk in outputs_chunks {
                 let mut block_builder = client.block().with_secret_manager(secret_manager);
                 let mut total_amount = 0;
+                let mut total_native_tokens = NativeTokensBuilder::new();
+
                 for (input, amount) in chunk {
                     block_builder = block_builder.with_input(UtxoInput::from(OutputId::new(
                         TransactionId::from_str(&input.metadata.transaction_id)?,
                         input.metadata.output_index,
                     )?))?;
+
+                    let output: Output = (&input.output).try_into()?;
+
+                    if let Some(native_tokens) = output.native_tokens() {
+                        total_native_tokens.add_native_tokens(native_tokens.clone())?;
+                    }
                     total_amount += amount;
                 }
 
+                let total_native_tokens = total_native_tokens.finish()?;
+
+                let consolidation_output = BasicOutputBuilder::new_with_amount(total_amount)?
+                    .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(
+                        Address::try_from_bech32(&consolidation_address)?.1,
+                    )))
+                    .with_native_tokens(total_native_tokens)
+                    .finish_output()?;
+
                 let block = block_builder
                     .with_input_range(index..index + 1)
-                    .with_output(&consolidation_address, total_amount)?
+                    .with_outputs(vec![consolidation_output])?
                     .with_initial_address_index(0)
                     .finish()
                     .await?;
