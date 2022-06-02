@@ -5,7 +5,7 @@
 
 use iota_client::{
     api::GetAddressesBuilder,
-    constants::SHIMMER_COIN_TYPE,
+    constants::{SHIMMER_COIN_TYPE, SHIMMER_TESTNET_BECH32_HRP},
     secret::{mnemonic::MnemonicSecretManager, SecretManager},
     Client, Result,
 };
@@ -22,6 +22,7 @@ async fn main() -> Result<()> {
 
     // Generate addresses with custom account index and range
     let addresses = GetAddressesBuilder::new(&secret_manager)
+        .with_bech32_hrp(SHIMMER_TESTNET_BECH32_HRP)
         .with_coin_type(SHIMMER_COIN_TYPE)
         .with_account_index(0)
         .with_range(0..1)
