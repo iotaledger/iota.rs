@@ -88,7 +88,7 @@ pub async fn consolidate_funds(
                         input.metadata.output_index,
                     )?))?;
 
-                    let output: Output = (&input.output).try_into()?;
+                    let output = Output::try_from(&input.output)?;
 
                     if let Some(native_tokens) = output.native_tokens() {
                         total_native_tokens.add_native_tokens(native_tokens.clone())?;
@@ -96,13 +96,11 @@ pub async fn consolidate_funds(
                     total_amount += amount;
                 }
 
-                let total_native_tokens = total_native_tokens.finish()?;
-
                 let consolidation_output = BasicOutputBuilder::new_with_amount(total_amount)?
                     .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(
                         Address::try_from_bech32(&consolidation_address)?.1,
                     )))
-                    .with_native_tokens(total_native_tokens)
+                    .with_native_tokens(total_native_tokens.finish()?)
                     .finish_output()?;
 
                 let block = block_builder
