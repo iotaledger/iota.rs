@@ -16,7 +16,7 @@ async fn main() -> Result<()> {
         .unwrap_or_else(|| "http://localhost:14265".to_string());
     // Creates a client instance with that node.
     let client = Client::builder()
-        // The nodes needs to have the indexer plugin enabled
+        // The nodes needs to have the indexer plugin enabled.
         .with_node(&node)?
         .with_node_sync_disabled()
         .finish()
@@ -24,18 +24,18 @@ async fn main() -> Result<()> {
 
     let alias_address = "rms1ppdr9w5wmyg7phcd7q9exv2kvnu5rnwafftsehjpfwd6zxn83938xw83dtr";
 
-    // Get output ids of foundry outputs that can be controlled by this address
+    // Get output ids of foundry outputs that can be controlled by this address.
     let output_ids = client
         .foundry_output_ids(vec![QueryParameter::AliasAddress(alias_address.to_string())])
         .await?;
 
     println!("Address output_ids {:?}", output_ids);
 
-    // Get the outputs by their id
+    // Get the outputs by their id.
     let outputs_responses = client.get_outputs(output_ids).await?;
     println!("Outputs: {outputs_responses:?}",);
 
-    // Get an foundry output by its FoundryId
+    // Get an foundry output by its FoundryId.
     let foundry_id =
         FoundryId::from_str("0x085a32ba8ed911e0df0df00b93315664f941cddd4a570cde414b9ba11a678962730100000000")?;
     let output_id = client.foundry_output_id(foundry_id).await?;

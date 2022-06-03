@@ -16,7 +16,7 @@ async fn main() -> Result<()> {
         .unwrap_or_else(|| "http://localhost:14265".to_string());
     // Creates a client instance with that node.
     let client = Client::builder()
-        // The nodes needs to have the indexer plugin enabled
+        // The nodes needs to have the indexer plugin enabled.
         .with_node(&node)?
         .with_node_sync_disabled()
         .finish()
@@ -24,7 +24,7 @@ async fn main() -> Result<()> {
 
     let address = "rms1qpllaj0pyveqfkwxmnngz2c488hfdtmfrj3wfkgxtk4gtyrax0jaxzt70zy";
 
-    // Get output ids of outputs that can be controlled by this address without further unlock constraints
+    // Get output ids of outputs that can be controlled by this address without further unlock constraints.
     let output_ids = client
         .nft_output_ids(vec![
             QueryParameter::Address(address.to_string()),
@@ -36,11 +36,11 @@ async fn main() -> Result<()> {
 
     println!("Address output_ids {:?}", output_ids);
 
-    // Get the outputs by their id
+    // Get the outputs by their id.
     let outputs_responses = client.get_outputs(output_ids).await?;
     println!("Nft outputs: {outputs_responses:?}",);
 
-    // Get an nft output by its NftId
+    // Get an nft output by its NftId.
     let nft_id = NftId::from_str("0x649db5b14ee26d7eb91304cfeaa27cb661e1b05d366623be24d07955e0af6ce1")?;
     let output_id = client.nft_output_id(nft_id).await?;
     println!("Nft output: {output_id}");
