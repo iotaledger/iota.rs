@@ -259,7 +259,11 @@ impl StrongholdAdapter {
     /// data, provide a list of keys in `keys_to_re_encrypt`, as we have no way to list and iterate over every
     /// key-value in the Stronghold store - we'll attempt on the ones provided instead. Set it to `None` to skip
     /// re-encryption.
-    pub async fn change_password(&mut self, new_password: &str, keys_to_re_encrypt: Option<&[&[u8]]>) -> Result<()> {
+    pub async fn change_password(
+        &mut self,
+        new_password: &str,
+        keys_to_re_encrypt: Option<Vec<Vec<u8>>>,
+    ) -> Result<()> {
         // Stop the key clearing task to prevent the key from being abrubtly cleared (largely).
         if let Some(timeout_task) = self.timeout_task.lock().await.take() {
             timeout_task.abort();
@@ -280,7 +284,7 @@ impl StrongholdAdapter {
 
         if let Some(keys_to_re_encrypt) = keys_to_re_encrypt {
             for key in keys_to_re_encrypt {
-                let value = match self.get(key).await {
+                let value = match self.get(&key).await {
                     Err(err) => {
                         error!("an error occurred during the re-encryption of Stronghold Store: {err}");
 
@@ -316,7 +320,7 @@ impl StrongholdAdapter {
         };
 
         for (key, value) in values.into_iter() {
-            if let Err(err) = self.insert(key, &*value).await {
+            if let Err(err) = self.insert(&key, &*value).await {
                 error!("an error occurred during the re-encryption of Stronghold store: {err}");
 
                 // Recover: put the old key back
