@@ -15,7 +15,7 @@ pub enum InputKind {
     Treasury = 1,
 }
 
-#[derive(Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Clone, Serialize, Deserialize, Eq, PartialEq)]
 pub struct Input(RustInput);
 
 impl Input {
@@ -59,7 +59,7 @@ impl Display for Input {
     }
 }
 
-#[derive(Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Clone, Serialize, Deserialize, Eq, PartialEq)]
 pub struct UtxoInput(RustUtxoInput);
 
 impl UtxoInput {
@@ -101,7 +101,7 @@ impl From<RustUtxoInput> for UtxoInput {
     }
 }
 
-#[derive(Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Clone, Serialize, Deserialize, Eq, PartialEq)]
 pub struct TreasuryInput(RustTreasuryInput);
 
 impl TreasuryInput {

@@ -5,7 +5,7 @@ use iota_client::bee_rest_api::types::dtos::{
     GossipDto as RustgossipDto, HeartbeatDto as RustheartbeatDto, MetricsDto as RustMetricsDto,
 };
 
-#[derive(Copy, Clone, PartialEq, Getters, CopyGetters, Debug)]
+#[derive(Copy, Clone, Eq, PartialEq, Getters, CopyGetters, Debug)]
 pub struct GossipDto {
     #[getset(get_copy = "pub")]
     pub heartbeat: HeartbeatDto,
@@ -19,7 +19,7 @@ impl core::fmt::Display for GossipDto {
     }
 }
 
-#[derive(Copy, Clone, PartialEq, Getters, CopyGetters, Debug)]
+#[derive(Copy, Clone, Eq, PartialEq, Getters, CopyGetters, Debug)]
 pub struct HeartbeatDto {
     #[getset(get_copy = "pub")]
     pub solid_milestone_index: u32,
@@ -43,7 +43,7 @@ impl core::fmt::Display for HeartbeatDto {
     }
 }
 
-#[derive(Copy, Clone, PartialEq, Getters, CopyGetters, Debug)]
+#[derive(Copy, Clone, Eq, PartialEq, Getters, CopyGetters, Debug)]
 pub struct MetricsDto {
     #[getset(get_copy = "pub")]
     pub new_messages: u64,

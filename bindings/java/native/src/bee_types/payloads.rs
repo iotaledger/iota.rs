@@ -19,7 +19,7 @@ pub enum MessagePayloadType {
     TreasuryTransaction = 5,
 }
 
-#[derive(PartialEq, Clone, Debug, Serialize, Deserialize)]
+#[derive(Eq, PartialEq, Clone, Debug, Serialize, Deserialize)]
 pub struct MessagePayload {
     payload: RustPayload,
 }

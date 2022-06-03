@@ -30,7 +30,7 @@ use anyhow::anyhow;
 
 pub const ADDRESS_GAP_RANGE: usize = 20;
 
-#[derive(Clone, Debug, Getters, CopyGetters, PartialEq)]
+#[derive(Clone, Debug, Getters, CopyGetters, Eq, PartialEq)]
 pub struct AddressDto {
     #[getset(get_copy = "pub")]
     pub kind: u8,
@@ -55,7 +55,7 @@ impl From<RustAddressDto> for AddressDto {
     }
 }
 
-#[derive(Clone, Getters, CopyGetters, PartialEq, Debug)]
+#[derive(Clone, Getters, CopyGetters, Eq, PartialEq, Debug)]
 pub struct BalanceAddressResponse {
     #[getset(get_copy = "pub")]
     pub address_type: u8,
@@ -91,7 +91,7 @@ impl From<RustBalanceAddressResponse> for BalanceAddressResponse {
 #[derive(Clone, Debug, Getters, CopyGetters)]
 pub struct AddressOutputsOptions {}
 
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub struct Address {
     address: RustAddress,
 }
@@ -354,7 +354,7 @@ impl<'a> GetAddressesBuilder<'a> {
     }
 }
 
-#[derive(Clone, Debug, Getters, CopyGetters, PartialEq)]
+#[derive(Clone, Debug, Getters, CopyGetters, Eq, PartialEq)]
 pub struct AddressStringPublicWrapper {
     #[getset(get = "pub")]
     address: String,
@@ -367,7 +367,7 @@ impl Display for AddressStringPublicWrapper {
     }
 }
 
-#[derive(Clone, Debug, Getters, CopyGetters, PartialEq)]
+#[derive(Clone, Debug, Getters, CopyGetters, Eq, PartialEq)]
 pub struct AddressPublicWrapper {
     address: Address,
     #[getset(get_copy = "pub")]

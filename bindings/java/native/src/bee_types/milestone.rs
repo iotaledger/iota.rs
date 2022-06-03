@@ -21,7 +21,7 @@ use crate::{bee_types::ReceiptPayload, ed25519::PublicKey, Result};
 
 use std::convert::TryInto;
 
-#[derive(Getters, CopyGetters, PartialEq, Debug)]
+#[derive(Getters, CopyGetters, Eq, PartialEq, Debug)]
 pub struct MilestoneResponse {
     #[getset(get_copy = "pub")]
     pub index: u32,
@@ -47,7 +47,7 @@ impl From<RustMilestoneResponse> for MilestoneResponse {
     }
 }
 
-#[derive(Getters, CopyGetters, PartialEq, Debug)]
+#[derive(Getters, CopyGetters, Eq, PartialEq, Debug)]
 pub struct MilestoneUtxoChangesResponse {
     #[getset(get_copy = "pub")]
     pub index: u32,
@@ -84,7 +84,7 @@ impl From<RustUtxoChangesResponse> for MilestoneUtxoChangesResponse {
     }
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(Eq, PartialEq, Debug)]
 pub struct MilestonePayload {
     rust_milestone: RustMilestonePayload,
     essence: RustMilestonePayloadEssence,
@@ -162,7 +162,7 @@ impl core::fmt::Display for MilestonePayload {
     }
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(Eq, PartialEq, Debug)]
 pub struct MilestoneSignature {
     signature: [u8; MILESTONE_SIGNATURE_LENGTH],
 }
@@ -179,7 +179,7 @@ impl core::fmt::Display for MilestoneSignature {
     }
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(Eq, PartialEq, Debug)]
 pub struct MilestonePayloadEssence {
     essence: RustMilestonePayloadEssence,
 }

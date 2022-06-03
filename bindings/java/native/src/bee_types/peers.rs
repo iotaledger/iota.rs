@@ -5,7 +5,7 @@ use iota_client::bee_rest_api::types::dtos::{PeerDto as RustPeerDto, RelationDto
 
 use crate::bee_types::GossipDto;
 
-#[derive(PartialEq, Getters, CopyGetters, Debug)]
+#[derive(Eq, PartialEq, Getters, CopyGetters, Debug)]
 pub struct PeerDto {
     #[getset(get = "pub")]
     pub id: String,
@@ -38,7 +38,7 @@ impl core::fmt::Display for PeerDto {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Debug)]
+#[derive(Clone, Copy, Eq, PartialEq, Debug)]
 pub enum Relation {
     KNOWN,
     UNKNOWN,
