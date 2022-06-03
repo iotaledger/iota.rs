@@ -204,8 +204,33 @@ impl StrongholdAdapter {
     ///
     /// This function will also spawn an asynchronous task in Tokio to automatically purge the derived key from
     /// `password` after `timeout` (if set).
-    pub async fn set_password(&mut self, password: &str) {
-        *self.key.lock().await = Some(self::common::derive_key_from_password(password));
+    /// It will also try to load a snapshot to check if the provided password is correct, if not it's cleared and an
+    /// error will be returned.
+    pub async fn set_password(&mut self, password: &str) -> Result<()> {
+        // In a closure so there is no deadlock when calling `self.read_stronghold_snapshot()`
+        {
+            let mut key = self.key.lock().await;
+            if key.is_some() {
+                return Err(crate::Error::StrongholdPasswordAlreadySet);
+            }
+            *key = Some(self::common::derive_key_from_password(password));
+        }
+
+        // Try to read a snapshot to check if the password is correct
+        if self.snapshot_path.is_some() {
+            let result = self.read_stronghold_snapshot().await;
+            if let Err(err) = result {
+                // TODO: replace with actual error matching when updated to the new Stronghold version
+                if let crate::Error::StrongholdProcedureError(ref err_msg) = err {
+                    if !err_msg.contains("IOError") {
+                        // If loading the snapshot failed but wasn't an IOError, then the password was incorrect and we
+                        // clear it
+                        *self.key.lock().await = None;
+                        return Err(err);
+                    }
+                }
+            }
+        }
 
         // If a timeout is set, spawn a task to clear the key after the timeout.
         if let Some(timeout) = self.timeout {
@@ -221,6 +246,8 @@ impl StrongholdAdapter {
 
             *self.timeout_task.lock().await = Some(tokio::spawn(task_key_clear(task_self, stronghold, key, timeout)));
         }
+
+        Ok(())
     }
 
     /// Change the password of the currently loaded Stronghold.
@@ -565,7 +592,7 @@ mod tests {
         let timeout = None;
         adapter.set_timeout(timeout).await;
 
-        adapter.set_password("password").await;
+        adapter.set_password("password").await.unwrap();
         assert!(matches!(*adapter.key.lock().await, Some(_)));
         assert_eq!(adapter.get_timeout(), timeout);
         assert!(matches!(*adapter.timeout_task.lock().await, None));
@@ -580,5 +607,19 @@ mod tests {
         assert!(matches!(*adapter.key.lock().await, None));
         assert_eq!(adapter.get_timeout(), timeout);
         assert!(matches!(*adapter.timeout_task.lock().await, None));
+    }
+
+    #[tokio::test]
+    async fn stronghold_password_already_set() {
+        let mut adapter = StrongholdAdapter::builder().password("drowssap").try_build().unwrap();
+
+        // When the password already exists, it should fail
+        assert!(adapter.set_password("drowssap").await.is_err());
+
+        adapter.clear_key().await;
+        // After the key got cleared it should work again to set it
+        assert!(adapter.set_password("drowssap").await.is_ok());
+        // When the password already exists, it should fail
+        assert!(adapter.set_password("drowssap").await.is_err());
     }
 }
