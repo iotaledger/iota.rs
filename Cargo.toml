@@ -166,6 +166,18 @@ path = "examples/node_api_core/22_get_utxo_changes_by_index.rs"
 name = "node_api_indexer_get_basic_outputs"
 path = "examples/node_api_indexer/00_get_basic_outputs.rs"
 
+[[example]]
+name = "node_api_indexer_get_nft_outputs"
+path = "examples/node_api_indexer/01_get_nft_outputs.rs"
+
+[[example]]
+name = "node_api_indexer_get_alias_outputs"
+path = "examples/node_api_indexer/02_get_alias_outputs.rs"
+
+[[example]]
+name = "node_api_indexer_get_foundry_outputs"
+path = "examples/node_api_indexer/03_get_foundry_outputs.rs"
+
 
 #######
 
