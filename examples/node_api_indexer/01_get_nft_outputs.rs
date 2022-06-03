@@ -1,8 +1,11 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! `cargo run --example node_api_indexer_get_basic_outputs --release -- [NODE URL]`.
+//! `cargo run --example node_api_indexer_get_nft_outputs --release -- [NODE URL]`.
 
+use std::str::FromStr;
+
+use bee_block::output::NftId;
 use iota_client::{node_api::indexer::query_parameters::QueryParameter, Client, Result};
 
 #[tokio::main]
@@ -21,9 +24,9 @@ async fn main() -> Result<()> {
 
     let address = "rms1qpllaj0pyveqfkwxmnngz2c488hfdtmfrj3wfkgxtk4gtyrax0jaxzt70zy";
 
-    // Get output ids of basic outputs that can be controlled by this address without further unlock constraints
+    // Get output ids of outputs that can be controlled by this address without further unlock constraints
     let output_ids = client
-        .basic_output_ids(vec![
+        .nft_output_ids(vec![
             QueryParameter::Address(address.to_string()),
             QueryParameter::HasExpirationCondition(false),
             QueryParameter::HasTimelockCondition(false),
@@ -35,7 +38,12 @@ async fn main() -> Result<()> {
 
     // Get the outputs by their id
     let outputs_responses = client.get_outputs(output_ids).await?;
-    println!("Outputs: {outputs_responses:?}",);
+    println!("Nft outputs: {outputs_responses:?}",);
+
+    // Get an nft output by its NftId
+    let nft_id = NftId::from_str("0x649db5b14ee26d7eb91304cfeaa27cb661e1b05d366623be24d07955e0af6ce1")?;
+    let output_id = client.nft_output_id(nft_id).await?;
+    println!("Nft output: {output_id}");
 
     Ok(())
 }
