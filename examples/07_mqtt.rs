@@ -36,7 +36,7 @@ async fn main() -> Result<()> {
     client
         .subscriber()
         .with_topics(vec![
-            Topic::try_from("milestones/latest".to_string())?,
+            Topic::try_from("milestone-info/latest".to_string())?,
             Topic::try_from("blocks".to_string())?,
             Topic::try_from(
                 "outputs/unlock/address/atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r".to_string(),
