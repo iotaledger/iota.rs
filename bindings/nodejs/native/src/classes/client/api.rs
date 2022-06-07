@@ -463,7 +463,7 @@ impl Task for ClientTask {
                     serde_json::to_string(&treasury)?
                 }
                 Api::GetIncludedMessage(transaction_id) => {
-                    let message = client.get_included_message(&*transaction_id).await?;
+                    let message = client.get_included_message(transaction_id).await?;
                     serde_json::to_string(&MessageWrapper {
                         message_id: message.id().0,
                         message: BeeMessageDto::from(&message),

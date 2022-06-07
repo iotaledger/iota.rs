@@ -30,7 +30,7 @@ To use the iota.rs library, you will simply need to add it as dependency in your
 
 ```bash
 [dependencies]
-iota-client = { git = "https://github.com/iotaledger/iota.rs", branch = "dev" }
+iota-client = { git = "https://github.com/iotaledger/iota.rs", branch = "production" }
 # asynchronous runtime
 tokio = { version = "1.12.0", features = ["full"] }
 ```
