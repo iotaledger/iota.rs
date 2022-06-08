@@ -8,15 +8,18 @@ keywords:
 - cross
 - compile
 ---
+import AndroidGradle from "./../../_partials/admonitions/_android_gradle.md";
+import CrossCompile from "./../../_partials/admonitions/_android_cross_compile.mdx";
+import UnnecessaryBuild from "./../../_partials/admonitions/_android_unnecessary_build.md";
+import AndroidAppExample from "./../../_partials/admonitions/_android_app_example.md";
+
 # Android development
 
 Android development requires a more specific environment setup. In this tutorial we will guide you through the various ways to build an APK with `iota.rs` capabilities.
 
 The first part of this tutorial shows you how to install the required tools for building an apk. Scroll [down](#using-pre-generated-binaries) for a guide using the precompiled binaries found on our release page [here](https://github.com/iotaledger/iota.rs/releases). The Java releases are tagged with `android-binding-vX.Y.Z`.
 
-:::info
-Since Android development mainly uses Gradle, we will use that for this tutorial
-:::
+<AndroidGradle />
 
 ## Setup by compiling
 
@@ -73,9 +76,7 @@ To generate the Java source files; we need to run cargo manually once.
 
 This step will require you to run `cargo build --release` in `iota.rs/bindings/java`.
 
-:::info
-This step is simplifying the process by running an unnecesary build (We compile here for our current system). If you have a working environment already, you can run cargo with a `--target=$TARGET` to save time later on.
-:::
+<UnnecessaryBuild />
 
 ### 1.2 Creating the Jar
 
@@ -89,17 +90,7 @@ Building the actual app can be done through two different ways. Using Android St
 
 The following 2 Sections describe both methods.
 
-:::note Cross compile
-
-To build on windows, we need to add android triplets to our VCPKG and use that during compilation.
-
-Currently, cross compiling has only worked on WSL/Linux.
-
-If you wish to use Android Studio in Windows, first make the android target binaries in WSL/Linux, then copy them over to `src/main/jniLibs/$TARGET/`. (See step [Compiling a binary](#Adding%20shared%20library), but do that for each enabled target in WSL/Linux)
-
-Afterwards, you need to comment out all `archTriplets` in `build.gradle` for you not to regenerate them (and fail on Windows).
-
-:::
+<CrossCompile />
 
 ### 2.1 Android studio
 
@@ -235,7 +226,4 @@ Then using Android Studio, add the native.jar to your project by right clicking 
 
 Add the jar to your `build.gradle` dependencies section using; for example: `implementation files('src\\main\\libs\\native.jar')`
 
-:::info
-
-When trying to build the `android-app` example in the repository with precompiled binaries, comment out all the `archTriplets` inside `iota.rs/bindings/java/examples/android-app/build.gradle` (otherwise you will try to regenerate the `.so` files).
-:::
+<AndroidAppExample />

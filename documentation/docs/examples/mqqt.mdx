@@ -18,20 +18,16 @@ keywords:
 ---
 import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
+
+import KeyConceptOutputs from './../_partials/admonitions/_key_concept_outputs.md';
 import JavaMQQT from "../libraries/java/examples/_10_mqqt.mdx";
 import NodejsMQQT from "../libraries/nodejs/examples/_10_mqtt.mdx";
 import PythonMQQT from "../libraries/python/examples/_10_mqtt.mdx";
 import RustMQQT from "../libraries/rust/examples/_10_mqtt.mdx";
 // import WasmMQQT from "../libraries/wasm/examples/_10_MQQT.mdx";
 
-:::info Enable MQTT
 
-The IOTA node needs to have the MQTT layer enabled. There is a set of test nodes available that have MQTT enabled.
-You can find more information in the [devnet section](https://wiki.iota.org/chrysalis-docs/devnet/) of the Chrysalis
-documentation.
-
-:::
-
+<KeyConceptOutputs />
 
 IOTA node(s) provide a [Message Queuing Telemetry Transport](https://en.wikipedia.org/wiki/MQTT) (MQTT) layer, if
 enabled, which is a lightweight publish-subscribe network protocol that provides information about events that are

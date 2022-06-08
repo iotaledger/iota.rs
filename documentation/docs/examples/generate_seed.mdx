@@ -17,24 +17,19 @@ keywords:
 ---
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
+
+import KeyConceptSeeds from './../_partials/admonitions/_key_concept_seeds.md';
+import AvoidSeedGenerators from './../_partials/admonitions/_avoid_seed_generators.md';
+import WalletRecommendation from './../_partials/admonitions/_wallet_transaction_recommendation.md';
 import JavaGenerateSeed from '../libraries/java/examples/_02_generate_seed.mdx';
 import NodejsGenerateSeed from '../libraries/nodejs/examples/_02_generate_seed.mdx';
 import PythonGenerateSeed from '../libraries/python/examples/_02_generate_seed.mdx';
 import RustGenerateSeed from '../libraries/rust/examples/_02_generate_seed.mdx';
 import WasmGenerateSeed from '../libraries/wasm/examples/_02_generate_seed.mdx';
 
-:::tip
+<KeyConceptSeeds />
 
-You can learn more about seeds in the [Key Concepts Section](./../key_concepts/seeds.md).
-
-:::
-
-:::info
-
-Please note, it is highly recommended that you avoid using online seed generators. The seed is the only key to the given
-addresses. So, anyone who owns the seed also owns all the funds related to respective IOTA addresses.
-
-:::
+<AvoidSeedGenerators />
 
 <Tabs groupId="language">
     <TabItem value="java" label="Java">
@@ -62,11 +57,4 @@ pass phrase weapon yellow diary scissors gift drive strategy antique scheme make
 eff5c97c96ddab55d6fe78f914508750152eaab1b9692236bc79268895ecfd168e91eedd2489ed6c51fc44156b9a2e6c967e4edcfb649ff33d41581be4627347
 ```
 
-:::warning
-
-Though it is possible to send transactions with iota.rs, we strongly recommend that you use official
-[`wallet.rs`](https://wiki.iota.org/wallet.rs/welcome) library together with the
-[`stronghold.rs`](https://wiki.iota.org/stronghold.rs/welcome) enclave for value-based transfers. This combination
-incorporates the best security practices while dealing with seeds, related addresses and `UTXO`.
-
-:::
+<WalletRecommendation />

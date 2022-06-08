@@ -64,7 +64,4 @@ Operations from the first group tend to be too atomic and basic to use convenien
 higher-level helper functions. These functions represent an actual task and combine multiple basic operations
 internally. For example, you can get your token balance by calling `getBalance`. It will first call `getAddresses`, then
 call `getAddressBalances` for each address, and add the results together to return the total balance. See
-the [full specification](./specs) for details.
-
-
-
+the [full specification](./specs.mdx) for details.

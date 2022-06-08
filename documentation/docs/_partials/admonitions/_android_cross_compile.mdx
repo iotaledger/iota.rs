@@ -1,0 +1,11 @@
+:::note Cross compile
+
+To build on Windows, we need to add android triplets to our VCPKG and use that during compilation.
+
+Currently, cross compiling has only worked on WSL/Linux.
+
+If you wish to use Android Studio in Windows, first make the android target binaries in WSL/Linux, then copy them over to `src/main/jniLibs/$TARGET/`. (See step [Compiling a binary](#Adding%20shared%20library), but do that for each enabled target in WSL/Linux)
+
+Afterwards, you need to comment out all `archTriplets` in `build.gradle` for you not to regenerate them (and fail on Windows).
+
+:::

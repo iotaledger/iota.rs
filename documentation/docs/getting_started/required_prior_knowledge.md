@@ -38,8 +38,8 @@ To check out our examples and write and test your own code, you will need an IDE
 stable internet connection. You also need to set up your environment by following instructions for one of the
 languages:
 
-* [Java](./java/getting_started.md).
+* [Java](./java/getting_started.mdx).
 * [Node.js](./nodejs.md).
-* [Python](./python.md).
+* [Python](./python.mdx).
 * [Rust](./rust.md).
 * [Wasm](./wasm.md).

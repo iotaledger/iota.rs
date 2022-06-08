@@ -1,0 +1,7 @@
+:::info Enable MQTT
+
+The IOTA node needs to have the MQTT layer enabled. There is a set of test nodes available that have MQTT enabled.
+You can find more information in the [devnet section](https://wiki.iota.org/chrysalis-docs/devnet/) of the Chrysalis
+documentation.
+
+:::

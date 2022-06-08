@@ -11,6 +11,11 @@ keywords:
 - account
 - reference
 ---
+
+import RustStandard from "./_partials/admonitions/_rust_standard.md";
+import MinimumNodes from "./_partials/admonitions/_minimum_nodes.md";
+import ActiveDevelopment from "./_partials/admonitions/_active_development.md";
+
 # High Level API Specification
 
 ## Introduction
@@ -24,12 +29,7 @@ to support developers who want to create foreign function interfaces with native
 The data structure to initialize the instance of the Higher level client library. It is always called first when
 starting a new interaction with the library.
 
-:::note
-
-This is the standard approach to do initialization in Rust. Different languages might use different methods, such as
-directly calling an initialization function.
-
-:::
+<RustStandard />
 
 ### Parameters
 
@@ -141,11 +141,7 @@ directly calling an initialization function.
 |----------|-----------------------------------------------|---------------------------------|------------------------------------------------|
 | ✘        | True,<br />Duration::from_secs(30),<br />True | [BrokerOptions](#BrokerOptions) | If not defined the default values will be used |
 
-::: note
-
-There must be at least one node to build the instance successfully.
-
-:::
+<MinimumNodes />
 
 ### Return
 
@@ -709,12 +705,7 @@ The full node APIs of [Bee](https://wiki.iota.org/bee/welcome) and [Hornet](http
 still be public. Users who are familiar with these relative low level Restful APIs can still call them directly if they
 are confident in their usage.
 
-:::note
-
-Given that both Bee and Hornet APIs are still in active development, the following items and signatures may change in
-the future.
-
-:::
+<ActiveDevelopment />
 
 ### get_health()
 

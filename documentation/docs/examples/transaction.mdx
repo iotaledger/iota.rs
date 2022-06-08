@@ -17,6 +17,8 @@ keywords:
 ---
 import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
+import WalletRecommendation from "./../_partials/admonitions/_wallet_transaction_recommendation.md";
+import DustProtection from "./../_partials/admonitions/_dust_protection.md";
 import JavaTransaction from "../libraries/java/examples/_09_transaction.mdx";
 import NodejsGetTransaction from "../libraries/nodejs/examples/_09_transaction.mdx";
 import PythonGetTransaction from "../libraries/python/examples/_09_transaction.mdx";
@@ -27,14 +29,7 @@ import WasmGetTransaction from "../libraries/wasm/examples/_09_transaction.mdx";
 A [SignedTransaction](../key_concepts/messages_payloads_and_transactions.md#signedtransaction) is a core payload
 type that is used to send value-based messages as [Unspent Transaction Output (UTXO)](key_concepts/messages_payloads_and_transactions#unspent-transaction-output-utxo). This core payload changes the ledger state as it spends "old" outputs and replaces them with new outputs.
 
-:::info
-
-Though it is possible to send transactions with iota.rs, we strongly recommend that you use official
-[`wallet.rs`](https://wiki.iota.org/wallet.rs/welcome) library together with the
-[`stronghold.rs`](https://wiki.iota.org/stronghold.rs/welcome) enclave for value-based transfers. This combination
-incorporates the best security practices while dealing with seeds, related addresses and `UTXO`.
-
-:::
+<WalletRecommendation />
 
 
 <Tabs groupId="language">
@@ -55,17 +50,4 @@ incorporates the best security practices while dealing with seeds, related addre
   </TabItem>
 </Tabs>
 
-:::note Dust Protection
-
-There is a [dust protection](https://wiki.iota.org/chrysalis-docs/faq#what-is-dust-protection-and-how-does-it-work)
-mechanism implemented in the network protocol to prevent malicious actors from spamming the network in an attempt to decrease node
-performance while keeping track of unspent amount (`UTXO`).
-
-
-"... microtransactions below 1Mi of IOTA tokens can be sent to another address if there is already at least 1Mi on that address."
-
-
-That's why the code in the example sent 1Mi, to comply with the protection.
-
-:::
-
+<DustProtection />

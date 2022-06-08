@@ -7,13 +7,14 @@ keywords:
 - pip
 - unpack
 ---
+
+import WarningPasswordStorage from "../_partials/admonitions/_password_storage.md";
+
 # Getting Started with IOTA Client Python Binding
 
 ## Security
 
-:::warning
-In a production setup, do not store passwords in the host's environment variables or in the source code. See our [backup and security recommendations](https://wiki.iota.org/chrysalis-docs/guides/backup_security) for production setups.
-:::
+<WarningPasswordStorage />
 
 ## Installation
 Easiest way how to get python binding up and running is to leverage pre-built python libraries for linux/macos/windows that can be installed to your python environment (3.6+) via `pip`. The binding is automagically generated using github [actions](https://github.com/iotaledger/iota.rs/actions/workflows/python_binding_publish.yml).
@@ -25,16 +26,19 @@ pip install <wheel_file>
 ```
 
 Once it has been properly installed you can double check it using `pip`:
+
 ```bash
 pip list
 ```
 
 You should see the similar output:
+
 ```plaintext
 Package                    Version
 -------------------------- -------
 iota-client-python           0.2.0a3
 ```
+
 Once installed in the given python environment you are all set and can start hacking using python binding!
 
 ## Usage

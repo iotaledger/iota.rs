@@ -8,6 +8,10 @@ keywords:
 - maven
 - environment variable
 ---
+
+import PasswordStorage from "./../../_partials/admonitions/_password_storage.md";
+import CompilingForAndroid from "./../../_partials/admonitions/_compiling_for_android.md";
+
 # Getting Started
 
 ## Prerequisites
@@ -29,9 +33,7 @@ git clone https://github.com/iotaledger/iota.rs.git
 
 ## Security
 
-:::warning
-In a production setup, do not store passwords in the host's environment variables or in the source code.  See our [backup and security recommendations](https://chrysalis.docs.iota.org/guides/backup_security) for production setups.
-:::
+<PasswordStorage />
 
 ## Installation
 
@@ -51,10 +53,7 @@ cargo build --release
 
 Generated binaries can then be found at `iota.rs/bindings/java/target/release`
 
-:::info
-Compiling for Android requires additional compilation instructions.
-Specific instructions can be found in [Android development](android_development.md)
-:::
+<CompilingForAndroid />
 
 ### Step 2: Creating the Java archive
 
