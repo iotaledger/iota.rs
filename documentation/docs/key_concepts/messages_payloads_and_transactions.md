@@ -1,5 +1,5 @@
 ---
-description: The IOTA network is based on messages and payloads. A message is a data structure broadcast in the IOTA network and represents a node (vertex) in  the Tangle graph, while a payload represents a layer of concern.
+description: The IOTA network is based on messages and payloads. A message is a data structure broadcast in the IOTA network and represents a node (vertex) in the Tangle graph, while a payload represents a layer of concern.
 image: /img/libraries/messages_in_tangle.svg
 keywords:
 - explanation
