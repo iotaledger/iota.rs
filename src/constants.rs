@@ -27,7 +27,7 @@ pub const IOTA_BECH32_HRP: &str = "iota";
 pub const IOTA_TESTNET_BECH32_HRP: &str = "atoi";
 /// Bech32 hrp for the Shimmer mainnet <https://github.com/satoshilabs/slips/blob/master/slip-0173.md>
 pub const SHIMMER_BECH32_HRP: &str = "smr";
-/// Bech32 hrp for the IOTA testnet <https://github.com/satoshilabs/slips/blob/master/slip-0173.md>
+/// Bech32 hrp for the Shimmer testnet <https://github.com/satoshilabs/slips/blob/master/slip-0173.md>
 pub const SHIMMER_TESTNET_BECH32_HRP: &str = "rms";
 
 /// BIP-0044 defines a logical hierarchy for deterministic wallets
