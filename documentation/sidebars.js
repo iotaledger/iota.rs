@@ -8,7 +8,6 @@
 
  Create as many sidebars as you want.
  */
-
 module.exports = {
   docs: [
     {
