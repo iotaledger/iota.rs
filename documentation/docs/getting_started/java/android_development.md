@@ -46,9 +46,9 @@ We will use `archTriplets` for the enabled list of device targets during this tu
 - Dependencies indicated in the [Getting started](getting_started.md) Prerequisite section
 - Android NDK or Android Studio with NDK installed (If you extract make sure to make it executable `chmod -R +x android-ndk-VERSION` )
 
-In order to cross compile the binaries for Android; we need the following target toolchains: (All of the enabled `archTriplets`)
+To cross compile the binaries for Android, we need the following target toolchains: (All of the enabled `archTriplets`)
 
-```bas
+```bash
 rustup target add \
     armv7-linux-androideabi \
     aarch64-linux-android \
@@ -56,20 +56,20 @@ rustup target add \
     x86_64-linux-android
 ```
 
-For this setup we use `$ANDROID_NDK_HOME` for the location of your NDK, wether you use Android studio or manual compilation
+For this setup we use `$ANDROID_NDK_HOME` for the location of your NDK, wether you use Android studio or manual compilation.
 
-1. set `ANDROID_NDK_HOME` environment variable
+1. Set `ANDROID_NDK_HOME` environment variable
 
 Example: `export ANDROID_NDK_HOME=$ANDROID_HOME/ndk/{A_VERSION_NUMBER}`
 
 If you dont have `ANDROID_HOME`; Usually found at `/home/user/Android`. Make sure you have installed Android correctly.
 Attempt to run `android` on your terminal. If this command does not open the Android SDK Manager, then your path is not configured correctly.
 
-## 1. Generating the java files
+## 1. Generating the Java Files
 
-### 1.1 Compiling a binary
+### 1.1 Compiling a Binary
 
-In order to generate the Java source files; we need to run cargo manually once.
+To generate the Java source files; we need to run cargo manually once.
 
 This step will require you to run `cargo build --release` in `iota.rs/bindings/java`.
 
@@ -77,13 +77,13 @@ This step will require you to run `cargo build --release` in `iota.rs/bindings/j
 This step is simplifying the process by running an unnecesary build (We compile here for our current system). If you have a working environment already, you can run cargo with a `--target=$TARGET` to save time later on.
 :::
 
-### 1.2 Creating the jar
+### 1.2 Creating the Jar
 
 Afterwards, you need to run `./gradlew jar` in `iota.rs/bindings/java` in order to generate the jar file.
 
 The jar will be found at `iota.rs/bindings/java/native/build/libs/native.jar`
 
-## 2. Build the app
+## 2. Build the App
 
 Building the actual app can be done through two different ways. Using Android Studio and by manual linking.
 
@@ -227,7 +227,7 @@ root_app/src/main/
       libiota_client_java.so
 ```
 
-### Android studio
+### Android Studio
 
 Then using Android Studio, add the native.jar to your project by right clicking -> Add As Library... -> Select your Android app Module and press OK.
 
@@ -236,5 +236,6 @@ Then using Android Studio, add the native.jar to your project by right clicking 
 Add the jar to your `build.gradle` dependencies section using; for example: `implementation files('src\\main\\libs\\native.jar')`
 
 :::info
-When trying to build the `android-app` example in the repository with precompiled binaries, comment out all the `archTriplets` inside `iota.rs/bindings/java/examples/android-app/build.gradle`. (Otherwise you will try to regenerate the `.so` files)
+
+When trying to build the `android-app` example in the repository with precompiled binaries, comment out all the `archTriplets` inside `iota.rs/bindings/java/examples/android-app/build.gradle` (otherwise you will try to regenerate the `.so` files).
 :::

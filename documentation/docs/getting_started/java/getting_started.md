@@ -35,16 +35,16 @@ In a production setup, do not store passwords in the host's environment variable
 
 ## Installation
 
-In order to build using the iota.rs Java bindings, you need the following two parts:
+To build using the iota.rs Java bindings, you need the following two parts:
 
-1. JNI Native library linking `Rust` to `C`, and then `C` to java `native` methods (`.so` , `.dll` or `.dylib` depending on your system)
-2. Java archive(Jar) containing `native` methods which call C code. (`.jar`)
+1. JNI Native library linking `Rust` to `C`, and then `C` to java `native` methods (`.so` , `.dll` or `.dylib` depending on your system).
+2. Java archive(Jar) containing `native` methods which call C code. (`.jar`).
 
-### Step 1: Creating the native library
+### Step 1: Creating the Native Library
 
 Build the iota.rs library (This generates the java source code and JNI library file)
 
-```bas
+```bash
 cd iota.rs/bindings/java
 cargo build --release
 ```
@@ -124,7 +124,7 @@ private static void nodeInfo() {
 
 ## API Reference
 
-[JAVA API Reference](api_reference/java).
+Java
 
 ### Limitations
 
