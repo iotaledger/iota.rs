@@ -3,16 +3,16 @@ import get_balance from '!!raw-loader!../../../../../bindings/python/examples/04
 
 There are three common API calls you can use to get a balance:
 
-## [`Client.get_address_balance(address: str)`](./..//libraries/python/api_reference#get_address_balanceaddress-balanceaddressresponse)
+## [`Client.get_address_balance(address: str)`](./../libraries/python/api_reference#get_address_balanceaddress-balanceaddressresponse)
 
 Expects a single address in Bech32 format and returns `dict` with a balance for the address.
 
 
-## [`Client.get_address_balances(addresses: list[str])`](./..//libraries/python/api_reference#get_address_balancesaddresses-listaddressbalancepair): 
+## [`Client.get_address_balances(addresses: list[str])`](./../libraries/python/api_reference#get_address_balancesaddresses-listaddressbalancepair):
 
 A convenient function that expects `list` of addresses in Bech32 format and returns list of `dict` with balances for all given addresses
 
-## [`Client.get_balance(seed, account_index (optional), initial_address_index(optional), gap_limit(optional))`](./..//libraries/python/api_reference#get_balanceseed-account_index-optional-initial_address_indexoptional-gap_limitoptional-int)
+## [`Client.get_balance(seed, account_index (optional), initial_address_index(optional), gap_limit(optional))`](./../libraries/python/api_reference#get_balanceseed-account_index-optional-initial_address_indexoptional-gap_limitoptional-int)
 
 A convenient function that combines `Client.get_addresses()` and `Client.get_address_balances()` api calls. It returns a combined balance for the provided `seed` and optional chaining calls `.accountIndex(index)`, `.initialAddressIndex(index)` and `.gapLimit(amount)`
 
