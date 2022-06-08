@@ -91,13 +91,13 @@ The following 2 Sections describe both methods.
 
 :::note Cross compile
 
-In order to build on windows, we need to add android triplets to our VCPKG and use that during compilation.
-[TODO]
+To build on windows, we need to add android triplets to our VCPKG and use that during compilation.
 
-Currently cross compiling has only worked on WSL/Linux.
+Currently, cross compiling has only worked on WSL/Linux.
+
 If you wish to use Android Studio in Windows, first make the android target binaries in WSL/Linux, then copy them over to `src/main/jniLibs/$TARGET/`. (See step [Compiling a binary](#Adding%20shared%20library), but do that for each enabled target in WSL/Linux)
 
-Afterwards you need to comment out all `archTriplets` in `build.gradle` in order for you not to regenerate them (and fail on Windows).
+Afterwards, you need to comment out all `archTriplets` in `build.gradle` for you not to regenerate them (and fail on Windows).
 
 :::
 
@@ -127,7 +127,7 @@ These toolchains can alternatively be prepended to the cargo command as well, bu
 
 #### Setting Cargo config
 
-In order to compile the binaries for the various Android targets, we need to specify the targets to rust.
+To compile the binaries for the various Android targets, we need to specify the targets to rust.
 
 Create or update the following file: `~/.cargo/config`.
 Replace each instance of `$ANDROID_NDK_HOME` with the actual location (variables do not work) and add the text below to the config file.
@@ -160,7 +160,7 @@ cd iota.rs/bindings/java
 ./gradlew build
 ```
 
-Alternatively, you can also manually run the commands;
+Alternatively, you can also manually run the commands.
 
 1. Compile the binaries for the target
 
@@ -183,7 +183,7 @@ cd iota.rs/bindings/java
 
 #### Signing your app
 
-1. prepare a signing keystore; we will call it `signed_ks.jks`
+1. Prepare a signing keystore; we will call it `signed_ks.jks`
 
 > How to make: <https://developer.android.com/studio/publish/app-signing#generate-key>
 
@@ -204,7 +204,7 @@ For example:
 
 ## Using pre-generated binaries
 
-It is very likely you dont want or need to compile by yourself. That is why we provide precompiled binaries found on our release page [here](https://github.com/iotaledger/iota.rs/releases). The Java releases are tagged with `android-binding-vX.Y.Z`.
+It is likely you do not want or need to compile by yourself. That is why we provide precompiled binaries found on our release page [here](https://github.com/iotaledger/iota.rs/releases). The Java releases are tagged with `android-binding-vX.Y.Z`.
 
 Install the files attached to the release so that you achieve the following directory structure: (extract the `jniLibs.zip` into `root_app/src/main/`)
 
