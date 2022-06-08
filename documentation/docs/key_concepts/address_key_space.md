@@ -68,4 +68,4 @@ and `coin_type` are given, the rest levels are up to developers to integrate.
 
 ## Related Examples
 
-* [Generate Addresses](./../how_tos/generate_addresses.mdx)
+* [Generate Addresses](./../examples/generate_addresses.mdx)
