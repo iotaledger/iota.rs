@@ -1,5 +1,5 @@
 ---
-description:   Choose your binding and get started with the IOTA Client Library. 
+description:  Choose your binding and get started with the IOTA Client Library. 
 image: /img/Banner/banner_client_lib_getting_started.png
 keywords:
 - rust
@@ -9,6 +9,7 @@ keywords:
 - javascript
 - IDE
 - WASM
+- reference
 ---
 # Getting Started
 
