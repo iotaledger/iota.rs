@@ -5,8 +5,6 @@ const javaFunctionName = 'public static void generateAddresses() {', indexStart 
 const nextJavaFunctionName = 'public static void getBalance() {', indexEnd = java_examples.indexOf(nextJavaFunctionName);
 const generate_addresses = java_examples.substring(indexStart, indexEnd);
 
-<>
-
 You can generate an IOTA address using the
     [`GetAddressesBuilder`](./../libraries/java/api_reference#getaddressesbuilder) helper class and calling the    `GetAddressesBuilder::from(seed: &str)` function
 and respective chaining calls that will return a list of tuples with the generated addresses. You can find more information
@@ -44,5 +42,3 @@ Addresses can be also represented in a hex format using the
 If you want to quickly validate any IOTA address, you can use the
 [`Client.isAddressValid()`](./../libraries/java/api_reference#isaddressvalidaddress-boolean) function that returns a `bool` value. You should
 perform a sanity check on address before using it.
-
-</>
