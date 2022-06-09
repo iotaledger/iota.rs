@@ -43,11 +43,7 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
 
-    println!(
-        "Transaction sent with block-id: {}",
-        block.id()
-    );
-
+    println!("Transaction sent with block-id: {}", block.id());
 
     Ok(())
 }

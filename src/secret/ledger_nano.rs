@@ -5,19 +5,23 @@
 //!
 //! Ledger status codes: <https://github.com/iotaledger/ledger-iota-app/blob/53c1f96d15f8b014ba8ba31a85f0401bb4d33e18/src/iota_io.h#L54>.
 
-use std::ops::Range;
+use std::{collections::HashMap, ops::Range};
 
 use async_trait::async_trait;
 use bee_block::{
-    address::Address,
-    unlock::{Unlock, Unlocks},
+    address::{Address, AliasAddress, NftAddress},
+    output::Output,
+    signature::Signature,
+    unlock::{AliasUnlock, NftUnlock, ReferenceUnlock, Unlock, Unlocks},
 };
+
+use iota_ledger::api::packable::Packable;
+
+use packable::PackableExt;
 use tokio::sync::Mutex;
 
 use super::{types::InputSigningData, GenerateAddressMetadata, SecretManage, SecretManageExt};
 use crate::secret::{LedgerStatus, PreparedTransactionData, RemainderData};
-
-use packable::PackableExt;
 
 /// Hardened const for the bip path.
 ///
@@ -138,6 +142,7 @@ impl SecretManageExt for LedgerSecretManager {
         let mut account_index: Option<u32> = None;
 
         let input_len = prepared_transaction.inputs_data.len();
+        let mut extra_bytes = 0;
 
         for input in &prepared_transaction.inputs_data {
             let bip32_indices: Vec<u32> = match &input.chain {
@@ -158,10 +163,12 @@ impl SecretManageExt for LedgerSecretManager {
             );
             coin_type = Some(bip32_indices[1]);
             account_index = Some(bip32_indices[2]);
-            input_bip32_indices.push(iota_ledger::LedgerBIP32Index {
+            let input_bip32_index = iota_ledger::LedgerBIP32Index {
                 bip32_change: bip32_indices[3] | HARDENED,
                 bip32_index: bip32_indices[4] | HARDENED,
-            });
+            };
+            input_bip32_indices.push(input_bip32_index);
+            extra_bytes += input_bip32_index.packed_len();
         }
 
         assert!(coin_type.is_some() && account_index.is_some());
@@ -176,7 +183,9 @@ impl SecretManageExt for LedgerSecretManager {
 
         let ledger = iota_ledger::get_ledger(coin_type, bip32_account, self.is_simulator)?;
 
-        if needs_blindsigning(prepared_transaction) {
+        // if essence + bip32 input indices are larger than the buffer size or the essence contains 
+        // features / types that are not supported blindsigning will be needed
+        if (essence_bytes.len() + extra_bytes > ledger.get_buffer_size()) || needs_blindsigning(prepared_transaction) {
             // prepare signing
             log::debug!("[LEDGER] prepare blindsigning");
             log::debug!("[LEDGER] {:?} {:?}", input_bip32_indices, essence_hash);
@@ -279,14 +288,21 @@ impl SecretManageExt for LedgerSecretManager {
         // sign
         let signature_bytes = ledger.sign(input_len as u16)?;
         let mut readable = &mut &*signature_bytes;
+
         // unpack signature to unlocks
-        let mut unlock_blocks = Vec::new();
-        // TODO: merge the signature unlocks with the reference unlocks here in the correct order
+        let mut unlocks = Vec::new();
         for _ in 0..input_len {
-            let unlock_block = Unlock::unpack_verified(&mut readable).map_err(|_| crate::Error::PackableError)?;
-            unlock_blocks.push(unlock_block);
+            let unlock = Unlock::unpack_verified(&mut readable).map_err(|_| crate::Error::PackableError)?;
+            unlocks.push(unlock);
         }
-        Ok(unlock_blocks)
+
+        // With blindsigning the ledger only returns SignatureUnlocks, so we might have to merge them
+        // Alias/Nft/Reference unlocks
+        if needs_blindsigning(prepared_transaction) {
+            unlocks = merge_unlocks(prepared_transaction, unlocks.into_iter()).await?;
+        }
+
+        Ok(Unlocks::new(unlocks)?)
     }
 }
 
@@ -318,12 +334,10 @@ impl LedgerSecretManager {
 
         log::info!("get_app_config");
         // if IOTA or Shimmer app is opened, the call will always succeed, returning information like
-        // device, debug-flag, version number, lock-state but here we only are interested in a 
+        // device, debug-flag, version number, lock-state but here we only are interested in a
         // successful call and the locked-flag
         let (connected_, locked) = match iota_ledger::get_app_config(&transport_type) {
-            Ok(config) => {
-                (true, config.flags == 0x1)
-            },
+            Ok(config) => (true, config.flags == 0x1),
             Err(_) => (false, false),
         };
         // We get the app info also if not the iota app is open, but another one
@@ -332,4 +346,80 @@ impl LedgerSecretManager {
         let connected = if app.is_some() { true } else { connected_ };
         LedgerStatus { connected, locked, app }
     }
+}
+
+// Merge signature unlocks with Alias/Nft/Reference unlocks
+async fn merge_unlocks(
+    prepared_transaction_data: &PreparedTransactionData,
+    mut unlocks: impl Iterator<Item = Unlock>,
+) -> crate::Result<Vec<Unlock>> {
+    // The hashed_essence gets signed
+    let hashed_essence = prepared_transaction_data.essence.hash();
+
+    let mut merged_unlocks = Vec::new();
+    let mut block_indexes = HashMap::<Address, usize>::new();
+
+    for (current_block_index, input) in prepared_transaction_data.inputs_data.iter().enumerate() {
+        // Get the address that is required to unlock the input
+        let (_, input_address) = Address::try_from_bech32(&input.bech32_address)?;
+
+        // Check if we already added an [Unlock] for this address
+        match block_indexes.get(&input_address) {
+            // If we already have an [Unlock] for this address, add a [Unlock] based on the address type
+            Some(block_index) => match input_address {
+                Address::Alias(_alias) => merged_unlocks.push(Unlock::Alias(AliasUnlock::new(*block_index as u16)?)),
+                Address::Ed25519(_ed25519) => {
+                    merged_unlocks.push(Unlock::Reference(ReferenceUnlock::new(*block_index as u16)?))
+                }
+                Address::Nft(_nft) => merged_unlocks.push(Unlock::Nft(NftUnlock::new(*block_index as u16)?)),
+            },
+            None => {
+                // We can only sign ed25519 addresses and block_indexes needs to contain the alias or nft
+                // address already at this point, because the reference index needs to be lower
+                // than the current block index
+                if !input_address.is_ed25519() {
+                    return Err(crate::Error::MissingInputWithEd25519UnlockCondition);
+                }
+
+                let unlock = unlocks
+                    .next()
+                    .ok_or(crate::Error::MissingInputWithEd25519UnlockCondition)?;
+
+                if let Unlock::Signature(signature_unlock) = &unlock {
+                    let Signature::Ed25519(ed25519_signature) = signature_unlock.signature();
+                    let ed25519_address = match input_address {
+                        Address::Ed25519(ed25519_address) => ed25519_address,
+                        _ => return Err(crate::Error::MissingInputWithEd25519UnlockCondition),
+                    };
+                    ed25519_signature.is_valid(&hashed_essence, &ed25519_address)?;
+                }
+
+                merged_unlocks.push(unlock);
+
+                // Add the ed25519 address to the block_indexes, so it gets referenced if further inputs have
+                // the same address in their unlock condition
+                block_indexes.insert(input_address, current_block_index);
+            }
+        }
+
+        // When we have an alias or Nft output, we will add their alias or nft address to block_indexes,
+        // because they can be used to unlock outputs via [Unlock::Alias] or [Unlock::Nft],
+        // that have the corresponding alias or nft address in their unlock condition
+        match &input.output {
+            Output::Alias(alias_output) => block_indexes.insert(
+                Address::Alias(AliasAddress::new(
+                    alias_output.alias_id().or_from_output_id(input.output_id()?),
+                )),
+                current_block_index,
+            ),
+            Output::Nft(nft_output) => block_indexes.insert(
+                Address::Nft(NftAddress::new(
+                    nft_output.nft_id().or_from_output_id(input.output_id()?),
+                )),
+                current_block_index,
+            ),
+            _ => None,
+        };
+    }
+    Ok(merged_unlocks)
 }

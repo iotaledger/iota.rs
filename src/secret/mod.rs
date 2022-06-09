@@ -21,7 +21,7 @@ use std::{path::PathBuf, time::Duration};
 
 use async_trait::async_trait;
 use bee_block::{
-    address::{Address, AliasAddress, Ed25519Address, NftAddress},
+    address::{Address, AliasAddress, NftAddress},
     output::Output,
     unlock::{AliasUnlock, NftUnlock, ReferenceUnlock, Unlock, Unlocks},
 };
@@ -326,7 +326,7 @@ impl SecretManager {
                     // We can only sign ed25519 addresses and block_indexes needs to contain the alias or nft
                     // address already at this point, because the reference index needs to be lower
                     // than the current block index
-                    if input_address.kind() != Ed25519Address::KIND {
+                    if !input_address.is_ed25519() {
                         return Err(crate::Error::MissingInputWithEd25519UnlockCondition);
                     }
 

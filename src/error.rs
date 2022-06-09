@@ -171,9 +171,6 @@ pub enum Error {
     /// Specifically used for `TryInfo` implementations for `SecretManager`.
     #[error("cannot unwrap a SecretManager: type mismatch!")]
     SecretManagerMismatch,
-    /// Missing unlock block error
-    #[error("missing unlock block")]
-    MissingBlock,
     /// No input with matching ed25519 unlock condition provided
     #[error("No input with matching ed25519 unlock condition provided")]
     MissingInputWithEd25519UnlockCondition,
