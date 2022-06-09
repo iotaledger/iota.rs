@@ -183,7 +183,7 @@ impl SecretManageExt for LedgerSecretManager {
 
         let ledger = iota_ledger::get_ledger(coin_type, bip32_account, self.is_simulator)?;
 
-        // if essence + bip32 input indices are larger than the buffer size or the essence contains 
+        // if essence + bip32 input indices are larger than the buffer size or the essence contains
         // features / types that are not supported blindsigning will be needed
         if (essence_bytes.len() + extra_bytes > ledger.get_buffer_size()) || needs_blindsigning(prepared_transaction) {
             // prepare signing
@@ -336,15 +336,24 @@ impl LedgerSecretManager {
         // if IOTA or Shimmer app is opened, the call will always succeed, returning information like
         // device, debug-flag, version number, lock-state but here we only are interested in a
         // successful call and the locked-flag
-        let (connected_, locked) = match iota_ledger::get_app_config(&transport_type) {
-            Ok(config) => (true, config.flags == 0x1),
-            Err(_) => (false, false),
+        let (connected_, locked, device) = match iota_ledger::get_app_config(&transport_type) {
+            Ok(config) => (
+                true,
+                config.flags == 0x1,
+                Some(crate::secret::types::LedgerDeviceType::from(config.device)),
+            ),
+            Err(_) => (false, false, None),
         };
         // We get the app info also if not the iota app is open, but another one
         // connected_ is in this case false, even tough the ledger is connected, that's why we always return true if we
         // got the app
         let connected = if app.is_some() { true } else { connected_ };
-        LedgerStatus { connected, locked, app }
+        LedgerStatus {
+            connected,
+            locked,
+            app,
+            device,
+        }
     }
 }
 

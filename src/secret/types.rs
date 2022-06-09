@@ -61,6 +61,28 @@ pub struct LedgerApp {
     pub(crate) version: String,
 }
 
+/// Ledger Device Type
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+pub enum LedgerDeviceType {
+    /// Device Type Nano S
+    LedgerNanoS,
+    /// Device Type Nano X
+    LedgerNanoX,
+    /// Device Type Nano S Plus
+    LedgerNanoSPlus,
+}
+
+impl From<u8> for LedgerDeviceType {
+    fn from(device: u8) -> Self {
+        match device {
+            0 => Self::LedgerNanoS,
+            1 => Self::LedgerNanoX,
+            2 => Self::LedgerNanoSPlus,
+            _ => Self::LedgerNanoS,
+        }
+    }
+}
+
 /// The Ledger device status.
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct LedgerStatus {
@@ -70,6 +92,8 @@ pub struct LedgerStatus {
     pub(crate) locked: bool,
     /// Ledger opened app.
     pub(crate) app: Option<LedgerApp>,
+    /// Ledger device
+    pub(crate) device: Option<LedgerDeviceType>,
 }
 
 ///
