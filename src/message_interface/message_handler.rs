@@ -20,7 +20,7 @@ use zeroize::Zeroize;
 
 use crate::{
     api::{PreparedTransactionData, PreparedTransactionDataDto},
-    message_interface::{client_method::ClientMethod, message::Message, response::Response},
+    message_interface::{client_method::ClientMethod, message::Message, output_builder::{build_alias_output, build_basic_output, build_foundry_output, build_nft_output}, response::Response},
     request_funds_from_faucet,
     secret::SecretManager,
     Client, Result,
@@ -99,6 +99,90 @@ impl ClientMessageHandler {
     #[allow(unused_mut)]
     async fn call_client_method(&self, method: &ClientMethod) -> Result<Response> {
         match method {
+            ClientMethod::BuildAliasOutput {
+                amount,
+                native_tokens,
+                alias_id,
+                state_index,
+                state_metadata,
+                foundry_counter,
+                unlock_conditions,
+                features,
+                immutable_features,
+            } => {
+                let output_dto = build_alias_output(
+                    &self.client,
+                    amount.clone(),
+                    native_tokens.clone(),
+                    alias_id,
+                    *state_index,
+                    state_metadata.clone(),
+                    *foundry_counter,
+                    unlock_conditions.to_vec(),
+                    features.clone(),
+                    immutable_features.clone(),
+                )
+                .await?;
+                Ok(Response::BuiltOutput(output_dto))
+            }
+            ClientMethod::BuildBasicOutput {
+                amount,
+                native_tokens,
+                unlock_conditions,
+                features,
+            } => {
+                let output_dto = build_basic_output(
+                    &self.client,
+                    amount.clone(),
+                    native_tokens.clone(),
+                    unlock_conditions.to_vec(),
+                    features.clone(),
+                )
+                .await?;
+                Ok(Response::BuiltOutput(output_dto))
+            }
+            ClientMethod::BuildFoundryOutput {
+                amount,
+                native_tokens,
+                serial_number,
+                token_scheme,
+                unlock_conditions,
+                features,
+                immutable_features,
+            } => {
+                let output_dto = build_foundry_output(
+                    &self.client,
+                    amount.clone(),
+                    native_tokens.clone(),
+                    *serial_number,
+                    token_scheme,
+                    unlock_conditions.to_vec(),
+                    features.clone(),
+                    immutable_features.clone(),
+                )
+                .await?;
+                Ok(Response::BuiltOutput(output_dto))
+            }
+            ClientMethod::BuildNftOutput {
+                amount,
+                native_tokens,
+                nft_id,
+                unlock_conditions,
+                features,
+                immutable_features,
+            } => {
+                let output_dto = build_nft_output(
+                    &self.client,
+                    amount.clone(),
+                    native_tokens.clone(),
+                    nft_id,
+                    unlock_conditions.to_vec(),
+                    features.clone(),
+                    immutable_features.clone(),
+                )
+                .await?;
+                Ok(Response::BuiltOutput(output_dto))
+            }
             ClientMethod::GenerateAddresses {
                 secret_manager,
                 options,

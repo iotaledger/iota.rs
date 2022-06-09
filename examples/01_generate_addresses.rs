@@ -1,7 +1,7 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! cargo run --example 03_generate_addresses --release
+//! cargo run --example 01_generate_addresses --release
 
 use std::env;
 
@@ -13,7 +13,7 @@ use iota_client::{
     Client, Result,
 };
 
-/// In this example we will create addresses from a seed defined in .env
+/// In this example we will create addresses from a mnemonic defined in .env
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -44,11 +44,9 @@ async fn main() -> Result<()> {
 
     println!("List of generated public addresses:\n{:?}\n", addresses);
 
-    // Generate public (false) & internal (true) addresses
-    let addresses = client.get_addresses(&secret_manager).with_range(0..4).get_all().await?;
-    println!("List of generated public and internal addresses:\n{:?}\n", addresses);
-
-    // Generate public addresses offline with the bech32_hrp defined
+    // Generating addresses with `client.get_addresses(&secret_manager)`, will by default get the bech32_hrp (Bech32
+    // human readable part) from the nodeinfo, generating it "offline" requires setting it with
+    // `with_bech32_hrp(bech32_hrp)`
     let addresses = GetAddressesBuilder::new(&secret_manager)
         .with_bech32_hrp(SHIMMER_TESTNET_BECH32_HRP)
         .with_account_index(0)

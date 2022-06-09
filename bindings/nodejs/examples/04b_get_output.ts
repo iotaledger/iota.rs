@@ -15,7 +15,6 @@ async function run() {
             {
                 // Insert your node URL here.
                 url: 'http://localhost:14265',
-                disabled: false,
             },
         ],
         localPow: true,
@@ -23,7 +22,7 @@ async function run() {
 
     try {
         const output = await client.getOutput(
-            '0xee8255ece109f4d460fa85d34f2a5f152014633db571220c84d6ebb944f129c00000',
+            '0xc1d95ac9c8c0237c6929faf427556c3562055a7155c6d336ee7891691d5525c90100',
         );
         console.log('Output: ', output);
     } catch (error) {

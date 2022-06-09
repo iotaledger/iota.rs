@@ -16,7 +16,6 @@ async function run() {
             {
                 // Insert your node URL here.
                 url: 'http://localhost:14265',
-                disabled: false,
             },
         ],
         localPow: true,
@@ -27,11 +26,13 @@ async function run() {
             throw new Error('.env mnemonic is undefined, see .env.example');
         }
 
+        // Configure your own mnemonic in ".env". Since the output amount cannot be zero, the mnemonic must contain non-zero
+        // balance
         const secretManager = {
             Mnemonic: process.env.NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1,
         };
 
-        // We generate an address from our seed so that we send the funds to ourselves
+        // We generate an address from our own mnemonic so that we send the funds to ourselves
         const addresses = await client.generateAddresses(secretManager, {
             range: {
                 start: 1,

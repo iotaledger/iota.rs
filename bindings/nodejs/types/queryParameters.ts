@@ -2,12 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /**
- * Query parameter for output requests
+ * Query parameter for filtering output requests
  */
 export type QueryParameter =
     | Address
+    | AliasAddress
     | HasStorageReturnCondition
-    | StorageDepositReturnAddress
+    | StorageReturnAddress
     | HasTimelockCondition
     | TimelockedBefore
     | TimelockedAfter
@@ -21,27 +22,70 @@ export type QueryParameter =
     | ExpirationReturnAddress
     | Sender
     | Tag
-    | CreatedBefore
-    | CreatedAfter
-    | Cursor
     | Issuer
     | StateController
     | Governor
-    | PageSize;
+    | CommonQueryParameters;
+
+/** Query parameters for filtering Alias Outputs */
+export type AliasQueryParameter =
+    | StateController
+    | Governor
+    | Issuer
+    | Sender
+    | CommonQueryParameters;
+
+/** Query parameters for filtering Foundry Outputs */
+export type FoundryQueryParameter = AliasAddress | CommonQueryParameters;
+
+/** Query parameters for filtering Nft Outputs */
+export type NftQueryParameter =
+    | Address
+    | AliasAddress
+    | HasStorageReturnCondition
+    | StorageReturnAddress
+    | HasTimelockCondition
+    | TimelockedBefore
+    | TimelockedAfter
+    | TimelockedBeforeMilestone
+    | TimelockedAfterMilestone
+    | HasExpirationCondition
+    | ExpiresBefore
+    | ExpiresAfter
+    | ExpiresBeforeMilestone
+    | ExpiresAfterMilestone
+    | ExpirationReturnAddress
+    | Sender
+    | Tag
+    | CommonQueryParameters;
+
+/** Shared query parameters*/
+type CommonQueryParameters =
+    | HasNativeTokens
+    | MinNativeTokenCount
+    | MaxNativeTokenCount
+    | CreatedAfter
+    | CreatedBefore
+    | PageSize
+    | Cursor;
 
 /** Bech32-encoded address that should be searched for. */
 interface Address {
     address: string;
 }
+/** Filter foundry outputs based on bech32-encoded address of the controlling alias. */
+interface AliasAddress {
+    aliasAddress: string;
+}
 /** Filters outputs based on the presence of storage return unlockcondition. */
 interface HasStorageReturnCondition {
-    hasStorageDepositReturnCondition: boolean;
+    hasStorageReturnCondition: boolean;
 }
 /** Filter outputs based on the presence of a specific Bech32-encoded return address
- * in the storage deposit return unlock condition.
+ * in the storage return unlock condition.
  */
-interface StorageDepositReturnAddress {
-    storageDepositReturnAddress: string;
+interface StorageReturnAddress {
+    storageReturnAddress: string;
 }
 /** Filters outputs based on the presence of timelock unlock condition. */
 interface HasTimelockCondition {
@@ -66,6 +110,18 @@ interface TimelockedAfterMilestone {
 /** Filters outputs based on the presence of expiration unlock condition. */
 interface HasExpirationCondition {
     hasExpirationCondition: boolean;
+}
+/** Filters outputs based on the presence of native tokens. */
+interface HasNativeTokens {
+    hasNativeTokens: boolean;
+}
+/** Filters outputs that have at most a certain number of distinct native tokens. */
+interface MaxNativeTokenCount {
+    maxNativeTokenCount: number;
+}
+/** Filters outputs that have at least a certain number of distinct native tokens. */
+interface MinNativeTokenCount {
+    minNativeTokenCount: number;
 }
 /** Return outputs that expire before a certain Unix timestamp. */
 interface ExpiresBefore {

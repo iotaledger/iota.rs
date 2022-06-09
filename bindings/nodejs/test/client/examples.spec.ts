@@ -8,7 +8,6 @@ const client = new Client({
     nodes: [
         {
             url: process.env.NODE_URL || 'http://localhost:14265',
-            disabled: false,
         },
     ],
     localPow: true,
@@ -24,8 +23,8 @@ describe.skip('Main examples', () => {
     it('gets info about the node', async () => {
         const info = await client.getInfo();
 
-        expect(info.nodeinfo.protocol.bech32HRP).toBe('rms');
-        expect(info.nodeinfo.protocol.minPoWScore).toBe(1000);
+        expect(info.nodeInfo.protocol.bech32HRP).toBe('rms');
+        expect(info.nodeInfo.protocol.minPoWScore).toBe(1000);
     });
 
     it('generates a mnemonic', async () => {
@@ -52,15 +51,16 @@ describe.skip('Main examples', () => {
     });
 
     it('gets address outputs', async () => {
-        const outputIds = await client.outputIds([
+        const outputIds = await client.basicOutputIds([
             {
                 address:
                     'rms1qpllaj0pyveqfkwxmnngz2c488hfdtmfrj3wfkgxtk4gtyrax0jaxzt70zy',
             },
             { hasExpirationCondition: false },
             { hasTimelockCondition: false },
-            { hasStorageDepositReturnCondition: false },
+            { hasStorageReturnCondition: false },
         ]);
+
         outputIds.forEach((id) => expect(id).toBeValidOutputId());
 
         const addressOutputs = await client.getOutputs(outputIds);
@@ -74,7 +74,7 @@ describe.skip('Main examples', () => {
 
     it('gets the output of a known output ID', async () => {
         const output = await client.getOutput(
-            '0xee8255ece109f4d460fa85d34f2a5f152014633db571220c84d6ebb944f129c00000',
+            '0xc1d95ac9c8c0237c6929faf427556c3562055a7155c6d336ee7891691d5525c90100',
         );
 
         expect(output.metadata.blockId).toBeValidBlockId();
@@ -92,11 +92,11 @@ describe.skip('Main examples', () => {
         expect(addresses[0]).toBeValidAddress();
 
         // Get output ids of outputs that can be controlled by this address without further unlock constraints
-        const outputIds = await client.outputIds([
+        const outputIds = await client.basicOutputIds([
             { address: addresses[0] },
             { hasExpirationCondition: false },
             { hasTimelockCondition: false },
-            { hasStorageDepositReturnCondition: false },
+            { hasStorageReturnCondition: false },
         ]);
         outputIds.forEach((id) => expect(id).toBeValidOutputId());
 
@@ -115,7 +115,7 @@ describe.skip('Main examples', () => {
             const output = outputResponse['output'];
 
             if ('nativeTokens' in output) {
-                output.nativeTokens.forEach(
+                output.nativeTokens?.forEach(
                     (token) =>
                         (totalNativeTokens[token.id] =
                             (totalNativeTokens[token.id] || 0) +

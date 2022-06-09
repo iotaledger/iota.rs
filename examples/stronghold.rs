@@ -7,21 +7,15 @@ use std::{env, path::PathBuf};
 
 use dotenv::dotenv;
 use iota_client::{
+    api::GetAddressesBuilder,
+    constants::{SHIMMER_COIN_TYPE, SHIMMER_TESTNET_BECH32_HRP},
     secret::{stronghold::StrongholdSecretManager, SecretManager},
-    Client, Result,
+    Result,
 };
-
-/// In this example we will create addresses with a stronghold secret manager
+/// In this example we will create an address with a stronghold secret manager
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    // Create a client instance
-    let client = Client::builder()
-        .with_node("http://localhost:14265")? // Insert your node URL here
-        .with_node_sync_disabled()
-        .finish()
-        .await?;
-
     let mut stronghold_secret_manager = StrongholdSecretManager::builder()
         .password("some_hopefully_secure_password")
         .snapshot_path(PathBuf::from("test.stronghold"))
@@ -34,14 +28,15 @@ async fn main() -> Result<()> {
     stronghold_secret_manager.store_mnemonic(mnemonic).await.unwrap();
 
     // Generate addresses with custom account index and range
-    let addresses = client
-        .get_addresses(&SecretManager::Stronghold(stronghold_secret_manager))
+    let addresses = GetAddressesBuilder::new(&SecretManager::Stronghold(stronghold_secret_manager))
+        .with_bech32_hrp(SHIMMER_TESTNET_BECH32_HRP)
+        .with_coin_type(SHIMMER_COIN_TYPE)
         .with_account_index(0)
-        .with_range(0..2)
+        .with_range(0..1)
         .finish()
         .await?;
 
-    println!("List of generated public addresses:\n{:?}\n", addresses);
+    println!("First public address: {}", addresses[0]);
 
     Ok(())
 }

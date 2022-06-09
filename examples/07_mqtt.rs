@@ -1,7 +1,7 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! cargo run --example 10_mqtt --features=mqtt --release
+//! cargo run --example 07_mqtt --features=mqtt --release
 
 use std::sync::{mpsc::channel, Arc, Mutex};
 
@@ -36,7 +36,7 @@ async fn main() -> Result<()> {
     client
         .subscriber()
         .with_topics(vec![
-            Topic::try_from("milestones/latest".to_string())?,
+            Topic::try_from("milestone-info/latest".to_string())?,
             Topic::try_from("blocks".to_string())?,
             Topic::try_from(
                 "outputs/unlock/address/atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r".to_string(),

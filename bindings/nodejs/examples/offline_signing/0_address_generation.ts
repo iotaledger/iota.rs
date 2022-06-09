@@ -8,9 +8,9 @@ require('dotenv').config({ path: '../../../.env' });
 // From examples directory, run with:
 // node ./dist/offline_signing/0_address_generation.js
 
-// In this example we will generate addresses offline which will be used later to find inputs
 const ADDRESS_FILE_NAME = __dirname + '/../../offline_signing/addresses.json';
 
+// In this example we will generate addresses offline which will be used later to find inputs
 async function run() {
     initLogger();
 
@@ -21,7 +21,6 @@ async function run() {
             {
                 // Insert your node URL here.
                 url: 'http://localhost:14265/',
-                disabled: false,
             },
         ],
         localPow: true,

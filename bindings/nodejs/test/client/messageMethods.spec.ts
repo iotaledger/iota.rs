@@ -5,9 +5,7 @@ import 'dotenv/config';
 const client = new Client({
     nodes: [
         {
-            // Insert your node URL here.
             url: process.env.NODE_URL || 'http://localhost:14265',
-            disabled: false,
         },
     ],
     localPow: true,
@@ -15,12 +13,12 @@ const client = new Client({
 
 // Skip for CI
 describe.skip('Block methods', () => {
-    it('sends a block json', async () => {
+    it('sends a block raw', async () => {
         const block = await client.generateBlock();
 
-        const jsonBlockId = await client.postBlockJson(block);
+        const blockId = await client.postBlockRaw(block);
 
-        expect(jsonBlockId).toBeValidBlockId();
+        expect(blockId).toBeValidBlockId();
     });
 
     it('gets block children', async () => {
@@ -39,8 +37,7 @@ describe.skip('Block methods', () => {
         expect(blocks.length).toBe(blockIds.length);
     });
 
-    // TODO: Error: 404 block not found. Fixed in https://github.com/iotaledger/iota.rs/pull/983
-    it.skip('gets raw block', async () => {
+    it('gets block as raw bytes', async () => {
         const block = await client.generateBlock();
         const blockId = await client.postBlock(block);
 

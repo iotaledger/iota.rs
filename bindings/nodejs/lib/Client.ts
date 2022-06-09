@@ -14,6 +14,13 @@ import type {
     IAuth,
     IRange,
     INodeInfo,
+    IBasicOutputBuilderOptions,
+    IAliasOutputBuilderOptions,
+    IFoundryOutputBuilderOptions,
+    INftOutputBuilderOptions,
+    FoundryQueryParameter,
+    NftQueryParameter,
+    AliasQueryParameter,
 } from '../types';
 import type {
     IUTXOInput,
@@ -27,6 +34,10 @@ import type {
     IMilestoneUtxoChangesResponse,
     IReceiptsResponse,
     ITreasury,
+    IBasicOutput,
+    IAliasOutput,
+    IFoundryOutput,
+    INftOutput,
 } from '@iota/types';
 import type { INodeInfoWrapper } from '../types/nodeInfo';
 
@@ -59,10 +70,10 @@ export class Client {
         return JSON.parse(response).payload;
     }
 
-    /** Get output IDs based on query parameters */
-    async outputIds(queryParameters: QueryParameter[]): Promise<string[]> {
+    /** Fetch basic output IDs based on query parameters */
+    async basicOutputIds(queryParameters: QueryParameter[]): Promise<string[]> {
         const response = await this.messageHandler.callClientMethod({
-            name: 'OutputIds',
+            name: 'BasicOutputIds',
             data: {
                 queryParameters,
             },
@@ -165,7 +176,7 @@ export class Client {
     }
 
     /**
-     * Send block, returns the block ID.
+     * Post block in JSON format, returns the block ID.
      */
     async postBlock(block: IBlock): Promise<BlockId> {
         const response = await this.messageHandler.callClientMethod({
@@ -179,7 +190,7 @@ export class Client {
     }
 
     /**
-     * Get block data with block ID
+     * Get block as JSON.
      */
     async getBlock(blockId: BlockId): Promise<IBlock> {
         const response = await this.messageHandler.callClientMethod({
@@ -193,7 +204,7 @@ export class Client {
     }
 
     /**
-     * Get block metadata with block ID
+     * Get block metadata.
      */
     async getBlockMetadata(blockId: BlockId): Promise<IBlockMetadata> {
         const response = await this.messageHandler.callClientMethod({
@@ -417,25 +428,14 @@ export class Client {
     }
 
     /**
-     * Get health of node with input url.
+     * Get health of node by input url.
      */
-    async getNodeHealth(url: string): Promise<boolean> {
+    async getHealth(url: string): Promise<boolean> {
         const response = await this.messageHandler.callClientMethod({
-            name: 'GetNodeHealth',
+            name: 'GetHealth',
             data: {
                 url,
             },
-        });
-
-        return JSON.parse(response).payload;
-    }
-
-    /**
-     * Get current node health.
-     */
-    async getHealth(): Promise<boolean> {
-        const response = await this.messageHandler.callClientMethod({
-            name: 'GetHealth',
         });
 
         return JSON.parse(response).payload;
@@ -468,11 +468,11 @@ export class Client {
     }
 
     /**
-     * Post block json.
+     * Post block as raw bytes, returns the block ID.
      */
-    async postBlockJson(block: IBlock): Promise<BlockId> {
+    async postBlockRaw(block: IBlock): Promise<BlockId> {
         const response = await this.messageHandler.callClientMethod({
-            name: 'PostBlockJson',
+            name: 'PostBlockRaw',
             data: {
                 block,
             },
@@ -482,9 +482,9 @@ export class Client {
     }
 
     /**
-     * Get block raw.
+     * Get block as raw bytes.
      */
-    async getBlockRaw(blockId: BlockId): Promise<string> {
+    async getBlockRaw(blockId: BlockId): Promise<number[]> {
         const response = await this.messageHandler.callClientMethod({
             name: 'GetBlockRaw',
             data: {
@@ -512,11 +512,9 @@ export class Client {
     /**
      * Look up a milestone by a given milestone index.
      */
-    async getMilestoneByMilestoneId(
-        milestoneId: string,
-    ): Promise<IMilestonePayload> {
+    async getMilestoneById(milestoneId: string): Promise<IMilestonePayload> {
         const response = await this.messageHandler.callClientMethod({
-            name: 'GetMilestoneByMilestoneId',
+            name: 'GetMilestoneById',
             data: {
                 milestoneId,
             },
@@ -528,11 +526,11 @@ export class Client {
     /**
      * Returns all UTXO changes that happened at a specific milestone.
      */
-    async getUtxoChangesByMilestoneId(
+    async getUtxoChangesById(
         milestoneId: string,
     ): Promise<IMilestoneUtxoChangesResponse> {
         const response = await this.messageHandler.callClientMethod({
-            name: 'GetUtxoChangesByMilestoneId',
+            name: 'GetUtxoChangesById',
             data: {
                 milestoneId,
             },
@@ -543,11 +541,9 @@ export class Client {
     /**
      * Look up a milestone by a given milestone index.
      */
-    async getMilestoneByMilestoneIndex(
-        index: number,
-    ): Promise<IMilestonePayload> {
+    async getMilestoneByIndex(index: number): Promise<IMilestonePayload> {
         const response = await this.messageHandler.callClientMethod({
-            name: 'GetMilestoneByMilestoneIndex',
+            name: 'GetMilestoneByIndex',
             data: {
                 index,
             },
@@ -559,11 +555,11 @@ export class Client {
     /**
      * Returns all UTXO changes that happened at a specific milestone.
      */
-    async getUtxoChangesByMilestoneIndex(
+    async getUtxoChangesByIndex(
         index: number,
     ): Promise<IMilestoneUtxoChangesResponse> {
         const response = await this.messageHandler.callClientMethod({
-            name: 'GetUtxoChangesByMilestoneIndex',
+            name: 'GetUtxoChangesByIndex',
             data: {
                 index,
             },
@@ -686,13 +682,13 @@ export class Client {
     }
 
     /**
-     * Fetch aliases output IDs
+     * Fetch alias output IDs
      */
-    async aliasesOutputIds(
-        queryParameters: QueryParameter[],
+    async aliasOutputIds(
+        queryParameters: AliasQueryParameter[],
     ): Promise<string[]> {
         const response = await this.messageHandler.callClientMethod({
-            name: 'AliasesOutputIds',
+            name: 'AliasOutputIds',
             data: {
                 queryParameters,
             },
@@ -716,11 +712,13 @@ export class Client {
     }
 
     /**
-     * Fetch NFTs output IDs
+     * Fetch NFT output IDs
      */
-    async nftsOutputIds(queryParameters: QueryParameter[]): Promise<string[]> {
+    async nftOutputIds(
+        queryParameters: NftQueryParameter[],
+    ): Promise<string[]> {
         const response = await this.messageHandler.callClientMethod({
-            name: 'NftsOutputIds',
+            name: 'NftOutputIds',
             data: {
                 queryParameters,
             },
@@ -744,13 +742,13 @@ export class Client {
     }
 
     /**
-     * Fetch Foundries Output IDs
+     * Fetch Foundry Output IDs
      */
-    async foundriesOutputIds(
-        queryParameters: QueryParameter[],
+    async foundryOutputIds(
+        queryParameters: FoundryQueryParameter[],
     ): Promise<string[]> {
         const response = await this.messageHandler.callClientMethod({
-            name: 'FoundriesOutputIds',
+            name: 'FoundryOutputIds',
             data: {
                 queryParameters,
             },
@@ -923,6 +921,62 @@ export class Client {
     async unsyncedNodes(): Promise<Set<INode>> {
         const response = await this.messageHandler.callClientMethod({
             name: 'UnsyncedNodes',
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Build a Basic Output.
+     */
+    async buildBasicOutput(
+        options: IBasicOutputBuilderOptions,
+    ): Promise<IBasicOutput> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'BuildBasicOutput',
+            data: options,
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Build an Alias Output.
+     */
+    async buildAliasOutput(
+        options: IAliasOutputBuilderOptions,
+    ): Promise<IAliasOutput> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'BuildAliasOutput',
+            data: options,
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Build a Foundry Output.
+     */
+    async buildFoundryOutput(
+        options: IFoundryOutputBuilderOptions,
+    ): Promise<IFoundryOutput> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'BuildFoundryOutput',
+            data: options,
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Build an Nft Output.
+     */
+    async buildNftOutput(
+        options: INftOutputBuilderOptions,
+    ): Promise<INftOutput> {
+        const response = await this.messageHandler.callClientMethod({
+            name: 'BuildNftOutput',
+            data: options,
         });
 
         return JSON.parse(response).payload;

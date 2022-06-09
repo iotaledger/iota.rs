@@ -8,12 +8,12 @@ require('dotenv').config({ path: '../../../.env' });
 // From examples directory, run with:
 // node ./dist/offline_signing/2_transaction_signing.js
 
-// In this example we will sign the prepared transaction
 const PREPARED_TRANSACTION_FILE_NAME =
     __dirname + '/../../offline_signing/prepared_transaction.json';
 const SIGNED_TRANSACTION_FILE_NAME =
     __dirname + '/../../offline_signing/signed_transaction.json';
 
+// In this example we will sign the prepared transaction
 async function run() {
     initLogger();
 
@@ -24,7 +24,6 @@ async function run() {
             {
                 // Insert your node URL here.
                 url: 'http://localhost:14265/',
-                disabled: false,
             },
         ],
         localPow: true,

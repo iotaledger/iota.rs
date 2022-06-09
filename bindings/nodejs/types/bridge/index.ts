@@ -1,6 +1,6 @@
 import type {
     __GetInfoPayloadMethod__,
-    __GetOutputIdsPayloadMethod__,
+    __GetBasicOutputIdsPayloadMethod__,
     __GetOutputPayloadMethod__,
     __GetOutputsPayloadMethod__,
     __GenerateMnemonicPayloadMethod__,
@@ -26,11 +26,10 @@ import type {
     __GetTipsIntervalPayloadMethod__,
     __GetLocalPowPayloadMethod__,
     __GetFallbackToLocalPowPayloadMethod__,
-    __GetNodeHealthPayloadMethod__,
     __GetHealthPayloadMethod__,
     __GetNodeInfoPayloadMethod__,
     __GetPeersPayloadMethod__,
-    __PostBlockJsonPayloadMethod__,
+    __PostBlockRawPayloadMethod__,
     __GetBlockRawPayloadMethod__,
     __GetBlockChildrenPayloadMethod__,
     __GetReceiptsPayloadMethod__,
@@ -41,11 +40,11 @@ import type {
     __HexToBech32PayloadMethod__,
     __HexPublicKeyToBech32AddressPayloadMethod__,
     __IsAddressValidPayloadMethod__,
-    __AliasesOutputIdsPayloadMethod__,
+    __AliasOutputIdsPayloadMethod__,
     __AliasOutputIdPayloadMethod__,
-    __NftsOutputIdsPayloadMethod__,
+    __NftOutputIdsPayloadMethod__,
     __NftOutputIdPayloadMethod__,
-    __FoundriesOutputIdsPayloadMethod__,
+    __FoundryOutputIdsPayloadMethod__,
     __FoundryOutputIdPayloadMethod__,
     __TryGetOutputsPayloadMethod__,
     __FindBlocksPayloadMethod__,
@@ -57,17 +56,21 @@ import type {
     __PromotePayloadMethod__,
     __PromoteUncheckedPayloadMethod__,
     __UnsyncedNodesPayloadMethod__,
-    __GetMilestoneByMilestoneIdPayloadMethod__,
-    __GetUtxoChangesByMilestoneIdPayloadMethod__,
-    __GetMilestoneByMilestoneIndexPayloadMethod__,
-    __GetUtxoChangesByMilestoneIndexPayloadMethod__,
+    __GetMilestoneByIdPayloadMethod__,
+    __GetUtxoChangesByIdPayloadMethod__,
+    __GetMilestoneByIndexPayloadMethod__,
+    __GetUtxoChangesByIndexPayloadMethod__,
     __StoreMnemonicPayloadMethod__,
+    __BuildBasicOutputPayloadMethod__,
+    __BuildAliasOutputPayloadMethod__,
+    __BuildFoundryOutputPayloadMethod__,
+    __BuildNftOutputPayloadMethod__,
 } from './client';
 
 export type __ClientPayloadMethods__ =
     | __GetInfoPayloadMethod__
     | __GetOutputPayloadMethod__
-    | __GetOutputIdsPayloadMethod__
+    | __GetBasicOutputIdsPayloadMethod__
     | __GetOutputsPayloadMethod__
     | __GenerateMnemonicPayloadMethod__
     | __MnemonicToHexSeedPayloadMethod__
@@ -93,17 +96,16 @@ export type __ClientPayloadMethods__ =
     | __GetTipsIntervalPayloadMethod__
     | __GetLocalPowPayloadMethod__
     | __GetFallbackToLocalPowPayloadMethod__
-    | __GetNodeHealthPayloadMethod__
     | __GetHealthPayloadMethod__
     | __GetNodeInfoPayloadMethod__
     | __GetPeersPayloadMethod__
-    | __PostBlockJsonPayloadMethod__
+    | __PostBlockRawPayloadMethod__
     | __GetBlockRawPayloadMethod__
     | __GetBlockChildrenPayloadMethod__
-    | __GetMilestoneByMilestoneIdPayloadMethod__
-    | __GetUtxoChangesByMilestoneIdPayloadMethod__
-    | __GetMilestoneByMilestoneIndexPayloadMethod__
-    | __GetUtxoChangesByMilestoneIndexPayloadMethod__
+    | __GetMilestoneByIdPayloadMethod__
+    | __GetUtxoChangesByIdPayloadMethod__
+    | __GetMilestoneByIndexPayloadMethod__
+    | __GetUtxoChangesByIndexPayloadMethod__
     | __GetReceiptsPayloadMethod__
     | __GetReceiptsMigratedAtPayloadMethod__
     | __GetTreasuryPayloadMethod__
@@ -112,11 +114,11 @@ export type __ClientPayloadMethods__ =
     | __HexToBech32PayloadMethod__
     | __HexPublicKeyToBech32AddressPayloadMethod__
     | __IsAddressValidPayloadMethod__
-    | __AliasesOutputIdsPayloadMethod__
+    | __AliasOutputIdsPayloadMethod__
     | __AliasOutputIdPayloadMethod__
-    | __NftsOutputIdsPayloadMethod__
+    | __NftOutputIdsPayloadMethod__
     | __NftOutputIdPayloadMethod__
-    | __FoundriesOutputIdsPayloadMethod__
+    | __FoundryOutputIdsPayloadMethod__
     | __FoundryOutputIdPayloadMethod__
     | __TryGetOutputsPayloadMethod__
     | __FindBlocksPayloadMethod__
@@ -127,7 +129,11 @@ export type __ClientPayloadMethods__ =
     | __ReattachUncheckedPayloadMethod__
     | __PromotePayloadMethod__
     | __PromoteUncheckedPayloadMethod__
-    | __UnsyncedNodesPayloadMethod__;
+    | __UnsyncedNodesPayloadMethod__
+    | __BuildBasicOutputPayloadMethod__
+    | __BuildAliasOutputPayloadMethod__
+    | __BuildFoundryOutputPayloadMethod__
+    | __BuildNftOutputPayloadMethod__;
 
 export interface __SendMessagePayload__ {
     cmd: 'CallClientMethod';

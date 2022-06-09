@@ -12,14 +12,14 @@ keywords = [ "iota", "tangle", "client" ]
 categories = [ "cryptography::cryptocurrencies" ]
 
 [dependencies]
-bee-block = { git = "https://github.com/iotaledger/bee", rev = "8d2e819cd7e94ed42ebafcb47e3c4b0b08f15c6a", default-features = false, features = [ "serde", "dto" ] }
-bee-rest-api = { git = "https://github.com/iotaledger/bee", rev = "8d2e819cd7e94ed42ebafcb47e3c4b0b08f15c6a", default-features = false }
-bee-pow = { git = "https://github.com/iotaledger/bee", rev = "8d2e819cd7e94ed42ebafcb47e3c4b0b08f15c6a", default-features = false }
+bee-block = { git = "https://github.com/iotaledger/bee", rev = "c67092169135df3ea67d874b00201d8ec3390599", default-features = false, features = [ "serde", "dto" ] }
+bee-rest-api = { git = "https://github.com/iotaledger/bee", rev = "c67092169135df3ea67d874b00201d8ec3390599", default-features = false }
+bee-pow = { git = "https://github.com/iotaledger/bee", rev = "c67092169135df3ea67d874b00201d8ec3390599", default-features = false }
 fern-logger = { version = "0.5.0", default-features = false }
 # Switch back when a new version got released
 # iota-crypto = { version = "0.11.0", default-features = false, features = [ "std", "chacha", "blake2b", "ed25519", "random", "slip10", "bip39", "bip39-en" ] }
 iota-crypto = { git = "https://github.com/iotaledger/crypto.rs", rev = "c61d29253930105d0d589e54829b639427061e81",  default-features = false, features = [ "std", "chacha", "blake2b", "ed25519", "random", "slip10", "bip39", "bip39-en" ] }
-packable = { version = "0.3.2", default-features = false, features = [ "serde", "primitive-types" ] }
+packable = { version = "0.3.3", default-features = false, features = [ "serde", "primitive-types" ] }
 
 async-trait = { version ="0.1.51", default-features = false }
 derive_builder = { version = "0.11.1", default-features = false, features = [ "std" ]}
@@ -160,10 +160,29 @@ path = "examples/node_api_core/21_get_milestone_by_index_raw.rs"
 name = "node_api_core_get_utxo_changes_by_index"
 path = "examples/node_api_core/22_get_utxo_changes_by_index.rs"
 
+# Node API indexer examples
+
+[[example]]
+name = "node_api_indexer_get_basic_outputs"
+path = "examples/node_api_indexer/00_get_basic_outputs.rs"
+
+[[example]]
+name = "node_api_indexer_get_nft_outputs"
+path = "examples/node_api_indexer/01_get_nft_outputs.rs"
+
+[[example]]
+name = "node_api_indexer_get_alias_outputs"
+path = "examples/node_api_indexer/02_get_alias_outputs.rs"
+
+[[example]]
+name = "node_api_indexer_get_foundry_outputs"
+path = "examples/node_api_indexer/03_get_foundry_outputs.rs"
+
+
 #######
 
 [[example]]
-name = "10_mqtt"
+name = "07_mqtt"
 required-features = [ "mqtt" ]
 
 [[example]]

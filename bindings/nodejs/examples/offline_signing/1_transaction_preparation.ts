@@ -6,11 +6,11 @@ import { writeFile, readFile } from 'fs/promises';
 // From examples directory, run with:
 // node ./dist/offline_signing/1_transaction_preparation.js
 
-// In this example we will get inputs and prepare a transaction
 const ADDRESS_FILE_NAME = __dirname + '/../../offline_signing/addresses.json';
 const PREPARED_TRANSACTION_FILE_NAME =
     __dirname + '/../../offline_signing/prepared_transaction.json';
 
+// In this example we will get inputs and prepare a transaction
 async function run() {
     initLogger();
 
@@ -20,7 +20,6 @@ async function run() {
             {
                 // Insert your node URL here.
                 url: 'http://localhost:14265/',
-                disabled: false,
             },
         ],
         localPow: true,

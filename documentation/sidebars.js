@@ -84,11 +84,6 @@ module.exports = {
         },
         {
           type: 'doc',
-          id: 'libraries/python/examples',
-          label: 'Examples'
-        },
-        {
-          type: 'doc',
           id: 'libraries/python/api_reference',
           label: 'API Reference'
         },
@@ -137,11 +132,6 @@ module.exports = {
       ]
     }
     ]
-  },
-  {
-    type: 'doc',
-    id: 'specs',
-    label: 'Specification',
   },
   {
     type: 'doc',
