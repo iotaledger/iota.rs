@@ -82,8 +82,6 @@ pub enum Response {
     BlockMetadata(BlockMetadataResponse),
     /// Block raw
     BlockRaw(Vec<u8>),
-    /// Block children
-    BlockChildren(Box<[BlockId]>),
     /// Get output successful
     Output(OutputResponse),
     /// Get the metadata of an output

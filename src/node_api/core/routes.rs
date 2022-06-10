@@ -16,7 +16,7 @@ use bee_block::{
 use bee_rest_api::types::{
     dtos::{PeerDto, ReceiptDto},
     responses::{
-        BlockChildrenResponse, BlockMetadataResponse, BlockResponse, MilestoneResponse, OutputMetadataResponse,
+        BlockMetadataResponse, BlockResponse, MilestoneResponse, OutputMetadataResponse,
         OutputResponse, PeersResponse, ReceiptsResponse, SubmitBlockResponse, TipsResponse, TreasuryResponse,
         UtxoChangesResponse,
     },
@@ -280,22 +280,6 @@ impl Client {
         self.node_manager
             .get_request(path, None, self.get_timeout(), true, true)
             .await
-    }
-
-    /// Returns the list of block IDs that reference a block by its identifier.
-    /// GET /api/v2/blocks/{blockID}/children
-    pub async fn get_block_children(&self, block_id: &BlockId) -> Result<Box<[BlockId]>> {
-        let path = &format!("api/v2/blocks/{}/children", block_id);
-
-        let resp = self
-            .node_manager
-            .get_request::<BlockChildrenResponse>(path, None, self.get_timeout(), false, true)
-            .await?;
-
-        resp.children
-            .iter()
-            .map(|s| BlockId::from_str(s).map_err(Error::BlockError))
-            .collect::<Result<Box<[BlockId]>>>()
     }
 
     // UTXO routes.

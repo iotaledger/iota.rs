@@ -21,15 +21,6 @@ describe.skip('Block methods', () => {
         expect(blockId).toBeValidBlockId();
     });
 
-    it('gets block children', async () => {
-        const block = await client.generateBlock();
-        const blockId = await client.postBlock(block);
-
-        const blockChildren = await client.getBlockChildren(blockId);
-
-        blockChildren.forEach((id) => expect(id).toBeValidBlockId);
-    });
-
     it('finds blocks by block IDs', async () => {
         const blockIds = await client.getTips();
         const blocks = await client.findBlocks(blockIds);

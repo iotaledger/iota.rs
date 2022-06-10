@@ -162,26 +162,6 @@ let block_metadata = client.get_block_metadata(&block_id).await?;
 
 Run `cargo run --example node_api_core_get_block_metadata --release -- [NODE URL]`.
 
-# `Client::get_block_children`
-
-## Description
-
-Calls `GET /api/v2/blocks/{blockId}/children`.
-
-Returns the children of a block.
-
-## Request
-
-## Response
-
-## Example
-
-```rust
-let block_children = client.get_block_children(&block_id).await?;
-```
-
-Run `cargo run --example node_api_core_get_block_children --release -- [NODE URL]`.
-
 # `Client::`
 
 Calls `GET /api/v2/outputs/{outputId}`.

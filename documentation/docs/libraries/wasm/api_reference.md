@@ -1093,7 +1093,6 @@ Build and sumbit the message.
         * [.index(index)](#MessageGetter+index) ⇒ <code>Promise.&lt;any&gt;</code>
         * [.data(message_id)](#MessageGetter+data) ⇒ <code>Promise.&lt;any&gt;</code>
         * [.raw(message_id)](#MessageGetter+raw) ⇒ <code>Promise.&lt;any&gt;</code>
-        * [.children(message_id)](#MessageGetter+children) ⇒ <code>Promise.&lt;any&gt;</code>
         * [.metadata(message_id)](#MessageGetter+metadata) ⇒ <code>Promise.&lt;any&gt;</code>
     * _static_
         * [.new(client)](#MessageGetter.new) ⇒ [<code>MessageGetter</code>](#MessageGetter)
@@ -1124,17 +1123,6 @@ Get a message with the message id.
 
 ### messageGetter.raw(message_id) ⇒ <code>Promise.&lt;any&gt;</code>
 Get the raw message with the message id.
-
-**Kind**: instance method of [<code>MessageGetter</code>](#MessageGetter)  
-
-| Param | Type |
-| --- | --- |
-| message_id | <code>string</code> | 
-
-<a name="MessageGetter+children"></a>
-
-### messageGetter.children(message_id) ⇒ <code>Promise.&lt;any&gt;</code>
-Get the childrens of a message with the message id.
 
 **Kind**: instance method of [<code>MessageGetter</code>](#MessageGetter)  
 

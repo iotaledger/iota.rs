@@ -220,13 +220,6 @@ export interface __GetBlockRawPayloadMethod__ {
     };
 }
 
-export interface __GetBlockChildrenPayloadMethod__ {
-    name: 'GetBlockChildren';
-    data: {
-        blockId: BlockId;
-    };
-}
-
 export interface __GetMilestoneByIdPayloadMethod__ {
     name: 'GetMilestoneById';
     data: {

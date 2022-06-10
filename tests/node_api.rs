@@ -182,18 +182,6 @@ async fn test_get_block_raw() {
 
 #[ignore]
 #[tokio::test]
-async fn test_get_block_children() {
-    let block_id = setup_tagged_data_block().await;
-    let r = setup_client_with_sync_disabled()
-        .await
-        .get_block_children(&block_id)
-        .await
-        .unwrap();
-    println!("{:#?}", r);
-}
-
-#[ignore]
-#[tokio::test]
 async fn test_get_address_balance() {
     let client = setup_client_with_sync_disabled().await;
     let secret_manager = setup_secret_manager().await;
