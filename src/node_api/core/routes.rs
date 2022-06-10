@@ -16,9 +16,8 @@ use bee_block::{
 use bee_rest_api::types::{
     dtos::{PeerDto, ReceiptDto},
     responses::{
-        BlockMetadataResponse, BlockResponse, MilestoneResponse, OutputMetadataResponse,
-        OutputResponse, PeersResponse, ReceiptsResponse, SubmitBlockResponse, TipsResponse, TreasuryResponse,
-        UtxoChangesResponse,
+        BlockMetadataResponse, BlockResponse, MilestoneResponse, OutputMetadataResponse, OutputResponse, PeersResponse,
+        ReceiptsResponse, SubmitBlockResponse, TipsResponse, TreasuryResponse, UtxoChangesResponse,
     },
 };
 use packable::PackableExt;
