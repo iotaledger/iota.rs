@@ -75,22 +75,6 @@ impl MessageGetter {
     Ok(promise)
   }
 
-  /// Get the childrens of a message with the message id.
-  #[wasm_bindgen]
-  pub fn children(&self, message_id: String) -> Result<Promise, JsValue> {
-    let client = self.client.clone();
-    let promise: Promise = future_to_promise(async move {
-      client
-        .client
-        .get_message()
-        .children(&MessageId::from_str(&message_id).map_err(wasm_error)?)
-        .await
-        .map_err(wasm_error)
-        .and_then(|message| JsValue::from_serde(&message).map_err(wasm_error))
-    });
-    Ok(promise)
-  }
-
   /// Get the metadata of a message with the message id.
   #[wasm_bindgen]
   pub fn metadata(&self, message_id: String) -> Result<Promise, JsValue> {

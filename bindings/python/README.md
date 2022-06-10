@@ -110,10 +110,6 @@ def main():
         f"Note the raw data is exactly the same from http://127.0.0.1:14265/api/v2/blocks/{block_id}")
     print(', which is not utf-8 format. The utf-8 format here is just for ease of demonstration')
 
-    print(f'get_block_children() for block_id {block_id}')
-    children = client.get_block_children(block_id)
-    print(f"children: {children}")
-
     print(f'block() Indexation')
     block_id_indexation = client.block(
         index="Hello", data=[84, 97, 110, 103, 108, 101])
@@ -417,16 +413,6 @@ Gets the raw block string from the block id.
 | [block_id] | <code>str</code> | <code>undefined</code> | The block id |
 
 **Returns** the raw block string.
-
-#### get_block_children(block_id): list[str]
-
-Gets the children of the given block.
-
-| Param        | Type             | Default                | Description    |
-| ------------ | ---------------- | ---------------------- | -------------- |
-| [block_id] | <code>str</code> | <code>undefined</code> | The block id |
-
-**Returns** the list of children strings.
 
 #### get_block_id(payload_str): str
 

@@ -829,10 +829,6 @@ foreign_class!(
         /// GET /api/v2/messages/{MessageId} endpoint
         /// Consume the builder and find a message by its identifer. This method returns the given message raw data.
         fn GetMessageBuilder::raw(&self, message_id: MessageId) -> Result<String>;
-
-        /// GET /api/v2/messages/{messageID}/children endpoint
-        /// Consume the builder and returns the list of message IDs that reference a message by its identifier.
-        fn GetMessageBuilder::children(&self, message_id: MessageId) -> Result<Vec<MessageId>>;
     }
 );
 

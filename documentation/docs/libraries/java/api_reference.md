@@ -656,15 +656,6 @@ Consume the builder and find a message by its identifier. This method returns th
 | ----- | ---------- | ----------- |
 | message_id | `MessageId` | The id of the message |
 
-#### children(message_id): MessageId []
-
-GET /api/v2/messages/{messageID}/children endpoint
-Consume the builder and returns the list of message IDs that reference a message by its identifier if it exists.
-
-| Param | Type       | Description |
-| ----- | ---------- | ----------- |
-| message_id | `MessageId` | The id of the message |
-
 ### GetAddressesBuilder
 
 #### balance(address): BalanceAddressResponse

@@ -917,16 +917,6 @@ Gets the block raw data.
 
 **Returns** the block raw data as string.
 
-#### children(id): Promise<string[]>
-
-Gets the children of the given block.
-
-| Param | Type                | Description            |
-| ----- | ------------------- | ---------------------- |
-| id    | <code>string</code> | The block identifier |
-
-**Returns** the list of block ids of the block children.
-
 #### metadata(id): Promise<BlockMetadata>
 
 Gets the metadata of the given block.

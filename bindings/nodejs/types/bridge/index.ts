@@ -31,7 +31,6 @@ import type {
     __GetPeersPayloadMethod__,
     __PostBlockRawPayloadMethod__,
     __GetBlockRawPayloadMethod__,
-    __GetBlockChildrenPayloadMethod__,
     __GetReceiptsPayloadMethod__,
     __GetReceiptsMigratedAtPayloadMethod__,
     __GetTreasuryPayloadMethod__,
@@ -101,7 +100,6 @@ export type __ClientPayloadMethods__ =
     | __GetPeersPayloadMethod__
     | __PostBlockRawPayloadMethod__
     | __GetBlockRawPayloadMethod__
-    | __GetBlockChildrenPayloadMethod__
     | __GetMilestoneByIdPayloadMethod__
     | __GetUtxoChangesByIdPayloadMethod__
     | __GetMilestoneByIndexPayloadMethod__

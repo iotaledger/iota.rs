@@ -66,13 +66,6 @@ class NodeCoreAPI(BaseAPI):
             'block_id': block_id
         })
 
-    def get_block_children(self, block_id):
-        """Get block children.
-        """
-        return self.call_client_method('GetBlockChildren', {
-            'block_id': block_id
-        })
-
     def get_output(self, output_id):
         """Get output.
         """

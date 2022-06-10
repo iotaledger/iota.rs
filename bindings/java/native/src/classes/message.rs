@@ -573,16 +573,4 @@ impl<'a> GetMessageBuilder<'a> {
             Err(e) => Err(anyhow!(e.to_string())),
         }
     }
-
-    pub fn children(&self, message_id: MessageId) -> Result<Vec<MessageId>> {
-        let res = crate::block_on(async {
-            RustGetMessageBuilder::new(self.client.borrow())
-                .children(&message_id)
-                .await
-        });
-        match res {
-            Ok(r) => Ok(r.to_vec()),
-            Err(e) => Err(anyhow!(e.to_string())),
-        }
-    }
 }
