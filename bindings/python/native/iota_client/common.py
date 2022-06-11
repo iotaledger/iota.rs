@@ -2,8 +2,8 @@ import iota_client
 from json import dumps
 
 
-def send_block_routine(func):
-    """The routine of dump json string and call send_block()
+def send_message_routine(func):
+    """The routine of dump json string and call send_message()
     """
     def wrapper(*args, **kwargs):
         message = func(*args, **kwargs)
