@@ -3,17 +3,17 @@ from iota_client._base_api import BaseAPI
 
 class NodeIndexerAPI(BaseAPI):
 
-    def output_ids(self, query_parameters):
-        """Fetch output IDs.
+    def basic_output_ids(self, query_parameters):
+        """Fetch basic output IDs.
         """
-        return self.call_client_method('OutputIds', {
+        return self.call_client_method('BasicOutputIds', {
             'query_parameters': query_parameters
         })
 
-    def aliases_output_ids(self, query_parameters):
-        """Fetch aliases output IDs.
+    def alias_output_ids(self, query_parameters):
+        """Fetch alias output IDs.
         """
-        return self.call_client_method('AliasesOutputIds', {
+        return self.call_client_method('AliasOutputIds', {
             'query_parameters': query_parameters
         })
 
@@ -24,10 +24,10 @@ class NodeIndexerAPI(BaseAPI):
             'alias_id': alias_id
         })
 
-    def nfts_output_ids(self, query_parameters):
-        """Fetch NFTs output IDs.
+    def nft_output_ids(self, query_parameters):
+        """Fetch NFT output IDs.
         """
-        return self.call_client_method('NftsOutputIds', {
+        return self.call_client_method('NftOutputIds', {
             'query_parameters': query_parameters
         })
 
@@ -38,15 +38,15 @@ class NodeIndexerAPI(BaseAPI):
             'nft_id': nft_id
         })
 
-    def foundries_output_ids(self, query_parameters):
-        """Fetch Foundries Output IDs.
+    def foundry_output_ids(self, query_parameters):
+        """Fetch foundry Output IDs.
         """
-        return self.call_client_method('FoundriesOutputIds', {
+        return self.call_client_method('FoundryOutputIds', {
             'query_parameters': query_parameters
         })
 
     def foundry_output_id(self, foundry_id):
-        """Fetch Foundry Output ID.
+        """Fetch foundry Output ID.
         """
         return self.call_client_method('FoundryOutputId', {
             'foundry_id': foundry_id

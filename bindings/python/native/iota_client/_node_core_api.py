@@ -80,17 +80,52 @@ class NodeCoreAPI(BaseAPI):
             'output_id': output_id
         })
 
-    def get_milestone(self, index):
+    def get_output_metadata(self, output_id):
+        """Get output metadata.
+        """
+        return self.call_client_method('GetOutputMetadata', {
+            'output_id': output_id
+        })
+
+    def get_milestone_by_id(self, milestone_id):
+        """Get the milestone by the given milestone id.
+        """
+        return self.call_client_method('GetMilestoneById', {
+            'milestone_id': milestone_id
+        })
+
+    def get_milestone_by_id_raw(self, milestone_id):
+        """Get the raw milestone by the given milestone id.
+        """
+        return self.call_client_method('GetMilestoneByIdRaw', {
+            'milestone_id': milestone_id
+        })
+
+    def get_milestone_by_index(self, index):
         """Get the milestone by the given index.
         """
-        return self.call_client_method('GetMilestone', {
+        return self.call_client_method('GetMilestoneByIndex', {
             'index': index
         })
 
-    def get_milestone_uxto_changes(self, index):
-        """Get the milestone utxo changes by the given index.
+    def get_milestone_by_index_raw(self, index):
+        """Get the milestone by the given index.
         """
-        return self.call_client_method('GetMilestoneUtxoChanges', {
+        return self.call_client_method('GetMilestoneByIndexRaw', {
+            'index': index
+        })
+
+    def get_utxo_changes_by_id(self, milestone_id):
+        """Get the UTXO changes by the given milestone id.
+        """
+        return self.call_client_method('GetUtxoChangesById', {
+            'milestone_id': milestone_id
+        })
+
+    def get_utxo_changes_by_index(self, index):
+        """Get the UTXO changes by the given milestone index.
+        """
+        return self.call_client_method('GetUtxoChangesByIndex', {
             'index': index
         })
 
