@@ -10,11 +10,6 @@ class NodeCoreAPI(BaseAPI):
             'url': url
         })
 
-    def get_health(self):
-        """Get node health.
-        """
-        return self.call_client_method('GetHealth')
-
     def get_node_info(self, url, auth=None):
         """Get node info.
         """
