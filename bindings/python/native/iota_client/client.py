@@ -181,7 +181,7 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
         })
 
     def submit_payload(self, payload_dto):
-        """Store a mnemonic in the Stronghold vault.
+        """Submit a payload in a block.
         """
         return self.call_client_method('SubmitPayload', {
             'payload_dto': payload_dto
