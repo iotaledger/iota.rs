@@ -15,10 +15,10 @@ use bee_block::{
     input::INPUT_COUNT_MAX,
     output::{
         unlock_condition::AddressUnlockCondition, BasicOutputBuilder, ByteCost, ByteCostConfig, NativeTokens, Output,
-        UnlockCondition,
+        UnlockCondition, OUTPUT_COUNT_MAX,
     },
 };
-use packable::PackableExt;
+use packable::{bounded::TryIntoBoundedU16Error, PackableExt};
 
 pub(crate) use self::{automatic::get_inputs, manual::get_custom_inputs};
 use self::{
@@ -59,6 +59,13 @@ pub async fn try_select_inputs(
         .await?;
         if let Some(remainder_data) = &remainder_data {
             outputs.push(remainder_data.output.clone());
+
+            // check if we have too many outputs after adding the remainder output
+            if outputs.len() as u16 > OUTPUT_COUNT_MAX {
+                return Err(Error::BlockError(bee_block::Error::InvalidOutputCount(
+                    TryIntoBoundedU16Error::Truncated(outputs.len()),
+                )));
+            }
         }
         return Ok(SelectedTransactionData {
             inputs,
@@ -238,6 +245,13 @@ pub async fn try_select_inputs(
     .await?;
     if let Some(remainder_data) = &remainder_data {
         outputs.push(remainder_data.output.clone());
+
+        // check if we have too many outputs after adding the remainder output
+        if outputs.len() as u16 > OUTPUT_COUNT_MAX {
+            return Err(Error::BlockError(bee_block::Error::InvalidOutputCount(
+                TryIntoBoundedU16Error::Truncated(outputs.len()),
+            )));
+        }
     }
 
     // sort inputs so ed25519 address unlocks will be first, safe to unwrap since we encoded it before
