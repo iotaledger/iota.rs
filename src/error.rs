@@ -231,7 +231,7 @@ pub enum Error {
     #[error("no snapshot path has been supplied")]
     StrongholdSnapshotPathMissing,
     /// The semantic validation of a transaction failed.
-    #[error("the semantic validation of a transaction failed")]
+    #[error("the semantic validation of a transaction failed with conflict reason: {} - {0:?}", *.0 as u8)]
     TransactionSemantic(ConflictReason),
     /// Local time doesn't match the time of the latest milestone timestamp
     #[error("Local time {0} doesn't match the time of the latest milestone timestamp: {1}")]
