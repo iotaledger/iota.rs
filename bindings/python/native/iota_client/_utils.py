@@ -51,3 +51,10 @@ class Utils(BaseAPI):
         return self.call_client_method('MnemonicToHexSeed', {
             'mnemonic': mnemonic
         })
+
+    def block_id(self, block):
+        """ Returns a block ID (Blake2b256 hash of block bytes) from a block.
+        """
+        return self.call_client_method('BlockId', {
+            'block': block
+        })
