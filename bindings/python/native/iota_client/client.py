@@ -31,7 +31,7 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
                            immutable_features=None):
         """Build an AliasOutput.
         """
-        return self.call_client_method('GenerateAddresses', {
+        return self.call_client_method('BuildAliasOutput', {
             'alias_id': alias_id,
             'unlock_conditions': unlock_conditions,
             'amount': amount,
