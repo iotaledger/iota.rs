@@ -343,9 +343,6 @@ impl ClientMessageHandler {
             ClientMethod::GetBlockRaw { block_id } => {
                 Ok(Response::BlockRaw(self.client.get_block_raw(block_id).await?))
             }
-            ClientMethod::GetBlockChildren { block_id } => {
-                Ok(Response::BlockChildren(self.client.get_block_children(block_id).await?))
-            }
             ClientMethod::GetOutput { output_id } => Ok(Response::Output(self.client.get_output(output_id).await?)),
             ClientMethod::GetOutputMetadata { output_id } => Ok(Response::OutputMetadata(
                 self.client.get_output_metadata(output_id).await?,

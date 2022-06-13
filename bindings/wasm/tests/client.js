@@ -75,10 +75,6 @@ async function test() {
       const message = await client.getMessage().data(milestone.messageId)
       assertMessageWrapper(message)
 
-
-      const children = await client.getMessage().children(milestone.messageId)
-      assert.strictEqual(Array.isArray(children), true)
-
       const metadata = await client.getMessage().metadata(milestone.messageId)
       assert.strictEqual(typeof metadata, 'object')
       assert.strictEqual('messageId' in metadata, true)

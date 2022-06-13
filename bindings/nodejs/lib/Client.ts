@@ -496,20 +496,6 @@ export class Client {
     }
 
     /**
-     * Get block children.
-     */
-    async getBlockChildren(blockId: BlockId): Promise<BlockId[]> {
-        const response = await this.messageHandler.callClientMethod({
-            name: 'GetBlockChildren',
-            data: {
-                blockId,
-            },
-        });
-
-        return JSON.parse(response).payload;
-    }
-
-    /**
      * Look up a milestone by a given milestone index.
      */
     async getMilestoneById(milestoneId: string): Promise<IMilestonePayload> {

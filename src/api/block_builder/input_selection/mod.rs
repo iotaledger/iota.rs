@@ -43,12 +43,12 @@ pub async fn try_select_inputs(
     allow_burning: bool,
 ) -> Result<SelectedTransactionData> {
     inputs.dedup();
-    if inputs.len() as u16 > INPUT_COUNT_MAX {
-        return Err(Error::ConsolidationRequired(inputs.len()));
-    }
 
     // Validate and only create a remainder if necessary
     if force_use_all_inputs {
+        if inputs.len() as u16 > INPUT_COUNT_MAX {
+            return Err(Error::ConsolidationRequired(inputs.len()));
+        }
         let remainder_data = get_remainder_output(
             inputs.iter(),
             outputs.iter(),

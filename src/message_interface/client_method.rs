@@ -220,12 +220,6 @@ pub enum ClientMethod {
         #[serde(rename = "blockId")]
         block_id: BlockId,
     },
-    /// Get block children
-    GetBlockChildren {
-        /// Block ID
-        #[serde(rename = "blockId")]
-        block_id: BlockId,
-    },
     /// Get output
     GetOutput {
         /// Output ID

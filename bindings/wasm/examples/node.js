@@ -17,7 +17,6 @@ async function main() {
     // console.log(message);
     // console.log(await client.getMessage().data(message.messageId));
     // console.log(await client.getMessage().raw(message.messageId));
-    // console.log(await client.getMessage().children(message.messageId));
     // console.log(await client.getMessage().metadata(message.messageId));
     // console.log(await client.getMessage().index(new TextEncoder().encode("test")));
     // const message = await client

@@ -15,8 +15,8 @@ use iota_client::{
     Client,
 };
 
-const DEFAULT_DEVNET_NODE_URL: &str = "https://api.alphanet.iotaledger.net";
-const DEFAULT_DEVNET_FAUCET_URL: &str = "https://faucet.alphanet.iotaledger.net";
+const DEFAULT_DEVNET_NODE_URL: &str = "http://localhost:14265";
+const DEFAULT_DEVNET_FAUCET_URL: &str = "http://localhost:14265";
 // THIS SEED SERVES FOR TESTING PURPOSES! DON'T USE THIS SEED IN PRODUCTION!
 const DEFAULT_DEVELOPMENT_SEED: &str = "256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2";
 
@@ -66,8 +66,8 @@ async fn setup_transaction_block() -> (BlockId, TransactionId) {
             DEFAULT_DEVNET_FAUCET_URL,
             &addresses[0].to_bech32(client.get_bech32_hrp().await.unwrap()),
         )
-            .await
-            .unwrap()
+        .await
+        .unwrap()
     );
     tokio::time::sleep(std::time::Duration::from_secs(20)).await;
 
@@ -102,7 +102,7 @@ async fn setup_transaction_block() -> (BlockId, TransactionId) {
     (block_id, transaction_id)
 }
 
-
+#[ignore]
 #[tokio::test]
 async fn test_get_health() {
     let r = setup_client_with_sync_disabled()
@@ -113,35 +113,35 @@ async fn test_get_health() {
     println!("{:#?}", r);
 }
 
-
+#[ignore]
 #[tokio::test]
 async fn test_get_info() {
     let r = Client::get_node_info(DEFAULT_DEVNET_NODE_URL, None).await.unwrap();
     println!("{:#?}", r);
 }
 
-
+#[ignore]
 #[tokio::test]
 async fn test_get_tips() {
     let r = setup_client_with_sync_disabled().await.get_tips().await.unwrap();
     println!("{:#?}", r);
 }
 
-
+#[ignore]
 #[tokio::test]
 async fn test_post_block_with_tagged_data() {
     let block_id = setup_tagged_data_block().await;
     println!("{}", block_id);
 }
 
-
+#[ignore]
 #[tokio::test]
 async fn test_post_block_with_transaction() {
     let block_id = setup_transaction_block().await;
     println!("Block ID: {:?}", block_id);
 }
 
-
+#[ignore]
 #[tokio::test]
 async fn test_get_block_data() {
     let client = setup_client_with_sync_disabled().await;
@@ -152,7 +152,7 @@ async fn test_get_block_data() {
     println!("{:#?}", r);
 }
 
-
+#[ignore]
 #[tokio::test]
 async fn test_get_block_metadata() {
     let block_id = setup_tagged_data_block().await;
@@ -166,7 +166,7 @@ async fn test_get_block_metadata() {
     println!("{:#?}", r);
 }
 
-
+#[ignore]
 #[tokio::test]
 async fn test_get_block_raw() {
     let block_id = setup_tagged_data_block().await;
@@ -180,19 +180,7 @@ async fn test_get_block_raw() {
     println!("{:#?}", r);
 }
 
-
-#[tokio::test]
-async fn test_get_block_children() {
-    let block_id = setup_tagged_data_block().await;
-    let r = setup_client_with_sync_disabled()
-        .await
-        .get_block_children(&block_id)
-        .await
-        .unwrap();
-    println!("{:#?}", r);
-}
-
-
+#[ignore]
 #[tokio::test]
 async fn test_get_address_balance() {
     let client = setup_client_with_sync_disabled().await;
@@ -214,7 +202,7 @@ async fn test_get_address_balance() {
     println!("{:#?}", r);
 }
 
-
+#[ignore]
 #[tokio::test]
 async fn test_get_address_outputs() {
     let client = setup_client_with_sync_disabled().await;
@@ -238,7 +226,7 @@ async fn test_get_address_outputs() {
     println!("{:#?}", r);
 }
 
-
+#[ignore]
 #[tokio::test]
 async fn test_get_output() {
     let (_block_id, transaction_id) = setup_transaction_block().await;
@@ -252,7 +240,7 @@ async fn test_get_output() {
     println!("{:#?}", r);
 }
 
-
+#[ignore]
 #[tokio::test]
 async fn test_get_peers() {
     let r = setup_client_with_sync_disabled().await.get_peers().await.unwrap();
@@ -260,7 +248,7 @@ async fn test_get_peers() {
     println!("{:#?}", r);
 }
 
-
+#[ignore]
 #[tokio::test]
 async fn test_get_milestone_by_id() {
     let client = setup_client_with_sync_disabled().await;
@@ -283,7 +271,7 @@ async fn test_get_milestone_by_id() {
     println!("{:#?}", r);
 }
 
-
+#[ignore]
 #[tokio::test]
 async fn test_get_milestone_by_index() {
     let client = setup_client_with_sync_disabled().await;
@@ -298,7 +286,7 @@ async fn test_get_milestone_by_index() {
     println!("{:#?}", r);
 }
 
-
+#[ignore]
 #[tokio::test]
 async fn test_get_utxo_changes_by_id() {
     let client = setup_client_with_sync_disabled().await;
@@ -321,7 +309,7 @@ async fn test_get_utxo_changes_by_id() {
     println!("{:#?}", r);
 }
 
-
+#[ignore]
 #[tokio::test]
 async fn test_get_utxo_changes_by_index() {
     let client = setup_client_with_sync_disabled().await;
@@ -336,7 +324,7 @@ async fn test_get_utxo_changes_by_index() {
     println!("{:#?}", r);
 }
 
-
+#[ignore]
 #[tokio::test]
 async fn test_get_receipts() {
     let r = setup_client_with_sync_disabled().await.get_receipts().await.unwrap();
@@ -344,7 +332,7 @@ async fn test_get_receipts() {
     println!("{:#?}", r);
 }
 
-
+#[ignore]
 #[tokio::test]
 async fn get_receipts_migrated_at() {
     let r = setup_client_with_sync_disabled()
@@ -356,7 +344,7 @@ async fn get_receipts_migrated_at() {
     println!("{:#?}", r);
 }
 
-
+#[ignore]
 #[tokio::test]
 async fn test_get_treasury() {
     let r = setup_client_with_sync_disabled().await.get_treasury().await.unwrap();
@@ -364,7 +352,7 @@ async fn test_get_treasury() {
     println!("{:#?}", r);
 }
 
-
+#[ignore]
 #[tokio::test]
 async fn test_get_included_block() {
     let (_block_id, transaction_id) = setup_transaction_block().await;
