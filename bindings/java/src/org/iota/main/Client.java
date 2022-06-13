@@ -61,12 +61,8 @@ public class Client {
         return nodeCoreApi.getBlockMetadata(blockId);
     }
 
-    public BlockChildrenResponse getBlockChildren(String blockId) throws ClientException {
-        return nodeCoreApi.getBlockChildren(blockId);
-    }
-
-    public OutputResponse getOutput(String outputId) throws ClientException {
-        return nodeCoreApi.getOutput(outputId);
+    public OutputResponse getOutputWithMetadata(String outputId) throws ClientException {
+        return nodeCoreApi.getOutputWithMetadata(outputId);
     }
 
     public OutputMetadataResponse getOutputMetadata(String outputId) throws ClientException {
@@ -135,17 +131,17 @@ public class Client {
         return nodeIndexerApi.getFoundryOutputIds(params);
     }
 
-    public OutputIdResponse getAliasOutputId(String aliasId) throws ClientException {
-        return nodeIndexerApi.getAliasOutputId(aliasId);
+    public OutputIdResponse getAliasOutputIdByAliasId(String aliasId) throws ClientException {
+        return nodeIndexerApi.getAliasOutputIdByAliasId(aliasId);
     }
 
-    public OutputIdResponse getNftOutputId(String nftId) throws ClientException {
-        return nodeIndexerApi.getNftOutputId(nftId);
+    public OutputIdResponse getNftOutputIdByNftId(String nftId) throws ClientException {
+        return nodeIndexerApi.getNftOutputIdByNftId(nftId);
     }
 
 
-    public OutputIdResponse getFoundryOutputId(String foundryId) throws ClientException {
-        return nodeIndexerApi.getFoundryOutputId(foundryId);
+    public OutputIdResponse getFoundryOutputIdByFoundryId(String foundryId) throws ClientException {
+        return nodeIndexerApi.getFoundryOutputIdByFoundryId(foundryId);
     }
 
     // High level APIs
@@ -244,8 +240,8 @@ public class Client {
         return utilsApi.computeNftId(nftOutputId);
     }
 
-    public ComputeFoundryIdResponse computeFoundryId(String aliasAddress, int serialNumber, int tokenSchemeKind) throws ClientException {
-        return utilsApi.computeFoundryId(aliasAddress, serialNumber, tokenSchemeKind);
+    public ComputeFoundryIdResponse computeFoundryId(String aliasAddress, int serialNumber, int tokenScheme) throws ClientException {
+        return utilsApi.computeFoundryId(aliasAddress, serialNumber, tokenScheme);
     }
 
     // Miscellaneous APIs

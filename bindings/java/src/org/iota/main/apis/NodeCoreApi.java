@@ -50,13 +50,7 @@ public class NodeCoreApi extends BaseApi {
         return (BlockMetadataResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetBlockMetadata", o.toString()));
     }
 
-    public BlockChildrenResponse getBlockChildren(String blockId) throws ClientException {
-        JsonObject o = new JsonObject();
-        o.addProperty("blockId", blockId);
-        return (BlockChildrenResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetBlockChildren", o.toString()));
-    }
-
-    public OutputResponse getOutput(String outputId) throws ClientException {
+    public OutputResponse getOutputWithMetadata(String outputId) throws ClientException {
         JsonObject o = new JsonObject();
         o.addProperty("outputId", outputId);
         return (OutputResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetOutput", o.toString()));

@@ -13,7 +13,7 @@ public class NodeInfoResponse extends ClientResponse {
         super(response);
 
         this.nodeUrl = response.getPayload().getAsJsonObject().get("url").getAsString();
-        this.nodeInfo = response.getPayload().getAsJsonObject().get("node_info").getAsJsonObject();
+        this.nodeInfo = response.getPayload().getAsJsonObject().get("nodeInfo").getAsJsonObject();
     }
 
     public String getNodeUrl() {

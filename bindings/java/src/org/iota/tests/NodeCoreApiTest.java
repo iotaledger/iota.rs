@@ -52,15 +52,8 @@ public class NodeCoreApiTest extends ApiTest {
     }
 
     @Test
-    public void testGetBlockChildren() throws ClientException {
-        BlockChildrenResponse r = client.getBlockChildren(client.postBlock(setUpTaggedDataBlock()).getBlockId());
-        for (String child : r.getBlockChildren())
-            System.out.println(child);
-    }
-
-    @Test
     public void testGetOutput() throws ClientException {
-        OutputResponse r = client.getOutput(setupOutputId());
+        OutputResponse r = client.getOutputWithMetadata(setupOutputId());
         System.out.println(r);
     }
 

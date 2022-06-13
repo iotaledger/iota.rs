@@ -77,11 +77,11 @@ public class UtilsApi extends BaseApi {
         return (ComputeNftIdResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "ComputeNftId", o.toString()));
     }
 
-    public ComputeFoundryIdResponse computeFoundryId(String aliasAddress, int serialNumber, int tokenSchemeKind) throws ClientException {
+    public ComputeFoundryIdResponse computeFoundryId(String aliasAddress, int serialNumber, int tokenScheme) throws ClientException {
         JsonObject o = new JsonObject();
         o.addProperty("aliasAddress", aliasAddress);
         o.addProperty("serialNumber", serialNumber);
-        o.addProperty("tokenSchemeKind", tokenSchemeKind);
+        o.addProperty("tokenSchemeKind", tokenScheme);
         return (ComputeFoundryIdResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "ComputeFoundryId", o.toString()));
     }
 }

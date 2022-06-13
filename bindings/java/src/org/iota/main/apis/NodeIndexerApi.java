@@ -37,19 +37,19 @@ public class NodeIndexerApi extends BaseApi {
         return (OutputIdsResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "FoundryOutputIds", o.toString()));
     }
 
-    public OutputIdResponse getAliasOutputId(String aliasId) throws ClientException {
+    public OutputIdResponse getAliasOutputIdByAliasId(String aliasId) throws ClientException {
         JsonObject o = new JsonObject();
         o.addProperty("aliasId", aliasId);
         return (OutputIdResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "AliasOutputId", o.toString()));
     }
 
-    public OutputIdResponse getNftOutputId(String nftId) throws ClientException {
+    public OutputIdResponse getNftOutputIdByNftId(String nftId) throws ClientException {
         JsonObject o = new JsonObject();
         o.addProperty("nftId", nftId);
         return (OutputIdResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "NftOutputId", o.toString()));
     }
 
-    public OutputIdResponse getFoundryOutputId(String foundryId) throws ClientException {
+    public OutputIdResponse getFoundryOutputIdByFoundryId(String foundryId) throws ClientException {
         JsonObject o = new JsonObject();
         o.addProperty("foundryId", foundryId);
         return (OutputIdResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "FoundryOutputId", o.toString()));
