@@ -1229,7 +1229,7 @@ dependencies = [
 [[package]]
 name = "iota-ledger"
 version = "0.1.0"
-source = "git+https://github.com/iotaledger/ledger.rs?rev=4a7a489f5c5899066c5ad27588690affef119b78#4a7a489f5c5899066c5ad27588690affef119b78"
+source = "git+https://github.com/iotaledger/ledger.rs?rev=9f01355db6c5c3ea54726e1431a8354615894d5e#9f01355db6c5c3ea54726e1431a8354615894d5e"
 dependencies = [
  "bech32 0.7.3",
  "enum-iterator",
