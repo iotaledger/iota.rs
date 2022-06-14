@@ -16,7 +16,7 @@ public class NodeIndexerApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.add("queryParameters", params.queryParams);
 
-        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "BasicOutputIds", o.toString()));
+        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "BasicOutputIds", o));
         JsonArray responsePayload = response.getPayload().getAsJsonArray();
 
         OutputId[] outputIds = new OutputId[responsePayload.size()];
@@ -31,7 +31,7 @@ public class NodeIndexerApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.add("queryParameters", params.queryParams);
 
-        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "AliasOutputIds", o.toString()));
+        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "AliasOutputIds", o));
         JsonArray responsePayload = response.getPayload().getAsJsonArray();
 
         OutputId[] outputIds = new OutputId[responsePayload.size()];
@@ -46,7 +46,7 @@ public class NodeIndexerApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.add("queryParameters", params.queryParams);
 
-        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "NftOutputIds", o.toString()));
+        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "NftOutputIds", o));
         JsonArray responsePayload = response.getPayload().getAsJsonArray();
 
         OutputId[] outputIds = new OutputId[responsePayload.size()];
@@ -61,7 +61,7 @@ public class NodeIndexerApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.add("queryParameters", params.queryParams);
 
-        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "FoundryOutputIds", o.toString()));
+        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "FoundryOutputIds", o));
         JsonArray responsePayload = response.getPayload().getAsJsonArray();
 
         OutputId[] outputIds = new OutputId[responsePayload.size()];
@@ -76,7 +76,7 @@ public class NodeIndexerApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.addProperty("aliasId", aliasId.toString());
 
-        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "AliasOutputId", o.toString()));
+        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "AliasOutputId", o));
         String responsePayload = response.getPayload().getAsString();
 
         return new OutputId(responsePayload);
@@ -86,7 +86,7 @@ public class NodeIndexerApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.addProperty("nftId", nftId.toString());
 
-        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "NftOutputId", o.toString()));
+        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "NftOutputId", o));
         String responsePayload = response.getPayload().getAsString();
 
         return new OutputId(responsePayload);
@@ -96,7 +96,7 @@ public class NodeIndexerApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.addProperty("foundryId", foundryId.toString());
 
-        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "FoundryOutputId", o.toString()));
+        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "FoundryOutputId", o));
         String responsePayload = response.getPayload().getAsString();
 
         return new OutputId(responsePayload);

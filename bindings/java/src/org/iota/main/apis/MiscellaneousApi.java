@@ -4,7 +4,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.iota.main.types.*;
 import org.iota.main.types.responses.ClientResponse;
-
 import org.iota.main.types.secret.GenerateAddressesOptions;
 import org.iota.main.types.secret.GenerateBlockOptions;
 import org.iota.main.types.secret.SecretManager;
@@ -20,7 +19,7 @@ public class MiscellaneousApi extends BaseApi {
         o.add("secretManager", secretManager.getJson());
         o.add("options", generateAddressesOptions.getJson());
 
-        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GenerateAddresses", o.toString()));
+        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GenerateAddresses", o));
         JsonArray responsePayload = response.getPayload().getAsJsonArray();
 
         String[] addresses = new String[responsePayload.size()];
@@ -36,7 +35,7 @@ public class MiscellaneousApi extends BaseApi {
         o.add("secretManager", secretManager.getJson());
         o.add("options", options.getJson());
 
-        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GenerateBlock", o.toString()));
+        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GenerateBlock", o));
         JsonObject responsePayload = response.getPayload().getAsJsonObject();
 
         return new Block(responsePayload);
@@ -115,25 +114,36 @@ public class MiscellaneousApi extends BaseApi {
         o.add("secretManager", secretManager.getJson());
         o.add("generateAddressesOptions", generateAddressesOptions.getJson());
 
-        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "PrepareTransaction", o.toString()));
+        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "PrepareTransaction", o));
         JsonObject responsePayload = response.getPayload().getAsJsonObject();
 
         return new PreparedTransactionData(responsePayload);
     }
 
     public BlockPayload signTransaction(SecretManager secretManager, PreparedTransactionData preparedTransactionData) throws ClientException {
-        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "SignTransaction", "{\"secretManager\": \"" + secretManager.toString() + "\", \"preparedTransactionData\": " + preparedTransactionData + "}"));
+        JsonObject o = new JsonObject();
+        o.add("secretManager", secretManager.getJson());
+        o.add("preparedTransactionData", preparedTransactionData.getJson());
+
+        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "SignTransaction", o));
         JsonObject responsePayload = response.getPayload().getAsJsonObject();
 
         return new BlockPayload(responsePayload);
     }
 
     public void storeMnemonic(SecretManager secretManager, String mnemonic) throws ClientException {
-        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "StoreMnemonic", "{\"secretManager\": \"" + secretManager.toString() + "\", \"mnemonic\": \"" + mnemonic + "\"}"));
+        JsonObject o = new JsonObject();
+        o.add("secretManager", secretManager.getJson());
+        o.addProperty("mnemonic", mnemonic);
+
+        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "StoreMnemonic", o));
     }
 
     public Block postBlockPayload(TransactionPayload payload) throws ClientException {
-        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "SubmitPayload", "{\"payload\":" + payload.toString() + "}"));
+        JsonObject o = new JsonObject();
+        o.add("payload", payload.getJson());
+
+        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "SubmitPayload", o));
         JsonObject responsePayload = response.getPayload().getAsJsonObject();
 
         return new Block(responsePayload);

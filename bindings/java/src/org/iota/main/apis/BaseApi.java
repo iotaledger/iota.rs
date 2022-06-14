@@ -1,6 +1,8 @@
 package org.iota.main.apis;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import org.iota.main.types.ClientConfig;
 import org.iota.main.types.ClientException;
 import org.iota.main.types.responses.ClientResponse;
@@ -39,7 +41,7 @@ public class BaseApi {
 
         private CommandType commandType;
         private String methodName;
-        private String methodParams;
+        private JsonElement methodParams;
 
 
         public ClientCommand(CommandType commandType, String methodName) {
@@ -47,7 +49,7 @@ public class BaseApi {
             this.methodName = methodName;
         }
 
-        public ClientCommand(CommandType commandType, String methodName, String methodParams) {
+        public ClientCommand(CommandType commandType, String methodName, JsonElement methodParams) {
             this.commandType = commandType;
             this.methodName = methodName;
             this.methodParams = methodParams;
@@ -55,7 +57,16 @@ public class BaseApi {
 
         @Override
         public String toString() {
-            return "{\"cmd\":\"" + commandType.toString() + "\",\"payload\":{\"name\":\"" + methodName + "\"" + (methodParams != null ? ",\"data\":" + methodParams : "") + "}}";
+            JsonObject payload = new JsonObject();
+            payload.addProperty("name", methodName);
+            if (methodParams != null)
+                payload.add("data", methodParams);
+
+            JsonObject outer = new JsonObject();
+            outer.addProperty("cmd", commandType.toString());
+            outer.add("payload", payload);
+
+            return outer.toString();
         }
 
         protected enum CommandType {

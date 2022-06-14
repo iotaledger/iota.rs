@@ -18,7 +18,7 @@ public class TransactionPayload {
         this.jsonObject = element.getAsJsonObject();
     }
 
-    public JsonObject getAsJsonObject() {
+    public JsonObject getJson() {
         return jsonObject;
     }
 

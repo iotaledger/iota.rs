@@ -23,7 +23,7 @@ public class HighLevelApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.add("outputIds", a);
 
-        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetOutputs", o.toString()));
+        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetOutputs", o));
         JsonArray responsePayload = response.getPayload().getAsJsonArray();
 
         Output[] outputs = new Output[responsePayload.size()];
@@ -40,7 +40,7 @@ public class HighLevelApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.add("outputIds", a);
 
-        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "TryGetOutputs", o.toString()));
+        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "TryGetOutputs", o));
         JsonArray responsePayload = response.getPayload().getAsJsonArray();
 
         Output[] outputs = new Output[responsePayload.size()];
@@ -57,7 +57,7 @@ public class HighLevelApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.add("blockIds", a);
 
-        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "FindBlocks", o.toString()));
+        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "FindBlocks", o));
         JsonArray responsePayload = response.getPayload().getAsJsonArray();
 
         Block[] blocks = new Block[responsePayload.size()];
@@ -71,7 +71,7 @@ public class HighLevelApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.addProperty("blockId", blockId.toString());
 
-        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "Retry", o.toString()));
+        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "Retry", o));
         JsonObject responsePayload = response.getPayload().getAsJsonObject();
 
         return Map.entry(new BlockId(responsePayload.get("blockId").getAsString()), new Block(responsePayload.get("block").getAsJsonObject()));
@@ -83,7 +83,7 @@ public class HighLevelApi extends BaseApi {
         o.addProperty("interval", interval);
         o.addProperty("maxAttempts", maxAttempts);
 
-        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "RetryUntilIncluded", o.toString()));
+        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "RetryUntilIncluded", o));
         JsonArray responsePayload = response.getPayload().getAsJsonArray();
 
         LinkedHashMap<BlockId, Block> blocks = new LinkedHashMap<BlockId, Block>();
@@ -101,7 +101,7 @@ public class HighLevelApi extends BaseApi {
         o.addProperty("accountIndex", accountIndex);
         o.addProperty("addressRange", addressRange);
 
-        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "ConsolidateFunds", o.toString()));
+        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "ConsolidateFunds", o));
         String responsePayload = response.getPayload().getAsString();
 
         return responsePayload;
@@ -115,7 +115,7 @@ public class HighLevelApi extends BaseApi {
         o.add("addresses", a);
         o.addProperty("amount", amount);
 
-        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "FindInputs", o.toString()));
+        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "FindInputs", o));
         JsonArray responsePayload = response.getPayload().getAsJsonArray();
 
         OutputId[] outputIds = new OutputId[responsePayload.size()];
@@ -137,7 +137,7 @@ public class HighLevelApi extends BaseApi {
         o.add("outputIds", outputIdsJson);
         o.add("addresses", addressesJson);
 
-        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "FindOutputs", o.toString()));
+        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "FindOutputs", o));
         JsonArray responsePayload = response.getPayload().getAsJsonArray();
 
         OutputId[] outputIdsRet = new OutputId[responsePayload.size()];
@@ -152,7 +152,7 @@ public class HighLevelApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.addProperty("blockId", blockId.toString());
 
-        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "Reattach", o.toString()));
+        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "Reattach", o));
         JsonObject responsePayload = response.getPayload().getAsJsonObject();
 
         return Map.entry(new BlockId(responsePayload.get("blockId").getAsString()), new Block(responsePayload.get("block").getAsJsonObject()));
@@ -162,7 +162,7 @@ public class HighLevelApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.addProperty("blockId", blockId.toString());
 
-        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "ReattachUnchecked", o.toString()));
+        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "ReattachUnchecked", o));
         JsonObject responsePayload = response.getPayload().getAsJsonObject();
 
         return Map.entry(new BlockId(responsePayload.get("blockId").getAsString()), new Block(responsePayload.get("block").getAsJsonObject()));
@@ -172,7 +172,7 @@ public class HighLevelApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.addProperty("blockId", blockId.toString());
 
-        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "Promote", o.toString()));
+        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "Promote", o));
         JsonObject responsePayload = response.getPayload().getAsJsonObject();
 
         return Map.entry(new BlockId(responsePayload.get("blockId").getAsString()), new Block(responsePayload.get("block").getAsJsonObject()));
@@ -182,7 +182,7 @@ public class HighLevelApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.addProperty("blockId", blockId.toString());
 
-        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "PromoteUnchecked", o.toString()));
+        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "PromoteUnchecked", o));
         JsonObject responsePayload = response.getPayload().getAsJsonObject();
 
         return Map.entry(new BlockId(responsePayload.get("blockId").getAsString()), new Block(responsePayload.get("block").getAsJsonObject()));
