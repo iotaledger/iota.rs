@@ -2,11 +2,7 @@ package org.iota.tests;
 
 import org.iota.main.Client;
 import org.iota.main.apis.UtilsApi;
-import org.iota.main.types.Block;
-import org.iota.main.types.BlockPayload;
-import org.iota.main.types.ClientConfig;
-import org.iota.main.types.ClientException;
-import org.iota.main.types.responses.node_core_api.BlockResponse;
+import org.iota.main.types.*;
 import org.iota.main.types.secret.GenerateAddressesOptions;
 import org.iota.main.types.secret.GenerateBlockOptions;
 import org.iota.main.types.secret.MnemonicSecretManager;
@@ -31,19 +27,18 @@ public abstract class ApiTest {
     }
 
     protected Block setUpTaggedDataBlock() throws ClientException {
-        BlockResponse r = client.submitBlockPayload(new BlockPayload("{ \"type\": 5, \"tag\": \"0x68656c6c6f20776f726c64\", \"data\": \"0x5370616d6d696e6720646174612e0a436f756e743a203037323935320a54696d657374616d703a20323032312d30322d31315431303a32333a34392b30313a30300a54697073656c656374696f6e3a203934c2b573\" }"));
-        return r.getBlock();
+        return client.submitBlockPayload(new TransactionPayload("{ \"type\": 5, \"tag\": \"0x68656c6c6f20776f726c64\", \"data\": \"0x5370616d6d696e6720646174612e0a436f756e743a203037323935320a54696d657374616d703a20323032312d30322d31315431303a32333a34392b30313a30300a54697073656c656374696f6e3a203934c2b573\" }"));
     }
 
     protected Block setUpTransactionBlock() throws ClientException {
-        String address = client.generateAddresses(new MnemonicSecretManager(DEFAULT_DEVELOPMENT_MNEMONIC), new GenerateAddressesOptions().withRange(0, 1)).getAddresses()[0];
+        String address = client.generateAddresses(new MnemonicSecretManager(DEFAULT_DEVELOPMENT_MNEMONIC), new GenerateAddressesOptions().withRange(0, 1))[0];
         requestFundsFromFaucet(address);
         try {
             Thread.sleep(1000 * 10);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        Block b = client.generateBlock(new MnemonicSecretManager(DEFAULT_DEVELOPMENT_MNEMONIC), new GenerateBlockOptions().withOutputHex(new GenerateBlockOptions.ClientBlockBuilderOutputAddress(client.bech32ToHex(address).getHexAddress(), "10000000"))).getBlock();
+        Block b = client.generateBlock(new MnemonicSecretManager(DEFAULT_DEVELOPMENT_MNEMONIC), new GenerateBlockOptions().withOutputHex(new GenerateBlockOptions.ClientBlockBuilderOutputAddress(client.bech32ToHex(address), "10000000")));
         try {
             Thread.sleep(1000 * 10);
         } catch (InterruptedException e) {
@@ -52,14 +47,14 @@ public abstract class ApiTest {
         return b;
     }
 
-    protected String setUpTransactionId() throws ClientException {
+    protected TransactionId setUpTransactionId() throws ClientException {
         Block b = setUpTransactionBlock();
-        String transactionId = client.getTransactionId(new BlockPayload(b.getJson().get("payload").getAsJsonObject())).getTransactionId();
+        TransactionId transactionId = client.getTransactionId(new TransactionPayload(b.getJson().get("payload").getAsJsonObject()));
         return transactionId;
     }
 
-    protected String setupOutputId() throws ClientException {
-        return setUpTransactionId() + "0000";
+    protected OutputId setupOutputId() throws ClientException {
+        return new OutputId(setUpTransactionId() + "0000");
     }
 
 }

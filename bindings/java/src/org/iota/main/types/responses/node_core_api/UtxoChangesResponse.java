@@ -1,30 +1,28 @@
 package org.iota.main.types.responses.node_core_api;
 
 import com.google.gson.JsonArray;
-import org.iota.main.types.responses.BaseApiResponse;
-import org.iota.main.types.responses.ClientResponse;
+import com.google.gson.JsonObject;
+import org.iota.main.types.OutputId;
 
-public class UtxoChangesResponse extends ClientResponse {
+public class UtxoChangesResponse {
 
     private int index;
-    private String[] consumedOutputs;
-    private String[] createdOutputs;
+    private OutputId[] consumedOutputs;
+    private OutputId[] createdOutputs;
 
-    public UtxoChangesResponse(BaseApiResponse response) {
-        super(response);
+    public UtxoChangesResponse(JsonObject response) {
+        index = response.get("index").getAsInt();
 
-        index = response.getPayload().getAsJsonObject().get("index").getAsInt();
-
-        JsonArray consumedOutputs = response.getPayload().getAsJsonObject().getAsJsonArray("consumedOutputs");
-        this.consumedOutputs = new String[consumedOutputs.size()];
+        JsonArray consumedOutputs = response.getAsJsonArray("consumedOutputs");
+        this.consumedOutputs = new OutputId[consumedOutputs.size()];
         for (int i = 0; i < consumedOutputs.size(); i++) {
-            this.consumedOutputs[i] = consumedOutputs.get(i).getAsString();
+            this.consumedOutputs[i] = new OutputId(consumedOutputs.get(i).getAsString());
         }
 
-        JsonArray createdOutputs = response.getPayload().getAsJsonObject().getAsJsonArray("createdOutputs");
-        this.createdOutputs = new String[createdOutputs.size()];
+        JsonArray createdOutputs = response.getAsJsonArray("createdOutputs");
+        this.createdOutputs = new OutputId[createdOutputs.size()];
         for (int i = 0; i < createdOutputs.size(); i++) {
-            this.createdOutputs[i] = createdOutputs.get(i).getAsString();
+            this.createdOutputs[i] = new OutputId(createdOutputs.get(i).getAsString());
         }
     }
 
@@ -32,11 +30,11 @@ public class UtxoChangesResponse extends ClientResponse {
         return index;
     }
 
-    public String[] getConsumedOutputs() {
+    public OutputId[] getConsumedOutputs() {
         return consumedOutputs;
     }
 
-    public String[] getCreatedOutputs() {
+    public OutputId[] getCreatedOutputs() {
         return createdOutputs;
     }
 

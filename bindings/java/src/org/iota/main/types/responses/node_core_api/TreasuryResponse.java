@@ -1,25 +1,23 @@
 package org.iota.main.types.responses.node_core_api;
 
-import org.iota.main.types.responses.BaseApiResponse;
-import org.iota.main.types.responses.ClientResponse;
+import com.google.gson.JsonObject;
+import org.iota.main.types.MilestoneId;
 
-public class TreasuryResponse extends ClientResponse {
+public class TreasuryResponse {
 
-    private String milestoneId;
-    private String amount;
+    private MilestoneId milestoneId;
+    private int amount;
 
-    public TreasuryResponse(BaseApiResponse response) {
-        super(response);
-
-        milestoneId = response.getPayload().getAsJsonObject().get("milestoneId").getAsString();
-        amount = response.getPayload().getAsJsonObject().get("amount").getAsString();
+    public TreasuryResponse(JsonObject response) {
+        milestoneId = new MilestoneId(response.get("milestoneId").getAsString());
+        amount = response.get("amount").getAsInt();
     }
 
-    public String getMilestoneId() {
+    public MilestoneId getMilestoneId() {
         return milestoneId;
     }
 
-    public String getAmount() {
+    public int getAmount() {
         return amount;
     }
 

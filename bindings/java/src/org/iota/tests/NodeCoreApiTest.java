@@ -1,17 +1,19 @@
 package org.iota.tests;
 
-import org.iota.main.types.ClientException;
-import org.iota.main.types.Peer;
-import org.iota.main.types.Receipt;
-import org.iota.main.types.responses.node_core_api.*;
+import org.iota.main.types.*;
+import org.iota.main.types.responses.node_core_api.NodeInfoResponse;
+import org.iota.main.types.responses.node_core_api.TreasuryResponse;
+import org.iota.main.types.responses.node_core_api.UtxoChangesResponse;
 import org.junit.jupiter.api.Test;
+
+import java.util.Map;
 
 public class NodeCoreApiTest extends ApiTest {
 
     @Test
     public void testGetHealth() throws ClientException {
-        HealthResponse r = client.getHealth(DEFAULT_DEVNET_NODE_URL);
-        System.out.println(r.isHealthy());
+        boolean health = client.getHealth(DEFAULT_DEVNET_NODE_URL);
+        System.out.println(health);
     }
 
     @Test
@@ -22,122 +24,116 @@ public class NodeCoreApiTest extends ApiTest {
 
     @Test
     public void testGetTips() throws ClientException {
-        TipsResponse r = client.getTips();
-        for (String tip : r.getTips())
+        for (BlockId tip : client.getTips())
             System.out.println(tip);
     }
 
     @Test
     public void testPostBlock() throws ClientException {
-        PostBlockResponse r = client.postBlock(setUpTaggedDataBlock());
-        System.out.println(r.getBlockId());
+        BlockId blockId = client.postBlock(setUpTaggedDataBlock());
+        System.out.println(blockId);
     }
 
     @Test
     public void testGetBlock() throws ClientException {
-        BlockResponse r = client.getBlock(client.postBlock(setUpTaggedDataBlock()).getBlockId());
-        System.out.println(r.getBlock());
+        Block block = client.getBlock(client.postBlock(setUpTaggedDataBlock()));
+        System.out.println(block);
     }
 
     @Test
     public void testGetBlockRaw() throws ClientException {
-        BlockRawResponse r = client.getBlockRaw(client.postBlock(setUpTaggedDataBlock()).getBlockId());
-        System.out.println(r);
+        byte[] blockBytes = client.getBlockRaw(client.postBlock(setUpTaggedDataBlock()));
     }
 
     @Test
     public void testGetBlockMetadata() throws ClientException {
-        BlockMetadataResponse r = client.getBlockMetadata(client.postBlock(setUpTaggedDataBlock()).getBlockId());
-        System.out.println(r);
+        System.out.println(client.getBlockMetadata(client.postBlock(setUpTaggedDataBlock())));
     }
 
     @Test
     public void testGetOutput() throws ClientException {
-        OutputResponse r = client.getOutputWithMetadata(setupOutputId());
-        System.out.println(r);
+        Map.Entry<Output, OutputMetadata> r = client.getOutputWithMetadata(setupOutputId());
+        System.out.println(r.getKey());
+        System.out.println(r.getValue());
     }
 
     @Test
     public void testGetOutputMetadata() throws ClientException {
-        OutputMetadataResponse r = client.getOutputMetadata(setupOutputId());
+        OutputMetadata r = client.getOutputMetadata(setupOutputId());
         System.out.println(r);
     }
 
     @Test
     public void testGetReceiptsMigratedAt() throws ClientException {
-        ReceiptsMigratedAtResponse r = client.getReceiptsMigratedAt(client.getNodeInfo().getNodeInfo().get("status").getAsJsonObject().get("latestMilestone").getAsJsonObject().get("index").getAsInt());
-        for (Receipt receipt : r.getReceipts())
-            System.out.println(receipt);
-
+        Receipt[] receipts = client.getReceiptsMigratedAt(client.getNodeInfo().getNodeInfo().get("status").getAsJsonObject().get("latestMilestone").getAsJsonObject().get("index").getAsInt());
+        for (Receipt r : receipts)
+            System.out.println(r);
     }
 
     @Test
     public void testGetReceipts() throws ClientException {
-        ReceiptsResponse r = client.getReceipts();
-        for (Receipt receipt : r.getReceipts())
-            System.out.println(receipt);
-
+        Receipt[] receipts = client.getReceipts();
+        for (Receipt r : receipts)
+            System.out.println(r);
     }
 
     @Test
     public void testGetTreasury() throws ClientException {
         TreasuryResponse r = client.getTreasury();
-        System.out.println(r.getMilestoneId());
-        System.out.println(r.getAmount());
+        System.out.println(r);
     }
 
     @Test
     public void testGetIncludedBlock() throws ClientException {
-        BlockResponse r = client.getIncludedBlock(setUpTransactionId());
-        System.out.println(r.getBlock());
+        System.out.println(client.getIncludedBlock(setUpTransactionId()));
     }
 
     @Test
     public void testGetMilestoneById() throws ClientException {
-        MilestoneResponse r = client.getMilestoneById(client.getNodeInfo().getNodeInfo().get("status").getAsJsonObject().get("latestMilestone").getAsJsonObject().get("milestoneId").getAsString());
-        System.out.println(r.getMilestone());
+        MilestoneId milestoneId = new MilestoneId(client.getNodeInfo().getNodeInfo().get("status").getAsJsonObject().get("latestMilestone").getAsJsonObject().get("milestoneId").getAsString());
+        Milestone r = client.getMilestoneById(milestoneId);
+        System.out.println(r);
     }
 
     @Test
     public void testGetMilestoneByIndex() throws ClientException {
-        MilestoneResponse r = client.getMilestoneByIndex(client.getNodeInfo().getNodeInfo().get("status").getAsJsonObject().get("latestMilestone").getAsJsonObject().get("index").getAsInt());
-        System.out.println(r.getMilestone());
+        Milestone r = client.getMilestoneByIndex(client.getNodeInfo().getNodeInfo().get("status").getAsJsonObject().get("latestMilestone").getAsJsonObject().get("index").getAsInt());
+        System.out.println(r);
     }
 
     @Test
     public void testGetMilestoneByIdRaw() throws ClientException {
-        MilestoneRawResponse r = client.getMilestoneByIdRaw(client.getNodeInfo().getNodeInfo().get("status").getAsJsonObject().get("latestMilestone").getAsJsonObject().get("milestoneId").getAsString());
-        System.out.println(r.getMilestoneBytes());
+        MilestoneId milestoneId = new MilestoneId(client.getNodeInfo().getNodeInfo().get("status").getAsJsonObject().get("latestMilestone").getAsJsonObject().get("milestoneId").getAsString());
+        byte[] milestoneBytes = client.getMilestoneByIdRaw(milestoneId);
     }
 
     @Test
     public void testGetMilestoneByIndexRaw() throws ClientException {
-        MilestoneRawResponse r = client.getMilestoneByIndexRaw(client.getNodeInfo().getNodeInfo().get("status").getAsJsonObject().get("latestMilestone").getAsJsonObject().get("index").getAsInt());
-        System.out.println(r.getMilestoneBytes());
+        byte[] milestoneBytes = client.getMilestoneByIndexRaw(client.getNodeInfo().getNodeInfo().get("status").getAsJsonObject().get("latestMilestone").getAsJsonObject().get("index").getAsInt());
     }
 
     @Test
     public void testGetUtxoChangesId() throws ClientException {
-        UtxoChangesResponse r = client.getUtxoChangesById(client.getNodeInfo().getNodeInfo().get("status").getAsJsonObject().get("latestMilestone").getAsJsonObject().get("milestoneId").getAsString());
-        for (String consumed : r.getConsumedOutputs())
+        MilestoneId milestoneId = new MilestoneId(client.getNodeInfo().getNodeInfo().get("status").getAsJsonObject().get("latestMilestone").getAsJsonObject().get("milestoneId").getAsString());
+        UtxoChangesResponse r = client.getUtxoChangesById(milestoneId);
+        for (OutputId consumed : r.getConsumedOutputs())
             System.out.println(consumed);
-        for (String created : r.getCreatedOutputs())
+        for (OutputId created : r.getCreatedOutputs())
             System.out.println(created);
     }
 
     @Test
     public void testGetUtxoChangesIndex() throws ClientException {
         UtxoChangesResponse r = client.getUtxoChangesByIndex(client.getNodeInfo().getNodeInfo().get("status").getAsJsonObject().get("latestMilestone").getAsJsonObject().get("index").getAsInt());
-        for (String consumed : r.getConsumedOutputs())
+        for (OutputId consumed : r.getConsumedOutputs())
             System.out.println(consumed);
-        for (String created : r.getCreatedOutputs())
+        for (OutputId created : r.getCreatedOutputs())
             System.out.println(created);
     }
 
     @Test
     public void testGetPeers() throws ClientException {
-        PeersResponse r = client.getPeers();
-        for (Peer peer : r.getPeers())
+        for (Peer peer : client.getPeers())
             System.out.println(peer);
     }
 

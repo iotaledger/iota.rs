@@ -1,10 +1,14 @@
 package org.iota.main.apis;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import org.iota.main.types.Block;
-import org.iota.main.types.ClientConfig;
-import org.iota.main.types.ClientException;
-import org.iota.main.types.responses.node_core_api.*;
+import org.iota.main.types.*;
+import org.iota.main.types.responses.ClientResponse;
+import org.iota.main.types.responses.node_core_api.NodeInfoResponse;
+import org.iota.main.types.responses.node_core_api.TreasuryResponse;
+import org.iota.main.types.responses.node_core_api.UtxoChangesResponse;
+
+import java.util.Map;
 
 public class NodeCoreApi extends BaseApi {
 
@@ -12,113 +16,229 @@ public class NodeCoreApi extends BaseApi {
         super(clientConfig);
     }
 
-    public HealthResponse getHealth(String nodeUrl) throws ClientException {
+    public boolean getHealth(String nodeUrl) throws ClientException {
         JsonObject o = new JsonObject();
         o.addProperty("url", nodeUrl);
-        return (HealthResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetHealth", o.toString()));
+
+        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetHealth", o.toString()));
+        Boolean responsePayload = response.getPayload().getAsBoolean();
+
+        return responsePayload;
     }
 
     public NodeInfoResponse getNodeInfo() throws ClientException {
-        return (NodeInfoResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetInfo"));
+        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetInfo"));
+        JsonObject responsePayload = response.getPayload().getAsJsonObject();
+
+        return new NodeInfoResponse(responsePayload);
     }
 
-    public TipsResponse getTips() throws ClientException {
-        return (TipsResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetTips"));
+    public BlockId[] getTips() throws ClientException {
+        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetTips"));
+        JsonArray responsePayload = response.getPayload().getAsJsonArray();
+
+        BlockId[] blockIds = new BlockId[responsePayload.size()];
+        for (int i = 0; i < responsePayload.size(); i++)
+            blockIds[i] = new BlockId(responsePayload.get(i).getAsString());
+
+        return blockIds;
     }
 
-    public PostBlockResponse postBlock(Block block) throws ClientException {
+    public BlockId postBlock(Block block) throws ClientException {
         JsonObject o = new JsonObject();
         o.add("block", block.getJson());
-        return (PostBlockResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "PostBlock", o.toString()));
+
+        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "PostBlock", o.toString()));
+        String responsePayload = response.getPayload().getAsString();
+
+        return new BlockId(responsePayload);
     }
 
-    public BlockResponse getBlock(String blockId) throws ClientException {
+    public Block getBlock(BlockId blockId) throws ClientException {
         JsonObject o = new JsonObject();
-        o.addProperty("blockId", blockId);
-        return (BlockResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetBlock", o.toString()));
+        o.addProperty("blockId", blockId.toString());
+
+        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetBlock", o.toString()));
+        JsonObject responsePayload = response.getPayload().getAsJsonObject();
+
+        return new Block(responsePayload);
     }
 
-    public BlockRawResponse getBlockRaw(String blockId) throws ClientException {
+    public byte[] getBlockRaw(BlockId blockId) throws ClientException {
         JsonObject o = new JsonObject();
-        o.addProperty("blockId", blockId);
-        return (BlockRawResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetBlockRaw", o.toString()));
+        o.addProperty("blockId", blockId.toString());
+
+        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetBlockRaw", o.toString()));
+        JsonArray responsePayload = response.getPayload().getAsJsonArray();
+
+        byte[] blockBytes = new byte[responsePayload.size()];
+
+        for (int i = 0; i < responsePayload.size(); i++) {
+            blockBytes[i] = responsePayload.get(i).getAsByte();
+        }
+
+        return blockBytes;
     }
 
-    public BlockMetadataResponse getBlockMetadata(String blockId) throws ClientException {
+    public BlockMetadata getBlockMetadata(BlockId blockId) throws ClientException {
         JsonObject o = new JsonObject();
-        o.addProperty("blockId", blockId);
-        return (BlockMetadataResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetBlockMetadata", o.toString()));
+        o.addProperty("blockId", blockId.toString());
+
+        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetBlockMetadata", o.toString()));
+        JsonObject responsePayload = response.getPayload().getAsJsonObject();
+
+        return new BlockMetadata(responsePayload);
     }
 
-    public OutputResponse getOutputWithMetadata(String outputId) throws ClientException {
+    public Map.Entry<Output, OutputMetadata> getOutputWithMetadata(OutputId outputId) throws ClientException {
         JsonObject o = new JsonObject();
-        o.addProperty("outputId", outputId);
-        return (OutputResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetOutput", o.toString()));
+        o.addProperty("outputId", outputId.toString());
+
+        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetOutput", o.toString()));
+        JsonObject responsePayload = response.getPayload().getAsJsonObject();
+
+        Output output = new Output(responsePayload.get("output").getAsJsonObject());
+        OutputMetadata metadata = new OutputMetadata(responsePayload.getAsJsonObject().get("metadata").getAsJsonObject());
+
+        return Map.entry(output, metadata);
     }
 
-    public OutputMetadataResponse getOutputMetadata(String outputId) throws ClientException {
+    public OutputMetadata getOutputMetadata(OutputId outputId) throws ClientException {
         JsonObject o = new JsonObject();
-        o.addProperty("outputId", outputId);
-        return (OutputMetadataResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetOutputMetadata", o.toString()));
+        o.addProperty("outputId", outputId.toString());
+
+        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetOutputMetadata", o.toString()));
+        JsonObject responsePayload = response.getPayload().getAsJsonObject();
+
+        return new OutputMetadata(responsePayload);
     }
 
-    public ReceiptsMigratedAtResponse getReceiptsMigratedAt(int milestoneIndex) throws ClientException {
+    public Receipt[] getReceiptsMigratedAt(int milestoneIndex) throws ClientException {
         JsonObject o = new JsonObject();
         o.addProperty("milestoneIndex", milestoneIndex);
-        return (ReceiptsMigratedAtResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetReceiptsMigratedAt", o.toString()));
+
+        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetReceiptsMigratedAt", o.toString()));
+        JsonArray responsePayload = response.getPayload().getAsJsonArray();
+
+        Receipt[] receipts = new Receipt[responsePayload.size()];
+        for (int i = 0; i < responsePayload.size(); i++) {
+            receipts[i] = new Receipt(responsePayload.get(i).getAsJsonObject());
+        }
+
+        return receipts;
     }
 
-    public ReceiptsResponse getReceipts() throws ClientException {
-        return (ReceiptsResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetReceipts"));
+    public Receipt[] getReceipts() throws ClientException {
+        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetReceipts"));
+        JsonArray responsePayload = response.getPayload().getAsJsonArray();
+
+        Receipt[] receipts = new Receipt[responsePayload.size()];
+        for (int i = 0; i < responsePayload.size(); i++) {
+            receipts[i] = new Receipt(responsePayload.get(i).getAsJsonObject());
+        }
+
+        return receipts;
     }
 
     public TreasuryResponse getTreasury() throws ClientException {
-        return (TreasuryResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetTreasury"));
+        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetTreasury"));
+        JsonObject responsePayload = response.getPayload().getAsJsonObject();
+
+        return new TreasuryResponse(responsePayload);
     }
 
-    public BlockResponse getIncludedBlock(String transactionId) throws ClientException {
+    public Block getIncludedBlock(TransactionId transactionId) throws ClientException {
         JsonObject o = new JsonObject();
-        o.addProperty("transactionId", transactionId);
-        return (BlockResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetIncludedBlock", o.toString()));
+        o.addProperty("transactionId", transactionId.toString());
+
+        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetIncludedBlock", o.toString()));
+        JsonObject responsePayload = response.getPayload().getAsJsonObject();
+
+        return new Block(responsePayload);
     }
 
-    public MilestoneResponse getMilestoneById(String milestoneId) throws ClientException {
+    public Milestone getMilestoneById(MilestoneId milestoneId) throws ClientException {
         JsonObject o = new JsonObject();
-        o.addProperty("milestoneId", milestoneId);
-        return (MilestoneResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetMilestoneById", o.toString()));
+        o.addProperty("milestoneId", milestoneId.toString());
+
+        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetMilestoneById", o.toString()));
+        JsonObject responsePayload = response.getPayload().getAsJsonObject();
+
+        return new Milestone(responsePayload);
     }
 
-    public MilestoneResponse getMilestoneByIndex(int index) throws ClientException {
+    public Milestone getMilestoneByIndex(int index) throws ClientException {
         JsonObject o = new JsonObject();
         o.addProperty("index", index);
-        return (MilestoneResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetMilestoneByIndex", o.toString()));
+
+        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetMilestoneByIndex", o.toString()));
+        JsonObject responsePayload = response.getPayload().getAsJsonObject();
+
+        return new Milestone(responsePayload);
     }
 
-    public MilestoneRawResponse getMilestoneByIdRaw(String milestoneId) throws ClientException {
+    public byte[] getMilestoneByIdRaw(MilestoneId milestoneId) throws ClientException {
         JsonObject o = new JsonObject();
-        o.addProperty("milestoneId", milestoneId);
-        return (MilestoneRawResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetMilestoneByIdRaw", o.toString()));
+        o.addProperty("milestoneId", milestoneId.toString());
+
+        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetMilestoneByIdRaw", o.toString()));
+        JsonArray responsePayload = response.getPayload().getAsJsonArray();
+
+        byte[] milestoneBytes = new byte[responsePayload.size()];
+
+        for (int i = 0; i < responsePayload.size(); i++) {
+            milestoneBytes[i] = responsePayload.get(i).getAsByte();
+        }
+
+        return milestoneBytes;
     }
 
-    public MilestoneRawResponse getMilestoneByIndexRaw(int index) throws ClientException {
+    public byte[] getMilestoneByIndexRaw(int index) throws ClientException {
         JsonObject o = new JsonObject();
         o.addProperty("index", index);
-        return (MilestoneRawResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetMilestoneByIndexRaw", o.toString()));
+
+        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetMilestoneByIndexRaw", o.toString()));
+        JsonArray responsePayload = response.getPayload().getAsJsonArray();
+
+        byte[] milestoneBytes = new byte[responsePayload.size()];
+
+        for (int i = 0; i < responsePayload.size(); i++) {
+            milestoneBytes[i] = responsePayload.get(i).getAsByte();
+        }
+
+        return milestoneBytes;
     }
 
-    public UtxoChangesResponse getUtxoChangesById(String milestoneId) throws ClientException {
+    public UtxoChangesResponse getUtxoChangesById(MilestoneId milestoneId) throws ClientException {
         JsonObject o = new JsonObject();
-        o.addProperty("milestoneId", milestoneId);
-        return (UtxoChangesResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetUtxoChangesById", o.toString()));
+        o.addProperty("milestoneId", milestoneId.toString());
+
+        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetUtxoChangesById", o.toString()));
+        JsonObject responsePayload = response.getPayload().getAsJsonObject();
+
+        return new UtxoChangesResponse(responsePayload);
     }
 
     public UtxoChangesResponse getUtxoChangesByIndex(int index) throws ClientException {
         JsonObject o = new JsonObject();
         o.addProperty("index", index);
-        return (UtxoChangesResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetUtxoChangesByIndex", o.toString()));
+
+        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetUtxoChangesByIndex", o.toString()));
+        JsonObject responsePayload = response.getPayload().getAsJsonObject();
+
+        return new UtxoChangesResponse(responsePayload);
     }
 
-    public PeersResponse getPeers() throws ClientException {
-        return (PeersResponse) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetPeers"));
+    public Peer[] getPeers() throws ClientException {
+        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetPeers"));
+        JsonArray responsePayload = response.getPayload().getAsJsonArray();
+
+        Peer[] peers = new Peer[responsePayload.size()];
+        for (int i = 0; i < responsePayload.size(); i++) {
+            peers[i] = new Peer(responsePayload.get(i).getAsJsonObject());
+        }
+
+        return peers;
     }
+
 }

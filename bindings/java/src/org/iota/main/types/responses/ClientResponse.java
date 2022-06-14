@@ -1,17 +1,30 @@
 package org.iota.main.types.responses;
 
-public abstract class ClientResponse {
+import com.google.gson.JsonElement;
 
-    protected BaseApiResponse response;
+public class ClientResponse {
 
-    public ClientResponse(BaseApiResponse response) {
-        this.response = response;
+    private String type;
+    private JsonElement payload;
+
+    public ClientResponse(String type, JsonElement payload) {
+        this.type = type;
+        this.payload = payload;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public JsonElement getPayload() {
+        return payload;
     }
 
     @Override
     public String toString() {
         return "ClientResponse{" +
-                "response=" + response +
+                "type='" + type + '\'' +
+                ", payload=" + payload +
                 '}';
     }
 }

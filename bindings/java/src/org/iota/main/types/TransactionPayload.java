@@ -4,21 +4,21 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-public class BlockPayload {
+public class TransactionPayload {
 
     private JsonObject jsonObject;
 
-    public BlockPayload(JsonObject jsonObject) {
+    public TransactionPayload(JsonObject jsonObject) {
         this.jsonObject = jsonObject;
     }
 
-    public BlockPayload(String jsonObject) {
+    public TransactionPayload(String jsonObject) {
         Gson gson = new Gson();
         JsonElement element = gson.fromJson (jsonObject, JsonElement.class);
         this.jsonObject = element.getAsJsonObject();
     }
 
-    public JsonObject getJson() {
+    public JsonObject getAsJsonObject() {
         return jsonObject;
     }
 
@@ -27,5 +27,6 @@ public class BlockPayload {
         return jsonObject.toString();
     }
 }
+
 
 

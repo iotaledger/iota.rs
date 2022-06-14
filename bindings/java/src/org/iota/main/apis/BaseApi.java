@@ -1,14 +1,9 @@
 package org.iota.main.apis;
 
 import com.google.gson.Gson;
-import org.iota.main.types.*;
-import org.iota.main.types.responses.*;
-import org.iota.main.types.responses.node_core_api.*;
-import org.iota.main.types.responses.node_indexer_api.OutputIdResponse;
-import org.iota.main.types.responses.node_indexer_api.OutputIdsResponse;
-import org.iota.main.types.responses.utils.ComputeAliasIdResponse;
-import org.iota.main.types.responses.utils.ComputeFoundryIdResponse;
-import org.iota.main.types.responses.utils.ComputeNftIdResponse;
+import org.iota.main.types.ClientConfig;
+import org.iota.main.types.ClientException;
+import org.iota.main.types.responses.ClientResponse;
 
 public class BaseApi {
 
@@ -26,102 +21,17 @@ public class BaseApi {
 
     protected ClientResponse callBaseApi(ClientCommand command) throws ClientException {
         System.out.println(command);
-        BaseApiResponse response = new Gson().fromJson(callNativeLibrary(clientConfig.toString(), command.toString()), BaseApiResponse.class);
+        ClientResponse response = new Gson().fromJson(callNativeLibrary(clientConfig.toString(), command.toString()), ClientResponse.class);
         System.out.println(response);
 
         switch (response.getType()) {
-                // Node Core API responses
-            case "Health": {
-                return new HealthResponse(response);
-            }
-            case "Info": {
-                return new NodeInfoResponse(response);
-            }
-            case "Tips": {
-                return new TipsResponse(response);
-            }
-            case "PostBlockSuccessful": {
-                return new PostBlockResponse(response);
-            }
-            case "Block":
-            case "IncludedBlock":
-            case "GeneratedBlock": {
-                return new BlockResponse(response);
-            }
-            case "BlockRaw": {
-                return new BlockRawResponse(response);
-            }
-            case "BlockMetadata": {
-                return new BlockMetadataResponse(response);
-            }
-            case "BlockChildren": {
-                return new BlockChildrenResponse(response);
-            }
-            case "Output": {
-                return new OutputResponse(response);
-            }
-            case "OutputMetadata": {
-                return new OutputMetadataResponse(response);
-            }
-            case "ReceiptsMigratedAtMilestone": {
-                return new ReceiptsMigratedAtResponse(response);
-            }
-            case "Receipts": {
-                return new ReceiptsResponse(response);
-            }
-            case "Treasury": {
-                return new TreasuryResponse(response);
-            }
-            case "Milestone": {
-                return new MilestoneResponse(response);
-            }
-            case "MilestoneRaw": {
-                return new MilestoneRawResponse(response);
-            }
-            case "MilestoneUtxoChanges": {
-                return new UtxoChangesResponse(response);
-            }
-            case "Peers": {
-                return new PeersResponse(response);
-            }
-            // Node Indexer API responses
-            case "OutputIds": {
-                return new OutputIdsResponse(response);
-            }
-            // Other
-            case "GeneratedAddresses": {
-                return new GenerateAddressesResponse(response);
-            }
-            case "Faucet": {
-                return new FaucetResponse(response);
-            }
-            case "Bech32ToHex": {
-                return new Bech32ToHexResponse(response);
-            }
-            case "TransactionId": {
-                return new TransactionIdResponse(response);
-            }
-            case "OutputId": {
-                return new OutputIdResponse(response);
-            }
-            case "AliasId": {
-                return new ComputeAliasIdResponse(response);
-            }
-            case "NftId": {
-                return new ComputeNftIdResponse(response);
-            }
-            case "FoundryId": {
-                return new ComputeFoundryIdResponse(response);
-            }
-            // Exceptions
             case "Panic":
                 throw new RuntimeException(response.toString());
             case "Error":
                 throw new ClientException(command.methodName, response.getPayload().getAsJsonObject().toString());
 
-            default: {
-                throw new RuntimeException("no match: " + response.getType());
-            }
+            default:
+                return response;
         }
     }
 
