@@ -1,27 +1,25 @@
 [package]
 name = "iota-client-python"
 version = "0.2.0-alpha.3"
-authors = ["IOTA Stiftung"]
+authors = [ "IOTA Stiftung" ]
 edition = "2021"
 description = "Python bindings for the IOTA client library"
 documentation = "https://wiki.iota.org/iota.rs/welcome"
 homepage = "https://www.iota.org/"
 repository = "https://github.com/iotaledger/iota.rs"
 license = "Apache-2.0"
-keywords = ["iota", "tangle", "client", "python"]
-categories = ["cryptography::cryptocurrencies"]
+keywords = [ "iota", "tangle", "client", "python" ]
+categories = [ "cryptography::cryptocurrencies" ]
 
 [lib]
 name = "iota_client"
-crate-type = ["cdylib"]
+crate-type = [ "cdylib" ]
 
 [dependencies]
-futures = { version = "0.3.17", default-features = false }
-iota-client = { path = "../../../", features = ["message_interface"] }
-once_cell = { version = "1.8.0", default-features = false, features = ["std"] }
-serde_json = { version = "1.0.68", default-features = false }
-tokio = { version = "1.12.0", default-features = false, features = ["macros"] }
+iota-client = { path = "../../../", default-features = false, features = [ "message_interface" ] }
 
-[dependencies.pyo3]
-version = "0.13.2"
-features = ["extension-module", "abi3-py36"]
+futures = { version = "0.3.21", default-features = false }
+once_cell = { version = "1.12.0", default-features = false, features = [ "std" ] }
+pyo3 = { version = "0.16.5", default-features = false, features = [ "macros", "extension-module" ] }
+serde_json = { version = "1.0.81", default-features = false }
+tokio = { version = "1.19.2", default-features = false, features = [ "macros" ] }

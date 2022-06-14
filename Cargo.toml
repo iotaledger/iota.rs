@@ -12,34 +12,33 @@ keywords = [ "iota", "tangle", "client" ]
 categories = [ "cryptography::cryptocurrencies" ]
 
 [dependencies]
-bee-block = { git = "https://github.com/iotaledger/bee", rev = "c67092169135df3ea67d874b00201d8ec3390599", default-features = false, features = [ "serde", "dto" ] }
-bee-rest-api = { git = "https://github.com/iotaledger/bee", rev = "c67092169135df3ea67d874b00201d8ec3390599", default-features = false }
-bee-pow = { git = "https://github.com/iotaledger/bee", rev = "c67092169135df3ea67d874b00201d8ec3390599", default-features = false }
+async-trait = { version = "0.1.56", default-features = false }
+bee-block = { git = "https://github.com/iotaledger/bee", rev = "4bc1ce7c3b1203829b5c54aaa86e34d64ecd64e9", default-features = false, features = [ "serde", "dto" ] }
+bee-rest-api = { git = "https://github.com/iotaledger/bee", rev = "4bc1ce7c3b1203829b5c54aaa86e34d64ecd64e9", default-features = false }
+bee-pow = { git = "https://github.com/iotaledger/bee", rev = "4bc1ce7c3b1203829b5c54aaa86e34d64ecd64e9", default-features = false }
+derive_builder = { version = "0.11.2", default-features = false, features = [ "std" ]}
 fern-logger = { version = "0.5.0", default-features = false }
+futures = { version = "0.3.21", default-features = false, features = [ "thread-pool" ] }
+hex = { version = "0.4.3", default-features = false }
 # Switch back when a new version got released
 # iota-crypto = { version = "0.11.0", default-features = false, features = [ "std", "chacha", "blake2b", "ed25519", "random", "slip10", "bip39", "bip39-en" ] }
 iota-crypto = { git = "https://github.com/iotaledger/crypto.rs", rev = "c61d29253930105d0d589e54829b639427061e81",  default-features = false, features = [ "std", "chacha", "blake2b", "ed25519", "random", "slip10", "bip39", "bip39-en" ] }
+log = { version = "0.4.17", default-features = false }
+num_cpus = { version = "1.13.1", default-features = false }
 packable = { version = "0.3.3", default-features = false, features = [ "serde", "primitive-types" ] }
-
-async-trait = { version ="0.1.51", default-features = false }
-derive_builder = { version = "0.11.1", default-features = false, features = [ "std" ]}
-futures = { version = "0.3.17", default-features = false, features = [ "thread-pool" ] }
-hex = { version = "0.4.3", default-features = false }
-log = { version = "0.4.14", default-features = false }
-num_cpus = { version = "1.13.0", default-features = false }
 primitive-types = { version = "0.10.1", default-features = false }
-regex = { version = "1.5.4", default-features = false, features = [ "std", "unicode-perl" ], optional = true }
-reqwest = { version = "0.11.6", default-features = false, features = [ "json", "blocking" ] }
+regex = { version = "1.5.6", default-features = false, features = [ "std", "unicode-perl" ], optional = true }
+reqwest = { version = "0.11.10", default-features = false, features = [ "json", "blocking" ] }
 serde = { version = "1.0.137", default-features = false, features = [ "derive" ] }
-serde_json = { version = "1.0.68", default-features = false }
-thiserror = { version = "1.0.29", default-features = false }
-tokio = { version = "1.12.0", default-features = false, features = [ "macros", "rt-multi-thread", "time", "sync" ] }
+serde_json = { version = "1.0.81", default-features = false }
+thiserror = { version = "1.0.31", default-features = false }
+tokio = { version = "1.19.2", default-features = false, features = [ "macros", "rt-multi-thread", "time", "sync" ] }
 url = { version = "2.2.2", default-features = false, features = [ "serde" ] }
-zeroize = { version = "1.5.3", default-features = false, features = [ "zeroize_derive" ] }
+zeroize = { version = "1.5.5", default-features = false, features = [ "zeroize_derive" ] }
 
 # MQTT
-rumqttc = { version = "0.10.0", default-features = false, features = [ "websocket" ], optional = true }
-once_cell = { version = "1.8.0", default-features = false, features = [ "std" ], optional = true }
+rumqttc = { version = "0.12.0", default-features = false, features = [ "websocket" ], optional = true }
+once_cell = { version = "1.12.0", default-features = false, features = [ "std" ], optional = true }
 
 # ledger hardware wallets
 iota-ledger = { git = "https://github.com/iotaledger/ledger.rs", rev = "8c239b13b80e169aaa19cde9cd825e8444be0973", default-features = false, optional = true }
@@ -51,17 +50,13 @@ riker = { version = "0.4.2", default-features = false, optional = true }
 crypto05 = { package = "iota-crypto", version = "0.5.1", default-features = false, features = [ "slip10" ], optional = true }
 
 # message_interface
-backtrace = { version = "0.3.62", default-features = false, features = [ "std" ], optional = true }
-
-# Temporary until it is updated by dependencies that require it
-# https://github.com/slog-rs/stdlog/releases/tag/v4.1.1
-slog-stdlog = { version = "4.1.1" }
+backtrace = { version = "0.3.65", default-features = false, features = [ "std" ], optional = true }
 
 [target.'cfg(target_family = "wasm")'.dependencies]
 instant = { version = "0.1.12", default-features = false }
-gloo-timers = { version = "0.2.3", default-features = false, features = [ "futures" ] }
+gloo-timers = { version = "0.2.4", default-features = false, features = [ "futures" ] }
 # single thread pow for wasm
-bee-ternary = { version = "0.5.2", default-features = false }
+bee-ternary = { version = "0.6.0", default-features = false }
 
 [dev-dependencies]
 dotenv = { version = "0.15.0", default-features = false }

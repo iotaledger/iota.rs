@@ -3,35 +3,32 @@
 # the same as the one specified in `../package.json`.
 name = "client"
 version = "0.1.0"
-authors = ["IOTA Stiftung"]
+authors = [ "IOTA Stiftung" ]
 edition = "2021"
 description = "Node.js bindings for the IOTA client library"
 documentation = "https://wiki.iota.org/iota.rs/welcome"
 homepage = "https://www.iota.org/"
 repository = "https://github.com/iotaledger/iota.rs"
 license = "Apache-2.0"
-keywords = ["iota", "tangle", "client", "nodejs"]
-categories = ["cryptography::cryptocurrencies"]
-exclude = ["artifacts.json", "index.node"]
+keywords = [ "iota", "tangle", "client", "nodejs" ]
+categories = [ "cryptography::cryptocurrencies" ]
+exclude = [ "artifacts.json", "index.node" ]
 
 [lib]
 crate-type = ["cdylib"]
 
 [dependencies]
-fern-logger = { version = "0.5.0", default-features = false }
-iota-client = { path = "../../", features = ["message_interface", "mqtt"] }
-serde = { version = "1.0.130", default-features = false, features = ["derive"] }
-serde_json = { version = "1.0.68", default-features = false }
-log = { version = "0.4.14", default-features = false }
-once_cell = { version = "1.8.0", default-features = false, features = ["std"] }
-rand = "0.7.3"
-futures = { version = "0.3.17", default-features = false }
-backtrace = "0.3.62"
-thiserror = { version = "1.0.29", default-features = false }
-tokio = { version = "1.12.0", features = ["macros"] }
-hex = { version = "0.4.3", default-features = false }
+iota-client = { path = "../../", features = [ "message_interface", "mqtt" ] }
 
-[dependencies.neon]
-version = "0.10"
-default-features = false
-features = ["napi-6", "event-queue-api"]
+backtrace = { version = "0.3.65", default-features = false }
+fern-logger = { version = "0.5.0", default-features = false }
+futures = { version = "0.3.21", default-features = false }
+hex = { version = "0.4.3", default-features = false }
+log = { version = "0.4.17", default-features = false }
+neon = { version =  "0.10.1", default-features = false, features = [ "napi-6", "event-queue-api" ] }
+once_cell = { version = "1.12.0", default-features = false, features = [ "std" ] }
+rand = { version = "0.8.5", default-features = false }
+serde = { version = "1.0.137", default-features = false, features = [ "derive" ] }
+serde_json = { version = "1.0.81", default-features = false }
+thiserror = { version = "1.0.31", default-features = false }
+tokio = { version = "1.19.2", default-features = false, features = [ "macros" ] }
