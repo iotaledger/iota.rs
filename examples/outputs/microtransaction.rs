@@ -1,7 +1,7 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! cargo run --example foo --release
+//! cargo run --example microtransaction --release
 
 use std::{
     env,
@@ -23,7 +23,11 @@ use iota_client::{
     Client, Result,
 };
 
-/// In this example we will send basic outputs with different feature blocks
+/// In this example we will do a microtransaction using unlock conditions to an output.
+///
+/// Due to the required storage deposit, it is not possible to send a small amount of tokens.
+/// However, it is possible to send a large amount and ask a slightly smaller amount in return to
+/// effectively transfer a small amount.
 
 const NODE_URL: &'static str = "http://localhost:14265";
 
@@ -56,9 +60,12 @@ async fn main() -> Result<()> {
         // with storage deposit return
         BasicOutputBuilder::new_with_amount(255100)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
+            /// Return 100 less than the original amount.
             .add_unlock_condition(UnlockCondition::StorageDepositReturn(
                 StorageDepositReturnUnlockCondition::new(address, 255000)?,
             ))
+            /// If the receiver does not consume this output, we Unlock after a day to avoid
+            /// locking our funds forever.
             .add_unlock_condition(UnlockCondition::Expiration(
                 ExpirationUnlockCondition::new(address, MilestoneIndex(0), tomorrow).unwrap(),
             ))
