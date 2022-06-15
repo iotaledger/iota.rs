@@ -223,6 +223,9 @@ impl NodeManager {
                                         }
                                     }
                                 }
+                                404 => {
+                                    error.replace(crate::Error::NotFound);
+                                }
                                 _ => {
                                     error.replace(crate::Error::NodeError(res_text));
                                 }
@@ -276,6 +279,7 @@ impl NodeManager {
                         // Without quorum it's enough if we got one response
                         match status {
                             200 => return Ok(res_text),
+                            404 => error.replace(crate::Error::NotFound),
                             _ => error.replace(crate::Error::NodeError(
                                 String::from_utf8(res_text)
                                     .map_err(|_| Error::NodeError("Non UTF8 node response".into()))?,
