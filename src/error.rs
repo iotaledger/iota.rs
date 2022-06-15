@@ -239,6 +239,9 @@ pub enum Error {
     /// An indexer API request contains a query parameter not supported by the endpoint.
     #[error("An indexer API request contains a query parameter not supported by the endpoint: {0}.")]
     UnsupportedQueryParameter(QueryParameter),
+    /// The requested data was not found.
+    #[error("The requested data was not found.")]
+    NotFound,
 }
 
 // map most errors to a single error but there are some errors that
