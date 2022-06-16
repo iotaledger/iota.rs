@@ -4,10 +4,10 @@
 //! The `DatabaseProvider` implementation for `StrongholdAdapter`.
 
 use async_trait::async_trait;
-use iota_stronghold::{Location, ResultMessage};
-use log::debug;
+use iota_stronghold::Location;
 
 use super::{
+    common::PRIVATE_DATA_CLIENT_PATH,
     encryption::{decrypt, encrypt},
     StrongholdAdapter,
 };
@@ -31,13 +31,17 @@ impl DatabaseProvider for StrongholdAdapter {
         }
 
         let location = location_from_key(k);
-        let (data, status) = self.stronghold.lock().await.read_from_store(location).await;
-
-        // XXX: this theoretically indicates a non-existent key, but what about other errors?
-        if let ResultMessage::Error(err) = status {
-            debug!("Stronghold reported \"{}\", but we treat it as \"key not found\".", err);
-            return Ok(None);
-        }
+        let data = match self
+            .stronghold
+            .lock()
+            .await
+            .load_client(PRIVATE_DATA_CLIENT_PATH)?
+            .store()
+            .get(k)?
+        {
+            Some(data) => data,
+            None => return Ok(None),
+        };
 
         let locked_key = self.key.lock().await;
         let key = if let Some(key) = &*locked_key {
@@ -68,17 +72,13 @@ impl DatabaseProvider for StrongholdAdapter {
             encrypt(v, key)?
         };
 
-        let location = location_from_key(k);
         let status = self
             .stronghold
             .lock()
             .await
-            .write_to_store(location, encrypted_value, None)
-            .await;
-
-        if let ResultMessage::Error(err) = status {
-            return Err(Error::StrongholdProcedureError(err));
-        }
+            .load_client(PRIVATE_DATA_CLIENT_PATH)?
+            .store()
+            .insert(k.to_vec(), encrypted_value, None)?;
 
         Ok(old_value)
     }
@@ -89,16 +89,13 @@ impl DatabaseProvider for StrongholdAdapter {
             self.read_stronghold_snapshot().await?;
         }
 
-        let old_value = self.get(k).await?;
-
-        let location = location_from_key(k);
-        let status = self.stronghold.lock().await.delete_from_store(location).await;
-
-        if let ResultMessage::Error(err) = status {
-            return Err(Error::StrongholdProcedureError(err));
-        }
-
-        Ok(old_value)
+        Ok(self
+            .stronghold
+            .lock()
+            .await
+            .load_client(PRIVATE_DATA_CLIENT_PATH)?
+            .store()
+            .delete(k)?)
     }
 }
 
@@ -108,7 +105,7 @@ mod tests {
         use super::StrongholdAdapter;
         use crate::db::DatabaseProvider;
 
-        let mut stronghold = StrongholdAdapter::builder().password("drowssap").try_build().unwrap();
+        let mut stronghold = StrongholdAdapter::builder().password("drowssap").build();
 
         assert!(matches!(stronghold.get(b"test-0").await, Ok(None)));
         assert!(matches!(stronghold.get(b"test-1").await, Ok(None)));

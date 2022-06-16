@@ -41,10 +41,7 @@ once_cell = { version = "1.12.0", default-features = false, features = [ "std" ]
 iota-ledger = { git = "https://github.com/iotaledger/ledger.rs", rev = "414c4b98294afc8863bed1b58c811a77105f7eea", default-features = false, optional = true }
 
 # stronghold secret manager integration
-iota_stronghold = { version = "0.4.1", default-features = false, optional = true }
-riker = { version = "0.4.2", default-features = false, optional = true }
-# for stronghold
-crypto05 = { package = "iota-crypto", version = "0.5.1", default-features = false, features = [ "slip10" ], optional = true }
+iota_stronghold = { version = "0.5.1", default-features = false, features = [ "std" ], optional = true }
 
 # message_interface
 backtrace = { version = "0.3.65", default-features = false, features = [ "std" ], optional = true }
@@ -66,7 +63,7 @@ default = [ "tls" ]
 mqtt = [ "rumqttc", "once_cell", "regex" ]
 ledger_nano = [ "iota-ledger" ]
 tls = [ "reqwest/rustls-tls" ]
-stronghold = [ "iota_stronghold", "riker", "crypto05" ]
+stronghold = [ "iota_stronghold" ]
 message_interface = [ "backtrace" ]
 
 [profile.release]

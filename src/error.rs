@@ -229,15 +229,16 @@ pub enum Error {
     #[cfg(feature = "ledger_nano")]
     #[error("ledger mnemonic is mismatched")]
     LedgerMnemonicMismatch,
-    /// Riker system error during Stronghold initialization
+    /// Stronghold client error
     #[cfg(feature = "stronghold")]
-    #[error("Stronghold reported a system error: {0}")]
+    #[error("stronghold client error: {0}")]
     #[serde(serialize_with = "display_string")]
-    StrongholdActorSystemError(#[from] riker::system::SystemError),
+    StrongholdClient(#[from] iota_stronghold::ClientError),
     /// Procedure execution error from Stronghold
     #[cfg(feature = "stronghold")]
     #[error("Stronghold reported a procedure error: {0}")]
-    StrongholdProcedureError(String),
+    #[serde(serialize_with = "display_string")]
+    StrongholdProcedureError(#[from] iota_stronghold::procedures::ProcedureError),
     /// A mnemonic has been already stored into a Stronghold vault
     #[cfg(feature = "stronghold")]
     #[error("a mnemonic has already been stored in the Stronghold vault")]

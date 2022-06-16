@@ -11,12 +11,17 @@ use bee_block::{
     signature::{Ed25519Signature, Signature},
     unlock::{SignatureUnlock, Unlock},
 };
-use crypto::hashes::{blake2b::Blake2b256, Digest};
-use iota_stronghold::{Location, ProcResult, Procedure, RecordHint, ResultMessage, SLIP10DeriveInput};
-use log::warn;
+use crypto::{
+    hashes::{blake2b::Blake2b256, Digest},
+    keys::slip10::Chain,
+};
+use iota_stronghold::{
+    procedures::{self, KeyType, Slip10DeriveInput},
+    Location,
+};
 
 use super::{
-    common::{DERIVE_OUTPUT_RECORD_PATH, RECORD_HINT, SECRET_VAULT_PATH, SEED_RECORD_PATH},
+    common::{DERIVE_OUTPUT_RECORD_PATH, PRIVATE_DATA_CLIENT_PATH, SECRET_VAULT_PATH, SEED_RECORD_PATH},
     StrongholdAdapter,
 };
 use crate::{
@@ -36,7 +41,7 @@ impl SecretManage for StrongholdAdapter {
         _metadata: GenerateAddressMetadata,
     ) -> Result<Vec<Address>> {
         // Stronghold arguments.
-        let seed_location = SLIP10DeriveInput::Seed(Location::Generic {
+        let seed_location = Slip10DeriveInput::Seed(Location::Generic {
             vault_path: SECRET_VAULT_PATH.to_vec(),
             record_path: SEED_RECORD_PATH.to_vec(),
         });
@@ -44,23 +49,16 @@ impl SecretManage for StrongholdAdapter {
             vault_path: SECRET_VAULT_PATH.to_vec(),
             record_path: DERIVE_OUTPUT_RECORD_PATH.to_vec(),
         };
-        let hint = RecordHint::new(RECORD_HINT).unwrap();
 
         // Addresses to return.
         let mut addresses = Vec::new();
 
         for address_index in address_indexes {
             // Stronghold 0.4.1 is still using an older version of iota-crypto, so we construct a different one here.
-            let chain = crypto05::keys::slip10::Chain::from_u32_hardened(vec![
-                44u32,
-                coin_type,
-                account_index,
-                internal as u32,
-                address_index,
-            ]);
+            let chain = Chain::from_u32_hardened(vec![44u32, coin_type, account_index, internal as u32, address_index]);
 
             // Derive a SLIP-10 private key in the vault.
-            self.slip10_derive(chain, seed_location.clone(), derive_location.clone(), hint)
+            self.slip10_derive(chain, seed_location.clone(), derive_location.clone())
                 .await?;
 
             // Get the Ed25519 public key from the derived SLIP-10 private key in the vault.
@@ -95,7 +93,7 @@ impl SecretManage for StrongholdAdapter {
         }
 
         // Stronghold arguments.
-        let seed_location = SLIP10DeriveInput::Seed(Location::Generic {
+        let seed_location = Slip10DeriveInput::Seed(Location::Generic {
             vault_path: SECRET_VAULT_PATH.to_vec(),
             record_path: SEED_RECORD_PATH.to_vec(),
         });
@@ -103,7 +101,6 @@ impl SecretManage for StrongholdAdapter {
             vault_path: SECRET_VAULT_PATH.to_vec(),
             record_path: DERIVE_OUTPUT_RECORD_PATH.to_vec(),
         };
-        let hint = RecordHint::new(RECORD_HINT).unwrap();
 
         // Stronghold asks for an older version of [Chain], so we have to perform a conversion here.
         let chain = {
@@ -117,11 +114,11 @@ impl SecretManage for StrongholdAdapter {
                 .map(|seg| u32::from_be_bytes(seg.bs()))
                 .collect();
 
-            crypto05::keys::slip10::Chain::from_u32_hardened(raw)
+            Chain::from_u32_hardened(raw)
         };
 
         // Derive a SLIP-10 private key in the vault.
-        self.slip10_derive(chain, seed_location.clone(), derive_location.clone(), hint)
+        self.slip10_derive(chain, seed_location.clone(), derive_location.clone())
             .await?;
 
         // Get the Ed25519 public key from the derived SLIP-10 private key in the vault.
@@ -142,139 +139,62 @@ impl SecretManage for StrongholdAdapter {
 /// Private methods for the secret manager implementation.
 impl StrongholdAdapter {
     /// Execute [Procedure::BIP39Recover] in Stronghold to put a mnemonic into the Stronghold vault.
-    async fn bip39_recover(
-        &self,
-        mnemonic: String,
-        passphrase: Option<String>,
-        output: Location,
-        hint: RecordHint,
-    ) -> Result<()> {
-        match self
-            .stronghold
+    async fn bip39_recover(&self, mnemonic: String, passphrase: Option<String>, output: Location) -> Result<()> {
+        self.stronghold
             .lock()
             .await
-            .runtime_exec(Procedure::BIP39Recover {
+            .load_client(PRIVATE_DATA_CLIENT_PATH)?
+            .execute_procedure(procedures::BIP39Recover {
                 mnemonic,
                 passphrase,
                 output,
-                hint,
-            })
-            .await
-        {
-            // BIP-39 recovery success.
-            ProcResult::BIP39Recover(ResultMessage::Ok(_)) => Ok(()),
-            // BIP-39 recovery failure.
-            // XXX: Should we create a separate error type for this error?
-            ProcResult::BIP39Recover(ResultMessage::Error(err)) => Err(crate::Error::StrongholdProcedureError(err)),
-            // Generic Stronghold procedure failure.
-            ProcResult::Error(err) => Err(crate::Error::StrongholdProcedureError(err)),
-            // Unexpected result type, which should never happen!
-            err => {
-                warn!(
-                    "StrongholdSecretManager::bip39_recover(): unexpected result from Stronghold: {:?}",
-                    err
-                );
-                Err(crate::Error::StrongholdProcedureError(format!("{:?}", err)))
-            }
-        }
+            })?;
+
+        Ok(())
     }
 
     /// Execute [Procedure::SLIP10Derive] in Stronghold to derive a SLIP-10 private key in the Stronghold vault.
     async fn slip10_derive(
         &self,
         // Stronghold 0.4.1 is still using an older version of iota-crypto, so we ask for a different one here.
-        chain: crypto05::keys::slip10::Chain,
-        input: SLIP10DeriveInput,
+        chain: Chain,
+        input: Slip10DeriveInput,
         output: Location,
-        hint: RecordHint,
     ) -> Result<()> {
-        match self
-            .stronghold
+        self.stronghold
             .lock()
             .await
-            .runtime_exec(Procedure::SLIP10Derive {
-                chain,
-                input,
-                output,
-                hint,
-            })
-            .await
-        {
-            // SLIP-10 derivation success.
-            // We don't care about the returned value, as later we use the output in vault.
-            ProcResult::SLIP10Derive(ResultMessage::Ok(_)) => Ok(()),
-            // SLIP-10 derivation failure.
-            // XXX: Should we create a separate error type for this error?
-            ProcResult::SLIP10Derive(ResultMessage::Error(err)) => Err(crate::Error::StrongholdProcedureError(err)),
-            // Generic Stronghold procedure failure.
-            ProcResult::Error(err) => Err(crate::Error::StrongholdProcedureError(err)),
-            // Unexpected result type, which should never happen!
-            err => {
-                warn!(
-                    "StrongholdSecretManager::slip10_derive(): unexpected result from Stronghold: {:?}",
-                    err
-                );
-                Err(crate::Error::StrongholdProcedureError(format!("{:?}", err)))
-            }
-        }
+            .load_client(PRIVATE_DATA_CLIENT_PATH)?
+            .execute_procedure(procedures::Slip10Derive { chain, input, output })?;
+
+        Ok(())
     }
 
     /// Execute [Procedure::Ed25519PublicKey] in Stronghold to get an Ed25519 public key from the SLIP-10 private key
     /// located in `private_key`.
     async fn ed25519_public_key(&self, private_key: Location) -> Result<[u8; 32]> {
-        match self
+        Ok(self
             .stronghold
             .lock()
             .await
-            .runtime_exec(Procedure::Ed25519PublicKey { private_key })
-            .await
-        {
-            // Ed25519 public key get success.
-            ProcResult::Ed25519PublicKey(ResultMessage::Ok(pubkey)) => Ok(pubkey),
-            // Ed25519 public key get failure.
-            // XXX: Should we create a separate error type for this error?
-            ProcResult::Ed25519PublicKey(ResultMessage::Error(err)) => Err(crate::Error::StrongholdProcedureError(err)),
-            // Generic Stronghold procedure failure.
-            ProcResult::Error(err) => Err(crate::Error::StrongholdProcedureError(err)),
-            // Unexpected result type, which should never happen!
-            err => {
-                warn!(
-                    "StrongholdSecretManager::ed25519_public_key(): unexpected result from Stronghold: {:?}",
-                    err
-                );
-                Err(crate::Error::StrongholdProcedureError(format!("{:?}", err)))
-            }
-        }
+            .load_client(PRIVATE_DATA_CLIENT_PATH)?
+            .execute_procedure(procedures::PublicKey {
+                ty: KeyType::Ed25519,
+                private_key,
+            })?)
     }
 
     /// Execute [Procedure::Ed25519Sign] in Stronghold to sign `msg` with `private_key` stored in the Stronghold vault.
     async fn ed25519_sign(&self, private_key: Location, msg: &[u8]) -> Result<[u8; 64]> {
-        match self
+        Ok(self
             .stronghold
             .lock()
             .await
-            .runtime_exec(Procedure::Ed25519Sign {
+            .load_client(PRIVATE_DATA_CLIENT_PATH)?
+            .execute_procedure(procedures::Ed25519Sign {
                 private_key,
                 msg: msg.to_vec(),
-            })
-            .await
-        {
-            // Ed25519 sign success.
-            ProcResult::Ed25519Sign(ResultMessage::Ok(msg)) => Ok(msg),
-            // Ed25519 sign failure.
-            // XXX: Should we create a separate error type for this error?
-            ProcResult::Ed25519Sign(ResultMessage::Error(err)) => Err(crate::Error::StrongholdProcedureError(err)),
-            // Generic Stronghold procedure failure.
-            ProcResult::Error(err) => Err(crate::Error::StrongholdProcedureError(err)),
-            // Unexpected result type, which should never happen!
-            err => {
-                warn!(
-                    "StrongholdSecretManager::ed25519_sign(): unexpected result from Stronghold: {:?}",
-                    err
-                );
-                Err(crate::Error::StrongholdProcedureError(format!("{:?}", err)))
-            }
-        }
+            })?)
     }
 
     /// Store a mnemonic into the Stronghold vault.
@@ -284,7 +204,6 @@ impl StrongholdAdapter {
             vault_path: SECRET_VAULT_PATH.to_vec(),
             record_path: SEED_RECORD_PATH.to_vec(),
         };
-        let hint = RecordHint::new("wallet.rs-seed").unwrap();
 
         // Trim the mnemonic, in case it hasn't been, as otherwise the restored seed would be wrong.
         let trimmed_mnemonic = mnemonic.trim().to_string();
@@ -302,12 +221,19 @@ impl StrongholdAdapter {
 
         // If the snapshot has successfully been loaded, then we need to check if there has been a
         // mnemonic stored in Stronghold or not to prevent overwriting it.
-        if self.snapshot_loaded && self.stronghold.lock().await.record_exists(output.clone()).await {
+        if self.snapshot_loaded
+            && self
+                .stronghold
+                .lock()
+                .await
+                .load_client(PRIVATE_DATA_CLIENT_PATH)?
+                .record_exists(&output)?
+        {
             return Err(crate::Error::StrongholdMnemonicAlreadyStored);
         }
 
         // Execute the BIP-39 recovery procedure to put it into the vault (in memory).
-        self.bip39_recover(trimmed_mnemonic, None, output, hint).await?;
+        self.bip39_recover(trimmed_mnemonic, None, output).await?;
 
         // Persist Stronghold to the disk, if a snapshot path has been set.
         if self.snapshot_path.is_some() {
@@ -337,8 +263,7 @@ mod tests {
         let mut stronghold_adapter = StrongholdAdapter::builder()
             .snapshot_path(stronghold_path.clone())
             .password("drowssap")
-            .try_build()
-            .unwrap();
+            .build();
 
         stronghold_adapter.store_mnemonic(mnemonic).await.unwrap();
 

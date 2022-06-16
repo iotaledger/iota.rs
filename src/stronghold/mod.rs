@@ -54,13 +54,12 @@ mod secret;
 use std::{path::PathBuf, sync::Arc, time::Duration};
 
 use derive_builder::Builder;
-use iota_stronghold::{ResultMessage, Stronghold};
+use iota_stronghold::{KeyProvider, Stronghold};
 use log::{debug, error, warn};
-use riker::actors::ActorSystem;
 use tokio::{sync::Mutex, task::JoinHandle};
 use zeroize::{Zeroize, Zeroizing};
 
-use self::common::{PRIVATE_DATA_CLIENT_PATH, STRONGHOLD_FILENAME};
+use self::common::{EncryptionKey, PRIVATE_DATA_CLIENT_PATH, STRONGHOLD_FILENAME};
 use crate::{db::DatabaseProvider, Error, Result};
 
 /// A wrapper on [Stronghold].
@@ -80,7 +79,7 @@ pub struct StrongholdAdapter {
     ///
     /// [`password()`]: self::StrongholdAdapterBuilder::password()
     #[builder(setter(custom))]
-    key: Arc<Mutex<Option<Zeroizing<Vec<u8>>>>>,
+    key: Arc<Mutex<Option<EncryptionKey>>>,
 
     /// An interval of time, after which `key` will be cleared from the memory.
     ///
@@ -119,9 +118,7 @@ impl StrongholdAdapterBuilder {
         self
     }
 
-    /// Try to build [`StrongholdAdapter`] from the configuration.
-    ///
-    /// The only possible error comes from [riker::system::ActorSystem::new()] for communicating with Stronghold.
+    /// Builds a [`StrongholdAdapter`] from the configuration.
     ///
     /// If both `key` (via [`password()`]) and `timeout` (via [`timeout()`]) are set, then an asynchronous task would be
     /// spawned in Tokio to purge ([zeroize]) `key` after `timeout`. There is a small delay (usually a few milliseconds)
@@ -135,20 +132,12 @@ impl StrongholdAdapterBuilder {
     ///
     /// [`password()`]: Self::password()
     /// [`timeout()`]: Self::timeout()
-    pub fn try_build(mut self) -> Result<StrongholdAdapter> {
+    pub fn build(mut self) -> StrongholdAdapter {
         // In any case, Stronghold - as a necessary component - needs to be present at this point.
         let stronghold = if let Some(stronghold) = self.stronghold {
             stronghold
         } else {
-            let system = ActorSystem::new()?;
-            let client_path = PRIVATE_DATA_CLIENT_PATH.to_vec();
-            let options = Vec::new();
-
-            Arc::new(Mutex::new(Stronghold::init_stronghold_system(
-                system,
-                client_path,
-                options,
-            )))
+            Arc::new(Mutex::new(Stronghold::default()))
         };
 
         // If both `key` and `timeout` are set, then we spawn the task and keep its join handle.
@@ -177,15 +166,18 @@ impl StrongholdAdapterBuilder {
             self.timeout_task = Some(timeout_task);
         }
 
+        // let client_path = PRIVATE_DATA_CLIENT_PATH.to_vec();
+        // TODO load snapshot
+
         // Create the adapter as per configuration and return it.
-        Ok(StrongholdAdapter {
+        StrongholdAdapter {
             stronghold,
             key: self.key.unwrap_or_else(|| Arc::new(Mutex::new(None))),
             timeout: self.timeout.unwrap_or(None),
             timeout_task: self.timeout_task.unwrap_or_else(|| Arc::new(Mutex::new(None))),
             snapshot_path: self.snapshot_path.unwrap_or(None),
             snapshot_loaded: false,
-        })
+        }
     }
 }
 
@@ -436,28 +428,19 @@ impl StrongholdAdapter {
             return Err(Error::StrongholdKeyCleared);
         };
 
+        let key_provider = KeyProvider::try_from(key)?;
+
         let snapshot_path = if let Some(path) = &self.snapshot_path {
             path
         } else {
             return Err(Error::StrongholdSnapshotPathMissing);
         };
 
-        match self
-            .stronghold
-            .lock()
-            .await
-            .read_snapshot(
-                PRIVATE_DATA_CLIENT_PATH.to_vec(),
-                None,
-                &**key,
-                Some(STRONGHOLD_FILENAME.to_string()),
-                Some(snapshot_path.clone()),
-            )
-            .await
-        {
-            ResultMessage::Ok(_) => Ok(()),
-            ResultMessage::Error(err) => Err(crate::Error::StrongholdProcedureError(err)),
-        }?;
+        self.stronghold.lock().await.load_client_from_snapshot(
+            PRIVATE_DATA_CLIENT_PATH,
+            &key_provider,
+            snapshot_path,
+        )?;
 
         self.snapshot_loaded = true;
 
@@ -509,7 +492,7 @@ impl StrongholdAdapter {
 
     /// Unload Stronghold from memory.
     ///
-    /// This first writes Stronghold snapshot to disk, then kills Stronghold. All secrets will be purged from the
+    /// It writes Stronghold snapshot to disk. All secrets will be purged from the
     /// memory, so if secrets aren't written to disk (for example, no snapshot path has been provided, i.e. running
     /// Stronghold purely in memory) then secrets stored in Stronghold will be lost.
     ///
@@ -520,18 +503,6 @@ impl StrongholdAdapter {
     pub async fn unload_stronghold_snapshot(&mut self) -> Result<()> {
         // Flush Stronghold.
         self.write_stronghold_snapshot().await?;
-
-        // Kill Stronghold.
-        match self
-            .stronghold
-            .lock()
-            .await
-            .kill_stronghold(PRIVATE_DATA_CLIENT_PATH.to_vec(), false)
-            .await
-        {
-            ResultMessage::Ok(_) => Ok(()),
-            ResultMessage::Error(err) => Err(crate::Error::StrongholdProcedureError(err)),
-        }?;
 
         self.snapshot_loaded = false;
 
@@ -553,13 +524,6 @@ async fn task_key_clear(
         key.zeroize();
     }
 
-    debug!("StrongholdAdapter is killing Stronghold");
-    stronghold
-        .lock()
-        .await
-        .kill_stronghold(PRIVATE_DATA_CLIENT_PATH.to_vec(), false)
-        .await;
-
     // Take self, but do nothing (we're exiting anyways).
     task_self.lock().await.take();
 }
@@ -575,8 +539,7 @@ mod tests {
         let mut adapter = StrongholdAdapter::builder()
             .password("drowssap")
             .timeout(timeout)
-            .try_build()
-            .unwrap();
+            .build();
 
         // There is a small delay between `build()` and the key clearing task being actually spawned and kept.
         tokio::time::sleep(Duration::from_millis(10)).await;
@@ -615,7 +578,7 @@ mod tests {
 
     #[tokio::test]
     async fn stronghold_password_already_set() {
-        let mut adapter = StrongholdAdapter::builder().password("drowssap").try_build().unwrap();
+        let mut adapter = StrongholdAdapter::builder().password("drowssap").build();
 
         // When the password already exists, it should fail
         assert!(adapter.set_password("drowssap").await.is_err());
