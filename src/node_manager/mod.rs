@@ -171,6 +171,9 @@ impl NodeManager {
                                 warn!("Couldn't convert noderesult to text");
                             }
                         }
+                        Err(Error::ResponseError(s, _, _)) if s == 404 => {
+                            error.replace(crate::Error::NotFound);
+                        }
                         Err(err) => {
                             error.replace(err);
                         }
@@ -223,9 +226,7 @@ impl NodeManager {
                                         }
                                     }
                                 }
-                                404 => {
-                                    error.replace(crate::Error::NotFound);
-                                }
+
                                 _ => {
                                     error.replace(crate::Error::NodeError(res_text));
                                 }
@@ -233,6 +234,9 @@ impl NodeManager {
                         } else {
                             warn!("Couldn't convert noderesult to text");
                         }
+                    }
+                    Err(Error::ResponseError(s, _, _)) if s == 404 => {
+                        error.replace(crate::Error::NotFound);
                     }
                     Err(err) => {
                         error.replace(err);
@@ -279,7 +283,6 @@ impl NodeManager {
                         // Without quorum it's enough if we got one response
                         match status {
                             200 => return Ok(res_text),
-                            404 => error.replace(crate::Error::NotFound),
                             _ => error.replace(crate::Error::NodeError(
                                 String::from_utf8(res_text)
                                     .map_err(|_| Error::NodeError("Non UTF8 node response".into()))?,
@@ -287,8 +290,11 @@ impl NodeManager {
                         };
                     }
                 }
-                Err(e) => {
-                    error.replace(crate::Error::NodeError(e.to_string()));
+                Err(Error::ResponseError(s, _, _)) if s == 404 => {
+                    error.replace(crate::Error::NotFound);
+                }
+                Err(err) => {
+                    error.replace(err);
                 }
             }
         }
