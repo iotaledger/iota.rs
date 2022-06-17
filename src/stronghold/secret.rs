@@ -51,7 +51,6 @@ impl SecretManage for StrongholdAdapter {
         let mut addresses = Vec::new();
 
         for address_index in address_indexes {
-            // Stronghold 0.4.1 is still using an older version of iota-crypto, so we construct a different one here.
             let chain = Chain::from_u32_hardened(vec![44u32, coin_type, account_index, internal as u32, address_index]);
 
             // Derive a SLIP-10 private key in the vault.
@@ -151,13 +150,7 @@ impl StrongholdAdapter {
     }
 
     /// Execute [Procedure::SLIP10Derive] in Stronghold to derive a SLIP-10 private key in the Stronghold vault.
-    async fn slip10_derive(
-        &self,
-        // Stronghold 0.4.1 is still using an older version of iota-crypto, so we ask for a different one here.
-        chain: Chain,
-        input: Slip10DeriveInput,
-        output: Location,
-    ) -> Result<()> {
+    async fn slip10_derive(&self, chain: Chain, input: Slip10DeriveInput, output: Location) -> Result<()> {
         self.stronghold
             .lock()
             .await
