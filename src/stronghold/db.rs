@@ -44,8 +44,6 @@ impl DatabaseProvider for StrongholdAdapter {
         // Lazy load the snapshot.
         self.read_stronghold_snapshot().await?;
 
-        let old_value = self.get(k).await?;
-
         let encrypted_value = {
             let locked_key = self.key.lock().await;
             let key = if let Some(key) = &*locked_key {
@@ -57,14 +55,13 @@ impl DatabaseProvider for StrongholdAdapter {
             encrypt(v, key)?
         };
 
-        self.stronghold
+        Ok(self
+            .stronghold
             .lock()
             .await
             .load_client(PRIVATE_DATA_CLIENT_PATH)?
             .store()
-            .insert(k.to_vec(), encrypted_value, None)?;
-
-        Ok(old_value)
+            .insert(k.to_vec(), encrypted_value, None)?)
     }
 
     async fn delete(&mut self, k: &[u8]) -> Result<Option<Vec<u8>>> {
