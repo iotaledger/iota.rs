@@ -19,23 +19,23 @@ public class BaseApi {
     }
 
     static {
-        String libraryName = null;
+        String libraryPath = null;
 
-        if(SystemUtils.IS_OS_WINDOWS)
-            libraryName = "iota_client.dll";
         if(SystemUtils.IS_OS_LINUX)
-            libraryName = "iota_client.so";
-        if(SystemUtils.IS_OS_MAC)
-            libraryName = "iota_client.dylib";
+            libraryPath = "/targets/linux/iota_client.so";
+        else if(SystemUtils.IS_OS_MAC)
+            libraryPath = "/targets/mac/iota_client.dylib";
+        else if(SystemUtils.IS_OS_WINDOWS)
+            libraryPath = "/targets/windows/iota_client.dll";
 
-        if(libraryName == null) {
+        if(libraryPath == null) {
             throw new RuntimeException("OS not supported");
         }
 
         try {
-            NativeUtils.loadLibraryFromJar("/ " + libraryName);
+            NativeUtils.loadLibraryFromJar(libraryPath);
         } catch (IOException e) {
-            throw new RuntimeException(e.getCause());
+            e.printStackTrace();
         }
     }
 

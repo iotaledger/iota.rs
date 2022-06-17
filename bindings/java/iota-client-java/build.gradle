@@ -27,7 +27,7 @@ test {
 sourceSets {
     main {
         resources {
-            srcDirs "native/target/release"
+            srcDirs "native/resources"
         }
     }
 }
@@ -44,16 +44,7 @@ task buildRust(){
 test.dependsOn 'buildRust'
 
 jar {
-    exclude('.fingerprint')
-    exclude('build')
-    exclude('deps')
-    exclude('examples')
-    exclude('incremental')
-    exclude('.cargo-lock')
-
     from {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
 }
-
-jar.dependsOn 'buildRust'
