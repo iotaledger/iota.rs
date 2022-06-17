@@ -3,6 +3,7 @@ package org.iota.apis;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import org.apache.commons.lang3.SystemUtils;
 import org.iota.types.ClientConfig;
 import org.iota.types.ClientException;
 import org.iota.types.responses.ClientResponse;
@@ -18,11 +19,23 @@ public class BaseApi {
     }
 
     static {
+        String libraryName = null;
+
+        if(SystemUtils.IS_OS_WINDOWS)
+            libraryName = "iota_client.dll";
+        if(SystemUtils.IS_OS_LINUX)
+            libraryName = "iota_client.so";
+        if(SystemUtils.IS_OS_MAC)
+            libraryName = "iota_client.dylib";
+
+        if(libraryName == null) {
+            throw new RuntimeException("OS not supported");
+        }
+
         try {
-            NativeUtils.loadLibraryFromJar("/iota_client.dll");
+            NativeUtils.loadLibraryFromJar("/ " + libraryName);
         } catch (IOException e) {
-            // This is probably not the best way to handle exception :-)
-            e.printStackTrace();
+            throw new RuntimeException(e.getCause());
         }
     }
 
