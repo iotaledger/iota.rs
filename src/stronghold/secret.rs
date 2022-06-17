@@ -232,10 +232,8 @@ impl StrongholdAdapter {
         // Execute the BIP-39 recovery procedure to put it into the vault (in memory).
         self.bip39_recover(trimmed_mnemonic, None, output).await?;
 
-        // Persist Stronghold to the disk, if a snapshot path has been set.
-        if self.snapshot_path.is_some() {
-            self.write_stronghold_snapshot().await?;
-        }
+        // Persist Stronghold to the disk
+        self.write_stronghold_snapshot().await?;
 
         // Now we consider that the snapshot has been loaded; it's just in a reversed order.
         self.snapshot_loaded = true;
@@ -258,9 +256,8 @@ mod tests {
             "giant dynamic museum toddler six deny defense ostrich bomb access mercy blood explain muscle shoot shallow glad autumn author calm heavy hawk abuse rally",
         );
         let mut stronghold_adapter = StrongholdAdapter::builder()
-            .snapshot_path(stronghold_path.clone())
             .password("drowssap")
-            .build();
+            .build(stronghold_path.clone());
 
         stronghold_adapter.store_mnemonic(mnemonic).await.unwrap();
 

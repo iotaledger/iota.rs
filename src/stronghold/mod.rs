@@ -98,8 +98,8 @@ pub struct StrongholdAdapter {
     timeout_task: Arc<Mutex<Option<JoinHandle<()>>>>,
 
     /// The path to a Stronghold snapshot file.
-    #[builder(setter(strip_option))]
-    pub snapshot_path: Option<PathBuf>,
+    #[builder(setter(skip))]
+    pub snapshot_path: PathBuf,
 
     /// Whether the snapshot has been loaded from the disk to the memory.
     #[builder(setter(skip))]
@@ -132,7 +132,7 @@ impl StrongholdAdapterBuilder {
     ///
     /// [`password()`]: Self::password()
     /// [`timeout()`]: Self::timeout()
-    pub fn build(mut self) -> StrongholdAdapter {
+    pub fn build(mut self, snapshot_path: PathBuf) -> StrongholdAdapter {
         // In any case, Stronghold - as a necessary component - needs to be present at this point.
         let stronghold = if let Some(stronghold) = self.stronghold {
             stronghold
@@ -175,7 +175,7 @@ impl StrongholdAdapterBuilder {
             key: self.key.unwrap_or_else(|| Arc::new(Mutex::new(None))),
             timeout: self.timeout.unwrap_or(None),
             timeout_task: self.timeout_task.unwrap_or_else(|| Arc::new(Mutex::new(None))),
-            snapshot_path: self.snapshot_path.unwrap_or(None),
+            snapshot_path,
             snapshot_loaded: false,
         }
     }
@@ -209,18 +209,16 @@ impl StrongholdAdapter {
         }
 
         // Try to read a snapshot to check if the password is correct
-        if self.snapshot_path.is_some() {
-            let result = self.read_stronghold_snapshot().await;
-            if let Err(err) = result {
-                // TODO: replace with actual error matching when updated to the new Stronghold version
-                // TODO: but the error is not an enum
-                if let crate::Error::StrongholdProcedureError(ref err_msg) = err {
-                    if !err_msg.to_string().contains("IOError") {
-                        // If loading the snapshot failed but wasn't an IOError, then the password was incorrect and we
-                        // clear it
-                        *self.key.lock().await = None;
-                        return Err(err);
-                    }
+        let result = self.read_stronghold_snapshot().await;
+        if let Err(err) = result {
+            // TODO: replace with actual error matching when updated to the new Stronghold version
+            // TODO: but the error is not an enum
+            if let crate::Error::StrongholdProcedureError(ref err_msg) = err {
+                if !err_msg.to_string().contains("IOError") {
+                    // If loading the snapshot failed but wasn't an IOError, then the password was incorrect and we
+                    // clear it
+                    *self.key.lock().await = None;
+                    return Err(err);
                 }
             }
         }
@@ -263,9 +261,7 @@ impl StrongholdAdapter {
         }
 
         // In case something goes wrong we can recover from the snapshot.
-        if self.snapshot_path.is_some() {
-            self.write_stronghold_snapshot().await?;
-        }
+        self.write_stronghold_snapshot().await?;
 
         // If there are keys to re-encrypt, we iterate over the requested keys and attempt to re-encrypt the
         // corresponding values.
@@ -339,9 +335,7 @@ impl StrongholdAdapter {
         }
 
         // Rewrite the snapshot to finish the password changing process.
-        if self.snapshot_path.is_some() {
-            self.write_stronghold_snapshot().await?;
-        }
+        self.write_stronghold_snapshot().await?;
 
         // Restart the key clearing task.
         if let Some(timeout) = self.timeout {
@@ -432,16 +426,10 @@ impl StrongholdAdapter {
         // TODO: I don't like this
         let key_provider = KeyProvider::try_from((**key).clone())?;
 
-        let snapshot_path = if let Some(path) = &self.snapshot_path {
-            path
-        } else {
-            return Err(Error::StrongholdSnapshotPathMissing);
-        };
-
         self.stronghold.lock().await.load_client_from_snapshot(
             PRIVATE_DATA_CLIENT_PATH,
             &key_provider,
-            &SnapshotPath::from_path(snapshot_path),
+            &SnapshotPath::from_path(&self.snapshot_path),
         )?;
 
         self.snapshot_loaded = true;
@@ -466,14 +454,8 @@ impl StrongholdAdapter {
         // TODO: I don't like this
         let key_provider = KeyProvider::try_from((**key).clone())?;
 
-        let snapshot_path = if let Some(path) = &self.snapshot_path {
-            path
-        } else {
-            return Err(Error::StrongholdSnapshotPathMissing);
-        };
-
         // Check if directory in path exists, if not create it
-        if let Some(parent) = snapshot_path.parent() {
+        if let Some(parent) = self.snapshot_path.parent() {
             if !parent.is_dir() {
                 std::fs::create_dir_all(parent)?;
             }
@@ -482,7 +464,7 @@ impl StrongholdAdapter {
         self.stronghold
             .lock()
             .await
-            .commit(&SnapshotPath::from_path(snapshot_path), &key_provider)?;
+            .commit(&SnapshotPath::from_path(&self.snapshot_path), &key_provider)?;
 
         Ok(())
     }
@@ -533,10 +515,11 @@ mod tests {
     async fn test_clear_key() {
         let timeout = Duration::from_millis(100);
 
+        let stronghold_path = PathBuf::from("test.stronghold");
         let mut adapter = StrongholdAdapter::builder()
             .password("drowssap")
             .timeout(timeout)
-            .build();
+            .build(stronghold_path);
 
         // There is a small delay between `build()` and the key clearing task being actually spawned and kept.
         tokio::time::sleep(Duration::from_millis(10)).await;
@@ -575,7 +558,8 @@ mod tests {
 
     #[tokio::test]
     async fn stronghold_password_already_set() {
-        let mut adapter = StrongholdAdapter::builder().password("drowssap").build();
+        let stronghold_path = PathBuf::from("test.stronghold");
+        let mut adapter = StrongholdAdapter::builder().password("drowssap").build(stronghold_path);
 
         // When the password already exists, it should fail
         assert!(adapter.set_password("drowssap").await.is_err());

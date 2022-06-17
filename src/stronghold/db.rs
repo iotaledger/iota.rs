@@ -15,10 +15,8 @@ use crate::{db::DatabaseProvider, Error, Result};
 #[async_trait]
 impl DatabaseProvider for StrongholdAdapter {
     async fn get(&mut self, k: &[u8]) -> Result<Option<Vec<u8>>> {
-        // Lazy load the snapshot (if the path is set).
-        if self.snapshot_path.is_some() {
-            self.read_stronghold_snapshot().await?;
-        }
+        // Lazy load the snapshot.
+        self.read_stronghold_snapshot().await?;
 
         let data = match self
             .stronghold
@@ -43,10 +41,8 @@ impl DatabaseProvider for StrongholdAdapter {
     }
 
     async fn insert(&mut self, k: &[u8], v: &[u8]) -> Result<Option<Vec<u8>>> {
-        // Lazy load the snapshot (if the path is set).
-        if self.snapshot_path.is_some() {
-            self.read_stronghold_snapshot().await?;
-        }
+        // Lazy load the snapshot.
+        self.read_stronghold_snapshot().await?;
 
         let old_value = self.get(k).await?;
 
@@ -72,10 +68,8 @@ impl DatabaseProvider for StrongholdAdapter {
     }
 
     async fn delete(&mut self, k: &[u8]) -> Result<Option<Vec<u8>>> {
-        // Lazy load the snapshot (if the path is set).
-        if self.snapshot_path.is_some() {
-            self.read_stronghold_snapshot().await?;
-        }
+        // Lazy load the snapshot.
+        self.read_stronghold_snapshot().await?;
 
         Ok(self
             .stronghold
@@ -90,10 +84,13 @@ impl DatabaseProvider for StrongholdAdapter {
 mod tests {
     #[tokio::test]
     async fn test_stronghold_db() {
+        use std::path::PathBuf;
+
         use super::StrongholdAdapter;
         use crate::db::DatabaseProvider;
 
-        let mut stronghold = StrongholdAdapter::builder().password("drowssap").build();
+        let stronghold_path = PathBuf::from("test.stronghold");
+        let mut stronghold = StrongholdAdapter::builder().password("drowssap").build(stronghold_path);
 
         assert!(matches!(stronghold.get(b"test-0").await, Ok(None)));
         assert!(matches!(stronghold.get(b"test-1").await, Ok(None)));
