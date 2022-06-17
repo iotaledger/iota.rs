@@ -22,7 +22,7 @@ crate-type = ["cdylib"]
 neon-build = "0.5"
 
 [dependencies]
-neon = "0.8"
+neon = "0.10"
 iota-client = { path = "../../..", features = ["mqtt"] }
 serde = { version = "1.0.130", default-features = false, features = ["derive"] }
 serde_json = { version = "1.0.68", default-features = false }
