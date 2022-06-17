@@ -35,13 +35,13 @@ public abstract class ApiTest {
         String address = client.generateAddresses(new MnemonicSecretManager(DEFAULT_DEVELOPMENT_MNEMONIC), new GenerateAddressesOptions().withRange(0, 1))[0];
         requestFundsFromFaucet(address);
         try {
-            Thread.sleep(1000 * 10);
+            Thread.sleep(1000 * 15);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
         Block b = client.generateBlock(new MnemonicSecretManager(DEFAULT_DEVELOPMENT_MNEMONIC), new GenerateBlockOptions().withOutputHex(new GenerateBlockOptions.ClientBlockBuilderOutputAddress(client.bech32ToHex(address), "10000000")));
         try {
-            Thread.sleep(1000 * 10);
+            Thread.sleep(1000 * 15);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

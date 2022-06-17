@@ -7,9 +7,9 @@ import org.iota.types.ids.BlockId;
 import org.iota.types.ids.MilestoneId;
 import org.iota.types.ids.OutputId;
 import org.iota.types.ids.TransactionId;
-import org.iota.types.responses.node_core_api.NodeInfoResponse;
-import org.iota.types.responses.node_core_api.TreasuryResponse;
-import org.iota.types.responses.node_core_api.UtxoChangesResponse;
+import org.iota.types.responses.NodeInfoResponse;
+import org.iota.types.responses.TreasuryResponse;
+import org.iota.types.responses.UtxoChangesResponse;
 
 import java.util.Map;
 

@@ -13,5 +13,3 @@ public class UtxoInput extends AbstractObject {
     }
 
 }
-
-

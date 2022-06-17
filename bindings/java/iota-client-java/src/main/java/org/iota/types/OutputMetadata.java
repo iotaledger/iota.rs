@@ -13,7 +13,3 @@ public class OutputMetadata extends AbstractObject {
     }
 
 }
-
-
-
-

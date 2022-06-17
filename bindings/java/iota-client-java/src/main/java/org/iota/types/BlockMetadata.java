@@ -13,5 +13,3 @@ public class BlockMetadata extends AbstractObject {
     }
 
 }
-
-

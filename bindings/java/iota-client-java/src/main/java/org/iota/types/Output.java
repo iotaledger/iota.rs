@@ -13,7 +13,3 @@ public class Output extends AbstractObject {
     }
 
 }
-
-
-
-

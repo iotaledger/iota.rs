@@ -5,6 +5,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 
+import java.util.Objects;
+
 public class AbstractObject {
 
     private JsonObject jsonObject;
@@ -21,6 +23,19 @@ public class AbstractObject {
 
     public JsonObject getJson() {
         return jsonObject;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AbstractObject other = (AbstractObject) o;
+        return Objects.equals(this.jsonObject, other.jsonObject);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(jsonObject);
     }
 
     @Override

@@ -4,9 +4,9 @@ import com.google.gson.JsonObject;
 import org.iota.apis.*;
 import org.iota.types.*;
 import org.iota.types.ids.*;
-import org.iota.types.responses.node_core_api.NodeInfoResponse;
-import org.iota.types.responses.node_core_api.TreasuryResponse;
-import org.iota.types.responses.node_core_api.UtxoChangesResponse;
+import org.iota.types.responses.NodeInfoResponse;
+import org.iota.types.responses.TreasuryResponse;
+import org.iota.types.responses.UtxoChangesResponse;
 import org.iota.types.secret.GenerateAddressesOptions;
 import org.iota.types.secret.GenerateBlockOptions;
 import org.iota.types.secret.Range;
@@ -308,4 +308,3 @@ public class Client {
     }
 
 }
-

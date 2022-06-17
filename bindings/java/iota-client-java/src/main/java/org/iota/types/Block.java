@@ -13,5 +13,3 @@ public class Block extends AbstractObject {
     }
 
 }
-
-

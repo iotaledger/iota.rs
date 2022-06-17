@@ -6,7 +6,6 @@ import com.google.gson.JsonObject;
 import org.apache.commons.lang3.SystemUtils;
 import org.iota.types.ClientConfig;
 import org.iota.types.ClientException;
-import org.iota.types.responses.ClientResponse;
 
 import java.io.IOException;
 
@@ -41,19 +40,25 @@ public class BaseApi {
     private static native String callNativeLibrary(String clientConfig, String clientCommand);
 
     protected JsonElement callBaseApi(ClientCommand command) throws ClientException {
-        System.out.println(command);
-        ClientResponse response = new Gson().fromJson(callNativeLibrary(clientConfig.toString(), command.toString()), ClientResponse.class);
-        System.out.println(response);
+        System.out.println("command: " + command);
+        String jsonResponse = callNativeLibrary(clientConfig.toString(), command.toString());
+        System.out.println("response: " + jsonResponse);
+        ClientResponse response = new Gson().fromJson(jsonResponse, ClientResponse.class);
 
-        switch (response.getType()) {
+        switch (response.type) {
             case "Panic":
                 throw new RuntimeException(response.toString());
             case "Error":
-                throw new ClientException(command.methodName, response.getPayload().getAsJsonObject().toString());
+                throw new ClientException(command.methodName, response.payload.getAsJsonObject().toString());
 
             default:
-                return response.getPayload();
+                return response.payload;
         }
+    }
+
+    private class ClientResponse {
+        String type;
+        JsonElement payload;
     }
 
     protected static class ClientCommand {

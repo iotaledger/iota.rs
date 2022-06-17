@@ -13,7 +13,3 @@ public class TransactionPayload extends AbstractObject {
     }
 
 }
-
-
-
-

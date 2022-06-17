@@ -1,4 +1,4 @@
-package org.iota.types.responses.node_core_api;
+package org.iota.types.responses;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;

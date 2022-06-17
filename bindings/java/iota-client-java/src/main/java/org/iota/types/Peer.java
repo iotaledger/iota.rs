@@ -13,5 +13,3 @@ public class Peer extends AbstractObject {
     }
 
 }
-
-

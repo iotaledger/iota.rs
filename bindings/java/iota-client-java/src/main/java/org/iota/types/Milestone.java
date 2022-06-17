@@ -13,5 +13,3 @@ public class Milestone extends AbstractObject {
     }
 
 }
-
-
