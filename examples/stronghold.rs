@@ -19,7 +19,7 @@ async fn main() -> Result<()> {
     let mut stronghold_secret_manager = StrongholdSecretManager::builder()
         .password("some_hopefully_secure_password")
         .snapshot_path(PathBuf::from("test.stronghold"))
-        .try_build()?;
+        .build();
 
     // This example uses dotenv, which is not safe for use in production
     dotenv().ok();

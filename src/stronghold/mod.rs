@@ -59,7 +59,7 @@ use log::{debug, error, warn};
 use tokio::{sync::Mutex, task::JoinHandle};
 use zeroize::{Zeroize, Zeroizing};
 
-use self::common::{EncryptionKey, PRIVATE_DATA_CLIENT_PATH, STRONGHOLD_FILENAME};
+use self::common::{EncryptionKey, PRIVATE_DATA_CLIENT_PATH};
 use crate::{db::DatabaseProvider, Error, Result};
 
 /// A wrapper on [Stronghold].
@@ -213,8 +213,9 @@ impl StrongholdAdapter {
             let result = self.read_stronghold_snapshot().await;
             if let Err(err) = result {
                 // TODO: replace with actual error matching when updated to the new Stronghold version
+                // TODO: but the error is not an enum
                 if let crate::Error::StrongholdProcedureError(ref err_msg) = err {
-                    if !err_msg.contains("IOError") {
+                    if !err_msg.to_string().contains("IOError") {
                         // If loading the snapshot failed but wasn't an IOError, then the password was incorrect and we
                         // clear it
                         *self.key.lock().await = None;
@@ -428,7 +429,8 @@ impl StrongholdAdapter {
             return Err(Error::StrongholdKeyCleared);
         };
 
-        let key_provider = KeyProvider::try_from(**key)?;
+        // TODO: I don't like this
+        let key_provider = KeyProvider::try_from((**key).clone())?;
 
         let snapshot_path = if let Some(path) = &self.snapshot_path {
             path
@@ -461,6 +463,9 @@ impl StrongholdAdapter {
             return Err(Error::StrongholdKeyCleared);
         };
 
+        // TODO: I don't like this
+        let key_provider = KeyProvider::try_from((**key).clone())?;
+
         let snapshot_path = if let Some(path) = &self.snapshot_path {
             path
         } else {
@@ -477,12 +482,9 @@ impl StrongholdAdapter {
         self.stronghold
             .lock()
             .await
-            .write_all_to_snapshot(
-                &**key,
-                Some(STRONGHOLD_FILENAME.to_string()),
-                Some(snapshot_path.clone()),
-            )
-            .await
+            .commit(&SnapshotPath::from_path(snapshot_path), &key_provider)?;
+
+        Ok(())
     }
 
     /// Unload Stronghold from memory.
@@ -508,7 +510,7 @@ impl StrongholdAdapter {
 /// The asynchronous key clearing task purging `key` after `timeout` spent in Tokio.
 async fn task_key_clear(
     task_self: Arc<Mutex<Option<JoinHandle<()>>>>,
-    stronghold: Arc<Mutex<Stronghold>>,
+    _stronghold: Arc<Mutex<Stronghold>>,
     key: Arc<Mutex<Option<Zeroizing<Vec<u8>>>>>,
     timeout: Duration,
 ) {

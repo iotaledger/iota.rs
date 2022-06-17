@@ -194,8 +194,7 @@ async fn address_generation() {
         let mut stronghold_secret_manager = StrongholdSecretManager::builder()
             .password("some_hopefully_secure_password")
             .snapshot_path(PathBuf::from(stronghold_filename.to_string()))
-            .try_build()
-            .unwrap();
+            .build();
 
         stronghold_secret_manager
             .store_mnemonic(address.mnemonic.to_string())

@@ -11,12 +11,9 @@ use bee_block::{
     signature::{Ed25519Signature, Signature},
     unlock::{SignatureUnlock, Unlock},
 };
-use crypto::{
-    hashes::{blake2b::Blake2b256, Digest},
-    keys::slip10::Chain,
-};
+use crypto::hashes::{blake2b::Blake2b256, Digest};
 use iota_stronghold::{
-    procedures::{self, KeyType, Slip10DeriveInput},
+    procedures::{self, Chain, KeyType, Slip10DeriveInput},
     Location,
 };
 

@@ -4,7 +4,6 @@
 //! The `DatabaseProvider` implementation for `StrongholdAdapter`.
 
 use async_trait::async_trait;
-use iota_stronghold::Location;
 
 use super::{
     common::PRIVATE_DATA_CLIENT_PATH,
@@ -12,15 +11,6 @@ use super::{
     StrongholdAdapter,
 };
 use crate::{db::DatabaseProvider, Error, Result};
-
-/// Convert from a string to a Stronghold location that we'll use.
-fn location_from_key(key: &[u8]) -> Location {
-    // This has been the case in wallet.rs; we preserve it here.
-    Location::Generic {
-        vault_path: key.to_vec(),
-        record_path: key.to_vec(),
-    }
-}
 
 #[async_trait]
 impl DatabaseProvider for StrongholdAdapter {
@@ -30,7 +20,6 @@ impl DatabaseProvider for StrongholdAdapter {
             self.read_stronghold_snapshot().await?;
         }
 
-        let location = location_from_key(k);
         let data = match self
             .stronghold
             .lock()
@@ -72,8 +61,7 @@ impl DatabaseProvider for StrongholdAdapter {
             encrypt(v, key)?
         };
 
-        let status = self
-            .stronghold
+        self.stronghold
             .lock()
             .await
             .load_client(PRIVATE_DATA_CLIENT_PATH)?

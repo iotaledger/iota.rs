@@ -23,7 +23,7 @@ pub(super) const DERIVE_OUTPUT_RECORD_PATH: &[u8] = b"iota-wallet-derived";
 /// Filename to the Stronghold vault.
 ///
 /// The value has been hard-coded historically.
-pub(super) const STRONGHOLD_FILENAME: &str = "wallet.stronghold";
+pub(super) const _STRONGHOLD_FILENAME: &str = "wallet.stronghold";
 
 /// The client path for the seed.
 ///
@@ -33,7 +33,7 @@ pub(super) const PRIVATE_DATA_CLIENT_PATH: &[u8] = b"iota_seed";
 const PBKDF_SALT: &[u8] = b"wallet.rs";
 const PBKDF_ITER: usize = 100;
 
-pub type EncryptionKey = Zeroizing<Vec<u8>>;
+pub(crate) type EncryptionKey = Zeroizing<Vec<u8>>;
 
 /// Hash a password, deriving a key, for accessing Stronghold.
 pub(super) fn derive_key_from_password(password: &str) -> EncryptionKey {
