@@ -24,11 +24,9 @@ impl Client {
     /// Get basic outputs filtered by the given parameters.
     /// GET with query parameter returns all outputIDs that fit these filter criteria.
     /// Query parameters: "address", "hasStorageDepositReturnCondition", "storageReturnAddress",
-    /// "hasExpirationCondition", "expiresBefore", "expiresAfter", "expiresBeforeMilestone", "expiresAfterMilestone",
-    /// "hasTimelockCondition", "timelockedBefore", "timelockedAfter", "timelockedBeforeMilestone",
-    /// "timelockedAfterMilestone", "sender", "tag", "createdBefore" and "createdAfter".
-    /// Returns an empty Vec if no results are found.
-    /// api/plugins/indexer/v1/outputs/basic
+    /// "hasExpirationCondition", "expiresBefore", "expiresAfter", "hasTimelockCondition", "timelockedBefore",
+    /// "timelockedAfter", "sender", "tag", "createdBefore" and "createdAfter". Returns an empty Vec if no results
+    /// are found. api/plugins/indexer/v1/outputs/basic
     pub async fn basic_output_ids(&self, query_parameters: Vec<QueryParameter>) -> Result<Vec<OutputId>> {
         let route = "api/plugins/indexer/v1/outputs/basic";
 
@@ -43,13 +41,9 @@ impl Client {
             QueryParameter::HasTimelockCondition,
             QueryParameter::TimelockedBefore,
             QueryParameter::TimelockedAfter,
-            QueryParameter::TimelockedBeforeMilestone,
-            QueryParameter::TimelockedAfterMilestone,
             QueryParameter::HasExpirationCondition,
             QueryParameter::ExpiresBefore,
             QueryParameter::ExpiresAfter,
-            QueryParameter::ExpiresBeforeMilestone,
-            QueryParameter::ExpiresAfterMilestone,
             QueryParameter::ExpirationReturnAddress,
             QueryParameter::Sender,
             QueryParameter::Tag,
@@ -140,10 +134,9 @@ impl Client {
 
     /// Get NFT outputs filtered by the given parameters.
     /// Query parameters: "address", "hasStorageDepositReturnCondition", "storageReturnAddress",
-    /// "hasExpirationCondition",                 "expiresBefore", "expiresAfter", "expiresBeforeMilestone",
-    /// "expiresAfterMilestone",                 "hasTimelockCondition", "timelockedBefore", "timelockedAfter",
-    /// "timelockedBeforeMilestone",                 "timelockedAfterMilestone", "issuer", "sender", "tag",
-    /// "createdBefore", "createdAfter" Returns an empty list if no results are found.
+    /// "hasExpirationCondition", "expiresBefore", "expiresAfter", "hasTimelockCondition", "timelockedBefore",
+    /// "timelockedAfter", "issuer", "sender", "tag", "createdBefore", "createdAfter"
+    /// Returns an empty list if no results are found.
     /// api/plugins/indexer/v1/outputs/nft
     pub async fn nft_output_ids(&self, query_parameters: Vec<QueryParameter>) -> Result<Vec<OutputId>> {
         let route = "api/plugins/indexer/v1/outputs/nft";
@@ -159,13 +152,9 @@ impl Client {
             QueryParameter::HasTimelockCondition,
             QueryParameter::TimelockedBefore,
             QueryParameter::TimelockedAfter,
-            QueryParameter::TimelockedBeforeMilestone,
-            QueryParameter::TimelockedAfterMilestone,
             QueryParameter::HasExpirationCondition,
             QueryParameter::ExpiresBefore,
             QueryParameter::ExpiresAfter,
-            QueryParameter::ExpiresBeforeMilestone,
-            QueryParameter::ExpiresAfterMilestone,
             QueryParameter::ExpirationReturnAddress,
             QueryParameter::Sender,
             QueryParameter::Tag,

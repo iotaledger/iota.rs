@@ -17,7 +17,6 @@ use iota_client::{
             },
             BasicOutputBuilder,
         },
-        payload::milestone::MilestoneIndex,
     },
     secret::{mnemonic::MnemonicSecretManager, SecretManager},
     Client, Result,
@@ -67,7 +66,7 @@ async fn main() -> Result<()> {
             /// If the receiver does not consume this output, we Unlock after a day to avoid
             /// locking our funds forever.
             .add_unlock_condition(UnlockCondition::Expiration(
-                ExpirationUnlockCondition::new(address, MilestoneIndex(0), tomorrow).unwrap(),
+                ExpirationUnlockCondition::new(address, tomorrow).unwrap(),
             ))
             .finish_output()?,
     ];

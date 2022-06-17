@@ -63,12 +63,8 @@ pub enum QueryParameter {
     ExpirationReturnAddress(String),
     /// Returns outputs that expire after a certain Unix timestamp.
     ExpiresAfter(u32),
-    /// Returns outputs that expire after a certain milestone index.
-    ExpiresAfterMilestone(u32),
     /// Returns outputs that expire before a certain Unix timestamp.
     ExpiresBefore(u32),
-    /// Returns outputs that expire before a certain milestone index.
-    ExpiresBeforeMilestone(u32),
     /// Filters outputs based on bech32-encoded governor (governance controller) address.
     Governor(String),
     /// Filters outputs based on the presence of expiration unlock condition.
@@ -98,12 +94,8 @@ pub enum QueryParameter {
     Tag(String),
     /// Returns outputs that are timelocked after a certain Unix timestamp.
     TimelockedAfter(u32),
-    /// Returns outputs that are timelocked ater a certain milestone index.
-    TimelockedAfterMilestone(u32),
     /// Returns outputs that are timelocked before a certain Unix timestamp.
     TimelockedBefore(u32),
-    /// Returns outputs that are timelocked before a certain milestone index.
-    TimelockedBeforeMilestone(u32),
 }
 
 impl QueryParameter {
@@ -116,9 +108,7 @@ impl QueryParameter {
             QueryParameter::Cursor(v) => format!("cursor={}", v),
             QueryParameter::ExpirationReturnAddress(v) => format!("expirationReturnAddress={}", v),
             QueryParameter::ExpiresAfter(v) => format!("expiresAfter={}", v),
-            QueryParameter::ExpiresAfterMilestone(v) => format!("expiresAfterMilestone={}", v),
             QueryParameter::ExpiresBefore(v) => format!("expiresBefore={}", v),
-            QueryParameter::ExpiresBeforeMilestone(v) => format!("expiresBeforeMilestone={}", v),
             QueryParameter::Governor(v) => format!("governor={}", v),
             QueryParameter::HasExpirationCondition(v) => format!("hasExpirationCondition={}", v),
             QueryParameter::HasNativeTokens(v) => format!("hasNativeTokens={}", v),
@@ -133,9 +123,7 @@ impl QueryParameter {
             QueryParameter::StorageReturnAddress(v) => format!("storageReturnAddress={}", v),
             QueryParameter::Tag(v) => format!("tag={}", v),
             QueryParameter::TimelockedAfter(v) => format!("timelockedAfter={}", v),
-            QueryParameter::TimelockedAfterMilestone(v) => format!("timelockedAfterMilestone={}", v),
             QueryParameter::TimelockedBefore(v) => format!("timelockedBefore={}", v),
-            QueryParameter::TimelockedBeforeMilestone(v) => format!("timelockedBeforeMilestone={}", v),
         }
     }
 
@@ -148,26 +136,22 @@ impl QueryParameter {
             QueryParameter::Cursor(_) => 4,
             QueryParameter::ExpirationReturnAddress(_) => 5,
             QueryParameter::ExpiresAfter(_) => 6,
-            QueryParameter::ExpiresAfterMilestone(_) => 7,
-            QueryParameter::ExpiresBefore(_) => 8,
-            QueryParameter::ExpiresBeforeMilestone(_) => 9,
-            QueryParameter::Governor(_) => 10,
-            QueryParameter::HasExpirationCondition(_) => 11,
-            QueryParameter::HasNativeTokens(_) => 12,
-            QueryParameter::HasStorageReturnCondition(_) => 13,
-            QueryParameter::HasTimelockCondition(_) => 14,
-            QueryParameter::Issuer(_) => 15,
-            QueryParameter::MaxNativeTokenCount(_) => 16,
-            QueryParameter::MinNativeTokenCount(_) => 17,
-            QueryParameter::PageSize(_) => 18,
-            QueryParameter::Sender(_) => 19,
-            QueryParameter::StateController(_) => 20,
-            QueryParameter::StorageReturnAddress(_) => 21,
-            QueryParameter::Tag(_) => 22,
-            QueryParameter::TimelockedAfter(_) => 23,
-            QueryParameter::TimelockedAfterMilestone(_) => 24,
-            QueryParameter::TimelockedBefore(_) => 25,
-            QueryParameter::TimelockedBeforeMilestone(_) => 26,
+            QueryParameter::ExpiresBefore(_) => 7,
+            QueryParameter::Governor(_) => 8,
+            QueryParameter::HasExpirationCondition(_) => 9,
+            QueryParameter::HasNativeTokens(_) => 10,
+            QueryParameter::HasStorageReturnCondition(_) => 11,
+            QueryParameter::HasTimelockCondition(_) => 12,
+            QueryParameter::Issuer(_) => 13,
+            QueryParameter::MaxNativeTokenCount(_) => 14,
+            QueryParameter::MinNativeTokenCount(_) => 15,
+            QueryParameter::PageSize(_) => 16,
+            QueryParameter::Sender(_) => 17,
+            QueryParameter::StateController(_) => 18,
+            QueryParameter::StorageReturnAddress(_) => 19,
+            QueryParameter::Tag(_) => 20,
+            QueryParameter::TimelockedAfter(_) => 21,
+            QueryParameter::TimelockedBefore(_) => 22,
         }
     }
 }

@@ -19,7 +19,7 @@ use iota_client::{
             AliasId, AliasOutputBuilder, BasicOutputBuilder, Feature, FoundryId, FoundryOutputBuilder, NativeToken,
             NftId, NftOutputBuilder, Output, OutputId, SimpleTokenScheme, TokenId, TokenScheme,
         },
-        payload::{milestone::MilestoneIndex, transaction::TransactionEssence, Payload},
+        payload::{transaction::TransactionEssence, Payload},
     },
     constants::SHIMMER_TESTNET_BECH32_HRP,
     request_funds_from_faucet,
@@ -203,19 +203,12 @@ async fn main() -> Result<()> {
         // with expiration
         BasicOutputBuilder::new_with_amount(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-            .add_unlock_condition(UnlockCondition::Expiration(ExpirationUnlockCondition::new(
-                address,
-                MilestoneIndex::new(400),
-                0,
-            )?))
+            .add_unlock_condition(UnlockCondition::Expiration(ExpirationUnlockCondition::new(address, 0)?))
             .finish_output()?,
         // with timelock
         BasicOutputBuilder::new_with_amount(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-            .add_unlock_condition(UnlockCondition::Timelock(TimelockUnlockCondition::new(
-                MilestoneIndex::new(400),
-                0,
-            )?))
+            .add_unlock_condition(UnlockCondition::Timelock(TimelockUnlockCondition::new(0)?))
             .finish_output()?,
     ];
 

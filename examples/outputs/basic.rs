@@ -7,16 +7,13 @@ use std::env;
 
 use dotenv::dotenv;
 use iota_client::{
-    bee_block::{
-        output::{
-            feature::MetadataFeature,
-            unlock_condition::{
-                AddressUnlockCondition, ExpirationUnlockCondition, StorageDepositReturnUnlockCondition,
-                TimelockUnlockCondition, UnlockCondition,
-            },
-            BasicOutputBuilder, Feature,
+    bee_block::output::{
+        feature::MetadataFeature,
+        unlock_condition::{
+            AddressUnlockCondition, ExpirationUnlockCondition, StorageDepositReturnUnlockCondition,
+            TimelockUnlockCondition, UnlockCondition,
         },
-        payload::milestone::MilestoneIndex,
+        BasicOutputBuilder, Feature,
     },
     constants::SHIMMER_TESTNET_BECH32_HRP,
     secret::{mnemonic::MnemonicSecretManager, SecretManager},
@@ -73,19 +70,12 @@ async fn main() -> Result<()> {
         // with expiration
         BasicOutputBuilder::new_with_amount(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-            .add_unlock_condition(UnlockCondition::Expiration(ExpirationUnlockCondition::new(
-                address,
-                MilestoneIndex::new(400),
-                0,
-            )?))
+            .add_unlock_condition(UnlockCondition::Expiration(ExpirationUnlockCondition::new(address, 0)?))
             .finish_output()?,
         // with timelock
         BasicOutputBuilder::new_with_amount(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-            .add_unlock_condition(UnlockCondition::Timelock(TimelockUnlockCondition::new(
-                MilestoneIndex::new(400),
-                0,
-            )?))
+            .add_unlock_condition(UnlockCondition::Timelock(TimelockUnlockCondition::new(0)?))
             .finish_output()?,
     ];
 
