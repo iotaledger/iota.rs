@@ -1,4 +1,4 @@
-// Copyright 2021 IOTA Stiftung
+// Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
 //! Implementation of [`LedgerSecretManager`].
@@ -53,7 +53,7 @@ impl SecretManage for LedgerSecretManager {
     async fn generate_addresses(
         &self,
         // https://github.com/satoshilabs/slips/blob/master/slip-0044.md
-        // current ledger app only supports IOTA_COIN_TYPE and SHIMMER_COIN_TYPE
+        // current ledger app only supports IOTA_COIN_TYPE, SHIMMER_COIN_TYPE and TESTNET_COIN_TYPE
         coin_type: u32,
         account_index: u32,
         address_indexes: Range<u32>,
@@ -144,7 +144,7 @@ impl SecretManageExt for LedgerSecretManager {
         // lock the mutex to prevent multiple simultaneous requests to a ledger
         let _lock = self.mutex.lock().await;
 
-        let mut input_bip32_indices: Vec<iota_ledger::LedgerBIP32Index> = Vec::new();
+        let mut input_bip32_indices: Vec<LedgerBIP32Index> = Vec::new();
         let mut coin_type: Option<u32> = None;
         let mut account_index: Option<u32> = None;
 
