@@ -234,6 +234,11 @@ pub enum Error {
     #[error("stronghold client error: {0}")]
     #[serde(serialize_with = "display_string")]
     StrongholdClient(#[from] iota_stronghold::ClientError),
+    /// Stronghold memory error
+    #[cfg(feature = "stronghold")]
+    #[error("stronghold memory error: {0}")]
+    #[serde(serialize_with = "display_string")]
+    StrongholdMemory(#[from] iota_stronghold::MemoryError),
     /// Procedure execution error from Stronghold
     #[cfg(feature = "stronghold")]
     #[error("Stronghold reported a procedure error: {0}")]

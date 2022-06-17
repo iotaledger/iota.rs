@@ -54,7 +54,7 @@ mod secret;
 use std::{path::PathBuf, sync::Arc, time::Duration};
 
 use derive_builder::Builder;
-use iota_stronghold::{KeyProvider, Stronghold};
+use iota_stronghold::{KeyProvider, SnapshotPath, Stronghold};
 use log::{debug, error, warn};
 use tokio::{sync::Mutex, task::JoinHandle};
 use zeroize::{Zeroize, Zeroizing};
@@ -428,7 +428,7 @@ impl StrongholdAdapter {
             return Err(Error::StrongholdKeyCleared);
         };
 
-        let key_provider = KeyProvider::try_from(key)?;
+        let key_provider = KeyProvider::try_from(**key)?;
 
         let snapshot_path = if let Some(path) = &self.snapshot_path {
             path
@@ -439,7 +439,7 @@ impl StrongholdAdapter {
         self.stronghold.lock().await.load_client_from_snapshot(
             PRIVATE_DATA_CLIENT_PATH,
             &key_provider,
-            snapshot_path,
+            &SnapshotPath::from_path(snapshot_path),
         )?;
 
         self.snapshot_loaded = true;
@@ -474,8 +474,7 @@ impl StrongholdAdapter {
             }
         }
 
-        match self
-            .stronghold
+        self.stronghold
             .lock()
             .await
             .write_all_to_snapshot(
@@ -484,10 +483,6 @@ impl StrongholdAdapter {
                 Some(snapshot_path.clone()),
             )
             .await
-        {
-            ResultMessage::Ok(_) => Ok(()),
-            ResultMessage::Error(err) => Err(crate::Error::StrongholdProcedureError(err)),
-        }
     }
 
     /// Unload Stronghold from memory.
