@@ -2,6 +2,8 @@ package org.iota;
 
 import org.iota.apis.UtilsApi;
 import org.iota.types.*;
+import org.iota.types.ids.OutputId;
+import org.iota.types.ids.TransactionId;
 import org.iota.types.secret.GenerateAddressesOptions;
 import org.iota.types.secret.GenerateBlockOptions;
 import org.iota.types.secret.MnemonicSecretManager;

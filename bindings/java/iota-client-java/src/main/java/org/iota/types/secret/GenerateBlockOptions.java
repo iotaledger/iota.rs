@@ -126,7 +126,7 @@ public class GenerateBlockOptions {
         if(outputs != null) {
             JsonArray array = new JsonArray();
             for(Output output: outputs)
-                array.add(output.getAsJsonObject());
+                array.add(output.getJson());
             o.add("outputs", array);
         }
 

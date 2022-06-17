@@ -1,6 +1,7 @@
 package org.iota.apis;
 
 import com.google.gson.JsonObject;
+import org.iota.types.ids.*;
 import org.iota.types.responses.ClientResponse;
 import org.iota.types.*;
 

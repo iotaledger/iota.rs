@@ -4,6 +4,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.iota.types.*;
+import org.iota.types.ids.BlockId;
+import org.iota.types.ids.OutputId;
 import org.iota.types.responses.ClientResponse;
 import org.iota.types.secret.Range;
 import org.iota.types.secret.SecretManager;

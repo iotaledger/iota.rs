@@ -3,6 +3,10 @@ package org.iota.apis;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.iota.types.*;
+import org.iota.types.ids.AliasId;
+import org.iota.types.ids.FoundryId;
+import org.iota.types.ids.NftId;
+import org.iota.types.ids.OutputId;
 import org.iota.types.responses.ClientResponse;
 
 

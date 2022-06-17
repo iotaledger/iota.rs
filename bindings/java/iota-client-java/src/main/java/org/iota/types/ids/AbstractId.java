@@ -1,30 +1,31 @@
-package org.iota.types;
+package org.iota.types.ids;
 
 import java.util.Objects;
 
-public class NftId {
+public class AbstractId {
 
-    private String nftId;
+    private String id;
 
-    public NftId(String nftId) {
-        this.nftId = nftId;
+    protected AbstractId(String id) {
+        this.id = id;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        NftId outputId1 = (NftId) o;
-        return Objects.equals(nftId, outputId1.nftId);
+        AbstractId other = (AbstractId) o;
+        return Objects.equals(this.id, other.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(nftId);
+        return Objects.hash(id);
     }
 
     @Override
     public String toString() {
-        return nftId;
+        return id;
     }
+
 }

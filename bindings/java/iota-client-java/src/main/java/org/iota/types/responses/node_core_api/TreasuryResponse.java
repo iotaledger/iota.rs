@@ -1,7 +1,7 @@
 package org.iota.types.responses.node_core_api;
 
 import com.google.gson.JsonObject;
-import org.iota.types.MilestoneId;
+import org.iota.types.ids.MilestoneId;
 
 public class TreasuryResponse {
 

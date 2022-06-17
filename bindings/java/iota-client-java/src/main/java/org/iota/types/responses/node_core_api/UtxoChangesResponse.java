@@ -2,7 +2,7 @@ package org.iota.types.responses.node_core_api;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import org.iota.types.OutputId;
+import org.iota.types.ids.OutputId;
 
 public class UtxoChangesResponse {
 

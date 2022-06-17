@@ -2,6 +2,8 @@ package org.iota;
 
 import org.iota.apis.NodeIndexerApi;
 import org.iota.types.*;
+import org.iota.types.ids.BlockId;
+import org.iota.types.ids.OutputId;
 import org.iota.types.secret.GenerateAddressesOptions;
 import org.iota.types.secret.MnemonicSecretManager;
 import org.iota.types.secret.Range;

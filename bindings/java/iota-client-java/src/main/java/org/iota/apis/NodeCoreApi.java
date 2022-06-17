@@ -2,6 +2,10 @@ package org.iota.apis;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import org.iota.types.ids.BlockId;
+import org.iota.types.ids.MilestoneId;
+import org.iota.types.ids.OutputId;
+import org.iota.types.ids.TransactionId;
 import org.iota.types.responses.ClientResponse;
 import org.iota.types.responses.node_core_api.NodeInfoResponse;
 import org.iota.types.responses.node_core_api.TreasuryResponse;

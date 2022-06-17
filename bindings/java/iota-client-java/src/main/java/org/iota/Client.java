@@ -3,6 +3,7 @@ package org.iota;
 import com.google.gson.JsonObject;
 import org.iota.apis.*;
 import org.iota.types.*;
+import org.iota.types.ids.*;
 import org.iota.types.responses.node_core_api.NodeInfoResponse;
 import org.iota.types.responses.node_core_api.TreasuryResponse;
 import org.iota.types.responses.node_core_api.UtxoChangesResponse;

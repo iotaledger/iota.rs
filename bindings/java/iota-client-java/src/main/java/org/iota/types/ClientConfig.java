@@ -1,19 +1,15 @@
 package org.iota.types;
 
-public class ClientConfig {
+import com.google.gson.JsonObject;
 
-    private String json;
+public class ClientConfig extends AbstractObject {
 
-    private ClientConfig() {
-        ;
+    public ClientConfig(JsonObject jsonObject) {
+        super(jsonObject);
     }
 
-    public ClientConfig(String json) {
-        this.json = json;
+    public ClientConfig(String jsonObject) {
+        super(jsonObject);
     }
 
-    @Override
-    public String toString() {
-        return json;
-    }
 }
