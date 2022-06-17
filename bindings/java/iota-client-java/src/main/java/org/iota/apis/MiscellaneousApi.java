@@ -3,7 +3,6 @@ package org.iota.apis;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.iota.types.*;
-import org.iota.types.responses.ClientResponse;
 import org.iota.types.secret.GenerateAddressesOptions;
 import org.iota.types.secret.GenerateBlockOptions;
 import org.iota.types.secret.SecretManager;
@@ -19,8 +18,7 @@ public class MiscellaneousApi extends BaseApi {
         o.add("secretManager", secretManager.getJson());
         o.add("options", generateAddressesOptions.getJson());
 
-        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GenerateAddresses", o));
-        JsonArray responsePayload = response.getPayload().getAsJsonArray();
+        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GenerateAddresses", o));
 
         String[] addresses = new String[responsePayload.size()];
         for (int i = 0; i < responsePayload.size(); i++) {
@@ -35,77 +33,60 @@ public class MiscellaneousApi extends BaseApi {
         o.add("secretManager", secretManager.getJson());
         o.add("options", options.getJson());
 
-        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GenerateBlock", o));
-        JsonObject responsePayload = response.getPayload().getAsJsonObject();
+        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GenerateBlock", o));
 
         return new Block(responsePayload);
     }
 
 
     public Node getNode() throws ClientException {
-        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetNode"));
-        JsonObject responsePayload = response.getPayload().getAsJsonObject();
-
+        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetNode"));
         return new Node(responsePayload);
     }
 
     public JsonObject getNetworkInfo() throws ClientException {
-        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetNetworkInfo"));
-        JsonObject responsePayload = response.getPayload().getAsJsonObject();
-
+        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetNetworkInfo"));
         return responsePayload;
     }
 
     public int getNetworkId() throws ClientException {
-        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetNetworkId"));
-        Integer responsePayload = response.getPayload().getAsInt();
-
+        Integer responsePayload = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetNetworkId")).getAsInt();
         return responsePayload;
     }
 
     public String getBech32Hrp() throws ClientException {
-        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetBech32Hrp"));
-        String responsePayload = response.getPayload().getAsString();
-
+        String responsePayload = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetBech32Hrp")).getAsString();
         return responsePayload;
     }
 
     public float getMinPoWScore() throws ClientException {
-        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetMinPoWScore"));
-        Float responsePayload = response.getPayload().getAsFloat();
-
+        Float responsePayload = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetMinPoWScore")).getAsFloat();
         return responsePayload;
     }
 
     public int getTipsInterval() throws ClientException {
-        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetTipsInterval"));
-        Integer responsePayload = response.getPayload().getAsInt();
-
+        Integer responsePayload = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetTipsInterval")).getAsInt();
         return responsePayload;
     }
 
     public boolean isLocalPow() throws ClientException {
-        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetLocalPoW"));
-        Boolean responsePayload = response.getPayload().getAsBoolean();
-
+        Boolean responsePayload = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetLocalPoW")).getAsBoolean();
         return responsePayload;
     }
 
     public boolean isFallbackToLocalPoW() throws ClientException {
-        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetFallbackToLocalPoW"));
-        Boolean responsePayload = response.getPayload().getAsBoolean();
-
+        Boolean responsePayload = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetFallbackToLocalPoW")).getAsBoolean();
         return responsePayload;
     }
 
     public Node[] getUnsyncedNodes() throws ClientException {
-        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "UnsyncedNodes"));
-        JsonArray responsePayload = response.getPayload().getAsJsonArray();
+        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "UnsyncedNodes"));
 
         Node[] nodes = new Node[responsePayload.size()];
         for (int i = 0; i < responsePayload.size(); i++) {
             nodes[i] = new Node(responsePayload.get(i).getAsJsonObject());
         }
+
         return nodes;
     }
 
@@ -114,8 +95,7 @@ public class MiscellaneousApi extends BaseApi {
         o.add("secretManager", secretManager.getJson());
         o.add("generateAddressesOptions", generateAddressesOptions.getJson());
 
-        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "PrepareTransaction", o));
-        JsonObject responsePayload = response.getPayload().getAsJsonObject();
+        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "PrepareTransaction", o));
 
         return new PreparedTransactionData(responsePayload);
     }
@@ -125,8 +105,7 @@ public class MiscellaneousApi extends BaseApi {
         o.add("secretManager", secretManager.getJson());
         o.add("preparedTransactionData", preparedTransactionData.getJson());
 
-        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "SignTransaction", o));
-        JsonObject responsePayload = response.getPayload().getAsJsonObject();
+        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "SignTransaction", o));
 
         return new BlockPayload(responsePayload);
     }
@@ -136,15 +115,14 @@ public class MiscellaneousApi extends BaseApi {
         o.add("secretManager", secretManager.getJson());
         o.addProperty("mnemonic", mnemonic);
 
-        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "StoreMnemonic", o));
+        callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "StoreMnemonic", o));
     }
 
     public Block postBlockPayload(TransactionPayload payload) throws ClientException {
         JsonObject o = new JsonObject();
         o.add("payload", payload.getJson());
 
-        ClientResponse response = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "SubmitPayload", o));
-        JsonObject responsePayload = response.getPayload().getAsJsonObject();
+        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "SubmitPayload", o));
 
         return new Block(responsePayload);
     }

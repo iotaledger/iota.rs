@@ -21,27 +21,26 @@ public class BaseApi {
     static {
         String libraryPath = null;
 
-        if(SystemUtils.IS_OS_LINUX)
+        if (SystemUtils.IS_OS_LINUX)
             libraryPath = "/targets/linux/iota_client.so";
-        else if(SystemUtils.IS_OS_MAC)
+        else if (SystemUtils.IS_OS_MAC)
             libraryPath = "/targets/mac/iota_client.dylib";
-        else if(SystemUtils.IS_OS_WINDOWS)
+        else if (SystemUtils.IS_OS_WINDOWS)
             libraryPath = "/targets/windows/iota_client.dll";
-
-        if(libraryPath == null) {
-            throw new RuntimeException("OS not supported");
-        }
+        else throw new RuntimeException("OS not supported");
 
         try {
             NativeUtils.loadLibraryFromJar(libraryPath);
         } catch (IOException e) {
             e.printStackTrace();
+            throw new RuntimeException("cannot load native library");
         }
+
     }
 
     private static native String callNativeLibrary(String clientConfig, String clientCommand);
 
-    protected ClientResponse callBaseApi(ClientCommand command) throws ClientException {
+    protected JsonElement callBaseApi(ClientCommand command) throws ClientException {
         System.out.println(command);
         ClientResponse response = new Gson().fromJson(callNativeLibrary(clientConfig.toString(), command.toString()), ClientResponse.class);
         System.out.println(response);
@@ -53,7 +52,7 @@ public class BaseApi {
                 throw new ClientException(command.methodName, response.getPayload().getAsJsonObject().toString());
 
             default:
-                return response;
+                return response.getPayload();
         }
     }
 
@@ -62,7 +61,6 @@ public class BaseApi {
         private CommandType commandType;
         private String methodName;
         private JsonElement methodParams;
-
 
         public ClientCommand(CommandType commandType, String methodName) {
             this.commandType = commandType;

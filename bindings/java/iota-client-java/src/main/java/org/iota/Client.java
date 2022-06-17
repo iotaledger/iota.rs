@@ -170,11 +170,11 @@ public class Client {
         return highLevelApi.consolidateFunds(secretManager, accountIndex, addressRange);
     }
 
-    public OutputId[] findInputs(String[] addresses, int amount) throws ClientException {
+    public UtxoInput[] findInputs(String[] addresses, int amount) throws ClientException {
         return highLevelApi.findInputs(addresses, amount);
     }
 
-    public OutputId[] findOutputs(OutputId[] outputIds, String[] addresses) throws ClientException {
+    public Output[] findOutputs(OutputId[] outputIds, String[] addresses) throws ClientException {
         return highLevelApi.findOutputs(outputIds, addresses);
     }
 

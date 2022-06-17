@@ -1,7 +1,10 @@
 package org.iota;
 
 import org.iota.apis.NodeIndexerApi;
-import org.iota.types.*;
+import org.iota.types.Block;
+import org.iota.types.ClientException;
+import org.iota.types.Output;
+import org.iota.types.UtxoInput;
 import org.iota.types.ids.BlockId;
 import org.iota.types.ids.OutputId;
 import org.iota.types.secret.GenerateAddressesOptions;
@@ -63,8 +66,66 @@ public class HighLevelApiTest extends ApiTest {
         SecretManager secretManager = new MnemonicSecretManager(DEFAULT_DEVELOPMENT_MNEMONIC);
         String address = client.generateAddresses(secretManager, new GenerateAddressesOptions().withRange(0, 1))[0];
         requestFundsFromFaucet(address);
-        String consolidatedAddress = client.consolidateFunds(secretManager, 0, new Range(0,5));
+        String consolidatedAddress = client.consolidateFunds(secretManager, 0, new Range(0, 5));
         System.out.println(consolidatedAddress);
+    }
+
+    @Test
+    public void testFindInputs() throws ClientException {
+        SecretManager secretManager = new MnemonicSecretManager(DEFAULT_DEVELOPMENT_MNEMONIC);
+        String[] addresses = client.generateAddresses(secretManager, new GenerateAddressesOptions().withRange(0, 5));
+        requestFundsFromFaucet(addresses[0]);
+        UtxoInput[] inputs = client.findInputs(addresses, 1000);
+        for (UtxoInput id : inputs)
+            System.out.println(id);
+    }
+
+    @Test
+    public void testFindOutputs() throws ClientException {
+        SecretManager secretManager = new MnemonicSecretManager(DEFAULT_DEVELOPMENT_MNEMONIC);
+        String[] addresses = client.generateAddresses(secretManager, new GenerateAddressesOptions().withRange(0, 5));
+        requestFundsFromFaucet(addresses[0]);
+        Output[] outputs = client.findOutputs(new OutputId[]{}, addresses);
+        for (Output o : outputs)
+            System.out.println(o);
+    }
+
+    @Test
+    public void testReattach() {
+        assertThrows(
+                ClientException.class,
+                () -> {
+                    Map.Entry<BlockId, Block> entry = client.reattach(client.getTips()[0]);
+                    System.out.println(entry.getKey());
+                    System.out.println(entry.getValue());
+                }
+        );
+    }
+
+    @Test
+    public void testReattachUnchecked() throws ClientException {
+        Map.Entry<BlockId, Block> entry = client.reattachUnchecked(client.getTips()[0]);
+        System.out.println(entry.getKey());
+        System.out.println(entry.getValue());
+    }
+
+    @Test
+    public void testPromote() {
+        assertThrows(
+                ClientException.class,
+                () -> {
+                    Map.Entry<BlockId, Block> entry = client.promote(client.getTips()[0]);
+                    System.out.println(entry.getKey());
+                    System.out.println(entry.getValue());
+                }
+        );
+    }
+
+    @Test
+    public void testPromoteUnchecked() throws ClientException {
+        Map.Entry<BlockId, Block> entry = client.promoteUnchecked(client.getTips()[0]);
+        System.out.println(entry.getKey());
+        System.out.println(entry.getValue());
     }
 
 }
