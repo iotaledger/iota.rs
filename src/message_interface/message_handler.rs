@@ -1,6 +1,8 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+#[cfg(target_family = "wasm")]
+use std::sync::mpsc::Sender;
 use std::{any::Any, panic::AssertUnwindSafe};
 
 use backtrace::Backtrace;
@@ -14,6 +16,7 @@ use bee_block::{
     Block as BeeBlock, BlockDto,
 };
 use futures::{Future, FutureExt};
+#[cfg(not(target_family = "wasm"))]
 use tokio::sync::mpsc::UnboundedSender;
 use zeroize::Zeroize;
 
@@ -72,7 +75,35 @@ impl ClientMessageHandler {
     }
 
     /// Handle messages
+    #[cfg(not(target_family = "wasm"))]
     pub async fn handle(&self, mut message: Message, response_tx: UnboundedSender<Response>) {
+        let result: Result<Response> = match message {
+            Message::CallClientMethod(ref method) => {
+                convert_async_panics(|| async { self.call_client_method(method).await }).await
+            }
+        };
+
+        // Zeroize secrets as soon as their missions are finished.
+        match &mut message {
+            #[cfg(feature = "stronghold")]
+            Message::CallClientMethod(ClientMethod::StoreMnemonic { mnemonic, .. }) => mnemonic.zeroize(),
+            Message::CallClientMethod(ClientMethod::MnemonicToHexSeed { mnemonic }) => mnemonic.zeroize(),
+
+            // SecretManagerDto impl ZeroizeOnDrop, so we don't have to call zeroize() here.
+            _ => (),
+        };
+
+        let response = match result {
+            Ok(r) => r,
+            Err(e) => Response::Error(e),
+        };
+
+        let _ = response_tx.send(response);
+    }
+
+    /// Handle messages
+    #[cfg(target_family = "wasm")]
+    pub async fn handle(&self, mut message: Message, response_tx: Sender<Response>) {
         let result: Result<Response> = match message {
             Message::CallClientMethod(ref method) => {
                 convert_async_panics(|| async { self.call_client_method(method).await }).await
@@ -320,7 +351,7 @@ impl ClientMessageHandler {
                         .await?,
                 )))
             }
-            #[cfg(not(feature = "wasm"))]
+            #[cfg(not(target_family = "wasm"))]
             ClientMethod::UnsyncedNodes => Ok(Response::UnsyncedNodes(
                 self.client.unsynced_nodes().await.into_iter().cloned().collect(),
             )),
