@@ -15,9 +15,9 @@ name = "iota_client"
 crate-type = ["cdylib"]
 
 [dependencies]
+futures = { version = "0.3.21", default-features = false }
 iota-client = { path = "../../../..", features = ["message_interface"] }
 jni = "0.19.0"
 serde_json = { version = "1.0.81", default-features = false }
 tokio = { version = "1.18.2", default-features = false, features = ["macros"] }
 once_cell = { version = "1.10.0", default-features = false }
-futures = { version = "0.3.21", default-features = false }
