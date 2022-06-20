@@ -75,35 +75,12 @@ impl ClientMessageHandler {
     }
 
     /// Handle messages
-    #[cfg(not(target_family = "wasm"))]
-    pub async fn handle(&self, mut message: Message, response_tx: UnboundedSender<Response>) {
-        let result: Result<Response> = match message {
-            Message::CallClientMethod(ref method) => {
-                convert_async_panics(|| async { self.call_client_method(method).await }).await
-            }
-        };
-
-        // Zeroize secrets as soon as their missions are finished.
-        match &mut message {
-            #[cfg(feature = "stronghold")]
-            Message::CallClientMethod(ClientMethod::StoreMnemonic { mnemonic, .. }) => mnemonic.zeroize(),
-            Message::CallClientMethod(ClientMethod::MnemonicToHexSeed { mnemonic }) => mnemonic.zeroize(),
-
-            // SecretManagerDto impl ZeroizeOnDrop, so we don't have to call zeroize() here.
-            _ => (),
-        };
-
-        let response = match result {
-            Ok(r) => r,
-            Err(e) => Response::Error(e),
-        };
-
-        let _ = response_tx.send(response);
-    }
-
-    /// Handle messages
-    #[cfg(target_family = "wasm")]
-    pub async fn handle(&self, mut message: Message, response_tx: Sender<Response>) {
+    pub async fn handle(
+        &self,
+        mut message: Message,
+        #[cfg(target_family = "wasm")] response_tx: Sender<Response>,
+        #[cfg(not(target_family = "wasm"))] response_tx: UnboundedSender<Response>,
+    ) {
         let result: Result<Response> = match message {
             Message::CallClientMethod(ref method) => {
                 convert_async_panics(|| async { self.call_client_method(method).await }).await
