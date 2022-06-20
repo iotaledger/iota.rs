@@ -132,7 +132,7 @@ impl StrongholdAdapterBuilder {
     ///
     /// [`password()`]: Self::password()
     /// [`timeout()`]: Self::timeout()
-    pub fn build(mut self, snapshot_path: PathBuf) -> StrongholdAdapter {
+    pub fn try_build(mut self, snapshot_path: PathBuf) -> Result<StrongholdAdapter> {
         // In any case, Stronghold - as a necessary component - needs to be present at this point.
         let stronghold = if let Some(stronghold) = self.stronghold {
             stronghold
@@ -170,14 +170,14 @@ impl StrongholdAdapterBuilder {
         // TODO load snapshot
 
         // Create the adapter as per configuration and return it.
-        StrongholdAdapter {
+        Ok(StrongholdAdapter {
             stronghold,
             key: self.key.unwrap_or_else(|| Arc::new(Mutex::new(None))),
             timeout: self.timeout.unwrap_or(None),
             timeout_task: self.timeout_task.unwrap_or_else(|| Arc::new(Mutex::new(None))),
             snapshot_path,
             snapshot_loaded: false,
-        }
+        })
     }
 }
 
@@ -522,7 +522,8 @@ mod tests {
         let mut adapter = StrongholdAdapter::builder()
             .password("drowssap")
             .timeout(timeout)
-            .build(stronghold_path);
+            .try_build(stronghold_path)
+            .unwrap();
 
         // There is a small delay between `build()` and the key clearing task being actually spawned and kept.
         tokio::time::sleep(Duration::from_millis(10)).await;
@@ -562,7 +563,10 @@ mod tests {
     #[tokio::test]
     async fn stronghold_password_already_set() {
         let stronghold_path = PathBuf::from("test.stronghold");
-        let mut adapter = StrongholdAdapter::builder().password("drowssap").build(stronghold_path);
+        let mut adapter = StrongholdAdapter::builder()
+            .password("drowssap")
+            .try_build(stronghold_path)
+            .unwrap();
 
         // When the password already exists, it should fail
         assert!(adapter.set_password("drowssap").await.is_err());

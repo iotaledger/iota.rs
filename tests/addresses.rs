@@ -193,7 +193,8 @@ async fn address_generation() {
         let stronghold_filename = format!("{}.stronghold", address.bech32_address);
         let mut stronghold_secret_manager = StrongholdSecretManager::builder()
             .password("some_hopefully_secure_password")
-            .build(PathBuf::from(stronghold_filename.to_string()));
+            .try_build(PathBuf::from(stronghold_filename.to_string()))
+            .unwrap();
 
         stronghold_secret_manager
             .store_mnemonic(address.mnemonic.to_string())

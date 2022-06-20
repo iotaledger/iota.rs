@@ -18,7 +18,7 @@ use iota_client::{
 async fn main() -> Result<()> {
     let mut stronghold_secret_manager = StrongholdSecretManager::builder()
         .password("some_hopefully_secure_password")
-        .build(PathBuf::from("test.stronghold"));
+        .try_build(PathBuf::from("test.stronghold"))?;
 
     // This example uses dotenv, which is not safe for use in production
     dotenv().ok();
