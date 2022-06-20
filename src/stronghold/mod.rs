@@ -143,11 +143,18 @@ impl StrongholdAdapterBuilder {
         if let Some(key) = &self.key {
             // TODO I don't think this.
             let key_provider = KeyProvider::try_from((**key).clone())?;
-            stronghold.load_client_from_snapshot(
+            let result = stronghold.load_client_from_snapshot(
                 PRIVATE_DATA_CLIENT_PATH,
                 &key_provider,
                 &SnapshotPath::from_path(&snapshot_path),
-            )?;
+            );
+            if let Err(iota_stronghold::ClientError::Inner(err_msg)) = result {
+                // TODO: replace with actual error matching when updated to the new Stronghold version
+                // TODO: but the error is not an enum
+                if !err_msg.to_string().contains("I/O error") {
+                    return Err(iota_stronghold::ClientError::Inner(err_msg).into());
+                }
+            }
         }
 
         let stronghold = Arc::new(Mutex::new(stronghold));
