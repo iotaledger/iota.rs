@@ -163,10 +163,12 @@ impl SecretManageExt for LedgerSecretManager {
                 None => return Err(crate::Error::NoInputs),
             };
             // coin_type and account_index should be the same in each output
-            assert!(
-                (coin_type.is_none() || coin_type == Some(bip32_indices[0]))
-                    && (account_index.is_none() || account_index == Some(bip32_indices[1]))
-            );
+            if (coin_type.is_some() && coin_type != Some(bip32_indices[0]))
+                || (account_index.is_some() && account_index != Some(bip32_indices[1]))
+            {
+                return Err(crate::Error::InvalidBIP32ChainData);
+            }
+
             coin_type = Some(bip32_indices[1]);
             account_index = Some(bip32_indices[2]);
             input_bip32_indices.push(iota_ledger::LedgerBIP32Index {
@@ -175,7 +177,9 @@ impl SecretManageExt for LedgerSecretManager {
             });
         }
 
-        assert!(coin_type.is_some() && account_index.is_some());
+        if coin_type.is_none() || account_index.is_none() {
+            return Err(crate::Error::NoInputs);
+        }
 
         // unwrap values
         let coin_type = coin_type.unwrap() & !HARDENED;
@@ -212,8 +216,7 @@ impl SecretManageExt for LedgerSecretManager {
                                 .map(|seg| u32::from_be_bytes(seg.bs()))
                                 .collect()
                         }
-                        // todo error
-                        None => return Err(crate::Error::NoInputs),
+                        None => return Err(crate::Error::InvalidBIP32ChainData),
                     };
                     (
                         true,
