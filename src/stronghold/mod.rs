@@ -69,6 +69,7 @@ use crate::{db::DatabaseProvider, Error, Result};
 #[builder(pattern = "owned", build_fn(skip))]
 pub struct StrongholdAdapter {
     /// A stronghold instance.
+    #[builder(field(type = "Option<Stronghold>"))]
     stronghold: Arc<Mutex<Stronghold>>,
 
     /// A key to open the Stronghold vault.
@@ -79,6 +80,7 @@ pub struct StrongholdAdapter {
     ///
     /// [`password()`]: self::StrongholdAdapterBuilder::password()
     #[builder(setter(custom))]
+    #[builder(field(type = "Option<EncryptionKey>"))]
     key: Arc<Mutex<Option<EncryptionKey>>>,
 
     /// An interval of time, after which `key` will be cleared from the memory.
@@ -111,9 +113,7 @@ impl StrongholdAdapterBuilder {
     /// Use an user-input password string to derive a key to use Stronghold.
     pub fn password(mut self, password: &str) -> Self {
         // Note that derive_builder always adds another layer of Option<T>.
-        self.key = Some(Arc::new(Mutex::new(Some(self::common::derive_key_from_password(
-            password,
-        )))));
+        self.key = Some(self::common::derive_key_from_password(password));
 
         self
     }
@@ -137,11 +137,25 @@ impl StrongholdAdapterBuilder {
         let stronghold = if let Some(stronghold) = self.stronghold {
             stronghold
         } else {
-            Arc::new(Mutex::new(Stronghold::default()))
+            Stronghold::default()
         };
 
+        if let Some(key) = &self.key {
+            // TODO I don't think this.
+            let key_provider = KeyProvider::try_from((**key).clone())?;
+            stronghold.load_client_from_snapshot(
+                PRIVATE_DATA_CLIENT_PATH,
+                &key_provider,
+                &SnapshotPath::from_path(&snapshot_path),
+            )?;
+        }
+
+        let stronghold = Arc::new(Mutex::new(stronghold));
+        let has_key = self.key.is_some();
+        let key = Arc::new(Mutex::new(self.key));
+
         // If both `key` and `timeout` are set, then we spawn the task and keep its join handle.
-        if let (Some(key), Some(Some(timeout))) = (&self.key, self.timeout) {
+        if let (true, Some(Some(timeout))) = (has_key, self.timeout) {
             let timeout_task = Arc::new(Mutex::new(None));
 
             // The key clearing task, with the data it owns.
@@ -166,13 +180,10 @@ impl StrongholdAdapterBuilder {
             self.timeout_task = Some(timeout_task);
         }
 
-        // let client_path = PRIVATE_DATA_CLIENT_PATH.to_vec();
-        // TODO load snapshot
-
         // Create the adapter as per configuration and return it.
         Ok(StrongholdAdapter {
             stronghold,
-            key: self.key.unwrap_or_else(|| Arc::new(Mutex::new(None))),
+            key,
             timeout: self.timeout.unwrap_or(None),
             timeout_task: self.timeout_task.unwrap_or_else(|| Arc::new(Mutex::new(None))),
             snapshot_path,
