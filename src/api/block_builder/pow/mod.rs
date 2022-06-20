@@ -113,7 +113,7 @@ pub async fn finish_single_thread_pow(
     payload: Option<bee_block::payload::Payload>,
     target_score: f64,
 ) -> crate::Result<Block> {
-    let parent_blocks = match parent_blocks {
+    let mut parent_blocks = match parent_blocks {
         Some(parents) => parents,
         None => client.get_tips().await?,
     };

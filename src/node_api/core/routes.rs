@@ -126,7 +126,7 @@ impl Client {
                             let min_pow_score = self.get_min_pow_score().await?;
                             let network_id = self.get_network_id().await?;
                             crate::api::finish_single_thread_pow(
-                                client,
+                                self,
                                 network_id,
                                 None,
                                 block.payload().cloned(),
@@ -209,7 +209,7 @@ impl Client {
                             let min_pow_score = self.get_min_pow_score().await?;
                             let network_id = self.get_network_id().await?;
                             crate::api::finish_single_thread_pow(
-                                client,
+                                self,
                                 network_id,
                                 None,
                                 block.payload().cloned(),

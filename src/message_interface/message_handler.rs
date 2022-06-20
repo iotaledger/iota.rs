@@ -1,6 +1,8 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+#[cfg(target_family = "wasm")]
+use std::sync::mpsc::Sender;
 use std::{any::Any, panic::AssertUnwindSafe};
 
 use backtrace::Backtrace;
@@ -14,6 +16,7 @@ use bee_block::{
     Block as BeeBlock, BlockDto,
 };
 use futures::{Future, FutureExt};
+#[cfg(not(target_family = "wasm"))]
 use tokio::sync::mpsc::UnboundedSender;
 use zeroize::Zeroize;
 
@@ -72,7 +75,12 @@ impl ClientMessageHandler {
     }
 
     /// Handle messages
-    pub async fn handle(&self, mut message: Message, response_tx: UnboundedSender<Response>) {
+    pub async fn handle(
+        &self,
+        mut message: Message,
+        #[cfg(target_family = "wasm")] response_tx: Sender<Response>,
+        #[cfg(not(target_family = "wasm"))] response_tx: UnboundedSender<Response>,
+    ) {
         let result: Result<Response> = match message {
             Message::CallClientMethod(ref method) => {
                 convert_async_panics(|| async { self.call_client_method(method).await }).await
@@ -320,7 +328,7 @@ impl ClientMessageHandler {
                         .await?,
                 )))
             }
-            #[cfg(not(feature = "wasm"))]
+            #[cfg(not(target_family = "wasm"))]
             ClientMethod::UnsyncedNodes => Ok(Response::UnsyncedNodes(
                 self.client.unsynced_nodes().await.into_iter().cloned().collect(),
             )),

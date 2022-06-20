@@ -171,6 +171,9 @@ impl NodeManager {
                                 warn!("Couldn't convert noderesult to text");
                             }
                         }
+                        Err(Error::ResponseError(s, _, _)) if s == 404 => {
+                            error.replace(crate::Error::NotFound);
+                        }
                         Err(err) => {
                             error.replace(err);
                         }
@@ -223,6 +226,7 @@ impl NodeManager {
                                         }
                                     }
                                 }
+
                                 _ => {
                                     error.replace(crate::Error::NodeError(res_text));
                                 }
@@ -230,6 +234,9 @@ impl NodeManager {
                         } else {
                             warn!("Couldn't convert noderesult to text");
                         }
+                    }
+                    Err(Error::ResponseError(s, _, _)) if s == 404 => {
+                        error.replace(crate::Error::NotFound);
                     }
                     Err(err) => {
                         error.replace(err);
@@ -283,8 +290,11 @@ impl NodeManager {
                         };
                     }
                 }
-                Err(e) => {
-                    error.replace(crate::Error::NodeError(e.to_string()));
+                Err(Error::ResponseError(s, _, _)) if s == 404 => {
+                    error.replace(crate::Error::NotFound);
+                }
+                Err(err) => {
+                    error.replace(err);
                 }
             }
         }

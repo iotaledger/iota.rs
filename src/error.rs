@@ -239,6 +239,9 @@ pub enum Error {
     /// Invalid BIP32 chain data
     #[error("Invalid BIP32 chain data")]
     InvalidBIP32ChainData,
+    /// The requested data was not found.
+    #[error("The requested data was not found.")]
+    NotFound,
 }
 
 // map most errors to a single error but there are some errors that
