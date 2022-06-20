@@ -18,7 +18,7 @@ impl Client {
         let mut outputs = Vec::new();
         #[cfg(target_family = "wasm")]
         for output_id in output_ids {
-            outputs.push(client.get_output(&output_id).await?);
+            outputs.push(self.get_output(&output_id).await?);
         }
         #[cfg(not(target_family = "wasm"))]
         for output_ids_chunk in output_ids
@@ -51,7 +51,7 @@ impl Client {
         let mut outputs = Vec::new();
         #[cfg(target_family = "wasm")]
         for output_id in output_ids {
-            if let Ok(output_response) = get_output(client, &output_id).await {
+            if let Ok(output_response) = self.get_output(&output_id).await {
                 outputs.push(output_response);
             }
         }
