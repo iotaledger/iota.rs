@@ -32,17 +32,21 @@ use primitive_types::U256;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    // Create a client instance.
-    let client = Client::builder()
-        .with_node("http://localhost:14265")?
-        .with_node_sync_disabled()
-        .finish()
-        .await?;
-
     // This example uses dotenv, which is not safe for use in production!
     // Configure your own mnemonic in the ".env" file. Since the output amount cannot be zero, the seed must contain
     // non-zero balance.
     dotenv().ok();
+
+    let node_url = env::var("NODE_URL").unwrap();
+    let faucet_url = env::var("FAUCET_URL").unwrap();
+
+    // Create a client instance.
+    let client = Client::builder()
+        .with_node(&node_url)?
+        .with_node_sync_disabled()
+        .finish()
+        .await?;
+
     let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
         &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
     )?);
@@ -50,11 +54,7 @@ async fn main() -> Result<()> {
     let address = client.get_addresses(&secret_manager).with_range(0..1).get_raw().await?[0];
     println!(
         "{}",
-        request_funds_from_faucet(
-            "http://localhost:8091/api/enqueue",
-            &address.to_bech32(SHIMMER_TESTNET_BECH32_HRP),
-        )
-        .await?
+        request_funds_from_faucet(&faucet_url, &address.to_bech32(SHIMMER_TESTNET_BECH32_HRP)).await?
     );
     tokio::time::sleep(std::time::Duration::from_secs(20)).await;
 
@@ -95,7 +95,11 @@ async fn main() -> Result<()> {
     //////////////////////////////////////////////////
     let alias_output_id = get_alias_output_id(block.payload().unwrap());
     let alias_id = AliasId::from(alias_output_id);
-    let token_scheme = TokenScheme::Simple(SimpleTokenScheme::new(U256::from(70), U256::from(0), U256::from(100))?);
+    let token_scheme = TokenScheme::Simple(SimpleTokenScheme::new(
+        U256::from(70u8),
+        U256::from(0u8),
+        U256::from(100u8),
+    )?);
     let foundry_id = FoundryId::build(
         &AliasAddress::from(AliasId::from(alias_output_id)),
         1,
@@ -117,7 +121,7 @@ async fn main() -> Result<()> {
             )))
             .finish_output()?,
         FoundryOutputBuilder::new_with_amount(1_000_000, 1, token_scheme)?
-            .add_native_token(NativeToken::new(token_id, U256::from(70))?)
+            .add_native_token(NativeToken::new(token_id, U256::from(70u8))?)
             .add_unlock_condition(UnlockCondition::ImmutableAliasAddress(
                 ImmutableAliasAddressUnlockCondition::new(AliasAddress::from(alias_id)),
             ))
@@ -159,9 +163,13 @@ async fn main() -> Result<()> {
         FoundryOutputBuilder::new_with_amount(
             1_000_000,
             1,
-            TokenScheme::Simple(SimpleTokenScheme::new(U256::from(70), U256::from(20), U256::from(100))?),
+            TokenScheme::Simple(SimpleTokenScheme::new(
+                U256::from(70u8),
+                U256::from(20u8),
+                U256::from(100u8),
+            )?),
         )?
-        .add_native_token(NativeToken::new(token_id, U256::from(50))?)
+        .add_native_token(NativeToken::new(token_id, U256::from(50u8))?)
         .add_unlock_condition(UnlockCondition::ImmutableAliasAddress(
             ImmutableAliasAddressUnlockCondition::new(AliasAddress::from(alias_id)),
         ))
@@ -204,7 +212,11 @@ async fn main() -> Result<()> {
         FoundryOutputBuilder::new_with_amount(
             1_000_000,
             1,
-            TokenScheme::Simple(SimpleTokenScheme::new(U256::from(70), U256::from(20), U256::from(100))?),
+            TokenScheme::Simple(SimpleTokenScheme::new(
+                U256::from(70u8),
+                U256::from(20u8),
+                U256::from(100u8),
+            )?),
         )?
         .add_unlock_condition(UnlockCondition::ImmutableAliasAddress(
             ImmutableAliasAddressUnlockCondition::new(AliasAddress::from(alias_id)),
@@ -212,7 +224,7 @@ async fn main() -> Result<()> {
         .finish_output()?,
         BasicOutputBuilder::new_with_amount(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-            .add_native_token(NativeToken::new(token_id, U256::from(50))?)
+            .add_native_token(NativeToken::new(token_id, U256::from(50u8))?)
             .finish_output()?,
     ];
 
@@ -245,7 +257,7 @@ async fn main() -> Result<()> {
     let outputs = vec![
         BasicOutputBuilder::new_with_amount(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-            .add_native_token(NativeToken::new(token_id, U256::from(50))?)
+            .add_native_token(NativeToken::new(token_id, U256::from(50u8))?)
             .finish_output()?,
     ];
 
@@ -269,7 +281,7 @@ async fn main() -> Result<()> {
     let outputs = vec![
         BasicOutputBuilder::new_with_amount(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-            .add_native_token(NativeToken::new(token_id, U256::from(30))?)
+            .add_native_token(NativeToken::new(token_id, U256::from(30u8))?)
             .finish_output()?,
     ];
 

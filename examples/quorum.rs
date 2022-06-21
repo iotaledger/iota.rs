@@ -17,9 +17,14 @@ use iota_client::{
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    // This example uses dotenv, which is not safe for use in production
+    dotenv().ok();
+
+    let node_url = env::var("NODE_URL").unwrap();
+
     let client = Client::builder()
         .with_node("https://api.lb-0.h.chrysalis-devnet.iota.cafe/")?
-        .with_node("http://localhost:14265")?
+        .with_node(&node_url)?
         .with_node("https://api.thin-hornet-1.h.chrysalis-devnet.iota.cafe/")?
         .with_quorum(true)
         .with_min_quorum_size(3)
@@ -27,8 +32,6 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
 
-    // This example uses dotenv, which is not safe for use in production
-    dotenv().ok();
     let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
         &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
     )?);

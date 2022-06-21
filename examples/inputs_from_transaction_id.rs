@@ -3,14 +3,21 @@
 
 //! cargo run --example inputs_from_transaction_id --release
 
+use std::env;
+
+use dotenv::dotenv;
 use iota_client::{bee_block::payload::transaction::TransactionId, Client, Result};
 
 /// In this example we will fetch all inputs from a given transaction id.
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    dotenv().ok();
+
+    let node_url = env::var("NODE_URL").unwrap();
+
     let client = Client::builder()
-        .with_node("http://localhost:14265")?
+        .with_node(&node_url)?
         .with_node_sync_disabled()
         .finish()
         .await?;

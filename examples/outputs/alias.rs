@@ -27,47 +27,45 @@ use iota_client::{
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    // Create a client instance.
-    let client = Client::builder()
-        .with_node("http://localhost:14265")?
-        .with_node_sync_disabled()
-        .finish()
-        .await?;
-
     // This example uses dotenv, which is not safe for use in production!
     // Configure your own mnemonic in the ".env" file. Since the output amount cannot be zero, the seed must contain
     // non-zero balance.
     dotenv().ok();
+
+    let node_url = env::var("NODE_URL").unwrap();
+    let faucet_url = env::var("FAUCET_URL").unwrap();
+
+    // Create a client instance.
+    let client = Client::builder()
+        .with_node(&node_url)?
+        .with_node_sync_disabled()
+        .finish()
+        .await?;
+
     let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
         &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
     )?);
 
     let address = client.get_addresses(&secret_manager).with_range(0..1).get_raw().await?[0];
-    request_funds_from_faucet(
-        "http://localhost:8091/api/enqueue",
-        &address.to_bech32(SHIMMER_TESTNET_BECH32_HRP),
-    )
-    .await?;
+    request_funds_from_faucet(&faucet_url, &address.to_bech32(SHIMMER_TESTNET_BECH32_HRP)).await?;
     tokio::time::sleep(std::time::Duration::from_secs(15)).await;
 
     //////////////////////////////////
     // create new alias output
     //////////////////////////////////
-    let outputs = vec![
-        AliasOutputBuilder::new_with_amount(1_000_000, AliasId::null())?
-            .with_state_index(0)
-            .with_foundry_counter(0)
-            .add_feature(Feature::Sender(SenderFeature::new(address)))
-            .add_feature(Feature::Metadata(MetadataFeature::new(vec![1, 2, 3])?))
-            .add_immutable_feature(Feature::Issuer(IssuerFeature::new(address)))
-            .add_unlock_condition(UnlockCondition::StateControllerAddress(
-                StateControllerAddressUnlockCondition::new(address),
-            ))
-            .add_unlock_condition(UnlockCondition::GovernorAddress(GovernorAddressUnlockCondition::new(
-                address,
-            )))
-            .finish_output()?,
-    ];
+    let outputs = vec![AliasOutputBuilder::new_with_amount(1_000_000, AliasId::null())?
+        .with_state_index(0)
+        .with_foundry_counter(0)
+        .add_feature(Feature::Sender(SenderFeature::new(address)))
+        .add_feature(Feature::Metadata(MetadataFeature::new(vec![1, 2, 3])?))
+        .add_immutable_feature(Feature::Issuer(IssuerFeature::new(address)))
+        .add_unlock_condition(UnlockCondition::StateControllerAddress(
+            StateControllerAddressUnlockCondition::new(address),
+        ))
+        .add_unlock_condition(UnlockCondition::GovernorAddress(GovernorAddressUnlockCondition::new(
+            address,
+        )))
+        .finish_output()?];
 
     let block = client
         .block()
@@ -87,21 +85,19 @@ async fn main() -> Result<()> {
     //////////////////////////////////
     let alias_output_id = get_alias_output_id(block.payload().unwrap());
     let alias_id = AliasId::from(alias_output_id);
-    let outputs = vec![
-        AliasOutputBuilder::new_with_amount(1_000_000, alias_id)?
-            .with_state_index(1)
-            .with_foundry_counter(0)
-            .add_feature(Feature::Sender(SenderFeature::new(address)))
-            .add_feature(Feature::Metadata(MetadataFeature::new(vec![1, 2, 3])?))
-            .add_immutable_feature(Feature::Issuer(IssuerFeature::new(address)))
-            .add_unlock_condition(UnlockCondition::StateControllerAddress(
-                StateControllerAddressUnlockCondition::new(address),
-            ))
-            .add_unlock_condition(UnlockCondition::GovernorAddress(GovernorAddressUnlockCondition::new(
-                address,
-            )))
-            .finish_output()?,
-    ];
+    let outputs = vec![AliasOutputBuilder::new_with_amount(1_000_000, alias_id)?
+        .with_state_index(1)
+        .with_foundry_counter(0)
+        .add_feature(Feature::Sender(SenderFeature::new(address)))
+        .add_feature(Feature::Metadata(MetadataFeature::new(vec![1, 2, 3])?))
+        .add_immutable_feature(Feature::Issuer(IssuerFeature::new(address)))
+        .add_unlock_condition(UnlockCondition::StateControllerAddress(
+            StateControllerAddressUnlockCondition::new(address),
+        ))
+        .add_unlock_condition(UnlockCondition::GovernorAddress(GovernorAddressUnlockCondition::new(
+            address,
+        )))
+        .finish_output()?];
 
     let block = client
         .block()
