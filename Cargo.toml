@@ -13,9 +13,9 @@ categories = [ "cryptography::cryptocurrencies" ]
 
 [dependencies]
 async-trait = { version = "0.1.56", default-features = false }
-bee-block = { git = "https://github.com/iotaledger/bee", rev = "bdc6a94b0248861474817059e15543d5c29b0d72", default-features = false, features = [ "serde", "dto" ] }
-bee-rest-api = { git = "https://github.com/iotaledger/bee", rev = "bdc6a94b0248861474817059e15543d5c29b0d72", default-features = false }
-bee-pow = { git = "https://github.com/iotaledger/bee", rev = "bdc6a94b0248861474817059e15543d5c29b0d72", default-features = false }
+bee-block = { git = "https://github.com/iotaledger/bee", rev = "99da0f12d8fc11a2b1e67a8a69737d1d8f8ec2b6", default-features = false, features = [ "serde", "dto" ] }
+bee-rest-api = { git = "https://github.com/iotaledger/bee", rev = "99da0f12d8fc11a2b1e67a8a69737d1d8f8ec2b6", default-features = false }
+bee-pow = { git = "https://github.com/iotaledger/bee", rev = "99da0f12d8fc11a2b1e67a8a69737d1d8f8ec2b6", default-features = false }
 derive_builder = { version = "0.11.2", default-features = false, features = [ "std" ]}
 fern-logger = { version = "0.5.0", default-features = false }
 futures = { version = "0.3.21", default-features = false, features = [ "thread-pool" ] }

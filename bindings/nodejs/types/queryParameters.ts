@@ -12,13 +12,9 @@ export type QueryParameter =
     | HasTimelockCondition
     | TimelockedBefore
     | TimelockedAfter
-    | TimelockedBeforeMilestone
-    | TimelockedAfterMilestone
     | HasExpirationCondition
     | ExpiresBefore
     | ExpiresAfter
-    | ExpiresBeforeMilestone
-    | ExpiresAfterMilestone
     | ExpirationReturnAddress
     | Sender
     | Tag
@@ -47,13 +43,9 @@ export type NftQueryParameter =
     | HasTimelockCondition
     | TimelockedBefore
     | TimelockedAfter
-    | TimelockedBeforeMilestone
-    | TimelockedAfterMilestone
     | HasExpirationCondition
     | ExpiresBefore
     | ExpiresAfter
-    | ExpiresBeforeMilestone
-    | ExpiresAfterMilestone
     | ExpirationReturnAddress
     | Sender
     | Tag
@@ -99,14 +91,7 @@ interface TimelockedBefore {
 interface TimelockedAfter {
     timelockedAfter: number;
 }
-/** Return outputs that are timelocked before a certain milestone index. */
-interface TimelockedBeforeMilestone {
-    timelockedBeforeMilestone: number;
-}
-/** Return outputs that are timelocked ater a certain milestone index. */
-interface TimelockedAfterMilestone {
-    timelockedAfterMilestone: number;
-}
+
 /** Filters outputs based on the presence of expiration unlock condition. */
 interface HasExpirationCondition {
     hasExpirationCondition: boolean;
@@ -130,14 +115,6 @@ interface ExpiresBefore {
 /** Return outputs that expire after a certain Unix timestamp. */
 interface ExpiresAfter {
     expiresAfter: number;
-}
-/** Return outputs that expire before a certain milestone index. */
-interface ExpiresBeforeMilestone {
-    expiresBeforeMilestone: number;
-}
-/** Return outputs that expire after a certain milestone index. */
-interface ExpiresAfterMilestone {
-    expiresAfterMilestone: number;
 }
 /** Filter outputs based on the presence of a specific Bech32-encoded return
  * address in the expiration unlock condition.

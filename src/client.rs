@@ -730,8 +730,9 @@ impl Client {
         Ok((block_id, block))
     }
 
-    /// Returns checked local time and milestone index.
-    pub async fn get_time_and_milestone_checked(&self) -> Result<(u32, u32)> {
+    /// Returns the local time checked with the timestamp of the latest milestone, if the difference is larger than 5
+    /// minutes an error is returned to prevent locking outputs by accident for a wrong time.
+    pub async fn get_time_checked(&self) -> Result<u32> {
         let local_time = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .expect("Time went backwards")
@@ -744,7 +745,7 @@ impl Client {
         {
             return Err(Error::TimeNotSynced(local_time, latest_ms_timestamp));
         }
-        Ok((local_time, status_response.latest_milestone.index))
+        Ok(local_time)
     }
 
     //////////////////////////////////////////////////////////////////////
