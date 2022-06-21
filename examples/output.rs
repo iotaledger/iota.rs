@@ -54,14 +54,8 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
 
-    println!(
-        "Transaction sent: http://localhost:14265/api/core/v2/blocks/{}",
-        block.id()
-    );
-    println!(
-        "Block metadata: http://localhost:14265/api/core/v2/blocks/{}/metadata",
-        block.id()
-    );
+    println!("Transaction sent: {node_url}/api/core/v2/blocks/{}", block.id());
+    println!("Block metadata: {node_url}/api/core/v2/blocks/{}/metadata", block.id());
 
     // conflict reasons from https://github.com/gohornet/hornet/blob/4cd911a5aaed017c31a2093fc27bf4d06182ac67/pkg/model/storage/block_metadata.go#L31
     // 	// ConflictInputUTXOAlreadySpent the referenced UTXO was already spent.

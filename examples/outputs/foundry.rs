@@ -85,7 +85,7 @@ async fn main() -> Result<()> {
         .await?;
 
     println!(
-        "Transaction with new alias output sent: http://localhost:14265/api/core/v2/blocks/{}",
+        "Transaction with new alias output sent: {node_url}/api/core/v2/blocks/{}",
         block.id()
     );
     let _ = client.retry_until_included(&block.id(), None, None).await?;
@@ -136,7 +136,7 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
     println!(
-        "Transaction with foundry output sent: http://localhost:14265/api/core/v2/blocks/{}",
+        "Transaction with foundry output sent: {node_url}/api/core/v2/blocks/{}",
         block.id()
     );
     let _ = client.retry_until_included(&block.id(), None, None).await?;
@@ -185,7 +185,7 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
     println!(
-        "Transaction with native tokens burnt sent: http://localhost:14265/api/core/v2/blocks/{}",
+        "Transaction with native tokens burnt sent: {node_url}/api/core/v2/blocks/{}",
         block.id()
     );
     let _ = client.retry_until_included(&block.id(), None, None).await?;
@@ -245,7 +245,7 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
     println!(
-        "Transaction with native tokens sent: http://localhost:14265/api/core/v2/blocks/{}",
+        "Transaction with native tokens sent: {node_url}/api/core/v2/blocks/{}",
         block.id()
     );
     let _ = client.retry_until_included(&block.id(), None, None).await?;
@@ -269,7 +269,7 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
     println!(
-        "Second transaction with native tokens sent: http://localhost:14265/api/core/v2/blocks/{}",
+        "Second transaction with native tokens sent: {node_url}/api/core/v2/blocks/{}",
         block.id()
     );
     let _ = client.retry_until_included(&block.id(), None, None).await?;
@@ -294,7 +294,7 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
     println!(
-        "Third transaction with native tokens burned sent: http://localhost:14265/api/core/v2/blocks/{}",
+        "Third transaction with native tokens burned sent: {node_url}/api/core/v2/blocks/{}",
         block.id()
     );
     let _ = client.retry_until_included(&block.id(), None, None).await?;

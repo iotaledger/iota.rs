@@ -54,9 +54,6 @@ async fn main() -> Result<()> {
     }
     let block = block_builder.finish().await?;
 
-    println!(
-        "Transaction sent: http://localhost:14265/api/core/v2/blocks/{}",
-        block.id()
-    );
+    println!("Transaction sent: {node_url}/api/core/v2/blocks/{}", block.id());
     Ok(())
 }

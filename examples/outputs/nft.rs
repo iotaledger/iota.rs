@@ -69,7 +69,7 @@ async fn main() -> Result<()> {
         .await?;
 
     println!(
-        "Transaction with new NFT output sent: http://localhost:14265/api/core/v2/blocks/{}",
+        "Transaction with new NFT output sent: {node_url}/api/core/v2/blocks/{}",
         block.id()
     );
     let _ = client.retry_until_included(&block.id(), None, None).await?;
@@ -85,11 +85,7 @@ async fn main() -> Result<()> {
     println!("bech32_nft_address {bech32_nft_address}");
     println!(
         "Faucet request {:?}",
-<<<<<<< HEAD
-        request_funds_from_faucet("http://localhost:8091/api/enqueue", &bech32_nft_address,).await?
-=======
-        request_funds_from_faucet(&faucet_url, &bech32_nft_address,).await?
->>>>>>> cd26ee26 (use `dotenv` for urls too)
+        request_funds_from_faucet(&faucet_url, &bech32_nft_address).await?
     );
     tokio::time::sleep(std::time::Duration::from_secs(20)).await;
 
@@ -113,7 +109,7 @@ async fn main() -> Result<()> {
         .await?;
 
     println!(
-        "Transaction with input(basic output) to NFT output sent: http://localhost:14265/api/core/v2/blocks/{}",
+        "Transaction with input(basic output) to NFT output sent: {node_url}/api/core/v2/blocks/{}",
         block.id()
     );
 
@@ -138,10 +134,7 @@ async fn main() -> Result<()> {
         .with_outputs(outputs)?
         .finish()
         .await?;
-    println!(
-        "Burn transaction sent: http://localhost:14265/api/core/v2/blocks/{}",
-        block.id()
-    );
+    println!("Burn transaction sent: {node_url}/api/core/v2/blocks/{}", block.id());
     let _ = client.retry_until_included(&block.id(), None, None).await?;
     Ok(())
 }

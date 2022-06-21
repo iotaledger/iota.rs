@@ -64,14 +64,8 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
 
-    println!(
-        "Transaction sent: http://localhost:14265/api/core/v2/blocks/{}",
-        block.id()
-    );
-    println!(
-        "Block metadata: http://localhost:14265/api/core/v2/blocks/{}/metadata",
-        block.id()
-    );
+    println!("Transaction sent: {node_url}/api/core/v2/blocks/{}", block.id());
+    println!("Block metadata: {node_url}/api/core/v2/blocks/{}/metadata", block.id());
 
     Ok(())
 }
