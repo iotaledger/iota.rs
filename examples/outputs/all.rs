@@ -222,7 +222,9 @@ async fn main() -> Result<()> {
 
     // get additional input for the new basic output
     let output_ids = client
-        .basic_output_ids(vec![QueryParameter::Address(address.to_bech32("rms"))])
+        .basic_output_ids(vec![QueryParameter::Address(
+            address.to_bech32(SHIMMER_TESTNET_BECH32_HRP),
+        )])
         .await?;
 
     let block = client
