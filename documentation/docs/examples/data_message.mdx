@@ -23,7 +23,7 @@ import PythonGetDataMessage from "../libraries/python/examples/_08_data_message.
 import RustGetDataMessage from "../libraries/rust/examples/_08_data_message.mdx";
 import WasmGetDataMessage from "../libraries/wasm/examples/_08_data_message.mdx";
 
-An [`IndexationPayload`](../key_concepts/messages_payloads_and_transactions.md#indexationpayload) is a payload type that can be used to attach arbitrary `data`
+An [`IndexationPayload`](../explanations/messages_payloads_and_transactions.md#indexationpayload) is a payload type that can be used to attach arbitrary `data`
 and a key `index` to a message. To send a payload, you should  at least provide the `index`. The data part
 (as `bytes[]`) is optional.
 
@@ -49,10 +49,10 @@ and a key `index` to a message. To send a payload, you should  at least provide 
 
 - You can find the message using its `message ID` in the
   [Tangle explorer](https://explorer.iota.org/devnet/message/8d4fa37be3c00691131c2c3e03e7b8b956c9118a2ce4be3a8597d51d82ed2de9).
-- There are three prepared [payloads](../key_concepts/messages_payloads_and_transactions.md#corepayloads)(`transaction`, `milestone`, and `indexation`). However, at the time, the `indexation`
+- There are three prepared [payloads](../explanations/messages_payloads_and_transactions.md#corepayloads)(`transaction`, `milestone`, and `indexation`). However, at the time, the `indexation`
   payload is the only one in use.
 - `data` contains arbitrary data encoded in bytes.
 - Please note there is no IOTA address involved while sending data messages. Data messages are referenced using their
   `message ID` or `index` key.
-- IOTA addresses are part of the `UTXO` data structure that is sent using the [`SignedTransaction`](./../key_concepts/messages_payloads_and_transactions#signedtransaction)
+- IOTA addresses are part of the `UTXO` data structure that is sent using the [`SignedTransaction`](./../explanations/messages_payloads_and_transactions#signedtransaction)
   payload.

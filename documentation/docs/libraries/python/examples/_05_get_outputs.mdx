@@ -82,15 +82,15 @@ list of `output_ids` or a list of `addresses`.
 - `transaction_id`, `output_index`: Refers to the output within the `SignedTransaction` payload. There may be several
   `outputs` involved in a single transaction, so the `transaction_id` by itself would not be enough.
 - `output`: This section provides details about the iota address to which the given
-  [unspent transaction output](../../../key_concepts/messages_payloads_and_transactions.md#unspent-transaction-output-utxo)
+  [unspent transaction output](../../../explanations/messages_payloads_and_transactions.md#unspent-transaction-output-utxo)
   is coupled with.
 - `amount`: States an amount of tokens related to the `output`.
 - `is_spent`: Indicates whether the given `output` is a part of the actual ledger state or not. As mentioned in the
-  [Messages, Payloads, and Transactions section](../../../key_concepts/messages_payloads_and_transactions.md#unspent-transaction-output-utxo),
+  [Messages, Payloads, and Transactions section](../../../explanations/messages_payloads_and_transactions.md#unspent-transaction-output-utxo),
   if an output was already spent it is not part of the ledger state any more and is replaced by some other `output(s)`
   in the process.
 
 Notice that the `output_id` that was used in a function call to get output details is the same as a combination of the
 `transaction_id` and `output index`. This way a transaction is tightly coupled with `outputs` since the
 `SignedTransaction` payload is a main vehicle to create and spend `outputs`, and everything is encapsulated in a
-[`message`](../../../key_concepts/messages_payloads_and_transactions.md#messages).
+[`message`](../../../explanations/messages_payloads_and_transactions.md#messages).

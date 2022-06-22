@@ -54,16 +54,15 @@ module.exports = {
           id: "getting_started/wasm",
           label: 'Wasm'
         },
-          
       ]
     },
     {
       type: "category",
-      label: "Key Concepts",
+      label: "Explanations",
       items: [
-        "key_concepts/seeds",
-        "key_concepts/address_key_space",
-        "key_concepts/messages_payloads_and_transactions",
+        "explanations/seeds",
+        "explanations/address_key_space",
+        "explanations/messages_payloads_and_transactions",
       ],
     },
     {
