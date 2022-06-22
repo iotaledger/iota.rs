@@ -137,8 +137,15 @@ pub enum Error {
     #[serde(serialize_with = "display_string")]
     CryptoError(#[from] crypto::Error),
     /// Error from RestAPI calls with unexpected status code response
-    #[error("Response error with status code {0}: {1}, URL: {2}")]
-    ResponseError(u16, String, String),
+    #[error("Response error with status code {code}: {text}, URL: {url}")]
+    ResponseError {
+        /// The status code.
+        code: u16,
+        /// The text from the response.
+        text: String,
+        /// The url of the API.
+        url: String,
+    },
     /// reqwest error
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]

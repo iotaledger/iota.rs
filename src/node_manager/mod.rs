@@ -174,7 +174,7 @@ impl NodeManager {
                                 warn!("Couldn't convert noderesult to text");
                             }
                         }
-                        Err(Error::ResponseError(s, _, _)) if s == 404 => {
+                        Err(Error::ResponseError { code: 404, .. }) => {
                             error.replace(crate::Error::NotFound);
                         }
                         Err(err) => {
@@ -238,7 +238,7 @@ impl NodeManager {
                             warn!("Couldn't convert noderesult to text");
                         }
                     }
-                    Err(Error::ResponseError(s, _, _)) if s == 404 => {
+                    Err(Error::ResponseError { code: 404, .. }) => {
                         error.replace(crate::Error::NotFound);
                     }
                     Err(err) => {
@@ -296,7 +296,7 @@ impl NodeManager {
                         };
                     }
                 }
-                Err(Error::ResponseError(s, _, _)) if s == 404 => {
+                Err(Error::ResponseError { code: 404, .. }) => {
                     error.replace(crate::Error::NotFound);
                 }
                 Err(err) => {
