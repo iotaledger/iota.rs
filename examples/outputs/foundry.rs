@@ -20,7 +20,6 @@ use iota_client::{
         },
         payload::{transaction::TransactionEssence, Payload},
     },
-    constants::SHIMMER_TESTNET_BECH32_HRP,
     node_api::indexer::query_parameters::QueryParameter,
     request_funds_from_faucet,
     secret::{mnemonic::MnemonicSecretManager, SecretManager},
@@ -54,7 +53,7 @@ async fn main() -> Result<()> {
     let address = client.get_addresses(&secret_manager).with_range(0..1).get_raw().await?[0];
     println!(
         "{}",
-        request_funds_from_faucet(&faucet_url, &address.to_bech32(SHIMMER_TESTNET_BECH32_HRP)).await?
+        request_funds_from_faucet(&faucet_url, &address.to_bech32(client.get_bech32_hrp().await?)).await?
     );
     tokio::time::sleep(std::time::Duration::from_secs(20)).await;
 
@@ -231,7 +230,7 @@ async fn main() -> Result<()> {
     // get additional input for the new basic output
     let output_ids = client
         .basic_output_ids(vec![QueryParameter::Address(
-            address.to_bech32(SHIMMER_TESTNET_BECH32_HRP),
+            address.to_bech32(client.get_bech32_hrp().await?),
         )])
         .await?;
 

@@ -7,7 +7,6 @@ use std::env;
 
 use dotenv::dotenv;
 use iota_client::{
-    constants::SHIMMER_TESTNET_BECH32_HRP,
     node_api::indexer::query_parameters::QueryParameter,
     secret::{mnemonic::MnemonicSecretManager, SecretManager},
     utils::request_funds_from_faucet,
@@ -40,12 +39,12 @@ async fn main() -> Result<()> {
 
     println!(
         "{}",
-        request_funds_from_faucet(&faucet_url, &address.to_bech32(SHIMMER_TESTNET_BECH32_HRP)).await?
+        request_funds_from_faucet(&faucet_url, &address.to_bech32(client.get_bech32_hrp().await?)).await?
     );
 
     let output_ids = client
         .basic_output_ids(vec![QueryParameter::Address(
-            address.to_bech32(SHIMMER_TESTNET_BECH32_HRP),
+            address.to_bech32(client.get_bech32_hrp().await?),
         )])
         .await?;
     println!("output ids {:?}", output_ids);

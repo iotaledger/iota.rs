@@ -8,7 +8,6 @@ use std::env;
 use dotenv::dotenv;
 use iota_client::{
     api::GetAddressesBuilder,
-    constants::SHIMMER_TESTNET_BECH32_HRP,
     secret::{mnemonic::MnemonicSecretManager, SecretManager},
     Client, Result,
 };
@@ -51,7 +50,7 @@ async fn main() -> Result<()> {
     // human readable part) from the nodeinfo, generating it "offline" requires setting it with
     // `with_bech32_hrp(bech32_hrp)`
     let addresses = GetAddressesBuilder::new(&secret_manager)
-        .with_bech32_hrp(SHIMMER_TESTNET_BECH32_HRP)
+        .with_bech32_hrp(client.get_bech32_hrp().await?)
         .with_account_index(0)
         .with_range(0..4)
         .finish()

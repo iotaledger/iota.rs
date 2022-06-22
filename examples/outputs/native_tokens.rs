@@ -11,7 +11,6 @@ use iota_client::{
         unlock_condition::{AddressUnlockCondition, UnlockCondition},
         BasicOutputBuilder, NativeToken, TokenId,
     },
-    constants::SHIMMER_TESTNET_BECH32_HRP,
     secret::{mnemonic::MnemonicSecretManager, SecretManager},
     utils::request_funds_from_faucet,
     Client, Result,
@@ -42,7 +41,7 @@ async fn main() -> Result<()> {
     )?);
 
     let address = client.get_addresses(&secret_manager).with_range(0..1).get_raw().await?[0];
-    request_funds_from_faucet(&faucet_url, &address.to_bech32(SHIMMER_TESTNET_BECH32_HRP)).await?;
+    request_funds_from_faucet(&faucet_url, &address.to_bech32(client.get_bech32_hrp().await?)).await?;
 
     // Replace with the token ID of native tokens you own.
     let token_id: [u8; 38] =

@@ -16,7 +16,6 @@ use iota_client::{
         },
         BasicOutputBuilder,
     },
-    constants::SHIMMER_TESTNET_BECH32_HRP,
     request_funds_from_faucet,
     secret::{mnemonic::MnemonicSecretManager, SecretManager},
     Client, Result,
@@ -50,7 +49,7 @@ async fn main() -> Result<()> {
     )?);
 
     let address = client.get_addresses(&secret_manager).with_range(0..1).get_raw().await?[0];
-    request_funds_from_faucet(&faucet_url, &address.to_bech32(SHIMMER_TESTNET_BECH32_HRP)).await?;
+    request_funds_from_faucet(&faucet_url, &address.to_bech32(client.get_bech32_hrp().await?)).await?;
     tokio::time::sleep(std::time::Duration::from_secs(15)).await;
 
     let tomorrow = (SystemTime::now() + Duration::from_secs(24 * 3600))
