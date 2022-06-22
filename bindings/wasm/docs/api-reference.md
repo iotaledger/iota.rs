@@ -326,7 +326,7 @@ Get peers.
 <a name="Client+getOutput"></a>
 
 ### client.getOutput(output_id) ⇒ <code>Promise.&lt;any&gt;</code>
-GET /api/v2/outputs/{outputId} endpoint
+GET /api/core/v2/outputs/{outputId} endpoint
 Find an output by its transaction_id and corresponding output_index.
 
 **Kind**: instance method of [<code>Client</code>](#Client)  
@@ -387,7 +387,7 @@ already know the addresses.
 <a name="Client+getMilestone"></a>
 
 ### client.getMilestone(index) ⇒ <code>Promise.&lt;any&gt;</code>
-GET /api/v2/milestones/{index} endpoint
+GET /api/core/v2/milestones/{index} endpoint
 Get the milestone by the given index.
 
 **Kind**: instance method of [<code>Client</code>](#Client)  
@@ -399,7 +399,7 @@ Get the milestone by the given index.
 <a name="Client+getMilestoneUtxoChanges"></a>
 
 ### client.getMilestoneUtxoChanges(index) ⇒ <code>Promise.&lt;any&gt;</code>
-GET /api/v2/milestones/{index}/utxo-changes endpoint
+GET /api/core/v2/milestones/{index}/utxo-changes endpoint
 Get the milestone by the given index.
 
 **Kind**: instance method of [<code>Client</code>](#Client)  
@@ -411,14 +411,14 @@ Get the milestone by the given index.
 <a name="Client+getReceipts"></a>
 
 ### client.getReceipts() ⇒ <code>Promise.&lt;any&gt;</code>
-GET /api/v2/receipts endpoint
+GET /api/core/v2/receipts endpoint
 Get all receipts.
 
 **Kind**: instance method of [<code>Client</code>](#Client)  
 <a name="Client+getReceiptsMigratedAt"></a>
 
 ### client.getReceiptsMigratedAt(milestone_index) ⇒ <code>Promise.&lt;any&gt;</code>
-GET /api/v2/receipts/{migratedAt} endpoint
+GET /api/core/v2/receipts/{migratedAt} endpoint
 Get the receipts by the given milestone index.
 
 **Kind**: instance method of [<code>Client</code>](#Client)  
@@ -430,14 +430,14 @@ Get the receipts by the given milestone index.
 <a name="Client+getTreasury"></a>
 
 ### client.getTreasury() ⇒ <code>Promise.&lt;any&gt;</code>
-GET /api/v2/treasury endpoint
+GET /api/core/v2/treasury endpoint
 Get the treasury output.
 
 **Kind**: instance method of [<code>Client</code>](#Client)  
 <a name="Client+getIncludedMessage"></a>
 
 ### client.getIncludedMessage(transaction_id) ⇒ <code>Promise.&lt;any&gt;</code>
-GET /api/v2/transactions/{transactionId}/included-message
+GET /api/core/v2/transactions/{transactionId}/included-message
 Returns the included message of the transaction.
 
 **Kind**: instance method of [<code>Client</code>](#Client)  

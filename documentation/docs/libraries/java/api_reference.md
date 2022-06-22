@@ -255,19 +255,19 @@ GET /health endpoint for a specific node
 
 #### getInfo(): NodeInfoWrapper
 
-GET /api/v2/info endpoint
+GET /api/core/v2/info endpoint
 
 #### getPeers(): PeerDto[]
 
-GET /api/v2/peers endpoint
+GET /api/core/v2/peers endpoint
 
 #### getTips(): ClientBuilder
 
-GET /api/v2/tips endpoint
+GET /api/core/v2/tips endpoint
 
 #### getOutput(output_id): OutputResponse
 
-GET /api/v2/outputs/{outputId} endpoint
+GET /api/core/v2/outputs/{outputId} endpoint
 Find an output by its transaction_id and corresponding output_index.
 
 | Param | Type       | Description |
@@ -309,7 +309,7 @@ the request amount exceeds individual node limit.
 
 #### getMilestone(index): MilestoneResponse
 
-GET /api/v2/milestones/{index} endpoint
+GET /api/core/v2/milestones/{index} endpoint
 Get the milestone by the given index.
 
 | Param | Type       | Description |
@@ -318,7 +318,7 @@ Get the milestone by the given index.
 
 #### getMilestoneUtxoChanges(index): MilestoneUtxoChangesResponse
 
-GET /api/v2/milestones/{index}/utxo-changes endpoint
+GET /api/core/v2/milestones/{index}/utxo-changes endpoint
 Gets the utxo changes by the given milestone index.
 
 | Param | Type       | Description |
@@ -327,12 +327,12 @@ Gets the utxo changes by the given milestone index.
 
 #### getReceipts(): ReceiptDto[]
 
-GET /api/v2/receipts/{migratedAt} endpoint
+GET /api/core/v2/receipts/{migratedAt} endpoint
 Get the receipts by the given milestone index.
 
 #### getReceiptsMigratedAt(index): MilestoneUtxoChangesResponse
 
-GET /api/v2/receipts/{migratedAt} endpoint
+GET /api/core/v2/receipts/{migratedAt} endpoint
 Get the receipts by the given milestone index.
 
 | Param | Type       | Description |
@@ -341,12 +341,12 @@ Get the receipts by the given milestone index.
 
 #### getTreasury(): TreasuryResponse[]
 
-GET /api/v2/treasury endpoint
+GET /api/core/v2/treasury endpoint
 Get the treasury output.
 
 #### getIncludedMessage(transaction_id): Message
 
-GET /api/v2/transactions/{transactionId}/included-message
+GET /api/core/v2/transactions/{transactionId}/included-message
 Returns the included message of the transaction.
 
 | Param | Type       | Description |
@@ -355,7 +355,7 @@ Returns the included message of the transaction.
 
 #### postMessage(msg): MessageId
 
-POST /api/v2/messages endpoint
+POST /api/core/v2/messages endpoint
 
 | Param | Type       | Description |
 | ----- | ---------- | ----------- |
@@ -411,7 +411,7 @@ A generic send function for easily sending transaction or indexation messages.
 
 #### getMessage(): GetMessageBuilder
 
-GET /api/v2/messages/{messageId} endpoint
+GET /api/core/v2/messages/{messageId} endpoint
 
 #### getAddresses(seed): GetAddressesBuilder
 
@@ -613,7 +613,7 @@ Consume the builder and return the message
 
 #### indexString(index): MessageId[]
 
-GET /api/v2/messages?index={Index} endpoint
+GET /api/core/v2/messages?index={Index} endpoint
 Consume the builder and search for messages matching the index
 
 | Param | Type       | Description |
@@ -622,7 +622,7 @@ Consume the builder and search for messages matching the index
 
 #### indexVec(index): MessageId[]
 
-GET /api/v2/messages?index={Index} endpoint
+GET /api/core/v2/messages?index={Index} endpoint
 Consume the builder and search for messages matching the index
 
 | Param | Type       | Description |
@@ -631,7 +631,7 @@ Consume the builder and search for messages matching the index
 
 #### data(message_id): Message
 
-GET /api/v2/messages/{messageID} endpoint
+GET /api/core/v2/messages/{messageID} endpoint
 Consume the builder and find a message by its identifier. This method returns the given message object if it exists.
 
 | Param | Type       | Description |
@@ -640,7 +640,7 @@ Consume the builder and find a message by its identifier. This method returns th
 
 #### metadata(message_id): MessageMetadata
 
-GET /api/v2/messages/{messageID}/metadata endpoint
+GET /api/core/v2/messages/{messageID}/metadata endpoint
 Consume the builder and find a message by its identifier. This method returns the given message metadata if it exists.
 
 | Param | Type       | Description |
@@ -649,7 +649,7 @@ Consume the builder and find a message by its identifier. This method returns th
 
 #### raw(message_id): String
 
-GET /api/v2/messages/{MessageId} endpoint
+GET /api/core/v2/messages/{MessageId} endpoint
 Consume the builder and find a message by its identifier. This method returns the given message raw data if it exists.
 
 | Param | Type       | Description |

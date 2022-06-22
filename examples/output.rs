@@ -41,11 +41,9 @@ async fn main() -> Result<()> {
     )
     .await?;
 
-    let outputs = vec![
-        BasicOutputBuilder::new_with_amount(1_000_000)?
-            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-            .finish_output()?,
-    ];
+    let outputs = vec![BasicOutputBuilder::new_with_amount(1_000_000)?
+        .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
+        .finish_output()?];
 
     let block = client
         .block()
@@ -54,9 +52,12 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
 
-    println!("Transaction sent: http://localhost:14265/api/v2/blocks/{}", block.id());
     println!(
-        "Block metadata: http://localhost:14265/api/v2/blocks/{}/metadata",
+        "Transaction sent: http://localhost:14265/api/core/v2/blocks/{}",
+        block.id()
+    );
+    println!(
+        "Block metadata: http://localhost:14265/api/core/v2/blocks/{}/metadata",
         block.id()
     );
 

@@ -71,11 +71,11 @@ impl NodeManager {
     ) -> Result<Vec<Node>> {
         let mut nodes_with_modified_url = Vec::new();
 
-        if prefer_permanode || (path == "api/v2/blocks" && query.is_some()) {
+        if prefer_permanode || (path == "api/core/v2/blocks" && query.is_some()) {
             if let Some(permanodes) = self.permanodes.clone() {
-                // remove api/v2/ since permanodes can have custom keyspaces
+                // remove api/core/v2/ since permanodes can have custom keyspaces
                 // https://editor.swagger.io/?url=https://raw.githubusercontent.com/iotaledger/chronicle.rs/main/docs/api.yaml
-                let path = &path["api/v2/".len()..];
+                let path = &path["api/core/v2/".len()..];
                 for mut permanode in permanodes {
                     permanode.url.set_path(&format!("{}{}", permanode.url.path(), path));
                     permanode.url.set_query(query);
@@ -190,7 +190,7 @@ impl NodeManager {
                             match status {
                                 200 => {
                                     // Handle node_info extra because we also want to return the url
-                                    if path == "api/v2/info" {
+                                    if path == "api/core/v2/info" {
                                         if let Ok(node_info) = serde_json::from_str::<InfoResponse>(&res_text) {
                                             let wrapper = crate::client::NodeInfoWrapper {
                                                 node_info,
@@ -263,7 +263,7 @@ impl NodeManager {
         }
     }
 
-    // Only used for api/v2/blocks/{blockID}, that's why we don't need the quorum stuff
+    // Only used for api/core/v2/blocks/{blockID}, that's why we don't need the quorum stuff
     pub(crate) async fn get_request_bytes(
         &self,
         path: &str,

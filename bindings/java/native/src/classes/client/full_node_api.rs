@@ -156,7 +156,7 @@ impl Client {
         Ok(receipts)
     }
 
-    /// GET /api/v2/treasury endpoint
+    /// GET /api/core/v2/treasury endpoint
     /// Get the treasury output.
     pub fn get_treasury(&self) -> Result<TreasuryResponse> {
         let res = crate::block_on(async { self.0.get_treasury().await });
@@ -230,7 +230,7 @@ impl Client {
         ClientMessageBuilder::new(self)
     }
 
-    /// GET /api/v2/messages/{messageId} endpoint
+    /// GET /api/core/v2/messages/{messageId} endpoint
     pub fn get_message(&self) -> GetMessageBuilder {
         GetMessageBuilder::new(self)
     }

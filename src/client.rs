@@ -383,7 +383,7 @@ impl Client {
     //////////////////////////////////////////////////////////////////////
 
     // todo: only used during syncing, can it be replaced with the other node info function?
-    /// GET /api/v2/info endpoint
+    /// GET /api/core/v2/info endpoint
     pub async fn get_node_info(url: &str, auth: Option<NodeAuth>) -> Result<NodeInfo> {
         let mut url = crate::node_manager::builder::validate_url(Url::parse(url)?)?;
         if let Some(auth) = &auth {
@@ -394,7 +394,7 @@ impl Client {
                     .map_err(|_| crate::Error::UrlAuthError("password".to_string()))?;
             }
         }
-        let path = "api/v2/info";
+        let path = "api/core/v2/info";
         url.set_path(path);
 
         let resp: NodeInfo = crate::node_manager::http_client::HttpClient::new()

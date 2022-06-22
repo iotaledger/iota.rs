@@ -92,7 +92,7 @@ async fn main() -> Result<()> {
         .await?;
 
     println!(
-        "Transaction with new nft and alias output sent: http://localhost:14265/api/v2/blocks/{}",
+        "Transaction with new nft and alias output sent: http://localhost:14265/api/core/v2/blocks/{}",
         block.id()
     );
     let _ = client.retry_until_included(&block.id(), None, None).await?;
@@ -145,7 +145,7 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
     println!(
-        "Transaction with alias id, foundry output with minted native tokens, and nfts sent: http://localhost:14265/api/v2/blocks/{}",
+        "Transaction with alias id, foundry output with minted native tokens, and nfts sent: http://localhost:14265/api/core/v2/blocks/{}",
         block.id()
     );
     let _ = client.retry_until_included(&block.id(), None, None).await?;
@@ -219,7 +219,7 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
     println!(
-        "Transaction with all outputs sent: http://localhost:14265/api/v2/blocks/{}",
+        "Transaction with all outputs sent: http://localhost:14265/api/core/v2/blocks/{}",
         block.id()
     );
     let _ = client.retry_until_included(&block.id(), None, None).await?;

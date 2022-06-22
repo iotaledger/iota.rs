@@ -53,21 +53,19 @@ async fn main() -> Result<()> {
     //////////////////////////////////
     // create new alias output
     //////////////////////////////////
-    let outputs = vec![
-        AliasOutputBuilder::new_with_amount(1_000_000, AliasId::null())?
-            .with_state_index(0)
-            .with_foundry_counter(0)
-            .add_feature(Feature::Sender(SenderFeature::new(address)))
-            .add_feature(Feature::Metadata(MetadataFeature::new(vec![1, 2, 3])?))
-            .add_immutable_feature(Feature::Issuer(IssuerFeature::new(address)))
-            .add_unlock_condition(UnlockCondition::StateControllerAddress(
-                StateControllerAddressUnlockCondition::new(address),
-            ))
-            .add_unlock_condition(UnlockCondition::GovernorAddress(GovernorAddressUnlockCondition::new(
-                address,
-            )))
-            .finish_output()?,
-    ];
+    let outputs = vec![AliasOutputBuilder::new_with_amount(1_000_000, AliasId::null())?
+        .with_state_index(0)
+        .with_foundry_counter(0)
+        .add_feature(Feature::Sender(SenderFeature::new(address)))
+        .add_feature(Feature::Metadata(MetadataFeature::new(vec![1, 2, 3])?))
+        .add_immutable_feature(Feature::Issuer(IssuerFeature::new(address)))
+        .add_unlock_condition(UnlockCondition::StateControllerAddress(
+            StateControllerAddressUnlockCondition::new(address),
+        ))
+        .add_unlock_condition(UnlockCondition::GovernorAddress(GovernorAddressUnlockCondition::new(
+            address,
+        )))
+        .finish_output()?];
 
     let block = client
         .block()
@@ -77,7 +75,7 @@ async fn main() -> Result<()> {
         .await?;
 
     println!(
-        "Transaction with new alias output sent: http://localhost:14265/api/v2/blocks/{}",
+        "Transaction with new alias output sent: http://localhost:14265/api/core/v2/blocks/{}",
         block.id()
     );
     let _ = client.retry_until_included(&block.id(), None, None).await?;
@@ -87,21 +85,19 @@ async fn main() -> Result<()> {
     //////////////////////////////////
     let alias_output_id = get_alias_output_id(block.payload().unwrap());
     let alias_id = AliasId::from(alias_output_id);
-    let outputs = vec![
-        AliasOutputBuilder::new_with_amount(1_000_000, alias_id)?
-            .with_state_index(1)
-            .with_foundry_counter(0)
-            .add_feature(Feature::Sender(SenderFeature::new(address)))
-            .add_feature(Feature::Metadata(MetadataFeature::new(vec![1, 2, 3])?))
-            .add_immutable_feature(Feature::Issuer(IssuerFeature::new(address)))
-            .add_unlock_condition(UnlockCondition::StateControllerAddress(
-                StateControllerAddressUnlockCondition::new(address),
-            ))
-            .add_unlock_condition(UnlockCondition::GovernorAddress(GovernorAddressUnlockCondition::new(
-                address,
-            )))
-            .finish_output()?,
-    ];
+    let outputs = vec![AliasOutputBuilder::new_with_amount(1_000_000, alias_id)?
+        .with_state_index(1)
+        .with_foundry_counter(0)
+        .add_feature(Feature::Sender(SenderFeature::new(address)))
+        .add_feature(Feature::Metadata(MetadataFeature::new(vec![1, 2, 3])?))
+        .add_immutable_feature(Feature::Issuer(IssuerFeature::new(address)))
+        .add_unlock_condition(UnlockCondition::StateControllerAddress(
+            StateControllerAddressUnlockCondition::new(address),
+        ))
+        .add_unlock_condition(UnlockCondition::GovernorAddress(GovernorAddressUnlockCondition::new(
+            address,
+        )))
+        .finish_output()?];
 
     let block = client
         .block()
@@ -111,7 +107,7 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
     println!(
-        "Transaction with alias id set sent: http://localhost:14265/api/v2/blocks/{}",
+        "Transaction with alias id set sent: http://localhost:14265/api/core/v2/blocks/{}",
         block.id()
     );
     let _ = client.retry_until_included(&block.id(), None, None).await?;
