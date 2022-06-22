@@ -35,11 +35,7 @@ async fn main() -> Result<()> {
 
     println!(
         "{}",
-        request_funds_from_faucet(
-            "http://localhost:14265/api/plugins/faucet/v1/enqueue",
-            &address.to_bech32("atoi"),
-        )
-        .await?
+        request_funds_from_faucet("http://localhost:8091/api/enqueue", &address.to_bech32("atoi"),).await?
     );
 
     let output_ids = client

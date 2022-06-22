@@ -44,11 +44,7 @@ async fn main() -> Result<()> {
 
     println!(
         "automatically funding sender address with faucet: {}",
-        request_funds_from_faucet(
-            "https://faucet.alphanet.iotaledger.net/api/plugins/faucet/v1/enqueue",
-            sender_address
-        )
-        .await?
+        request_funds_from_faucet("http://localhost:8091/api/enqueue", sender_address).await?
     );
     tokio::time::sleep(std::time::Duration::from_secs(15)).await;
 

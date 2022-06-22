@@ -43,7 +43,7 @@ async fn main() -> Result<()> {
 
     let address = client.get_addresses(&secret_manager).with_range(0..1).get_raw().await?[0];
     request_funds_from_faucet(
-        "http://localhost:14265/api/plugins/faucet/v1/enqueue",
+        "http://localhost:8091/api/enqueue",
         &address.to_bech32(SHIMMER_TESTNET_BECH32_HRP),
     )
     .await?;
@@ -69,7 +69,7 @@ async fn main() -> Result<()> {
         .await?;
 
     println!(
-        "Transaction with new NFT output sent: http://localhost:14265/api/v2/blocks/{}",
+        "Transaction with new NFT output sent: http://localhost:14265/api/core/v2/blocks/{}",
         block.id()
     );
     let _ = client.retry_until_included(&block.id(), None, None).await?;
@@ -85,11 +85,7 @@ async fn main() -> Result<()> {
     println!("bech32_nft_address {bech32_nft_address}");
     println!(
         "Faucet request {:?}",
-        request_funds_from_faucet(
-            "http://localhost:14265/api/plugins/faucet/v1/enqueue",
-            &bech32_nft_address,
-        )
-        .await?
+        request_funds_from_faucet("http://localhost:8091/api/enqueue", &bech32_nft_address,).await?
     );
     tokio::time::sleep(std::time::Duration::from_secs(20)).await;
 
@@ -113,7 +109,7 @@ async fn main() -> Result<()> {
         .await?;
 
     println!(
-        "Transaction with input(basic output) to NFT output sent: http://localhost:14265/api/v2/blocks/{}",
+        "Transaction with input(basic output) to NFT output sent: http://localhost:14265/api/core/v2/blocks/{}",
         block.id()
     );
 
@@ -139,7 +135,7 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
     println!(
-        "Burn transaction sent: http://localhost:14265/api/v2/blocks/{}",
+        "Burn transaction sent: http://localhost:14265/api/core/v2/blocks/{}",
         block.id()
     );
     let _ = client.retry_until_included(&block.id(), None, None).await?;

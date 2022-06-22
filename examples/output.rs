@@ -35,11 +35,7 @@ async fn main() -> Result<()> {
     )?);
 
     let address = client.get_addresses(&secret_manager).with_range(0..1).get_raw().await?[0];
-    request_funds_from_faucet(
-        "http://localhost:14265/api/plugins/faucet/v1/enqueue",
-        &address.to_bech32("atoi"),
-    )
-    .await?;
+    request_funds_from_faucet("http://localhost:8091/api/enqueue", &address.to_bech32("atoi")).await?;
 
     let outputs = vec![
         BasicOutputBuilder::new_with_amount(1_000_000)?
@@ -54,9 +50,12 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
 
-    println!("Transaction sent: http://localhost:14265/api/v2/blocks/{}", block.id());
     println!(
-        "Block metadata: http://localhost:14265/api/v2/blocks/{}/metadata",
+        "Transaction sent: http://localhost:14265/api/core/v2/blocks/{}",
+        block.id()
+    );
+    println!(
+        "Block metadata: http://localhost:14265/api/core/v2/blocks/{}/metadata",
         block.id()
     );
 

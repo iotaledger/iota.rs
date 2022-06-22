@@ -44,7 +44,7 @@ async fn main() -> Result<()> {
 
     let address = client.get_addresses(&secret_manager).with_range(0..1).get_raw().await?[0];
     request_funds_from_faucet(
-        "http://localhost:14265/api/plugins/faucet/v1/enqueue",
+        "http://localhost:8091/api/enqueue",
         &address.to_bech32(SHIMMER_TESTNET_BECH32_HRP),
     )
     .await?;
@@ -77,7 +77,7 @@ async fn main() -> Result<()> {
         .await?;
 
     println!(
-        "Transaction with new alias output sent: http://localhost:14265/api/v2/blocks/{}",
+        "Transaction with new alias output sent: http://localhost:14265/api/core/v2/blocks/{}",
         block.id()
     );
     let _ = client.retry_until_included(&block.id(), None, None).await?;
@@ -111,7 +111,7 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
     println!(
-        "Transaction with alias id set sent: http://localhost:14265/api/v2/blocks/{}",
+        "Transaction with alias id set sent: http://localhost:14265/api/core/v2/blocks/{}",
         block.id()
     );
     let _ = client.retry_until_included(&block.id(), None, None).await?;

@@ -51,7 +51,7 @@ async fn main() -> Result<()> {
     println!(
         "{}",
         request_funds_from_faucet(
-            "http://localhost:14265/api/plugins/faucet/v1/enqueue",
+            "http://localhost:8091/api/enqueue",
             &address.to_bech32(SHIMMER_TESTNET_BECH32_HRP),
         )
         .await?
@@ -85,7 +85,7 @@ async fn main() -> Result<()> {
         .await?;
 
     println!(
-        "Transaction with new alias output sent: http://localhost:14265/api/v2/blocks/{}",
+        "Transaction with new alias output sent: http://localhost:14265/api/core/v2/blocks/{}",
         block.id()
     );
     let _ = client.retry_until_included(&block.id(), None, None).await?;
@@ -132,7 +132,7 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
     println!(
-        "Transaction with foundry output sent: http://localhost:14265/api/v2/blocks/{}",
+        "Transaction with foundry output sent: http://localhost:14265/api/core/v2/blocks/{}",
         block.id()
     );
     let _ = client.retry_until_included(&block.id(), None, None).await?;
@@ -177,7 +177,7 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
     println!(
-        "Transaction with native tokens burnt sent: http://localhost:14265/api/v2/blocks/{}",
+        "Transaction with native tokens burnt sent: http://localhost:14265/api/core/v2/blocks/{}",
         block.id()
     );
     let _ = client.retry_until_included(&block.id(), None, None).await?;
@@ -233,7 +233,7 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
     println!(
-        "Transaction with native tokens sent: http://localhost:14265/api/v2/blocks/{}",
+        "Transaction with native tokens sent: http://localhost:14265/api/core/v2/blocks/{}",
         block.id()
     );
     let _ = client.retry_until_included(&block.id(), None, None).await?;
@@ -257,7 +257,7 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
     println!(
-        "Second transaction with native tokens sent: http://localhost:14265/api/v2/blocks/{}",
+        "Second transaction with native tokens sent: http://localhost:14265/api/core/v2/blocks/{}",
         block.id()
     );
     let _ = client.retry_until_included(&block.id(), None, None).await?;
@@ -282,7 +282,7 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
     println!(
-        "Third transaction with native tokens burned sent: http://localhost:14265/api/v2/blocks/{}",
+        "Third transaction with native tokens burned sent: http://localhost:14265/api/core/v2/blocks/{}",
         block.id()
     );
     let _ = client.retry_until_included(&block.id(), None, None).await?;

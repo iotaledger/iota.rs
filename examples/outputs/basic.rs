@@ -44,7 +44,7 @@ async fn main() -> Result<()> {
     println!(
         "{}",
         request_funds_from_faucet(
-            "http://localhost:14265/api/plugins/faucet/v1/enqueue",
+            "http://localhost:8091/api/enqueue",
             &address.to_bech32(SHIMMER_TESTNET_BECH32_HRP),
         )
         .await?
@@ -86,9 +86,12 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
 
-    println!("Transaction sent: http://localhost:14265/api/v2/blocks/{}", block.id());
     println!(
-        "Block metadata: http://localhost:14265/api/v2/blocks/{}/metadata",
+        "Transaction sent: http://localhost:14265/api/core/v2/blocks/{}",
+        block.id()
+    );
+    println!(
+        "Block metadata: http://localhost:14265/api/core/v2/blocks/{}/metadata",
         block.id()
     );
     let _ = client.retry_until_included(&block.id(), None, None).await?;

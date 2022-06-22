@@ -10,13 +10,11 @@ use std::{
 
 use dotenv::dotenv;
 use iota_client::{
-    bee_block::{
-        output::{
-            unlock_condition::{
-                AddressUnlockCondition, ExpirationUnlockCondition, StorageDepositReturnUnlockCondition, UnlockCondition,
-            },
-            BasicOutputBuilder,
+    bee_block::output::{
+        unlock_condition::{
+            AddressUnlockCondition, ExpirationUnlockCondition, StorageDepositReturnUnlockCondition, UnlockCondition,
         },
+        BasicOutputBuilder,
     },
     secret::{mnemonic::MnemonicSecretManager, SecretManager},
     Client, Result,
@@ -78,8 +76,8 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
 
-    println!("Transaction sent: {NODE_URL}/api/v2/blocks/{}", block.id());
-    println!("Block metadata: {NODE_URL}/api/v2/blocks/{}/metadata", block.id());
+    println!("Transaction sent: {NODE_URL}/api/core/v2/blocks/{}", block.id());
+    println!("Block metadata: {NODE_URL}/api/core/v2/blocks/{}/metadata", block.id());
     let _ = client.retry_until_included(&block.id(), None, None).await?;
     Ok(())
 }

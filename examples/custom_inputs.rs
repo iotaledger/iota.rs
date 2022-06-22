@@ -38,7 +38,7 @@ async fn main() -> Result<()> {
 
     println!(
         "{}",
-        request_funds_from_faucet("http://localhost:14265/api/plugins/faucet/v1/enqueue", &addresses[0]).await?
+        request_funds_from_faucet("http://localhost:8091/api/enqueue", &addresses[0]).await?
     );
     tokio::time::sleep(std::time::Duration::from_secs(15)).await;
 
