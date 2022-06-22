@@ -204,7 +204,7 @@ foreign_class!(
         /// Find an output by its transaction_id and corresponding output_index.
         fn Client::get_output(&self, output_id: String) -> Result<OutputResponse>;
 
-        /// GET /api/plugins/indexer/v1/outputs/basic{query} endpoint
+        /// GET /api/indexer/v1/outputs/basic{query} endpoint
         fn Client::get_address(&self) -> GetAddressBuilder;
 
         /// Return the balance in iota for the given address; No seed needed to do this

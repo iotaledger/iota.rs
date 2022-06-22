@@ -33,11 +33,7 @@ async fn main() -> Result<()> {
     let address = client.get_addresses(&secret_manager).with_range(0..1).get_raw().await?[0];
     println!(
         "{}",
-        request_funds_from_faucet(
-            "http://localhost:14265/api/plugins/faucet/v1/enqueue",
-            &address.to_bech32("atoi"),
-        )
-        .await?
+        request_funds_from_faucet("http://localhost:8091/api/enqueue", &address.to_bech32("atoi"),).await?
     );
 
     // wait so the faucet can send the funds

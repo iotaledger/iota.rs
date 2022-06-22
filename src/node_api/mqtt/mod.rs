@@ -53,7 +53,7 @@ async fn get_mqtt_client(client: &mut Client) -> Result<&mut MqttClient> {
                 let id = format!("iotars{}", hex::encode(entropy));
                 let port = client.broker_options.port;
                 let mut uri = format!(
-                    "{}://{}:{}/api/plugins/mqtt/v1",
+                    "{}://{}:{}/api/mqtt/v1",
                     if node.url.scheme() == "https" { "wss" } else { "ws" },
                     host,
                     node.url.port_or_known_default().unwrap_or(port)

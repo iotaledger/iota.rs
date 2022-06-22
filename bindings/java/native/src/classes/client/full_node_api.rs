@@ -89,7 +89,7 @@ impl Client {
         Ok(crate::block_on(async { self.0.get_output(&RustUtxoInput::from_str(&output_id)?).await })?.into())
     }
 
-    /// GET /api/plugins/indexer/v1/outputs/basic{query} endpoint
+    /// GET /api/indexer/v1/outputs/basic{query} endpoint
     pub fn get_address(&self) -> GetAddressBuilder {
         GetAddressBuilder::new(self)
     }

@@ -39,7 +39,7 @@ async fn main() -> Result<()> {
 
     let address = client.get_addresses(&secret_manager).with_range(0..1).get_raw().await?[0];
     request_funds_from_faucet(
-        "http://localhost:14265/api/plugins/faucet/v1/enqueue",
+        "http://localhost:8091/api/enqueue",
         &address.to_bech32(SHIMMER_TESTNET_BECH32_HRP),
     )
     .await?;

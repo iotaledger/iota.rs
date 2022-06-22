@@ -37,8 +37,7 @@ async fn main() -> Result<()> {
         .unwrap();
     println!("{}", addresses[0]);
 
-    let faucet_response =
-        request_funds_from_faucet("http://localhost:14265/api/plugins/faucet/v1/enqueue", &addresses[0]).await?;
+    let faucet_response = request_funds_from_faucet("http://localhost:8091/api/enqueue", &addresses[0]).await?;
 
     println!("{}", faucet_response);
     Ok(())

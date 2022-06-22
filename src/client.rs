@@ -413,7 +413,7 @@ impl Client {
         Ok(resp)
     }
 
-    /// GET /api/plugins/indexer/v1/outputs/basic{query} endpoint
+    /// GET /api/indexer/v1/outputs/basic{query} endpoint
     pub fn get_address(&self) -> GetAddressBuilder<'_> {
         GetAddressBuilder::new(self)
     }
