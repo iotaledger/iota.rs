@@ -139,7 +139,10 @@ impl NodeManager {
         // Get node urls and set path
         let nodes = self.get_nodes(path, query, false, prefer_permanode).await?;
         if self.quorum && need_quorum && nodes.len() < self.min_quorum_size {
-            return Err(Error::QuorumPoolSizeError(nodes.len(), self.min_quorum_size));
+            return Err(Error::QuorumPoolSizeError {
+                found: nodes.len(),
+                required: self.min_quorum_size,
+            });
         }
 
         // Track amount of results for quorum
@@ -259,7 +262,10 @@ impl NodeManager {
         {
             Ok(serde_json::from_str(&res.0)?)
         } else {
-            Err(Error::QuorumThresholdError(res.1, self.min_quorum_size))
+            Err(Error::QuorumThresholdError {
+                found: res.1,
+                required: self.min_quorum_size,
+            })
         }
     }
 
