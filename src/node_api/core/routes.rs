@@ -260,7 +260,7 @@ impl Client {
 
         match resp {
             BlockResponse::Json(dto) => Ok(Block::try_from(&dto)?),
-            BlockResponse::Raw(bytes) => Ok(Block::unpack_verified(&bytes).map_err(|_| crate::Error::PackableError)?),
+            BlockResponse::Raw(_) => Err(crate::Error::UnexpectedApiResponse),
         }
     }
 
@@ -355,7 +355,7 @@ impl Client {
 
         match resp {
             BlockResponse::Json(dto) => Ok(Block::try_from(&dto)?),
-            BlockResponse::Raw(bytes) => Ok(Block::unpack_verified(&bytes).map_err(|_| crate::Error::PackableError)?),
+            BlockResponse::Raw(_) => Err(crate::Error::UnexpectedApiResponse),
         }
     }
 
@@ -373,9 +373,7 @@ impl Client {
 
         match resp {
             MilestoneResponse::Json(dto) => Ok(MilestonePayload::try_from(&dto)?),
-            MilestoneResponse::Raw(bytes) => {
-                Ok(MilestonePayload::unpack_verified(&bytes).map_err(|_| crate::Error::PackableError)?)
-            }
+            MilestoneResponse::Raw(_) => Err(crate::Error::UnexpectedApiResponse),
         }
     }
 
@@ -411,9 +409,7 @@ impl Client {
 
         match resp {
             MilestoneResponse::Json(dto) => Ok(MilestonePayload::try_from(&dto)?),
-            MilestoneResponse::Raw(bytes) => {
-                Ok(MilestonePayload::unpack_verified(&bytes).map_err(|_| crate::Error::PackableError)?)
-            }
+            MilestoneResponse::Raw(_) => Err(crate::Error::UnexpectedApiResponse),
         }
     }
 
