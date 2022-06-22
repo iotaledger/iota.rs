@@ -256,8 +256,13 @@ pub enum Error {
     #[error("the semantic validation of a transaction failed with conflict reason: {} - {0:?}", *.0 as u8)]
     TransactionSemantic(ConflictReason),
     /// Local time doesn't match the time of the latest milestone timestamp
-    #[error("Local time {0} doesn't match the time of the latest milestone timestamp: {1}")]
-    TimeNotSynced(u32, u32),
+    #[error("Local time {found} doesn't match the time of the latest milestone timestamp: {expected}")]
+    TimeNotSynced {
+        /// The found local time.
+        found: u32,
+        /// The timestamp of the latest milestone.
+        expected: u32,
+    },
     /// An indexer API request contains a query parameter not supported by the endpoint.
     #[error("An indexer API request contains a query parameter not supported by the endpoint: {0}.")]
     UnsupportedQueryParameter(QueryParameter),

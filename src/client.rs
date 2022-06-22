@@ -746,7 +746,10 @@ impl Client {
         if !(latest_ms_timestamp - FIVE_MINUTES_IN_SECONDS..latest_ms_timestamp + FIVE_MINUTES_IN_SECONDS)
             .contains(&local_time)
         {
-            return Err(Error::TimeNotSynced(local_time, latest_ms_timestamp));
+            return Err(Error::TimeNotSynced {
+                found: local_time,
+                expected: latest_ms_timestamp,
+            });
         }
         Ok(local_time)
     }
