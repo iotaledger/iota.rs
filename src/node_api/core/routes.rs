@@ -258,7 +258,7 @@ impl Client {
             .get_request::<BlockResponse>(path, None, self.get_timeout(), false, true)
             .await?;
 
-            match resp {
+        match resp {
             BlockResponse::Json(dto) => Ok(Block::try_from(&dto)?),
             BlockResponse::Raw(bytes) => Ok(Block::unpack_verified(&bytes).map_err(|_| crate::Error::PackableError)?),
         }
