@@ -70,12 +70,12 @@ async fn main() -> Result<()> {
         // with expiration
         BasicOutputBuilder::new_with_amount(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-            .add_unlock_condition(UnlockCondition::Expiration(ExpirationUnlockCondition::new(address, 0)?))
+            .add_unlock_condition(UnlockCondition::Expiration(ExpirationUnlockCondition::new(address, 1)?))
             .finish_output()?,
         // with timelock
         BasicOutputBuilder::new_with_amount(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-            .add_unlock_condition(UnlockCondition::Timelock(TimelockUnlockCondition::new(0)?))
+            .add_unlock_condition(UnlockCondition::Timelock(TimelockUnlockCondition::new(1)?))
             .finish_output()?,
     ];
 
