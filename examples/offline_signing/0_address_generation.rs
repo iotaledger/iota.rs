@@ -14,6 +14,7 @@ use std::{
 
 use dotenv::dotenv;
 use iota_client::{
+    constants::SHIMMER_TESTNET_BECH32_HRP,
     secret::{mnemonic::MnemonicSecretManager, SecretManager},
     Client, Result,
 };
@@ -34,7 +35,7 @@ async fn main() -> Result<()> {
     let addresses = offline_client
         .get_addresses(&secret_manager)
         .with_range(0..10)
-        .with_bech32_hrp("rms")
+        .with_bech32_hrp(SHIMMER_TESTNET_BECH32_HRP)
         .finish()
         .await?;
 

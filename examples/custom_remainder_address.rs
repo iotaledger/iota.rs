@@ -17,15 +17,17 @@ use iota_client::{
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    // This example uses dotenv, which is not safe for use in production
+    dotenv().ok();
+
+    let node_url = env::var("NODE_URL").unwrap();
+
     // Create a client instance
     let client = Client::builder()
-        .with_node("http://localhost:14265")? // Insert your node URL here
+        .with_node(&node_url)? // Insert your node URL here
         .with_node_sync_disabled()
         .finish()
         .await?;
-
-    // This example uses dotenv, which is not safe for use in production
-    dotenv().ok();
 
     // First address from the seed below is atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r
     let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_hex_seed(

@@ -221,6 +221,10 @@ name = "foundry"
 path = "examples/outputs/foundry.rs"
 
 [[example]]
+name = "microtransaction"
+path = "examples/outputs/microtransaction.rs"
+
+[[example]]
 name = "native_tokens"
 path = "examples/outputs/native_tokens.rs"
 

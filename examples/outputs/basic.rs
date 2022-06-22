@@ -15,7 +15,6 @@ use iota_client::{
         },
         BasicOutputBuilder, Feature,
     },
-    constants::SHIMMER_TESTNET_BECH32_HRP,
     secret::{mnemonic::MnemonicSecretManager, SecretManager},
     utils::request_funds_from_faucet,
     Client, Result,
@@ -25,17 +24,21 @@ use iota_client::{
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    // Create a client instance.
-    let client = Client::builder()
-        .with_node("http://localhost:14265")?
-        .with_node_sync_disabled()
-        .finish()
-        .await?;
-
     // This example uses dotenv, which is not safe for use in production!
     // Configure your own mnemonic in the ".env" file. Since the output amount cannot be zero, the seed must contain
     // non-zero balance.
     dotenv().ok();
+
+    let node_url = env::var("NODE_URL").unwrap();
+    let faucet_url = env::var("FAUCET_URL").unwrap();
+
+    // Create a client instance.
+    let client = Client::builder()
+        .with_node(&node_url)?
+        .with_node_sync_disabled()
+        .finish()
+        .await?;
+
     let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
         &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
     )?);
@@ -43,11 +46,7 @@ async fn main() -> Result<()> {
     let address = client.get_addresses(&secret_manager).with_range(0..1).get_raw().await?[0];
     println!(
         "{}",
-        request_funds_from_faucet(
-            "http://localhost:8091/api/enqueue",
-            &address.to_bech32(SHIMMER_TESTNET_BECH32_HRP),
-        )
-        .await?
+        request_funds_from_faucet(&faucet_url, &address.to_bech32(client.get_bech32_hrp().await?)).await?
     );
 
     let outputs = vec![
@@ -86,14 +85,8 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
 
-    println!(
-        "Transaction sent: http://localhost:14265/api/core/v2/blocks/{}",
-        block.id()
-    );
-    println!(
-        "Block metadata: http://localhost:14265/api/core/v2/blocks/{}/metadata",
-        block.id()
-    );
+    println!("Transaction sent: {node_url}/api/core/v2/blocks/{}", block.id());
+    println!("Block metadata: {node_url}/api/core/v2/blocks/{}/metadata", block.id());
     let _ = client.retry_until_included(&block.id(), None, None).await?;
     Ok(())
 }
