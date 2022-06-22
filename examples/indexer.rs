@@ -35,11 +35,7 @@ async fn main() -> Result<()> {
 
     println!(
         "{}",
-        request_funds_from_faucet(
-            "http://localhost:8091/api/enqueue",
-            &address.to_bech32("atoi"),
-        )
-        .await?
+        request_funds_from_faucet("http://localhost:8091/api/enqueue", &address.to_bech32("atoi"),).await?
     );
 
     let output_ids = client
@@ -49,6 +45,6 @@ async fn main() -> Result<()> {
 
     let outputs = client.get_outputs(output_ids).await?;
 
-    println!("outputs {:?}", outputs);client.set_outputs(outputs
+    println!("outputs {:?}", outputs);
     Ok(())
 }
