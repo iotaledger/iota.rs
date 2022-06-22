@@ -258,7 +258,10 @@ impl Client {
             .get_request::<BlockResponse>(path, None, self.get_timeout(), false, true)
             .await?;
 
-        Ok(Block::try_from(&resp.0)?)
+        match resp {
+            BlockResponse::Json(dto) => Ok(Block::try_from(&dto)?),
+            BlockResponse::Raw(_) => Err(crate::Error::UnexpectedApiResponse),
+        }
     }
 
     /// Finds a block by its BlockId. This method returns the given block raw data.
@@ -350,7 +353,10 @@ impl Client {
             .get_request::<BlockResponse>(path, None, self.get_timeout(), true, true)
             .await?;
 
-        Ok(Block::try_from(&resp.0)?)
+        match resp {
+            BlockResponse::Json(dto) => Ok(Block::try_from(&dto)?),
+            BlockResponse::Raw(_) => Err(crate::Error::UnexpectedApiResponse),
+        }
     }
 
     // Milestones routes.
@@ -365,7 +371,10 @@ impl Client {
             .get_request::<MilestoneResponse>(path, None, self.get_timeout(), false, true)
             .await?;
 
-        Ok(MilestonePayload::try_from(&resp.0)?)
+        match resp {
+            MilestoneResponse::Json(dto) => Ok(MilestonePayload::try_from(&dto)?),
+            MilestoneResponse::Raw(_) => Err(crate::Error::UnexpectedApiResponse),
+        }
     }
 
     /// Gets the milestone by the given milestone id.
@@ -398,7 +407,10 @@ impl Client {
             .get_request::<MilestoneResponse>(path, None, self.get_timeout(), false, true)
             .await?;
 
-        Ok(MilestonePayload::try_from(&resp.0)?)
+        match resp {
+            MilestoneResponse::Json(dto) => Ok(MilestonePayload::try_from(&dto)?),
+            MilestoneResponse::Raw(_) => Err(crate::Error::UnexpectedApiResponse),
+        }
     }
 
     /// Gets the milestone by the given milestone index.

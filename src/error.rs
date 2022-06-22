@@ -162,9 +162,9 @@ pub enum Error {
     /// Packable error
     #[error("Bee packable error")]
     PackableError,
-    /// API error
-    #[error("Invalid API name")]
-    ApiError,
+    /// Unexpected API response error
+    #[error("Unexpected API response")]
+    UnexpectedApiResponse,
     /// Rw lock failed.
     #[error("Rw lock failed")]
     PoisonError,
