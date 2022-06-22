@@ -627,7 +627,10 @@ impl Client {
         }
 
         if total_already_spent < amount {
-            return Err(crate::Error::NotEnoughBalance(total_already_spent, amount));
+            return Err(crate::Error::NotEnoughBalance {
+                found: total_already_spent,
+                required: amount,
+            });
         }
 
         Ok(selected_inputs)

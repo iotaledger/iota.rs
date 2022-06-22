@@ -28,8 +28,13 @@ pub enum Error {
     #[error("Error when building transaction block")]
     TransactionError,
     /// The wallet account doesn't have enough balance
-    #[error("The wallet account doesn't have enough balance. It only has {0}, required is {1}")]
-    NotEnoughBalance(u64, u64),
+    #[error("The wallet account doesn't have enough balance. It only has {found}, required is {required}")]
+    NotEnoughBalance {
+        /// The amount found in the balance.
+        found: u64,
+        /// The required amount.
+        required: u64,
+    },
     /// The wallet account doesn't have any inputs found
     #[error("No inputs found")]
     NoInputs,
