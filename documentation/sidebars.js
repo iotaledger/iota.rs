@@ -80,7 +80,7 @@ module.exports = {
         "examples/get_message_data",
         "examples/data_message",
         "examples/transaction",
-        "examples/mqqt",
+        "examples/mqtt",
       ],
     },
     {

@@ -47,7 +47,7 @@ And there are few additional interesting notes:
 
 * Each level defines a completely different subtree (subspace) of addresses/keys, and those are never mixed up.
 * The hierarchy is ready to "absorb" addresses/keys for many coins at the same time (`coin_type`), and all those coins
-  are secured by the same seed.This means any BIP32/44-compliant wallet is potentially able to manage any \
+  are secured by the same seed. This means any BIP32/44-compliant wallet is potentially able to manage any \
   BIP32/44-compliant coin(s).
 * There may be also other `purposes` in the future. However, consider a single purpose for now. The constant `44` stands
   for BIP44.
