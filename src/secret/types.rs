@@ -72,13 +72,14 @@ pub enum LedgerDeviceType {
     LedgerNanoSPlus,
 }
 
-impl From<u8> for LedgerDeviceType {
-    fn from(device: u8) -> Self {
+impl TryFrom<u8> for LedgerDeviceType {
+    type Error = crate::Error;
+    fn try_from(device: u8) -> Result<Self> {
         match device {
-            0 => Self::LedgerNanoS,
-            1 => Self::LedgerNanoX,
-            2 => Self::LedgerNanoSPlus,
-            _ => Self::LedgerNanoS,
+            0 => Ok(Self::LedgerNanoS),
+            1 => Ok(Self::LedgerNanoX),
+            2 => Ok(Self::LedgerNanoSPlus),
+            _ => Err(crate::Error::LedgerMiscError),
         }
     }
 }
