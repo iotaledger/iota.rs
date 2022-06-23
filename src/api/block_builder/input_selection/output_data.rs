@@ -3,7 +3,7 @@
 
 use bee_block::{
     address::Address,
-    output::{dto::OutputDto, unlock_condition::dto::UnlockConditionDto, NativeTokensBuilder, Output},
+    output::{dto::OutputDto, unlock_condition::dto::UnlockConditionDto, NativeTokensBuilder, NftOutput, Output},
 };
 use bee_rest_api::types::responses::OutputResponse;
 use crypto::keys::slip10::Chain;
@@ -96,13 +96,21 @@ pub(crate) async fn get_utxo_chains_inputs(
                 if !nft_output.nft_id().is_null() {
                     let output_id = client.nft_output_id(*nft_output.nft_id()).await?;
                     let output_response = client.get_output(&output_id).await?;
-                    if let OutputDto::Nft(nft_output_dto) = &output_response.output {
-                        for unlock_condition in &nft_output_dto.unlock_conditions {
-                            if let UnlockConditionDto::Address(address_unlock_condition_dto) = unlock_condition {
-                                let address = Address::try_from(&address_unlock_condition_dto.address)?;
-                                utxo_chains.push((address, output_response.clone()));
-                            }
-                        }
+                    if let OutputDto::Nft(nft_output) = &output_response.output {
+                        let nft_output = NftOutput::try_from(nft_output)?;
+                        let output_address = nft_output
+                            .unlock_conditions()
+                            .address()
+                            .expect("Nft output needs to have an address unlock condition")
+                            .address();
+
+                        let local_time = block_builder.client.get_time_checked().await?;
+
+                        let unlock_address = nft_output
+                            .unlock_conditions()
+                            .locked_address(output_address, local_time);
+
+                        utxo_chains.push((*unlock_address, output_response.clone()));
                     }
                 }
             }
