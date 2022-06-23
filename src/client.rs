@@ -627,7 +627,10 @@ impl Client {
         }
 
         if total_already_spent < amount {
-            return Err(crate::Error::NotEnoughBalance(total_already_spent, amount));
+            return Err(crate::Error::NotEnoughBalance {
+                found: total_already_spent,
+                required: amount,
+            });
         }
 
         Ok(selected_inputs)
@@ -743,7 +746,10 @@ impl Client {
         if !(latest_ms_timestamp - FIVE_MINUTES_IN_SECONDS..latest_ms_timestamp + FIVE_MINUTES_IN_SECONDS)
             .contains(&local_time)
         {
-            return Err(Error::TimeNotSynced(local_time, latest_ms_timestamp));
+            return Err(Error::TimeNotSynced {
+                local_time,
+                milestone_timestamp: latest_ms_timestamp,
+            });
         }
         Ok(local_time)
     }

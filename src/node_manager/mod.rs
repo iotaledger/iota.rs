@@ -139,7 +139,10 @@ impl NodeManager {
         // Get node urls and set path
         let nodes = self.get_nodes(path, query, false, prefer_permanode).await?;
         if self.quorum && need_quorum && nodes.len() < self.min_quorum_size {
-            return Err(Error::QuorumPoolSizeError(nodes.len(), self.min_quorum_size));
+            return Err(Error::QuorumPoolSizeError {
+                available_nodes: nodes.len(),
+                minimum_threshold: self.min_quorum_size,
+            });
         }
 
         // Track amount of results for quorum
@@ -171,7 +174,7 @@ impl NodeManager {
                                 warn!("Couldn't convert noderesult to text");
                             }
                         }
-                        Err(Error::ResponseError(s, _, _)) if s == 404 => {
+                        Err(Error::ResponseError { code: 404, .. }) => {
                             error.replace(crate::Error::NotFound);
                         }
                         Err(err) => {
@@ -235,7 +238,7 @@ impl NodeManager {
                             warn!("Couldn't convert noderesult to text");
                         }
                     }
-                    Err(Error::ResponseError(s, _, _)) if s == 404 => {
+                    Err(Error::ResponseError { code: 404, .. }) => {
                         error.replace(crate::Error::NotFound);
                     }
                     Err(err) => {
@@ -259,7 +262,10 @@ impl NodeManager {
         {
             Ok(serde_json::from_str(&res.0)?)
         } else {
-            Err(Error::QuorumThresholdError(res.1, self.min_quorum_size))
+            Err(Error::QuorumThresholdError {
+                quorum_size: res.1,
+                minimum_threshold: self.min_quorum_size,
+            })
         }
     }
 
@@ -290,7 +296,7 @@ impl NodeManager {
                         };
                     }
                 }
-                Err(Error::ResponseError(s, _, _)) if s == 404 => {
+                Err(Error::ResponseError { code: 404, .. }) => {
                     error.replace(crate::Error::NotFound);
                 }
                 Err(err) => {

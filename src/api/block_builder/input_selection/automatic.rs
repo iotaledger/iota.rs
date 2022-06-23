@@ -134,28 +134,28 @@ pub(crate) async fn get_inputs(
                     Ok(r) => r,
                     // for these errors ,just try again in the next round with more addresses which might have more
                     // outputs
-                    Err(crate::Error::NotEnoughBalance(a, b)) => {
-                        cached_error.replace(crate::Error::NotEnoughBalance(a, b));
+                    Err(err @ crate::Error::NotEnoughBalance { .. }) => {
+                        cached_error.replace(err);
                         continue;
                     }
-                    Err(crate::Error::NotEnoughNativeTokens(a)) => {
-                        cached_error.replace(crate::Error::NotEnoughNativeTokens(a));
+                    Err(err @ crate::Error::NotEnoughNativeTokens { .. }) => {
+                        cached_error.replace(err);
                         continue;
                     }
                     // Native tokens left, but no balance for the storage deposit for a remainder
-                    Err(crate::Error::NoBalanceForNativeTokenRemainder) => {
-                        cached_error.replace(crate::Error::NoBalanceForNativeTokenRemainder);
+                    Err(err @ crate::Error::NoBalanceForNativeTokenRemainder) => {
+                        cached_error.replace(err);
                         continue;
                     }
                     // Currently too many inputs, by scanning for more inputs, we might find some with more amount
-                    Err(crate::Error::ConsolidationRequired(v)) => {
-                        cached_error.replace(crate::Error::ConsolidationRequired(v));
+                    Err(err @ crate::Error::ConsolidationRequired { .. }) => {
+                        cached_error.replace(err);
                         continue;
                     }
                     // Not enough balance for a remainder
                     Err(crate::Error::BlockError(block_error)) => match block_error {
-                        bee_block::Error::InvalidStorageDepositAmount(v) => {
-                            cached_error.replace(bee_block::Error::InvalidStorageDepositAmount(v).into());
+                        bee_block::Error::InvalidStorageDepositAmount { .. } => {
+                            cached_error.replace(crate::Error::BlockError(block_error));
                             continue;
                         }
                         _ => return Err(block_error.into()),
