@@ -747,8 +747,8 @@ impl Client {
             .contains(&local_time)
         {
             return Err(Error::TimeNotSynced {
-                found: local_time,
-                expected: latest_ms_timestamp,
+                local_time,
+                milestone_timestamp: latest_ms_timestamp,
             });
         }
         Ok(local_time)
