@@ -114,12 +114,12 @@ impl SecretManage for LedgerSecretManager {
     }
 }
 
-/// needs_blindsigning
+/// needs_blind_signing
 /// the Ledger Nano S(+)/X app can present the user a detailed view of the transaction before it
 /// is signed but only with BasicOutputs, without extra-features and if the Essence is not too large.
-/// If criteria are not met, blindsigning is needed.
-/// This method finds out if we have to switch to blindsigning mode.
-pub fn needs_blindsigning(prepared_transaction: &PreparedTransactionData, buffer_size: usize) -> bool {
+/// If criteria are not met, blind signing is needed.
+/// This method finds out if we have to switch to blind signing mode.
+pub fn needs_blind_signing(prepared_transaction: &PreparedTransactionData, buffer_size: usize) -> bool {
     match &prepared_transaction.essence {
         bee_block::payload::transaction::TransactionEssence::Regular(essence) => {
             for output in essence.outputs().iter() {
@@ -203,15 +203,15 @@ impl SecretManageExt for LedgerSecretManager {
         let essence_hash = prepared_transaction.essence.hash().to_vec();
 
         let ledger = iota_ledger::get_ledger(coin_type, bip32_account, self.is_simulator)?;
-        let blindsigning = needs_blindsigning(prepared_transaction, ledger.get_buffer_size());
+        let blind_signing = needs_blind_signing(prepared_transaction, ledger.get_buffer_size());
 
         // if essence + bip32 input indices are larger than the buffer size or the essence contains
-        // features / types that are not supported blindsigning will be needed
-        if blindsigning {
+        // features / types that are not supported blind signing will be needed
+        if blind_signing {
             // prepare signing
-            log::debug!("[LEDGER] prepare blindsigning");
+            log::debug!("[LEDGER] prepare_blind_signing");
             log::debug!("[LEDGER] {:?} {:?}", input_bip32_indices, essence_hash);
-            ledger.prepare_blindsigning(input_bip32_indices, essence_hash)?;
+            ledger.prepare_blind_signing(input_bip32_indices, essence_hash)?;
         } else {
             // figure out the remainder address and bip32 index (if there is one)
             let (has_remainder, remainder_address, remainder_bip32): (
@@ -317,9 +317,9 @@ impl SecretManageExt for LedgerSecretManager {
             unlocks.push(unlock);
         }
 
-        // With blindsigning the ledger only returns SignatureUnlocks, so we might have to merge them with
+        // With blind signing the ledger only returns SignatureUnlocks, so we might have to merge them with
         // Alias/Nft/Reference unlocks
-        if blindsigning {
+        if blind_signing {
             unlocks = merge_unlocks(prepared_transaction, unlocks.into_iter()).await?;
         }
 
@@ -357,12 +357,12 @@ impl LedgerSecretManager {
         // if IOTA or Shimmer app is opened, the call will always succeed, returning information like
         // device, debug-flag, version number, lock-state but here we only are interested in a
         // successful call and the locked-flag
-        let (connected_, locked, blindsigning_enabled, device) = match iota_ledger::get_app_config(&transport_type) {
+        let (connected_, locked, blind_signing_enabled, device) = match iota_ledger::get_app_config(&transport_type) {
             Ok(config) => (
                 true,
                 // locked flag
                 config.flags & (1 << 0) != 0,
-                // blindsigning enabled flag
+                // blind signing enabled flag
                 config.flags & (1 << 1) != 0,
                 LedgerDeviceType::try_from(config.device).ok(),
             ),
@@ -383,7 +383,7 @@ impl LedgerSecretManager {
         LedgerStatus {
             connected,
             locked,
-            blindsigning_enabled,
+            blind_signing_enabled,
             app,
             device,
             buffer_size,

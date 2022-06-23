@@ -79,8 +79,8 @@ pub struct LedgerStatus {
     pub(crate) connected: bool,
     /// Ledger is connected and locked.
     pub(crate) locked: bool,
-    /// Ledger blindsigning enabled
-    pub(crate) blindsigning_enabled: bool,
+    /// Ledger blind signing enabled
+    pub(crate) blind_signing_enabled: bool,
     /// Ledger opened app.
     pub(crate) app: Option<LedgerApp>,
     /// Ledger device
