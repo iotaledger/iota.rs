@@ -22,6 +22,7 @@ use tokio::sync::Mutex;
 
 use super::{types::InputSigningData, GenerateAddressMetadata, SecretManage, SecretManageExt};
 use crate::secret::{LedgerStatus, PreparedTransactionData, RemainderData};
+use crate::Result;
 
 /// Hardened const for the bip path.
 ///
@@ -47,6 +48,18 @@ pub struct LedgerSecretManager {
 //     /// bip32 index
 //     pub(crate) bip32: LedgerBIP32Index,
 // }
+
+impl TryFrom<u8> for crate::secret::types::LedgerDeviceType {
+    type Error = crate::Error;
+    fn try_from(device: u8) -> Result<Self> {
+        match device {
+            0 => Ok(Self::LedgerNanoS),
+            1 => Ok(Self::LedgerNanoX),
+            2 => Ok(Self::LedgerNanoSPlus),
+            _ => Err(crate::Error::LedgerMiscError),
+        }
+    }
+}
 
 #[async_trait]
 impl SecretManage for LedgerSecretManager {
@@ -354,7 +367,7 @@ impl LedgerSecretManager {
                 match crate::secret::types::LedgerDeviceType::try_from(config.device) {
                     Ok(d) => Some(d),
                     Err(_) => None,
-                }
+                },
             ),
             Err(_) => (false, false, false, None),
         };

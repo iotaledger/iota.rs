@@ -72,18 +72,6 @@ pub enum LedgerDeviceType {
     LedgerNanoSPlus,
 }
 
-impl TryFrom<u8> for LedgerDeviceType {
-    type Error = crate::Error;
-    fn try_from(device: u8) -> Result<Self> {
-        match device {
-            0 => Ok(Self::LedgerNanoS),
-            1 => Ok(Self::LedgerNanoX),
-            2 => Ok(Self::LedgerNanoSPlus),
-            _ => Err(crate::Error::LedgerMiscError),
-        }
-    }
-}
-
 /// The Ledger device status.
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct LedgerStatus {
