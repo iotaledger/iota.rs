@@ -364,10 +364,7 @@ impl LedgerSecretManager {
                 config.flags & (1 << 0) != 0,
                 // blindsigning enabled flag
                 config.flags & (1 << 1) != 0,
-                match crate::secret::types::LedgerDeviceType::try_from(config.device) {
-                    Ok(d) => Some(d),
-                    Err(_) => None,
-                },
+                LedgerDeviceType::try_from(config.device).ok(),
             ),
             Err(_) => (false, false, false, None),
         };
