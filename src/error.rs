@@ -63,20 +63,20 @@ pub enum Error {
     #[error("No synced node available")]
     SyncedNodePoolEmpty,
     /// Error on reaching quorum
-    #[error("Failed to reach quorum: {found} < {required}")]
+    #[error("Failed to reach quorum: {quorum_size} < {minimum_threshold}")]
     QuorumThresholdError {
         /// The current quorum size.
-        found: usize,
+        quorum_size: usize,
         /// The minimum quorum threshold.
-        required: usize,
+        minimum_threshold: usize,
     },
     /// Error on quorum because not enough nodes are available
-    #[error("Not enough nodes for quorum: {found} < {required}")]
+    #[error("Not enough nodes for quorum: {available_nodes} < {minimum_threshold}")]
     QuorumPoolSizeError {
         /// The number of nodes available for quorum.
-        found: usize,
+        available_nodes: usize,
         /// The minimum quorum threshold.
-        required: usize,
+        minimum_threshold: usize,
     },
     /// Error on API request
     #[error("Node error: {0}")]
