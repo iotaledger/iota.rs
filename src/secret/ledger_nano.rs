@@ -14,9 +14,7 @@ use bee_block::{
     signature::Signature,
     unlock::{AliasUnlock, NftUnlock, ReferenceUnlock, Unlock, Unlocks},
 };
-
 use iota_ledger::{api::packable::Packable, LedgerBIP32Index};
-
 use packable::PackableExt;
 use tokio::sync::Mutex;
 
