@@ -21,8 +21,8 @@ use packable::PackableExt;
 use tokio::sync::Mutex;
 
 use super::{types::InputSigningData, GenerateAddressMetadata, SecretManage, SecretManageExt};
-use crate::secret::{LedgerStatus, PreparedTransactionData, RemainderData};
-use crate::Result;
+use crate::secret::{types::LedgerDeviceType, LedgerStatus, PreparedTransactionData, RemainderData};
+use crate::{Error, Result};
 
 /// Hardened const for the bip path.
 ///
@@ -49,14 +49,14 @@ pub struct LedgerSecretManager {
 //     pub(crate) bip32: LedgerBIP32Index,
 // }
 
-impl TryFrom<u8> for crate::secret::types::LedgerDeviceType {
-    type Error = crate::Error;
+impl TryFrom<u8> for LedgerDeviceType {
+    type Error = Error;
     fn try_from(device: u8) -> Result<Self> {
         match device {
             0 => Ok(Self::LedgerNanoS),
             1 => Ok(Self::LedgerNanoX),
             2 => Ok(Self::LedgerNanoSPlus),
-            _ => Err(crate::Error::LedgerMiscError),
+            _ => Err(Error::LedgerMiscError),
         }
     }
 }
