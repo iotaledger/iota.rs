@@ -71,7 +71,7 @@ pub enum Error {
         required: usize,
     },
     /// Error on quorum because not enough nodes are available
-    #[error("Not enough nodes for quorum {found} {required}")]
+    #[error("Not enough nodes for quorum: {found} < {required}")]
     QuorumPoolSizeError {
         /// The number of nodes available for quorum.
         found: usize,
