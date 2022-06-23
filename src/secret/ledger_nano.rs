@@ -317,7 +317,7 @@ impl SecretManageExt for LedgerSecretManager {
             unlocks.push(unlock);
         }
 
-        // With blindsigning the ledger only returns SignatureUnlocks, so we might have to merge them
+        // With blindsigning the ledger only returns SignatureUnlocks, so we might have to merge them with
         // Alias/Nft/Reference unlocks
         if blindsigning {
             unlocks = merge_unlocks(prepared_transaction, unlocks.into_iter()).await?;
