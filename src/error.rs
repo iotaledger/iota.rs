@@ -63,7 +63,7 @@ pub enum Error {
     #[error("No synced node available")]
     SyncedNodePoolEmpty,
     /// Error on reaching quorum
-    #[error("Failed to reach quorum {found} {required}")]
+    #[error("Failed to reach quorum: {found} < {required}")]
     QuorumThresholdError {
         /// The current quorum size.
         found: usize,
