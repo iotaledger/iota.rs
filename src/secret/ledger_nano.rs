@@ -19,8 +19,10 @@ use packable::PackableExt;
 use tokio::sync::Mutex;
 
 use super::{types::InputSigningData, GenerateAddressMetadata, SecretManage, SecretManageExt};
-use crate::secret::{types::LedgerDeviceType, LedgerStatus, PreparedTransactionData, RemainderData};
-use crate::{Error, Result};
+use crate::{
+    secret::{types::LedgerDeviceType, LedgerStatus, PreparedTransactionData, RemainderData},
+    Error, Result,
+};
 
 /// Hardened const for the bip path.
 ///
