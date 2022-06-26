@@ -298,7 +298,7 @@ public class Client {
         return miscellaneousApi.prepareTransaction(secretManager, generateAddressesOptions);
     }
 
-    public BlockPayload signTransaction(SecretManager secretManager, PreparedTransactionData preparedTransactionData) throws ClientException {
+    public TransactionPayload signTransaction(SecretManager secretManager, PreparedTransactionData preparedTransactionData) throws ClientException {
         return miscellaneousApi.signTransaction(secretManager, preparedTransactionData);
     }
 

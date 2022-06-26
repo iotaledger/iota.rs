@@ -103,14 +103,14 @@ public class MiscellaneousApi extends BaseApi {
         return new PreparedTransactionData(responsePayload);
     }
 
-    public BlockPayload signTransaction(SecretManager secretManager, PreparedTransactionData preparedTransactionData) throws ClientException {
+    public TransactionPayload signTransaction(SecretManager secretManager, PreparedTransactionData preparedTransactionData) throws ClientException {
         JsonObject o = new JsonObject();
         o.add("secretManager", secretManager.getJson());
         o.add("preparedTransactionData", preparedTransactionData.getJson());
 
         JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "SignTransaction", o));
 
-        return new BlockPayload(responsePayload);
+        return new TransactionPayload(responsePayload);
     }
 
     public void storeMnemonic(SecretManager secretManager, String mnemonic) throws ClientException {
