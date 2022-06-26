@@ -279,11 +279,11 @@ public class Client {
         return miscellaneousApi.getTipsInterval();
     }
 
-    public boolean isLocalPow() throws ClientException {
-        return miscellaneousApi.isLocalPow();
+    public boolean getLocalPow() throws ClientException {
+        return miscellaneousApi.getLocalPow();
     }
 
-    public boolean isFallbackToLocalPoW() throws ClientException {
+    public boolean getFallbackToLocalPoW() throws ClientException {
         return miscellaneousApi.isFallbackToLocalPoW();
     }
 

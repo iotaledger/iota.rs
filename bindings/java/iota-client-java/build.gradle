@@ -39,8 +39,6 @@ task buildRust(){
     dependsOn 'buildRustRelease'
 }
 
-test.dependsOn 'buildRust'
-
 jar {
     from {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }

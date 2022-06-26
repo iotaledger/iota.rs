@@ -69,7 +69,7 @@ public class MiscellaneousApi extends BaseApi {
         return responsePayload;
     }
 
-    public boolean isLocalPow() throws ClientException {
+    public boolean getLocalPow() throws ClientException {
         Boolean responsePayload = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetLocalPoW")).getAsBoolean();
         return responsePayload;
     }
