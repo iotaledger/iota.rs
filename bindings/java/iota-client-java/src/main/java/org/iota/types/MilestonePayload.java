@@ -5,13 +5,13 @@ package org.iota.types;
 
 import com.google.gson.JsonObject;
 
-public class Milestone extends AbstractObject {
+public class MilestonePayload extends BlockPayload {
 
-    public Milestone(JsonObject jsonObject) {
+    public MilestonePayload(JsonObject jsonObject) {
         super(jsonObject);
     }
 
-    public Milestone(String jsonObject) {
+    public MilestonePayload(String jsonObject) {
         super(jsonObject);
     }
 

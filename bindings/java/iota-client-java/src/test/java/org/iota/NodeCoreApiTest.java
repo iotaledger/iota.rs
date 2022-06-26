@@ -97,13 +97,13 @@ public class NodeCoreApiTest extends ApiTest {
     @Test
     public void testGetMilestoneById() throws ClientException {
         MilestoneId milestoneId = new MilestoneId(client.getNodeInfo().getNodeInfo().get("status").getAsJsonObject().get("latestMilestone").getAsJsonObject().get("milestoneId").getAsString());
-        Milestone r = client.getMilestoneById(milestoneId);
+        MilestonePayload r = client.getMilestoneById(milestoneId);
         System.out.println(r);
     }
 
     @Test
     public void testGetMilestoneByIndex() throws ClientException {
-        Milestone r = client.getMilestoneByIndex(client.getNodeInfo().getNodeInfo().get("status").getAsJsonObject().get("latestMilestone").getAsJsonObject().get("index").getAsInt());
+        MilestonePayload r = client.getMilestoneByIndex(client.getNodeInfo().getNodeInfo().get("status").getAsJsonObject().get("latestMilestone").getAsJsonObject().get("index").getAsInt());
         System.out.println(r);
     }
 

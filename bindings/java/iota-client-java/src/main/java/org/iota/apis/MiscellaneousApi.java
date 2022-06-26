@@ -121,7 +121,7 @@ public class MiscellaneousApi extends BaseApi {
         callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "StoreMnemonic", o));
     }
 
-    public Block postBlockPayload(TransactionPayload payload) throws ClientException {
+    public Block postBlockPayload(BlockPayload payload) throws ClientException {
         JsonObject o = new JsonObject();
         o.add("payload", payload.getJson());
 

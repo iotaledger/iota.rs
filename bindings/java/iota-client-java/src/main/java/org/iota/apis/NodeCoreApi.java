@@ -147,22 +147,22 @@ public class NodeCoreApi extends BaseApi {
         return new Block(responsePayload);
     }
 
-    public Milestone getMilestoneById(MilestoneId milestoneId) throws ClientException {
+    public MilestonePayload getMilestoneById(MilestoneId milestoneId) throws ClientException {
         JsonObject o = new JsonObject();
         o.addProperty("milestoneId", milestoneId.toString());
 
         JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetMilestoneById", o));
 
-        return new Milestone(responsePayload);
+        return new MilestonePayload(responsePayload);
     }
 
-    public Milestone getMilestoneByIndex(int index) throws ClientException {
+    public MilestonePayload getMilestoneByIndex(int index) throws ClientException {
         JsonObject o = new JsonObject();
         o.addProperty("index", index);
 
         JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetMilestoneByIndex", o));
 
-        return new Milestone(responsePayload);
+        return new MilestonePayload(responsePayload);
     }
 
     public byte[] getMilestoneByIdRaw(MilestoneId milestoneId) throws ClientException {

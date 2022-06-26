@@ -88,11 +88,11 @@ public class Client {
         return nodeCoreApi.getIncludedBlock(transactionId);
     }
 
-    public Milestone getMilestoneById(MilestoneId milestoneId) throws ClientException {
+    public MilestonePayload getMilestoneById(MilestoneId milestoneId) throws ClientException {
         return nodeCoreApi.getMilestoneById(milestoneId);
     }
 
-    public Milestone getMilestoneByIndex(int milestoneIndex) throws ClientException {
+    public MilestonePayload getMilestoneByIndex(int milestoneIndex) throws ClientException {
         return nodeCoreApi.getMilestoneByIndex(milestoneIndex);
     }
 
@@ -306,7 +306,7 @@ public class Client {
         miscellaneousApi.storeMnemonic(secretManager, mnemonic);
     }
 
-    public Block submitBlockPayload(TransactionPayload payload) throws ClientException {
+    public Block submitBlockPayload(BlockPayload payload) throws ClientException {
         return miscellaneousApi.postBlockPayload(payload);
     }
 
