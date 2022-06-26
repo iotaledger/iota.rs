@@ -1,3 +1,6 @@
+// Copyright 2022 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
+
 package org.iota;
 
 import org.iota.apis.NodeIndexerApi;
@@ -6,6 +9,7 @@ import org.iota.types.ids.AliasId;
 import org.iota.types.ids.FoundryId;
 import org.iota.types.ids.NftId;
 import org.iota.types.ids.OutputId;
+
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
