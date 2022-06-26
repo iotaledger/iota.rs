@@ -23,7 +23,12 @@ use zeroize::Zeroize;
 
 use crate::{
     api::{PreparedTransactionData, PreparedTransactionDataDto},
-    message_interface::{client_method::ClientMethod, message::Message, output_builder::{build_alias_output, build_basic_output, build_foundry_output, build_nft_output}, response::Response},
+    message_interface::{
+        client_method::ClientMethod,
+        message::Message,
+        output_builder::{build_alias_output, build_basic_output, build_foundry_output, build_nft_output},
+        response::Response,
+    },
     request_funds_from_faucet,
     secret::SecretManager,
     Client, Result,

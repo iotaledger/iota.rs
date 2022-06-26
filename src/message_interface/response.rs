@@ -7,7 +7,7 @@ use std::collections::HashSet;
 use bee_block::{
     address::dto::AddressDto,
     input::dto::UtxoInputDto,
-    output::{AliasId, FoundryId, NftId, dto::OutputDto, OutputId},
+    output::{dto::OutputDto, AliasId, FoundryId, NftId, OutputId},
     payload::{
         dto::{MilestonePayloadDto, PayloadDto},
         transaction::TransactionId,
