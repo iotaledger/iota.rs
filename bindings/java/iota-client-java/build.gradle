@@ -1,8 +1,6 @@
 apply plugin: 'java'
-apply plugin: 'application'
 apply plugin: 'c'
 
-mainClassName = 'Main'
 group 'org.iota'
 version '1.0-SNAPSHOT'
 

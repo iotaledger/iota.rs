@@ -472,7 +472,7 @@ pub enum ClientMethod {
         /// Block
         block: BlockDto,
     },
-    /// Returns a transaction ID
+    /// Returns the transaction ID (Blake2b256 hash of the provided transaction payload)
     TransactionId {
         /// Transaction Payload
         payload: TransactionPayloadDto,

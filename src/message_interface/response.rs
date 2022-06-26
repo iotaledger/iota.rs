@@ -141,13 +141,13 @@ pub enum Response {
     MnemonicHexSeed(String),
     /// The BLAKE2b-256 hash of the block bytes
     BlockId(BlockId),
-    /// The BLAKE2b-256 hash of the block bytes
+    /// Returns a Transaction ID
     TransactionId(TransactionId),
-    /// The BLAKE2b-256 hash of the block bytes
+    /// Returns an Alias ID
     AliasId(AliasId),
-    /// The BLAKE2b-256 hash of the block bytes
+    /// Returns a NFT ID
     NftId(NftId),
-    /// The BLAKE2b-256 hash of the block bytes
+    /// Returns a Foundry ID
     FoundryId(FoundryId),
     /// The response from the faucet
     Faucet(String),

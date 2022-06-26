@@ -1,5 +1,6 @@
 package org.iota;
 
+import org.iota.apis.NodeIndexerApi;
 import org.iota.apis.UtilsApi;
 import org.iota.types.*;
 import org.iota.types.ids.OutputId;
@@ -25,37 +26,25 @@ public abstract class ApiTest {
 
     protected void requestFundsFromFaucet(String address) throws ClientException {
         new UtilsApi(config).requestFundsFromFaucet(DEFAULT_DEVNET_FAUCET_URL, address);
+        try {
+            Thread.sleep(1000 * 25);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     protected Block setUpTaggedDataBlock() throws ClientException {
         return client.submitBlockPayload(new TransactionPayload("{ \"type\": 5, \"tag\": \"0x68656c6c6f20776f726c64\", \"data\": \"0x5370616d6d696e6720646174612e0a436f756e743a203037323935320a54696d657374616d703a20323032312d30322d31315431303a32333a34392b30313a30300a54697073656c656374696f6e3a203934c2b573\" }"));
     }
 
-    protected Block setUpTransactionBlock() throws ClientException {
-        String address = client.generateAddresses(new MnemonicSecretManager(DEFAULT_DEVELOPMENT_MNEMONIC), new GenerateAddressesOptions().withRange(0, 1))[0];
-        requestFundsFromFaucet(address);
-        try {
-            Thread.sleep(1000 * 15);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        Block b = client.generateBlock(new MnemonicSecretManager(DEFAULT_DEVELOPMENT_MNEMONIC), new GenerateBlockOptions().withOutputHex(new GenerateBlockOptions.ClientBlockBuilderOutputAddress(client.bech32ToHex(address), "10000000")));
-        try {
-            Thread.sleep(1000 * 15);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        return b;
-    }
-
     protected TransactionId setUpTransactionId() throws ClientException {
-        Block b = setUpTransactionBlock();
-        TransactionId transactionId = client.getTransactionId(new TransactionPayload(b.getJson().get("payload").getAsJsonObject()));
-        return transactionId;
+        OutputId outputId = client.getBasicOutputIds(new NodeIndexerApi.QueryParams())[0];
+        OutputMetadata metadata = client.getOutputMetadata(outputId);
+        return new TransactionId(metadata.getJson().get("transactionId").getAsString());
     }
 
     protected OutputId setupOutputId() throws ClientException {
-        return new OutputId(setUpTransactionId() + "0000");
+        return client.getBasicOutputIds(new NodeIndexerApi.QueryParams())[0];
     }
 
 }
