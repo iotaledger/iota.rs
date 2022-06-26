@@ -40,7 +40,10 @@ pub(crate) async fn get_remainder_output<'a>(
 
     // check amount first
     if input_data.amount < output_data.amount {
-        return Err(Error::NotEnoughBalance(input_data.amount, output_data.amount));
+        return Err(Error::NotEnoughBalance {
+            found: input_data.amount,
+            required: output_data.amount,
+        });
     }
     let remainder_amount = input_data.amount - output_data.amount;
 
@@ -88,27 +91,19 @@ pub(crate) async fn get_remainder_output<'a>(
 }
 
 // Get an Ed25519 address from the inputs as remainder address
-// We don't want to use nft or alias addresses as remainder address, because we might can't control them later
+// We don't want to use nft or alias addresses as remainder address, because we might not be able to control them later
 pub(crate) fn get_remainder_address<'a>(
     inputs: impl Iterator<Item = &'a InputSigningData>,
 ) -> Result<(Address, Option<Chain>)> {
-    // get address from an input, by default we only allow ed25519 addresses as remainder, because then we're sure that
-    // the sender can access it
-    let mut address = None;
-    'outer: for input in inputs {
-        if let Some(unlock_conditions) = input.output.unlock_conditions() {
-            for unlock_condition in unlock_conditions.iter() {
-                if let UnlockCondition::Address(address_unlock_condition) = unlock_condition {
-                    address.replace((*address_unlock_condition.address(), input.chain.clone()));
-                    break 'outer;
-                }
+    for input in inputs {
+        if let Some(address_unlock_condition) = input.output.unlock_conditions().and_then(|o| o.address()) {
+            if address_unlock_condition.address().is_ed25519() {
+                return Ok((*address_unlock_condition.address(), input.chain.clone()));
             }
         }
     }
-    match address {
-        Some(addr) => Ok(addr),
-        None => Err(Error::MissingInputWithEd25519UnlockCondition),
-    }
+
+    Err(Error::MissingInputWithEd25519UnlockCondition)
 }
 
 // Get additional required storage deposit amount for the remainder output

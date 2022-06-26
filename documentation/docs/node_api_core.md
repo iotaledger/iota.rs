@@ -22,7 +22,7 @@ Run `cargo run --example node_api_core_get_health --release -- [NODE URL]`.
 
 ## Description
 
-Calls `GET /api/v2/info`.
+Calls `GET /api/core/v2/info`.
 
 Returns general information about the node.
 
@@ -44,7 +44,7 @@ Run `cargo run --example node_api_core_get_info --release -- [NODE URL]`.
 
 ## Description
 
-Calls `GET /api/v2/tips`.
+Calls `GET /api/core/v2/tips`.
 
 Returns tips that are ideal for attaching a block.
 
@@ -66,7 +66,7 @@ Run `cargo run --example node_api_core_get_tips --release -- [NODE URL]`.
 
 ## Description
 
-Calls `POST /api/v2/blocks`.
+Calls `POST /api/core/v2/blocks`.
 
 Submits a block as a JSON payload.
 
@@ -86,7 +86,7 @@ Run `cargo run --example node_api_core_post_block --release -- [NODE URL]`.
 
 ## Description
 
-Calls `POST /api/v2/blocks`.
+Calls `POST /api/core/v2/blocks`.
 
 Submits a block as raw bytes.
 
@@ -106,7 +106,7 @@ Run `cargo run --example node_api_core_post_block_raw --release -- [NODE URL]`.
 
 ## Description
 
-Calls `GET /api/v2/blocks/{blockId}`.
+Calls `GET /api/core/v2/blocks/{blockId}`.
 
 Returns block data as JSON by its identifier.
 
@@ -126,7 +126,7 @@ Run `cargo run --example node_api_core_get_block --release -- [NODE URL]`.
 
 ## Description
 
-Calls `GET /api/v2/blocks/{blockId}`.
+Calls `GET /api/core/v2/blocks/{blockId}`.
 
 Returns block data as raw bytes by its identifier.
 
@@ -146,7 +146,7 @@ Run `cargo run --example node_api_core_get_block_raw --release -- [NODE URL]`.
 
 ## Description
 
-Calls `GET /api/v2/blocks/{blockId}/metadata`.
+Calls `GET /api/core/v2/blocks/{blockId}/metadata`.
 
 Finds the metadata of a given block.
 
@@ -164,7 +164,7 @@ Run `cargo run --example node_api_core_get_block_metadata --release -- [NODE URL
 
 # `Client::`
 
-Calls `GET /api/v2/outputs/{outputId}`.
+Calls `GET /api/core/v2/outputs/{outputId}`.
 
 Finds an output by its identifier.
 
@@ -183,7 +183,7 @@ Run `cargo run --example node_api_core_ --release -- [NODE URL]`.
 
 ## Description
 
-Calls `GET /api/v2/outputs/{outputId}/metadata`.
+Calls `GET /api/core/v2/outputs/{outputId}/metadata`.
 
 Returns metadata about an output by its identifier.
 
@@ -200,7 +200,7 @@ Run `cargo run --example node_api_core_ --release -- [NODE URL]`.
 
 # `Client::get_receipts`
 
-Calls `GET /api/v2/receipts`.
+Calls `GET /api/core/v2/receipts`.
 
 Returns all stored receipts.
 
@@ -220,7 +220,7 @@ Run `cargo run --example node_api_core_get_receipts --release -- [NODE URL]`.
 
 ## Description
 
-Calls `GET /api/v2/receipts/{migratedAt}`.
+Calls `GET /api/core/v2/receipts/{migratedAt}`.
 
 Returns all stored receipts for a given migration index.
 
@@ -238,7 +238,7 @@ Run `cargo run --example node_api_core_get_receipts_migrated_at --release -- [NO
 
 # `Client::get_treasury`
 
-Calls `GET /api/v2/treasury`.
+Calls `GET /api/core/v2/treasury`.
 
 Returns information about the treasury.
 
@@ -260,7 +260,7 @@ Run `cargo run --example node_api_core_get_treasury --release -- [NODE URL]`.
 
 ## Description
 
-Calls `GET /api/v2/transactions/{transactionId}/included-block`.
+Calls `GET /api/core/v2/transactions/{transactionId}/included-block`.
 
 Returns the included block of a transaction.
 
@@ -279,7 +279,7 @@ Run `cargo run --example node_api_core_ --release -- [NODE URL]`.
 
 ## Description
 
-Calls `GET /api/v2/milestones/{milestoneId}`.
+Calls `GET /api/core/v2/milestones/{milestoneId}`.
 
 Returns milestone data as JSON by its identifier.
 
@@ -299,7 +299,7 @@ Run `cargo run --example node_api_core_get_milestone_by_id --release -- [NODE UR
 
 ## Description
 
-Calls `GET /api/v2/milestones/{milestoneId}`.
+Calls `GET /api/core/v2/milestones/{milestoneId}`.
 
 Returns milestone data as raw bytes by its identifier.
 
@@ -319,7 +319,7 @@ Run `cargo run --example node_api_core_get_milestone_by_id_raw --release -- [NOD
 
 ## Description
 
-Calls `GET /api/v2/milestones/{milestoneId}/utxo-changes`.
+Calls `GET /api/core/v2/milestones/{milestoneId}/utxo-changes`.
 
 Gets all UTXO changes of a given milestone by Milestone ID.
 
@@ -339,7 +339,7 @@ Run `cargo run --example node_api_core_get_utxo_changes_by_id --release -- [NODE
 
 ## Description
 
-Calls `GET /api/v2/milestones/by-index/{index}`.
+Calls `GET /api/core/v2/milestones/by-index/{index}`.
 
 Returns milestone data as JSON by its index.
 
@@ -359,7 +359,7 @@ Run `cargo run --example node_api_core_get_milestone_by_index --release -- [NODE
 
 ## Description
 
-Calls `GET /api/v2/milestones/by-index/{index}`.
+Calls `GET /api/core/v2/milestones/by-index/{index}`.
 
 Returns milestone data as raw bytes by its index.
 
@@ -379,7 +379,7 @@ Run `cargo run --example node_api_core_get_milestone_by_index_raw --release -- [
 
 ## Description
 
-Calls `GET /api/v2/milestones/by-index/{index}/utxo-changes`.
+Calls `GET /api/core/v2/milestones/by-index/{index}/utxo-changes`.
 
 Gets all UTXO changes of a given milestone by milestone index.
 
@@ -399,7 +399,7 @@ Run `cargo run --example node_api_core_get_utxo_changes_by_index --release -- [N
 
 ## Description
 
-Calls `POST /api/v2/whiteflag`.
+Calls `POST /api/core/v2/whiteflag`.
 
 Computes applied and confirmed merkle route hashes for a proposed milestone.
 
@@ -418,7 +418,7 @@ Run `cargo run --example node_api_core_ --release -- [NODE URL]`.
 
 ## Description
 
-Calls `GET /api/v2/peers`.
+Calls `GET /api/core/v2/peers`.
 
 Gets information about the peers of the node.
 
@@ -437,7 +437,7 @@ Run `cargo run --example node_api_core_ --release -- [NODE URL]`.
 
 ## Description
 
-Calls `POST /api/v2/peers`.
+Calls `POST /api/core/v2/peers`.
 
 Adds a given peer to the node.
 
@@ -456,7 +456,7 @@ Run `cargo run --example node_api_core_ --release -- [NODE URL]`.
 
 ## Description
 
-Calls `GET /api/v2/peers/{peerId}`.
+Calls `GET /api/core/v2/peers/{peerId}`.
 
 Gets information about a given peer.
 
@@ -472,7 +472,7 @@ Run `cargo run --example node_api_core_ --release -- [NODE URL]`.
 
 ## Description
 
-Calls `DELETE /api/v2/peers/{peerId}`.
+Calls `DELETE /api/core/v2/peers/{peerId}`.
 
 Removes/disconnects a given peer.
 
@@ -491,7 +491,7 @@ Run `cargo run --example node_api_core_ --release -- [NODE URL]`.
 
 ## Description
 
-Calls `POST /api/v2/control/database/prune`.
+Calls `POST /api/core/v2/control/database/prune`.
 
 Prunes the node database.
 
@@ -510,6 +510,6 @@ Run `cargo run --example node_api_core_ --release -- [NODE URL]`.
 
 ## Description
 
-Calls `POST /api/v2/control/snapshot/create`.
+Calls `POST /api/core/v2/control/snapshot/create`.
 
 Creates a new snapshot

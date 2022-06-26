@@ -71,11 +71,11 @@ impl NodeManager {
     ) -> Result<Vec<Node>> {
         let mut nodes_with_modified_url = Vec::new();
 
-        if prefer_permanode || (path == "api/v2/blocks" && query.is_some()) {
+        if prefer_permanode || (path == "api/core/v2/blocks" && query.is_some()) {
             if let Some(permanodes) = self.permanodes.clone() {
-                // remove api/v2/ since permanodes can have custom keyspaces
+                // remove api/core/v2/ since permanodes can have custom keyspaces
                 // https://editor.swagger.io/?url=https://raw.githubusercontent.com/iotaledger/chronicle.rs/main/docs/api.yaml
-                let path = &path["api/v2/".len()..];
+                let path = &path["api/core/v2/".len()..];
                 for mut permanode in permanodes {
                     permanode.url.set_path(&format!("{}{}", permanode.url.path(), path));
                     permanode.url.set_query(query);
@@ -139,7 +139,10 @@ impl NodeManager {
         // Get node urls and set path
         let nodes = self.get_nodes(path, query, false, prefer_permanode).await?;
         if self.quorum && need_quorum && nodes.len() < self.min_quorum_size {
-            return Err(Error::QuorumPoolSizeError(nodes.len(), self.min_quorum_size));
+            return Err(Error::QuorumPoolSizeError {
+                available_nodes: nodes.len(),
+                minimum_threshold: self.min_quorum_size,
+            });
         }
 
         // Track amount of results for quorum
@@ -171,6 +174,9 @@ impl NodeManager {
                                 warn!("Couldn't convert noderesult to text");
                             }
                         }
+                        Err(Error::ResponseError { code: 404, .. }) => {
+                            error.replace(crate::Error::NotFound);
+                        }
                         Err(err) => {
                             error.replace(err);
                         }
@@ -187,7 +193,7 @@ impl NodeManager {
                             match status {
                                 200 => {
                                     // Handle node_info extra because we also want to return the url
-                                    if path == "api/v2/info" {
+                                    if path == "api/core/v2/info" {
                                         if let Ok(node_info) = serde_json::from_str::<InfoResponse>(&res_text) {
                                             let wrapper = crate::client::NodeInfoWrapper {
                                                 node_info,
@@ -223,6 +229,7 @@ impl NodeManager {
                                         }
                                     }
                                 }
+
                                 _ => {
                                     error.replace(crate::Error::NodeError(res_text));
                                 }
@@ -230,6 +237,9 @@ impl NodeManager {
                         } else {
                             warn!("Couldn't convert noderesult to text");
                         }
+                    }
+                    Err(Error::ResponseError { code: 404, .. }) => {
+                        error.replace(crate::Error::NotFound);
                     }
                     Err(err) => {
                         error.replace(err);
@@ -252,11 +262,14 @@ impl NodeManager {
         {
             Ok(serde_json::from_str(&res.0)?)
         } else {
-            Err(Error::QuorumThresholdError(res.1, self.min_quorum_size))
+            Err(Error::QuorumThresholdError {
+                quorum_size: res.1,
+                minimum_threshold: self.min_quorum_size,
+            })
         }
     }
 
-    // Only used for api/v2/blocks/{blockID}, that's why we don't need the quorum stuff
+    // Only used for api/core/v2/blocks/{blockID}, that's why we don't need the quorum stuff
     pub(crate) async fn get_request_bytes(
         &self,
         path: &str,
@@ -283,8 +296,11 @@ impl NodeManager {
                         };
                     }
                 }
-                Err(e) => {
-                    error.replace(crate::Error::NodeError(e.to_string()));
+                Err(Error::ResponseError { code: 404, .. }) => {
+                    error.replace(crate::Error::NotFound);
+                }
+                Err(err) => {
+                    error.replace(err);
                 }
             }
         }

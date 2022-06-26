@@ -8,7 +8,6 @@ use std::env;
 use dotenv::dotenv;
 use iota_client::{
     api::GetAddressesBuilder,
-    constants::SHIMMER_TESTNET_BECH32_HRP,
     secret::{mnemonic::MnemonicSecretManager, SecretManager},
     Client, Result,
 };
@@ -17,15 +16,18 @@ use iota_client::{
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    // This example uses dotenv, which is not safe for use in production
+    dotenv().ok();
+
+    let node_url = env::var("NODE_URL").unwrap();
+
     // Create a client instance
     let client = Client::builder()
-        .with_node("http://localhost:14265")? // Insert your node URL here
+        .with_node(&node_url)? // Insert your node URL here
         .with_node_sync_disabled()
         .finish()
         .await?;
 
-    // This example uses dotenv, which is not safe for use in production
-    dotenv().ok();
     let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
         &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
     )?);
@@ -48,7 +50,7 @@ async fn main() -> Result<()> {
     // human readable part) from the nodeinfo, generating it "offline" requires setting it with
     // `with_bech32_hrp(bech32_hrp)`
     let addresses = GetAddressesBuilder::new(&secret_manager)
-        .with_bech32_hrp(SHIMMER_TESTNET_BECH32_HRP)
+        .with_bech32_hrp(client.get_bech32_hrp().await?)
         .with_account_index(0)
         .with_range(0..4)
         .finish()

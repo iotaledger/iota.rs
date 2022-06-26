@@ -16,14 +16,16 @@ use iota_client::{
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let address_range = 0..150;
-    // Create a client instance
-    let client = Client::builder().with_node("http://localhost:14265")?.finish().await?;
-
     // This example uses dotenv, which is not safe for use in production
     // Configure your own mnemonic in ".env". Since the output amount cannot be zero, the mnemonic must contain non-zero
     // balance
     dotenv().ok();
+
+    let node_url = env::var("NODE_URL").unwrap();
+
+    let address_range = 0..150;
+    // Create a client instance
+    let client = Client::builder().with_node(&node_url)?.finish().await?;
 
     let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_hex_seed(
         &env::var("NON_SECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap(),

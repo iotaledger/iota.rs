@@ -3,14 +3,21 @@
 
 //! cargo run --example 05_data_block --release
 
+use std::env;
+
+use dotenv::dotenv;
 use iota_client::{bee_block::payload::Payload, Client, Result};
 
 /// In this example we will send a block with a tagged data payload
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    dotenv().ok();
+
+    let node_url = env::var("NODE_URL").unwrap();
+
     let client = Client::builder()
-        .with_node("http://localhost:14265")?
+        .with_node(&node_url)?
         // .with_permanode("http://18.196.167.57:8000/api/permanode/", None, None)?
         .with_node_sync_disabled()
         .finish()

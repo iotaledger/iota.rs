@@ -18,15 +18,18 @@ use iota_client::{
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    // This example uses dotenv, which is not safe for use in production
+    dotenv().ok();
+
+    let node_url = env::var("NODE_URL").unwrap();
+    let faucet_url = env::var("FAUCET_URL").unwrap();
+
     // Create a client instance
     let client = Client::builder()
-        .with_node("http://localhost:14265")? // Insert your node URL here
+        .with_node(&node_url)? // Insert your node URL here
         .with_node_sync_disabled()
         .finish()
         .await?;
-
-    // This example uses dotenv, which is not safe for use in production
-    dotenv().ok();
 
     // First address from the seed below is atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r
     let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_hex_seed(
@@ -36,10 +39,7 @@ async fn main() -> Result<()> {
     let addresses = client.get_addresses(&secret_manager).with_range(0..1).finish().await?;
     println!("{:?}", addresses[0]);
 
-    println!(
-        "{}",
-        request_funds_from_faucet("http://localhost:14265/api/plugins/faucet/v1/enqueue", &addresses[0]).await?
-    );
+    println!("{}", request_funds_from_faucet(&faucet_url, &addresses[0]).await?);
     tokio::time::sleep(std::time::Duration::from_secs(15)).await;
 
     let output_ids = client

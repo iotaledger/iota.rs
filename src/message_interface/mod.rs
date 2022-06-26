@@ -10,6 +10,10 @@ mod message_handler;
 pub mod output_builder;
 mod response;
 
+#[cfg(target_family = "wasm")]
+use std::sync::mpsc::channel;
+
+#[cfg(not(target_family = "wasm"))]
 use tokio::sync::mpsc::unbounded_channel;
 
 pub use self::{
@@ -28,9 +32,19 @@ pub async fn create_message_handler(client_config: Option<String>) -> Result<Cli
 
 /// Send message to message handler
 pub async fn send_message(handle: &ClientMessageHandler, message: Message) -> Response {
+    #[cfg(not(target_family = "wasm"))]
     let (message_tx, mut message_rx) = unbounded_channel();
+    #[cfg(target_family = "wasm")]
+    let (message_tx, message_rx) = channel();
     handle.handle(message, message_tx).await;
-    message_rx.recv().await.unwrap()
+    #[cfg(not(target_family = "wasm"))]
+    {
+        message_rx.recv().await.unwrap()
+    }
+    #[cfg(target_family = "wasm")]
+    {
+        message_rx.recv().unwrap()
+    }
 }
 
 #[cfg(test)]

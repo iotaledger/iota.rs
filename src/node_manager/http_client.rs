@@ -51,11 +51,11 @@ impl HttpClient {
         if status.is_success() {
             Ok(Response(response))
         } else {
-            Err(Error::ResponseError(
-                status.as_u16(),
-                response.text().await?,
-                url.to_string(),
-            ))
+            Err(Error::ResponseError {
+                code: status.as_u16(),
+                text: response.text().await?,
+                url: url.to_string(),
+            })
         }
     }
 

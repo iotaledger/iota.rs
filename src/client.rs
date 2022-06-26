@@ -383,7 +383,7 @@ impl Client {
     //////////////////////////////////////////////////////////////////////
 
     // todo: only used during syncing, can it be replaced with the other node info function?
-    /// GET /api/v2/info endpoint
+    /// GET /api/core/v2/info endpoint
     pub async fn get_node_info(url: &str, auth: Option<NodeAuth>) -> Result<NodeInfo> {
         let mut url = crate::node_manager::builder::validate_url(Url::parse(url)?)?;
         if let Some(auth) = &auth {
@@ -394,7 +394,7 @@ impl Client {
                     .map_err(|_| crate::Error::UrlAuthError("password".to_string()))?;
             }
         }
-        let path = "api/v2/info";
+        let path = "api/core/v2/info";
         url.set_path(path);
 
         let resp: NodeInfo = crate::node_manager::http_client::HttpClient::new()
@@ -413,7 +413,7 @@ impl Client {
         Ok(resp)
     }
 
-    /// GET /api/plugins/indexer/v1/outputs/basic{query} endpoint
+    /// GET /api/indexer/v1/outputs/basic{query} endpoint
     pub fn get_address(&self) -> GetAddressBuilder<'_> {
         GetAddressBuilder::new(self)
     }
@@ -627,7 +627,10 @@ impl Client {
         }
 
         if total_already_spent < amount {
-            return Err(crate::Error::NotEnoughBalance(total_already_spent, amount));
+            return Err(crate::Error::NotEnoughBalance {
+                found: total_already_spent,
+                required: amount,
+            });
         }
 
         Ok(selected_inputs)
@@ -730,8 +733,9 @@ impl Client {
         Ok((block_id, block))
     }
 
-    /// Returns checked local time and milestone index.
-    pub async fn get_time_and_milestone_checked(&self) -> Result<(u32, u32)> {
+    /// Returns the local time checked with the timestamp of the latest milestone, if the difference is larger than 5
+    /// minutes an error is returned to prevent locking outputs by accident for a wrong time.
+    pub async fn get_time_checked(&self) -> Result<u32> {
         let local_time = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .expect("Time went backwards")
@@ -742,9 +746,12 @@ impl Client {
         if !(latest_ms_timestamp - FIVE_MINUTES_IN_SECONDS..latest_ms_timestamp + FIVE_MINUTES_IN_SECONDS)
             .contains(&local_time)
         {
-            return Err(Error::TimeNotSynced(local_time, latest_ms_timestamp));
+            return Err(Error::TimeNotSynced {
+                local_time,
+                milestone_timestamp: latest_ms_timestamp,
+            });
         }
-        Ok((local_time, status_response.latest_milestone.index))
+        Ok(local_time)
     }
 
     //////////////////////////////////////////////////////////////////////

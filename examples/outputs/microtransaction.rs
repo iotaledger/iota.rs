@@ -1,23 +1,31 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! cargo run --example native_tokens --release
+//! cargo run --example microtransaction --release
 
-use std::env;
+use std::{
+    env,
+    time::{Duration, SystemTime, UNIX_EPOCH},
+};
 
 use dotenv::dotenv;
 use iota_client::{
     bee_block::output::{
-        unlock_condition::{AddressUnlockCondition, UnlockCondition},
-        BasicOutputBuilder, NativeToken, TokenId,
+        unlock_condition::{
+            AddressUnlockCondition, ExpirationUnlockCondition, StorageDepositReturnUnlockCondition, UnlockCondition,
+        },
+        BasicOutputBuilder,
     },
+    request_funds_from_faucet,
     secret::{mnemonic::MnemonicSecretManager, SecretManager},
-    utils::request_funds_from_faucet,
     Client, Result,
 };
-use primitive_types::U256;
 
-/// In this example we will send basic outputs with native tokens
+/// In this example we will do a microtransaction using unlock conditions to an output.
+///
+/// Due to the required storage deposit, it is not possible to send a small amount of tokens.
+/// However, it is possible to send a large amount and ask a slightly smaller amount in return to
+/// effectively transfer a small amount.
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -42,17 +50,27 @@ async fn main() -> Result<()> {
 
     let address = client.get_addresses(&secret_manager).with_range(0..1).get_raw().await?[0];
     request_funds_from_faucet(&faucet_url, &address.to_bech32(client.get_bech32_hrp().await?)).await?;
+    tokio::time::sleep(std::time::Duration::from_secs(15)).await;
 
-    // Replace with the token ID of native tokens you own.
-    let token_id: [u8; 38] =
-        hex::decode("08e68f7616cd4948efebc6a77c4f935eaed770ac53869cba56d104f2b472a8836d0100000000")?
-            .try_into()
-            .unwrap();
+    let tomorrow = (SystemTime::now() + Duration::from_secs(24 * 3600))
+        .duration_since(UNIX_EPOCH)
+        .expect("clock went backwards")
+        .as_secs()
+        .try_into()
+        .unwrap();
     let outputs = vec![
-        // most simple output
-        BasicOutputBuilder::new_with_amount(1_000_000)?
+        // with storage deposit return
+        BasicOutputBuilder::new_with_amount(255100)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-            .add_native_token(NativeToken::new(TokenId::new(token_id), U256::from(50))?)
+            // Return 100 less than the original amount.
+            .add_unlock_condition(UnlockCondition::StorageDepositReturn(
+                StorageDepositReturnUnlockCondition::new(address, 255000)?,
+            ))
+            // If the receiver does not consume this output, we Unlock after a day to avoid
+            // locking our funds forever.
+            .add_unlock_condition(UnlockCondition::Expiration(
+                ExpirationUnlockCondition::new(address, tomorrow).unwrap(),
+            ))
             .finish_output()?,
     ];
 
@@ -65,6 +83,6 @@ async fn main() -> Result<()> {
 
     println!("Transaction sent: {node_url}/api/core/v2/blocks/{}", block.id());
     println!("Block metadata: {node_url}/api/core/v2/blocks/{}/metadata", block.id());
-
+    let _ = client.retry_until_included(&block.id(), None, None).await?;
     Ok(())
 }

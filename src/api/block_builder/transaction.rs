@@ -10,7 +10,6 @@ use bee_block::{
     input::{Input, UtxoInput},
     output::{dto::OutputDto, InputsCommitment, Output, OutputId},
     payload::{
-        milestone::MilestoneIndex,
         transaction::{RegularTransactionEssence, TransactionEssence, TransactionPayload},
         Payload, TaggedDataPayload,
     },
@@ -118,14 +117,9 @@ pub async fn sign_transaction(
         .await?;
     let tx_payload = TransactionPayload::new(prepared_transaction_data.essence.clone(), unlocks)?;
 
-    let (local_time, milestone_index) = block_builder.client.get_time_and_milestone_checked().await?;
+    let local_time = block_builder.client.get_time_checked().await?;
 
-    let conflict = verify_semantic(
-        &prepared_transaction_data.inputs_data,
-        &tx_payload,
-        milestone_index,
-        local_time,
-    )?;
+    let conflict = verify_semantic(&prepared_transaction_data.inputs_data, &tx_payload, local_time)?;
 
     if conflict != ConflictReason::None {
         return Err(Error::TransactionSemantic(conflict));
@@ -139,7 +133,6 @@ pub async fn sign_transaction(
 pub fn verify_semantic(
     input_signing_data: &[InputSigningData],
     transaction: &TransactionPayload,
-    milestone_index: u32,
     local_time: u32,
 ) -> crate::Result<ConflictReason> {
     let transaction_id = transaction.id();
@@ -162,7 +155,6 @@ pub fn verify_semantic(
         essence,
         inputs.iter().map(|(id, input)| (id, *input)),
         transaction.unlocks(),
-        MilestoneIndex(milestone_index),
         local_time,
     );
 

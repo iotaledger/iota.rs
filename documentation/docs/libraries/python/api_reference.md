@@ -103,7 +103,7 @@ def main():
     block_id = client.block(
         seed=SEED, outputs=[{'address': EMPTY_ADDRESS, 'amount': 100}])['block_id']
     print(f'Token sent with block_id: {block_id}')
-    print(f'Please check http://127.0.0.1:14265/api/v2/blocks/{block_id}')
+    print(f'Please check http://127.0.0.1:14265/api/core/v2/blocks/{block_id}')
 
     print(f'get_block_metadata() for block_id {block_id}')
     block_metadata = client.get_block_metadata(block_id)
@@ -117,7 +117,7 @@ def main():
     block_raw = client.get_block_raw(block_id)
     print(f"raw_data = {block_raw.encode('utf-8')}")
     print(
-        f"Note the raw data is exactly the same from http://127.0.0.1:14265/api/v2/blocks/{block_id}")
+        f"Note the raw data is exactly the same from http://127.0.0.1:14265/api/core/v2/blocks/{block_id}")
     print(', which is not utf-8 format. The utf-8 format here is just for ease of demonstration')
 
     print(f'block() Indexation')
@@ -125,7 +125,7 @@ def main():
         index="Hello", data=[84, 97, 110, 103, 108, 101])
     print(f'Indexation sent with block_id: {block_id_indexation}')
     print(
-        f'Please check http://127.0.0.1:14265/api/v2/blocks/{block_id_indexation}')
+        f'Please check http://127.0.0.1:14265/api/core/v2/blocks/{block_id_indexation}')
 
     # Note that in rust we need to specify the parameter type explicitly, so if the user wants
     # to use the utf-8 string as the data, then the `data_str` field can be used.
@@ -134,7 +134,7 @@ def main():
         index="Hi", data_str="Tangle")
     print(f'Indexation sent with block_id: {block_id_indexation}')
     print(
-        f'Please check http://127.0.0.1:14265/api/v2/blocks/{block_id_indexation}')
+        f'Please check http://127.0.0.1:14265/api/core/v2/blocks/{block_id_indexation}')
 
     print(f"get_block_index() for index 'Hello'")
     block_id_indexation_queried = client.get_block_index("Hello")

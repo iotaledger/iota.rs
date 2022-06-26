@@ -24,13 +24,11 @@ impl Client {
     /// Get basic outputs filtered by the given parameters.
     /// GET with query parameter returns all outputIDs that fit these filter criteria.
     /// Query parameters: "address", "hasStorageDepositReturnCondition", "storageReturnAddress",
-    /// "hasExpirationCondition", "expiresBefore", "expiresAfter", "expiresBeforeMilestone", "expiresAfterMilestone",
-    /// "hasTimelockCondition", "timelockedBefore", "timelockedAfter", "timelockedBeforeMilestone",
-    /// "timelockedAfterMilestone", "sender", "tag", "createdBefore" and "createdAfter".
-    /// Returns an empty Vec if no results are found.
-    /// api/plugins/indexer/v1/outputs/basic
+    /// "hasExpirationCondition", "expiresBefore", "expiresAfter", "hasTimelockCondition", "timelockedBefore",
+    /// "timelockedAfter", "sender", "tag", "createdBefore" and "createdAfter". Returns an empty Vec if no results
+    /// are found. api/indexer/v1/outputs/basic
     pub async fn basic_output_ids(&self, query_parameters: Vec<QueryParameter>) -> Result<Vec<OutputId>> {
-        let route = "api/plugins/indexer/v1/outputs/basic";
+        let route = "api/indexer/v1/outputs/basic";
 
         verify_query_parameters!(
             query_parameters,
@@ -43,13 +41,9 @@ impl Client {
             QueryParameter::HasTimelockCondition,
             QueryParameter::TimelockedBefore,
             QueryParameter::TimelockedAfter,
-            QueryParameter::TimelockedBeforeMilestone,
-            QueryParameter::TimelockedAfterMilestone,
             QueryParameter::HasExpirationCondition,
             QueryParameter::ExpiresBefore,
             QueryParameter::ExpiresAfter,
-            QueryParameter::ExpiresBeforeMilestone,
-            QueryParameter::ExpiresAfterMilestone,
             QueryParameter::ExpirationReturnAddress,
             QueryParameter::Sender,
             QueryParameter::Tag,
@@ -67,9 +61,9 @@ impl Client {
     /// GET with query parameter returns all outputIDs that fit these filter criteria.
     /// Query parameters: "stateController", "governor", "issuer", "sender", "createdBefore", "createdAfter"
     /// Returns an empty list if no results are found.
-    /// api/plugins/indexer/v1/outputs/alias
+    /// api/indexer/v1/outputs/alias
     pub async fn alias_output_ids(&self, query_parameters: Vec<QueryParameter>) -> Result<Vec<OutputId>> {
-        let route = "api/plugins/indexer/v1/outputs/alias";
+        let route = "api/indexer/v1/outputs/alias";
 
         verify_query_parameters!(
             query_parameters,
@@ -91,9 +85,9 @@ impl Client {
     }
 
     /// Get alias output by its aliasID.
-    /// api/plugins/indexer/v1/outputs/alias/:{AliasId}
+    /// api/indexer/v1/outputs/alias/:{AliasId}
     pub async fn alias_output_id(&self, alias_id: AliasId) -> Result<OutputId> {
-        let route = format!("api/plugins/indexer/v1/outputs/alias/{alias_id}");
+        let route = format!("api/indexer/v1/outputs/alias/{alias_id}");
 
         Ok(*(self
             .get_output_ids_with_pagination(&route, Vec::new(), true, false)
@@ -106,9 +100,9 @@ impl Client {
     /// GET with query parameter returns all outputIDs that fit these filter criteria.
     /// Query parameters: "address", "createdBefore", "createdAfter"
     /// Returns an empty list if no results are found.
-    /// api/plugins/indexer/v1/outputs/foundry
+    /// api/indexer/v1/outputs/foundry
     pub async fn foundry_output_ids(&self, query_parameters: Vec<QueryParameter>) -> Result<Vec<OutputId>> {
-        let route = "api/plugins/indexer/v1/outputs/foundry";
+        let route = "api/indexer/v1/outputs/foundry";
 
         verify_query_parameters!(
             query_parameters,
@@ -127,9 +121,9 @@ impl Client {
     }
 
     /// Get foundry output by its foundryID.
-    /// api/plugins/indexer/v1/outputs/foundry/:{FoundryID}
+    /// api/indexer/v1/outputs/foundry/:{FoundryID}
     pub async fn foundry_output_id(&self, foundry_id: FoundryId) -> Result<OutputId> {
-        let route = format!("api/plugins/indexer/v1/outputs/foundry/{foundry_id}");
+        let route = format!("api/indexer/v1/outputs/foundry/{foundry_id}");
 
         Ok(*(self
             .get_output_ids_with_pagination(&route, Vec::new(), true, false)
@@ -140,13 +134,12 @@ impl Client {
 
     /// Get NFT outputs filtered by the given parameters.
     /// Query parameters: "address", "hasStorageDepositReturnCondition", "storageReturnAddress",
-    /// "hasExpirationCondition",                 "expiresBefore", "expiresAfter", "expiresBeforeMilestone",
-    /// "expiresAfterMilestone",                 "hasTimelockCondition", "timelockedBefore", "timelockedAfter",
-    /// "timelockedBeforeMilestone",                 "timelockedAfterMilestone", "issuer", "sender", "tag",
-    /// "createdBefore", "createdAfter" Returns an empty list if no results are found.
-    /// api/plugins/indexer/v1/outputs/nft
+    /// "hasExpirationCondition", "expiresBefore", "expiresAfter", "hasTimelockCondition", "timelockedBefore",
+    /// "timelockedAfter", "issuer", "sender", "tag", "createdBefore", "createdAfter"
+    /// Returns an empty list if no results are found.
+    /// api/indexer/v1/outputs/nft
     pub async fn nft_output_ids(&self, query_parameters: Vec<QueryParameter>) -> Result<Vec<OutputId>> {
-        let route = "api/plugins/indexer/v1/outputs/nft";
+        let route = "api/indexer/v1/outputs/nft";
 
         verify_query_parameters!(
             query_parameters,
@@ -159,13 +152,9 @@ impl Client {
             QueryParameter::HasTimelockCondition,
             QueryParameter::TimelockedBefore,
             QueryParameter::TimelockedAfter,
-            QueryParameter::TimelockedBeforeMilestone,
-            QueryParameter::TimelockedAfterMilestone,
             QueryParameter::HasExpirationCondition,
             QueryParameter::ExpiresBefore,
             QueryParameter::ExpiresAfter,
-            QueryParameter::ExpiresBeforeMilestone,
-            QueryParameter::ExpiresAfterMilestone,
             QueryParameter::ExpirationReturnAddress,
             QueryParameter::Sender,
             QueryParameter::Tag,
@@ -180,9 +169,9 @@ impl Client {
     }
 
     /// Get NFT output by its nftID.
-    /// api/plugins/indexer/v1/outputs/nft/:{NftId}
+    /// api/indexer/v1/outputs/nft/:{NftId}
     pub async fn nft_output_id(&self, nft_id: NftId) -> Result<OutputId> {
-        let route = format!("api/plugins/indexer/v1/outputs/nft/{nft_id}");
+        let route = format!("api/indexer/v1/outputs/nft/{nft_id}");
 
         Ok(*(self
             .get_output_ids_with_pagination(&route, Vec::new(), true, false)

@@ -20,13 +20,13 @@ pub struct AddressBalance {
     pub ledger_index: u32,
 }
 
-/// Builder of GET /api/v2/address/{address} endpoint
+/// Builder of GET /api/core/v2/address/{address} endpoint
 pub struct GetAddressBuilder<'a> {
     client: &'a Client,
 }
 
 impl<'a> GetAddressBuilder<'a> {
-    /// Create GET /api/v2/address/{address} endpoint builder
+    /// Create GET /api/core/v2/address/{address} endpoint builder
     pub fn new(client: &'a Client) -> Self {
         Self { client }
     }

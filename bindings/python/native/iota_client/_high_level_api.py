@@ -42,12 +42,12 @@ class HighLevelAPI(BaseAPI):
             'max_attempts': max_attempts
         })
 
-    def consolidate_funds(self, signer, account_index, address_range):
+    def consolidate_funds(self, secret_manager, account_index, address_range):
         """Function to consolidate all funds from a range of addresses to the address with the lowest index in that range
            Returns the address to which the funds got consolidated, if any were available.
         """
         return self.call_client_method('ConsolidateFunds', {
-            'signer': signer,
+            'secret_manager': secret_manager,
             'account_index': account_index,
             'address_range': address_range
         })
@@ -60,12 +60,12 @@ class HighLevelAPI(BaseAPI):
             'amount': amount
         })
 
-    def find_outputs(self, outputs, addresses):
+    def find_outputs(self, output_ids, addresses):
         """Find all outputs based on the requests criteria. This method will try to query multiple nodes if
            the request amount exceeds individual node limit.
         """
         return self.call_client_method('FindOutputs', {
-            'outputs': outputs,
+            'output_ids': output_ids,
             'addresses': addresses
         })
 

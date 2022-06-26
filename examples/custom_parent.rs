@@ -3,17 +3,22 @@
 
 //! cargo run --example custom_parent --release
 
-use std::str::FromStr;
+use std::{env, str::FromStr};
 
+use dotenv::dotenv;
 use iota_client::{bee_block::BlockId, Client};
 
 /// In this example we will define a custom block parent which be used for promoting
 
 #[tokio::main]
 async fn main() {
+    dotenv().ok();
+
+    let node_url = env::var("NODE_URL").unwrap();
+
     // Create a client instance
     let client = Client::builder()
-        .with_node("http://localhost:14265") // Insert your node URL here
+        .with_node(&node_url) // Insert your node URL here
         .unwrap()
         .finish()
         .await

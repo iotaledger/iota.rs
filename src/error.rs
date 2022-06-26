@@ -28,8 +28,13 @@ pub enum Error {
     #[error("Error when building transaction block")]
     TransactionError,
     /// The wallet account doesn't have enough balance
-    #[error("The wallet account doesn't have enough balance. It only has {0}, required is {1}")]
-    NotEnoughBalance(u64, u64),
+    #[error("The wallet account doesn't have enough balance. It only has {found}, required is {required}")]
+    NotEnoughBalance {
+        /// The amount found in the balance.
+        found: u64,
+        /// The required amount.
+        required: u64,
+    },
     /// The wallet account doesn't have any inputs found
     #[error("No inputs found")]
     NoInputs,
@@ -58,11 +63,21 @@ pub enum Error {
     #[error("No synced node available")]
     SyncedNodePoolEmpty,
     /// Error on reaching quorum
-    #[error("Failed to reach quorum {0} {1}")]
-    QuorumThresholdError(usize, usize),
+    #[error("Failed to reach quorum: {quorum_size} < {minimum_threshold}")]
+    QuorumThresholdError {
+        /// The current quorum size.
+        quorum_size: usize,
+        /// The minimum quorum threshold.
+        minimum_threshold: usize,
+    },
     /// Error on quorum because not enough nodes are available
-    #[error("Not enough nodes for quorum {0} {1}")]
-    QuorumPoolSizeError(usize, usize),
+    #[error("Not enough nodes for quorum: {available_nodes} < {minimum_threshold}")]
+    QuorumPoolSizeError {
+        /// The number of nodes available for quorum.
+        available_nodes: usize,
+        /// The minimum quorum threshold.
+        minimum_threshold: usize,
+    },
     /// Error on API request
     #[error("Node error: {0}")]
     NodeError(String),
@@ -122,8 +137,15 @@ pub enum Error {
     #[serde(serialize_with = "display_string")]
     CryptoError(#[from] crypto::Error),
     /// Error from RestAPI calls with unexpected status code response
-    #[error("Response error with status code {0}: {1}, URL: {2}")]
-    ResponseError(u16, String, String),
+    #[error("Response error with status code {code}: {text}, URL: {url}")]
+    ResponseError {
+        /// The status code.
+        code: u16,
+        /// The text from the response.
+        text: String,
+        /// The url of the API.
+        url: String,
+    },
     /// reqwest error
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
@@ -162,9 +184,9 @@ pub enum Error {
     /// Packable error
     #[error("Bee packable error")]
     PackableError,
-    /// API error
-    #[error("Invalid API name")]
-    ApiError,
+    /// Unexpected API response error
+    #[error("Unexpected API response")]
+    UnexpectedApiResponse,
     /// Rw lock failed.
     #[error("Rw lock failed")]
     PoisonError,
@@ -231,14 +253,22 @@ pub enum Error {
     #[error("no snapshot path has been supplied")]
     StrongholdSnapshotPathMissing,
     /// The semantic validation of a transaction failed.
-    #[error("the semantic validation of a transaction failed")]
+    #[error("the semantic validation of a transaction failed with conflict reason: {} - {0:?}", *.0 as u8)]
     TransactionSemantic(ConflictReason),
     /// Local time doesn't match the time of the latest milestone timestamp
-    #[error("Local time {0} doesn't match the time of the latest milestone timestamp: {1}")]
-    TimeNotSynced(u32, u32),
+    #[error("Local time {local_time} doesn't match the time of the latest milestone timestamp: {milestone_timestamp}")]
+    TimeNotSynced {
+        /// The local time.
+        local_time: u32,
+        /// The timestamp of the latest milestone.
+        milestone_timestamp: u32,
+    },
     /// An indexer API request contains a query parameter not supported by the endpoint.
     #[error("An indexer API request contains a query parameter not supported by the endpoint: {0}.")]
     UnsupportedQueryParameter(QueryParameter),
+    /// The requested data was not found.
+    #[error("The requested data was not found.")]
+    NotFound,
 }
 
 // map most errors to a single error but there are some errors that

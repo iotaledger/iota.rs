@@ -15,16 +15,19 @@ use iota_client::{
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let client = Client::builder()
-        .with_node("http://localhost:14265")?
-        .with_node_sync_disabled()
-        .finish()
-        .await?;
-
     // This example uses dotenv, which is not safe for use in production
     // Configure your own mnemonic in ".env". Since the output amount cannot be zero, the mnemonic must contain non-zero
     // balance
     dotenv().ok();
+
+    let node_url = env::var("NODE_URL").unwrap();
+
+    let client = Client::builder()
+        .with_node(&node_url)?
+        .with_node_sync_disabled()
+        .finish()
+        .await?;
+
     let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
         &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
     )?);

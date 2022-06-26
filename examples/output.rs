@@ -20,26 +20,26 @@ use iota_client::{
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let client = Client::builder()
-        .with_node("http://localhost:14265")?
-        .with_node_sync_disabled()
-        .finish()
-        .await?;
-
     // This example uses dotenv, which is not safe for use in production
     // Configure your own mnemonic in ".env". Since the output amount cannot be zero, the mnemonic must contain non-zero
     // balance
     dotenv().ok();
+
+    let node_url = env::var("NODE_URL").unwrap();
+    let faucet_url = env::var("FAUCET_URL").unwrap();
+
+    let client = Client::builder()
+        .with_node(&node_url)?
+        .with_node_sync_disabled()
+        .finish()
+        .await?;
+
     let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
         &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
     )?);
 
     let address = client.get_addresses(&secret_manager).with_range(0..1).get_raw().await?[0];
-    request_funds_from_faucet(
-        "http://localhost:14265/api/plugins/faucet/v1/enqueue",
-        &address.to_bech32("atoi"),
-    )
-    .await?;
+    request_funds_from_faucet(&faucet_url, &address.to_bech32(client.get_bech32_hrp().await?)).await?;
 
     let outputs = vec![
         BasicOutputBuilder::new_with_amount(1_000_000)?
@@ -54,11 +54,8 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
 
-    println!("Transaction sent: http://localhost:14265/api/v2/blocks/{}", block.id());
-    println!(
-        "Block metadata: http://localhost:14265/api/v2/blocks/{}/metadata",
-        block.id()
-    );
+    println!("Transaction sent: {node_url}/api/core/v2/blocks/{}", block.id());
+    println!("Block metadata: {node_url}/api/core/v2/blocks/{}/metadata", block.id());
 
     // conflict reasons from https://github.com/gohornet/hornet/blob/4cd911a5aaed017c31a2093fc27bf4d06182ac67/pkg/model/storage/block_metadata.go#L31
     // 	// ConflictInputUTXOAlreadySpent the referenced UTXO was already spent.

@@ -3,7 +3,7 @@
 
 //! Node indexer responses.
 
-/// Response of GET /api/plugins/indexer/v1/*
+/// Response of GET /api/indexer/v1/*
 /// Returns the output_ids for the provided query parameters.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct OutputIdsResponse {

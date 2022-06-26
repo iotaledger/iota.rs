@@ -13,16 +13,20 @@ use iota_client::{
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    // This example uses dotenv, which is not safe for use in production
+    dotenv().ok();
+
+    let node_url = env::var("NODE_URL").unwrap();
+    let faucet_url = env::var("FAUCET_URL").unwrap();
+
     // Create a client instance
     let client = Client::builder()
-        .with_node("http://localhost:14265") // Insert the node here
+        .with_node(&node_url) // Insert the node here
         .unwrap()
         .with_node_sync_disabled()
         .finish()
         .await
         .unwrap();
-    // This example uses dotenv, which is not safe for use in production
-    dotenv().ok();
 
     let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
         &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
@@ -37,8 +41,7 @@ async fn main() -> Result<()> {
         .unwrap();
     println!("{}", addresses[0]);
 
-    let faucet_response =
-        request_funds_from_faucet("http://localhost:14265/api/plugins/faucet/v1/enqueue", &addresses[0]).await?;
+    let faucet_response = request_funds_from_faucet(&faucet_url, &addresses[0]).await?;
 
     println!("{}", faucet_response);
     Ok(())
