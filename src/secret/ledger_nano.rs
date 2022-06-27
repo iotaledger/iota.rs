@@ -176,8 +176,8 @@ impl SecretManageExt for LedgerSecretManager {
                 None => return Err(crate::Error::NoInputs),
             };
             // coin_type and account_index should be the same in each output
-            if (coin_type.is_some() && coin_type != Some(bip32_indices[0]))
-                || (account_index.is_some() && account_index != Some(bip32_indices[1]))
+            if (coin_type.is_some() && coin_type != Some(bip32_indices[1]))
+                || (account_index.is_some() && account_index != Some(bip32_indices[2]))
             {
                 return Err(crate::Error::InvalidBIP32ChainData);
             }
@@ -214,8 +214,7 @@ impl SecretManageExt for LedgerSecretManager {
             ledger.prepare_blind_signing(input_bip32_indices, essence_hash)?;
         } else {
             // figure out the remainder address and bip32 index (if there is one)
-            let (has_remainder, remainder_address, remainder_bip32): (
-                bool,
+            let (remainder_address, remainder_bip32): (
                 Option<&bee_block::address::Address>,
                 iota_ledger::LedgerBIP32Index,
             ) = match &prepared_transaction.remainder {
@@ -232,7 +231,6 @@ impl SecretManageExt for LedgerSecretManager {
                         None => return Err(crate::Error::InvalidBIP32ChainData),
                     };
                     (
-                        true,
                         Some(&a.address),
                         iota_ledger::LedgerBIP32Index {
                             bip32_change: remainder_bip32_indices[3] | HARDENED,
@@ -240,11 +238,11 @@ impl SecretManageExt for LedgerSecretManager {
                         },
                     )
                 }
-                None => (false, None, iota_ledger::LedgerBIP32Index::default()),
+                None => (None, iota_ledger::LedgerBIP32Index::default()),
             };
 
             let mut remainder_index = 0u16;
-            if has_remainder {
+            if remainder_address.is_some() {
                 match &prepared_transaction.essence {
                     bee_block::payload::transaction::TransactionEssence::Regular(essence) => {
                         // find the index of the remainder in the essence
@@ -288,14 +286,14 @@ impl SecretManageExt for LedgerSecretManager {
                 "[LEDGER] {:?} {:02x?} {} {} {:?}",
                 input_bip32_indices,
                 essence_bytes,
-                has_remainder,
+                remainder_address.is_some(),
                 remainder_index,
                 remainder_bip32
             );
             ledger.prepare_signing(
                 input_bip32_indices,
                 essence_bytes,
-                has_remainder,
+                remainder_address.is_some(),
                 remainder_index,
                 remainder_bip32,
             )?;
