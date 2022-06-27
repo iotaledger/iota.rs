@@ -97,7 +97,7 @@ pub enum Error {
     /// Unpack error
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
-    UnpackError(#[from] packable::error::UnpackError<<Self as Packable>::UnpackError, UnexpectedEOF>),
+    UnpackError(#[from] packable::error::UnpackError<bee_block::Error, UnexpectedEOF>),
     /// Block dtos error
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
