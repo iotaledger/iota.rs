@@ -29,7 +29,7 @@ use crate::{
         response::Response,
     },
     secret::SecretManager,
-    Client, Result,
+    Client, Error, Result,
 };
 
 fn panic_to_response_message(panic: Box<dyn Any>) -> Response {
