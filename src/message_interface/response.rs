@@ -78,6 +78,8 @@ pub enum Response {
     PostBlockSuccessful(BlockId),
     /// Block
     Block(BlockDto),
+    /// BlockId with its Block
+    BlockIdWithBlock(BlockId, BlockDto),
     /// Block metadata
     BlockMetadata(BlockMetadataResponse),
     /// Block raw
@@ -112,8 +114,6 @@ pub enum Response {
     Balance(u64),
     /// Addresses balances
     AddressesBalances(Vec<AddressBalance>),
-    /// Retry
-    RetrySuccessful((BlockId, BlockDto)),
     /// Retry until included
     RetryUntilIncludedSuccessful(Vec<(BlockId, BlockDto)>),
     /// Consolidated funds
