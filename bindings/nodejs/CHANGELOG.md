@@ -1,5 +1,10 @@
 # Changelog
 
+## \[2.2.4]
+
+- Fix primary_pow_node usage.
+  - [2ab756f](https://github.com/iotaledger/iota.rs/commit/2ab756ffe884bda87cad0029077863389f8cdddb) Bump neon from 0.8.3 to 0.10.1 in /bindings/nodejs/native ([#1070](https://github.com/iotaledger/iota.rs/pull/1070)) on 2022-06-17
+
 ## \[2.2.3]
 
 - Fixes getIncludedMessage().
