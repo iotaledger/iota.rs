@@ -6,6 +6,7 @@
 use std::fmt::{Debug, Display};
 
 use bee_block::{output::NativeTokens, semantic::ConflictReason};
+use packable::error::UnexpectedEOF;
 use serde::{ser::Serializer, Serialize};
 
 use crate::node_api::indexer::QueryParameter;
@@ -93,6 +94,10 @@ pub enum Error {
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
     BlockError(#[from] bee_block::Error),
+    /// Unpack error
+    #[error("{0}")]
+    #[serde(serialize_with = "display_string")]
+    UnpackError(#[from] packable::error::UnpackError<bee_block::Error, UnexpectedEOF>),
     /// Block dtos error
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
