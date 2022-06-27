@@ -327,7 +327,7 @@ version = "0.9.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0a4e37d16930f5459780f5621038b6382b9bb37c19016f39fb6b5808d831f174"
 dependencies = [
- "crypto-mac 0.8.0",
+ "crypto-mac",
  "digest 0.9.0",
  "opaque-debug",
 ]
@@ -522,16 +522,6 @@ name = "crypto-mac"
 version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b584a330336237c1eecd3e94266efb216c56ed91225d634cb2991c5f3fd1aeab"
-dependencies = [
- "generic-array",
- "subtle",
-]
-
-[[package]]
-name = "crypto-mac"
-version = "0.11.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b1d1a86f49236c215f271d40892d5fc950490551400b02ef360692c29815c714"
 dependencies = [
  "generic-array",
  "subtle",
@@ -1046,17 +1036,7 @@ version = "0.12.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "791a029f6b9fc27657f6f188ec6e5e43f6911f6f878e0dc5501396e09809d437"
 dependencies = [
- "hmac 0.12.1",
-]
-
-[[package]]
-name = "hmac"
-version = "0.11.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2a2a2320eb7ec0ebe8da8f744d7812d9fc4cb4d09344ac01898dbcb6a20ae69b"
-dependencies = [
- "crypto-mac 0.11.1",
- "digest 0.9.0",
+ "hmac",
 ]
 
 [[package]]
@@ -1252,16 +1232,8 @@ version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ee273ae67ff1bc7c59317c0ab280e0e76259e6bd83e140ac4c2ecebec994f740"
 dependencies = [
- "aead",
  "blake2 0.9.2",
- "chacha20poly1305",
- "curve25519-dalek",
  "digest 0.9.0",
- "generic-array",
- "getrandom 0.2.7",
- "hmac 0.11.0",
- "sha2 0.9.9",
- "x25519-dalek",
 ]
 
 [[package]]
@@ -1281,7 +1253,7 @@ dependencies = [
  "ed25519-zebra",
  "generic-array",
  "getrandom 0.2.7",
- "hmac 0.12.1",
+ "hmac",
  "pbkdf2",
  "serde",
  "sha2 0.10.2",
@@ -1310,9 +1282,9 @@ dependencies = [
 
 [[package]]
 name = "iota_stronghold"
-version = "0.6.0"
+version = "0.6.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3d6920eac403068618dfc07f4281d4e2cb432daa1b67f3d9091d6eae340a92db"
+checksum = "89ebdd443fde5c02437469c1a318aa4d56cba83db3913743862a0e3b54ab5736"
 dependencies = [
  "bincode",
  "hkdf",
