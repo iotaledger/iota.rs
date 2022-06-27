@@ -341,8 +341,10 @@ impl ClientMessageHandler {
             ClientMethod::GetInfo => Ok(Response::Info(self.client.get_info().await?)),
             ClientMethod::GetPeers => Ok(Response::Peers(self.client.get_peers().await?)),
             ClientMethod::GetTips => Ok(Response::Tips(self.client.get_tips().await?)),
-            ClientMethod::PostBlockRaw { block } => Ok(Response::PostBlockSuccessful(
-                self.client.post_block_raw(&BeeBlock::try_from(block)?).await?,
+            ClientMethod::PostBlockRaw { block_bytes } => Ok(Response::PostBlockSuccessful(
+                self.client
+                    .post_block_raw(&BeeBlock::unpack_strict(&mut &block_bytes[..])?)
+                    .await?,
             )),
             ClientMethod::PostBlock { block } => Ok(Response::PostBlockSuccessful(
                 self.client.post_block(&BeeBlock::try_from(block)?).await?,
