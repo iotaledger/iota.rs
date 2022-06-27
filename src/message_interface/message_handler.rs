@@ -423,7 +423,7 @@ impl ClientMessageHandler {
             )),
             ClientMethod::Retry { block_id } => {
                 let (block_id, block) = self.client.retry(block_id).await?;
-                Ok(Response::RetrySuccessful((block_id, BlockDto::from(&block))))
+                Ok(Response::BlockIdWithBlock(block_id, BlockDto::from(&block)))
             }
             ClientMethod::RetryUntilIncluded {
                 block_id,

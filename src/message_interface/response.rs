@@ -114,8 +114,6 @@ pub enum Response {
     Balance(u64),
     /// Addresses balances
     AddressesBalances(Vec<AddressBalance>),
-    /// Retry
-    RetrySuccessful((BlockId, BlockDto)),
     /// Retry until included
     RetryUntilIncludedSuccessful(Vec<(BlockId, BlockDto)>),
     /// Consolidated funds
