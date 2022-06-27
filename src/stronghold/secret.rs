@@ -53,7 +53,7 @@ impl SecretManage for StrongholdAdapter {
         for address_index in address_indexes {
             let chain = Chain::from_u32_hardened(vec![44u32, coin_type, account_index, internal as u32, address_index]);
 
-            let stronghold_client = self.stronghold.lock().await.load_client(PRIVATE_DATA_CLIENT_PATH)?;
+            let stronghold_client = self.stronghold.lock().await.get_client(PRIVATE_DATA_CLIENT_PATH)?;
 
             // Derive a SLIP-10 private key in the vault.
             stronghold_client.execute_procedure(procedures::Slip10Derive {
@@ -162,7 +162,7 @@ impl StrongholdAdapter {
         self.stronghold
             .lock()
             .await
-            .load_client(PRIVATE_DATA_CLIENT_PATH)?
+            .get_client(PRIVATE_DATA_CLIENT_PATH)?
             .execute_procedure(procedures::Slip10Derive { chain, input, output })?;
 
         Ok(())
@@ -175,7 +175,7 @@ impl StrongholdAdapter {
             .stronghold
             .lock()
             .await
-            .load_client(PRIVATE_DATA_CLIENT_PATH)?
+            .get_client(PRIVATE_DATA_CLIENT_PATH)?
             .execute_procedure(procedures::PublicKey {
                 ty: KeyType::Ed25519,
                 private_key,
@@ -188,7 +188,7 @@ impl StrongholdAdapter {
             .stronghold
             .lock()
             .await
-            .load_client(PRIVATE_DATA_CLIENT_PATH)?
+            .get_client(PRIVATE_DATA_CLIENT_PATH)?
             .execute_procedure(procedures::Ed25519Sign {
                 private_key,
                 msg: msg.to_vec(),
@@ -224,7 +224,7 @@ impl StrongholdAdapter {
                 .stronghold
                 .lock()
                 .await
-                .load_client(PRIVATE_DATA_CLIENT_PATH)?
+                .get_client(PRIVATE_DATA_CLIENT_PATH)?
                 .record_exists(&output)?
         {
             return Err(crate::Error::StrongholdMnemonicAlreadyStored);
@@ -252,7 +252,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_address_generation() {
-        let stronghold_path = PathBuf::from("test.stronghold");
+        let stronghold_path = PathBuf::from("test_address_generation.stronghold");
         let mnemonic = String::from(
             "giant dynamic museum toddler six deny defense ostrich bomb access mercy blood explain muscle shoot shallow glad autumn author calm heavy hawk abuse rally",
         );

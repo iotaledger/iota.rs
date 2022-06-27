@@ -141,19 +141,22 @@ impl StrongholdAdapterBuilder {
         };
 
         if let Some(key) = &self.key {
-            // TODO I don't think this.
+            // TODO I don't like this.
             let key_provider = KeyProvider::try_from((**key).clone())?;
             let result = stronghold.load_client_from_snapshot(
                 PRIVATE_DATA_CLIENT_PATH,
                 &key_provider,
                 &SnapshotPath::from_path(&snapshot_path),
             );
-            if let Err(iota_stronghold::ClientError::Inner(err_msg)) = result {
-                // TODO: replace with actual error matching when updated to the new Stronghold version
-                // TODO: but the error is not an enum
-                if !err_msg.to_string().contains("I/O error") {
-                    return Err(iota_stronghold::ClientError::Inner(err_msg).into());
-                }
+            if let Err(iota_stronghold::ClientError::SnapshotFileMissing(_)) = result {
+                stronghold.create_client(PRIVATE_DATA_CLIENT_PATH)?;
+                stronghold.write_client(PRIVATE_DATA_CLIENT_PATH)?;
+                stronghold.commit(&SnapshotPath::from_path(&snapshot_path), &key_provider)?;
+                stronghold.load_client_from_snapshot(
+                    PRIVATE_DATA_CLIENT_PATH,
+                    &key_provider,
+                    &SnapshotPath::from_path(&snapshot_path),
+                )?;
             }
         }
 
@@ -475,13 +478,6 @@ impl StrongholdAdapter {
         // TODO: I don't like this
         let key_provider = KeyProvider::try_from((**key).clone())?;
 
-        // Check if directory in path exists, if not create it
-        if let Some(parent) = self.snapshot_path.parent() {
-            if !parent.is_dir() {
-                std::fs::create_dir_all(parent)?;
-            }
-        }
-
         self.stronghold
             .lock()
             .await
@@ -532,11 +528,14 @@ async fn task_key_clear(
 mod tests {
     use super::*;
 
+    use std::{fs, path::PathBuf};
+
     #[tokio::test]
     async fn test_clear_key() {
         let timeout = Duration::from_millis(100);
 
-        let stronghold_path = PathBuf::from("test.stronghold");
+        let snapshot_path = "test_clear_key.stronghold";
+        let stronghold_path = PathBuf::from(snapshot_path);
         let mut adapter = StrongholdAdapter::builder()
             .password("drowssap")
             .timeout(timeout)
@@ -576,11 +575,14 @@ mod tests {
         assert!(matches!(*adapter.key.lock().await, None));
         assert_eq!(adapter.get_timeout(), timeout);
         assert!(matches!(*adapter.timeout_task.lock().await, None));
+
+        fs::remove_file(snapshot_path).unwrap();
     }
 
     #[tokio::test]
     async fn stronghold_password_already_set() {
-        let stronghold_path = PathBuf::from("test.stronghold");
+        let snapshot_path = "stronghold_password_already_set.stronghold";
+        let stronghold_path = PathBuf::from(snapshot_path);
         let mut adapter = StrongholdAdapter::builder()
             .password("drowssap")
             .try_build(stronghold_path)
@@ -594,5 +596,7 @@ mod tests {
         assert!(adapter.set_password("drowssap").await.is_ok());
         // When the password already exists, it should fail
         assert!(adapter.set_password("drowssap").await.is_err());
+
+        fs::remove_file(snapshot_path).unwrap();
     }
 }

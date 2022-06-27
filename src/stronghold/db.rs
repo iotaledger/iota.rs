@@ -15,14 +15,11 @@ use crate::{db::DatabaseProvider, Error, Result};
 #[async_trait]
 impl DatabaseProvider for StrongholdAdapter {
     async fn get(&mut self, k: &[u8]) -> Result<Option<Vec<u8>>> {
-        // Lazy load the snapshot.
-        self.read_stronghold_snapshot().await?;
-
         let data = match self
             .stronghold
             .lock()
             .await
-            .load_client(PRIVATE_DATA_CLIENT_PATH)?
+            .get_client(PRIVATE_DATA_CLIENT_PATH)?
             .store()
             .get(k)?
         {
@@ -41,9 +38,6 @@ impl DatabaseProvider for StrongholdAdapter {
     }
 
     async fn insert(&mut self, k: &[u8], v: &[u8]) -> Result<Option<Vec<u8>>> {
-        // Lazy load the snapshot.
-        self.read_stronghold_snapshot().await?;
-
         let encrypted_value = {
             let locked_key = self.key.lock().await;
             let key = if let Some(key) = &*locked_key {
@@ -59,20 +53,17 @@ impl DatabaseProvider for StrongholdAdapter {
             .stronghold
             .lock()
             .await
-            .load_client(PRIVATE_DATA_CLIENT_PATH)?
+            .get_client(PRIVATE_DATA_CLIENT_PATH)?
             .store()
             .insert(k.to_vec(), encrypted_value, None)?)
     }
 
     async fn delete(&mut self, k: &[u8]) -> Result<Option<Vec<u8>>> {
-        // Lazy load the snapshot.
-        self.read_stronghold_snapshot().await?;
-
         Ok(self
             .stronghold
             .lock()
             .await
-            .load_client(PRIVATE_DATA_CLIENT_PATH)?
+            .get_client(PRIVATE_DATA_CLIENT_PATH)?
             .store()
             .delete(k)?)
     }
@@ -81,12 +72,13 @@ impl DatabaseProvider for StrongholdAdapter {
 mod tests {
     #[tokio::test]
     async fn test_stronghold_db() {
-        use std::path::PathBuf;
+        use std::{fs, path::PathBuf};
 
         use super::StrongholdAdapter;
         use crate::db::DatabaseProvider;
 
-        let stronghold_path = PathBuf::from("test.stronghold");
+        let snapshot_path = "test_stronghold_db.stronghold";
+        let stronghold_path = PathBuf::from(snapshot_path);
         let mut stronghold = StrongholdAdapter::builder()
             .password("drowssap")
             .try_build(stronghold_path)
@@ -115,5 +107,7 @@ mod tests {
         assert!(matches!(stronghold.get(b"test-0").await, Ok(None)));
         assert!(matches!(stronghold.get(b"test-1").await, Ok(None)));
         assert!(matches!(stronghold.get(b"test-2").await, Ok(None)));
+
+        fs::remove_file(snapshot_path).unwrap();
     }
 }
