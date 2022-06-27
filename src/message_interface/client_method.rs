@@ -195,6 +195,7 @@ pub enum ClientMethod {
     /// Post block (raw)
     PostBlockRaw {
         /// Block
+        #[serde(rename = "blockBytes")]
         block_bytes: Vec<u8>,
     },
     /// Get block
