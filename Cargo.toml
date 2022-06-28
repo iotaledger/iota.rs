@@ -38,7 +38,7 @@ rumqttc = { version = "0.12.0", default-features = false, features = [ "websocke
 once_cell = { version = "1.12.0", default-features = false, features = [ "std" ], optional = true }
 
 # ledger hardware wallets
-iota-ledger = { git = "https://github.com/iotaledger/ledger.rs", rev = "8c239b13b80e169aaa19cde9cd825e8444be0973", default-features = false, optional = true }
+iota-ledger = { git = "https://github.com/iotaledger/ledger.rs", rev = "414c4b98294afc8863bed1b58c811a77105f7eea", default-features = false, optional = true }
 
 # stronghold secret manager integration
 iota_stronghold = { version = "0.4.1", default-features = false, optional = true }
@@ -178,6 +178,10 @@ required-features = [ "mqtt" ]
 
 [[example]]
 name = "ledger_nano"
+required-features = [ "ledger_nano" ]
+
+[[example]]
+name = "ledger_nano_transaction"
 required-features = [ "ledger_nano" ]
 
 [[example]]

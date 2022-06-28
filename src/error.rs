@@ -198,9 +198,6 @@ pub enum Error {
     /// Specifically used for `TryInfo` implementations for `SecretManager`.
     #[error("cannot unwrap a SecretManager: type mismatch!")]
     SecretManagerMismatch,
-    /// Missing unlock block error
-    #[error("missing unlock block")]
-    MissingBlock,
     /// No input with matching ed25519 unlock condition provided
     #[error("No input with matching ed25519 unlock condition provided")]
     MissingInputWithEd25519UnlockCondition,
@@ -271,6 +268,9 @@ pub enum Error {
     /// An indexer API request contains a query parameter not supported by the endpoint.
     #[error("An indexer API request contains a query parameter not supported by the endpoint: {0}.")]
     UnsupportedQueryParameter(QueryParameter),
+    /// Invalid BIP32 chain data
+    #[error("Invalid BIP32 chain data")]
+    InvalidBIP32ChainData,
     /// The requested data was not found.
     #[error("The requested data was not found.")]
     NotFound,

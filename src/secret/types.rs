@@ -61,6 +61,17 @@ pub struct LedgerApp {
     pub(crate) version: String,
 }
 
+/// Ledger Device Type
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+pub enum LedgerDeviceType {
+    /// Device Type Nano S
+    LedgerNanoS,
+    /// Device Type Nano X
+    LedgerNanoX,
+    /// Device Type Nano S Plus
+    LedgerNanoSPlus,
+}
+
 /// The Ledger device status.
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct LedgerStatus {
@@ -68,8 +79,14 @@ pub struct LedgerStatus {
     pub(crate) connected: bool,
     /// Ledger is connected and locked.
     pub(crate) locked: bool,
+    /// Ledger blind signing enabled
+    pub(crate) blind_signing_enabled: bool,
     /// Ledger opened app.
     pub(crate) app: Option<LedgerApp>,
+    /// Ledger device
+    pub(crate) device: Option<LedgerDeviceType>,
+    /// Buffer size on device
+    pub(crate) buffer_size: Option<usize>,
 }
 
 ///
