@@ -38,14 +38,8 @@ impl SecretManage for StrongholdAdapter {
         _metadata: GenerateAddressMetadata,
     ) -> Result<Vec<Address>> {
         // Stronghold arguments.
-        let seed_location = Slip10DeriveInput::Seed(Location::Generic {
-            vault_path: SECRET_VAULT_PATH.to_vec(),
-            record_path: SEED_RECORD_PATH.to_vec(),
-        });
-        let derive_location = Location::Generic {
-            vault_path: SECRET_VAULT_PATH.to_vec(),
-            record_path: DERIVE_OUTPUT_RECORD_PATH.to_vec(),
-        };
+        let seed_location = Slip10DeriveInput::Seed(Location::generic(SECRET_VAULT_PATH, SEED_RECORD_PATH));
+        let derive_location = Location::generic(SECRET_VAULT_PATH, DERIVE_OUTPUT_RECORD_PATH);
 
         // Addresses to return.
         let mut addresses = Vec::new();
@@ -97,14 +91,8 @@ impl SecretManage for StrongholdAdapter {
         }
 
         // Stronghold arguments.
-        let seed_location = Slip10DeriveInput::Seed(Location::Generic {
-            vault_path: SECRET_VAULT_PATH.to_vec(),
-            record_path: SEED_RECORD_PATH.to_vec(),
-        });
-        let derive_location = Location::Generic {
-            vault_path: SECRET_VAULT_PATH.to_vec(),
-            record_path: DERIVE_OUTPUT_RECORD_PATH.to_vec(),
-        };
+        let seed_location = Slip10DeriveInput::Seed(Location::generic(SECRET_VAULT_PATH, SEED_RECORD_PATH));
+        let derive_location = Location::generic(SECRET_VAULT_PATH, DERIVE_OUTPUT_RECORD_PATH);
 
         // Stronghold asks for an older version of [Chain], so we have to perform a conversion here.
         let chain = {
@@ -198,10 +186,7 @@ impl StrongholdAdapter {
     /// Store a mnemonic into the Stronghold vault.
     pub async fn store_mnemonic(&mut self, mnemonic: String) -> Result<()> {
         // Stronghold arguments.
-        let output = Location::Generic {
-            vault_path: SECRET_VAULT_PATH.to_vec(),
-            record_path: SEED_RECORD_PATH.to_vec(),
-        };
+        let output = Location::generic(SECRET_VAULT_PATH, SEED_RECORD_PATH);
 
         // Trim the mnemonic, in case it hasn't been, as otherwise the restored seed would be wrong.
         let trimmed_mnemonic = mnemonic.trim().to_string();
