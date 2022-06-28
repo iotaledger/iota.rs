@@ -149,6 +149,8 @@ pub enum SecretManagerDto {
     LedgerNanoSimulator,
     /// Mnemonic
     Mnemonic(String),
+    /// Hex seed
+    HexSeed(String),
     /// Placeholder
     Placeholder,
 }
@@ -183,6 +185,8 @@ impl TryFrom<&SecretManagerDto> for SecretManager {
             SecretManagerDto::LedgerNanoSimulator => Self::LedgerNanoSimulator(LedgerSecretManager::new(true)),
 
             SecretManagerDto::Mnemonic(mnemonic) => Self::Mnemonic(MnemonicSecretManager::try_from_mnemonic(mnemonic)?),
+
+            SecretManagerDto::HexSeed(hex_seed) => Self::Mnemonic(MnemonicSecretManager::try_from_hex_seed(hex_seed)?),
 
             SecretManagerDto::Placeholder => Self::Placeholder(PlaceholderSecretManager),
         })
