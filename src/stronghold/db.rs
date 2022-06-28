@@ -3,6 +3,8 @@
 
 //! The `DatabaseProvider` implementation for `StrongholdAdapter`.
 
+use std::ops::Deref;
+
 use async_trait::async_trait;
 
 use super::{
@@ -27,26 +29,30 @@ impl DatabaseProvider for StrongholdAdapter {
             None => return Ok(None),
         };
 
-        let locked_key = self.key.lock().await;
-        let key = if let Some(key) = &*locked_key {
-            key
+        let locked_key_provider = self.key_provider.lock().await;
+        let key_provider = if let Some(key_provider) = &*locked_key_provider {
+            key_provider
         } else {
             return Err(Error::StrongholdKeyCleared);
         };
+        let buffer = key_provider.try_unlock()?;
+        let buffer_ref = buffer.borrow();
 
-        decrypt(&data, key).map(Some)
+        decrypt(&data, buffer_ref.deref()).map(Some)
     }
 
     async fn insert(&mut self, k: &[u8], v: &[u8]) -> Result<Option<Vec<u8>>> {
         let encrypted_value = {
-            let locked_key = self.key.lock().await;
-            let key = if let Some(key) = &*locked_key {
-                key
+            let locked_key_provider = self.key_provider.lock().await;
+            let key_provider = if let Some(key_provider) = &*locked_key_provider {
+                key_provider
             } else {
                 return Err(Error::StrongholdKeyCleared);
             };
+            let buffer = key_provider.try_unlock()?;
+            let buffer_ref = buffer.borrow();
 
-            encrypt(v, key)?
+            encrypt(v, buffer_ref.deref())?
         };
 
         Ok(self

@@ -57,9 +57,9 @@ use derive_builder::Builder;
 use iota_stronghold::{KeyProvider, SnapshotPath, Stronghold};
 use log::{debug, error, warn};
 use tokio::{sync::Mutex, task::JoinHandle};
-use zeroize::{Zeroize, Zeroizing};
+use zeroize::Zeroizing;
 
-use self::common::{EncryptionKey, PRIVATE_DATA_CLIENT_PATH};
+use self::common::PRIVATE_DATA_CLIENT_PATH;
 use crate::{db::DatabaseProvider, Error, Result};
 
 /// A wrapper on [Stronghold].
@@ -80,8 +80,8 @@ pub struct StrongholdAdapter {
     ///
     /// [`password()`]: self::StrongholdAdapterBuilder::password()
     #[builder(setter(custom))]
-    #[builder(field(type = "Option<EncryptionKey>"))]
-    key: Arc<Mutex<Option<EncryptionKey>>>,
+    #[builder(field(type = "Option<KeyProvider>"))]
+    key_provider: Arc<Mutex<Option<KeyProvider>>>,
 
     /// An interval of time, after which `key` will be cleared from the memory.
     ///
@@ -113,7 +113,9 @@ impl StrongholdAdapterBuilder {
     /// Use an user-input password string to derive a key to use Stronghold.
     pub fn password(mut self, password: &str) -> Self {
         // Note that derive_builder always adds another layer of Option<T>.
-        self.key = Some(self::common::derive_key_from_password(password));
+        // PANIC: Unwrapping is fine since `derive_key_from_password` returns a vector of 32 bytes.
+        self.key_provider =
+            Some(KeyProvider::try_from((*self::common::derive_key_from_password(password)).clone()).unwrap());
 
         self
     }
@@ -140,9 +142,7 @@ impl StrongholdAdapterBuilder {
             Stronghold::default()
         };
 
-        if let Some(key) = &self.key {
-            // TODO I don't like this.
-            let key_provider = KeyProvider::try_from((**key).clone())?;
+        if let Some(key_provider) = &self.key_provider {
             let result = stronghold.load_client_from_snapshot(
                 PRIVATE_DATA_CLIENT_PATH,
                 &key_provider,
@@ -161,17 +161,17 @@ impl StrongholdAdapterBuilder {
         }
 
         let stronghold = Arc::new(Mutex::new(stronghold));
-        let has_key = self.key.is_some();
-        let key = Arc::new(Mutex::new(self.key));
+        let has_key_provider = self.key_provider.is_some();
+        let key_provider = Arc::new(Mutex::new(self.key_provider));
 
         // If both `key` and `timeout` are set, then we spawn the task and keep its join handle.
-        if let (true, Some(Some(timeout))) = (has_key, self.timeout) {
+        if let (true, Some(Some(timeout))) = (has_key_provider, self.timeout) {
             let timeout_task = Arc::new(Mutex::new(None));
 
             // The key clearing task, with the data it owns.
             let task_self = timeout_task.clone();
             let stronghold_cloned = stronghold.clone();
-            let key = key.clone();
+            let key_provider = key_provider.clone();
 
             // To keep this function synchronous (`fn`), we spawn a task that spawns the key clearing task here. It'll
             // however panic when this function is not in a Tokio runtime context (usually in an `async fn`), albeit it
@@ -181,7 +181,7 @@ impl StrongholdAdapterBuilder {
                 *task_self.lock().await = Some(tokio::spawn(task_key_clear(
                     task_self.clone(), // LHS moves task_self
                     stronghold_cloned,
-                    key,
+                    key_provider,
                     timeout,
                 )));
             });
@@ -193,7 +193,7 @@ impl StrongholdAdapterBuilder {
         // Create the adapter as per configuration and return it.
         Ok(StrongholdAdapter {
             stronghold,
-            key,
+            key_provider,
             timeout: self.timeout.unwrap_or(None),
             timeout_task: self.timeout_task.unwrap_or_else(|| Arc::new(Mutex::new(None))),
             snapshot_path,
@@ -210,7 +210,7 @@ impl StrongholdAdapter {
 
     /// Test if the key hasn't been cleared.
     pub async fn is_key_available(&self) -> bool {
-        self.key.lock().await.is_some()
+        self.key_provider.lock().await.is_some()
     }
 
     /// Use an user-input password string to derive a key to use Stronghold.
@@ -222,11 +222,13 @@ impl StrongholdAdapter {
     pub async fn set_password(&mut self, password: &str) -> Result<()> {
         // In a closure so there is no deadlock when calling `self.read_stronghold_snapshot()`
         {
-            let mut key = self.key.lock().await;
-            if key.is_some() {
+            let mut key_provider = self.key_provider.lock().await;
+            if key_provider.is_some() {
                 return Err(crate::Error::StrongholdPasswordAlreadySet);
             }
-            *key = Some(self::common::derive_key_from_password(password));
+            *key_provider = Some(KeyProvider::try_from(
+                (*self::common::derive_key_from_password(password)).clone(),
+            )?);
         }
 
         // Try to read a snapshot to check if the password is correct
@@ -238,7 +240,7 @@ impl StrongholdAdapter {
                 if !err_msg.to_string().contains("IOError") {
                     // If loading the snapshot failed but wasn't an IOError, then the password was incorrect and we
                     // clear it
-                    *self.key.lock().await = None;
+                    *self.key_provider.lock().await = None;
                     return Err(err);
                 }
             }
@@ -254,9 +256,14 @@ impl StrongholdAdapter {
             // The key clearing task, with the data it owns.
             let task_self = self.timeout_task.clone();
             let stronghold = self.stronghold.clone();
-            let key = self.key.clone();
+            let key_provider = self.key_provider.clone();
 
-            *self.timeout_task.lock().await = Some(tokio::spawn(task_key_clear(task_self, stronghold, key, timeout)));
+            *self.timeout_task.lock().await = Some(tokio::spawn(task_key_clear(
+                task_self,
+                stronghold,
+                key_provider,
+                timeout,
+            )));
         }
 
         Ok(())
@@ -303,10 +310,14 @@ impl StrongholdAdapter {
                             // The key clearing task, with the data it owns.
                             let task_self = self.timeout_task.clone();
                             let stronghold = self.stronghold.clone();
-                            let key = self.key.clone();
+                            let key_provider = self.key_provider.clone();
 
-                            *self.timeout_task.lock().await =
-                                Some(tokio::spawn(task_key_clear(task_self, stronghold, key, timeout)));
+                            *self.timeout_task.lock().await = Some(tokio::spawn(task_key_clear(
+                                task_self,
+                                stronghold,
+                                key_provider,
+                                timeout,
+                            )));
                         }
 
                         return Err(err);
@@ -321,12 +332,14 @@ impl StrongholdAdapter {
 
         // Now we put the new key in, enabling encryption with the new key. Also, take the old key out to prevent
         // disasters.
-        let old_key = {
-            let mut lock = self.key.lock().await;
-            let old_key = lock.take();
-            *lock = Some(self::common::derive_key_from_password(new_password));
+        let old_key_provider = {
+            let mut lock = self.key_provider.lock().await;
+            let old_key_provider = lock.take();
+            *lock = Some(KeyProvider::try_from(
+                (*self::common::derive_key_from_password(new_password)).clone(),
+            )?);
 
-            old_key
+            old_key_provider
         };
 
         for (key, value) in values {
@@ -334,7 +347,7 @@ impl StrongholdAdapter {
                 error!("an error occurred during the re-encryption of Stronghold store: {err}");
 
                 // Recover: put the old key back
-                *self.key.lock().await = old_key;
+                *self.key_provider.lock().await = old_key_provider;
 
                 // Recover: forcefully reload Stronghold
                 self.snapshot_loaded = false;
@@ -345,10 +358,14 @@ impl StrongholdAdapter {
                     // The key clearing task, with the data it owns.
                     let task_self = self.timeout_task.clone();
                     let stronghold = self.stronghold.clone();
-                    let key = self.key.clone();
+                    let key_provider = self.key_provider.clone();
 
-                    *self.timeout_task.lock().await =
-                        Some(tokio::spawn(task_key_clear(task_self, stronghold, key, timeout)));
+                    *self.timeout_task.lock().await = Some(tokio::spawn(task_key_clear(
+                        task_self,
+                        stronghold,
+                        key_provider,
+                        timeout,
+                    )));
                 }
 
                 return Err(err);
@@ -363,9 +380,14 @@ impl StrongholdAdapter {
             // The key clearing task, with the data it owns.
             let task_self = self.timeout_task.clone();
             let stronghold = self.stronghold.clone();
-            let key = self.key.clone();
+            let key_provider = self.key_provider.clone();
 
-            *self.timeout_task.lock().await = Some(tokio::spawn(task_key_clear(task_self, stronghold, key, timeout)));
+            *self.timeout_task.lock().await = Some(tokio::spawn(task_key_clear(
+                task_self,
+                stronghold,
+                key_provider,
+                timeout,
+            )));
         }
 
         Ok(())
@@ -389,9 +411,7 @@ impl StrongholdAdapter {
         }
 
         // Purge the key, setting it to None then.
-        if let Some(mut key) = self.key.lock().await.take() {
-            key.zeroize();
-        }
+        self.key_provider.lock().await.take();
     }
 
     /// Get timeout for the key clearing task.
@@ -416,13 +436,18 @@ impl StrongholdAdapter {
         self.timeout = new_timeout;
 
         // If a new timeout is set and the key is still in the memory, spawn a new task; otherwise we do nothing.
-        if let (Some(_), Some(timeout)) = (self.key.lock().await.as_ref(), self.timeout) {
+        if let (Some(_), Some(timeout)) = (self.key_provider.lock().await.as_ref(), self.timeout) {
             // The key clearing task, with the data it owns.
             let task_self = self.timeout_task.clone();
             let stronghold = self.stronghold.clone();
-            let key = self.key.clone();
+            let key_provider = self.key_provider.clone();
 
-            *self.timeout_task.lock().await = Some(tokio::spawn(task_key_clear(task_self, stronghold, key, timeout)));
+            *self.timeout_task.lock().await = Some(tokio::spawn(task_key_clear(
+                task_self,
+                stronghold,
+                key_provider,
+                timeout,
+            )));
         }
     }
 
@@ -440,15 +465,12 @@ impl StrongholdAdapter {
         }
 
         // The key and the snapshot path need to be supplied first.
-        let locked_key = self.key.lock().await;
-        let key = if let Some(key) = &*locked_key {
-            key
+        let locked_key_provider = self.key_provider.lock().await;
+        let key_provider = if let Some(key_provider) = &*locked_key_provider {
+            key_provider
         } else {
             return Err(Error::StrongholdKeyCleared);
         };
-
-        // TODO: I don't like this
-        let key_provider = KeyProvider::try_from((**key).clone())?;
 
         self.stronghold.lock().await.load_client_from_snapshot(
             PRIVATE_DATA_CLIENT_PATH,
@@ -468,15 +490,12 @@ impl StrongholdAdapter {
     /// [`unload_stronghold_snapshot()`]: Self::unload_stronghold_snapshot()
     pub async fn write_stronghold_snapshot(&mut self) -> Result<()> {
         // The key and the snapshot path need to be supplied first.
-        let locked_key = self.key.lock().await;
-        let key = if let Some(key) = &*locked_key {
-            key
+        let locked_key_provider = self.key_provider.lock().await;
+        let key_provider = if let Some(key_provider) = &*locked_key_provider {
+            key_provider
         } else {
             return Err(Error::StrongholdKeyCleared);
         };
-
-        // TODO: I don't like this
-        let key_provider = KeyProvider::try_from((**key).clone())?;
 
         self.stronghold
             .lock()
@@ -510,15 +529,13 @@ impl StrongholdAdapter {
 async fn task_key_clear(
     task_self: Arc<Mutex<Option<JoinHandle<()>>>>,
     _stronghold: Arc<Mutex<Stronghold>>,
-    key: Arc<Mutex<Option<Zeroizing<Vec<u8>>>>>,
+    key_provider: Arc<Mutex<Option<KeyProvider>>>,
     timeout: Duration,
 ) {
     tokio::time::sleep(timeout).await;
 
     debug!("StrongholdAdapter is purging the key");
-    if let Some(mut key) = key.lock().await.take() {
-        key.zeroize();
-    }
+    key_provider.lock().await.take();
 
     // Take self, but do nothing (we're exiting anyways).
     task_self.lock().await.take();
@@ -546,13 +563,13 @@ mod tests {
         tokio::time::sleep(Duration::from_millis(10)).await;
 
         // Setting a password would spawn a task to automatically clear the key.
-        assert!(matches!(*adapter.key.lock().await, Some(_)));
+        assert!(matches!(*adapter.key_provider.lock().await, Some(_)));
         assert_eq!(adapter.get_timeout(), Some(timeout));
         assert!(matches!(*adapter.timeout_task.lock().await, Some(_)));
 
         // After the timeout, the key should be purged.
         tokio::time::sleep(Duration::from_millis(200)).await;
-        assert!(matches!(*adapter.key.lock().await, None));
+        assert!(matches!(*adapter.key_provider.lock().await, None));
         assert_eq!(adapter.get_timeout(), Some(timeout));
         assert!(matches!(*adapter.timeout_task.lock().await, None));
 
@@ -561,18 +578,18 @@ mod tests {
         adapter.set_timeout(timeout).await;
 
         adapter.set_password("password").await.unwrap();
-        assert!(matches!(*adapter.key.lock().await, Some(_)));
+        assert!(matches!(*adapter.key_provider.lock().await, Some(_)));
         assert_eq!(adapter.get_timeout(), timeout);
         assert!(matches!(*adapter.timeout_task.lock().await, None));
 
         adapter.clear_key().await;
-        assert!(matches!(*adapter.key.lock().await, None));
+        assert!(matches!(*adapter.key_provider.lock().await, None));
         assert_eq!(adapter.get_timeout(), timeout);
         assert!(matches!(*adapter.timeout_task.lock().await, None));
 
         // Even if we attempt to restart the task, it won't.
         adapter.restart_key_clearing_task().await;
-        assert!(matches!(*adapter.key.lock().await, None));
+        assert!(matches!(*adapter.key_provider.lock().await, None));
         assert_eq!(adapter.get_timeout(), timeout);
         assert!(matches!(*adapter.timeout_task.lock().await, None));
 
