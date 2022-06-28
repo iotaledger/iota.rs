@@ -170,7 +170,6 @@ impl StrongholdAdapterBuilder {
 
             // The key clearing task, with the data it owns.
             let task_self = timeout_task.clone();
-            let stronghold_cloned = stronghold.clone();
             let key_provider = key_provider.clone();
 
             // To keep this function synchronous (`fn`), we spawn a task that spawns the key clearing task here. It'll
@@ -180,7 +179,6 @@ impl StrongholdAdapterBuilder {
             tokio::spawn(async move {
                 *task_self.lock().await = Some(tokio::spawn(task_key_clear(
                     task_self.clone(), // LHS moves task_self
-                    stronghold_cloned,
                     key_provider,
                     timeout,
                 )));
@@ -255,15 +253,9 @@ impl StrongholdAdapter {
 
             // The key clearing task, with the data it owns.
             let task_self = self.timeout_task.clone();
-            let stronghold = self.stronghold.clone();
             let key_provider = self.key_provider.clone();
 
-            *self.timeout_task.lock().await = Some(tokio::spawn(task_key_clear(
-                task_self,
-                stronghold,
-                key_provider,
-                timeout,
-            )));
+            *self.timeout_task.lock().await = Some(tokio::spawn(task_key_clear(task_self, key_provider, timeout)));
         }
 
         Ok(())
@@ -309,15 +301,10 @@ impl StrongholdAdapter {
                         if let Some(timeout) = self.timeout {
                             // The key clearing task, with the data it owns.
                             let task_self = self.timeout_task.clone();
-                            let stronghold = self.stronghold.clone();
                             let key_provider = self.key_provider.clone();
 
-                            *self.timeout_task.lock().await = Some(tokio::spawn(task_key_clear(
-                                task_self,
-                                stronghold,
-                                key_provider,
-                                timeout,
-                            )));
+                            *self.timeout_task.lock().await =
+                                Some(tokio::spawn(task_key_clear(task_self, key_provider, timeout)));
                         }
 
                         return Err(err);
@@ -357,15 +344,10 @@ impl StrongholdAdapter {
                 if let Some(timeout) = self.timeout {
                     // The key clearing task, with the data it owns.
                     let task_self = self.timeout_task.clone();
-                    let stronghold = self.stronghold.clone();
                     let key_provider = self.key_provider.clone();
 
-                    *self.timeout_task.lock().await = Some(tokio::spawn(task_key_clear(
-                        task_self,
-                        stronghold,
-                        key_provider,
-                        timeout,
-                    )));
+                    *self.timeout_task.lock().await =
+                        Some(tokio::spawn(task_key_clear(task_self, key_provider, timeout)));
                 }
 
                 return Err(err);
@@ -379,15 +361,9 @@ impl StrongholdAdapter {
         if let Some(timeout) = self.timeout {
             // The key clearing task, with the data it owns.
             let task_self = self.timeout_task.clone();
-            let stronghold = self.stronghold.clone();
             let key_provider = self.key_provider.clone();
 
-            *self.timeout_task.lock().await = Some(tokio::spawn(task_key_clear(
-                task_self,
-                stronghold,
-                key_provider,
-                timeout,
-            )));
+            *self.timeout_task.lock().await = Some(tokio::spawn(task_key_clear(task_self, key_provider, timeout)));
         }
 
         Ok(())
@@ -439,15 +415,9 @@ impl StrongholdAdapter {
         if let (Some(_), Some(timeout)) = (self.key_provider.lock().await.as_ref(), self.timeout) {
             // The key clearing task, with the data it owns.
             let task_self = self.timeout_task.clone();
-            let stronghold = self.stronghold.clone();
             let key_provider = self.key_provider.clone();
 
-            *self.timeout_task.lock().await = Some(tokio::spawn(task_key_clear(
-                task_self,
-                stronghold,
-                key_provider,
-                timeout,
-            )));
+            *self.timeout_task.lock().await = Some(tokio::spawn(task_key_clear(task_self, key_provider, timeout)));
         }
     }
 
@@ -528,7 +498,6 @@ impl StrongholdAdapter {
 /// The asynchronous key clearing task purging `key` after `timeout` spent in Tokio.
 async fn task_key_clear(
     task_self: Arc<Mutex<Option<JoinHandle<()>>>>,
-    _stronghold: Arc<Mutex<Stronghold>>,
     key_provider: Arc<Mutex<Option<KeyProvider>>>,
     timeout: Duration,
 ) {

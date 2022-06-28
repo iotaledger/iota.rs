@@ -20,11 +20,6 @@ pub(super) const SEED_RECORD_PATH: &[u8] = b"iota-wallet-seed";
 /// The value has been hard-coded historically.
 pub(super) const DERIVE_OUTPUT_RECORD_PATH: &[u8] = b"iota-wallet-derived";
 
-/// Filename to the Stronghold vault.
-///
-/// The value has been hard-coded historically.
-pub(super) const _STRONGHOLD_FILENAME: &str = "wallet.stronghold";
-
 /// The client path for the seed.
 ///
 /// The value has been hard-coded historically.
