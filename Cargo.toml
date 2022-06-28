@@ -217,6 +217,10 @@ name = "basic"
 path = "examples/outputs/basic.rs"
 
 [[example]]
+name = "expiration"
+path = "examples/outputs/expiration.rs"
+
+[[example]]
 name = "foundry"
 path = "examples/outputs/foundry.rs"
 
