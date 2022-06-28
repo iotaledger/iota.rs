@@ -1,7 +1,7 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! cargo run --example native_tokens --release
+//! cargo run --example expiration --release
 
 use std::{
     env,
@@ -11,20 +11,18 @@ use std::{
 use dotenv::dotenv;
 use iota_client::{
     bee_block::output::{
-        unlock_condition::{
-            AddressUnlockCondition, ExpirationUnlockCondition, StorageDepositReturnUnlockCondition, UnlockCondition,
-        },
-        BasicOutputBuilder, NativeToken, TokenId,
+        unlock_condition::{AddressUnlockCondition, ExpirationUnlockCondition, UnlockCondition},
+        BasicOutputBuilder,
     },
+    request_funds_from_faucet,
     secret::{mnemonic::MnemonicSecretManager, SecretManager},
-    utils::request_funds_from_faucet,
     Client, Result,
 };
-use primitive_types::U256;
 
-/// In this example we will send basic outputs with native tokens in two ways:
-/// 1. receiver gets the full output amount + native tokens
-/// 2. receiver needs to claim the output to get the native tokens, but has to send the amount back
+/// In this example we will create a basic output with an expiration unlock condition.
+///
+/// When the receiver (address in AddressUnlockCondition) doesn't consume the output before it gets expired, the sender
+/// (address in ExpirationUnlockCondition) will get the full control back.
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -50,7 +48,9 @@ async fn main() -> Result<()> {
     let addresses = client.get_addresses(&secret_manager).with_range(0..2).get_raw().await?;
     let sender_address = addresses[0];
     let receiver_address = addresses[1];
+
     request_funds_from_faucet(&faucet_url, &sender_address.to_bech32(client.get_bech32_hrp().await?)).await?;
+    tokio::time::sleep(std::time::Duration::from_secs(15)).await;
 
     let tomorrow = (SystemTime::now() + Duration::from_secs(24 * 3600))
         .duration_since(UNIX_EPOCH)
@@ -59,29 +59,11 @@ async fn main() -> Result<()> {
         .try_into()
         .unwrap();
 
-    // Replace with the token ID of native tokens you own.
-    let token_id: [u8; 38] =
-        hex::decode("08e68f7616cd4948efebc6a77c4f935eaed770ac53869cba56d104f2b472a8836d0100000000")?
-            .try_into()
-            .unwrap();
-
     let outputs = vec![
-        // Without StorageDepositReturnUnlockCondition, the receiver will get the amount of the output and the native
-        // tokens
-        BasicOutputBuilder::new_with_amount(1_000_000)?
+        // with storage deposit return
+        BasicOutputBuilder::new_with_amount(255100)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(receiver_address)))
-            .add_native_token(NativeToken::new(TokenId::new(token_id), U256::from(10))?)
-            .finish_output()?,
-        // With StorageDepositReturnUnlockCondition, the receiver can consume the output to get the native tokens, but
-        // he needs to send the amount back
-        BasicOutputBuilder::new_with_amount(1_000_000)?
-            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(receiver_address)))
-            .add_native_token(NativeToken::new(TokenId::new(token_id), U256::from(10))?)
-            // Return the full amount.
-            .add_unlock_condition(UnlockCondition::StorageDepositReturn(
-                StorageDepositReturnUnlockCondition::new(sender_address, 1_000_000)?,
-            ))
-            // If the receiver does not consume this output, we unlock after a day to avoid
+            // If the receiver does not consume this output, we Unlock after a day to avoid
             // locking our funds forever.
             .add_unlock_condition(UnlockCondition::Expiration(
                 ExpirationUnlockCondition::new(sender_address, tomorrow).unwrap(),
@@ -98,6 +80,6 @@ async fn main() -> Result<()> {
 
     println!("Transaction sent: {node_url}/api/core/v2/blocks/{}", block.id());
     println!("Block metadata: {node_url}/api/core/v2/blocks/{}/metadata", block.id());
-
+    let _ = client.retry_until_included(&block.id(), None, None).await?;
     Ok(())
 }
