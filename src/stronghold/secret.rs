@@ -47,20 +47,12 @@ impl SecretManage for StrongholdAdapter {
         for address_index in address_indexes {
             let chain = Chain::from_u32_hardened(vec![44u32, coin_type, account_index, internal as u32, address_index]);
 
-            let stronghold_client = self.stronghold.lock().await.get_client(PRIVATE_DATA_CLIENT_PATH)?;
-
             // Derive a SLIP-10 private key in the vault.
-            stronghold_client.execute_procedure(procedures::Slip10Derive {
-                chain,
-                input: seed_location.clone(),
-                output: derive_location.clone(),
-            })?;
+            self.slip10_derive(chain, seed_location.clone(), derive_location.clone())
+                .await?;
 
             // Get the Ed25519 public key from the derived SLIP-10 private key in the vault.
-            let public_key = stronghold_client.execute_procedure(procedures::PublicKey {
-                ty: KeyType::Ed25519,
-                private_key: derive_location.clone(),
-            })?;
+            let public_key = self.ed25519_public_key(derive_location.clone()).await?;
 
             // Hash the public key to get the address.
             let hash = Blake2b256::digest(&public_key);
@@ -135,7 +127,7 @@ impl StrongholdAdapter {
         self.stronghold
             .lock()
             .await
-            .create_client(PRIVATE_DATA_CLIENT_PATH)?
+            .get_client(PRIVATE_DATA_CLIENT_PATH)?
             .execute_procedure(procedures::BIP39Recover {
                 mnemonic,
                 passphrase,
