@@ -321,14 +321,16 @@ impl ClientMessageHandler {
                 }
                 Ok(Response::Ok(()))
             }
-            ClientMethod::SubmitPayload { payload_dto } => {
+            ClientMethod::PostBlockPayload { payload_dto } => {
                 let block_builder = self.client.block();
 
-                Ok(Response::GeneratedBlock(BlockDto::from(
-                    &block_builder
-                        .finish_block(Some(Payload::try_from(payload_dto)?))
-                        .await?,
-                )))
+                let block = block_builder
+                    .finish_block(Some(Payload::try_from(payload_dto)?))
+                    .await?;
+
+                let block_id = block.id();
+
+                Ok(Response::BlockIdWithBlock(block_id, BlockDto::from(&block)))
             }
             #[cfg(not(target_family = "wasm"))]
             ClientMethod::UnsyncedNodes => Ok(Response::UnsyncedNodes(
@@ -423,7 +425,7 @@ impl ClientMessageHandler {
             )),
             ClientMethod::Retry { block_id } => {
                 let (block_id, block) = self.client.retry(block_id).await?;
-                Ok(Response::RetrySuccessful((block_id, BlockDto::from(&block))))
+                Ok(Response::BlockIdWithBlock(block_id, BlockDto::from(&block)))
             }
             ClientMethod::RetryUntilIncluded {
                 block_id,

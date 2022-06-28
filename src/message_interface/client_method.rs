@@ -165,8 +165,8 @@ pub enum ClientMethod {
         /// Mnemonic
         mnemonic: String,
     },
-    /// Submit a payload in a block
-    SubmitPayload {
+    /// Build a block containing the specified payload and post it to the network.
+    PostBlockPayload {
         /// The payload to send
         #[serde(rename = "payload")]
         payload_dto: PayloadDto,
