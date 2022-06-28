@@ -1,0 +1,9 @@
+import CodeBlock from "@theme/CodeBlock";
+import java_examples from "!!raw-loader!../../../../../bindings/java/examples/java-app/src/main/java/org/iota/client/example/ExampleApp.java";
+const javaFunctionName = "public static void mqtt",
+  indexStart = java_examples.indexOf(javaFunctionName);
+const nextJavaFunctionName = "public static void consolidate",
+  indexEnd = java_examples.indexOf(nextJavaFunctionName);
+const transaction = java_examples.substring(indexStart, indexEnd);
+
+<CodeBlock className="language-java">{transaction}</CodeBlock>

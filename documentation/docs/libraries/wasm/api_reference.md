@@ -803,7 +803,7 @@ Set quorum_threshold
 <a name="ClientBuilder+network"></a>
 
 ### clientBuilder.network(network) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
-Selects the type of network to get default nodes for it, only "testnet" is supported at the moment.
+Selects the type of network to get default nodes for it, only "devnet" is supported at the moment.
 Nodes that don't belong to this network are ignored. Default nodes are only used when no other nodes are
 provided.
 

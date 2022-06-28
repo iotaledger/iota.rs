@@ -1,0 +1,42 @@
+import CodeBlock from '@theme/CodeBlock';
+import generate_addresses from '!!raw-loader!../../../../../bindings/wasm/examples/03_generate_addresses.js';
+
+You can generate an IOTA address using the [`AddressGetter`](./../libraries/wasm/api_reference#addressgetter) helper
+class and calling the [`Client.getAddresses()`](./../libraries/wasm/api_reference#getaddressesseed-addressgetter)
+function and respective chaining calls that will return a list of tuples with the generated addresses. You can find
+more information on the parameters in the [Address/Key Space section](./../../../explanations/address_key_space.md).
+
+The whole process is deterministic. This means the output is the same as long as the seed is the same:
+
+<CodeBlock className="language-javascript">
+    {generate_addresses}
+</CodeBlock>
+
+**Output example**:
+
+```string
+[
+  'atoi1qz6dr6dtl0856tf0pczz7gesrf7j8a4vr00q58ld2zx7ttlv3p96snpym9z',
+  'atoi1qpp7sz28a0ghvd6knwnljr7j2s04qquduuc5vlz94fwf94zznj2yv5ew2c4',
+  'atoi1qzje6zhg5vu456eg3z84ekcfn3laxqyczche5eeqhcdh3w9yr5sqvr4z4td',
+  'atoi1qqwhxjmcvmatpedeedapgx0vwyupfwx9k5n4w0lnc5l6vmz78aavwhs55v0',
+  'atoi1qzg63t9880jtfysvpq7rrynz0rqt3kd2fw8r4934ezraz9dpwvzxkw2dtmh'
+]
+```
+
+IOTA addresses are represented by a checksumed base-32 string (Bech32). You can find a detailed explanation in the
+[Chrysalis documentations](https://wiki.iota.org/chrysalis-docs/guides/developer/#iota-15-address-anatom), but here are
+parts relevant to this example:
+
+* If an address starts with `atoi` then it means it is related to `devnet`. `iota` stands for `mainnet`.
+* Number `1` at the 5<sup>th</sup> positvion is just a separator.
+* The last 6 characters are reserved for a checksum.
+
+Addresses can be also represented in a hex format and `iota.rs` provides some convenient functions to convert addresses:
+[`Client.bech32ToHex(address)`](./../libraries/wasm/api_reference#clientbech32tohexaddress--string) and
+[`Client.hexToBech32(address, bech32) `](./../libraries/wasm/api_reference#clienthextobech32address-bech32--promiseany).
+
+If you want to quickly validate any IOTA address, you can use the
+[`Client.isAddressValid()`](./../libraries/wasm/api_reference#clientisaddressvalidaddress--boolean) function that
+returns a `bool` value. You should perform a sanity check on address before using it.
+

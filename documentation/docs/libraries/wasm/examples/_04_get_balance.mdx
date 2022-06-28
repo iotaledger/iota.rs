@@ -1,0 +1,46 @@
+import CodeBlock from "@theme/CodeBlock";
+import get_balance from "!!raw-loader!../../../../../bindings/wasm/examples/04_get_balance.js";
+
+There are two API calls you can use to get a balance:
+
+## [`Client.getAddressBalances(addresses: any)`](./../libraries/wasm/api_reference#Client+getAddressBalances)
+
+ A convenient function that expects `list` of addresses in Bech32 format and returns list of `dict` with balances for all
+  given addresses.
+
+## [`Client.getBalance(seed: string)`](./../libraries/wasm/api_reference#Client+getBalance)
+ A convenient helper [`BalanceGetter`](./../libraries/wasm/api_reference#BalanceGetter) class that combines
+  [`Client.getAddresses(seed: string)`](./../libraries/wasm/api_reference#Client+getAddresses) and
+  `Client.getAddressBalances()` api calls. It returns a combined balance for the provided `seed` and optional chaining
+  calls [`.accountIndex(index)`](./../libraries/wasm/api_reference#BalanceGetter+accountIndex),
+  [`.initialAddressIndex(initial_address_index: number)`](./../libraries/wasm/api_reference#balancegetterinitialaddressindexinitial_address_index--codebalancegettercode)
+  and
+  [`.gap_limit(amount: number)`](./../libraries/wasm/api_reference#balancegettergap_limitgap_limit--codebalancegettercode)
+
+`Client.getBalance(seed: string)` performs several tasks under the hood. It starts by generating addresses for the
+provided `seed` and `.accountIndex` from
+[`.initialAddressIndex(initial_address_index: number)`](./../libraries/wasm/api_reference#BalanceGetter+initialAddressIndex),
+and checks for a balance of each of the generated addresses. Since it does not know how many addresses are used in fact,
+there is a condition set by the
+[`.gap_limit(amount: number)`](./../libraries/wasm/api_reference#BalanceGetter+gap_limit) argument to know when to stop
+searching. If the `.gap_limit` amount of addresses in a row have no balance, the function returns results and searching
+does not continue.
+
+
+<CodeBlock className="language-javascript">{get_balance}</CodeBlock>
+
+Example of output:
+
+```json
+{
+   "address":"atoi1qp9427varyc05py79ajku89xarfgkj74tpel5egr9y7xu3wpfc4lkpx0l86",
+   "balance":10000000,
+   "dustAllowed":false,
+   "ledgerIndex": 2338924
+}
+Account balance: 0
+```
+
+- `dustAllowed` indicates whether the given address is allowed to accept a dust. You can learn more about dust
+  protection in the
+  [Chrysalis documentation](https://wiki.iota.org/chrysalis-docs/faq#what-is-dust-protection-and-how-does-it-work).

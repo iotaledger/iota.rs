@@ -1,0 +1,13 @@
+import CodeBlock from "@theme/CodeBlock";
+import transaction from "!!raw-loader!../../../../../examples/09_transaction.rs";
+
+Sending value-based messages is a very straightforward process if you use the
+[`ClientMessageBuilder`](https://docs.rs/iota-client/latest/iota_client/api/struct.ClientMessageBuilder.html) helper
+class. You will only need to provide a valid seed by chaining a call to
+[`.with_seed(seed: &'a Seed)`](https://docs.rs/iota-client/latest/iota_client/api/struct.ClientMessageBuilder.html#method.with_seed), and
+output address and amount by chaining a call to
+[`.with_output(address: &str, amount: u64)`](https://docs.rs/iota-client/latest/iota_client/api/struct.ClientMessageBuilder.html#method.with_output).
+The method will find valid output(s) that can be used to fund the given amount(s) and the unspent amount will be sent to
+the same address.
+
+<CodeBlock className="language-javascript">{transaction}</CodeBlock>

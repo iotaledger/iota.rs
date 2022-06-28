@@ -1,0 +1,56 @@
+import CodeBlock from "@theme/CodeBlock";
+import get_message_data from "!!raw-loader!../../../../../examples/07_get_message_metadata.rs";
+
+Once a [message](../../../explanations/messages_payloads_and_transactions.md) is broadcast, you can use the
+[`GetMessageBuilder`](https://docs.rs/iota-client/latest/iota_client/node/struct.GetMessageBuilder.html) helper class
+that you can instantiate using the
+[`Client.get_message()`](https://docs.rs/iota-client/latest/iota_client/client/struct.Client.html#method.get_message)
+function to retrieve it from the network. The `GetMessageBuilder` provides helper functions related to the message, such
+as
+[`Client.get_message().data(message_id: &MessageId)`](https://docs.rs/iota-client/latest/iota_client/node/struct.GetMessageBuilder.html#method.data)
+and
+[`Client.get_message().metadata(message_id: &MessageId)`](https://docs.rs/iota-client/latest/iota_client/node/struct.GetMessageBuilder.html#method.metadata):
+
+<CodeBlock className="language-javascript">{get_message_data}</CodeBlock>
+
+**Output example**:
+
+```json
+Message meta data:
+{
+   "messageId":"e52b631bc7500366b90c6e11eb7fd6abaa7527f9bb5b4b512b0b9112bb9e7be8",
+   "parentMessageIds": [
+      "26d72339ed262c1ec29d6c91de6be26d067b3327191f5e47606df53cc40e334e",
+      "6289ea0aecf3830e5e8d9925959bb6e804e324bb6db23c5701f7a538d12831f6",
+      "fdbf2d02603235fdff99f0ceb57705ead95041d62de386387f2922e5d9f6c502",
+      "ffa26139ca7f9d4849e118ff369fb3a387c8fefd8d15232b8353d4acf334324c"
+   ],
+   "isSolid":true,
+   "shouldPromote":false,
+   "shouldReattach":false
+}
+
+Message data:
+{
+   "message": {
+      "networkId":"14379272398717627559",
+      "parentMessageIds": [
+         "27782707e4cbf84ca26b3db881bbf39b6429f9ee736a0cbe5a1c177d7a52b05d",
+         "61cdf92c64a3304bbbabaf9fbfb0ea7ef9624e1eedea68efbe08595ccdf853e1",
+         "a222d13e3ee51b56b0b0e38140a5f7f813b6d9e29b752d7e1e2424099455080d",
+         "ab6bca20091b58dcbb0906438a7e47bfb11621c4a37b8d118b565f7f138a40d6"
+      ],
+      "payload": {
+         "type":2,
+         "index":"484f524e4554205370616d6d6572",
+         "data":"42696e61727920697320746865206675747572652e0a436f756e743a2031333936393530390a54696d657374616d703a20323032312d30352d33315431353a33363a30392b30323a30300a54697073656c656374696f6e3a203337c2b573"
+         },
+      "nonce":"246736"
+   },
+   "messageId":"30d87fa9917602e5685638e37802bde11b260bd2379f6c850704d7babd365b44"
+}
+```
+
+- `Client.getMessage().metadata()` provides information on how the given message fits to network structures, such as
+  `ledger_inclusion_state`, etc.
+- `Client.getMessage().data()` provides all the data that relates to the given message and its payload(s).

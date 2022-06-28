@@ -1,0 +1,59 @@
+import CodeBlock from '@theme/CodeBlock';
+import generate_addresses from '!!raw-loader!../../../../../bindings/python/examples/03_generate_addresses.py';
+
+You can generate an IOTA address using the
+[`Client.get_addresses()`](./../libraries/python/api_reference##get_addressesseed-account_index-optional-input_range_begin-optional-input_range_end-optional-get_all-optional-liststr-bool-optional)
+function that will return a list of tuples with the generated addresses. You can find more information on the
+parameters in the [Address/Key Space section](../../../explanations/address_key_space.md).
+
+The whole process is deterministic. This means the output is the same as long as the seed is the same:
+
+<CodeBlock className="language-python">
+    {generate_addresses}
+</CodeBlock>
+
+**Output example**:
+
+```string
+[('atoi1qp9427varyc05py79ajku89xarfgkj74tpel5egr9y7xu3wpfc4lkpx0l86', False),
+ ('atoi1qzfvkkp398v7hhvu89fu88hxctf7snwc9sf3a3nd7msfv77jk7qk2ah07s3', True),
+ ('atoi1qq4t98j5y8wxkaujue99mjwqcp6jvvmsd5lv0755sz7dtjdz3p2lydv76sy', False),
+ ('atoi1qrhzhjxc4z8vpwjt3hafs5xpdng5katqe890p0h95mc0l273j8yzxn7r4hc', True),
+ ('atoi1qputu0yvfvxd7g39wf4rc67e0f0dyhl6enxu9jxnsrjqmemh067tw7qelyc', False),
+ ('atoi1qptg5w2x47qwjf3gpqt3h7d2ey5x7xf8v7qtt29gkxt4mjfjfc28sutvd8a', True),
+ ('atoi1qprvelq9paakh72fgm6j2kf8kexadw3t5xljer9dpsep5c7wx5mjwdxch6z', False),
+ ('atoi1qrwk37tz47ddng9kpxfflkpz5tplcq7ll56v4acam04307xk70l7uf6wg8j', True),
+ ('atoi1qper3zr5xe9x0wqs35ytwh622870g44frkyygdhs0ds8yejle3xujhq7dx3', False),
+ ('atoi1qq6lkr9hucfylqjaqphu0stvk8pcmsx98r7ukuq40asszwmqytlnc058thk', True),
+ ('atoi1qzpn7se3ryhscmqg404pycxzvfpt8v4xn8aul0tqdh00xsncgnxu7na7zjj', False),
+ ('atoi1qz4qqakty9qytw8fk9shelt9lwlvv83s5ggt3wjag9fkgcc74z78w4l86y5', True),
+ ('atoi1qp20uddchglqry0l5qnjg5aln8d5rk2v5l45hwrxv9z0daxs7u6xcsh4077', False),
+ ('atoi1qrlqm2u5txxxnjx22fxq0jfjzk6l4nwnue6ht5pepk65m2f4xmxqynmxu2m', True),
+ ('atoi1qqydc70mpjdvl8l2wyseaseqwzhmedzzxrn4l9g2c8wdcsmhldz0ulwjxpz', False),
+ ('atoi1qrkjennxyl2xcqem6x69ya65sasma33z0ux872k846lqft0s3qf7k6lqpft', True),
+ ('atoi1qr4yuekp30ff7mnnnjwy9tdhynxmlmkpuxf70qurtwudp2zpf3jeyw4uh37', False),
+ ('atoi1qp6m5sz5ayjtccfxapdk5lp4qkheyfg0emzntmulyxzftps730vcul8dmqr', True),
+ ('atoi1qzrwhkzhu67fqltfffwljejawdcghedukpgu9x6tzevwlnq89gmfjtayhgz', False),
+ ('atoi1qpehxcp24z947dgupjqc9ktkn5ylmdxqqnx83m7xlajnf8005756u4n7z77', True)]
+```
+
+* Each tuple contains `address` and `bool` value indicating if the address is a `change` address or not. `True`
+means the address is a change address (internal). There are two independent sets of addresses (10 items per each).
+* This behavior is controlled by the `get_all` argument. `get_all=False` (default) generates only public addresses.
+
+IOTA addresses are represented by a checksumed base-32 string (Bech32). You can find a detailed explanation in the
+[Chrysalis documentations](https://wiki.iota.org/chrysalis-docs/guides/developer/#iota-15-address-anatom), but here are
+parts relevant to this example:
+
+* If an address starts with `atoi` then it means it is related to `devnet`. `iota` stands for `mainnet`.
+* Number `1` at the 5<sup>th</sup> position is just a separator.
+* The last 6 characters are reserved for a checksum.
+
+Addresses can be also represented in a hex format and `iota.rs` provides some convenient functions to convert addresses:
+[`Client.bech32_to_hex()`](./../libraries/python/api_reference#bech32_to_hexbech32) and
+[`Client.hex_to_bech32()`](./../libraries/python/api_reference#hex_to_bech32hex-bech32_hrp-optional).
+
+If you want to quickly validate any IOTA address, you can use the
+[`Client.is_address_valid()`](./../libraries/python/api_reference#is_address_validaddress-bool) function that returns a
+`bool` value. You should perform a sanity check on address before using it.
+

@@ -1,0 +1,31 @@
+import CodeBlock from "@theme/CodeBlock";
+import data_message from "!!raw-loader!../../../../../examples/08_data_message.rs";
+
+You can use the
+[`ClientMessageBuilder.with_data(data: Vec<u8>)`](https://docs.rs/iota-client/latest/iota_client/api/struct.ClientMessageBuilder.html#method.with_data)
+function to sent data in a message.
+
+<CodeBlock className="language-javascript">{data_message}</CodeBlock>
+
+**Output example**:
+
+```json
+{
+  "message": {
+    "networkId": "14379272398717627559",
+    "parentMessageIds": [
+      "1a383abbe5f6a6b0899d718975c3119643aa784a68d04075f4e986fd7a0c0e4b",
+      "6098f889e31911833df7b7839e8b222d701ab496f7dfa1a719087edf4fa7ae52",
+      "a98b47db4e8254eccc738c968bd35b08a5491e56d6c1a18af298c42bbd8c3a46",
+      "da6796c0842c08de832c7948fffedc0d5adce372e50a108f26a128dba6096d31"
+    ],
+    "payload": {
+      "type": 2,
+      "index": "494f54412e52532042494e44494e47202d204e4f44452e4a53",
+      "data": "736f6d65207574662062617365642064617461"
+    },
+    "nonce": "13835058055282176519"
+  },
+  "messageId": "10f59c101cec669b0a0ba163bc777184c7f63455f5e771d42f910a1ba2ad20ff"
+}
+```

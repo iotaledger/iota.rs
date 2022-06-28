@@ -1,0 +1,29 @@
+import CodeBlock from "@theme/CodeBlock";
+import simple_message from "!!raw-loader!../../../../../examples/06_simple_message.rs";
+
+The function
+[`Client.postMessage( message: &Message)`](https://docs.rs/iota-client/latest/iota_client/client/struct.Client.html#method.post_message)
+accepts a message instance as a parameter and sends it over a network.
+
+<CodeBlock className="language-javascript">{simple_message}</CodeBlock>
+
+**Output example**:
+
+```string
+{
+  message: {
+    networkId: '14379272398717627559',
+    parentMessageIds: [
+      '03ddc83fad172a322fb00fb4e449436e9d1117ff390879100647c650a30c2d52',
+      '252798210fa9816f6fd40f1b19095da9f2dc88ae06fc4c0523a928a29d0d782e',
+      'a8e4f4cd49227068424ead8da187a48fdaa7ce8ffc4b9ac0ee2d5d3f2fcd7e70',
+      'dbbc8044bc624b3378e1dda83ab95f9be468b06a6a9806c76a70353182028cf9'
+    ],
+    payload: null,
+    nonce: '9223372036854784215'
+  },
+  messageId: '10dbee9cf3c58507725861b34ac711058dc13f709be1a6d21f1dc0af17b06379'
+}
+```
+
+- `messageId` is a unique id that refers to the given message in the network.

@@ -1,0 +1,45 @@
+---
+title: Check a Balance
+description: There are three common API calls you can use to get a balance using the Client, getAddressBalance, getAddressBalances and getBalance.
+image: /img/logo/iota_mark_light.png
+keywords:
+- how to
+- account
+- address
+- nodejs
+- message
+- output
+- java
+- nodejs
+- python
+- rust
+- wasm
+---
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import FaucetService from '../_admonitions/_faucet_service.md';
+import JavaGetBalance from '../libraries/java/examples/_04_get_balance.mdx';
+import NodejsGetBalance from '../libraries/nodejs/examples/_04_get_balance.mdx';
+import PythonGetBalance from '../libraries/python/examples/_04_get_balance.mdx';
+import RustGetBalance from '../libraries/rust/examples/_04_get_balance.mdx';
+import WasmGetBalance from '../libraries/wasm/examples/_04_get_balance.mdx';
+
+<FaucetService/>
+
+<Tabs groupId="language">
+    <TabItem value="java" label="Java">
+        <JavaGetBalance/>
+    </TabItem>
+    <TabItem value="nodejs" label="Nodejs">
+        <NodejsGetBalance/>
+    </TabItem>
+    <TabItem value="python" label="Python">
+        <PythonGetBalance/>
+    </TabItem>
+    <TabItem value="rust" label="Rust">
+        <RustGetBalance/>
+    </TabItem>
+    <TabItem value="wasm" label="Wasm">
+        <WasmGetBalance/>
+    </TabItem>
+</Tabs>

@@ -1,0 +1,56 @@
+---
+title: Get Node Information
+description: You can access all the features of the iota.rs library using an instance of the Client class. The Client class provides high-level abstraction to all interactions over IOTA network (Tangle).
+image: /img/logo/iota_mark_light.png
+keywords:
+- how to
+- client class
+- iota node
+- ClientBuilder
+- load balancer
+- java
+- nodejs
+- python
+- rust
+- wasm
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import WarningPasswordStorage from '../_admonitions/_password_storage.md';
+import JavaGetInfo from '../libraries/java/examples/_01_get_info.mdx';
+import NodejsGetInfo from '../libraries/nodejs/examples/_01_get_info.mdx';
+import PythonGetInfo from '../libraries/python/examples/_01_get_info.mdx';
+import RustGetInfo from '../libraries/rust/examples/_01_get_info.mdx';
+import WasmGetInfo from '../libraries/wasm/examples/_01_get_info.mdx';
+
+# Connecting to Node(s)
+
+You can access all the features of the `iota.rs` library using an instance of the `Client` class. The `Client` class
+provides high-level abstraction to all interactions over IOTA network (Tangle). You have to instantiate this class
+before you start any interactions with the library, or more precisely with the
+[IOTA nodes](https://wiki.iota.org/chrysalis-docs/node_software) that power IOTA network.
+
+The library is designed to automatically choose a starting IOTA node based on the network type you would like to
+participate in: [`devnet`](https://wiki.iota.org/chrysalis-docs/devnet) or
+[`mainnet`](https://wiki.iota.org/chrysalis-docs/mainnet).
+
+<WarningPasswordStorage/>
+
+<Tabs groupId="language">
+    <TabItem value="java" label="Java">
+        <JavaGetInfo/>
+    </TabItem>
+    <TabItem value="nodejs" label="Nodejs">
+        <NodejsGetInfo/>
+    </TabItem>
+    <TabItem value="python" label="Python">
+        <PythonGetInfo/>
+    </TabItem>
+    <TabItem value="rust" label="Rust">
+        <RustGetInfo/>
+    </TabItem>
+    <TabItem value="wasm" label="Wasm">
+        <WasmGetInfo/>
+    </TabItem>
+</Tabs>

@@ -1,0 +1,53 @@
+---
+title: Send a Signed Transaction
+description: Sending value-based messages is a very straightforward process. You will only need to provide a valid seed, output addresses, and amount.
+image: /img/logo/iota_mark_light.png
+keywords:
+- how to
+- value
+- utxo
+- ouputs
+- core payload type
+- unspent transactions output
+- java
+- nodejs
+- python
+- wasm
+- rust
+---
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+import WalletRecommendation from "../_admonitions/_wallet_transaction_recommendation.md";
+import DustProtection from "../_admonitions/_dust_protection.md";
+import JavaTransaction from "../libraries/java/examples/_09_transaction.mdx";
+import NodejsGetTransaction from "../libraries/nodejs/examples/_09_transaction.mdx";
+import PythonGetTransaction from "../libraries/python/examples/_09_transaction.mdx";
+import RustGetTransaction from "../libraries/rust/examples/_09_transaction.mdx";
+import WasmGetTransaction from "../libraries/wasm/examples/_09_transaction.mdx";
+
+A [SignedTransaction](./../explanations/messages_payloads_and_transactions.md#signedtransaction) is a core payload type
+that is used to send value-based messages as
+[Unspent Transaction Output (UTXO)](./../explanations/messages_payloads_and_transactions#unspent-transaction-output-utxo).
+This core payload changes the ledger state as it spends "old" outputs and replaces them with new outputs.
+
+<WalletRecommendation />
+
+<Tabs groupId="language">
+  <TabItem value="java" label="Java">
+    <JavaTransaction />
+  </TabItem>
+  <TabItem value="nodejs" label="Nodejs">
+    <NodejsGetTransaction />
+  </TabItem>
+  <TabItem value="python" label="Python">
+    <PythonGetTransaction />
+  </TabItem>
+  <TabItem value="rust" label="Rust">
+    <RustGetTransaction />
+  </TabItem>
+  <TabItem value="wasm" label="Wasm">
+    <WasmGetTransaction />
+  </TabItem>
+</Tabs>
+
+<DustProtection />

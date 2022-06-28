@@ -1,0 +1,58 @@
+---
+title: Send a Data Message
+description: An IndexationPayload is a payload type that can be used to attach arbitrary data and a key index to a message.
+image: /img/logo/iota_mark_light.png
+keywords:
+- how to
+- key index
+- data message
+- arbitrary data
+- client
+- payloads
+- java
+- nodejs
+- python
+- wasm
+- rust
+---
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+import JavaDataMessage from "../libraries/java/examples/_08_data_message.mdx";
+import NodejsGetDataMessage from "../libraries/nodejs/examples/_08_data_message.mdx";
+import PythonGetDataMessage from "../libraries/python/examples/_08_data_message.mdx";
+import RustGetDataMessage from "../libraries/rust/examples/_08_data_message.mdx";
+import WasmGetDataMessage from "../libraries/wasm/examples/_08_data_message.mdx";
+
+An [`IndexationPayload`](../explanations/messages_payloads_and_transactions.md#indexationpayload) is a payload type that can be used to attach arbitrary `data`
+and a key `index` to a message. To send a payload, you should  at least provide the `index`. The data part
+(as `bytes[]`) is optional.
+
+
+<Tabs groupId="language">
+  <TabItem value="java" label="Java">
+    <JavaDataMessage />
+  </TabItem>
+  <TabItem value="nodejs" label="Nodejs">
+    <NodejsGetDataMessage />
+  </TabItem>
+  <TabItem value="python" label="Python">
+    <PythonGetDataMessage />
+  </TabItem>
+  <TabItem value="rust" label="Rust">
+    <RustGetDataMessage />
+  </TabItem>
+  <TabItem value="wasm" label="Wasm">
+    <WasmGetDataMessage />
+  </TabItem>
+</Tabs>
+
+
+- You can find the message using its `message ID` in the
+  [Tangle explorer](https://explorer.iota.org/devnet/message/8d4fa37be3c00691131c2c3e03e7b8b956c9118a2ce4be3a8597d51d82ed2de9).
+- There are three prepared [payloads](../explanations/messages_payloads_and_transactions.md#corepayloads)(`transaction`, `milestone`, and `indexation`). However, at the time, the `indexation`
+  payload is the only one in use.
+- `data` contains arbitrary data encoded in bytes.
+- Please note there is no IOTA address involved while sending data messages. Data messages are referenced using their
+  `message ID` or `index` key.
+- IOTA addresses are part of the `UTXO` data structure that is sent using the [`SignedTransaction`](./../explanations/messages_payloads_and_transactions#signedtransaction)
+  payload.

@@ -1,0 +1,65 @@
+---
+title: Listen to MQTT
+description: You can reach the listener using an instance of a Client.TopicSubscriber object that is returned from the Client.subscriber() function.
+image: /img/logo/iota_mark_light.png
+keywords:
+- how to
+- message
+- message queuing telemetry
+- queues
+- asynchronous events listener
+- list topics
+- nodejs
+- java
+- nodejs
+- python
+- wasm
+- rust
+---
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+import KeyConceptOutputs from '../_admonitions/_explanation_outputs.md';
+import Javamqtt from "../libraries/java/examples/_10_mqtt.mdx";
+import Nodejsmqtt from "../libraries/nodejs/examples/_10_mqtt.mdx";
+import Pythonmqtt from "../libraries/python/examples/_10_mqtt.mdx";
+import Rustmqtt from "../libraries/rust/examples/_10_mqtt.mdx";
+// import Wasmmqtt from "../libraries/wasm/examples/_10_mqtt.mdx";
+
+
+<KeyConceptOutputs />
+
+IOTA node(s) provide a [Message Queuing Telemetry Transport](https://en.wikipedia.org/wiki/MQTT) (MQTT) layer, if
+enabled, which is a lightweight publish-subscribe network protocol that provides information about events that are
+being triggered by the IOTA network.
+
+The `iota.rs` client library supports asynchronous event listeners that can be listened to, and continuously receive
+MQTT events based on a `topic`, which can be:
+
+* milestones/latest
+* milestones/confirmed
+* messages
+* messages/referenced
+* messages/indexation/{index}
+* messages/{messageId}/metadata
+* transactions/{transactionId}/included-message
+* outputs/{outputId}
+* addresses/{address}/outputs
+* addresses/ed25519/{address}/outputs
+
+
+<Tabs groupId="language">
+  <TabItem value="java" label="Java">
+    <Javamqtt />
+  </TabItem>
+  <TabItem value="nodejs" label="Nodejs">
+    <Nodejsmqtt />
+  </TabItem>
+  <TabItem value="python" label="Python">
+    <Pythonmqtt />
+  </TabItem>
+  <TabItem value="rust" label="Rust">
+    <Rustmqtt />
+  </TabItem>
+</Tabs>
+

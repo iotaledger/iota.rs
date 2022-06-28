@@ -1,0 +1,33 @@
+import CodeBlock from '@theme/CodeBlock';
+import LoadBalancerHealthChecks from '../../../_admonitions/_load_balancer_health_checks.md';
+import get_info from '!!raw-loader!../../../../../examples/01_get_info.rs';
+import GetInfoOutput from '../../../_partials/examples/01_get_info/outputs/snake_case.md'
+import ClientBuilder from '../../../_partials/examples/01_get_info/_client_builder.md';
+
+<CodeBlock className="language-rust">
+    {get_info}
+</CodeBlock>
+
+**Output example** of the `get_info()` function of the `Client` instance:
+
+<GetInfoOutput/>
+
+<LoadBalancerHealthChecks/>
+
+<ClientBuilder/>
+
+The most common ones are:
+
+* `.with_network(self, network: &str)`: Can be either `devnet` or `mainnet`. It instructs
+the library whether to automatically select devnet nodes or mainnet nodes.
+* `.with_node.(self, url: &str)`: Specify address of actual running IOTA node that should be used
+to communicate with in the format `https://node:port`). For example: `https://api.lb-0.h.chrysalis-devnet.iota.cafe:443`.
+* `.with_node_pool_urls(self, node_pool_urls: &[String]) `: The library also supports managing a pool of
+nodes. You can provide a list of nodes and the library manages the access to them automatically by selecting them based
+on their sync status. If you provide `.node_pool_urls(urls)`, then the library periodically will periodically check whether node is in sync or
+not by calling `.with_node_sync_interval(self, node_sync_interval: Duration)`.
+* `.with_local_pow(self, local: bool)`: If `.with_local_pow(True)` a Proof-of-work will be done
+locally and not remotely.
+* `. with_node_sync_disabled(self)`: When called, the library will use nodes that
+are **not** in sync with network. This parameter is usually useful if you would like to interact with a local test node
+that is not fully synced. **This parameter should not be used in production**.

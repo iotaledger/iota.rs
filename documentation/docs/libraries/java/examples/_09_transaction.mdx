@@ -1,0 +1,18 @@
+import CodeBlock from "@theme/CodeBlock";
+import java_examples from "!!raw-loader!../../../../../bindings/java/examples/java-app/src/main/java/org/iota/client/example/ExampleApp.java";
+const javaFunctionName = "public static void transaction",
+  indexStart = java_examples.indexOf(javaFunctionName);
+const nextJavaFunctionName = "public static void mqtt",
+  indexEnd = java_examples.indexOf(nextJavaFunctionName);
+const transaction = java_examples.substring(indexStart, indexEnd);
+
+Sending value-based messages is a very straightforward process if you use the
+[`ClientMessageBuilder` ](./../libraries/java/api_reference#clientmessagebuilder) helper class. You will only need to
+provide a valid seed by chaining a call to
+[`.withSeed(seed: String)`](./../libraries/java/api_reference#withseedseed-clientmessagebuilder), and output addresses
+and amount by chaining a call to
+[`withOutput(address: String, amount: long):`](./../libraries/java/api_reference#withoutputaddress-amount-clientmessagebuilder).
+The method will find valid output(s) that can be used to fund the given amount(s) and the unspent amount will be sent to
+the same address.
+
+<CodeBlock className="language-java">{transaction}</CodeBlock>

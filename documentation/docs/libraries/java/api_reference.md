@@ -101,268 +101,357 @@ import Util from './api/Util.mdx'
 import UtxoInput from './api/UtxoInput.mdx'
 
 ## Address
+
 <Address components={props.components} />
 
 ## AddressDto
+
 <AddressDto components={props.components} />
 
 ## AddressIndexRecorder
+
 <AddressIndexRecorder components={props.components} />
 
 ## AddressPublicWrapper
+
 <AddressPublicWrapper components={props.components} />
 
 ## AddressStringPublicWrapper
+
 <AddressStringPublicWrapper components={props.components} />
 
 ## Api
+
 <Api components={props.components} />
 
 ## BalanceAddressResponse
+
 <BalanceAddressResponse components={props.components} />
 
 ## BrokerOptions
+
 <BrokerOptions components={props.components} />
 
 ## Chain
+
 <Chain components={props.components} />
 
 ## Client
+
 <Client components={props.components} />
 
 ## ClientBuilder
+
 <ClientBuilder components={props.components} />
 
 ## ClientException
+
 <ClientException components={props.components} />
 
 ## ClientMessageBuilder
+
 <ClientMessageBuilder components={props.components} />
 
 ## ClientMiner
+
 <ClientMiner components={props.components} />
 
 ## Essence
+
 <Essence components={props.components} />
 
 ## GetAddressBuilder
+
 <GetAddressBuilder components={props.components} />
 
 ## GetAddressesBuilder
+
 <GetAddressesBuilder components={props.components} />
 
 ## GetBalanceBuilderApi
+
 <GetBalanceBuilderApi components={props.components} />
 
 ## GetMessageBuilder
+
 <GetMessageBuilder components={props.components} />
 
 ## GossipDto
+
 <GossipDto components={props.components} />
 
 ## HeartbeatDto
+
 <HeartbeatDto components={props.components} />
 
 ## IndexPublicDto
+
 <IndexPublicDto components={props.components} />
 
 ## IndexationPayload
+
 <IndexationPayload components={props.components} />
 
 ## InfoResponse
+
 <InfoResponse components={props.components} />
 
 ## Input
+
 <Input components={props.components} />
 
 ## InputKind
+
 <InputKind components={props.components} />
 
 ## LedgerInclusionStateDto
+
 <LedgerInclusionStateDto components={props.components} />
 
 ## Message
+
 <Message components={props.components} />
 
 ## MessageBuilder
+
 <MessageBuilder components={props.components} />
 
 ## MessageId
+
 <MessageId components={props.components} />
 
 ## MessageMetadata
+
 <MessageMetadata components={props.components} />
 
 ## MessagePayload
+
 <MessagePayload components={props.components} />
 
 ## MessagePayloadType
+
 <MessagePayloadType components={props.components} />
 
 ## MessageWrap
+
 <MessageWrap components={props.components} />
 
 ## MetricsDto
+
 <MetricsDto components={props.components} />
 
 ## MigratedFundsEntry
+
 <MigratedFundsEntry components={props.components} />
 
 ## MigratedFundsEntryDto
+
 <MigratedFundsEntryDto components={props.components} />
 
 ## MilestoneId
+
 <MilestoneId components={props.components} />
 
 ## MilestonePayload
+
 <MilestonePayload components={props.components} />
 
 ## MilestonePayloadEssence
+
 <MilestonePayloadEssence components={props.components} />
 
 ## MilestoneResponse
+
 <MilestoneResponse components={props.components} />
 
 ## MilestoneSignature
+
 <MilestoneSignature components={props.components} />
 
 ## MilestoneUtxoChangesResponse
+
 <MilestoneUtxoChangesResponse components={props.components} />
 
 ## MqttEvent
+
 <MqttEvent components={props.components} />
 
 ## MqttListener
+
 <MqttListener components={props.components} />
 
 ## MqttManager
+
 <MqttManager components={props.components} />
 
 ## MqttTopicManager
+
 <MqttTopicManager components={props.components} />
 
 ## NativeAPI
+
 <NativeAPI components={props.components} />
 
 ## NetworkInfo
+
 <NetworkInfo components={props.components} />
 
 ## Node
+
 <Node components={props.components} />
 
 ## NodeInfoWrapper
+
 <NodeInfoWrapper components={props.components} />
 
 ## Output
+
 <Output components={props.components} />
 
 ## OutputDto
+
 <OutputDto components={props.components} />
 
 ## OutputKind
+
 <OutputKind components={props.components} />
 
 ## OutputResponse
+
 <OutputResponse components={props.components} />
 
 ## OutputsOptions
+
 <OutputsOptions components={props.components} />
 
 ## PeerDto
+
 <PeerDto components={props.components} />
 
 ## PreparedTransactionData
+
 <PreparedTransactionData components={props.components} />
 
 ## PublicKey
+
 <PublicKey components={props.components} />
 
 ## ReceiptDto
+
 <ReceiptDto components={props.components} />
 
 ## ReceiptPayload
+
 <ReceiptPayload components={props.components} />
 
 ## ReceiptPayloadDto
+
 <ReceiptPayloadDto components={props.components} />
 
 ## ReferenceUnlock
+
 <ReferenceUnlock components={props.components} />
 
 ## RegularEssence
+
 <RegularEssence components={props.components} />
 
 ## Relation
+
 <Relation components={props.components} />
 
 ## RustHex
+
 <RustHex components={props.components} />
 
 ## RustLogging
+
 <RustLogging components={props.components} />
 
 ## SecretKey
+
 <SecretKey components={props.components} />
 
 ## Signature
+
 <Signature components={props.components} />
 
 ## SignatureLockedDustAllowanceOutput
+
 <SignatureLockedDustAllowanceOutput components={props.components} />
 
 ## SignatureLockedDustAllowanceOutputDto
+
 <SignatureLockedDustAllowanceOutputDto components={props.components} />
 
 ## SignatureLockedSingleOutput
+
 <SignatureLockedSingleOutput components={props.components} />
 
 ## SignatureLockedSingleOutputDto
+
 <SignatureLockedSingleOutputDto components={props.components} />
 
 ## SignatureUnlock
+
 <SignatureUnlock components={props.components} />
 
 ## Topic
+
 <Topic components={props.components} />
 
 ## TopicEvent
+
 <TopicEvent components={props.components} />
 
 ## TransactionId
+
 <TransactionId components={props.components} />
 
 ## TransactionPayload
+
 <TransactionPayload components={props.components} />
 
 ## TransactionPayloadBuilder
+
 <TransactionPayloadBuilder components={props.components} />
 
 ## TreasuryInput
+
 <TreasuryInput components={props.components} />
 
 ## TreasuryOutput
+
 <TreasuryOutput components={props.components} />
 
 ## TreasuryOutputDto
+
 <TreasuryOutputDto components={props.components} />
 
 ## TreasuryPayload
+
 <TreasuryPayload components={props.components} />
 
 ## TreasuryResponse
+
 <TreasuryResponse components={props.components} />
 
 ## UnlockBlock
+
 <UnlockBlock components={props.components} />
 
 ## UnlockBlockKind
+
 <UnlockBlockKind components={props.components} />
 
 ## UnlockBlocks
+
 <UnlockBlocks components={props.components} />
 
 ## Util
+
 <Util components={props.components} />
 
 ## UtxoInput
+
 <UtxoInput components={props.components} />

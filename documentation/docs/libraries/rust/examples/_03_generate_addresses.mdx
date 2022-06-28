@@ -1,0 +1,62 @@
+import CodeBlock from '@theme/CodeBlock';
+import generate_addresses from '!!raw-loader!../../../../../examples/03_generate_addresses.rs';
+
+You can generate IOTA addresses calling the
+[`Client.get_addresses()`](https://docs.rs/iota-client/latest/iota_client/client/struct.Client.html#method.get_addresses)
+function and respective chaining calls that will return a list of tuples with the generated addresses. You can find
+more information on the parameters in the [Address/Key Space section](../../../explanations/address_key_space.md).
+
+The whole process is deterministic. This means the output is the same as long as the seed is the same:
+
+<CodeBlock className="language-javascript">
+    {generate_addresses}
+</CodeBlock>
+
+**Output example**:
+
+```palintext
+List of generated public addresses:
+[
+"atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r",
+"atoi1qpnrumvaex24dy0duulp4q07lpa00w20ze6jfd0xly422kdcjxzakzsz5kf",
+"atoi1qz4sfmp605vnj6fxt0sf0cwclffw5hpxjqkf6fthyd74r9nmmu337m3lwl2",
+...]
+
+List of generated public addresses:
+[
+"atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r",
+"atoi1qpnrumvaex24dy0duulp4q07lpa00w20ze6jfd0xly422kdcjxzakzsz5kf",
+"atoi1qz4sfmp605vnj6fxt0sf0cwclffw5hpxjqkf6fthyd74r9nmmu337m3lwl2",
+...]
+
+List of generated public and internal addresses:
+[
+("atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r", false),
+("atoi1qprxpfvaz2peggq6f8k9cj8zfsxuw69e4nszjyv5kuf8yt70t2847shpjak", true),
+("atoi1qpnrumvaex24dy0duulp4q07lpa00w20ze6jfd0xly422kdcjxzakzsz5kf", false),
+...]
+
+List of offline generated public addresses:
+["atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r",
+"atoi1qpnrumvaex24dy0duulp4q07lpa00w20ze6jfd0xly422kdcjxzakzsz5kf",
+"atoi1qz4sfmp605vnj6fxt0sf0cwclffw5hpxjqkf6fthyd74r9nmmu337m3lwl2",
+...]
+
+
+```
+
+IOTA addresses are represented by a checksumed base-32 string (Bech32). You can find a detailed explanation in the
+[Chrysalis documentations](https://wiki.iota.org/chrysalis-docs/guides/developer/#iota-15-address-anatom), but here are
+parts relevant to this example:
+
+* If an address starts with `atoi` then it means it is related to `devnet`. `iota` stands for `mainnet`.
+* Number `1` at the 5<sup>th</sup> position is just a separator.
+* The last 6 characters are reserved for a checksum.
+
+Addresses can be also represented in a hex format and `iota.rs` provides some convenient functions to convert addresses:
+[`Client.bech32ToHex(bech32)`](https://docs.rs/iota-client/latest/iota_client/client/struct.Client.html#method.bech32_to_hex)
+and [`Client.hex_to_bech32(hex, bech32_hrp (optional))`](https://docs.rs/iota-client/latest/iota_client/client/struct.Client.html#method.hex_to_bech32).
+
+If you want to quickly validate any IOTA address, you can use the
+[`Client.is_address_valid()`](https://docs.rs/iota-client/latest/iota_client/client/struct.Client.html#method.is_address_valid)
+function that returns a `bool` value. You should perform a sanity check on address before using it.

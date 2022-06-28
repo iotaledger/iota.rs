@@ -1,0 +1,51 @@
+import CodeBlock from "@theme/CodeBlock";
+import get_message_data from "!!raw-loader!../../../../../bindings/wasm/examples/07_get_message_data.js";
+
+Once a [message](../../../explanations/messages_payloads_and_transactions.md) is broadcast, you can use the
+[`Client.get_message_data(message_id: str)`](./../libraries/python/api_reference#get_message_datamessage_id-message) and
+[`Client.get_message_metadata()`](./../libraries/python/api_reference#get_message_metadatamessage_id-messagemetadataresponse)
+functions used to get all the information about the message from the Tangle.
+
+<CodeBlock className="language-python">{get_message_data}</CodeBlock>
+
+Output example:
+
+```json
+Message meta data:
+{
+   "message_id":"e2daa4c6b012b615becd6c12189b2c9e701ba0d53b31a15425b21af5105fc086",
+   "parent_message_ids":[
+      "0e2705ce50fec88f896663d4b7d562e74cbcfdd951ac482b1f03cfa5f27396d7",
+      "0f5a0b2041766127c3f3bff2dd653b450b72e364765fcc805a40423c59ed01f9",
+      "20635b30aee437575d7e6abdf6629eec80543bee30848b0abdda2200fc11a977",
+      "da97cd6cfcbb854b8fd3f064c8459c5c9eae80dbd5ef594a3e1a26dcb8fc078c"
+   ],
+   "is_solid":true,
+   "referenced_by_milestone_index":284866,
+   "milestone_index":"None",
+   "ledger_inclusion_state":{
+      "state":"NoTransaction"
+   },
+   "conflict_reason":"None",
+   "should_promote":"None",
+   "should_reattach":"None"
+}
+
+Message data:
+{
+   "message_id":"e2daa4c6b012b615becd6c12189b2c9e701ba0d53b31a15425b21af5105fc086",
+   "network_id":7712883261355838377,
+   "parents":[
+      "0e2705ce50fec88f896663d4b7d562e74cbcfdd951ac482b1f03cfa5f27396d7",
+      "0f5a0b2041766127c3f3bff2dd653b450b72e364765fcc805a40423c59ed01f9",
+      "20635b30aee437575d7e6abdf6629eec80543bee30848b0abdda2200fc11a977",
+      "da97cd6cfcbb854b8fd3f064c8459c5c9eae80dbd5ef594a3e1a26dcb8fc078c"
+   ],
+   "payload":"None",
+   "nonce":2305843009213869242
+}
+```
+
+- `Client.get_message_metadata` provides information on how the given message fits to network structures such as
+  `ledger_inclusion_state`.
+- `Client.get_message_data` provides all the data that relates to the message and its payload(s)

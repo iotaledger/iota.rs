@@ -1,0 +1,32 @@
+---
+description: IOTA uses the `Ed25519` signature scheme and addresses are usually represented by Bech32 (checksummed base32) format string of 64 characters. 
+image: /img/libraries/messages_in_tangle.svg 
+keywords:
+- explanation
+- seeds
+- ED2519
+- signature scheme
+- random seed
+- seed generator
+- private key
+---
+import SeedMnemonics from "../_admonitions/_seed_mnemonics.md";
+
+# Seeds
+
+Since the IOTA network is permission-less, anybody is able to use it and interact with it. No central authority is
+required at any stage. So anybody is able to generate their own `seed` and then deterministically generate the
+respective private keys/addresses.
+
+IOTA uses the `Ed25519` signature scheme and addresses are usually represented by Bech32 (checksummed base32) format
+string of 64 characters.
+
+A root of the `Ed25519` signature scheme is basically a `32-byte (256-bit)` uniformly randomly generated seed on which
+all private keys and corresponding addresses are generated. In the examples below, the seed is represented by a string
+of 64 characters using the `[0-9a-f]` alphabet (32 bytes encoded in hexadecimal).
+
+<SeedMnemonics />
+
+## Related Examples
+
+* [Generate Seed](./../examples/generate_seed.mdx)
