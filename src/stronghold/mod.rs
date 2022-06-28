@@ -512,9 +512,9 @@ async fn task_key_clear(
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     use std::{fs, path::PathBuf};
+
+    use super::*;
 
     #[tokio::test]
     async fn test_clear_key() {
