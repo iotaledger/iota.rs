@@ -242,7 +242,7 @@ impl SecretManageExt for LedgerSecretManager {
             };
 
             let mut remainder_index = 0u16;
-            if remainder_address.is_some() {
+            if let Some(remainder_address) = remainder_address {
                 match &prepared_transaction.essence {
                     bee_block::payload::transaction::TransactionEssence::Regular(essence) => {
                         // find the index of the remainder in the essence
@@ -257,7 +257,7 @@ impl SecretManageExt for LedgerSecretManager {
                                 bee_block::output::Output::Basic(s) => {
                                     for block in s.unlock_conditions().iter() {
                                         if let bee_block::output::UnlockCondition::Address(e) = block {
-                                            if *remainder_address.unwrap() == *e.address() {
+                                            if *remainder_address == *e.address() {
                                                 break 'essence_outputs;
                                             }
                                         }
