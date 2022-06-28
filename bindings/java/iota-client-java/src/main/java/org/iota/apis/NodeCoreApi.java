@@ -4,7 +4,9 @@
 package org.iota.apis;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import org.iota.types.*;
 import org.iota.types.ids.BlockId;
 import org.iota.types.ids.MilestoneId;
@@ -51,6 +53,19 @@ public class NodeCoreApi extends BaseApi {
         o.add("block", block.getJson());
 
         String responsePayload = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "PostBlock", o)).getAsString();
+        return new BlockId(responsePayload);
+    }
+
+    public BlockId postBlockRaw(byte[] blockBytes) throws ClientException {
+        JsonArray a = new JsonArray();
+
+        for(byte blockByte: blockBytes)
+            a.add(blockByte & 0xFF);
+
+        JsonObject o = new JsonObject();
+        o.add("blockBytes", a);
+
+        String responsePayload = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "PostBlockRaw", o)).getAsString();
         return new BlockId(responsePayload);
     }
 

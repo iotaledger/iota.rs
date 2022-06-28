@@ -52,6 +52,10 @@ public class Client {
         return nodeCoreApi.postBlock(block);
     }
 
+    public BlockId postBlockRaw(byte[] blockBytes) throws ClientException {
+        return nodeCoreApi.postBlockRaw(blockBytes);
+    }
+
     public Block getBlock(BlockId blockId) throws ClientException {
         return nodeCoreApi.getBlock(blockId);
     }
@@ -306,7 +310,7 @@ public class Client {
         miscellaneousApi.storeMnemonic(secretManager, mnemonic);
     }
 
-    public Block submitBlockPayload(BlockPayload payload) throws ClientException {
+    public Block postBlockPayload(BlockPayload payload) throws ClientException {
         return miscellaneousApi.postBlockPayload(payload);
     }
 

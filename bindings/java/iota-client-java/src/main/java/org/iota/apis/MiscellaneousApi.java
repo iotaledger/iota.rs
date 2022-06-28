@@ -125,7 +125,7 @@ public class MiscellaneousApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.add("payload", payload.getJson());
 
-        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "SubmitPayload", o));
+        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "PostBlockPayload", o));
 
         return new Block(responsePayload);
     }
