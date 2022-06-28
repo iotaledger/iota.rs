@@ -17,14 +17,7 @@ use crate::{db::DatabaseProvider, Error, Result};
 #[async_trait]
 impl DatabaseProvider for StrongholdAdapter {
     async fn get(&mut self, k: &[u8]) -> Result<Option<Vec<u8>>> {
-        let data = match self
-            .stronghold
-            .lock()
-            .await
-            .get_client(PRIVATE_DATA_CLIENT_PATH)?
-            .store()
-            .get(k)?
-        {
+        let data = match self.stronghold.get_client(PRIVATE_DATA_CLIENT_PATH)?.store().get(k)? {
             Some(data) => data,
             None => return Ok(None),
         };
@@ -57,8 +50,6 @@ impl DatabaseProvider for StrongholdAdapter {
 
         Ok(self
             .stronghold
-            .lock()
-            .await
             .get_client(PRIVATE_DATA_CLIENT_PATH)?
             .store()
             .insert(k.to_vec(), encrypted_value, None)?)
@@ -67,8 +58,6 @@ impl DatabaseProvider for StrongholdAdapter {
     async fn delete(&mut self, k: &[u8]) -> Result<Option<Vec<u8>>> {
         Ok(self
             .stronghold
-            .lock()
-            .await
             .get_client(PRIVATE_DATA_CLIENT_PATH)?
             .store()
             .delete(k)?)

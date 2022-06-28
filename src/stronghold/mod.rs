@@ -70,7 +70,7 @@ use crate::{db::DatabaseProvider, Error, Result};
 pub struct StrongholdAdapter {
     /// A stronghold instance.
     #[builder(field(type = "Option<Stronghold>"))]
-    stronghold: Arc<Mutex<Stronghold>>,
+    stronghold: Stronghold,
 
     /// A key to open the Stronghold vault.
     ///
@@ -160,7 +160,6 @@ impl StrongholdAdapterBuilder {
             }
         }
 
-        let stronghold = Arc::new(Mutex::new(stronghold));
         let has_key_provider = self.key_provider.is_some();
         let key_provider = Arc::new(Mutex::new(self.key_provider));
 
@@ -442,7 +441,7 @@ impl StrongholdAdapter {
             return Err(Error::StrongholdKeyCleared);
         };
 
-        self.stronghold.lock().await.load_client_from_snapshot(
+        self.stronghold.load_client_from_snapshot(
             PRIVATE_DATA_CLIENT_PATH,
             key_provider,
             &SnapshotPath::from_path(&self.snapshot_path),
@@ -468,8 +467,6 @@ impl StrongholdAdapter {
         };
 
         self.stronghold
-            .lock()
-            .await
             .commit(&SnapshotPath::from_path(&self.snapshot_path), key_provider)?;
 
         Ok(())

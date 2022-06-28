@@ -48,11 +48,10 @@ impl SecretManage for StrongholdAdapter {
             let chain = Chain::from_u32_hardened(vec![44u32, coin_type, account_index, internal as u32, address_index]);
 
             // Derive a SLIP-10 private key in the vault.
-            self.slip10_derive(chain, seed_location.clone(), derive_location.clone())
-                .await?;
+            self.slip10_derive(chain, seed_location.clone(), derive_location.clone())?;
 
             // Get the Ed25519 public key from the derived SLIP-10 private key in the vault.
-            let public_key = self.ed25519_public_key(derive_location.clone()).await?;
+            let public_key = self.ed25519_public_key(derive_location.clone())?;
 
             // Hash the public key to get the address.
             let hash = Blake2b256::digest(&public_key);
@@ -102,14 +101,13 @@ impl SecretManage for StrongholdAdapter {
         };
 
         // Derive a SLIP-10 private key in the vault.
-        self.slip10_derive(chain, seed_location.clone(), derive_location.clone())
-            .await?;
+        self.slip10_derive(chain, seed_location.clone(), derive_location.clone())?;
 
         // Get the Ed25519 public key from the derived SLIP-10 private key in the vault.
-        let public_key = self.ed25519_public_key(derive_location.clone()).await?;
+        let public_key = self.ed25519_public_key(derive_location.clone())?;
 
         // Sign the essence hash with the derived SLIP-10 private key in the vault.
-        let signature = self.ed25519_sign(derive_location.clone(), essence_hash).await?;
+        let signature = self.ed25519_sign(derive_location.clone(), essence_hash)?;
 
         // Convert the raw bytes into [Unlock].
         let unlock = Unlock::Signature(SignatureUnlock::new(Signature::Ed25519(Ed25519Signature::new(
@@ -123,10 +121,8 @@ impl SecretManage for StrongholdAdapter {
 /// Private methods for the secret manager implementation.
 impl StrongholdAdapter {
     /// Execute [Procedure::BIP39Recover] in Stronghold to put a mnemonic into the Stronghold vault.
-    async fn bip39_recover(&self, mnemonic: String, passphrase: Option<String>, output: Location) -> Result<()> {
+    fn bip39_recover(&self, mnemonic: String, passphrase: Option<String>, output: Location) -> Result<()> {
         self.stronghold
-            .lock()
-            .await
             .get_client(PRIVATE_DATA_CLIENT_PATH)?
             .execute_procedure(procedures::BIP39Recover {
                 mnemonic,
@@ -138,10 +134,8 @@ impl StrongholdAdapter {
     }
 
     /// Execute [Procedure::SLIP10Derive] in Stronghold to derive a SLIP-10 private key in the Stronghold vault.
-    async fn slip10_derive(&self, chain: Chain, input: Slip10DeriveInput, output: Location) -> Result<()> {
+    fn slip10_derive(&self, chain: Chain, input: Slip10DeriveInput, output: Location) -> Result<()> {
         self.stronghold
-            .lock()
-            .await
             .get_client(PRIVATE_DATA_CLIENT_PATH)?
             .execute_procedure(procedures::Slip10Derive { chain, input, output })?;
 
@@ -150,11 +144,9 @@ impl StrongholdAdapter {
 
     /// Execute [Procedure::Ed25519PublicKey] in Stronghold to get an Ed25519 public key from the SLIP-10 private key
     /// located in `private_key`.
-    async fn ed25519_public_key(&self, private_key: Location) -> Result<[u8; 32]> {
+    fn ed25519_public_key(&self, private_key: Location) -> Result<[u8; 32]> {
         Ok(self
             .stronghold
-            .lock()
-            .await
             .get_client(PRIVATE_DATA_CLIENT_PATH)?
             .execute_procedure(procedures::PublicKey {
                 ty: KeyType::Ed25519,
@@ -163,11 +155,9 @@ impl StrongholdAdapter {
     }
 
     /// Execute [Procedure::Ed25519Sign] in Stronghold to sign `msg` with `private_key` stored in the Stronghold vault.
-    async fn ed25519_sign(&self, private_key: Location, msg: &[u8]) -> Result<[u8; 64]> {
+    fn ed25519_sign(&self, private_key: Location, msg: &[u8]) -> Result<[u8; 64]> {
         Ok(self
             .stronghold
-            .lock()
-            .await
             .get_client(PRIVATE_DATA_CLIENT_PATH)?
             .execute_procedure(procedures::Ed25519Sign {
                 private_key,
@@ -199,8 +189,6 @@ impl StrongholdAdapter {
         if self.snapshot_loaded
             && self
                 .stronghold
-                .lock()
-                .await
                 .get_client(PRIVATE_DATA_CLIENT_PATH)?
                 .record_exists(&output)?
         {
@@ -208,7 +196,7 @@ impl StrongholdAdapter {
         }
 
         // Execute the BIP-39 recovery procedure to put it into the vault (in memory).
-        self.bip39_recover(trimmed_mnemonic, None, output).await?;
+        self.bip39_recover(trimmed_mnemonic, None, output)?;
 
         // Persist Stronghold to the disk
         self.write_stronghold_snapshot().await?;
