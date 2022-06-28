@@ -145,16 +145,16 @@ impl StrongholdAdapterBuilder {
         if let Some(key_provider) = &self.key_provider {
             let result = stronghold.load_client_from_snapshot(
                 PRIVATE_DATA_CLIENT_PATH,
-                &key_provider,
+                key_provider,
                 &SnapshotPath::from_path(&snapshot_path),
             );
             if let Err(iota_stronghold::ClientError::SnapshotFileMissing(_)) = result {
                 stronghold.create_client(PRIVATE_DATA_CLIENT_PATH)?;
                 stronghold.write_client(PRIVATE_DATA_CLIENT_PATH)?;
-                stronghold.commit(&SnapshotPath::from_path(&snapshot_path), &key_provider)?;
+                stronghold.commit(&SnapshotPath::from_path(&snapshot_path), key_provider)?;
                 stronghold.load_client_from_snapshot(
                     PRIVATE_DATA_CLIENT_PATH,
-                    &key_provider,
+                    key_provider,
                     &SnapshotPath::from_path(&snapshot_path),
                 )?;
             }
@@ -474,7 +474,7 @@ impl StrongholdAdapter {
 
         self.stronghold.lock().await.load_client_from_snapshot(
             PRIVATE_DATA_CLIENT_PATH,
-            &key_provider,
+            key_provider,
             &SnapshotPath::from_path(&self.snapshot_path),
         )?;
 
@@ -500,7 +500,7 @@ impl StrongholdAdapter {
         self.stronghold
             .lock()
             .await
-            .commit(&SnapshotPath::from_path(&self.snapshot_path), &key_provider)?;
+            .commit(&SnapshotPath::from_path(&self.snapshot_path), key_provider)?;
 
         Ok(())
     }
