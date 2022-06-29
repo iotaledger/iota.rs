@@ -101,13 +101,13 @@ impl SecretManage for StrongholdAdapter {
         };
 
         // Derive a SLIP-10 private key in the vault.
-        self.slip10_derive(chain, seed_location.clone(), derive_location.clone())?;
+        self.slip10_derive(chain, seed_location, derive_location.clone())?;
 
         // Get the Ed25519 public key from the derived SLIP-10 private key in the vault.
         let public_key = self.ed25519_public_key(derive_location.clone())?;
 
         // Sign the essence hash with the derived SLIP-10 private key in the vault.
-        let signature = self.ed25519_sign(derive_location.clone(), essence_hash)?;
+        let signature = self.ed25519_sign(derive_location, essence_hash)?;
 
         // Convert the raw bytes into [Unlock].
         let unlock = Unlock::Signature(SignatureUnlock::new(Signature::Ed25519(Ed25519Signature::new(
