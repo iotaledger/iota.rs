@@ -269,11 +269,7 @@ impl StrongholdAdapter {
     /// data, provide a list of keys in `keys_to_re_encrypt`, as we have no way to list and iterate over every
     /// key-value in the Stronghold store - we'll attempt on the ones provided instead. Set it to `None` to skip
     /// re-encryption.
-    pub async fn change_password(
-        &mut self,
-        new_password: &str,
-        keys_to_re_encrypt: Option<Vec<Vec<u8>>>,
-    ) -> Result<()> {
+    pub async fn change_password(&mut self, new_password: &str) -> Result<()> {
         // Stop the key clearing task to prevent the key from being abrubtly cleared (largely).
         if let Some(timeout_task) = self.timeout_task.lock().await.take() {
             timeout_task.abort();
@@ -289,31 +285,30 @@ impl StrongholdAdapter {
         // to the memory first (decrypted with the old key), then change `self.key`, then store them back (encrypted
         // with the new key).
         let mut values = Vec::new();
+        let keys_to_re_encrypt = self.stronghold.get_client(PRIVATE_DATA_CLIENT_PATH)?.store().keys()?;
 
-        if let Some(keys_to_re_encrypt) = keys_to_re_encrypt {
-            for key in keys_to_re_encrypt {
-                let value = match self.get(&key).await {
-                    Err(err) => {
-                        error!("an error occurred during the re-encryption of Stronghold Store: {err}");
+        for key in keys_to_re_encrypt {
+            let value = match self.get(&key).await {
+                Err(err) => {
+                    error!("an error occurred during the re-encryption of Stronghold Store: {err}");
 
-                        // Recover: restart the key clearing task
-                        if let Some(timeout) = self.timeout {
-                            // The key clearing task, with the data it owns.
-                            let task_self = self.timeout_task.clone();
-                            let key_provider = self.key_provider.clone();
+                    // Recover: restart the key clearing task
+                    if let Some(timeout) = self.timeout {
+                        // The key clearing task, with the data it owns.
+                        let task_self = self.timeout_task.clone();
+                        let key_provider = self.key_provider.clone();
 
-                            *self.timeout_task.lock().await =
-                                Some(tokio::spawn(task_key_clear(task_self, key_provider, timeout)));
-                        }
-
-                        return Err(err);
+                        *self.timeout_task.lock().await =
+                            Some(tokio::spawn(task_key_clear(task_self, key_provider, timeout)));
                     }
-                    Ok(None) => continue,
-                    Ok(Some(value)) => Zeroizing::new(value),
-                };
 
-                values.push((key, value));
-            }
+                    return Err(err);
+                }
+                Ok(None) => continue,
+                Ok(Some(value)) => Zeroizing::new(value),
+            };
+
+            values.push((key, value));
         }
 
         // Now we put the new key in, enabling encryption with the new key. Also, take the old key out to prevent
