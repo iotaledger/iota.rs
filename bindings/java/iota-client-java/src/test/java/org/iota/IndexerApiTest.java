@@ -66,7 +66,13 @@ public class IndexerApiTest extends ApiTest {
 
     @Test
     public void testGetNftOutputIdByNftId() throws ClientException {
-        OutputId nftOutputId = client.getNftOutputIds(new NodeIndexerApi.QueryParams())[0];
+        OutputId nftOutputId = null;
+        for (OutputId id : client.getNftOutputIds(new NodeIndexerApi.QueryParams())) {
+            if (client.getOutput(id).getKey().getJson().get("nftId").getAsString().equals("0x0000000000000000000000000000000000000000000000000000000000000000")) {
+                nftOutputId = id;
+                break;
+            }
+        }
         NftId nftId = client.computeNftId(nftOutputId);
         assertEquals(client.getNftOutputIdByNftId(nftId), nftOutputId);
     }

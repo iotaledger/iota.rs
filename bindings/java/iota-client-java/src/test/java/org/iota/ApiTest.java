@@ -38,9 +38,15 @@ public abstract class ApiTest {
     }
 
     protected TransactionId setUpTransactionId() throws ClientException {
-        OutputId outputId = client.getBasicOutputIds(new NodeIndexerApi.QueryParams())[0];
-        OutputMetadata metadata = client.getOutputMetadata(outputId);
-        return new TransactionId(metadata.getJson().get("transactionId").getAsString());
+        for(OutputId outputId: client.getBasicOutputIds(new NodeIndexerApi.QueryParams())) {
+            try {
+                OutputMetadata metadata = client.getOutputMetadata(outputId);
+                TransactionId ret = new TransactionId(metadata.getJson().get("transactionId").getAsString());
+                client.getIncludedBlock(ret);
+                return ret;
+            } catch (ClientException e) { ; }
+        }
+        throw new RuntimeException("cannot setup transaction ID");
     }
 
     protected OutputId setupOutputId() throws ClientException {
