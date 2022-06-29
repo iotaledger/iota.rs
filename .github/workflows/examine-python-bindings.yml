@@ -5,27 +5,27 @@ on:
       - develop
       - dev
     paths:
-      - '.github/workflows/examine-python-bindings.yml'
-      - '.github/actions/**'
-      - 'bindings/python/**'
+      - ".github/workflows/examine-python-bindings.yml"
+      - ".github/actions/**"
+      - "bindings/python/**"
       # Watch the Rust core too
-      - 'src/**'
-      - 'Cargo.toml'
-      - 'Cargo.lock'
+      - "src/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
   pull_request:
     branches:
       - develop
       - dev
     paths:
-      - '.github/workflows/examine-python-bindings.yml'
-      - '.github/actions/**'
-      - 'bindings/python/**'
+      - ".github/workflows/examine-python-bindings.yml"
+      - ".github/actions/**"
+      - "bindings/python/**"
       # Watch the Rust core too
-      - 'src/**'
-      - 'Cargo.toml'
-      - 'Cargo.lock'
+      - "src/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
   schedule:
-    - cron: '0 1 * * *'
+    - cron: "0 1 * * *"
   workflow_dispatch:
 
 jobs:
@@ -39,7 +39,7 @@ jobs:
         os: [windows-latest, macos-latest, ubuntu-latest]
         # python: ['3.9', '3.10']
         # FIXME: Make tests work on newer Python versions. (#782)
-        python: ['3.8', '3.9']
+        python: ["3.8", "3.9"]
 
     steps:
       - name: Checkout the Source Code
@@ -147,11 +147,23 @@ jobs:
           components: rustfmt
           cache: false
 
+      - name: Install cargo-license-template
+        uses: actions-rs/cargo@v1
+        with:
+          command: install
+          args: --force cargo-license-template
+
       - name: Run Cargo Fmt
         uses: actions-rs/cargo@v1
         with:
           command: fmt
           args: --manifest-path bindings/python/native/Cargo.toml --all -- --check
+
+      - name: Run cargo-license-template
+        uses: actions-rs/cargo@v1
+        with:
+          command: license-template
+          args: --template .license_template
 
       # TODO: Check the Python code too
 

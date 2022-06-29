@@ -6,28 +6,28 @@ on:
       # - develop
       - dev
     paths:
-      - '.github/workflows/examine-java-bindings.yml'
-      - '.github/actions/**'
-      - 'bindings/java/**'
+      - ".github/workflows/examine-java-bindings.yml"
+      - ".github/actions/**"
+      - "bindings/java/**"
       # Watch the Rust core too
-      - 'src/**'
-      - 'Cargo.toml'
-      - 'Cargo.lock'
+      - "src/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
   pull_request:
     branches:
       # disabled until Java binding is updated
       # - develop
       - dev
     paths:
-      - '.github/workflows/examine-java-bindings.yml'
-      - '.github/actions/**'
-      - 'bindings/java/**'
+      - ".github/workflows/examine-java-bindings.yml"
+      - ".github/actions/**"
+      - "bindings/java/**"
       # Watch the Rust core too
-      - 'src/**'
-      - 'Cargo.toml'
-      - 'Cargo.lock'
+      - "src/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
   schedule:
-    - cron: '0 1 * * *'
+    - cron: "0 1 * * *"
   workflow_dispatch:
 
 jobs:
@@ -41,7 +41,7 @@ jobs:
         os: [windows-latest, macos-latest, ubuntu-latest]
         # java: ['8', '11', '17']
         # FIXME: Make tests work on the newer Java LTS version 17. (#782)
-        java: ['8', '11']
+        java: ["8", "11"]
 
     steps:
       - name: Checkout the Source Code
@@ -149,11 +149,23 @@ jobs:
           components: rustfmt
           cache: false
 
+      - name: Install cargo-license-template
+        uses: actions-rs/cargo@v1
+        with:
+          command: install
+          args: --force cargo-license-template
+
       - name: Run Cargo Fmt
         uses: actions-rs/cargo@v1
         with:
           command: fmt
           args: --manifest-path bindings/java/native/Cargo.toml --all -- --check
+
+      - name: Run cargo-license-template
+        uses: actions-rs/cargo@v1
+        with:
+          command: license-template
+          args: --template .license_template
 
       # TODO: Check the Java code too
 
