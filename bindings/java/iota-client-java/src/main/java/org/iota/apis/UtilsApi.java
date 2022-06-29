@@ -28,7 +28,7 @@ public class UtilsApi extends BaseApi {
     public String hexToBech32(String hex, String bech32) throws ClientException {
         JsonObject o = new JsonObject();
         o.addProperty("hex", hex);
-        o.addProperty("bech32", bech32);
+        o.addProperty("bech32Hrp", bech32);
 
         String responsePayload = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "HexToBech32", o)).getAsString();
 

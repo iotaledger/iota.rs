@@ -1,4 +1,5 @@
 import com.google.gson.JsonObject;
+import org.apache.commons.codec.DecoderException;
 import org.iota.Client;
 import org.iota.apis.NodeIndexerApi;
 import org.iota.types.*;
@@ -7,7 +8,6 @@ import org.iota.types.ids.OutputId;
 import org.iota.types.secret.GenerateAddressesOptions;
 import org.iota.types.secret.GenerateBlockOptions;
 import org.iota.types.secret.SeedSecretManager;
-import org.iota.types.secret.WrongSeedConversionSecretManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,18 +18,44 @@ An incorrect seed conversion from Java to Rust in February 2022 resulted in inco
 This example shows how to access and migrate the funds located on the incorrectly derived addresses.
 This example will try to migrate funds from the first 50 addresses of the seed.
  */
-public class WrongSeedConversionSecretManagerExample {
+public class WrongSeedConversionSecretManager {
 
     private static final String DEFAULT_TESTNET_NODE_URL = "http://localhost:14265";
     private static ClientConfig config = new ClientConfig("{ \"nodes\": [\"" + DEFAULT_TESTNET_NODE_URL + "\" ], \"nodeSyncEnabled\": false}");
 
     public static void main(String[] args) throws ClientException {
+        testAddressDerivation();
+        migrate();
+    }
+
+    public static void testAddressDerivation() throws ClientException {
+        // Build the client.
+        Client client = new Client(config);
+
+        // The hex seed that is affected by the seed conversion bug.
+        String hexSeed = "4e4f4e5345435552455f5553455f4f465f444556454c4f504d454e545f534545445f31";
+
+        // Test the hex seed with the wrong + valid seed secret manager.
+        org.iota.types.secret.WrongSeedConversionSecretManager wrongSecretManager = new org.iota.types.secret.WrongSeedConversionSecretManager(hexSeed);
+        SeedSecretManager correctSecretManager = new SeedSecretManager(hexSeed);
+
+        // Generate the first address.
+        String wrongAddress = client.hexToBech32(client.bech32ToHex(client.generateAddresses(wrongSecretManager, new GenerateAddressesOptions().withRange(0, 1).withCoinType(4218))[0]), "atoi");
+        String correctAddress = client.hexToBech32(client.bech32ToHex(client.generateAddresses(correctSecretManager, new GenerateAddressesOptions().withRange(0, 1).withCoinType(4218))[0]), "atoi");
+
+        if(wrongAddress.equals("atoi1qzzj3wa2c0m0mpe6s2v004037sjhyk7zgr7hj3umwgnanr9xy6c92qyz3c8") && correctAddress.equals("atoi1qp5dzudmpxxz7xxlzez8w5ttefeanhpf9rju48ds5y2ellp6aauuztf0dyd")) {
+            System.out.println("success");
+        }
+
+    }
+
+    public static void migrate() throws ClientException {
         // Build the client.
         Client client = new Client(config);
 
         // The hex seed that is affected by the seed conversion bug.
         String hexSeed = "";
-        WrongSeedConversionSecretManager wrongSecretManager = new WrongSeedConversionSecretManager(hexSeed);
+        org.iota.types.secret.WrongSeedConversionSecretManager wrongSecretManager = new org.iota.types.secret.WrongSeedConversionSecretManager(hexSeed);
 
         // Generate the first 50 affected addresses of account index 0.
         GenerateAddressesOptions addressesOptions = new GenerateAddressesOptions().withAccountIndex(0).withRange(1, 50);

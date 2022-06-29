@@ -295,7 +295,7 @@ public class Client {
         return miscellaneousApi.isFallbackToLocalPoW();
     }
 
-    public Node[] getUsyncedNodes() throws ClientException {
+    public Node[] getUnsyncedNodes() throws ClientException {
         return miscellaneousApi.getUnsyncedNodes();
     }
 
