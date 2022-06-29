@@ -1,5 +1,4 @@
 import com.google.gson.JsonObject;
-import org.apache.commons.codec.DecoderException;
 import org.iota.Client;
 import org.iota.apis.NodeIndexerApi;
 import org.iota.types.*;
