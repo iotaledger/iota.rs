@@ -35,8 +35,6 @@ public class WrongSeedConversionSecretManagerExample {
         GenerateAddressesOptions addressesOptions = new GenerateAddressesOptions().withAccountIndex(0).withRange(1, 50);
         String[] affectedAddresses = client.generateAddresses(wrongSecretManager, addressesOptions);
 
-        System.out.println(affectedAddresses[0]);
-
         // Get the affected outputs
         List<OutputId> affectedOutputIds = new ArrayList<>();
         for (String address : affectedAddresses) {
