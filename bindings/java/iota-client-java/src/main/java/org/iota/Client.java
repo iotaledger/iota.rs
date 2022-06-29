@@ -16,6 +16,7 @@ import org.iota.types.secret.Range;
 import org.iota.types.secret.SecretManager;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Client {
@@ -68,8 +69,8 @@ public class Client {
         return nodeCoreApi.getBlockMetadata(blockId);
     }
 
-    public Map.Entry<Output, OutputMetadata> getOutputWithMetadata(OutputId outputId) throws ClientException {
-        return nodeCoreApi.getOutputWithMetadata(outputId);
+    public Map.Entry<Output, OutputMetadata> getOutput(OutputId outputId) throws ClientException {
+        return nodeCoreApi.getOutput(outputId);
     }
 
     public OutputMetadata getOutputMetadata(OutputId outputId) throws ClientException {
@@ -153,11 +154,11 @@ public class Client {
 
     // High level APIs
 
-    public Output[] getOutputs(OutputId[] outputIds) throws ClientException {
+    public List<Map.Entry<Output, OutputMetadata>> getOutputs(OutputId[] outputIds) throws ClientException {
         return highLevelApi.getOutputs(outputIds);
     }
 
-    public Output[] tryGetOutputs(OutputId[] outputIds) throws ClientException {
+    public List<Map.Entry<Output, OutputMetadata>> tryGetOutputs(OutputId[] outputIds) throws ClientException {
         return highLevelApi.tryGetOutputs(outputIds);
     }
 
@@ -181,7 +182,7 @@ public class Client {
         return highLevelApi.findInputs(addresses, amount);
     }
 
-    public Output[] findOutputs(OutputId[] outputIds, String[] addresses) throws ClientException {
+    public List<Map.Entry<Output, OutputMetadata>> findOutputs(OutputId[] outputIds, String[] addresses) throws ClientException {
         return highLevelApi.findOutputs(outputIds, addresses);
     }
 

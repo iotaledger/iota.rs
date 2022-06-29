@@ -6,7 +6,6 @@ package org.iota;
 import org.iota.apis.NodeIndexerApi;
 import org.iota.types.Block;
 import org.iota.types.ClientException;
-import org.iota.types.Output;
 import org.iota.types.UtxoInput;
 import org.iota.types.ids.BlockId;
 import org.iota.types.ids.OutputId;
@@ -26,16 +25,16 @@ public class HighLevelApiTest extends ApiTest {
     @Test
     public void testGetOutputs() throws ClientException {
         OutputId[] outputs = client.getBasicOutputIds(new NodeIndexerApi.QueryParams());
-        for (Output o : client.getOutputs(outputs)) {
-            System.out.println(o);
+        for (Map.Entry e : client.getOutputs(outputs)) {
+            System.out.println(e.getKey());
         }
     }
 
     @Test
     public void testTryGetOutputs() throws ClientException {
         OutputId[] outputs = client.getBasicOutputIds(new NodeIndexerApi.QueryParams());
-        for (Output o : client.tryGetOutputs(outputs)) {
-            System.out.println(o);
+        for (Map.Entry e : client.tryGetOutputs(outputs)) {
+            System.out.println(e.getKey());
         }
     }
 
@@ -88,9 +87,9 @@ public class HighLevelApiTest extends ApiTest {
         SecretManager secretManager = new MnemonicSecretManager(DEFAULT_DEVELOPMENT_MNEMONIC);
         String[] addresses = client.generateAddresses(secretManager, new GenerateAddressesOptions().withRange(0, 5));
         requestFundsFromFaucet(addresses[0]);
-        Output[] outputs = client.findOutputs(new OutputId[]{}, addresses);
-        for (Output o : outputs)
-            System.out.println(o);
+        for (Map.Entry e : client.findOutputs(new OutputId[]{}, addresses)) {
+            System.out.println(e.getKey());
+        }
     }
 
     @Test

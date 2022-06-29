@@ -4,9 +4,7 @@
 package org.iota.apis;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 import org.iota.types.*;
 import org.iota.types.ids.BlockId;
 import org.iota.types.ids.MilestoneId;
@@ -101,7 +99,7 @@ public class NodeCoreApi extends BaseApi {
         return new BlockMetadata(responsePayload);
     }
 
-    public Map.Entry<Output, OutputMetadata> getOutputWithMetadata(OutputId outputId) throws ClientException {
+    public Map.Entry<Output, OutputMetadata> getOutput(OutputId outputId) throws ClientException {
         JsonObject o = new JsonObject();
         o.addProperty("outputId", outputId.toString());
 

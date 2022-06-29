@@ -12,7 +12,10 @@ import org.iota.types.ids.OutputId;
 import org.iota.types.secret.Range;
 import org.iota.types.secret.SecretManager;
 
+import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 public class HighLevelApi extends BaseApi {
@@ -21,7 +24,7 @@ public class HighLevelApi extends BaseApi {
         super(clientConfig);
     }
 
-    public Output[] getOutputs(OutputId[] outputIds) throws ClientException {
+    public List<Map.Entry<Output, OutputMetadata>> getOutputs(OutputId[] outputIds) throws ClientException {
         JsonArray a = new JsonArray();
         for (OutputId id : outputIds)
             a.add(id.toString());
@@ -30,14 +33,17 @@ public class HighLevelApi extends BaseApi {
 
         JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetOutputs", o));
 
-        Output[] outputs = new Output[responsePayload.size()];
-        for (int i = 0; i < responsePayload.size(); i++)
-            outputs[i] = new Output(responsePayload.get(i).getAsJsonObject());
+        List<Map.Entry<Output, OutputMetadata>> outputs = new ArrayList<>();
+        for (int i = 0; i < responsePayload.size(); i++) {
+            Output output = new Output(responsePayload.get(i).getAsJsonObject().get("output").getAsJsonObject());
+            OutputMetadata metadata = new OutputMetadata(responsePayload.get(i).getAsJsonObject().get("metadata").getAsJsonObject());
+            outputs.add(new SimpleEntry(output, metadata));
+        }
 
         return outputs;
     }
 
-    public Output[] tryGetOutputs(OutputId[] outputIds) throws ClientException {
+    public List<Map.Entry<Output, OutputMetadata>> tryGetOutputs(OutputId[] outputIds) throws ClientException {
         JsonArray a = new JsonArray();
         for (OutputId id : outputIds)
             a.add(id.toString());
@@ -46,9 +52,12 @@ public class HighLevelApi extends BaseApi {
 
         JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "TryGetOutputs", o));
 
-        Output[] outputs = new Output[responsePayload.size()];
-        for (int i = 0; i < responsePayload.size(); i++)
-            outputs[i] = new Output(responsePayload.get(i).getAsJsonObject());
+        List<Map.Entry<Output, OutputMetadata>> outputs = new ArrayList<>();
+        for (int i = 0; i < responsePayload.size(); i++) {
+            Output output = new Output(responsePayload.get(i).getAsJsonObject().get("output").getAsJsonObject());
+            OutputMetadata metadata = new OutputMetadata(responsePayload.get(i).getAsJsonObject().get("metadata").getAsJsonObject());
+            outputs.add(new SimpleEntry(output, metadata));
+        }
 
         return outputs;
     }
@@ -123,7 +132,7 @@ public class HighLevelApi extends BaseApi {
         return inputs;
     }
 
-    public Output[] findOutputs(OutputId[] outputIds, String[] addresses) throws ClientException {
+    public List<Map.Entry<Output, OutputMetadata>> findOutputs(OutputId[] outputIds, String[] addresses) throws ClientException {
         JsonArray outputIdsJson = new JsonArray();
         JsonArray addressesJson = new JsonArray();
         for (OutputId outputId : outputIds)
@@ -137,12 +146,14 @@ public class HighLevelApi extends BaseApi {
 
         JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "FindOutputs", o));
 
-        Output[] outputs = new Output[responsePayload.size()];
-        for (int i = 0; i < responsePayload.size(); i++)
-            outputs[i] = new Output(responsePayload.get(i).getAsJsonObject());
+        List<Map.Entry<Output, OutputMetadata>> outputs = new ArrayList<>();
+        for (int i = 0; i < responsePayload.size(); i++) {
+            Output output = new Output(responsePayload.get(i).getAsJsonObject().get("output").getAsJsonObject());
+            OutputMetadata metadata = new OutputMetadata(responsePayload.get(i).getAsJsonObject().get("metadata").getAsJsonObject());
+            outputs.add(new SimpleEntry(output, metadata));
+        }
 
         return outputs;
-
     }
 
     public Map.Entry<BlockId, Block> reattach(BlockId blockId) throws ClientException {

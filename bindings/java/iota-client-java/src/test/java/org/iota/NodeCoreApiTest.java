@@ -58,7 +58,7 @@ public class NodeCoreApiTest extends ApiTest {
 
     @Test
     public void testGetOutput() throws ClientException {
-        Map.Entry<Output, OutputMetadata> r = client.getOutputWithMetadata(setupOutputId());
+        Map.Entry<Output, OutputMetadata> r = client.getOutput(setupOutputId());
         System.out.println(r.getKey());
         System.out.println(r.getValue());
     }

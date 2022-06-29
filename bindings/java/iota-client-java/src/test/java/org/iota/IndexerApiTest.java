@@ -44,7 +44,7 @@ public class IndexerApiTest extends ApiTest {
     public void testGetAliasOutputIdByAliasId() throws ClientException {
         OutputId outputId = null;
         for (OutputId id : client.getAliasOutputIds(new NodeIndexerApi.QueryParams())) {
-            if (client.getOutputWithMetadata(id).getKey().getJson().get("aliasId").getAsString().equals("0x0000000000000000000000000000000000000000000000000000000000000000")) {
+            if (client.getOutput(id).getKey().getJson().get("aliasId").getAsString().equals("0x0000000000000000000000000000000000000000000000000000000000000000")) {
                 outputId = id;
                 break;
             }
@@ -56,7 +56,7 @@ public class IndexerApiTest extends ApiTest {
     @Test
     public void testGetFoundryOutputIdByFoundryId() throws ClientException {
         OutputId foundryOutputId = client.getFoundryOutputIds(new NodeIndexerApi.QueryParams())[0];
-        Output foundryOutput = client.getOutputWithMetadata(foundryOutputId).getKey();
+        Output foundryOutput = client.getOutput(foundryOutputId).getKey();
         String aliasId = foundryOutput.getJson().get("unlockConditions").getAsJsonArray().get(0).getAsJsonObject().get("address").getAsJsonObject().get("aliasId").getAsString();
         int serialNumber = foundryOutput.getJson().get("serialNumber").getAsInt();
         int tokenScheme = foundryOutput.getJson().get("tokenScheme").getAsJsonObject().get("type").getAsInt();
