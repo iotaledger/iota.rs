@@ -6,6 +6,8 @@ package org.iota.types.secret;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.iota.types.Output;
+import org.iota.types.UtxoInput;
+import org.iota.types.ids.BlockId;
 
 import java.util.List;
 
@@ -14,7 +16,7 @@ public class GenerateBlockOptions {
     private Integer coinType;
     private Integer accountIndex;
     private Integer initialAddressIndex;
-    private List<String> inputs;
+    private List<UtxoInput> inputs;
     private Range inputRange;
     private ClientBlockBuilderOutputAddress output;
     private ClientBlockBuilderOutputAddress outputHex;
@@ -22,7 +24,7 @@ public class GenerateBlockOptions {
     private String customRemainderAddress;
     private byte[] tag;
     private byte[] data;
-    private List<String> parents;
+    private List<BlockId> parents;
     private Boolean allowBurning;
 
     public GenerateBlockOptions withCoinType(Integer coinType) {
@@ -40,7 +42,7 @@ public class GenerateBlockOptions {
         return this;
     }
 
-    public GenerateBlockOptions withInputs(List<String> inputs) {
+    public GenerateBlockOptions withInputs(List<UtxoInput> inputs) {
         this.inputs = inputs;
         return this;
     }
@@ -80,7 +82,7 @@ public class GenerateBlockOptions {
         return this;
     }
 
-    public GenerateBlockOptions withParents(List<String> parents) {
+    public GenerateBlockOptions withParents(List<BlockId> parents) {
         this.parents = parents;
         return this;
     }
@@ -117,9 +119,11 @@ public class GenerateBlockOptions {
 
         if(inputs != null) {
             JsonArray array = new JsonArray();
-            for(String input: inputs)
-                array.add(input);
+            for(UtxoInput input: inputs)
+                array.add(input.getJson());
             o.add("inputs", array);
+        } else {
+            o.add("inputs", null);
         }
 
         o.add("inputRange", inputRange != null ? inputRange.getAsJson() : null);
@@ -131,29 +135,37 @@ public class GenerateBlockOptions {
             for(Output output: outputs)
                 array.add(output.getJson());
             o.add("outputs", array);
+        } else {
+            o.add("outputs", null);
         }
 
         o.addProperty("customRemainderAddress", customRemainderAddress);
 
         if(tag != null) {
             JsonArray array = new JsonArray();
-            for(byte b: tag)
-                array.add((int) b);
+            for(byte tagByte: tag)
+                array.add(tagByte & 0xFF);
             o.add("tag", array);
+        } else {
+            o.add("tag", null);
         }
 
         if(data != null) {
             JsonArray array = new JsonArray();
-            for(byte b: data)
-                array.add((int) b);
+            for(byte dataByte: data)
+                array.add(dataByte & 0xFF);
             o.add("data", array);
+        } else {
+            o.add("data", null);
         }
 
         if(parents != null) {
             JsonArray array = new JsonArray();
-            for(String parent: parents)
-                array.add(parent);
+            for(BlockId parent: parents)
+                array.add(parent.toString());
             o.add("parents", array);
+        } else {
+            o.add("parents", null);
         }
 
         o.addProperty("allowBurning", allowBurning);

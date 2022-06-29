@@ -93,10 +93,10 @@ public class MiscellaneousApi extends BaseApi {
         return nodes;
     }
 
-    public PreparedTransactionData prepareTransaction(SecretManager secretManager, GenerateAddressesOptions generateAddressesOptions) throws ClientException {
+    public PreparedTransactionData prepareTransaction(SecretManager secretManager, GenerateBlockOptions generateBlockOptions) throws ClientException {
         JsonObject o = new JsonObject();
         o.add("secretManager", secretManager.getJson());
-        o.add("generateAddressesOptions", generateAddressesOptions.getJson());
+        o.add("generateBlockOptions", generateBlockOptions.getJson());
 
         JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "PrepareTransaction", o));
 

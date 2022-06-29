@@ -298,8 +298,8 @@ public class Client {
         return miscellaneousApi.getUnsyncedNodes();
     }
 
-    public PreparedTransactionData prepareTransaction(SecretManager secretManager, GenerateAddressesOptions generateAddressesOptions) throws ClientException {
-        return miscellaneousApi.prepareTransaction(secretManager, generateAddressesOptions);
+    public PreparedTransactionData prepareTransaction(SecretManager secretManager, GenerateBlockOptions generateBlockOptions) throws ClientException {
+        return miscellaneousApi.prepareTransaction(secretManager, generateBlockOptions);
     }
 
     public TransactionPayload signTransaction(SecretManager secretManager, PreparedTransactionData preparedTransactionData) throws ClientException {
