@@ -5,27 +5,27 @@ on:
       - develop
       - dev
     paths:
-      - '.github/workflows/examine-core.yml'
-      - '.github/actions/**'
-      - 'src/**'
-      - 'tests/**'
-      - 'examples/**'
-      - 'Cargo.toml'
-      - 'Cargo.lock'
+      - ".github/workflows/examine-core.yml"
+      - ".github/actions/**"
+      - "src/**"
+      - "tests/**"
+      - "examples/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
   pull_request:
     branches:
       - develop
       - dev
     paths:
-      - '.github/workflows/examine-core.yml'
-      - '.github/actions/**'
-      - 'src/**'
-      - 'tests/**'
-      - 'examples/**'
-      - 'Cargo.toml'
-      - 'Cargo.lock'
+      - ".github/workflows/examine-core.yml"
+      - ".github/actions/**"
+      - "src/**"
+      - "tests/**"
+      - "examples/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
   schedule:
-    - cron: '0 1 * * *'
+    - cron: "0 1 * * *"
   workflow_dispatch:
 
 jobs:
@@ -137,11 +137,23 @@ jobs:
           components: rustfmt
           cache: false
 
+      - name: Install cargo-license-template
+        uses: actions-rs/cargo@v1
+        with:
+          command: install
+          args: --force cargo-license-template
+
       - name: Run Cargo Fmt
         uses: actions-rs/cargo@v1
         with:
           command: fmt
           args: --all -- --check
+
+      - name: Run cargo-license-template
+        uses: actions-rs/cargo@v1
+        with:
+          command: license-template
+          args: --template .license_template
 
   audit:
     name: Perform Security Audit

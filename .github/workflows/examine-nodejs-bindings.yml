@@ -5,27 +5,27 @@ on:
       - develop
       - dev
     paths:
-      - '.github/workflows/examine-nodejs-bindings.yml'
-      - '.github/actions/**'
-      - 'bindings/nodejs/**'
+      - ".github/workflows/examine-nodejs-bindings.yml"
+      - ".github/actions/**"
+      - "bindings/nodejs/**"
       # Watch the Rust core too
-      - 'src/**'
-      - 'Cargo.toml'
-      - 'Cargo.lock'
+      - "src/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
   pull_request:
     branches:
       - develop
       - dev
     paths:
-      - '.github/workflows/examine-nodejs-bindings.yml'
-      - '.github/actions/**'
-      - 'bindings/nodejs/**'
+      - ".github/workflows/examine-nodejs-bindings.yml"
+      - ".github/actions/**"
+      - "bindings/nodejs/**"
       # Watch the Rust core too
-      - 'src/**'
-      - 'Cargo.toml'
-      - 'Cargo.lock'
+      - "src/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
   schedule:
-    - cron: '0 1 * * *'
+    - cron: "0 1 * * *"
   workflow_dispatch:
 
 jobs:
@@ -37,11 +37,11 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows-latest, macos-latest, ubuntu-latest]
-        node: ['12', '14', '16']
+        node: ["12", "14", "16"]
         exclude:
           # Remove once neon is updated
           - os: windows-latest
-            node: '16'
+            node: "16"
 
     steps:
       - name: Checkout the Source Code
@@ -114,7 +114,7 @@ jobs:
           cache: yarn
           cache-dependency-path: bindings/nodejs/yarn.lock
           node-version: 14.x
-      
+
       - name: Install Dependencies
         working-directory: bindings/nodejs/
         run: yarn
@@ -166,11 +166,23 @@ jobs:
           components: rustfmt
           cache: false
 
+      - name: Install cargo-license-template
+        uses: actions-rs/cargo@v1
+        with:
+          command: install
+          args: --force cargo-license-template
+
       - name: Run Cargo Fmt
         uses: actions-rs/cargo@v1
         with:
           command: fmt
           args: --manifest-path bindings/nodejs/Cargo.toml --all -- --check
+
+      - name: Run cargo-license-template
+        uses: actions-rs/cargo@v1
+        with:
+          command: license-template
+          args: --template .license_template
 
       - name: Setup Node.js
         uses: actions/setup-node@v2
@@ -178,7 +190,7 @@ jobs:
           cache: yarn
           cache-dependency-path: bindings/nodejs/yarn.lock
           node-version: 14.x
-      
+
       - name: Install Dependencies
         working-directory: bindings/nodejs/
         run: yarn
