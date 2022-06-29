@@ -536,10 +536,7 @@ mod tests {
         let timeout = None;
         adapter.set_timeout(timeout).await;
 
-        adapter.set_password("password").await.unwrap();
-        assert!(matches!(*adapter.key_provider.lock().await, Some(_)));
-        assert_eq!(adapter.get_timeout(), timeout);
-        assert!(matches!(*adapter.timeout_task.lock().await, None));
+        assert!(adapter.set_password("password").await.is_err());
 
         adapter.clear_key().await;
         assert!(matches!(*adapter.key_provider.lock().await, None));
