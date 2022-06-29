@@ -6,9 +6,13 @@ package org.iota.apis;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.iota.types.*;
+import org.iota.types.ids.BlockId;
 import org.iota.types.secret.GenerateAddressesOptions;
 import org.iota.types.secret.GenerateBlockOptions;
 import org.iota.types.secret.SecretManager;
+
+import java.util.AbstractMap;
+import java.util.Map;
 
 public class MiscellaneousApi extends BaseApi {
 
@@ -121,13 +125,16 @@ public class MiscellaneousApi extends BaseApi {
         callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "StoreMnemonic", o));
     }
 
-    public Block postBlockPayload(BlockPayload payload) throws ClientException {
+    public Map.Entry<BlockId, Block> postBlockPayload(BlockPayload payload) throws ClientException {
         JsonObject o = new JsonObject();
         o.add("payload", payload.getJson());
 
-        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "PostBlockPayload", o));
+        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "PostBlockPayload", o));
 
-        return new Block(responsePayload);
+        BlockId blockId = new BlockId(responsePayload.get(0).getAsString());
+        Block block = new Block(responsePayload.get(1).getAsJsonObject());
+
+        return new AbstractMap.SimpleEntry<>(blockId, block);
     }
 
 }

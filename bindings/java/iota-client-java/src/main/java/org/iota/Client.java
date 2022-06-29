@@ -311,7 +311,7 @@ public class Client {
         miscellaneousApi.storeMnemonic(secretManager, mnemonic);
     }
 
-    public Block postBlockPayload(BlockPayload payload) throws ClientException {
+    public Map.Entry<BlockId, Block> postBlockPayload(BlockPayload payload) throws ClientException {
         return miscellaneousApi.postBlockPayload(payload);
     }
 
