@@ -231,12 +231,10 @@ impl StrongholdAdapter {
         // Try to read a snapshot to check if the password is correct
         let result = self.read_stronghold_snapshot().await;
         if let Err(err) = result {
-            // TODO: replace with actual error matching when updated to the new Stronghold version
-            // TODO: but the error is not an enum
-            if let crate::Error::StrongholdProcedureError(ref err_msg) = err {
-                if !err_msg.to_string().contains("IOError") {
-                    // If loading the snapshot failed but wasn't an IOError, then the password was incorrect and we
-                    // clear it
+            if let Error::StrongholdClient(ref err_msg) = err {
+                // Matching the error string is not ideal but stronhold doesn't wrap the error types at the moment.
+                if err_msg.to_string().contains("XCHACHA20-POLY1305") {
+                    // The the password was incorrect so we clear it.
                     *self.key_provider.lock().await = None;
                     return Err(err);
                 }
