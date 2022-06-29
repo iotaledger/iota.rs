@@ -49,31 +49,33 @@ async fn main() -> Result<()> {
         request_funds_from_faucet(&faucet_url, &address.to_bech32(client.get_bech32_hrp().await?)).await?
     );
 
+    let basic_output_builder = BasicOutputBuilder::new_with_amount(1_000_000)?
+        .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)));
+
     let outputs = vec![
         // most simple output
-        BasicOutputBuilder::new_with_amount(1_000_000)?
-            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-            .finish_output()?,
+        basic_output_builder.clone().finish_output()?,
         // with metadata feature block
-        BasicOutputBuilder::new_with_amount(1_000_000)?
-            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
+        basic_output_builder
+            .clone()
             .add_feature(Feature::Metadata(MetadataFeature::new(vec![13, 37])?))
             .finish_output()?,
         // with storage deposit return
-        BasicOutputBuilder::new_with_amount(234100)?
-            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
+        basic_output_builder
+            .clone()
+            .with_amount(234100)?
             .add_unlock_condition(UnlockCondition::StorageDepositReturn(
                 StorageDepositReturnUnlockCondition::new(address, 234000)?,
             ))
             .finish_output()?,
         // with expiration
-        BasicOutputBuilder::new_with_amount(1_000_000)?
-            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
+        basic_output_builder
+            .clone()
             .add_unlock_condition(UnlockCondition::Expiration(ExpirationUnlockCondition::new(address, 1)?))
             .finish_output()?,
         // with timelock
-        BasicOutputBuilder::new_with_amount(1_000_000)?
-            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
+        basic_output_builder
+            .clone()
             .add_unlock_condition(UnlockCondition::Timelock(TimelockUnlockCondition::new(1)?))
             .finish_output()?,
     ];
