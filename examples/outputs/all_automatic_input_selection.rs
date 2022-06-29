@@ -77,9 +77,7 @@ async fn main() -> Result<()> {
         .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)));
 
     let outputs = vec![
-        alias_output_builder
-            .clone()
-            .finish_output()?,
+        alias_output_builder.clone().finish_output()?,
         nft_output_builder
             .clone()
             // address of the minter of the NFT

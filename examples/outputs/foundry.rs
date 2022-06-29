@@ -72,11 +72,7 @@ async fn main() -> Result<()> {
             address,
         )));
 
-    let outputs = vec![
-        alias_output_builder
-            .clone()
-            .finish_output()?,
-    ];
+    let outputs = vec![alias_output_builder.clone().finish_output()?];
 
     let block = client
         .block()
