@@ -75,8 +75,6 @@ async fn main() -> Result<()> {
     let outputs = vec![
         alias_output_builder
             .clone()
-            .with_state_index(0)
-            .with_foundry_counter(0)
             .finish_output()?,
     ];
 
