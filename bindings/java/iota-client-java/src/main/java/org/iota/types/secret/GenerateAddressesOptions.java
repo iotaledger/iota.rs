@@ -48,8 +48,8 @@ public class GenerateAddressesOptions {
     static class GenerateAddressMetadata {
         private boolean syncing;
 
-        public GenerateAddressMetadata withSyncing(boolean synching) {
-            this.syncing = synching;
+        public GenerateAddressMetadata withSyncing(boolean syncing) {
+            this.syncing = syncing;
             return this;
         }
 
