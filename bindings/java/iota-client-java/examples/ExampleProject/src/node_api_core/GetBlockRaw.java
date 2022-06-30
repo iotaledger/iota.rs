@@ -1,5 +1,6 @@
 package node_api_core;
 
+import org.apache.commons.codec.binary.Hex;
 import org.iota.Client;
 import org.iota.types.ClientConfig;
 import org.iota.types.ClientException;
@@ -19,6 +20,9 @@ public class GetBlockRaw {
 
         // Get the block.
         byte[] blockBytes = client.getBlockRaw(blockId);
+
+        // Print the bytes
+        System.out.println(Hex.encodeHex(blockBytes));
     }
 
 }

@@ -1,5 +1,6 @@
 package node_api_core;
 
+import org.apache.commons.codec.binary.Hex;
 import org.iota.Client;
 import org.iota.types.ClientConfig;
 import org.iota.types.ClientException;
@@ -20,6 +21,9 @@ public class GetMilestoneByIdRaw {
 
         // Get the milestone.
         byte[] milestoneBytes = client.getMilestoneByIdRaw(milestoneId);
+
+        // Print the bytes
+        System.out.println(Hex.encodeHex(milestoneBytes));
     }
 
 }
