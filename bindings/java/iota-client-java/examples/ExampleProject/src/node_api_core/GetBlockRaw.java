@@ -14,7 +14,7 @@ public class GetBlockRaw {
         // Build the client.
         Client client = new Client(config);
 
-        // Set up a block for this example.
+        // Get a block id for which the block can be requested.
         BlockId blockId = ExampleUtils.setUpBlockId(client);
 
         // Get the block.
