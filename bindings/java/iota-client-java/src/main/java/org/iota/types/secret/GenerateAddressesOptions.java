@@ -46,16 +46,16 @@ public class GenerateAddressesOptions {
     }
 
     static class GenerateAddressMetadata {
-        private boolean synching;
+        private boolean syncing;
 
-        public GenerateAddressMetadata withSynching(boolean synching) {
-            this.synching = synching;
+        public GenerateAddressMetadata withSyncing(boolean synching) {
+            this.syncing = synching;
             return this;
         }
 
         public JsonObject getAsJson() {
             JsonObject o = new JsonObject();
-            o.addProperty("synching", synching);
+            o.addProperty("syncing", syncing);
             return o;
         }
     }
