@@ -2,7 +2,7 @@ apply plugin: 'java'
 apply plugin: 'c'
 
 group 'org.iota'
-version '1.0-SNAPSHOT'
+version '3.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
@@ -20,15 +20,6 @@ test {
     useJUnitPlatform()
 }
 
-sourceSets {
-    main {
-        resources {
-            srcDirs "./native/resources"
-        }
-    }
-}
-
-
 task buildRustRelease(type:Exec){
     workingDir './native'
     commandLine 'cargo', 'build', '--release'
@@ -38,14 +29,18 @@ task buildRust(){
     dependsOn 'buildRustRelease'
 }
 
-task copyNativeLibrary() {
+task prepareFolders() {
     dependsOn 'buildRust'
-    mkdir "./native/resources/target"
+    mkdir "native/resources/target"
+}
+
+task copyNativeLibrary() {
+    dependsOn 'prepareFolders'
     doLast {
         copy {
-            from './native/target/release'
+            from "native/target/release"
             include '*.so', '*.dll'
-            into "./native/resources/target"
+            into "native/resources/target"
         }
     }
 }
@@ -59,11 +54,10 @@ jar {
         include '**/*.*'
     }
 
-    doLast {
         from {
             configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
         }
-    }
+
 }
 
 
