@@ -1,0 +1,73 @@
+apply plugin: 'java'
+apply plugin: 'c'
+
+group 'org.iota'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
+    implementation group: 'com.google.code.gson', name: 'gson', version: '2.7'
+    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.12.0'
+    implementation group: 'commons-codec', name: 'commons-codec', version: '1.15'
+}
+
+test {
+    dependsOn jar
+    doFirst {
+        classpath += jar.outputs.files
+    }
+    useJUnitPlatform()
+}
+
+sourceSets {
+    main {
+        resources {
+            srcDirs "native/resources"
+        }
+    }
+}
+
+task buildRustRelease(type:Exec){
+    workingDir './native'
+    commandLine 'cargo', 'build', '--release'
+}
+
+task buildRust(){
+    dependsOn 'buildRustRelease'
+}
+
+task prepareFolders() {
+    dependsOn 'buildRust'
+    mkdir "native/resources/target"
+}
+
+task copyNativeLibrary() {
+    dependsOn 'prepareFolders'
+    doLast {
+        copy {
+            from "native/target/release"
+            include '*.so', '*.dll'
+            into "native/resources/target"
+        }
+    }
+}
+
+jar {
+    dependsOn 'copyNativeLibrary'
+
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    from('./native/resources') {
+        include '**/*.*'
+    }
+
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+
+}

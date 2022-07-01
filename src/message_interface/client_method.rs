@@ -4,13 +4,18 @@
 use std::ops::Range;
 
 use bee_block::{
+    address::AliasAddress,
     output::{
         dto::{AliasIdDto, NativeTokenDto, NftIdDto, TokenSchemeDto},
         feature::dto::FeatureDto,
         unlock_condition::dto::UnlockConditionDto,
         AliasId, FoundryId, NftId, OutputId,
     },
-    payload::{dto::PayloadDto, milestone::MilestoneId, transaction::TransactionId},
+    payload::{
+        dto::PayloadDto,
+        milestone::MilestoneId,
+        transaction::{dto::TransactionPayloadDto, TransactionId},
+    },
     BlockDto, BlockId,
 };
 use serde::Deserialize;
@@ -467,5 +472,41 @@ pub enum ClientMethod {
     BlockId {
         /// Block
         block: BlockDto,
+    },
+    /// Returns the transaction ID (Blake2b256 hash of the provided transaction payload)
+    TransactionId {
+        /// Transaction Payload
+        payload: TransactionPayloadDto,
+    },
+    /// Computes the alias ID
+    ComputeAliasId {
+        /// Output ID
+        #[serde(rename = "outputId")]
+        output_id: OutputId,
+    },
+    /// Computes the NFT ID
+    ComputeNftId {
+        /// Output ID
+        #[serde(rename = "outputId")]
+        output_id: OutputId,
+    },
+    /// Computes the Foundry ID
+    ComputeFoundryId {
+        /// Alias address
+        #[serde(rename = "aliasAddress")]
+        alias_address: AliasAddress,
+        /// Serial number
+        #[serde(rename = "serialNumber")]
+        serial_number: u32,
+        /// Token scheme kind
+        #[serde(rename = "tokenSchemeKind")]
+        token_scheme_kind: u8,
+    },
+    /// Requests funds for a given address from the faucet.
+    Faucet {
+        /// Faucet URL
+        url: String,
+        /// The address for request funds
+        address: String,
     },
 }

@@ -7,8 +7,11 @@ use std::collections::HashSet;
 use bee_block::{
     address::dto::AddressDto,
     input::dto::UtxoInputDto,
-    output::{dto::OutputDto, OutputId},
-    payload::dto::{MilestonePayloadDto, PayloadDto},
+    output::{dto::OutputDto, AliasId, FoundryId, NftId, OutputId},
+    payload::{
+        dto::{MilestonePayloadDto, PayloadDto},
+        transaction::TransactionId,
+    },
     BlockDto, BlockId,
 };
 use bee_rest_api::types::{
@@ -138,6 +141,16 @@ pub enum Response {
     MnemonicHexSeed(String),
     /// The BLAKE2b-256 hash of the block bytes
     BlockId(BlockId),
+    /// Returns a Transaction ID
+    TransactionId(TransactionId),
+    /// Returns an Alias ID
+    AliasId(AliasId),
+    /// Returns a NFT ID
+    NftId(NftId),
+    /// Returns a Foundry ID
+    FoundryId(FoundryId),
+    /// The response from the faucet
+    Faucet(String),
     /// An error occurred.
     Error(Error),
     /// A panic occurred.
