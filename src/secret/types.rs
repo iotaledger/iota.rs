@@ -61,8 +61,19 @@ pub struct LedgerApp {
     pub(crate) version: String,
 }
 
+impl LedgerApp {
+    /// Opened app name.
+    pub fn name(&self) -> &String {
+        &self.name
+    }
+    /// Opened app version.
+    pub fn version(&self) -> &String {
+        &self.version
+    }
+}
+
 /// Ledger Device Type
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub enum LedgerDeviceType {
     /// Device Type Nano S
     LedgerNanoS,
@@ -87,6 +98,33 @@ pub struct LedgerStatus {
     pub(crate) device: Option<LedgerDeviceType>,
     /// Buffer size on device
     pub(crate) buffer_size: Option<usize>,
+}
+
+impl LedgerStatus {
+    /// Ledger is available and ready to be used.
+    pub fn connected(&self) -> bool {
+        self.connected
+    }
+    /// Ledger is connected and locked.
+    pub fn locked(&self) -> bool {
+        self.locked
+    }
+    /// Ledger blind signing enabled
+    pub fn blind_signing_enabled(&self) -> bool {
+        self.blind_signing_enabled
+    }
+    /// Ledger opened app.
+    pub fn app(&self) -> Option<&LedgerApp> {
+        self.app.as_ref()
+    }
+    /// Ledger device
+    pub fn device(&self) -> Option<LedgerDeviceType> {
+        self.device
+    }
+    /// Buffer size on device
+    pub fn buffer_size(&self) -> Option<usize> {
+        self.buffer_size
+    }
 }
 
 ///
