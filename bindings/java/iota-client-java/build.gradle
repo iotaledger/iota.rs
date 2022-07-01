@@ -52,9 +52,11 @@ task copyNativeLibrary() {
 
 jar {
     dependsOn 'copyNativeLibrary'
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    from {
-        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    doLast {
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+        from {
+            configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+        }
     }
 }
 
