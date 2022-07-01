@@ -38,16 +38,23 @@ task buildRust(){
     dependsOn 'buildRustRelease'
 }
 
-jar {
-    copy {
-        from 'native/target/release'
-        include '*.so', '*.dll'
-        into "native/resources/target"
+task copyNativeLibrary() {
+    dependsOn 'buildRust'
+    mkdir "./native/resources/target"
+    doLast {
+        copy {
+            from './native/target/release'
+            include '*.so', '*.dll'
+            into "./native/resources/target"
+        }
     }
+}
+
+jar {
+    dependsOn 'copyNativeLibrary'
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
 }
 
-jar.dependsOn 'buildRust'
