@@ -20,6 +20,14 @@ test {
     useJUnitPlatform()
 }
 
+sourceSets {
+    main {
+        resources {
+            srcDirs "native/resources"
+        }
+    }
+}
+
 task buildRustRelease(type:Exec){
     workingDir './native'
     commandLine 'cargo', 'build', '--release'
