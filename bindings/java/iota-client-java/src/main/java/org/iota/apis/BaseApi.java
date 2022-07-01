@@ -21,18 +21,18 @@ public class BaseApi {
     }
 
     static {
-        String libraryPath = null;
+        String libraryName = null;
 
         if (SystemUtils.IS_OS_LINUX)
-            libraryPath = "/targets/linux-x86-64/iota_client.so";
+            libraryName = "libiota_client.so";
         else if (SystemUtils.IS_OS_MAC)
-            libraryPath = "/targets/mac-x86-64/iota_client.dylib";
+            libraryName = "libiota_client.dylib";
         else if (SystemUtils.IS_OS_WINDOWS)
-            libraryPath = "/targets/windows-x86-64/iota_client.dll";
+            libraryName = "iota_client.dll";
         else throw new RuntimeException("OS not supported");
 
         try {
-            NativeUtils.loadLibraryFromJar(libraryPath);
+            NativeUtils.loadLibraryFromJar("/target/" + libraryName);
         } catch (IOException e) {
             e.printStackTrace();
             throw new RuntimeException("cannot load native library");

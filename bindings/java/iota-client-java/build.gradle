@@ -2,7 +2,7 @@ apply plugin: 'java'
 apply plugin: 'c'
 
 group 'org.iota'
-version '1.0-SNAPSHOT-linux-macos-windows-x86-64'
+version '1.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
@@ -28,7 +28,7 @@ sourceSets {
     }
 }
 
-/*
+
 task buildRustRelease(type:Exec){
     workingDir './native'
     commandLine 'cargo', 'build', '--release'
@@ -38,18 +38,16 @@ task buildRust(){
     dependsOn 'buildRustRelease'
 }
 
-task customJar(type: Jar) {
-    dependsOn 'buildRustRelease'
-    archiveAppendix = 'custom'
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
-    with jar
-}
- */
-
 jar {
+    copy {
+        from 'native/target/release'
+        include '*.so', '*.dll'
+        into "native/resources/target"
+    }
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
 }
+
+jar.dependsOn 'buildRust'

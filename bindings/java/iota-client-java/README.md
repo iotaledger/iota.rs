@@ -2,11 +2,15 @@
 
 Java binding to the iota.rs library.
 
-## Quick start
+## Build the JAR for your operating system
 
-1. Download the [iota-client-java-1.0-SNAPSHOT-linux-macos-windows-x86-64.jar](jar) file from the repository.
-2. Add it as a library to your project.
-3. You are ready!
+Before you execute the following commands, please make sure that you have the latest version of `Rust` installed.
+
+1) Clone the repository: `git clone https://github.com/iotaledger/iota.rs`
+2) Change directory: `cd bindings/java/iota-client-java`
+3) Build your JAR: `./gradlew jar`
+4) Find the produced JAR in `build/libs/`.
+5) Add the JAR as a library to your project.
 
 ## Examples
 
