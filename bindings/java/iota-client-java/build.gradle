@@ -17,6 +17,10 @@ dependencies {
 }
 
 test {
+    dependsOn jar
+    doFirst {
+        classpath += jar.outputs.files
+    }
     useJUnitPlatform()
 }
 
@@ -67,5 +71,3 @@ jar {
     }
 
 }
-
-
