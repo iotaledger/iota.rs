@@ -24,13 +24,23 @@ public class GenerateAddressesOptions {
         return this;
     }
 
+    public GenerateAddressesOptions withRange(int start, int end) {
+        range = new Range(start, end);
+        return this;
+    }
+
     public GenerateAddressesOptions withInternal(boolean internal) {
         this.internal = internal;
         return this;
     }
 
-    public GenerateAddressesOptions withRange(int start, int end) {
-        range = new Range(start, end);
+    public GenerateAddressesOptions withBech32Hrp(String bech32Hrp) {
+        this.bech32Hrp = bech32Hrp;
+        return this;
+    }
+
+    public GenerateAddressesOptions withMetadata(GenerateAddressMetadata metadata) {
+        this.metadata = metadata;
         return this;
     }
 
