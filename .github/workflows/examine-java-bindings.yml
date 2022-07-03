@@ -189,6 +189,6 @@ jobs:
         with:
           command: audit
           # NOTE: Workspace
-          args: --file bindings/java/Cargo.lock --deny warnings
+          args: --file bindings/java/iota-client-java/native/Cargo.lock --deny warnings
 
       # TODO: Check the Java code too
