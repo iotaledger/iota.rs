@@ -28,10 +28,13 @@ public class StrongholdSecretManager extends SecretManager {
 
     @Override
     public JsonObject getJson() {
+        JsonObject dto = new JsonObject();
+        dto.addProperty("password", password);
+        dto.addProperty("timeout", timeout);
+        dto.addProperty("snapshotPath", snapshotPath);
+
         JsonObject o = new JsonObject();
-        o.addProperty("password", password);
-        o.addProperty("timeout", timeout);
-        o.addProperty("snapshotPath", snapshotPath);
+        o.addProperty("Stronghold", dto);
         return o;
     }
 }

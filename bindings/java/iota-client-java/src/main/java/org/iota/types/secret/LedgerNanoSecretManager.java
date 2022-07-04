@@ -16,7 +16,7 @@ public class LedgerNanoSecretManager extends SecretManager {
     @Override
     public JsonObject getJson() {
         JsonObject o = new JsonObject();
-        o.addProperty("isSimulator", isSimulator);
+        o.addProperty("LedgerNano", isSimulator);
         return o;
     }
 }
