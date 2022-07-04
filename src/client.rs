@@ -467,7 +467,7 @@ impl Client {
 
         // Collect the `BlockId` in the HashSet.
         for block_id in block_ids {
-            block_ids_to_query.insert(block_id.clone());
+            block_ids_to_query.insert(*block_id);
         }
 
         // Use `get_block()` API to get the `Block`.
@@ -789,6 +789,7 @@ impl Client {
     }
 
     /// Checks if a String is a valid bech32 encoded address.
+    #[must_use]
     pub fn is_address_valid(address: &str) -> bool {
         is_address_valid(address)
     }

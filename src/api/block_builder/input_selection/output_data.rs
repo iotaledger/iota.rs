@@ -21,7 +21,7 @@ use crate::{
 
 // Calculate required accumulated amounts from the outputs, considers also minted and melted native tokens
 pub(crate) fn get_accumulated_output_amounts<'a>(
-    inputs: impl Iterator<Item = &'a Output> + Clone,
+    inputs: &(impl Iterator<Item = &'a Output> + Clone),
     outputs: impl Iterator<Item = &'a Output> + Clone,
 ) -> Result<AccumulatedOutputAmounts> {
     // Calculate the total tokens to spend
@@ -37,7 +37,7 @@ pub(crate) fn get_accumulated_output_amounts<'a>(
     }
 
     // check if a foundry mints or melts native tokens
-    let (minted_native_tokens, melted_native_tokens) = get_minted_and_melted_native_tokens(&inputs, outputs)?;
+    let (minted_native_tokens, melted_native_tokens) = get_minted_and_melted_native_tokens(inputs, outputs)?;
     // add melted native tokens as outputs, because we need to have this amount in the inputs
     required_native_tokens.merge(melted_native_tokens)?;
 

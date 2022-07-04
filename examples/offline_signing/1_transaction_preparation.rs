@@ -56,7 +56,7 @@ async fn main() -> Result<()> {
 
     println!("Prepared transaction sending {} to {}.", amount, address);
 
-    write_prepared_transaction_to_file(PREPARED_TRANSACTION_FILE_NAME, prepared_transaction)
+    write_prepared_transaction_to_file(PREPARED_TRANSACTION_FILE_NAME, &prepared_transaction)
 }
 
 fn read_addresses_from_file<P: AsRef<Path>>(path: P) -> Result<Vec<String>> {
@@ -69,9 +69,9 @@ fn read_addresses_from_file<P: AsRef<Path>>(path: P) -> Result<Vec<String>> {
 
 fn write_prepared_transaction_to_file<P: AsRef<Path>>(
     path: P,
-    prepared_transaction: PreparedTransactionData,
+    prepared_transaction: &PreparedTransactionData,
 ) -> Result<()> {
-    let json = serde_json::to_string_pretty(&PreparedTransactionDataDto::from(&prepared_transaction))?;
+    let json = serde_json::to_string_pretty(&PreparedTransactionDataDto::from(prepared_transaction))?;
     let mut file = BufWriter::new(File::create(path)?);
 
     println!("{}", json);

@@ -73,7 +73,7 @@ impl SecretManage for StrongholdAdapter {
             let address = Address::Ed25519(Ed25519Address::new(hash.into()));
 
             // Collect it.
-            addresses.push(address)
+            addresses.push(address);
         }
 
         Ok(addresses)

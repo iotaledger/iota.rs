@@ -253,21 +253,19 @@ impl SecretManageExt for LedgerSecretManager {
                         // The outputs in the essence already are sorted
                         // at this place, so we can rely on their order and don't have to sort it again.
                         'essence_outputs: for output in essence.outputs().iter() {
-                            match output {
-                                bee_block::output::Output::Basic(s) => {
-                                    for block in s.unlock_conditions().iter() {
-                                        if let bee_block::output::UnlockCondition::Address(e) = block {
-                                            if *remainder_address == *e.address() {
-                                                break 'essence_outputs;
-                                            }
+                            if let bee_block::output::Output::Basic(s) = output {
+                                for block in s.unlock_conditions().iter() {
+                                    if let bee_block::output::UnlockCondition::Address(e) = block {
+                                        if *remainder_address == *e.address() {
+                                            break 'essence_outputs;
                                         }
                                     }
                                 }
-                                _ => {
-                                    log::debug!("[LEDGER] unsupported output");
-                                    return Err(crate::Error::LedgerMiscError);
-                                }
+                            } else {
+                                log::debug!("[LEDGER] unsupported output");
+                                return Err(crate::Error::LedgerMiscError);
                             }
+
                             remainder_index += 1;
                         }
 
@@ -318,7 +316,7 @@ impl SecretManageExt for LedgerSecretManager {
         // With blind signing the ledger only returns SignatureUnlocks, so we might have to merge them with
         // Alias/Nft/Reference unlocks
         if blind_signing {
-            unlocks = merge_unlocks(prepared_transaction, unlocks.into_iter()).await?;
+            unlocks = merge_unlocks(prepared_transaction, unlocks.into_iter())?;
         }
 
         Ok(Unlocks::new(unlocks)?)
@@ -341,9 +339,10 @@ impl LedgerSecretManager {
         log::info!("ledger get_opened_app");
         // lock the mutex
         let _lock = self.mutex.lock().await;
-        let transport_type = match self.is_simulator {
-            true => iota_ledger::TransportTypes::TCP,
-            false => iota_ledger::TransportTypes::NativeHID,
+        let transport_type = if self.is_simulator {
+            iota_ledger::TransportTypes::TCP
+        } else {
+            iota_ledger::TransportTypes::NativeHID
         };
 
         let app = match iota_ledger::get_opened_app(&transport_type) {
@@ -390,7 +389,7 @@ impl LedgerSecretManager {
 }
 
 // Merge signature unlocks with Alias/Nft/Reference unlocks
-async fn merge_unlocks(
+fn merge_unlocks(
     prepared_transaction_data: &PreparedTransactionData,
     mut unlocks: impl Iterator<Item = Unlock>,
 ) -> crate::Result<Vec<Unlock>> {
@@ -410,7 +409,7 @@ async fn merge_unlocks(
             Some(block_index) => match input_address {
                 Address::Alias(_alias) => merged_unlocks.push(Unlock::Alias(AliasUnlock::new(*block_index as u16)?)),
                 Address::Ed25519(_ed25519) => {
-                    merged_unlocks.push(Unlock::Reference(ReferenceUnlock::new(*block_index as u16)?))
+                    merged_unlocks.push(Unlock::Reference(ReferenceUnlock::new(*block_index as u16)?));
                 }
                 Address::Nft(_nft) => merged_unlocks.push(Unlock::Nft(NftUnlock::new(*block_index as u16)?)),
             },

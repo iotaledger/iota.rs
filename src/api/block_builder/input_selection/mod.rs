@@ -77,7 +77,7 @@ pub async fn try_select_inputs(
 
     let input_outputs = inputs.iter().map(|i| &i.output);
 
-    let required = get_accumulated_output_amounts(input_outputs, outputs.iter())?;
+    let required = get_accumulated_output_amounts(&input_outputs, outputs.iter())?;
     let mut selected_input_native_tokens = required.minted_native_tokens.clone();
 
     let mut selected_input_amount = 0;

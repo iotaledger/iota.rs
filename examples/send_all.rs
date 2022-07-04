@@ -65,7 +65,7 @@ async fn main() -> Result<()> {
     let mut total_amount = 0;
     let mut total_native_tokens = NativeTokensBuilder::new();
 
-    for output_response in outputs_responses.into_iter() {
+    for output_response in outputs_responses {
         let output = Output::try_from(&output_response.output)?;
 
         if let Some(native_tokens) = output.native_tokens() {
@@ -88,7 +88,7 @@ async fn main() -> Result<()> {
         )),
     );
 
-    for native_token in total_native_tokens.into_iter() {
+    for native_token in total_native_tokens {
         basic_output_builder = basic_output_builder.add_native_token(native_token);
     }
     let new_output = basic_output_builder.finish_output()?;

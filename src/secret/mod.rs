@@ -322,7 +322,7 @@ impl SecretManager {
                 Some(block_index) => match input_address {
                     Address::Alias(_alias) => blocks.push(Unlock::Alias(AliasUnlock::new(*block_index as u16)?)),
                     Address::Ed25519(_ed25519) => {
-                        blocks.push(Unlock::Reference(ReferenceUnlock::new(*block_index as u16)?))
+                        blocks.push(Unlock::Reference(ReferenceUnlock::new(*block_index as u16)?));
                     }
                     Address::Nft(_nft) => blocks.push(Unlock::Nft(NftUnlock::new(*block_index as u16)?)),
                 },

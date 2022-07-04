@@ -33,8 +33,8 @@ pub(crate) async fn get_remainder_output<'a>(
 ) -> Result<Option<RemainderData>> {
     log::debug!("[get_remainder]");
     let input_outputs = inputs.clone().map(|i| &i.output);
-    let input_data = get_accumulated_output_amounts(std::iter::empty(), input_outputs.clone())?;
-    let output_data = get_accumulated_output_amounts(std::iter::empty(), outputs.clone())?;
+    let input_data = get_accumulated_output_amounts(&std::iter::empty(), input_outputs.clone())?;
+    let output_data = get_accumulated_output_amounts(&std::iter::empty(), outputs.clone())?;
     // Get minted native tokens
     let (minted_native_tokens, melted_native_tokens) = get_minted_and_melted_native_tokens(&input_outputs, outputs)?;
 
