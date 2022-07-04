@@ -9,8 +9,9 @@ use std::{collections::HashMap, ops::Range};
 
 use async_trait::async_trait;
 use bee_block::{
-    address::{Address, AliasAddress, NftAddress},
-    output::Output,
+    address::{Address, AliasAddress, Ed25519Address, NftAddress},
+    output::{Output, UnlockCondition},
+    payload::transaction::TransactionEssence,
     signature::Signature,
     unlock::{AliasUnlock, NftUnlock, ReferenceUnlock, Unlock, Unlocks},
 };
@@ -96,9 +97,7 @@ impl SecretManage for LedgerSecretManager {
 
         let mut ed25519_addresses = Vec::new();
         for address in addresses {
-            ed25519_addresses.push(bee_block::address::Address::Ed25519(
-                bee_block::address::Ed25519Address::new(address),
-            ));
+            ed25519_addresses.push(Address::Ed25519(Ed25519Address::new(address)));
         }
         Ok(ed25519_addresses)
     }
@@ -121,14 +120,14 @@ impl SecretManage for LedgerSecretManager {
 /// This method finds out if we have to switch to blind signing mode.
 pub fn needs_blind_signing(prepared_transaction: &PreparedTransactionData, buffer_size: usize) -> bool {
     match &prepared_transaction.essence {
-        bee_block::payload::transaction::TransactionEssence::Regular(essence) => {
+        TransactionEssence::Regular(essence) => {
             for output in essence.outputs().iter() {
                 // only basic outputs allowed
-                if let bee_block::output::Output::Basic(s) = output {
+                if let Output::Basic(s) = output {
                     // no native tokens
                     // only one address unlock
                     // no features
-                    if let ([], [bee_block::output::UnlockCondition::Address(_)], []) = (
+                    if let ([], [UnlockCondition::Address(_)], []) = (
                         s.native_tokens().as_ref(),
                         s.unlock_conditions().as_ref(),
                         s.features().as_ref(),
@@ -214,37 +213,35 @@ impl SecretManageExt for LedgerSecretManager {
             ledger.prepare_blind_signing(input_bip32_indices, essence_hash)?;
         } else {
             // figure out the remainder address and bip32 index (if there is one)
-            let (remainder_address, remainder_bip32): (
-                Option<&bee_block::address::Address>,
-                iota_ledger::LedgerBIP32Index,
-            ) = match &prepared_transaction.remainder {
-                Some(a) => {
-                    let remainder_bip32_indices: Vec<u32> = match &a.chain {
-                        Some(chain) => {
-                            chain
-                                .segments()
-                                .iter()
-                                // XXX: "ser32(i)". RTFSC: [crypto::keys::slip10::Segment::from_u32()]
-                                .map(|seg| u32::from_be_bytes(seg.bs()))
-                                .collect()
-                        }
-                        None => return Err(crate::Error::InvalidBIP32ChainData),
-                    };
-                    (
-                        Some(&a.address),
-                        iota_ledger::LedgerBIP32Index {
-                            bip32_change: remainder_bip32_indices[3] | HARDENED,
-                            bip32_index: remainder_bip32_indices[4] | HARDENED,
-                        },
-                    )
-                }
-                None => (None, iota_ledger::LedgerBIP32Index::default()),
-            };
+            let (remainder_address, remainder_bip32): (Option<&Address>, iota_ledger::LedgerBIP32Index) =
+                match &prepared_transaction.remainder {
+                    Some(a) => {
+                        let remainder_bip32_indices: Vec<u32> = match &a.chain {
+                            Some(chain) => {
+                                chain
+                                    .segments()
+                                    .iter()
+                                    // XXX: "ser32(i)". RTFSC: [crypto::keys::slip10::Segment::from_u32()]
+                                    .map(|seg| u32::from_be_bytes(seg.bs()))
+                                    .collect()
+                            }
+                            None => return Err(crate::Error::InvalidBIP32ChainData),
+                        };
+                        (
+                            Some(&a.address),
+                            iota_ledger::LedgerBIP32Index {
+                                bip32_change: remainder_bip32_indices[3] | HARDENED,
+                                bip32_index: remainder_bip32_indices[4] | HARDENED,
+                            },
+                        )
+                    }
+                    None => (None, iota_ledger::LedgerBIP32Index::default()),
+                };
 
             let mut remainder_index = 0u16;
             if let Some(remainder_address) = remainder_address {
                 match &prepared_transaction.essence {
-                    bee_block::payload::transaction::TransactionEssence::Regular(essence) => {
+                    TransactionEssence::Regular(essence) => {
                         // find the index of the remainder in the essence
                         // this has to be done because outputs in essences are sorted
                         // lexically and therefore the remainder is not always the last output.
@@ -253,9 +250,9 @@ impl SecretManageExt for LedgerSecretManager {
                         // The outputs in the essence already are sorted
                         // at this place, so we can rely on their order and don't have to sort it again.
                         'essence_outputs: for output in essence.outputs().iter() {
-                            if let bee_block::output::Output::Basic(s) = output {
+                            if let Output::Basic(s) = output {
                                 for block in s.unlock_conditions().iter() {
-                                    if let bee_block::output::UnlockCondition::Address(e) = block {
+                                    if let UnlockCondition::Address(e) = block {
                                         if *remainder_address == *e.address() {
                                             break 'essence_outputs;
                                         }
