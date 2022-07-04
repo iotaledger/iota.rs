@@ -50,7 +50,7 @@ async fn main() -> Result<()> {
             // We generate an address from our seed so that we send the funds to ourselves
             &client.get_addresses(&secret_manager).with_range(0..1).finish().await?[0],
             1_000_000,
-        )?
+        )?;
     }
     let block = block_builder.finish().await?;
 

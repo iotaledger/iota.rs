@@ -20,8 +20,8 @@ use crate::{
 };
 
 // Calculate required accumulated amounts from the outputs, considers also minted and melted native tokens
-pub(crate) async fn get_accumulated_output_amounts<'a>(
-    inputs: impl Iterator<Item = &'a Output> + Clone,
+pub(crate) fn get_accumulated_output_amounts<'a>(
+    inputs: &(impl Iterator<Item = &'a Output> + Clone),
     outputs: impl Iterator<Item = &'a Output> + Clone,
 ) -> Result<AccumulatedOutputAmounts> {
     // Calculate the total tokens to spend

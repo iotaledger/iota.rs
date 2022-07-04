@@ -4,7 +4,7 @@
 use bee_block::{
     address::Address,
     output::{
-        unlock_condition::{AddressUnlockCondition, UnlockCondition},
+        unlock_condition::{AddressUnlockCondition, UnlockCondition, UnlockConditions},
         BasicOutputBuilder, ByteCostConfig, NativeTokensBuilder, Output,
     },
 };
@@ -33,10 +33,10 @@ pub(crate) async fn get_remainder_output<'a>(
 ) -> Result<Option<RemainderData>> {
     log::debug!("[get_remainder]");
     let input_outputs = inputs.clone().map(|i| &i.output);
-    let input_data = get_accumulated_output_amounts(std::iter::empty(), input_outputs.clone()).await?;
-    let output_data = get_accumulated_output_amounts(std::iter::empty(), outputs.clone()).await?;
+    let input_data = get_accumulated_output_amounts(&std::iter::empty(), input_outputs.clone())?;
+    let output_data = get_accumulated_output_amounts(&std::iter::empty(), outputs.clone())?;
     // Get minted native tokens
-    let (minted_native_tokens, melted_native_tokens) = get_minted_and_melted_native_tokens(input_outputs, outputs)?;
+    let (minted_native_tokens, melted_native_tokens) = get_minted_and_melted_native_tokens(&input_outputs, outputs)?;
 
     // check amount first
     if input_data.amount < output_data.amount {
@@ -96,7 +96,7 @@ pub(crate) fn get_remainder_address<'a>(
     inputs: impl Iterator<Item = &'a InputSigningData>,
 ) -> Result<(Address, Option<Chain>)> {
     for input in inputs {
-        if let Some(address_unlock_condition) = input.output.unlock_conditions().and_then(|o| o.address()) {
+        if let Some(address_unlock_condition) = input.output.unlock_conditions().and_then(UnlockConditions::address) {
             if address_unlock_condition.address().is_ed25519() {
                 return Ok((*address_unlock_condition.address(), input.chain.clone()));
             }

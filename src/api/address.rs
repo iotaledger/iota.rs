@@ -14,6 +14,7 @@ use crate::{
 };
 
 /// Builder of get_addresses API
+#[must_use]
 pub struct GetAddressesBuilder<'a> {
     client: Option<&'a Client>,
     secret_manager: &'a SecretManager,

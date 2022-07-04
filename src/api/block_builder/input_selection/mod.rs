@@ -77,7 +77,7 @@ pub async fn try_select_inputs(
 
     let input_outputs = inputs.iter().map(|i| &i.output);
 
-    let required = get_accumulated_output_amounts(input_outputs, outputs.iter()).await?;
+    let required = get_accumulated_output_amounts(&input_outputs, outputs.iter())?;
     let mut selected_input_native_tokens = required.minted_native_tokens.clone();
 
     let mut selected_input_amount = 0;
@@ -91,7 +91,7 @@ pub async fn try_select_inputs(
         match input_signing_data.output {
             Output::Basic(_) => basic_outputs.push(input_signing_data),
             Output::Alias(_) | Output::Foundry(_) | Output::Nft(_) => utxo_chain_outputs.push(input_signing_data),
-            _ => {}
+            Output::Treasury(_) => {}
         }
     }
 

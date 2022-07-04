@@ -39,10 +39,10 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
 
-    write_addresses_to_file(ADDRESS_FILE_NAME, addresses)
+    write_addresses_to_file(ADDRESS_FILE_NAME, &addresses)
 }
 
-fn write_addresses_to_file<P: AsRef<Path>>(path: P, addresses: Vec<String>) -> Result<()> {
+fn write_addresses_to_file<P: AsRef<Path>>(path: P, addresses: &[String]) -> Result<()> {
     let json = serde_json::to_string_pretty(&addresses)?;
     let mut file = BufWriter::new(File::create(path)?);
 

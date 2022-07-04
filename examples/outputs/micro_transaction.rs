@@ -60,11 +60,11 @@ async fn main() -> Result<()> {
         .unwrap();
     let outputs = vec![
         // with storage deposit return
-        BasicOutputBuilder::new_with_amount(255100)?
+        BasicOutputBuilder::new_with_amount(255_100)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             // Return 100 less than the original amount.
             .add_unlock_condition(UnlockCondition::StorageDepositReturn(
-                StorageDepositReturnUnlockCondition::new(address, 255000)?,
+                StorageDepositReturnUnlockCondition::new(address, 255_000)?,
             ))
             // If the receiver does not consume this output, we Unlock after a day to avoid
             // locking our funds forever.

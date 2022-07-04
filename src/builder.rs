@@ -18,12 +18,12 @@ use {
 #[cfg(feature = "mqtt")]
 use crate::node_api::mqtt::{BrokerOptions, MqttEvent};
 use crate::{
-    client::*,
+    client::Client,
     constants::{
         DEFAULT_API_TIMEOUT, DEFAULT_MIN_POW, DEFAULT_REMOTE_POW_API_TIMEOUT, DEFAULT_TIPS_INTERVAL,
         SHIMMER_TESTNET_BECH32_HRP,
     },
-    error::*,
+    error::{Error, Result},
     node_manager::{
         builder::validate_url,
         node::{Node, NodeAuth},
@@ -94,6 +94,7 @@ fn default_tips_interval() -> u64 {
 /// Builder to construct client instance with sensible default values
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 #[serde(deny_unknown_fields)]
+#[must_use]
 pub struct ClientBuilder {
     /// Node manager builder
     #[serde(flatten, rename = "nodeManagerBuilder")]

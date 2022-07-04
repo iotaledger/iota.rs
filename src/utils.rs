@@ -15,7 +15,7 @@ use fern_logger::{logger_init, LoggerConfig, LoggerOutputConfigBuilder};
 use log::LevelFilter;
 use zeroize::Zeroize;
 
-use crate::error::*;
+use crate::error::{Error, Result};
 
 /// Hash the network id str from the nodeinfo to an u64 (used in blocks)
 pub fn hash_network(network_id_string: &str) -> Result<u64> {

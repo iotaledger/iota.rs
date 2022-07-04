@@ -58,7 +58,7 @@ pub async fn consolidate_funds(
 
             let mut output_with_metadata = Vec::new();
 
-            for output in basic_outputs.iter() {
+            for output in &basic_outputs {
                 let (amount, _output_address) =
                     ClientBlockBuilder::get_output_amount_and_address(&output.output, None)?;
                 output_with_metadata.push((output.clone(), amount));

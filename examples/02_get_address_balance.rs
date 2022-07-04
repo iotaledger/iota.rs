@@ -58,7 +58,7 @@ async fn main() -> Result<()> {
     // Calculate the total amount and native tokens
     let mut total_amount = 0;
     let mut total_native_tokens = NativeTokensBuilder::new();
-    for output_response in outputs_responses.into_iter() {
+    for output_response in outputs_responses {
         let output = Output::try_from(&output_response.output)?;
 
         if let Some(native_tokens) = output.native_tokens() {
