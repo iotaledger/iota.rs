@@ -27,7 +27,7 @@ use crate::{
 /// Hardened const for the bip path.
 ///
 /// See also: <https://wiki.trezor.io/Hardened_and_non-hardened_derivation>.
-pub const HARDENED: u32 = 0x80000000;
+pub const HARDENED: u32 = 0x8000_0000;
 
 /// Secret manager that uses a Ledger hardware wallet.
 #[derive(Default)]

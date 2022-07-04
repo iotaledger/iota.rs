@@ -116,7 +116,7 @@ pub(crate) async fn get_inputs(
                             *internal as u32,
                             address_index,
                         ])),
-                        bech32_address: str_address.to_owned(),
+                        bech32_address: str_address.clone(),
                     });
                 }
                 let selected_transaction_data = match try_select_inputs(

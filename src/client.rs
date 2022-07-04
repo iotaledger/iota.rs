@@ -127,7 +127,7 @@ impl Drop for Client {
         #[cfg(not(target_family = "wasm"))]
         if let Some(runtime) = self.runtime.take() {
             if let Ok(runtime) = Arc::try_unwrap(runtime) {
-                runtime.shutdown_background()
+                runtime.shutdown_background();
             }
         }
 
@@ -218,7 +218,7 @@ impl Client {
         }
         // Get network_id with the most nodes
         let mut most_nodes = ("network_id", 0);
-        for (network_id, node) in network_nodes.iter() {
+        for (network_id, node) in &network_nodes {
             if node.len() > most_nodes.1 {
                 most_nodes.0 = network_id;
                 most_nodes.1 = node.len();
@@ -439,7 +439,7 @@ impl Client {
             .iter()
             .map(|i| match i {
                 Input::Utxo(input) => *input.output_id(),
-                _ => {
+                Input::Treasury(_) => {
                     unreachable!()
                 }
             })
@@ -467,7 +467,7 @@ impl Client {
 
         // Collect the `BlockId` in the HashSet.
         for block_id in block_ids {
-            block_ids_to_query.insert(block_id.to_owned());
+            block_ids_to_query.insert(block_id.clone());
         }
 
         // Use `get_block()` API to get the `Block`.
@@ -598,7 +598,7 @@ impl Client {
 
         let mut basic_outputs = Vec::new();
 
-        for output_resp in available_outputs.into_iter() {
+        for output_resp in available_outputs {
             let (amount, _) = ClientBlockBuilder::get_output_amount_and_address(&output_resp.output, None)?;
             basic_outputs.push((
                 UtxoInput::new(
@@ -657,7 +657,7 @@ impl Client {
             output_metadata.extend(address_outputs.into_iter());
         }
 
-        Ok(output_metadata.to_vec())
+        Ok(output_metadata.clone())
     }
 
     /// Reattaches blocks for provided block id. Blocks can be reattached only if they are valid and haven't been
@@ -694,9 +694,10 @@ impl Client {
         // Post the modified
         let block_id = self.post_block_raw(&reattach_block).await?;
         // Get block if we use remote PoW, because the node will change parents and nonce
-        let block = match self.get_local_pow().await {
-            true => reattach_block,
-            false => self.get_block(&block_id).await?,
+        let block = if self.get_local_pow().await {
+            reattach_block
+        } else {
+            self.get_block(&block_id).await?
         };
         Ok((block_id, block))
     }
@@ -726,9 +727,10 @@ impl Client {
 
         let block_id = self.post_block_raw(&promote_block).await?;
         // Get block if we use remote PoW, because the node will change parents and nonce
-        let block = match self.get_local_pow().await {
-            true => promote_block,
-            false => self.get_block(&block_id).await?,
+        let block = if self.get_local_pow().await {
+            promote_block
+        } else {
+            self.get_block(&block_id).await?
         };
         Ok((block_id, block))
     }

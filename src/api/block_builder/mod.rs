@@ -44,6 +44,7 @@ use crate::{
 };
 
 /// Builder of the block API
+#[must_use]
 pub struct ClientBlockBuilder<'a> {
     client: &'a Client,
     secret_manager: Option<&'a SecretManager>,
@@ -480,7 +481,7 @@ impl<'a> ClientBlockBuilder<'a> {
             let data = &self.data.as_ref().unwrap_or(empty_slice);
 
             // build tagged_data
-            let index = TaggedDataPayload::new(index.expect("No tagged_data tag").to_vec(), data.to_vec())
+            let index = TaggedDataPayload::new(index.expect("No tagged_data tag").to_vec(), (*data).clone())
                 .map_err(|e| Error::TaggedDataError(e.to_string()))?;
             payload = Payload::TaggedData(Box::new(index));
         }
@@ -512,7 +513,7 @@ impl<'a> ClientBlockBuilder<'a> {
         let final_block = match self.parents {
             Some(mut parents) => {
                 // Sort parents
-                parents.sort_unstable_by_key(|a| a.pack_to_vec());
+                parents.sort_unstable_by_key(PackableExt::pack_to_vec);
                 parents.dedup();
 
                 let min_pow_score = self.client.get_min_pow_score().await?;
@@ -529,24 +530,23 @@ impl<'a> ClientBlockBuilder<'a> {
 
         let block_id = self.client.post_block_raw(&final_block).await?;
         // Get block if we use remote PoW, because the node will change parents and nonce
-        match self.client.get_local_pow().await {
-            true => Ok(final_block),
-            false => {
-                // Request block multiple times because the node maybe didn't process it completely in this time
-                // or a node balancer could be used which forwards the request to different node than we published
-                for time in 1..3 {
-                    if let Ok(block) = self.client.get_block(&block_id).await {
-                        return Ok(block);
-                    }
-                    #[cfg(not(target_family = "wasm"))]
-                    sleep(Duration::from_millis(time * 50)).await;
-                    #[cfg(target_family = "wasm")]
-                    {
-                        TimeoutFuture::new((time * 50).try_into().unwrap()).await;
-                    }
+        if self.client.get_local_pow().await {
+            Ok(final_block)
+        } else {
+            // Request block multiple times because the node maybe didn't process it completely in this time
+            // or a node balancer could be used which forwards the request to different node than we published
+            for time in 1..3 {
+                if let Ok(block) = self.client.get_block(&block_id).await {
+                    return Ok(block);
                 }
-                self.client.get_block(&block_id).await
+                #[cfg(not(target_family = "wasm"))]
+                sleep(Duration::from_millis(time * 50)).await;
+                #[cfg(target_family = "wasm")]
+                {
+                    TimeoutFuture::new((time * 50).try_into().unwrap()).await;
+                }
             }
+            self.client.get_block(&block_id).await
         }
     }
 }

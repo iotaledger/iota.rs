@@ -29,7 +29,7 @@ pub async fn finish_pow(client: &Client, payload: Option<Payload>) -> Result<Blo
         let cancel_2 = cancel.clone();
         let payload_ = payload.clone();
         let mut parent_blocks = client.get_tips().await?;
-        parent_blocks.sort_unstable_by_key(|a| a.pack_to_vec());
+        parent_blocks.sort_unstable_by_key(PackableExt::pack_to_vec);
         parent_blocks.dedup();
         let time_thread = std::thread::spawn(move || Ok(pow_timeout(tips_interval, cancel)));
         let pow_thread = std::thread::spawn(move || {

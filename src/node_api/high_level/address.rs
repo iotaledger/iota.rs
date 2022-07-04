@@ -21,6 +21,7 @@ pub struct AddressBalance {
 }
 
 /// Builder of GET /api/core/v2/address/{address} endpoint
+#[must_use]
 pub struct GetAddressBuilder<'a> {
     client: &'a Client,
 }
@@ -49,7 +50,7 @@ impl<'a> GetAddressBuilder<'a> {
         let mut total_balance = 0;
         let mut native_tokens_builder = NativeTokensBuilder::new();
 
-        for output_response in outputs_responses.iter() {
+        for output_response in &outputs_responses {
             let output = Output::try_from(&output_response.output)?;
 
             if let Some(native_tokens) = output.native_tokens() {

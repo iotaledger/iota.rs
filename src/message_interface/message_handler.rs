@@ -131,7 +131,7 @@ impl ClientMessageHandler {
                     *state_index,
                     state_metadata.clone(),
                     *foundry_counter,
-                    unlock_conditions.to_vec(),
+                    unlock_conditions.clone(),
                     features.clone(),
                     immutable_features.clone(),
                 )
@@ -148,7 +148,7 @@ impl ClientMessageHandler {
                     &self.client,
                     amount.clone(),
                     native_tokens.clone(),
-                    unlock_conditions.to_vec(),
+                    unlock_conditions.clone(),
                     features.clone(),
                 )
                 .await?;
@@ -169,7 +169,7 @@ impl ClientMessageHandler {
                     native_tokens.clone(),
                     *serial_number,
                     token_scheme,
-                    unlock_conditions.to_vec(),
+                    unlock_conditions.clone(),
                     features.clone(),
                     immutable_features.clone(),
                 )
@@ -189,7 +189,7 @@ impl ClientMessageHandler {
                     amount.clone(),
                     native_tokens.clone(),
                     nft_id,
-                    unlock_conditions.to_vec(),
+                    unlock_conditions.clone(),
                     features.clone(),
                     immutable_features.clone(),
                 )

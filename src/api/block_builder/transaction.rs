@@ -82,7 +82,7 @@ pub async fn prepare_transaction(block_builder: &ClientBlockBuilder<'_>) -> Resu
     if let Some(index) = block_builder.tag.clone() {
         let tagged_data_payload =
             TaggedDataPayload::new((&index).to_vec(), block_builder.data.clone().unwrap_or_default())?;
-        essence = essence.with_payload(Payload::TaggedData(Box::new(tagged_data_payload)))
+        essence = essence.with_payload(Payload::TaggedData(Box::new(tagged_data_payload)));
     }
     let regular_essence = essence.finish()?;
     let essence = TransactionEssence::Regular(regular_essence);
@@ -139,7 +139,7 @@ pub fn verify_semantic(
     let TransactionEssence::Regular(essence) = transaction.essence();
     let output_ids = input_signing_data
         .iter()
-        .map(|i| i.output_id())
+        .map(InputSigningData::output_id)
         .collect::<Result<Vec<OutputId>>>()?;
     let outputs = input_signing_data
         .iter()

@@ -10,6 +10,7 @@ use bee_pow::providers::{
 
 /// The miner builder.
 #[derive(Default)]
+#[must_use]
 pub struct ClientMinerBuilder {
     local_pow: bool,
     cancel: MinerCancel,

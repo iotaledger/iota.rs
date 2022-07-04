@@ -45,7 +45,7 @@ pub(crate) fn get_remainder_native_tokens(
 // Get minted and melted tokens from foundry outputs
 // minted first, melted second
 pub(crate) fn get_minted_and_melted_native_tokens<'a>(
-    inputs: impl Iterator<Item = &'a Output> + Clone,
+    inputs: &(impl Iterator<Item = &'a Output> + Clone),
     outputs: impl Iterator<Item = &'a Output> + Clone,
 ) -> Result<(NativeTokensBuilder, NativeTokensBuilder)> {
     let mut minted_native_tokens = NativeTokensBuilder::new();
