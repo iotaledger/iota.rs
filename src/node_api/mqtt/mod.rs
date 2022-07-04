@@ -179,7 +179,7 @@ fn poll_mqtt(
                                             }
                                         }
                                     } else {
-                                        match serde_json::from_slice(&*p.payload) {
+                                        match serde_json::from_slice(&p.payload) {
                                             Ok(value) => Ok(TopicEvent {
                                                 topic,
                                                 payload: MqttPayload::Json(value),

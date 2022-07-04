@@ -81,7 +81,7 @@ pub async fn prepare_transaction(block_builder: &ClientBlockBuilder<'_>) -> Resu
     // Add tagged data payload if tag set
     if let Some(index) = block_builder.tag.clone() {
         let tagged_data_payload =
-            TaggedDataPayload::new((&index).to_vec(), block_builder.data.clone().unwrap_or_default())?;
+            TaggedDataPayload::new(index.to_vec(), block_builder.data.clone().unwrap_or_default())?;
         essence = essence.with_payload(Payload::TaggedData(Box::new(tagged_data_payload)));
     }
     let regular_essence = essence.finish()?;

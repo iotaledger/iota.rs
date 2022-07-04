@@ -320,7 +320,7 @@ impl StrongholdAdapter {
         };
 
         for (key, value) in values {
-            if let Err(err) = self.insert(&key, &*value).await {
+            if let Err(err) = self.insert(&key, &value).await {
                 error!("an error occurred during the re-encryption of Stronghold store: {err}");
 
                 // Recover: put the old key back
