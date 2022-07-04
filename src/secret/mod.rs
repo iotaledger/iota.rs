@@ -93,15 +93,10 @@ pub enum SecretManager {
     #[cfg_attr(docsrs, doc(cfg(feature = "stronghold")))]
     Stronghold(StrongholdSecretManager),
 
-    /// Secret manager that uses a Ledger hardware wallet.
+    /// Secret manager that uses a Ledger Nano hardware wallet or Speculos simulator.
     #[cfg(feature = "ledger_nano")]
     #[cfg_attr(docsrs, doc(cfg(feature = "ledger_nano")))]
     LedgerNano(LedgerSecretManager),
-
-    /// Secret manager that uses a Ledger Speculos simulator.
-    #[cfg(feature = "ledger_nano")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "ledger_nano")))]
-    LedgerNanoSimulator(LedgerSecretManager),
 
     /// Secret manager that uses only a mnemonic.
     Mnemonic(MnemonicSecretManager),
@@ -118,8 +113,6 @@ impl std::fmt::Debug for SecretManager {
             Self::Stronghold(_) => f.debug_tuple("Stronghold").field(&"...").finish(),
             #[cfg(feature = "ledger_nano")]
             Self::LedgerNano(_) => f.debug_tuple("LedgerNano").field(&"...").finish(),
-            #[cfg(feature = "ledger_nano")]
-            Self::LedgerNanoSimulator(_) => f.debug_tuple("LedgerNanoSimulator").field(&"...").finish(),
             Self::Mnemonic(_) => f.debug_tuple("Mnemonic").field(&"...").finish(),
             Self::Placeholder(_) => f.debug_struct("Placeholder").finish(),
         }
@@ -141,12 +134,9 @@ pub enum SecretManagerDto {
     #[cfg(feature = "stronghold")]
     #[cfg_attr(docsrs, doc(cfg(feature = "stronghold")))]
     Stronghold(StrongholdDto),
-    /// Ledger Device
+    /// Ledger Device, bool specifies if it's a simulator or not
     #[cfg(feature = "ledger_nano")]
-    LedgerNano,
-    /// Ledger Speculos Simulator
-    #[cfg(feature = "ledger_nano")]
-    LedgerNanoSimulator,
+    LedgerNano(bool),
     /// Mnemonic
     Mnemonic(String),
     /// Hex seed
@@ -179,10 +169,7 @@ impl TryFrom<&SecretManagerDto> for SecretManager {
             }
 
             #[cfg(feature = "ledger_nano")]
-            SecretManagerDto::LedgerNano => Self::LedgerNano(LedgerSecretManager::new(false)),
-
-            #[cfg(feature = "ledger_nano")]
-            SecretManagerDto::LedgerNanoSimulator => Self::LedgerNanoSimulator(LedgerSecretManager::new(true)),
+            SecretManagerDto::LedgerNano(is_simulator) => Self::LedgerNano(LedgerSecretManager::new(*is_simulator)),
 
             SecretManagerDto::Mnemonic(mnemonic) => Self::Mnemonic(MnemonicSecretManager::try_from_mnemonic(mnemonic)?),
 
@@ -207,10 +194,7 @@ impl From<&SecretManager> for SecretManagerDto {
             }),
 
             #[cfg(feature = "ledger_nano")]
-            SecretManager::LedgerNano(_) => Self::LedgerNano,
-
-            #[cfg(feature = "ledger_nano")]
-            SecretManager::LedgerNanoSimulator(_) => Self::LedgerNanoSimulator,
+            SecretManager::LedgerNano(ledger_nano) => Self::LedgerNano(ledger_nano.is_simulator),
 
             // `MnemonicSecretManager(Seed)` doesn't have Debug or Display implemented and in the current use cases of
             // the client/wallet we also don't need to convert it in this direction with the mnemonic/seed, we only need
@@ -239,7 +223,7 @@ impl SecretManage for SecretManager {
                     .await
             }
             #[cfg(feature = "ledger_nano")]
-            SecretManager::LedgerNano(secret_manager) | SecretManager::LedgerNanoSimulator(secret_manager) => {
+            SecretManager::LedgerNano(secret_manager) => {
                 secret_manager
                     .generate_addresses(coin_type, account_index, address_indexes, internal, metadata)
                     .await
@@ -269,7 +253,7 @@ impl SecretManage for SecretManager {
                 secret_manager.signature_unlock(input, essence_hash, metadata).await
             }
             #[cfg(feature = "ledger_nano")]
-            SecretManager::LedgerNano(secret_manager) | SecretManager::LedgerNanoSimulator(secret_manager) => {
+            SecretManager::LedgerNano(secret_manager) => {
                 secret_manager.signature_unlock(input, essence_hash, metadata).await
             }
             SecretManager::Mnemonic(secret_manager) => {
@@ -292,7 +276,7 @@ impl SecretManageExt for SecretManager {
             #[cfg(feature = "stronghold")]
             SecretManager::Stronghold(_) => self.default_sign_transaction_essence(prepared_transaction_data).await,
             #[cfg(feature = "ledger_nano")]
-            SecretManager::LedgerNano(secret_manager) | SecretManager::LedgerNanoSimulator(secret_manager) => {
+            SecretManager::LedgerNano(secret_manager) => {
                 secret_manager.sign_transaction_essence(prepared_transaction_data).await
             }
             SecretManager::Mnemonic(_) => self.default_sign_transaction_essence(prepared_transaction_data).await,
