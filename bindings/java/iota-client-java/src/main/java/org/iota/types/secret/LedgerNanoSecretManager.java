@@ -3,13 +3,21 @@
 
 package org.iota.types.secret;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonObject;
 
 public class LedgerNanoSecretManager extends SecretManager {
+
+    private boolean isSimulator;
+
+    public LedgerNanoSecretManager(boolean isSimulator) {
+        this.isSimulator = isSimulator;
+    }
+
     @Override
-    public JsonElement getJson() {
-        return new JsonPrimitive("LedgerNano");
+    public JsonObject getJson() {
+        JsonObject o = new JsonObject();
+        o.addProperty("isSimulator", isSimulator);
+        return o;
     }
 }
 
