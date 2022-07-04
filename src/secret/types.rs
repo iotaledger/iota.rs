@@ -91,12 +91,14 @@ pub struct LedgerStatus {
     /// Ledger is connected and locked.
     pub(crate) locked: bool,
     /// Ledger blind signing enabled
+    #[serde(rename = "blindSigningEnabled")]
     pub(crate) blind_signing_enabled: bool,
     /// Ledger opened app.
     pub(crate) app: Option<LedgerApp>,
     /// Ledger device
     pub(crate) device: Option<LedgerDeviceType>,
     /// Buffer size on device
+    #[serde(rename = "bufferSize")]
     pub(crate) buffer_size: Option<usize>,
 }
 
