@@ -262,4 +262,59 @@ mod tests {
         // Remove garbage after test, but don't care about the result
         std::fs::remove_file(stronghold_path).unwrap_or(());
     }
+
+    #[tokio::test]
+    async fn test_key_cleared() {
+        let stronghold_path = PathBuf::from("test_key_cleared.stronghold");
+        let mnemonic = String::from(
+            "giant dynamic museum toddler six deny defense ostrich bomb access mercy blood explain muscle shoot shallow glad autumn author calm heavy hawk abuse rally",
+        );
+        let mut stronghold_adapter = StrongholdAdapter::builder()
+            .password("drowssap")
+            .try_build(stronghold_path.clone())
+            .unwrap();
+
+        stronghold_adapter.store_mnemonic(mnemonic).await.unwrap();
+
+        // The snapshot should have been on the disk now.
+        assert!(stronghold_path.exists());
+
+        stronghold_adapter.clear_key().await;
+
+        // Address generation returns an error when the key is cleared.
+        assert!(
+            stronghold_adapter
+                .generate_addresses(
+                    IOTA_COIN_TYPE,
+                    0,
+                    0..1,
+                    false,
+                    GenerateAddressMetadata { syncing: false },
+                )
+                .await
+                .is_err()
+        );
+
+        stronghold_adapter.set_password("drowssap").await.unwrap();
+
+        // After setting the correct password it works again.
+        let addresses = stronghold_adapter
+            .generate_addresses(
+                IOTA_COIN_TYPE,
+                0,
+                0..1,
+                false,
+                GenerateAddressMetadata { syncing: false },
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(
+            addresses[0].to_bech32("atoi"),
+            "atoi1qpszqzadsym6wpppd6z037dvlejmjuke7s24hm95s9fg9vpua7vluehe53e".to_string()
+        );
+
+        // Remove garbage after test, but don't care about the result
+        std::fs::remove_file(stronghold_path).unwrap_or(());
+    }
 }
