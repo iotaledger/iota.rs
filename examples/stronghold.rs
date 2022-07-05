@@ -26,8 +26,6 @@ async fn main() -> Result<()> {
     // The mnemonic only needs to be stored the first time
     stronghold_secret_manager.store_mnemonic(mnemonic).await.unwrap();
 
-    stronghold_secret_manager.clear_key().await;
-
     // Generate addresses with custom account index and range
     let addresses = GetAddressesBuilder::new(&SecretManager::Stronghold(stronghold_secret_manager))
         .with_bech32_hrp(SHIMMER_TESTNET_BECH32_HRP)
