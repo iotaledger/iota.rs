@@ -1282,9 +1282,9 @@ dependencies = [
 
 [[package]]
 name = "iota_stronghold"
-version = "0.6.4"
+version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "89ebdd443fde5c02437469c1a318aa4d56cba83db3913743862a0e3b54ab5736"
+checksum = "c9cf2728835a3b25cf04bd3c3615a9cea149855fcefd78bc95a04e766f78faa9"
 dependencies = [
  "bincode",
  "hkdf",

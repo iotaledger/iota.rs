@@ -70,7 +70,7 @@ use crate::{db::DatabaseProvider, Error, Result};
 pub struct StrongholdAdapter {
     /// A stronghold instance.
     #[builder(field(type = "Option<Stronghold>"))]
-    stronghold: Stronghold,
+    stronghold: Arc<Mutex<Stronghold>>,
 
     /// A key to open the Stronghold vault.
     ///
@@ -162,6 +162,7 @@ impl StrongholdAdapterBuilder {
 
         let has_key_provider = self.key_provider.is_some();
         let key_provider = Arc::new(Mutex::new(self.key_provider));
+        let stronghold = Arc::new(Mutex::new(stronghold));
 
         // If both `key` and `timeout` are set, then we spawn the task and keep its join handle.
         if let (true, Some(Some(timeout))) = (has_key_provider, self.timeout) {
@@ -175,9 +176,11 @@ impl StrongholdAdapterBuilder {
             // however panic when this function is not in a Tokio runtime context (usually in an `async fn`), albeit it
             // itself is a `fn`. There is also a small delay from the return of this function to the task actually being
             // spawned and set in the `struct`.
+            let stronghold_clone = stronghold.clone();
             tokio::spawn(async move {
                 *task_self.lock().await = Some(tokio::spawn(task_key_clear(
                     task_self.clone(), // LHS moves task_self
+                    stronghold_clone,
                     key_provider,
                     timeout,
                 )));
@@ -252,7 +255,12 @@ impl StrongholdAdapter {
             let task_self = self.timeout_task.clone();
             let key_provider = self.key_provider.clone();
 
-            *self.timeout_task.lock().await = Some(tokio::spawn(task_key_clear(task_self, key_provider, timeout)));
+            *self.timeout_task.lock().await = Some(tokio::spawn(task_key_clear(
+                task_self,
+                self.stronghold.clone(),
+                key_provider,
+                timeout,
+            )));
         }
 
         Ok(())
@@ -283,7 +291,13 @@ impl StrongholdAdapter {
         // to the memory first (decrypted with the old key), then change `self.key`, then store them back (encrypted
         // with the new key).
         let mut values = Vec::new();
-        let keys_to_re_encrypt = self.stronghold.get_client(PRIVATE_DATA_CLIENT_PATH)?.store().keys()?;
+        let keys_to_re_encrypt = self
+            .stronghold
+            .lock()
+            .await
+            .get_client(PRIVATE_DATA_CLIENT_PATH)?
+            .store()
+            .keys()?;
 
         for key in keys_to_re_encrypt {
             let value = match self.get(&key).await {
@@ -296,8 +310,12 @@ impl StrongholdAdapter {
                         let task_self = self.timeout_task.clone();
                         let key_provider = self.key_provider.clone();
 
-                        *self.timeout_task.lock().await =
-                            Some(tokio::spawn(task_key_clear(task_self, key_provider, timeout)));
+                        *self.timeout_task.lock().await = Some(tokio::spawn(task_key_clear(
+                            task_self,
+                            self.stronghold.clone(),
+                            key_provider,
+                            timeout,
+                        )));
                     }
 
                     return Err(err);
@@ -338,8 +356,12 @@ impl StrongholdAdapter {
                     let task_self = self.timeout_task.clone();
                     let key_provider = self.key_provider.clone();
 
-                    *self.timeout_task.lock().await =
-                        Some(tokio::spawn(task_key_clear(task_self, key_provider, timeout)));
+                    *self.timeout_task.lock().await = Some(tokio::spawn(task_key_clear(
+                        task_self,
+                        self.stronghold.clone(),
+                        key_provider,
+                        timeout,
+                    )));
                 }
 
                 return Err(err);
@@ -355,7 +377,12 @@ impl StrongholdAdapter {
             let task_self = self.timeout_task.clone();
             let key_provider = self.key_provider.clone();
 
-            *self.timeout_task.lock().await = Some(tokio::spawn(task_key_clear(task_self, key_provider, timeout)));
+            *self.timeout_task.lock().await = Some(tokio::spawn(task_key_clear(
+                task_self,
+                self.stronghold.clone(),
+                key_provider,
+                timeout,
+            )));
         }
 
         Ok(())
@@ -409,7 +436,12 @@ impl StrongholdAdapter {
             let task_self = self.timeout_task.clone();
             let key_provider = self.key_provider.clone();
 
-            *self.timeout_task.lock().await = Some(tokio::spawn(task_key_clear(task_self, key_provider, timeout)));
+            *self.timeout_task.lock().await = Some(tokio::spawn(task_key_clear(
+                task_self,
+                self.stronghold.clone(),
+                key_provider,
+                timeout,
+            )));
         }
     }
 
@@ -434,7 +466,7 @@ impl StrongholdAdapter {
             return Err(Error::StrongholdKeyCleared);
         };
 
-        self.stronghold.load_client_from_snapshot(
+        self.stronghold.lock().await.load_client_from_snapshot(
             PRIVATE_DATA_CLIENT_PATH,
             key_provider,
             &SnapshotPath::from_path(&self.snapshot_path),
@@ -460,6 +492,8 @@ impl StrongholdAdapter {
         };
 
         self.stronghold
+            .lock()
+            .await
             .commit(&SnapshotPath::from_path(&self.snapshot_path), key_provider)?;
 
         Ok(())
@@ -488,6 +522,7 @@ impl StrongholdAdapter {
 /// The asynchronous key clearing task purging `key` after `timeout` spent in Tokio.
 async fn task_key_clear(
     task_self: Arc<Mutex<Option<JoinHandle<()>>>>,
+    stronghold: Arc<Mutex<Stronghold>>,
     key_provider: Arc<Mutex<Option<KeyProvider>>>,
     timeout: Duration,
 ) {
