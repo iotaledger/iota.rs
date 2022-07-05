@@ -229,15 +229,21 @@ pub enum Error {
     #[cfg(feature = "ledger_nano")]
     #[error("ledger mnemonic is mismatched")]
     LedgerMnemonicMismatch,
-    /// Riker system error during Stronghold initialization
+    /// Stronghold client error
     #[cfg(feature = "stronghold")]
-    #[error("Stronghold reported a system error: {0}")]
+    #[error("stronghold client error: {0}")]
     #[serde(serialize_with = "display_string")]
-    StrongholdActorSystemError(#[from] riker::system::SystemError),
+    StrongholdClient(#[from] iota_stronghold::ClientError),
+    /// Stronghold memory error
+    #[cfg(feature = "stronghold")]
+    #[error("stronghold memory error: {0}")]
+    #[serde(serialize_with = "display_string")]
+    StrongholdMemory(#[from] iota_stronghold::MemoryError),
     /// Procedure execution error from Stronghold
     #[cfg(feature = "stronghold")]
     #[error("Stronghold reported a procedure error: {0}")]
-    StrongholdProcedureError(String),
+    #[serde(serialize_with = "display_string")]
+    StrongholdProcedureError(#[from] iota_stronghold::procedures::ProcedureError),
     /// A mnemonic has been already stored into a Stronghold vault
     #[cfg(feature = "stronghold")]
     #[error("a mnemonic has already been stored in the Stronghold vault")]
@@ -250,10 +256,6 @@ pub enum Error {
     #[cfg(feature = "stronghold")]
     #[error("no password has been supplied, or the key has been cleared from the memory")]
     StrongholdKeyCleared,
-    /// No snapshot path has been supplied
-    #[cfg(feature = "stronghold")]
-    #[error("no snapshot path has been supplied")]
-    StrongholdSnapshotPathMissing,
     /// The semantic validation of a transaction failed.
     #[error("the semantic validation of a transaction failed with conflict reason: {} - {0:?}", *.0 as u8)]
     TransactionSemantic(ConflictReason),

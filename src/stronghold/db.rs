@@ -3,112 +3,92 @@
 
 //! The `DatabaseProvider` implementation for `StrongholdAdapter`.
 
+use std::ops::Deref;
+
 use async_trait::async_trait;
-use iota_stronghold::{Location, ResultMessage};
-use log::debug;
 
 use super::{
+    common::PRIVATE_DATA_CLIENT_PATH,
     encryption::{decrypt, encrypt},
     StrongholdAdapter,
 };
 use crate::{db::DatabaseProvider, Error, Result};
 
-/// Convert from a string to a Stronghold location that we'll use.
-fn location_from_key(key: &[u8]) -> Location {
-    // This has been the case in wallet.rs; we preserve it here.
-    Location::Generic {
-        vault_path: key.to_vec(),
-        record_path: key.to_vec(),
-    }
-}
-
 #[async_trait]
 impl DatabaseProvider for StrongholdAdapter {
     async fn get(&mut self, k: &[u8]) -> Result<Option<Vec<u8>>> {
-        // Lazy load the snapshot (if the path is set).
-        if self.snapshot_path.is_some() {
-            self.read_stronghold_snapshot().await?;
-        }
-
-        let location = location_from_key(k);
-        let (data, status) = self.stronghold.lock().await.read_from_store(location).await;
-
-        // XXX: this theoretically indicates a non-existent key, but what about other errors?
-        if let ResultMessage::Error(err) = status {
-            debug!("Stronghold reported \"{}\", but we treat it as \"key not found\".", err);
-            return Ok(None);
-        }
-
-        let locked_key = self.key.lock().await;
-        let key = if let Some(key) = &*locked_key {
-            key
-        } else {
-            return Err(Error::StrongholdKeyCleared);
-        };
-
-        decrypt(&data, key).map(Some)
-    }
-
-    async fn insert(&mut self, k: &[u8], v: &[u8]) -> Result<Option<Vec<u8>>> {
-        // Lazy load the snapshot (if the path is set).
-        if self.snapshot_path.is_some() {
-            self.read_stronghold_snapshot().await?;
-        }
-
-        let old_value = self.get(k).await?;
-
-        let encrypted_value = {
-            let locked_key = self.key.lock().await;
-            let key = if let Some(key) = &*locked_key {
-                key
-            } else {
-                return Err(Error::StrongholdKeyCleared);
-            };
-
-            encrypt(v, key)?
-        };
-
-        let location = location_from_key(k);
-        let status = self
+        let data = match self
             .stronghold
             .lock()
             .await
-            .write_to_store(location, encrypted_value, None)
-            .await;
+            .get_client(PRIVATE_DATA_CLIENT_PATH)?
+            .store()
+            .get(k)?
+        {
+            Some(data) => data,
+            None => return Ok(None),
+        };
 
-        if let ResultMessage::Error(err) = status {
-            return Err(Error::StrongholdProcedureError(err));
-        }
+        let locked_key_provider = self.key_provider.lock().await;
+        let key_provider = if let Some(key_provider) = &*locked_key_provider {
+            key_provider
+        } else {
+            return Err(Error::StrongholdKeyCleared);
+        };
+        let buffer = key_provider.try_unlock()?;
+        let buffer_ref = buffer.borrow();
 
-        Ok(old_value)
+        decrypt(&data, buffer_ref.deref()).map(Some)
+    }
+
+    async fn insert(&mut self, k: &[u8], v: &[u8]) -> Result<Option<Vec<u8>>> {
+        let encrypted_value = {
+            let locked_key_provider = self.key_provider.lock().await;
+            let key_provider = if let Some(key_provider) = &*locked_key_provider {
+                key_provider
+            } else {
+                return Err(Error::StrongholdKeyCleared);
+            };
+            let buffer = key_provider.try_unlock()?;
+            let buffer_ref = buffer.borrow();
+
+            encrypt(v, buffer_ref.deref())?
+        };
+
+        Ok(self
+            .stronghold
+            .lock()
+            .await
+            .get_client(PRIVATE_DATA_CLIENT_PATH)?
+            .store()
+            .insert(k.to_vec(), encrypted_value, None)?)
     }
 
     async fn delete(&mut self, k: &[u8]) -> Result<Option<Vec<u8>>> {
-        // Lazy load the snapshot (if the path is set).
-        if self.snapshot_path.is_some() {
-            self.read_stronghold_snapshot().await?;
-        }
-
-        let old_value = self.get(k).await?;
-
-        let location = location_from_key(k);
-        let status = self.stronghold.lock().await.delete_from_store(location).await;
-
-        if let ResultMessage::Error(err) = status {
-            return Err(Error::StrongholdProcedureError(err));
-        }
-
-        Ok(old_value)
+        Ok(self
+            .stronghold
+            .lock()
+            .await
+            .get_client(PRIVATE_DATA_CLIENT_PATH)?
+            .store()
+            .delete(k)?)
     }
 }
 
 mod tests {
     #[tokio::test]
     async fn test_stronghold_db() {
+        use std::{fs, path::PathBuf};
+
         use super::StrongholdAdapter;
         use crate::db::DatabaseProvider;
 
-        let mut stronghold = StrongholdAdapter::builder().password("drowssap").try_build().unwrap();
+        let snapshot_path = "test_stronghold_db.stronghold";
+        let stronghold_path = PathBuf::from(snapshot_path);
+        let mut stronghold = StrongholdAdapter::builder()
+            .password("drowssap")
+            .try_build(stronghold_path)
+            .unwrap();
 
         assert!(matches!(stronghold.get(b"test-0").await, Ok(None)));
         assert!(matches!(stronghold.get(b"test-1").await, Ok(None)));
@@ -133,5 +113,7 @@ mod tests {
         assert!(matches!(stronghold.get(b"test-0").await, Ok(None)));
         assert!(matches!(stronghold.get(b"test-1").await, Ok(None)));
         assert!(matches!(stronghold.get(b"test-2").await, Ok(None)));
+
+        fs::remove_file(snapshot_path).unwrap();
     }
 }

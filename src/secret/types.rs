@@ -29,7 +29,7 @@ pub struct StrongholdDto {
     pub timeout: Option<u64>,
     /// The path for the Stronghold file
     #[serde(rename = "snapshotPath")]
-    pub snapshot_path: Option<String>,
+    pub snapshot_path: String,
 }
 /// An account address.
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]

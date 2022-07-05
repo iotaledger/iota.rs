@@ -193,8 +193,7 @@ async fn address_generation() {
         let stronghold_filename = format!("{}.stronghold", address.bech32_address);
         let mut stronghold_secret_manager = StrongholdSecretManager::builder()
             .password("some_hopefully_secure_password")
-            .snapshot_path(PathBuf::from(stronghold_filename.to_string()))
-            .try_build()
+            .try_build(PathBuf::from(stronghold_filename.to_string()))
             .unwrap();
 
         stronghold_secret_manager
@@ -272,7 +271,7 @@ async fn address_generation() {
             let secret_manager_dto = StrongholdDto {
                 password: Some("some_hopefully_secure_password".to_string()),
                 timeout: None,
-                snapshot_path: Some(stronghold_filename.clone()),
+                snapshot_path: stronghold_filename.clone(),
             };
             let message = Message::CallClientMethod(ClientMethod::StoreMnemonic {
                 secret_manager: SecretManagerDto::Stronghold(secret_manager_dto.clone()),

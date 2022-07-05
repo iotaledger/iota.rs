@@ -161,11 +161,7 @@ impl TryFrom<&SecretManagerDto> for SecretManager {
                     builder = builder.timeout(Duration::from_secs(*timeout));
                 }
 
-                if let Some(snapshot_path) = &stronghold_dto.snapshot_path {
-                    builder = builder.snapshot_path(PathBuf::from(snapshot_path));
-                }
-
-                Self::Stronghold(builder.try_build()?)
+                Self::Stronghold(builder.try_build(PathBuf::from(&stronghold_dto.snapshot_path))?)
             }
 
             #[cfg(feature = "ledger_nano")]
@@ -189,8 +185,10 @@ impl From<&SecretManager> for SecretManagerDto {
                 timeout: stronghold_adapter.get_timeout().map(|duration| duration.as_secs()),
                 snapshot_path: stronghold_adapter
                     .snapshot_path
-                    .as_ref()
-                    .map(|s| s.clone().into_os_string().to_string_lossy().into()),
+                    .clone()
+                    .into_os_string()
+                    .to_string_lossy()
+                    .into(),
             }),
 
             #[cfg(feature = "ledger_nano")]
