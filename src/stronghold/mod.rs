@@ -513,6 +513,8 @@ impl StrongholdAdapter {
         // Flush Stronghold.
         self.write_stronghold_snapshot().await?;
 
+        self.stronghold.lock().await.clear()?;
+
         self.snapshot_loaded = false;
 
         Ok(())
@@ -530,6 +532,9 @@ async fn task_key_clear(
 
     debug!("StrongholdAdapter is purging the key");
     key_provider.lock().await.take();
+
+    // TODO handle error
+    stronghold.lock().await.clear().unwrap();
 
     // Take self, but do nothing (we're exiting anyways).
     task_self.lock().await.take();
