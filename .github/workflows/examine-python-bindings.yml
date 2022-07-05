@@ -19,7 +19,7 @@ on:
     paths:
       - ".github/workflows/examine-python-bindings.yml"
       - ".github/actions/**"
-      - "bindings/python/native/**"
+      - "bindings/python/**"
       # Watch the Rust core too
       - "src/**"
       - "Cargo.toml"
