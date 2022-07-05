@@ -237,7 +237,7 @@ impl StrongholdAdapter {
             if let Error::StrongholdClient(ref err_msg) = err {
                 // Matching the error string is not ideal but stronhold doesn't wrap the error types at the moment.
                 if err_msg.to_string().contains("XCHACHA20-POLY1305") {
-                    // The the password was incorrect so we clear it.
+                    // The password was incorrect so we clear it.
                     *self.key_provider.lock().await = None;
                     return Err(err);
                 }
