@@ -251,11 +251,9 @@ impl SecretManageExt for LedgerSecretManager {
                         // at this place, so we can rely on their order and don't have to sort it again.
                         'essence_outputs: for output in essence.outputs().iter() {
                             if let Output::Basic(s) = output {
-                                for block in s.unlock_conditions().iter() {
-                                    if let UnlockCondition::Address(e) = block {
-                                        if *remainder_address == *e.address() {
-                                            break 'essence_outputs;
-                                        }
+                                if let Some(address) = s.unlock_conditions().address() {
+                                    if *remainder_address == *address.address() {
+                                        break 'essence_outputs;
                                     }
                                 }
                             } else {

@@ -5,7 +5,7 @@
 
 use bee_block::{
     address::Address,
-    output::{feature::Feature, ByteCostConfig, Output},
+    output::{feature::Features, ByteCostConfig, Output},
 };
 use crypto::keys::slip10::Chain;
 
@@ -195,19 +195,11 @@ async fn get_inputs_for_sender_and_issuer(
     // address
     let mut required_ed25519_addresses = Vec::new();
     for output in &block_builder.outputs {
-        if let Some(features_blocks) = output.features() {
-            for feature in features_blocks.iter() {
-                if let Feature::Sender(sender_feature) = feature {
-                    required_ed25519_addresses.push(sender_feature.address());
-                }
-            }
+        if let Some(sender_feature) = output.features().and_then(Features::sender) {
+            required_ed25519_addresses.push(sender_feature.address());
         }
-        if let Some(features_blocks) = output.immutable_features() {
-            for feature in features_blocks.iter() {
-                if let Feature::Issuer(issuer_feature) = feature {
-                    required_ed25519_addresses.push(issuer_feature.address());
-                }
-            }
+        if let Some(issuer_feature) = output.immutable_features().and_then(Features::issuer) {
+            required_ed25519_addresses.push(issuer_feature.address());
         }
     }
     required_ed25519_addresses.dedup();
