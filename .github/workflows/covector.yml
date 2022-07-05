@@ -9,6 +9,10 @@ on:
       - 'specs/**'
       - 'documentation/**'
 
+concurrency: 
+  group: ${{ github.head_ref }}
+  cancel-in-progress: true
+
 jobs:
   status:
     name: Status
