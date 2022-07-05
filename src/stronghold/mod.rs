@@ -150,7 +150,6 @@ impl StrongholdAdapterBuilder {
             );
             if let Err(iota_stronghold::ClientError::SnapshotFileMissing(_)) = result {
                 stronghold.create_client(PRIVATE_DATA_CLIENT_PATH)?;
-                stronghold.write_client(PRIVATE_DATA_CLIENT_PATH)?;
                 stronghold.commit(&SnapshotPath::from_path(&snapshot_path), key_provider)?;
                 stronghold.load_client_from_snapshot(
                     PRIVATE_DATA_CLIENT_PATH,
