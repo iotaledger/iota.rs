@@ -22,6 +22,23 @@ use crate::{
     Error, Result,
 };
 
+fn is_output_time_unlockable(output: &Output, local_time: u32) -> bool {
+    if let Some(unlock_conditions) = output.unlock_conditions() {
+        if unlock_conditions.is_time_locked(local_time) {
+            return false;
+        }
+
+        if let Some(expiration) = unlock_conditions.expiration() {
+            return !expiration.return_address_expired(local_time).is_some();
+        }
+
+        true
+    } else {
+        // Should not happen anyway as there should always be at least the address unlock condition.
+        false
+    }
+}
+
 /// Searches inputs for provided outputs, by requesting the outputs from the account addresses or for alias/foundry/nft
 /// outputs get the latest state with their alias/nft id. Forwards to [try_select_inputs()]
 pub(crate) async fn get_inputs(
@@ -103,19 +120,24 @@ pub(crate) async fn get_inputs(
                 // Reset counter if there is an output
                 empty_address_count = 0;
 
+                let local_time = block_builder.client.get_time_checked().await?;
                 for output_response in address_outputs {
-                    available_inputs.push(InputSigningData {
-                        output: Output::try_from(&output_response.output)?,
-                        output_metadata: OutputMetadata::try_from(&output_response.metadata)?,
-                        chain: Some(Chain::from_u32_hardened(vec![
-                            HD_WALLET_TYPE,
-                            block_builder.coin_type,
-                            account_index,
-                            *internal as u32,
-                            address_index,
-                        ])),
-                        bech32_address: str_address.clone(),
-                    });
+                    let output = Output::try_from(&output_response.output)?;
+
+                    if is_output_time_unlockable(&output, local_time) {
+                        available_inputs.push(InputSigningData {
+                            output,
+                            output_metadata: OutputMetadata::try_from(&output_response.metadata)?,
+                            chain: Some(Chain::from_u32_hardened(vec![
+                                HD_WALLET_TYPE,
+                                block_builder.coin_type,
+                                account_index,
+                                *internal as u32,
+                                address_index,
+                            ])),
+                            bech32_address: str_address.clone(),
+                        });
+                    }
                 }
                 let selected_transaction_data = match try_select_inputs(
                     available_inputs.clone(),
@@ -226,9 +248,13 @@ async fn get_inputs_for_sender_and_issuer(
                 .await?;
 
             let address_outputs = block_builder.client.get_outputs(output_ids).await?;
+            let local_time = block_builder.client.get_time_checked().await?;
 
-            match address_outputs.first() {
-                Some(output_response) => {
+            let mut found_output = false;
+            for output_response in address_outputs {
+                let output = Output::try_from(&output_response.output)?;
+
+                if is_output_time_unlockable(&output, local_time) {
                     required_ed25519_inputs.push(InputSigningData {
                         output: Output::try_from(&output_response.output)?,
                         output_metadata: OutputMetadata::try_from(&output_response.metadata)?,
@@ -244,8 +270,13 @@ async fn get_inputs_for_sender_and_issuer(
                     // we want to include all outputs, because another output might be better balance wise,
                     // but will not unlock the address we need
                     force_use_all_inputs = true;
+                    found_output = true;
+                    break;
                 }
-                None => return Err(Error::MissingInputWithEd25519UnlockCondition),
+            }
+
+            if !found_output {
+                return Err(Error::MissingInputWithEd25519UnlockCondition);
             }
         }
     }
