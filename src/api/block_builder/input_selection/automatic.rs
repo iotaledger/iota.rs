@@ -84,8 +84,6 @@ pub(crate) async fn get_inputs(
                 .client
                 .basic_output_ids(vec![
                     QueryParameter::Address(str_address.to_string()),
-                    QueryParameter::HasExpirationCondition(false),
-                    QueryParameter::HasTimelockCondition(false),
                     QueryParameter::HasStorageReturnCondition(false),
                 ])
                 .await?;
@@ -202,6 +200,7 @@ async fn get_inputs_for_sender_and_issuer(
             required_ed25519_addresses.push(issuer_feature.address());
         }
     }
+
     required_ed25519_addresses.dedup();
     for address in required_ed25519_addresses {
         if let Address::Ed25519(address) = address {
@@ -222,8 +221,6 @@ async fn get_inputs_for_sender_and_issuer(
                 .client
                 .basic_output_ids(vec![
                     QueryParameter::Address(Address::Ed25519(*address).to_bech32(&bech32_hrp)),
-                    QueryParameter::HasExpirationCondition(false),
-                    QueryParameter::HasTimelockCondition(false),
                     QueryParameter::HasStorageReturnCondition(false),
                 ])
                 .await?;
@@ -252,5 +249,6 @@ async fn get_inputs_for_sender_and_issuer(
             }
         }
     }
+
     Ok((force_use_all_inputs, required_ed25519_inputs))
 }
