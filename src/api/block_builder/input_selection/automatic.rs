@@ -22,14 +22,16 @@ use crate::{
     Error, Result,
 };
 
-fn is_output_time_unlockable(output: &Output, local_time: u32) -> bool {
+fn is_output_time_unlockable(output: &Output, address: &Address, local_time: u32) -> bool {
     if let Some(unlock_conditions) = output.unlock_conditions() {
         if unlock_conditions.is_time_locked(local_time) {
             return false;
         }
 
         if let Some(expiration) = unlock_conditions.expiration() {
-            return !expiration.return_address_expired(local_time).is_some();
+            if let Some(expiration_address) = expiration.return_address_expired(local_time) {
+                return expiration_address == address;
+            }
         }
 
         true
@@ -123,8 +125,9 @@ pub(crate) async fn get_inputs(
                 let local_time = block_builder.client.get_time_checked().await?;
                 for output_response in address_outputs {
                     let output = Output::try_from(&output_response.output)?;
+                    let address = Address::try_from_bech32(str_address)?;
 
-                    if is_output_time_unlockable(&output, local_time) {
+                    if is_output_time_unlockable(&output, &address, local_time) {
                         available_inputs.push(InputSigningData {
                             output,
                             output_metadata: OutputMetadata::try_from(&output_response.metadata)?,
@@ -239,10 +242,11 @@ async fn get_inputs_for_sender_and_issuer(
             .await?;
             // if we didn't return with an error, then the address was found
 
+            let address = Address::Ed25519(*address);
             let output_ids = block_builder
                 .client
                 .basic_output_ids(vec![
-                    QueryParameter::Address(Address::Ed25519(*address).to_bech32(&bech32_hrp)),
+                    QueryParameter::Address(address.to_bech32(&bech32_hrp)),
                     QueryParameter::HasStorageReturnCondition(false),
                 ])
                 .await?;
@@ -254,7 +258,7 @@ async fn get_inputs_for_sender_and_issuer(
             for output_response in address_outputs {
                 let output = Output::try_from(&output_response.output)?;
 
-                if is_output_time_unlockable(&output, local_time) {
+                if is_output_time_unlockable(&output, &address, local_time) {
                     required_ed25519_inputs.push(InputSigningData {
                         output: Output::try_from(&output_response.output)?,
                         output_metadata: OutputMetadata::try_from(&output_response.metadata)?,
@@ -265,7 +269,7 @@ async fn get_inputs_for_sender_and_issuer(
                             internal as u32,
                             address_index,
                         ])),
-                        bech32_address: Address::Ed25519(*address).to_bech32(&bech32_hrp),
+                        bech32_address: address.to_bech32(&bech32_hrp),
                     });
                     // we want to include all outputs, because another output might be better balance wise,
                     // but will not unlock the address we need
