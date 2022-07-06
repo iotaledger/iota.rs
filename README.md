@@ -40,14 +40,14 @@ Add `iota-client` as a dependency in `Cargo.toml`:
 
 ```toml
 [dependencies]
-iota-client = "1.2.0"
+iota-client = "1.3.0"
 ```
 
 Or, for the latest changes:
 
 ```toml
 [dependencies]
-iota-client = { git = "https://github.com/iotaledger/iota.rs", branch = "dev" }
+iota-client = { git = "https://github.com/iotaledger/iota.rs", branch = "production" }
 ```
 
 Then, use the library in code with:
