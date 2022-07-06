@@ -108,6 +108,33 @@ pub struct StrongholdAdapter {
     snapshot_loaded: bool,
 }
 
+fn check_or_create_snapshot(
+    stronghold: &Stronghold,
+    key_provider: &KeyProvider,
+    snapshot_path: &SnapshotPath,
+) -> Result<()> {
+    let result = stronghold.load_client_from_snapshot(PRIVATE_DATA_CLIENT_PATH, &key_provider, snapshot_path);
+
+    if let Err(err) = result {
+        match err {
+            iota_stronghold::ClientError::SnapshotFileMissing(_) => {
+                stronghold.create_client(PRIVATE_DATA_CLIENT_PATH)?;
+                stronghold.commit(snapshot_path, &key_provider)?;
+                stronghold.load_client_from_snapshot(PRIVATE_DATA_CLIENT_PATH, &key_provider, snapshot_path)?;
+            }
+            iota_stronghold::ClientError::Inner(ref err_msg) => {
+                // Matching the error string is not ideal but stronhold doesn't wrap the error types at the moment.
+                if err_msg.to_string().contains("XCHACHA20-POLY1305") {
+                    return Err(Error::StrongholdClient(err));
+                }
+            }
+            _ => {}
+        }
+    }
+
+    Ok(())
+}
+
 /// Extra / custom builder method implementations.
 impl StrongholdAdapterBuilder {
     /// Use an user-input password string to derive a key to use Stronghold.
@@ -143,20 +170,7 @@ impl StrongholdAdapterBuilder {
         };
 
         if let Some(key_provider) = &self.key_provider {
-            let result = stronghold.load_client_from_snapshot(
-                PRIVATE_DATA_CLIENT_PATH,
-                key_provider,
-                &SnapshotPath::from_path(&snapshot_path),
-            );
-            if let Err(iota_stronghold::ClientError::SnapshotFileMissing(_)) = result {
-                stronghold.create_client(PRIVATE_DATA_CLIENT_PATH)?;
-                stronghold.commit(&SnapshotPath::from_path(&snapshot_path), key_provider)?;
-                stronghold.load_client_from_snapshot(
-                    PRIVATE_DATA_CLIENT_PATH,
-                    key_provider,
-                    &SnapshotPath::from_path(&snapshot_path),
-                )?;
-            }
+            check_or_create_snapshot(&stronghold, &key_provider, &SnapshotPath::from_path(&snapshot_path))?;
         }
 
         let has_key_provider = self.key_provider.is_some();
@@ -230,30 +244,8 @@ impl StrongholdAdapter {
             let key_provider = KeyProvider::try_from((*self::common::derive_key_from_password(password)).clone())?;
             let snapshot_path = SnapshotPath::from_path(&self.snapshot_path);
             let stronghold = self.stronghold.lock().await;
-            let result = stronghold.load_client_from_snapshot(PRIVATE_DATA_CLIENT_PATH, &key_provider, &snapshot_path);
 
-            if let Err(err) = result {
-                match err {
-                    iota_stronghold::ClientError::SnapshotFileMissing(_) => {
-                        stronghold.create_client(PRIVATE_DATA_CLIENT_PATH)?;
-                        stronghold.commit(&snapshot_path, &key_provider)?;
-                        stronghold.load_client_from_snapshot(
-                            PRIVATE_DATA_CLIENT_PATH,
-                            &key_provider,
-                            &snapshot_path,
-                        )?;
-                    }
-                    iota_stronghold::ClientError::Inner(ref err_msg) => {
-                        // Matching the error string is not ideal but stronhold doesn't wrap the error types at the moment.
-                        if err_msg.to_string().contains("XCHACHA20-POLY1305") {
-                            // The password was incorrect so we clear it.
-                            *self.key_provider.lock().await = None;
-                            return Err(Error::StrongholdClient(err));
-                        }
-                    }
-                    _ => {}
-                }
-            }
+            check_or_create_snapshot(&stronghold, &key_provider, &snapshot_path)?;
 
             *key_provider_guard = Some(key_provider);
         }
