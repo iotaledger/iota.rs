@@ -221,13 +221,24 @@ impl StrongholdAdapter {
     pub async fn set_password(&mut self, password: &str) -> Result<()> {
         // In a closure so there is no deadlock when calling `self.read_stronghold_snapshot()`
         {
-            let mut key_provider = self.key_provider.lock().await;
-            if key_provider.is_some() {
+            let mut key_provider_guard = self.key_provider.lock().await;
+
+            if key_provider_guard.is_some() {
                 return Err(crate::Error::StrongholdPasswordAlreadySet);
             }
-            *key_provider = Some(KeyProvider::try_from(
-                (*self::common::derive_key_from_password(password)).clone(),
-            )?);
+
+            let key_provider = KeyProvider::try_from((*self::common::derive_key_from_password(password)).clone())?;
+            let snapshot_path = SnapshotPath::from_path(&self.snapshot_path);
+            let stronghold = self.stronghold.lock().await;
+            let result = stronghold.load_client_from_snapshot(PRIVATE_DATA_CLIENT_PATH, &key_provider, &snapshot_path);
+
+            if let Err(iota_stronghold::ClientError::SnapshotFileMissing(_)) = result {
+                stronghold.create_client(PRIVATE_DATA_CLIENT_PATH)?;
+                stronghold.commit(&snapshot_path, &key_provider)?;
+                stronghold.load_client_from_snapshot(PRIVATE_DATA_CLIENT_PATH, &key_provider, &snapshot_path)?;
+            }
+
+            *key_provider_guard = Some(key_provider);
         }
 
         // Try to read a snapshot to check if the password is correct
