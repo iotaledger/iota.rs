@@ -232,26 +232,30 @@ impl StrongholdAdapter {
             let stronghold = self.stronghold.lock().await;
             let result = stronghold.load_client_from_snapshot(PRIVATE_DATA_CLIENT_PATH, &key_provider, &snapshot_path);
 
-            if let Err(iota_stronghold::ClientError::SnapshotFileMissing(_)) = result {
-                stronghold.create_client(PRIVATE_DATA_CLIENT_PATH)?;
-                stronghold.commit(&snapshot_path, &key_provider)?;
-                stronghold.load_client_from_snapshot(PRIVATE_DATA_CLIENT_PATH, &key_provider, &snapshot_path)?;
+            if let Err(err) = result {
+                match err {
+                    iota_stronghold::ClientError::SnapshotFileMissing(_) => {
+                        stronghold.create_client(PRIVATE_DATA_CLIENT_PATH)?;
+                        stronghold.commit(&snapshot_path, &key_provider)?;
+                        stronghold.load_client_from_snapshot(
+                            PRIVATE_DATA_CLIENT_PATH,
+                            &key_provider,
+                            &snapshot_path,
+                        )?;
+                    }
+                    iota_stronghold::ClientError::Inner(ref err_msg) => {
+                        // Matching the error string is not ideal but stronhold doesn't wrap the error types at the moment.
+                        if err_msg.to_string().contains("XCHACHA20-POLY1305") {
+                            // The password was incorrect so we clear it.
+                            *self.key_provider.lock().await = None;
+                            return Err(Error::StrongholdClient(err));
+                        }
+                    }
+                    _ => {}
+                }
             }
 
             *key_provider_guard = Some(key_provider);
-        }
-
-        // Try to read a snapshot to check if the password is correct
-        let result = self.read_stronghold_snapshot().await;
-        if let Err(err) = result {
-            if let Error::StrongholdClient(ref err_msg) = err {
-                // Matching the error string is not ideal but stronhold doesn't wrap the error types at the moment.
-                if err_msg.to_string().contains("XCHACHA20-POLY1305") {
-                    // The password was incorrect so we clear it.
-                    *self.key_provider.lock().await = None;
-                    return Err(err);
-                }
-            }
         }
 
         // If a timeout is set, spawn a task to clear the key after the timeout.
