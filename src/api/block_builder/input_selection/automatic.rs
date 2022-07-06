@@ -5,7 +5,7 @@
 
 use bee_block::{
     address::Address,
-    output::{feature::Feature, ByteCostConfig, Output},
+    output::{feature::Features, ByteCostConfig, Output},
 };
 use crypto::keys::slip10::Chain;
 
@@ -21,6 +21,25 @@ use crate::{
     secret::types::{InputSigningData, OutputMetadata},
     Error, Result,
 };
+
+fn is_output_time_unlockable(output: &Output, address: &Address, local_time: u32) -> bool {
+    if let Some(unlock_conditions) = output.unlock_conditions() {
+        if unlock_conditions.is_time_locked(local_time) {
+            return false;
+        }
+
+        if let Some(expiration) = unlock_conditions.expiration() {
+            if let Some(expiration_address) = expiration.return_address_expired(local_time) {
+                return expiration_address == address;
+            }
+        }
+
+        true
+    } else {
+        // Should not happen anyway as there should always be at least the address unlock condition.
+        false
+    }
+}
 
 /// Searches inputs for provided outputs, by requesting the outputs from the account addresses or for alias/foundry/nft
 /// outputs get the latest state with their alias/nft id. Forwards to [try_select_inputs()]
@@ -84,8 +103,6 @@ pub(crate) async fn get_inputs(
                 .client
                 .basic_output_ids(vec![
                     QueryParameter::Address(str_address.to_string()),
-                    QueryParameter::HasExpirationCondition(false),
-                    QueryParameter::HasTimelockCondition(false),
                     QueryParameter::HasStorageReturnCondition(false),
                 ])
                 .await?;
@@ -105,19 +122,25 @@ pub(crate) async fn get_inputs(
                 // Reset counter if there is an output
                 empty_address_count = 0;
 
+                let local_time = block_builder.client.get_time_checked().await?;
                 for output_response in address_outputs {
-                    available_inputs.push(InputSigningData {
-                        output: Output::try_from(&output_response.output)?,
-                        output_metadata: OutputMetadata::try_from(&output_response.metadata)?,
-                        chain: Some(Chain::from_u32_hardened(vec![
-                            HD_WALLET_TYPE,
-                            block_builder.coin_type,
-                            account_index,
-                            *internal as u32,
-                            address_index,
-                        ])),
-                        bech32_address: str_address.clone(),
-                    });
+                    let output = Output::try_from(&output_response.output)?;
+                    let address = Address::try_from_bech32(str_address)?.1;
+
+                    if is_output_time_unlockable(&output, &address, local_time) {
+                        available_inputs.push(InputSigningData {
+                            output,
+                            output_metadata: OutputMetadata::try_from(&output_response.metadata)?,
+                            chain: Some(Chain::from_u32_hardened(vec![
+                                HD_WALLET_TYPE,
+                                block_builder.coin_type,
+                                account_index,
+                                *internal as u32,
+                                address_index,
+                            ])),
+                            bech32_address: str_address.clone(),
+                        });
+                    }
                 }
                 let selected_transaction_data = match try_select_inputs(
                     available_inputs.clone(),
@@ -195,21 +218,14 @@ async fn get_inputs_for_sender_and_issuer(
     // address
     let mut required_ed25519_addresses = Vec::new();
     for output in &block_builder.outputs {
-        if let Some(features_blocks) = output.features() {
-            for feature in features_blocks.iter() {
-                if let Feature::Sender(sender_feature) = feature {
-                    required_ed25519_addresses.push(sender_feature.address());
-                }
-            }
+        if let Some(sender_feature) = output.features().and_then(Features::sender) {
+            required_ed25519_addresses.push(sender_feature.address());
         }
-        if let Some(features_blocks) = output.immutable_features() {
-            for feature in features_blocks.iter() {
-                if let Feature::Issuer(issuer_feature) = feature {
-                    required_ed25519_addresses.push(issuer_feature.address());
-                }
-            }
+        if let Some(issuer_feature) = output.immutable_features().and_then(Features::issuer) {
+            required_ed25519_addresses.push(issuer_feature.address());
         }
     }
+
     required_ed25519_addresses.dedup();
     for address in required_ed25519_addresses {
         if let Address::Ed25519(address) = address {
@@ -226,20 +242,23 @@ async fn get_inputs_for_sender_and_issuer(
             .await?;
             // if we didn't return with an error, then the address was found
 
+            let address = Address::Ed25519(*address);
             let output_ids = block_builder
                 .client
                 .basic_output_ids(vec![
-                    QueryParameter::Address(Address::Ed25519(*address).to_bech32(&bech32_hrp)),
-                    QueryParameter::HasExpirationCondition(false),
-                    QueryParameter::HasTimelockCondition(false),
+                    QueryParameter::Address(address.to_bech32(&bech32_hrp)),
                     QueryParameter::HasStorageReturnCondition(false),
                 ])
                 .await?;
 
             let address_outputs = block_builder.client.get_outputs(output_ids).await?;
+            let local_time = block_builder.client.get_time_checked().await?;
 
-            match address_outputs.first() {
-                Some(output_response) => {
+            let mut found_output = false;
+            for output_response in address_outputs {
+                let output = Output::try_from(&output_response.output)?;
+
+                if is_output_time_unlockable(&output, &address, local_time) {
                     required_ed25519_inputs.push(InputSigningData {
                         output: Output::try_from(&output_response.output)?,
                         output_metadata: OutputMetadata::try_from(&output_response.metadata)?,
@@ -250,15 +269,21 @@ async fn get_inputs_for_sender_and_issuer(
                             internal as u32,
                             address_index,
                         ])),
-                        bech32_address: Address::Ed25519(*address).to_bech32(&bech32_hrp),
+                        bech32_address: address.to_bech32(&bech32_hrp),
                     });
                     // we want to include all outputs, because another output might be better balance wise,
                     // but will not unlock the address we need
                     force_use_all_inputs = true;
+                    found_output = true;
+                    break;
                 }
-                None => return Err(Error::MissingInputWithEd25519UnlockCondition),
+            }
+
+            if !found_output {
+                return Err(Error::MissingInputWithEd25519UnlockCondition);
             }
         }
     }
+
     Ok((force_use_all_inputs, required_ed25519_inputs))
 }
