@@ -125,7 +125,7 @@ pub(crate) async fn get_inputs(
                 let local_time = block_builder.client.get_time_checked().await?;
                 for output_response in address_outputs {
                     let output = Output::try_from(&output_response.output)?;
-                    let address = Address::try_from_bech32(str_address)?;
+                    let address = Address::try_from_bech32(str_address)?.1;
 
                     if is_output_time_unlockable(&output, &address, local_time) {
                         available_inputs.push(InputSigningData {
