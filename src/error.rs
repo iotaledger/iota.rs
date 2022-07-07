@@ -256,6 +256,10 @@ pub enum Error {
     #[cfg(feature = "stronghold")]
     #[error("no password has been supplied, or the key has been cleared from the memory")]
     StrongholdKeyCleared,
+    /// Invalid stronghold password.
+    #[cfg(feature = "stronghold")]
+    #[error("invalid stronghold password")]
+    StrongholdInvalidPassword,
     /// The semantic validation of a transaction failed.
     #[error("the semantic validation of a transaction failed with conflict reason: {} - {0:?}", *.0 as u8)]
     TransactionSemantic(ConflictReason),

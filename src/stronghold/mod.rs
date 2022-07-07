@@ -115,21 +115,19 @@ fn check_or_create_snapshot(
 ) -> Result<()> {
     let result = stronghold.load_client_from_snapshot(PRIVATE_DATA_CLIENT_PATH, &key_provider, snapshot_path);
 
-    if let Err(err) = result {
-        match err {
-            iota_stronghold::ClientError::SnapshotFileMissing(_) => {
-                stronghold.create_client(PRIVATE_DATA_CLIENT_PATH)?;
-                stronghold.commit(snapshot_path, &key_provider)?;
-                stronghold.load_client_from_snapshot(PRIVATE_DATA_CLIENT_PATH, &key_provider, snapshot_path)?;
-            }
-            iota_stronghold::ClientError::Inner(ref err_msg) => {
-                // Matching the error string is not ideal but stronhold doesn't wrap the error types at the moment.
-                if err_msg.to_string().contains("XCHACHA20-POLY1305") {
-                    return Err(Error::StrongholdClient(err));
-                }
-            }
-            _ => {}
+    match result {
+        Err(iota_stronghold::ClientError::SnapshotFileMissing(_)) => {
+            stronghold.create_client(PRIVATE_DATA_CLIENT_PATH)?;
+            stronghold.commit(snapshot_path, &key_provider)?;
+            stronghold.load_client_from_snapshot(PRIVATE_DATA_CLIENT_PATH, &key_provider, snapshot_path)?;
         }
+        Err(iota_stronghold::ClientError::Inner(ref err_msg)) => {
+            // Matching the error string is not ideal but stronhold doesn't wrap the error types at the moment.
+            if err_msg.to_string().contains("XCHACHA20-POLY1305") {
+                return Err(Error::StrongholdInvalidPassword);
+            }
+        }
+        _ => {}
     }
 
     Ok(())
