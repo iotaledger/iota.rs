@@ -608,14 +608,13 @@ mod tests {
             .try_build(stronghold_path)
             .unwrap();
 
-        // When the password already exists, it should fail
-        assert!(adapter.set_password("drowssap").await.is_err());
-
         adapter.clear_key().await;
         // After the key got cleared it should work again to set it
         assert!(adapter.set_password("drowssap").await.is_ok());
-        // When the password already exists, it should fail
-        assert!(adapter.set_password("drowssap").await.is_err());
+        // When the password already exists, it should still work
+        assert!(adapter.set_password("drowssap").await.is_ok());
+        // When the password already exists, but a wrong one is provided, it should return an error
+        assert!(adapter.set_password("other_password").await.is_err());
 
         fs::remove_file(snapshot_path).unwrap();
     }
