@@ -34,24 +34,26 @@ async fn main() -> Result<()> {
     });
 
     client
-        .subscriber()
-        .with_topics(vec![
-            Topic::try_from("milestone-info/latest".to_string())?,
-            Topic::try_from("blocks".to_string())?,
-            Topic::try_from(
-                "outputs/unlock/address/atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r".to_string(),
-            )?,
-        ])
-        .subscribe(move |event| {
-            println!("Topic: {}", event.topic);
-            match &event.payload {
-                MqttPayload::Json(val) => println!("{}", serde_json::to_string(&val).unwrap()),
-                MqttPayload::Block(block) => println!("{:?}", block),
-                MqttPayload::MilestonePayload(ms) => println!("{:?}", ms),
-                MqttPayload::Receipt(receipt) => println!("{:?}", receipt),
-            }
-            tx.lock().unwrap().send(()).unwrap();
-        })
+        .subscribe(
+            vec![
+                Topic::try_from("milestone-info/latest".to_string())?,
+                Topic::try_from("blocks".to_string())?,
+                Topic::try_from(
+                    "outputs/unlock/address/atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r"
+                        .to_string(),
+                )?,
+            ],
+            move |event| {
+                println!("Topic: {}", event.topic);
+                match &event.payload {
+                    MqttPayload::Json(val) => println!("{}", serde_json::to_string(&val).unwrap()),
+                    MqttPayload::Block(block) => println!("{:?}", block),
+                    MqttPayload::MilestonePayload(ms) => println!("{:?}", ms),
+                    MqttPayload::Receipt(receipt) => println!("{:?}", receipt),
+                }
+                tx.lock().unwrap().send(()).unwrap();
+            },
+        )
         .await
         .unwrap();
 
@@ -59,11 +61,7 @@ async fn main() -> Result<()> {
         rx.recv().unwrap();
         if i == 7 {
             // unsubscribe from topic "blocks", will continue to receive events for "milestones/latest"
-            client
-                .subscriber()
-                .with_topics(vec![Topic::try_from("blocks".to_string())?])
-                .unsubscribe()
-                .await?;
+            client.unsubscribe(vec![Topic::try_from("blocks".to_string())?]).await?;
         }
     }
 
