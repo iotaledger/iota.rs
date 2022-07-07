@@ -248,10 +248,6 @@ pub enum Error {
     #[cfg(feature = "stronghold")]
     #[error("a mnemonic has already been stored in the Stronghold vault")]
     StrongholdMnemonicAlreadyStored,
-    /// A password has already been set
-    #[cfg(feature = "stronghold")]
-    #[error("a password has already been set")]
-    StrongholdPasswordAlreadySet,
     /// No password has been supplied to a Stronghold vault, or it has been cleared
     #[cfg(feature = "stronghold")]
     #[error("no password has been supplied, or the key has been cleared from the memory")]
