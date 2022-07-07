@@ -113,13 +113,13 @@ fn check_or_create_snapshot(
     key_provider: &KeyProvider,
     snapshot_path: &SnapshotPath,
 ) -> Result<()> {
-    let result = stronghold.load_client_from_snapshot(PRIVATE_DATA_CLIENT_PATH, &key_provider, snapshot_path);
+    let result = stronghold.load_client_from_snapshot(PRIVATE_DATA_CLIENT_PATH, key_provider, snapshot_path);
 
     match result {
         Err(iota_stronghold::ClientError::SnapshotFileMissing(_)) => {
             stronghold.create_client(PRIVATE_DATA_CLIENT_PATH)?;
-            stronghold.commit(snapshot_path, &key_provider)?;
-            stronghold.load_client_from_snapshot(PRIVATE_DATA_CLIENT_PATH, &key_provider, snapshot_path)?;
+            stronghold.commit(snapshot_path, key_provider)?;
+            stronghold.load_client_from_snapshot(PRIVATE_DATA_CLIENT_PATH, key_provider, snapshot_path)?;
         }
         Err(iota_stronghold::ClientError::Inner(ref err_msg)) => {
             // Matching the error string is not ideal but stronhold doesn't wrap the error types at the moment.
@@ -168,7 +168,7 @@ impl StrongholdAdapterBuilder {
         };
 
         if let Some(key_provider) = &self.key_provider {
-            check_or_create_snapshot(&stronghold, &key_provider, &SnapshotPath::from_path(&snapshot_path))?;
+            check_or_create_snapshot(&stronghold, key_provider, &SnapshotPath::from_path(&snapshot_path))?;
         }
 
         let has_key_provider = self.key_provider.is_some();
@@ -235,11 +235,14 @@ impl StrongholdAdapter {
         {
             let mut key_provider_guard = self.key_provider.lock().await;
 
-            if key_provider_guard.is_some() {
-                return Err(crate::Error::StrongholdPasswordAlreadySet);
+            let key_provider = KeyProvider::try_from((*self::common::derive_key_from_password(password)).clone())?;
+
+            if let Some(old_key_provider) = &*key_provider_guard {
+                if old_key_provider.try_unlock()? != key_provider.try_unlock()? {
+                    return Err(crate::Error::StrongholdInvalidPassword);
+                }
             }
 
-            let key_provider = KeyProvider::try_from((*self::common::derive_key_from_password(password)).clone())?;
             let snapshot_path = SnapshotPath::from_path(&self.snapshot_path);
             let stronghold = self.stronghold.lock().await;
 
@@ -605,14 +608,13 @@ mod tests {
             .try_build(stronghold_path)
             .unwrap();
 
-        // When the password already exists, it should fail
-        assert!(adapter.set_password("drowssap").await.is_err());
-
         adapter.clear_key().await;
         // After the key got cleared it should work again to set it
         assert!(adapter.set_password("drowssap").await.is_ok());
-        // When the password already exists, it should fail
-        assert!(adapter.set_password("drowssap").await.is_err());
+        // When the password already exists, it should still work
+        assert!(adapter.set_password("drowssap").await.is_ok());
+        // When the password already exists, but a wrong one is provided, it should return an error
+        assert!(adapter.set_password("other_password").await.is_err());
 
         fs::remove_file(snapshot_path).unwrap();
     }
