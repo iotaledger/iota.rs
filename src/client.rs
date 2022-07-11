@@ -30,6 +30,7 @@ use bee_rest_api::types::{
 use crypto::keys::slip10::Seed;
 #[cfg(target_family = "wasm")]
 use gloo_timers::future::TimeoutFuture;
+use tokio::{sync::RwLockReadGuard, task::JoinHandle};
 use url::Url;
 #[cfg(not(target_family = "wasm"))]
 use {
@@ -104,6 +105,8 @@ pub struct Client {
     #[allow(dead_code)] // not used for wasm
     /// pow_worker_count for local PoW.
     pub(crate) pow_worker_count: Option<usize>,
+    pub(crate) node_info: Arc<tokio::sync::RwLock<NodeInfo>>,
+    pub(crate) node_info_update: Arc<JoinHandle<()>>,
 }
 
 impl std::fmt::Debug for Client {
@@ -141,6 +144,8 @@ impl Drop for Client {
             .join()
             .unwrap();
         }
+
+        self.node_info_update.abort();
     }
 }
 
@@ -148,6 +153,11 @@ impl Client {
     /// Create the builder to instntiate the IOTA Client.
     pub fn builder() -> ClientBuilder {
         ClientBuilder::new()
+    }
+
+    /// FIXME: add docs
+    pub async fn node_info(&self) -> RwLockReadGuard<'_, NodeInfo> {
+        self.node_info.read().await
     }
 
     /// Sync the node lists per node_sync_interval milliseconds

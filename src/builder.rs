@@ -356,7 +356,8 @@ impl ClientBuilder {
             .nodes
             .iter()
             .map(|node| node.clone().into())
-            .collect();
+            .collect::<HashSet<Node>>();
+
         #[cfg(target_family = "wasm")]
         let (sync, network_info) = (Arc::new(RwLock::new(nodes)), network_info);
         #[cfg(not(target_family = "wasm"))]
@@ -387,8 +388,34 @@ impl ClientBuilder {
 
         #[cfg(feature = "mqtt")]
         let (mqtt_event_tx, mqtt_event_rx) = tokio::sync::watch::channel(MqttEvent::Connected);
+
+        fn get_url(sync: &RwLock<HashSet<Node>>) -> Result<String> {
+            let synced_nodes = sync.read().unwrap();
+            let node = synced_nodes.iter().next().ok_or(Error::SyncedNodePoolEmpty)?;
+            Ok(node.url.to_string())
+        }
+
+        let url = get_url(&sync)?;
+        let node_info = Arc::new(tokio::sync::RwLock::new(Client::get_node_info(&url, None).await?));
+
+        let node_info_update = {
+            let node_info = node_info.clone();
+            let sync = sync.clone();
+
+            Arc::new(tokio::spawn(async move {
+                loop {
+                    tokio::time::sleep(tokio::time::Duration::from_secs(60)).await;
+                    if let Ok(url) = get_url(&sync) {
+                        let new_info = Client::get_node_info(&url, None).await.unwrap();
+                        *node_info.write().await = new_info;
+                    }
+                }
+            }))
+        };
+
+        let node_manager = self.node_manager_builder.build(sync);
         let client = Client {
-            node_manager: self.node_manager_builder.build(sync),
+            node_manager,
             #[cfg(not(target_family = "wasm"))]
             runtime,
             #[cfg(not(target_family = "wasm"))]
@@ -405,6 +432,8 @@ impl ClientBuilder {
             api_timeout: self.api_timeout,
             remote_pow_timeout: self.remote_pow_timeout,
             pow_worker_count: self.pow_worker_count,
+            node_info,
+            node_info_update,
         };
         Ok(client)
     }
