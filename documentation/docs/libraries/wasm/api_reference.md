@@ -625,7 +625,6 @@ Returns the transaction id from a provided transaction payload.
     * [.nodeSyncInterval(value)](#ClientBuilder+nodeSyncInterval) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
     * [.nodeSyncDisabled()](#ClientBuilder+nodeSyncDisabled) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
     * [.offlineMode()](#ClientBuilder+offlineMode) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
-    * [.nodePoolUrls(node_pool_urls)](#ClientBuilder+nodePoolUrls) ⇒ <code>Promise.&lt;any&gt;</code>
     * [.quorum(value)](#ClientBuilder+quorum) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
     * [.quorumSize(value)](#ClientBuilder+quorumSize) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
     * [.quorumThreshold(value)](#ClientBuilder+quorumThreshold) ⇒ [<code>ClientBuilder</code>](#ClientBuilder)
@@ -744,16 +743,6 @@ Every node will be considered healthy and ready to use.
 Allows creating the client without nodes for offline address generation or signing
 
 **Kind**: instance method of [<code>ClientBuilder</code>](#ClientBuilder)  
-<a name="ClientBuilder+nodePoolUrls"></a>
-
-### clientBuilder.nodePoolUrls(node_pool_urls) ⇒ <code>Promise.&lt;any&gt;</code>
-Get node list from the node_pool_urls
-
-**Kind**: instance method of [<code>ClientBuilder</code>](#ClientBuilder)  
-
-| Param | Type |
-| --- | --- |
-| node_pool_urls | <code>any</code> | 
 
 <a name="ClientBuilder+quorum"></a>
 

@@ -139,22 +139,6 @@ impl ClientBuilder {
     Ok(self)
   }
 
-  /// Get node list from the node_pool_urls
-  #[wasm_bindgen(js_name = nodePoolUrls)]
-  pub fn node_pool_urls(self, node_pool_urls: JsValue) -> Result<Promise, JsValue> {
-    let node_pool_urls: Vec<String> = node_pool_urls.into_serde().map_err(wasm_error)?;
-    let mut clientbuilder = self.clone();
-    let promise: Promise = future_to_promise(async move {
-      clientbuilder.builder = self
-        .builder
-        .with_node_pool_urls(&node_pool_urls[..])
-        .await
-        .map_err(wasm_error)?;
-      Ok(clientbuilder.into())
-    });
-    Ok(promise)
-  }
-
   /// Set if quroum should be used or not
   #[wasm_bindgen(js_name = quorum)]
   pub fn quorum(mut self, value: bool) -> Result<ClientBuilder, JsValue> {
