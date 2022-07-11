@@ -64,16 +64,3 @@ impl From<&NodeDto> for Node {
         }
     }
 }
-
-/// JSON struct for NodeDetail from the node_pool_urls
-#[derive(Debug, Serialize, Deserialize)]
-pub(crate) struct NodeDetail {
-    /// Iota node url
-    pub(crate) node: String,
-    /// Network id
-    pub(crate) network_id: String,
-    /// Implementation name
-    pub(crate) implementation: String,
-    /// Enabled PoW
-    pub(crate) pow: bool,
-}

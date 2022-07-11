@@ -14,11 +14,11 @@ use url::Url;
 
 use crate::{
     builder::NetworkInfo,
-    constants::{DEFAULT_API_TIMEOUT, DEFAULT_MIN_QUORUM_SIZE, DEFAULT_QUORUM_THRESHOLD, NODE_SYNC_INTERVAL},
+    constants::{DEFAULT_MIN_QUORUM_SIZE, DEFAULT_QUORUM_THRESHOLD, NODE_SYNC_INTERVAL},
     error::{Error, Result},
     node_manager::{
         http_client::HttpClient,
-        node::{Node, NodeAuth, NodeDetail, NodeDto},
+        node::{Node, NodeAuth, NodeDto},
         NodeManager,
     },
 };
@@ -188,34 +188,6 @@ impl NodeManagerBuilder {
         Ok(self)
     }
 
-    /// Get node list from the node_pool_urls
-    pub(crate) async fn with_node_pool_urls(mut self, node_pool_urls: &[String]) -> Result<Self> {
-        for pool_url in node_pool_urls {
-            let http_client = crate::node_manager::HttpClient::new();
-            let nodes_details: Vec<NodeDetail> = http_client
-                .get(
-                    Node {
-                        url: validate_url(Url::parse(pool_url)?)?,
-                        auth: None,
-                        disabled: false,
-                    },
-                    DEFAULT_API_TIMEOUT,
-                )
-                .await?
-                .into_json()
-                .await?;
-            for node_detail in nodes_details {
-                let url = validate_url(Url::parse(&node_detail.node)?)?;
-                self.nodes.insert(NodeDto::Node(Node {
-                    url,
-                    auth: None,
-                    disabled: false,
-                }));
-            }
-        }
-        Ok(self)
-    }
-
     pub(crate) fn with_node_sync_interval(mut self, node_sync_interval: Duration) -> Self {
         self.node_sync_interval = node_sync_interval;
         self
@@ -237,21 +209,17 @@ impl NodeManagerBuilder {
     }
 
     pub(crate) async fn add_default_nodes(mut self, network_info: &NetworkInfo) -> Result<Self> {
-        // todo update with new node pool
-        // let default_testnet_node_pools = vec!["https://giftiota.com/nodes.json".to_string()];
         let default_testnet_nodes = vec![];
         if self.nodes.is_empty() && self.primary_node.is_none() {
             match network_info.network {
                 Some(ref network) => match network.to_lowercase().as_str() {
                     "testnet" | "devnet" | "test" | "dev" => {
                         self = self.with_nodes(&default_testnet_nodes[..])?;
-                        // self = self.with_node_pool_urls(&default_testnet_node_pools[..]).await?;
                     }
                     _ => return Err(Error::SyncedNodePoolEmpty),
                 },
                 _ => {
                     self = self.with_nodes(&default_testnet_nodes[..])?;
-                    // self = self.with_node_pool_urls(&default_testnet_node_pools[..]).await?;
                 }
             }
         }

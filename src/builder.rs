@@ -250,12 +250,6 @@ impl ClientBuilder {
         self
     }
 
-    /// Get node list from the node_pool_urls
-    pub async fn with_node_pool_urls(mut self, node_pool_urls: &[String]) -> Result<Self> {
-        self.node_manager_builder = self.node_manager_builder.with_node_pool_urls(node_pool_urls).await?;
-        Ok(self)
-    }
-
     /// Set if quroum should be used or not
     pub fn with_quorum(mut self, quorum: bool) -> Self {
         self.node_manager_builder = self.node_manager_builder.with_quorum(quorum);
