@@ -8,7 +8,6 @@ use std::{
 };
 
 use bee_rest_api::types::responses::RentStructureResponse;
-use log::LevelFilter;
 #[cfg(not(target_family = "wasm"))]
 use {
     std::collections::HashSet,
@@ -326,18 +325,6 @@ impl ClientBuilder {
     pub fn with_remote_pow_timeout(mut self, timeout: Duration) -> Self {
         self.remote_pow_timeout = timeout;
         self
-    }
-
-    /// Enables the default logger which writes debug logs to "iota.rs.log"
-    pub fn with_default_logger(self) -> Result<Self> {
-        crate::init_logger("iota.rs.log", LevelFilter::Debug)?;
-        Ok(self)
-    }
-
-    /// Write logs to a file
-    pub fn with_logger(self, filename: &str, level: LevelFilter) -> Result<Self> {
-        crate::init_logger(filename, level)?;
-        Ok(self)
     }
 
     /// Build the Client instance.
