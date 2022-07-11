@@ -7,6 +7,7 @@ use bee_block::{
     address::Address,
     output::{feature::Features, ByteCostConfig, Output},
 };
+use bee_rest_api::types::responses::OutputResponse;
 use crypto::keys::slip10::Chain;
 
 use crate::{
@@ -22,7 +23,36 @@ use crate::{
     Error, Result,
 };
 
-fn is_output_time_unlockable(output: &Output, address: &Address, local_time: u32) -> bool {
+async fn address_outputs(block_builder: &ClientBlockBuilder<'_>, address: String) -> Result<Vec<OutputResponse>> {
+    let mut output_ids = Vec::new();
+
+    // First request to get all basic outputs that can directly be unlocked by the address.
+    output_ids.extend(
+        block_builder
+            .client
+            .basic_output_ids(vec![
+                QueryParameter::Address(address.clone()),
+                QueryParameter::HasStorageReturnCondition(false),
+            ])
+            .await?,
+    );
+
+    // Second request to get all basic outputs that can be unlocked by the address through the expiration condition.
+    output_ids.extend(
+        block_builder
+            .client
+            .basic_output_ids(vec![
+                QueryParameter::ExpirationReturnAddress(address),
+                QueryParameter::HasExpirationCondition(true),
+                QueryParameter::HasStorageReturnCondition(false),
+            ])
+            .await?,
+    );
+
+    block_builder.client.get_outputs(output_ids).await
+}
+
+fn is_output_address_unlockable(output: &Output, address: &Address, local_time: u32) -> bool {
     if let Some(unlock_conditions) = output.unlock_conditions() {
         if unlock_conditions.is_time_locked(local_time) {
             return false;
@@ -34,7 +64,8 @@ fn is_output_time_unlockable(output: &Output, address: &Address, local_time: u32
             }
         }
 
-        true
+        // PANIC: safe to unwrap as basic outputs always have an address.
+        unlock_conditions.address().unwrap().address() == address
     } else {
         // Should not happen anyway as there should always be at least the address unlock condition.
         false
@@ -99,15 +130,7 @@ pub(crate) async fn get_inputs(
         // For each address, get the address outputs
         let mut address_index = gap_index;
         for (index, (str_address, internal)) in public_and_internal_addresses.iter().enumerate() {
-            let output_ids = block_builder
-                .client
-                .basic_output_ids(vec![
-                    QueryParameter::Address(str_address.to_string()),
-                    QueryParameter::HasStorageReturnCondition(false),
-                ])
-                .await?;
-
-            let address_outputs = block_builder.client.get_outputs(output_ids).await?;
+            let address_outputs = address_outputs(block_builder, str_address.to_string()).await?;
 
             // If there are more than 20 (ADDRESS_GAP_RANGE) consecutive empty addresses, then we stop
             // looking up the addresses belonging to the seed. Note that we don't
@@ -127,7 +150,7 @@ pub(crate) async fn get_inputs(
                     let output = Output::try_from(&output_response.output)?;
                     let address = Address::try_from_bech32(str_address)?.1;
 
-                    if is_output_time_unlockable(&output, &address, local_time) {
+                    if is_output_address_unlockable(&output, &address, local_time) {
                         available_inputs.push(InputSigningData {
                             output,
                             output_metadata: OutputMetadata::try_from(&output_response.metadata)?,
@@ -243,22 +266,14 @@ async fn get_inputs_for_sender_and_issuer(
             // if we didn't return with an error, then the address was found
 
             let address = Address::Ed25519(*address);
-            let output_ids = block_builder
-                .client
-                .basic_output_ids(vec![
-                    QueryParameter::Address(address.to_bech32(&bech32_hrp)),
-                    QueryParameter::HasStorageReturnCondition(false),
-                ])
-                .await?;
-
-            let address_outputs = block_builder.client.get_outputs(output_ids).await?;
+            let address_outputs = address_outputs(block_builder, address.to_bech32(&bech32_hrp)).await?;
             let local_time = block_builder.client.get_time_checked().await?;
 
             let mut found_output = false;
             for output_response in address_outputs {
                 let output = Output::try_from(&output_response.output)?;
 
-                if is_output_time_unlockable(&output, &address, local_time) {
+                if is_output_address_unlockable(&output, &address, local_time) {
                     required_ed25519_inputs.push(InputSigningData {
                         output: Output::try_from(&output_response.output)?,
                         output_metadata: OutputMetadata::try_from(&output_response.metadata)?,
