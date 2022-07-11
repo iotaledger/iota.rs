@@ -32,7 +32,6 @@ async fn address_outputs(block_builder: &ClientBlockBuilder<'_>, address: String
             .client
             .basic_output_ids(vec![
                 QueryParameter::Address(address.clone()),
-                QueryParameter::HasExpirationCondition(false),
                 QueryParameter::HasStorageReturnCondition(false),
             ])
             .await?,
