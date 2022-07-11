@@ -17,7 +17,7 @@ use crate::{
 
 /// Response of GET /api/v1/treasury.
 /// Returns all information about the treasury.
-#[derive(Clone, Debug, PartialEq, Getters, CopyGetters)]
+#[derive(Clone, Debug, Eq, PartialEq, Getters, CopyGetters)]
 pub struct TreasuryResponse {
     #[getset(get = "pub")]
     pub milestone_id: String,

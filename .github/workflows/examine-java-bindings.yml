@@ -105,7 +105,8 @@ jobs:
         uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          args: --manifest-path bindings/java/native/Cargo.toml --all-features --all-targets -- --deny warnings
+          # -- -A clippy::upper-case-acronyms is added because of bindgen https://github.com/rust-lang/rust-bindgen/issues/2100#issuecomment-1174775030
+          args: --manifest-path bindings/java/native/Cargo.toml --all-features --all-targets -- --deny warnings -A clippy::upper-case-acronyms
           name: Clippy Results for the Java Bindings
 
       # TODO: Lint the Java code too

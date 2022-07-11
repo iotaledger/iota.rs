@@ -449,7 +449,7 @@ impl Client {
     }
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(Eq, PartialEq, Debug)]
 pub struct Node(RustNode);
 
 impl Node {

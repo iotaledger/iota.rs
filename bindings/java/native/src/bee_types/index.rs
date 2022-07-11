@@ -6,7 +6,7 @@ use anyhow::anyhow;
 
 use iota_client::bee_message::prelude::IndexationPayload as RustIndexationPayload;
 
-#[derive(PartialEq, Clone)]
+#[derive(Eq, PartialEq, Clone)]
 pub struct IndexationPayload(RustIndexationPayload);
 
 impl IndexationPayload {

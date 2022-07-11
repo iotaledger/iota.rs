@@ -24,7 +24,7 @@ use crate::{
     ClientMiner, MessagePayload, Result,
 };
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, Eq, PartialEq)]
 pub struct MessageWrap {
     message: Message,
 
@@ -57,7 +57,7 @@ impl core::fmt::Debug for MessageWrap {
     }
 }
 
-#[derive(Clone, PartialEq, Getters, CopyGetters)]
+#[derive(Clone, Eq, PartialEq, Getters, CopyGetters)]
 pub struct Message {
     rust_message: RustMessage,
 

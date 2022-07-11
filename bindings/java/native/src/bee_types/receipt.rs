@@ -97,7 +97,7 @@ impl From<RustReceiptPayloadDto> for ReceiptPayloadDto {
     }
 }
 
-#[derive(Clone, Debug, Getters, CopyGetters, PartialEq)]
+#[derive(Clone, Debug, Getters, CopyGetters, Eq, PartialEq)]
 pub struct MigratedFundsEntryDto {
     #[getset(get = "pub")]
     pub tail_transaction_hash: String,
