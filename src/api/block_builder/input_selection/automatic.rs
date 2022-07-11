@@ -65,7 +65,8 @@ fn is_output_address_unlockable(output: &Output, address: &Address, local_time: 
             }
         }
 
-        true
+        // PANIC: safe to unwrap as basic outputs always have an address.
+        unlock_conditions.address().unwrap().address() == address
     } else {
         // Should not happen anyway as there should always be at least the address unlock condition.
         false
