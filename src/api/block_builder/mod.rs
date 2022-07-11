@@ -361,8 +361,8 @@ impl<'a> ClientBlockBuilder<'a> {
         match output {
             OutputDto::Treasury(_) => Err(Error::OutputError("Treasury output is no supported")),
             OutputDto::Basic(ref r) => {
-                for block in &r.unlock_conditions {
-                    match block {
+                for condition in &r.unlock_conditions {
+                    match condition {
                         UnlockConditionDto::Address(e) => {
                             return Ok((
                                 r.amount
@@ -379,13 +379,14 @@ impl<'a> ClientBlockBuilder<'a> {
             OutputDto::Alias(ref r) => {
                 let alias_id = AliasId::try_from(&r.alias_id)?;
                 let mut is_governance_transition = false;
+
                 if let Some(governance_transition) = governance_transition {
                     if governance_transition.contains(&alias_id) {
                         is_governance_transition = true;
                     }
                 }
-                for block in &r.unlock_conditions {
-                    match block {
+                for condition in &r.unlock_conditions {
+                    match condition {
                         UnlockConditionDto::StateControllerAddress(e) => {
                             if is_governance_transition {
                                 return Ok((
@@ -412,8 +413,8 @@ impl<'a> ClientBlockBuilder<'a> {
                 Err(Error::OutputError("Only Ed25519Address is implemented"))
             }
             OutputDto::Foundry(ref r) => {
-                for block in &r.unlock_conditions {
-                    match block {
+                for condition in &r.unlock_conditions {
+                    match condition {
                         UnlockConditionDto::ImmutableAliasAddress(e) => {
                             return Ok((
                                 r.amount
@@ -428,8 +429,8 @@ impl<'a> ClientBlockBuilder<'a> {
                 Err(Error::OutputError("Only Ed25519Address is implemented"))
             }
             OutputDto::Nft(ref r) => {
-                for block in &r.unlock_conditions {
-                    match block {
+                for condition in &r.unlock_conditions {
+                    match condition {
                         UnlockConditionDto::Address(e) => {
                             return Ok((
                                 r.amount
