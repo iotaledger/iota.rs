@@ -200,7 +200,7 @@ impl ClientMessageHandler {
                 secret_manager,
                 options,
             } => {
-                let mut secret_manager: SecretManager = secret_manager.try_into()?;
+                let mut secret_manager = secret_manager.try_into()?;
                 // If we use stronghold we need to read the snapshot in case it hasn't been done already
                 #[cfg(feature = "stronghold")]
                 if let SecretManager::Stronghold(stronghold_secret_manager) = &mut secret_manager {
@@ -293,7 +293,7 @@ impl ClientMessageHandler {
             } => {
                 let mut block_builder = self.client.block();
 
-                let mut secret_manager: SecretManager = secret_manager.try_into()?;
+                let mut secret_manager = secret_manager.try_into()?;
                 // If we use stronghold we need to read the snapshot in case it hasn't been done already
                 #[cfg(feature = "stronghold")]
                 if let SecretManager::Stronghold(stronghold_secret_manager) = &mut secret_manager {
@@ -313,7 +313,7 @@ impl ClientMessageHandler {
                 secret_manager,
                 mnemonic,
             } => {
-                let mut secret_manager: SecretManager = secret_manager.try_into()?;
+                let mut secret_manager = secret_manager.try_into()?;
                 if let SecretManager::Stronghold(secret_manager) = &mut secret_manager {
                     secret_manager.store_mnemonic(mnemonic.to_string()).await?;
                 } else {
@@ -447,7 +447,7 @@ impl ClientMessageHandler {
                 account_index,
                 address_range,
             } => {
-                let mut secret_manager: SecretManager = secret_manager.try_into()?;
+                let mut secret_manager = secret_manager.try_into()?;
                 // If we use stronghold we need to read the snapshot in case it hasn't been done already
                 #[cfg(feature = "stronghold")]
                 if let SecretManager::Stronghold(stronghold_secret_manager) = &mut secret_manager {
