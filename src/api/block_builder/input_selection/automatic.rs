@@ -38,7 +38,7 @@ async fn address_outputs(block_builder: &ClientBlockBuilder<'_>, address: String
             .await?,
     );
 
-    // First request to get all basic outputs that can be unlocked by the address through the expiration condition.
+    // Second request to get all basic outputs that can be unlocked by the address through the expiration condition.
     output_ids.extend(
         block_builder
             .client
