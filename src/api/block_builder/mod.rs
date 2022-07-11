@@ -371,7 +371,7 @@ impl<'a> ClientBlockBuilder<'a> {
                                 Address::try_from(&e.address)?,
                             ));
                         }
-                        _ => todo!(),
+                        _ => {}
                     }
                 }
                 Err(Error::OutputError("Only Ed25519Address is implemented"))
@@ -407,7 +407,7 @@ impl<'a> ClientBlockBuilder<'a> {
                                 ));
                             }
                         }
-                        _ => todo!(),
+                        _ => {}
                     }
                 }
                 Err(Error::OutputError("Only Ed25519Address is implemented"))
@@ -423,7 +423,7 @@ impl<'a> ClientBlockBuilder<'a> {
                                 Address::try_from(&e.address)?,
                             ));
                         }
-                        _ => todo!(),
+                        _ => {}
                     }
                 }
                 Err(Error::OutputError("Only Ed25519Address is implemented"))
@@ -439,7 +439,7 @@ impl<'a> ClientBlockBuilder<'a> {
                                 Address::try_from(&e.address)?,
                             ));
                         }
-                        _ => todo!(),
+                        _ => {}
                     }
                 }
                 Err(Error::OutputError("Only Ed25519Address is implemented"))
