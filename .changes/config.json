@@ -27,19 +27,6 @@
           "command": "yarn publish --access public --loglevel silly"
         }
       ]
-    },
-    "wasm-binding": {
-      "path": "./bindings/wasm/",
-      "manager": "javascript",
-      "getPublishedVersion": "npm view ${ pkgFile.pkg.name } version",
-      "publish": [
-        {
-          "command": "yarn install"
-        },
-        {
-          "command": "yarn publish --access public --loglevel silly"
-        }
-      ]
     }
   }
 }
