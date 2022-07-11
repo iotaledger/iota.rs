@@ -125,6 +125,10 @@ name = "node_api_core_get_treasury"
 path = "examples/node_api_core/14_get_treasury.rs"
 
 [[example]]
+name = "node_api_core_get_included_block"
+path = "examples/node_api_core/16_get_included_block.rs"
+
+[[example]]
 name = "node_api_core_get_milestone_by_id"
 path = "examples/node_api_core/17_get_milestone_by_id.rs"
 
