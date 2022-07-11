@@ -26,13 +26,26 @@ use crate::{
 async fn address_outputs(block_builder: &ClientBlockBuilder<'_>, address: String) -> Result<Vec<OutputResponse>> {
     let mut output_ids = Vec::new();
 
+    // First request to get all basic outputs that can directly be unlocked by the address.
     output_ids.extend(
         block_builder
             .client
             .basic_output_ids(vec![
-                QueryParameter::Address(address),
-                QueryParameter::HasStorageReturnCondition(false),
+                QueryParameter::Address(address.clone()),
                 QueryParameter::HasExpirationCondition(false),
+                QueryParameter::HasStorageReturnCondition(false),
+            ])
+            .await?,
+    );
+
+    // First request to get all basic outputs that can be unlocked by the address through the expiration condition.
+    output_ids.extend(
+        block_builder
+            .client
+            .basic_output_ids(vec![
+                QueryParameter::ExpirationReturnAddress(address),
+                QueryParameter::HasExpirationCondition(true),
+                QueryParameter::HasStorageReturnCondition(false),
             ])
             .await?,
     );
