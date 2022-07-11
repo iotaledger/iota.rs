@@ -141,12 +141,12 @@ fn get_cc_system_include_dirs() -> Result<Vec<PathBuf>, String> {
         .find(BEGIN_PAT)
         .ok_or_else(|| format!("No '{}' in output from C compiler", BEGIN_PAT))?
         + BEGIN_PAT.len();
-    let end_includes = (&cc_output[start_includes..])
+    let end_includes = cc_output[start_includes..]
         .find(END_PAT)
         .ok_or_else(|| format!("No '{}' in output from C compiler", END_PAT))?
         + start_includes;
 
-    Ok((&cc_output[start_includes..end_includes])
+    Ok(cc_output[start_includes..end_includes]
         .split('\n')
         .map(|s| PathBuf::from(s.trim().to_string()))
         .collect())
