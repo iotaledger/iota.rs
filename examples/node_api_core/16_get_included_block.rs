@@ -25,10 +25,10 @@ async fn main() -> Result<()> {
     // Transactions get pruned from the node after some time, replace with a new TransactionId.
     let transaction_id = TransactionId::from_str("0xb66fd384cb5755668f1890ea2e41d699db9cf32f3bc422ad3c24ffeb9c7f01d0")?;
     // Sends the request.
-    let milestone = client.get_included_block(&transaction_id).await?;
+    let block = client.get_included_block(&transaction_id).await?;
 
     // Prints the response.
-    println!("{:#?}", milestone);
+    println!("{:#?}", block);
 
     Ok(())
 }
