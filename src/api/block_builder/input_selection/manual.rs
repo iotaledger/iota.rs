@@ -36,6 +36,8 @@ pub(crate) async fn get_custom_inputs(
     let mut inputs_data = Vec::new();
 
     if let Some(inputs) = &block_builder.inputs {
+        let local_time = block_builder.client.get_time_checked().await?;
+
         for input in inputs {
             let output_response = block_builder.client.get_output(input.output_id()).await?;
 
@@ -43,6 +45,7 @@ pub(crate) async fn get_custom_inputs(
                 let (_output_amount, output_address) = ClientBlockBuilder::get_output_amount_and_address(
                     &output_response.output,
                     governance_transition.clone(),
+                    local_time,
                 )?;
 
                 let bech32_hrp = block_builder.client.get_bech32_hrp().await?;

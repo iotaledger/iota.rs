@@ -356,6 +356,7 @@ impl<'a> ClientBlockBuilder<'a> {
     pub fn get_output_amount_and_address(
         output: &OutputDto,
         governance_transition: Option<HashSet<AliasId>>,
+        local_time: u32,
     ) -> Result<(u64, Address)> {
         match output {
             OutputDto::Treasury(_) => Err(Error::OutputError("Treasury output is no supported")),

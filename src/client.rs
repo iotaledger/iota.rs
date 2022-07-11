@@ -600,6 +600,7 @@ impl Client {
     pub async fn find_inputs(&self, addresses: Vec<String>, amount: u64) -> Result<Vec<UtxoInput>> {
         // Get outputs from node and select inputs
         let mut available_outputs = Vec::new();
+
         for address in addresses {
             available_outputs.extend_from_slice(
                 &self
@@ -615,9 +616,10 @@ impl Client {
         }
 
         let mut basic_outputs = Vec::new();
+        let local_time = self.get_time_checked().await?;
 
         for output_resp in available_outputs {
-            let (amount, _) = ClientBlockBuilder::get_output_amount_and_address(&output_resp.output, None)?;
+            let (amount, _) = ClientBlockBuilder::get_output_amount_and_address(&output_resp.output, None, local_time)?;
             basic_outputs.push((
                 UtxoInput::new(
                     TransactionId::from_str(&output_resp.metadata.transaction_id)?,
