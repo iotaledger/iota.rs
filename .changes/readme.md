@@ -11,7 +11,6 @@ Use the following format:
 ```md
 ---
 "nodejs-binding": patch
-"wasm-binding": minor
 ---
 
 Change summary goes here

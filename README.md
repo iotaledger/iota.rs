@@ -78,7 +78,6 @@ Bindings to other programming languages are available under the folder [bindings
 * [Node.js binding](bindings/nodejs/)
 * [Python binding](bindings/python/)
 * [Java binding](bindings/java/)
-* [Wasm binding](bindings/wasm/)
 
 ## Joining the discussion
 

@@ -109,27 +109,6 @@ module.exports = {
           label: 'API Reference'
         },
       ]
-    },
-    {
-      type: 'category',
-      label: 'Wasm',
-      items: [
-        {
-          type: 'doc',
-          id: 'libraries/wasm/getting_started',
-          label: 'Getting Started'
-        },
-        {
-          type: 'doc',
-          id: 'libraries/wasm/examples',
-          label: 'Examples'
-        },
-        {
-          type: 'doc',
-          id: 'libraries/wasm/api_reference',
-          label: 'API Reference'
-        },
-      ]
     }
     ]
   },
