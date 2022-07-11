@@ -37,7 +37,7 @@ async fn address_outputs(block_builder: &ClientBlockBuilder<'_>, address: String
             .await?,
     );
 
-    Ok(block_builder.client.get_outputs(output_ids).await?)
+    block_builder.client.get_outputs(output_ids).await
 }
 
 fn is_output_time_unlockable(output: &Output, address: &Address, local_time: u32) -> bool {
