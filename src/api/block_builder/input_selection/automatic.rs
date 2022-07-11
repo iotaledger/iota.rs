@@ -53,7 +53,7 @@ async fn address_outputs(block_builder: &ClientBlockBuilder<'_>, address: String
     block_builder.client.get_outputs(output_ids).await
 }
 
-fn is_output_time_unlockable(output: &Output, address: &Address, local_time: u32) -> bool {
+fn is_output_address_unlockable(output: &Output, address: &Address, local_time: u32) -> bool {
     if let Some(unlock_conditions) = output.unlock_conditions() {
         if unlock_conditions.is_time_locked(local_time) {
             return false;
@@ -150,7 +150,7 @@ pub(crate) async fn get_inputs(
                     let output = Output::try_from(&output_response.output)?;
                     let address = Address::try_from_bech32(str_address)?.1;
 
-                    if is_output_time_unlockable(&output, &address, local_time) {
+                    if is_output_address_unlockable(&output, &address, local_time) {
                         available_inputs.push(InputSigningData {
                             output,
                             output_metadata: OutputMetadata::try_from(&output_response.metadata)?,
@@ -273,7 +273,7 @@ async fn get_inputs_for_sender_and_issuer(
             for output_response in address_outputs {
                 let output = Output::try_from(&output_response.output)?;
 
-                if is_output_time_unlockable(&output, &address, local_time) {
+                if is_output_address_unlockable(&output, &address, local_time) {
                     required_ed25519_inputs.push(InputSigningData {
                         output: Output::try_from(&output_response.output)?,
                         output_metadata: OutputMetadata::try_from(&output_response.metadata)?,
