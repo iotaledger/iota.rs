@@ -7,6 +7,7 @@ use bee_block::{
     address::Address,
     output::{feature::Features, ByteCostConfig, Output},
 };
+use bee_rest_api::types::responses::OutputResponse;
 use crypto::keys::slip10::Chain;
 
 use crate::{
@@ -21,6 +22,23 @@ use crate::{
     secret::types::{InputSigningData, OutputMetadata},
     Error, Result,
 };
+
+async fn address_outputs(block_builder: &ClientBlockBuilder<'_>, address: String) -> Result<Vec<OutputResponse>> {
+    let mut output_ids = Vec::new();
+
+    output_ids.extend(
+        block_builder
+            .client
+            .basic_output_ids(vec![
+                QueryParameter::Address(address),
+                QueryParameter::HasStorageReturnCondition(false),
+                QueryParameter::HasExpirationCondition(false),
+            ])
+            .await?,
+    );
+
+    Ok(block_builder.client.get_outputs(output_ids).await?)
+}
 
 fn is_output_time_unlockable(output: &Output, address: &Address, local_time: u32) -> bool {
     if let Some(unlock_conditions) = output.unlock_conditions() {
@@ -99,15 +117,7 @@ pub(crate) async fn get_inputs(
         // For each address, get the address outputs
         let mut address_index = gap_index;
         for (index, (str_address, internal)) in public_and_internal_addresses.iter().enumerate() {
-            let output_ids = block_builder
-                .client
-                .basic_output_ids(vec![
-                    QueryParameter::Address(str_address.to_string()),
-                    QueryParameter::HasStorageReturnCondition(false),
-                ])
-                .await?;
-
-            let address_outputs = block_builder.client.get_outputs(output_ids).await?;
+            let address_outputs = address_outputs(block_builder, str_address.to_string()).await?;
 
             // If there are more than 20 (ADDRESS_GAP_RANGE) consecutive empty addresses, then we stop
             // looking up the addresses belonging to the seed. Note that we don't
@@ -243,15 +253,7 @@ async fn get_inputs_for_sender_and_issuer(
             // if we didn't return with an error, then the address was found
 
             let address = Address::Ed25519(*address);
-            let output_ids = block_builder
-                .client
-                .basic_output_ids(vec![
-                    QueryParameter::Address(address.to_bech32(&bech32_hrp)),
-                    QueryParameter::HasStorageReturnCondition(false),
-                ])
-                .await?;
-
-            let address_outputs = block_builder.client.get_outputs(output_ids).await?;
+            let address_outputs = address_outputs(block_builder, address.to_bech32(&bech32_hrp)).await?;
             let local_time = block_builder.client.get_time_checked().await?;
 
             let mut found_output = false;
