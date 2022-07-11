@@ -231,25 +231,23 @@ impl StrongholdAdapter {
     /// It will also try to load a snapshot to check if the provided password is correct, if not it's cleared and an
     /// error will be returned.
     pub async fn set_password(&mut self, password: &str) -> Result<()> {
-        // In a closure so there is no deadlock when calling `self.read_stronghold_snapshot()`
-        {
-            let mut key_provider_guard = self.key_provider.lock().await;
+        let mut key_provider_guard = self.key_provider.lock().await;
 
-            let key_provider = KeyProvider::try_from((*self::common::derive_key_from_password(password)).clone())?;
+        let key_provider = KeyProvider::try_from((*self::common::derive_key_from_password(password)).clone())?;
 
-            if let Some(old_key_provider) = &*key_provider_guard {
-                if old_key_provider.try_unlock()? != key_provider.try_unlock()? {
-                    return Err(crate::Error::StrongholdInvalidPassword);
-                }
+        if let Some(old_key_provider) = &*key_provider_guard {
+            if old_key_provider.try_unlock()? != key_provider.try_unlock()? {
+                return Err(crate::Error::StrongholdInvalidPassword);
             }
-
-            let snapshot_path = SnapshotPath::from_path(&self.snapshot_path);
-            let stronghold = self.stronghold.lock().await;
-
-            check_or_create_snapshot(&stronghold, &key_provider, &snapshot_path)?;
-
-            *key_provider_guard = Some(key_provider);
         }
+
+        let snapshot_path = SnapshotPath::from_path(&self.snapshot_path);
+        let stronghold = self.stronghold.lock().await;
+
+        check_or_create_snapshot(&stronghold, &key_provider, &snapshot_path)?;
+
+        *key_provider_guard = Some(key_provider);
+        drop(key_provider_guard);
 
         // If a timeout is set, spawn a task to clear the key after the timeout.
         if let Some(timeout) = self.timeout {

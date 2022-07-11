@@ -197,11 +197,7 @@ impl StrongholdAdapter {
             .map_err(|e| crate::Error::InvalidMnemonic(format!("{:?}", e)))?;
 
         // Try to load the snapshot to see if we're creating a new Stronghold vault or not.
-        //
-        // XXX: The current design of [Error] doesn't allow us to see if it's really a "file does
-        // not exist" error or not. Better throw errors other than that, but now we just leave it
-        // like this, as if so then later operations would throw errors too.
-        self.read_stronghold_snapshot().await.unwrap_or(());
+        self.read_stronghold_snapshot().await?;
 
         // If the snapshot has successfully been loaded, then we need to check if there has been a
         // mnemonic stored in Stronghold or not to prevent overwriting it.
@@ -291,18 +287,16 @@ mod tests {
         stronghold_adapter.clear_key().await;
 
         // Address generation returns an error when the key is cleared.
-        assert!(
-            stronghold_adapter
-                .generate_addresses(
-                    IOTA_COIN_TYPE,
-                    0,
-                    0..1,
-                    false,
-                    GenerateAddressMetadata { syncing: false },
-                )
-                .await
-                .is_err()
-        );
+        assert!(stronghold_adapter
+            .generate_addresses(
+                IOTA_COIN_TYPE,
+                0,
+                0..1,
+                false,
+                GenerateAddressMetadata { syncing: false },
+            )
+            .await
+            .is_err());
 
         stronghold_adapter.set_password("drowssap").await.unwrap();
 
