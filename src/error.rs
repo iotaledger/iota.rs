@@ -86,10 +86,6 @@ pub enum Error {
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
     FromHexError(#[from] hex::FromHexError),
-    /// Logger error
-    #[error("{0}")]
-    #[serde(serialize_with = "display_string")]
-    LoggerError(#[from] fern_logger::Error),
     /// Block types error
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]

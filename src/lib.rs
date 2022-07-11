@@ -56,7 +56,6 @@ pub use bee_block;
 pub use bee_pow as pow;
 pub use bee_rest_api;
 pub use crypto::{self, keys::slip10::Seed};
-pub use fern_logger as logger;
 pub use packable;
 pub use url::Url;
 

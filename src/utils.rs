@@ -11,8 +11,6 @@ use crypto::{
     keys::{bip39::wordlist, slip10::Seed},
     utils,
 };
-use fern_logger::{logger_init, LoggerConfig, LoggerOutputConfigBuilder};
-use log::LevelFilter;
 use zeroize::Zeroize;
 
 use crate::error::{Error, Result};
@@ -107,14 +105,4 @@ pub async fn request_funds_from_faucet(url: &str, bech32_address: &str) -> Resul
     let client = reqwest::Client::new();
     let faucet_response = client.post(url).json(&map).send().await?.text().await?;
     Ok(faucet_response)
-}
-
-/// creates a file in which logs will be written in
-pub fn init_logger(filename: &str, levelfilter: LevelFilter) -> crate::Result<()> {
-    let output_config = LoggerOutputConfigBuilder::new()
-        .name(filename)
-        .level_filter(levelfilter);
-    let config = LoggerConfig::build().with_output(output_config).finish();
-    logger_init(config)?;
-    Ok(())
 }
