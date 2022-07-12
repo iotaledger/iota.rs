@@ -12,7 +12,7 @@ use bee_block::{
     input::{UtxoInput, INPUT_COUNT_MAX},
     output::{
         dto::OutputDto,
-        unlock_condition::{self, AddressUnlockCondition, UnlockCondition},
+        unlock_condition::{AddressUnlockCondition, UnlockCondition},
         AliasId, ByteCostConfig, Output, OUTPUT_COUNT_RANGE,
     },
     payload::{Payload, TaggedDataPayload},
@@ -363,7 +363,7 @@ impl<'a> ClientBlockBuilder<'a> {
             Output::Basic(ref output) => {
                 let address = output.unlock_conditions().address().unwrap();
 
-                (output.amount(), *address.address(), output.unlock_conditions())
+                (output.amount(), address.address(), output.unlock_conditions())
             }
             Output::Alias(ref output) => {
                 let is_governance_transition = if let Some(governance_transition) = governance_transition {
@@ -375,26 +375,26 @@ impl<'a> ClientBlockBuilder<'a> {
                 if is_governance_transition {
                     let address = output.unlock_conditions().governor_address().unwrap();
 
-                    (output.amount(), *address.address(), output.unlock_conditions())
+                    (output.amount(), address.address(), output.unlock_conditions())
                 } else {
                     let address = output.unlock_conditions().state_controller_address().unwrap();
 
-                    (output.amount(), *address.address(), output.unlock_conditions())
+                    (output.amount(), address.address(), output.unlock_conditions())
                 }
             }
             Output::Foundry(ref output) => {
                 let address = output.unlock_conditions().immutable_alias_address().unwrap();
 
-                (output.amount(), *address.address(), output.unlock_conditions())
+                (output.amount(), address.address(), output.unlock_conditions())
             }
             Output::Nft(ref output) => {
                 let address = output.unlock_conditions().address().unwrap();
 
-                (output.amount(), *address.address(), output.unlock_conditions())
+                (output.amount(), address.address(), output.unlock_conditions())
             }
         };
 
-        Ok((amount, address))
+        Ok((amount, *unlock_conditions.locked_address(address, local_time)))
     }
 
     // If custom inputs are provided we check if they are unspent, get the balance and search the address for it,
