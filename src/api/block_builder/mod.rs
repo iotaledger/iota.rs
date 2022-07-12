@@ -358,14 +358,12 @@ impl<'a> ClientBlockBuilder<'a> {
         governance_transition: Option<HashSet<AliasId>>,
         local_time: u32,
     ) -> Result<(u64, Address)> {
-        match output {
-            Output::Treasury(_) => Err(Error::OutputError("Treasury output is no supported")),
+        let (amount, address) = match output {
+            Output::Treasury(_) => return Err(Error::OutputError("Treasury output is no supported")),
             Output::Basic(ref r) => {
-                if let Some(address) = r.unlock_conditions().address() {
-                    return Ok((r.amount(), *address.address()));
-                }
+                let address = r.unlock_conditions().address().unwrap();
 
-                Err(Error::OutputError("Only Ed25519Address is implemented"))
+                (r.amount(), *address.address())
             }
             Output::Alias(ref r) => {
                 let is_governance_transition = if let Some(governance_transition) = governance_transition {
@@ -375,32 +373,28 @@ impl<'a> ClientBlockBuilder<'a> {
                 };
 
                 if is_governance_transition {
-                    if let Some(address) = r.unlock_conditions().governor_address() {
-                        return Ok((r.amount(), *address.address()));
-                    }
-                } else {
-                    if let Some(address) = r.unlock_conditions().state_controller_address() {
-                        return Ok((r.amount(), *address.address()));
-                    }
-                }
+                    let address = r.unlock_conditions().governor_address().unwrap();
 
-                Err(Error::OutputError("Only Ed25519Address is implemented"))
+                    (r.amount(), *address.address())
+                } else {
+                    let address = r.unlock_conditions().state_controller_address().unwrap();
+
+                    (r.amount(), *address.address())
+                }
             }
             Output::Foundry(ref r) => {
-                if let Some(address) = r.unlock_conditions().immutable_alias_address() {
-                    return Ok((r.amount(), *address.address()));
-                }
+                let address = r.unlock_conditions().immutable_alias_address().unwrap();
 
-                Err(Error::OutputError("Only Ed25519Address is implemented"))
+                (r.amount(), *address.address())
             }
             Output::Nft(ref r) => {
-                if let Some(address) = r.unlock_conditions().address() {
-                    return Ok((r.amount(), *address.address()));
-                }
+                let address = r.unlock_conditions().address().unwrap();
 
-                Err(Error::OutputError("Only Ed25519Address is implemented"))
+                (r.amount(), *address.address())
             }
-        }
+        };
+
+        Ok((amount, address))
     }
 
     // If custom inputs are provided we check if they are unspent, get the balance and search the address for it,
