@@ -379,7 +379,7 @@ impl<'a> ClientBlockBuilder<'a> {
 
                     (output.amount(), address.address(), output.unlock_conditions())
                 } else {
-                    // PANIC: safe to unwrap as AliasOutput has to have an StateControllerAddressUnlockCondition.
+                    // PANIC: safe to unwrap as AliasOutput has to have a StateControllerAddressUnlockCondition.
                     let address = output.unlock_conditions().state_controller_address().unwrap();
 
                     (output.amount(), address.address(), output.unlock_conditions())
