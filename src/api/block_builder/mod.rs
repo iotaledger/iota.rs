@@ -361,6 +361,7 @@ impl<'a> ClientBlockBuilder<'a> {
         let (amount, address, unlock_conditions) = match output {
             Output::Treasury(_) => return Err(Error::OutputError("Treasury output is no supported")),
             Output::Basic(ref output) => {
+                // PANIC: safe to unwrap as BasicOutput has to have an AddressUnlockCondition.
                 let address = output.unlock_conditions().address().unwrap();
 
                 (output.amount(), address.address(), output.unlock_conditions())
@@ -373,21 +374,25 @@ impl<'a> ClientBlockBuilder<'a> {
                 };
 
                 if is_governance_transition {
+                    // PANIC: safe to unwrap as AliasOutput has to have a GovernorAddressUnlockCondition.
                     let address = output.unlock_conditions().governor_address().unwrap();
 
                     (output.amount(), address.address(), output.unlock_conditions())
                 } else {
+                    // PANIC: safe to unwrap as AliasOutput has to have an StateControllerAddressUnlockCondition.
                     let address = output.unlock_conditions().state_controller_address().unwrap();
 
                     (output.amount(), address.address(), output.unlock_conditions())
                 }
             }
             Output::Foundry(ref output) => {
+                // PANIC: safe to unwrap as FoundryOutput has to have an ImmutableAliasAddressUnlockCondition.
                 let address = output.unlock_conditions().immutable_alias_address().unwrap();
 
                 (output.amount(), address.address(), output.unlock_conditions())
             }
             Output::Nft(ref output) => {
+                // PANIC: safe to unwrap as NftOutput has to have an AddressUnlockCondition.
                 let address = output.unlock_conditions().address().unwrap();
 
                 (output.amount(), address.address(), output.unlock_conditions())
