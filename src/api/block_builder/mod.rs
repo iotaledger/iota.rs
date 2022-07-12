@@ -361,61 +361,43 @@ impl<'a> ClientBlockBuilder<'a> {
         match output {
             Output::Treasury(_) => Err(Error::OutputError("Treasury output is no supported")),
             Output::Basic(ref r) => {
-                for condition in r.unlock_conditions().iter() {
-                    match condition {
-                        UnlockCondition::Address(e) => {
-                            return Ok((r.amount(), *e.address()));
-                        }
-                        _ => {}
-                    }
+                if let Some(address) = r.unlock_conditions().address() {
+                    return Ok((r.amount(), *address.address()));
                 }
+
                 Err(Error::OutputError("Only Ed25519Address is implemented"))
             }
             Output::Alias(ref r) => {
-                let mut is_governance_transition = false;
+                let is_governance_transition = if let Some(governance_transition) = governance_transition {
+                    governance_transition.contains(r.alias_id())
+                } else {
+                    false
+                };
 
-                if let Some(governance_transition) = governance_transition {
-                    if governance_transition.contains(r.alias_id()) {
-                        is_governance_transition = true;
+                if is_governance_transition {
+                    if let Some(address) = r.unlock_conditions().governor_address() {
+                        return Ok((r.amount(), *address.address()));
+                    }
+                } else {
+                    if let Some(address) = r.unlock_conditions().state_controller_address() {
+                        return Ok((r.amount(), *address.address()));
                     }
                 }
-                for condition in r.unlock_conditions().iter() {
-                    match condition {
-                        UnlockCondition::StateControllerAddress(e) => {
-                            if is_governance_transition {
-                                return Ok((r.amount(), *e.address()));
-                            }
-                        }
-                        UnlockCondition::GovernorAddress(e) => {
-                            if !is_governance_transition {
-                                return Ok((r.amount(), *e.address()));
-                            }
-                        }
-                        _ => {}
-                    }
-                }
+
                 Err(Error::OutputError("Only Ed25519Address is implemented"))
             }
             Output::Foundry(ref r) => {
-                for condition in r.unlock_conditions().iter() {
-                    match condition {
-                        UnlockCondition::ImmutableAliasAddress(e) => {
-                            return Ok((r.amount(), *e.address()));
-                        }
-                        _ => {}
-                    }
+                if let Some(address) = r.unlock_conditions().immutable_alias_address() {
+                    return Ok((r.amount(), *address.address()));
                 }
+
                 Err(Error::OutputError("Only Ed25519Address is implemented"))
             }
             Output::Nft(ref r) => {
-                for condition in r.unlock_conditions().iter() {
-                    match condition {
-                        UnlockCondition::Address(e) => {
-                            return Ok((r.amount(), *e.address()));
-                        }
-                        _ => {}
-                    }
+                if let Some(address) = r.unlock_conditions().address() {
+                    return Ok((r.amount(), *address.address()));
                 }
+
                 Err(Error::OutputError("Only Ed25519Address is implemented"))
             }
         }
