@@ -12,7 +12,7 @@ use bee_block::{
     input::{UtxoInput, INPUT_COUNT_MAX},
     output::{
         dto::OutputDto,
-        unlock_condition::{AddressUnlockCondition, UnlockCondition},
+        unlock_condition::{self, AddressUnlockCondition, UnlockCondition},
         AliasId, ByteCostConfig, Output, OUTPUT_COUNT_RANGE,
     },
     payload::{Payload, TaggedDataPayload},
@@ -358,39 +358,39 @@ impl<'a> ClientBlockBuilder<'a> {
         governance_transition: Option<HashSet<AliasId>>,
         local_time: u32,
     ) -> Result<(u64, Address)> {
-        let (amount, address) = match output {
+        let (amount, address, unlock_conditions) = match output {
             Output::Treasury(_) => return Err(Error::OutputError("Treasury output is no supported")),
-            Output::Basic(ref r) => {
-                let address = r.unlock_conditions().address().unwrap();
+            Output::Basic(ref output) => {
+                let address = output.unlock_conditions().address().unwrap();
 
-                (r.amount(), *address.address())
+                (output.amount(), *address.address(), output.unlock_conditions())
             }
-            Output::Alias(ref r) => {
+            Output::Alias(ref output) => {
                 let is_governance_transition = if let Some(governance_transition) = governance_transition {
-                    governance_transition.contains(r.alias_id())
+                    governance_transition.contains(output.alias_id())
                 } else {
                     false
                 };
 
                 if is_governance_transition {
-                    let address = r.unlock_conditions().governor_address().unwrap();
+                    let address = output.unlock_conditions().governor_address().unwrap();
 
-                    (r.amount(), *address.address())
+                    (output.amount(), *address.address(), output.unlock_conditions())
                 } else {
-                    let address = r.unlock_conditions().state_controller_address().unwrap();
+                    let address = output.unlock_conditions().state_controller_address().unwrap();
 
-                    (r.amount(), *address.address())
+                    (output.amount(), *address.address(), output.unlock_conditions())
                 }
             }
-            Output::Foundry(ref r) => {
-                let address = r.unlock_conditions().immutable_alias_address().unwrap();
+            Output::Foundry(ref output) => {
+                let address = output.unlock_conditions().immutable_alias_address().unwrap();
 
-                (r.amount(), *address.address())
+                (output.amount(), *address.address(), output.unlock_conditions())
             }
-            Output::Nft(ref r) => {
-                let address = r.unlock_conditions().address().unwrap();
+            Output::Nft(ref output) => {
+                let address = output.unlock_conditions().address().unwrap();
 
-                (r.amount(), *address.address())
+                (output.amount(), *address.address(), output.unlock_conditions())
             }
         };
 
