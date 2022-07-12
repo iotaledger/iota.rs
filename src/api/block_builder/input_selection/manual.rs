@@ -40,10 +40,11 @@ pub(crate) async fn get_custom_inputs(
 
         for input in inputs {
             let output_response = block_builder.client.get_output(input.output_id()).await?;
+            let output = Output::try_from(&output_response.output)?;
 
             if !output_response.metadata.is_spent {
                 let (_output_amount, output_address) = ClientBlockBuilder::get_output_amount_and_address(
-                    &output_response.output,
+                    &output,
                     governance_transition.clone(),
                     local_time,
                 )?;
@@ -70,7 +71,7 @@ pub(crate) async fn get_custom_inputs(
                     None => (0, false),
                 };
                 inputs_data.push(InputSigningData {
-                    output: Output::try_from(&output_response.output)?,
+                    output,
                     output_metadata: OutputMetadata::try_from(&output_response.metadata)?,
                     chain: Some(Chain::from_u32_hardened(vec![
                         HD_WALLET_TYPE,

@@ -12,7 +12,7 @@ use bee_block::{
     input::{UtxoInput, INPUT_COUNT_MAX},
     output::{
         dto::OutputDto,
-        unlock_condition::{dto::UnlockConditionDto, AddressUnlockCondition, UnlockCondition},
+        unlock_condition::{AddressUnlockCondition, UnlockCondition},
         AliasId, ByteCostConfig, Output, OUTPUT_COUNT_RANGE,
     },
     payload::{Payload, TaggedDataPayload},
@@ -354,57 +354,41 @@ impl<'a> ClientBlockBuilder<'a> {
     /// Get output amount and address from an OutputDto, governance_transition for Alias Outputs so we get the unlock
     /// condition we're interested in
     pub fn get_output_amount_and_address(
-        output: &OutputDto,
+        output: &Output,
         governance_transition: Option<HashSet<AliasId>>,
         local_time: u32,
     ) -> Result<(u64, Address)> {
         match output {
-            OutputDto::Treasury(_) => Err(Error::OutputError("Treasury output is no supported")),
-            OutputDto::Basic(ref r) => {
-                for condition in &r.unlock_conditions {
+            Output::Treasury(_) => Err(Error::OutputError("Treasury output is no supported")),
+            Output::Basic(ref r) => {
+                for condition in r.unlock_conditions().iter() {
                     match condition {
-                        UnlockConditionDto::Address(e) => {
-                            return Ok((
-                                r.amount
-                                    .parse::<u64>()
-                                    .map_err(|_| crate::Error::InvalidAmount(r.amount.clone()))?,
-                                Address::try_from(&e.address)?,
-                            ));
+                        UnlockCondition::Address(e) => {
+                            return Ok((r.amount(), *e.address()));
                         }
                         _ => {}
                     }
                 }
                 Err(Error::OutputError("Only Ed25519Address is implemented"))
             }
-            OutputDto::Alias(ref r) => {
-                let alias_id = AliasId::try_from(&r.alias_id)?;
+            Output::Alias(ref r) => {
                 let mut is_governance_transition = false;
 
                 if let Some(governance_transition) = governance_transition {
-                    if governance_transition.contains(&alias_id) {
+                    if governance_transition.contains(r.alias_id()) {
                         is_governance_transition = true;
                     }
                 }
-                for condition in &r.unlock_conditions {
+                for condition in r.unlock_conditions().iter() {
                     match condition {
-                        UnlockConditionDto::StateControllerAddress(e) => {
+                        UnlockCondition::StateControllerAddress(e) => {
                             if is_governance_transition {
-                                return Ok((
-                                    r.amount
-                                        .parse::<u64>()
-                                        .map_err(|_| crate::Error::InvalidAmount(r.amount.clone()))?,
-                                    Address::try_from(&e.address)?,
-                                ));
+                                return Ok((r.amount(), *e.address()));
                             }
                         }
-                        UnlockConditionDto::GovernorAddress(e) => {
+                        UnlockCondition::GovernorAddress(e) => {
                             if !is_governance_transition {
-                                return Ok((
-                                    r.amount
-                                        .parse::<u64>()
-                                        .map_err(|_| crate::Error::InvalidAmount(r.amount.clone()))?,
-                                    Address::try_from(&e.address)?,
-                                ));
+                                return Ok((r.amount(), *e.address()));
                             }
                         }
                         _ => {}
@@ -412,32 +396,22 @@ impl<'a> ClientBlockBuilder<'a> {
                 }
                 Err(Error::OutputError("Only Ed25519Address is implemented"))
             }
-            OutputDto::Foundry(ref r) => {
-                for condition in &r.unlock_conditions {
+            Output::Foundry(ref r) => {
+                for condition in r.unlock_conditions().iter() {
                     match condition {
-                        UnlockConditionDto::ImmutableAliasAddress(e) => {
-                            return Ok((
-                                r.amount
-                                    .parse::<u64>()
-                                    .map_err(|_| crate::Error::InvalidAmount(r.amount.clone()))?,
-                                Address::try_from(&e.address)?,
-                            ));
+                        UnlockCondition::ImmutableAliasAddress(e) => {
+                            return Ok((r.amount(), *e.address()));
                         }
                         _ => {}
                     }
                 }
                 Err(Error::OutputError("Only Ed25519Address is implemented"))
             }
-            OutputDto::Nft(ref r) => {
-                for condition in &r.unlock_conditions {
+            Output::Nft(ref r) => {
+                for condition in r.unlock_conditions().iter() {
                     match condition {
-                        UnlockConditionDto::Address(e) => {
-                            return Ok((
-                                r.amount
-                                    .parse::<u64>()
-                                    .map_err(|_| crate::Error::InvalidAmount(r.amount.clone()))?,
-                                Address::try_from(&e.address)?,
-                            ));
+                        UnlockCondition::Address(e) => {
+                            return Ok((r.amount(), *e.address()));
                         }
                         _ => {}
                     }

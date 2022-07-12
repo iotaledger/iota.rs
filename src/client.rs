@@ -14,7 +14,7 @@ use std::{
 use bee_block::{
     address::Address,
     input::{Input, UtxoInput, INPUT_COUNT_MAX},
-    output::{ByteCostConfig, ByteCostConfigBuilder, OutputId},
+    output::{ByteCostConfig, ByteCostConfigBuilder, Output, OutputId},
     parent::Parents,
     payload::{
         transaction::{TransactionEssence, TransactionId},
@@ -619,7 +619,11 @@ impl Client {
         let local_time = self.get_time_checked().await?;
 
         for output_resp in available_outputs {
-            let (amount, _) = ClientBlockBuilder::get_output_amount_and_address(&output_resp.output, None, local_time)?;
+            let (amount, _) = ClientBlockBuilder::get_output_amount_and_address(
+                &Output::try_from(&output_resp.output)?,
+                None,
+                local_time,
+            )?;
             basic_outputs.push((
                 UtxoInput::new(
                     TransactionId::from_str(&output_resp.metadata.transaction_id)?,
