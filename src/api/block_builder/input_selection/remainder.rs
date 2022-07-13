@@ -1,7 +1,7 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use std::{cmp::Ordering, collections::HashMap};
+use std::collections::HashMap;
 
 use bee_block::{
     address::Address,
@@ -33,20 +33,22 @@ pub(crate) fn get_storage_deposit_return_outputs<'a>(
 ) -> Result<Vec<Output>> {
     log::debug!("[get_storage_deposit_return_outputs]");
 
-    // Get inputs with storage deposit return unlock condition
-    let inputs_with_sdr = inputs
-        .filter(|i| i.output.unlock_conditions().unwrap().storage_deposit_return().is_some())
-        .map(|i| i.output.clone())
-        .collect::<Vec<Output>>();
+    // Get inputs with storage deposit return unlock condition that are not expired
+    let inputs_sdr = inputs
+        .filter(|i| sdr_not_expired(&i.output, current_time).is_some())
+        // Safe to unwrap since we only return outputs with a sdr when filtering with sdr_not_expired()
+        .map(|i| {
+            i.output
+                .unlock_conditions()
+                .expect("Output need to have unlock conditions")
+                .storage_deposit_return()
+                .expect("Output needs to have a sdr")
+        });
 
     // There could be multiple sdr outputs required for the same address, so we keep track of the required amount here.
     let mut required_address_returns: HashMap<Address, u64> = HashMap::new();
-
-    // Exclude expired outputs
-    for input in inputs_with_sdr {
-        if let Some(sdr) = sdr_not_expired(&input, current_time) {
-            *required_address_returns.entry(*sdr.return_address()).or_default() += sdr.amount();
-        }
+    for sdr in inputs_sdr {
+        *required_address_returns.entry(*sdr.return_address()).or_default() += sdr.amount();
     }
 
     let mut new_sdr_outputs = Vec::new();
@@ -78,7 +80,7 @@ pub(crate) fn get_storage_deposit_return_outputs<'a>(
             .map(|o| o.amount())
             .sum();
 
-        if let Ordering::Greater = required_return_amount.cmp(&existing_sdr_amount) {
+        if required_return_amount > existing_sdr_amount {
             // create a new output with the missing amount
             let remaining_amount_to_add = required_return_amount - existing_sdr_amount;
             new_sdr_outputs.push(
