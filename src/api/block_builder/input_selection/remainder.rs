@@ -34,16 +34,7 @@ pub(crate) fn get_storage_deposit_return_outputs<'a>(
     log::debug!("[get_storage_deposit_return_outputs]");
 
     // Get inputs with storage deposit return unlock condition that are not expired
-    let inputs_sdr = inputs
-        .filter(|i| sdr_not_expired(&i.output, current_time).is_some())
-        // Safe to unwrap since we only return outputs with a sdr when filtering with sdr_not_expired()
-        .map(|i| {
-            i.output
-                .unlock_conditions()
-                .expect("Output need to have unlock conditions")
-                .storage_deposit_return()
-                .expect("Output needs to have a sdr")
-        });
+    let inputs_sdr = inputs.filter_map(|i| sdr_not_expired(&i.output, current_time));
 
     // There could be multiple sdr outputs required for the same address, so we keep track of the required amount here.
     let mut required_address_returns: HashMap<Address, u64> = HashMap::new();
