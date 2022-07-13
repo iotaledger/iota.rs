@@ -47,7 +47,8 @@ pub async fn try_select_inputs(
     allow_burning: bool,
     current_time: u32,
 ) -> Result<SelectedTransactionData> {
-    inputs.dedup();
+    inputs.sort_by_key(|a| (a.output_metadata.transaction_id, a.output_metadata.output_index));
+    inputs.dedup_by_key(|a| (a.output_metadata.transaction_id, a.output_metadata.output_index));
 
     // Validate and only create a remainder if necessary
     if force_use_all_inputs {
@@ -117,7 +118,7 @@ pub async fn try_select_inputs(
             selected_input_native_tokens.add_native_tokens(output_native_tokens.clone())?;
         }
 
-        if let Some(sdr) = sdr_not_expired(&output, current_time) {
+        if let Some(sdr) = sdr_not_expired(output, current_time) {
             // add sdr to required amount, because we have to send it back
             required.amount += sdr.amount();
         }
@@ -145,7 +146,7 @@ pub async fn try_select_inputs(
                     selected_input_amount += output.amount();
                     selected_inputs.push(basic_outputs[index].clone());
                     added_to_inputs = true;
-                    if let Some(sdr) = sdr_not_expired(&output, current_time) {
+                    if let Some(sdr) = sdr_not_expired(output, current_time) {
                         // add sdr to required amount, because we have to send it back
                         required.amount += sdr.amount();
                     }
@@ -190,7 +191,7 @@ pub async fn try_select_inputs(
                     selected_input_amount += output.amount();
                     selected_inputs.push(basic_outputs[index].clone());
                     added_to_inputs = true;
-                    if let Some(sdr) = sdr_not_expired(&output, current_time) {
+                    if let Some(sdr) = sdr_not_expired(output, current_time) {
                         // add sdr to required amount, because we have to send it back
                         required.amount += sdr.amount();
                     }
@@ -240,7 +241,7 @@ pub async fn try_select_inputs(
             }
             selected_inputs.push(basic_outputs[index].clone());
             added_to_inputs = true;
-            if let Some(sdr) = sdr_not_expired(&output, current_time) {
+            if let Some(sdr) = sdr_not_expired(output, current_time) {
                 // add sdr to required amount, because we have to send it back
                 required.amount += sdr.amount();
             }
@@ -323,11 +324,7 @@ pub(crate) fn sdr_not_expired(output: &Output, current_time: u32) -> Option<&Sto
     if let Some(unlock_conditions) = output.unlock_conditions() {
         if let Some(sdr) = unlock_conditions.storage_deposit_return() {
             let expired = if let Some(expiration) = unlock_conditions.expiration() {
-                if current_time >= expiration.timestamp() {
-                    true
-                } else {
-                    false
-                }
+                current_time >= expiration.timestamp()
             } else {
                 false
             };
