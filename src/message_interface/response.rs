@@ -211,7 +211,7 @@ pub enum Response {
     Faucet(String),
     /// Response for:
     /// - [`StoreMnemonic`](crate::message_interface::ClientMethod::StoreMnemonic)
-    Ok(()),
+    Ok,
     /// Response for any method that returns an error.
     Error(Error),
     /// Response for any method that panics.

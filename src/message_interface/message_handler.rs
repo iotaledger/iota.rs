@@ -319,7 +319,7 @@ impl ClientMessageHandler {
                 } else {
                     return Err(crate::Error::SecretManagerMismatch);
                 }
-                Ok(Response::Ok(()))
+                Ok(Response::Ok)
             }
             ClientMethod::PostBlockPayload { payload_dto } => {
                 let block_builder = self.client.block();
