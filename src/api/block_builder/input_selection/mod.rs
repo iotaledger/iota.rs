@@ -14,8 +14,8 @@ use bee_block::{
     address::Address,
     input::INPUT_COUNT_MAX,
     output::{
-        unlock_condition::AddressUnlockCondition, BasicOutputBuilder, ByteCost, ByteCostConfig, NativeTokens, Output,
-        UnlockCondition, OUTPUT_COUNT_MAX,
+        unlock_condition::{AddressUnlockCondition, StorageDepositReturnUnlockCondition},
+        BasicOutputBuilder, ByteCost, ByteCostConfig, NativeTokens, Output, UnlockCondition, OUTPUT_COUNT_MAX,
     },
 };
 use packable::{bounded::TryIntoBoundedU16Error, PackableExt};
@@ -45,7 +45,7 @@ pub async fn try_select_inputs(
     remainder_address: Option<Address>,
     byte_cost_config: &ByteCostConfig,
     allow_burning: bool,
-    curent_time: u32,
+    current_time: u32,
 ) -> Result<SelectedTransactionData> {
     inputs.dedup();
 
@@ -56,7 +56,7 @@ pub async fn try_select_inputs(
         }
 
         let additional_storage_deposit_return_outputs =
-            get_storage_deposit_return_outputs(inputs.iter(), outputs.iter(), curent_time)?;
+            get_storage_deposit_return_outputs(inputs.iter(), outputs.iter(), current_time)?;
         outputs.extend(additional_storage_deposit_return_outputs.into_iter());
 
         let remainder_data = get_remainder_output(
@@ -89,7 +89,7 @@ pub async fn try_select_inputs(
 
     let input_outputs = inputs.iter().map(|i| &i.output);
 
-    let required = get_accumulated_output_amounts(&input_outputs, outputs.iter())?;
+    let mut required = get_accumulated_output_amounts(&input_outputs, outputs.iter())?;
     let mut selected_input_native_tokens = required.minted_native_tokens.clone();
 
     let mut selected_input_amount = 0;
@@ -117,6 +117,11 @@ pub async fn try_select_inputs(
             selected_input_native_tokens.add_native_tokens(output_native_tokens.clone())?;
         }
 
+        if let Some(sdr) = sdr_not_expired(&output, current_time) {
+            // add sdr to required amount, because we have to send it back
+            required.amount += sdr.amount();
+        }
+
         selected_inputs.push(input_signing_data.clone());
     }
 
@@ -140,6 +145,10 @@ pub async fn try_select_inputs(
                     selected_input_amount += output.amount();
                     selected_inputs.push(basic_outputs[index].clone());
                     added_to_inputs = true;
+                    if let Some(sdr) = sdr_not_expired(&output, current_time) {
+                        // add sdr to required amount, because we have to send it back
+                        required.amount += sdr.amount();
+                    }
                 }
             }
 
@@ -181,6 +190,10 @@ pub async fn try_select_inputs(
                     selected_input_amount += output.amount();
                     selected_inputs.push(basic_outputs[index].clone());
                     added_to_inputs = true;
+                    if let Some(sdr) = sdr_not_expired(&output, current_time) {
+                        // add sdr to required amount, because we have to send it back
+                        required.amount += sdr.amount();
+                    }
                 }
             }
         }
@@ -227,6 +240,10 @@ pub async fn try_select_inputs(
             }
             selected_inputs.push(basic_outputs[index].clone());
             added_to_inputs = true;
+            if let Some(sdr) = sdr_not_expired(&output, current_time) {
+                // add sdr to required amount, because we have to send it back
+                required.amount += sdr.amount();
+            }
         }
 
         // If added to the inputs, remove it so it can't be selected again
@@ -247,7 +264,7 @@ pub async fn try_select_inputs(
 
     // Add possible required storage deposit return outputs
     let additional_storage_deposit_return_outputs =
-        get_storage_deposit_return_outputs(inputs.iter(), outputs.iter(), curent_time)?;
+        get_storage_deposit_return_outputs(inputs.iter(), outputs.iter(), current_time)?;
     outputs.extend(additional_storage_deposit_return_outputs.into_iter());
 
     // create remainder output if necessary
@@ -299,4 +316,28 @@ pub fn minimum_storage_deposit(
         .finish_output()?;
 
     Ok(basic_output.byte_cost(config))
+}
+
+/// Get the `StorageDepositReturnUnlockCondition`, if not expired
+pub(crate) fn sdr_not_expired(output: &Output, current_time: u32) -> Option<&StorageDepositReturnUnlockCondition> {
+    if let Some(unlock_conditions) = output.unlock_conditions() {
+        if let Some(sdr) = unlock_conditions.storage_deposit_return() {
+            let expired = if let Some(expiration) = unlock_conditions.expiration() {
+                if current_time >= expiration.timestamp() {
+                    true
+                } else {
+                    false
+                }
+            } else {
+                false
+            };
+
+            // We only have to send the storage deposit return back if the output is not expired
+            if !expired { Some(sdr) } else { None }
+        } else {
+            None
+        }
+    } else {
+        None
+    }
 }

@@ -15,7 +15,7 @@ use crate::{
     api::{
         input_selection::{
             get_accumulated_output_amounts, get_minted_and_melted_native_tokens, get_remainder_native_tokens,
-            minimum_storage_deposit, AccumulatedOutputAmounts,
+            minimum_storage_deposit, sdr_not_expired, AccumulatedOutputAmounts,
         },
         RemainderData,
     },
@@ -44,21 +44,9 @@ pub(crate) fn get_storage_deposit_return_outputs<'a>(
 
     // Exclude expired outputs
     for input in inputs_with_sdr {
-        let input_unlock_conditions = input
-            .unlock_conditions()
-            .expect("Output needs to have unlock conditions");
-
-        if let Some(expiration) = input_unlock_conditions.expiration() {
-            if current_time >= expiration.timestamp() {
-                // Skip if output is expired, because we then don't have to send the storage deposit return
-                continue;
-            }
+        if let Some(sdr) = sdr_not_expired(&input, current_time) {
+            *required_address_returns.entry(*sdr.return_address()).or_default() += sdr.amount();
         }
-
-        // Safe to unwrap, since we filtered the outputs base on the sdr
-        let sdr = input_unlock_conditions.storage_deposit_return().unwrap();
-
-        *required_address_returns.entry(*sdr.return_address()).or_default() += sdr.amount();
     }
 
     let mut new_sdr_outputs = Vec::new();
