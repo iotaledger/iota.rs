@@ -23,138 +23,197 @@ use bee_rest_api::types::{
 };
 use serde::Serialize;
 
-use crate::{
-    api::PreparedTransactionDataDto, builder::NetworkInfo, node_api::high_level::AddressBalance,
-    node_manager::node::Node, Error, NodeInfoWrapper,
-};
+use crate::{api::PreparedTransactionDataDto, builder::NetworkInfo, node_manager::node::Node, Error, NodeInfoWrapper};
 
 /// The response message.
 #[derive(Serialize, Debug)]
 #[serde(tag = "type", content = "payload")]
 pub enum Response {
-    /// Response for
-    /// [`BuildAliasOutput`](crate::message_interface::ClientMethod::BuildAliasOutput)
-    /// [`BuildBasicOutput`](crate::message_interface::ClientMethod::BuildBasicOutput)
-    /// [`BuildFoundryOutput`](crate::message_interface::ClientMethod::BuildFoundryOutput)
-    /// [`BuildNftOutput`](crate::message_interface::ClientMethod::BuildNftOutput)
+    /// Response for:
+    /// - [`BuildAliasOutput`](crate::message_interface::ClientMethod::BuildAliasOutput)
+    /// - [`BuildBasicOutput`](crate::message_interface::ClientMethod::BuildBasicOutput)
+    /// - [`BuildFoundryOutput`](crate::message_interface::ClientMethod::BuildFoundryOutput)
+    /// - [`BuildNftOutput`](crate::message_interface::ClientMethod::BuildNftOutput)
     BuiltOutput(OutputDto),
-    /// GenerateAddress response.
+    /// Response for:
+    /// - [`GenerateAddresses`](crate::message_interface::ClientMethod::GenerateAddresses)
     GeneratedAddresses(Vec<String>),
-    /// Generated block
+    /// Response for:
+    /// - [`GenerateBlock`](crate::message_interface::ClientMethod::GenerateBlock)
     GeneratedBlock(BlockDto),
-    /// Node
+    /// Response for:
+    /// - [`GetNode`](crate::message_interface::ClientMethod::GetNode)
     Node(Node),
-    /// Network info
+    /// Response for:
+    /// - [`GetNetworkInfo`](crate::message_interface::ClientMethod::GetNetworkInfo)
     NetworkInfo(NetworkInfo),
-    /// Network ID
+    /// Response for:
+    /// - [`GetNetworkId`](crate::message_interface::ClientMethod::GetNetworkId)
     NetworkId(u64),
-    /// Protocol version
-    ProtocolVersion(u8),
-    /// Bech32 human readable part
+    /// Response for:
+    /// - [`GetBech32Hrp`](crate::message_interface::ClientMethod::GetBech32Hrp)
     Bech32Hrp(String),
-    /// Min proof of work score
+    /// Response for:
+    /// - [`GetMinPoWScore`](crate::message_interface::ClientMethod::GetMinPoWScore)
     MinPoWScore(f64),
-    /// tips interval
+    /// Response for:
+    /// - [`GetTipsInterval`](crate::message_interface::ClientMethod::GetTipsInterval)
     TipsInterval(u64),
-    /// Is local proof of work used
+    /// Response for:
+    /// - [`GetLocalPoW`](crate::message_interface::ClientMethod::GetLocalPoW)
     LocalPoW(bool),
-    /// Is fallback to local proof of work enabled
+    /// Response for:
+    /// - [`GetFallbackToLocalPoW`](crate::message_interface::ClientMethod::GetFallbackToLocalPoW)
     FallbackToLocalPoW(bool),
-    /// Prepared transaction data for signing
+    /// Response for:
+    /// - [`PrepareTransaction`](crate::message_interface::ClientMethod::PrepareTransaction)
     PreparedTransactionData(PreparedTransactionDataDto),
-    /// Signed transaction data for signing
+    /// Response for:
+    /// - [`SignTransaction`](crate::message_interface::ClientMethod::SignTransaction)
     SignedTransaction(PayloadDto),
-    /// returns the unsynced nodes.
-    #[cfg(not(target_family = "wasm"))]
+    /// Response for:
+    /// - [`UnsyncedNodes`](crate::message_interface::ClientMethod::UnsyncedNodes)
     UnsyncedNodes(HashSet<Node>),
-    /// Health
+    /// Response for:
+    /// - [`GetHealth`](crate::message_interface::ClientMethod::GetHealth)
     Health(bool),
-    /// Node info
+    /// Response for:
+    /// - [`GetNodeInfo`](crate::message_interface::ClientMethod::GetNodeInfo)
     NodeInfo(NodeInfo),
-    /// Info
+    /// Response for:
+    /// - [`GetInfo`](crate::message_interface::ClientMethod::GetInfo)
     Info(NodeInfoWrapper),
-    /// Peers
+    /// Response for:
+    /// - [`GetPeers`](crate::message_interface::ClientMethod::GetPeers)
     Peers(Vec<PeerDto>),
-    /// Tips
+    /// Response for:
+    /// - [`GetTips`](crate::message_interface::ClientMethod::GetTips)
     Tips(Vec<BlockId>),
-    /// Posted block
+    /// Response for:
+    /// - [`PostBlockRaw`](crate::message_interface::ClientMethod::PostBlockRaw)
+    /// - [`PostBlock`](crate::message_interface::ClientMethod::PostBlock)
     PostBlockSuccessful(BlockId),
-    /// Block
+    /// Response for:
+    /// - [`GetBlock`](crate::message_interface::ClientMethod::GetBlock)
     Block(BlockDto),
-    /// BlockId with its Block
+    /// Response for:
+    /// - [`PostBlockPayload`](crate::message_interface::ClientMethod::PostBlockPayload)
+    /// - [`Retry`](crate::message_interface::ClientMethod::Retry)
     BlockIdWithBlock(BlockId, BlockDto),
-    /// Block metadata
+    /// Response for:
+    /// - [`GetBlockMetadata`](crate::message_interface::ClientMethod::GetBlockMetadata)
     BlockMetadata(BlockMetadataResponse),
-    /// Block raw
+    /// Response for:
+    /// - [`GetBlockRaw`](crate::message_interface::ClientMethod::GetBlockRaw)
     BlockRaw(Vec<u8>),
-    /// Get output successful
+    /// Response for:
+    /// - [`GetOutput`](crate::message_interface::ClientMethod::GetOutput)
     Output(OutputResponse),
-    /// Get the metadata of an output
+    /// Response for:
+    /// - [`GetOutputMetadata`](crate::message_interface::ClientMethod::GetOutputMetadata)
     OutputMetadata(OutputMetadataResponse),
-    /// Get outputs successful
+    /// Response for:
+    /// - [`GetOutputs`](crate::message_interface::ClientMethod::GetOutputs)
+    /// - [`TryGetOutputs`](crate::message_interface::ClientMethod::TryGetOutputs)
+    /// - [`FindOutputs`](crate::message_interface::ClientMethod::FindOutputs)
     Outputs(Vec<OutputResponse>),
-    /// Get milestone successful
+    /// Response for:
+    /// - [`GetMilestoneById`](crate::message_interface::ClientMethod::GetMilestoneById)
+    /// - [`GetMilestoneByIndex`](crate::message_interface::ClientMethod::GetMilestoneByIndex)
     Milestone(MilestonePayloadDto),
-    /// Get the milestone in raw bytes
+    /// Response for:
+    /// - [`GetMilestoneByIdRaw`](crate::message_interface::ClientMethod::GetMilestoneByIdRaw)
+    /// - [`GetMilestoneByIndexRaw`](crate::message_interface::ClientMethod::GetMilestoneByIndexRaw)
     MilestoneRaw(Vec<u8>),
-    /// Get milestone utxo changes
+    /// Response for:
+    /// - [`GetUtxoChangesById`](crate::message_interface::ClientMethod::GetUtxoChangesById)
+    /// - [`GetUtxoChangesByIndex`](crate::message_interface::ClientMethod::GetUtxoChangesByIndex)
     MilestoneUtxoChanges(MilestoneUTXOChanges),
-    /// Get receipts successful
+    /// Response for:
+    /// - [`GetReceipts`](crate::message_interface::ClientMethod::GetReceipts)
     Receipts(Vec<ReceiptDto>),
-    /// Get receipts migrated at milestone
+    /// Response for:
+    /// - [`GetReceiptsMigratedAt`](crate::message_interface::ClientMethod::GetReceiptsMigratedAt)
     ReceiptsMigratedAtMilestone(Vec<ReceiptDto>),
-    /// Get treasury successful
+    /// Response for:
+    /// - [`GetTreasury`](crate::message_interface::ClientMethod::GetTreasury)
     Treasury(TreasuryResponse),
-    /// Get included block successful
+    /// Response for:
+    /// - [`GetIncludedBlock`](crate::message_interface::ClientMethod::GetIncludedBlock)
     IncludedBlock(BlockDto),
-    /// Fetched output ID
+    /// Response for:
+    /// - [`AliasOutputId`](crate::message_interface::ClientMethod::AliasOutputId)
+    /// - [`NftOutputId`](crate::message_interface::ClientMethod::NftOutputId)
+    /// - [`FoundryOutputId`](crate::message_interface::ClientMethod::FoundryOutputId)
     OutputId(OutputId),
-    /// Fetched output IDs
+    /// Response for:
+    /// - [`BasicOutputIds`](crate::message_interface::ClientMethod::BasicOutputIds)
+    /// - [`AliasOutputIds`](crate::message_interface::ClientMethod::AliasOutputIds)
+    /// - [`NftOutputIds`](crate::message_interface::ClientMethod::NftOutputIds)
+    /// - [`FoundryOutputIds`](crate::message_interface::ClientMethod::FoundryOutputIds)
     OutputIds(Vec<OutputId>),
-    /// Blocks
+    /// Response for:
+    /// - [`FindBlocks`](crate::message_interface::ClientMethod::FindBlocks)
     Blocks(Vec<BlockDto>),
-    /// Balance
-    Balance(u64),
-    /// Addresses balances
-    AddressesBalances(Vec<AddressBalance>),
-    /// Retry until included
+    /// Response for:
+    /// - [`RetryUntilIncluded`](crate::message_interface::ClientMethod::RetryUntilIncluded)
     RetryUntilIncludedSuccessful(Vec<(BlockId, BlockDto)>),
-    /// Consolidated funds
+    /// Response for:
+    /// - [`ConsolidateFunds`](crate::message_interface::ClientMethod::ConsolidateFunds)
     ConsolidatedFunds(String),
-    /// Found inputs
+    /// Response for:
+    /// - [`FindInputs`](crate::message_interface::ClientMethod::FindInputs)
     Inputs(Vec<UtxoInputDto>),
-    /// Reattach
+    /// Response for:
+    /// - [`Reattach`](crate::message_interface::ClientMethod::Reattach)
+    /// - [`ReattachUnchecked`](crate::message_interface::ClientMethod::ReattachUnchecked)
     Reattached((BlockId, BlockDto)),
-    /// Promoted
+    /// Response for:
+    /// - [`Promote`](crate::message_interface::ClientMethod::Promote)
+    /// - [`PromoteUnchecked`](crate::message_interface::ClientMethod::PromoteUnchecked)
     Promoted((BlockId, BlockDto)),
-    /// Bech32 to hex
+    /// Response for:
+    /// - [`Bech32ToHex`](crate::message_interface::ClientMethod::Bech32ToHex)
     Bech32ToHex(String),
-    /// Hex to bech32
+    /// Response for:
+    /// - [`HexToBech32`](crate::message_interface::ClientMethod::HexToBech32)
+    /// - [`HexPublicKeyToBech32Address`](crate::message_interface::ClientMethod::HexPublicKeyToBech32Address)
     HexToBech32(String),
-    /// Parsed bech32 address
+    /// Response for:
+    /// - [`ParseBech32Address`](crate::message_interface::ClientMethod::ParseBech32Address)
     ParsedBech32Address(AddressDto),
-    /// Is address valid
+    /// Response for:
+    /// - [`IsAddressValid`](crate::message_interface::ClientMethod::IsAddressValid)
     IsAddressValid(bool),
-    /// Generated mnemonic
+    /// Response for:
+    /// - [`GenerateMnemonic`](crate::message_interface::ClientMethod::GenerateMnemonic)
     GeneratedMnemonic(String),
-    /// Mnemonic to hex encoded seed
+    /// Response for:
+    /// - [`MnemonicToHexSeed`](crate::message_interface::ClientMethod::MnemonicToHexSeed)
     MnemonicHexSeed(String),
-    /// The BLAKE2b-256 hash of the block bytes
+    /// Response for:
+    /// - [`BlockId`](crate::message_interface::ClientMethod::BlockId)
     BlockId(BlockId),
-    /// Returns a Transaction ID
+    /// Response for:
+    /// - [`TransactionId`](crate::message_interface::ClientMethod::TransactionId)
     TransactionId(TransactionId),
-    /// Returns an Alias ID
+    /// Response for:
+    /// - [`ComputeAliasId`](crate::message_interface::ClientMethod::ComputeAliasId)
     AliasId(AliasId),
-    /// Returns a NFT ID
+    /// Response for:
+    /// - [`ComputeNftId`](crate::message_interface::ClientMethod::ComputeNftId)
     NftId(NftId),
-    /// Returns a Foundry ID
+    /// Response for:
+    /// - [`ComputeFoundryId`](crate::message_interface::ClientMethod::ComputeFoundryId)
     FoundryId(FoundryId),
-    /// The response from the faucet
+    /// Response for:
+    /// - [`Faucet`](crate::message_interface::ClientMethod::Faucet)
     Faucet(String),
-    /// An error occurred.
-    Error(Error),
-    /// A panic occurred.
-    Panic(String),
-    /// All went fine.
+    /// Response for:
+    /// - [`StoreMnemonic`](crate::message_interface::ClientMethod::StoreMnemonic)
     Ok(()),
+    /// Response for any method that returns an error.
+    Error(Error),
+    /// Response for any method that panics.
+    Panic(String),
 }
