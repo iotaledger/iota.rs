@@ -131,10 +131,8 @@ pub enum Response {
     MilestoneUtxoChanges(MilestoneUTXOChanges),
     /// Response for:
     /// - [`GetReceipts`](crate::message_interface::ClientMethod::GetReceipts)
-    Receipts(Vec<ReceiptDto>),
-    /// Response for:
     /// - [`GetReceiptsMigratedAt`](crate::message_interface::ClientMethod::GetReceiptsMigratedAt)
-    ReceiptsMigratedAtMilestone(Vec<ReceiptDto>),
+    Receipts(Vec<ReceiptDto>),
     /// Response for:
     /// - [`GetTreasury`](crate::message_interface::ClientMethod::GetTreasury)
     Treasury(TreasuryResponse),

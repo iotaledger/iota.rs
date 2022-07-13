@@ -383,7 +383,7 @@ impl ClientMessageHandler {
                 self.client.get_utxo_changes_by_index(*index).await?,
             )),
             ClientMethod::GetReceipts => Ok(Response::Receipts(self.client.get_receipts().await?)),
-            ClientMethod::GetReceiptsMigratedAt { milestone_index } => Ok(Response::ReceiptsMigratedAtMilestone(
+            ClientMethod::GetReceiptsMigratedAt { milestone_index } => Ok(Response::Receipts(
                 self.client.get_receipts_migrated_at(*milestone_index).await?,
             )),
             ClientMethod::GetTreasury => Ok(Response::Treasury(self.client.get_treasury().await?)),
