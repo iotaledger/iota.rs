@@ -89,6 +89,8 @@ pub(crate) async fn get_inputs(
     let (force_use_all_inputs, required_ed25519_inputs) = get_inputs_for_sender_and_issuer(block_builder).await?;
     available_inputs.extend(required_ed25519_inputs.into_iter());
 
+    let local_time = block_builder.client.get_time_checked().await?;
+
     // Try to select inputs with required inputs for utxo chains alone before requesting more inputs from addresses
     if let Ok(selected_transaction_data) = try_select_inputs(
         available_inputs.clone(),
@@ -99,6 +101,7 @@ pub(crate) async fn get_inputs(
         // Don't allow burning of native tokens during automatic input selection, because otherwise it
         // could lead to burned native tokens by accident
         false,
+        local_time,
     )
     .await
     {
@@ -145,7 +148,6 @@ pub(crate) async fn get_inputs(
                 // Reset counter if there is an output
                 empty_address_count = 0;
 
-                let local_time = block_builder.client.get_time_checked().await?;
                 for output_response in address_outputs {
                     let output = Output::try_from(&output_response.output)?;
                     let address = Address::try_from_bech32(str_address)?.1;
@@ -174,6 +176,7 @@ pub(crate) async fn get_inputs(
                     // Don't allow burning of native tokens during automatic input selection, because otherwise it
                     // could lead to burned native tokens by accident
                     false,
+                    local_time,
                 )
                 .await
                 {

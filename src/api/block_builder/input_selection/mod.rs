@@ -27,7 +27,11 @@ use self::{
     remainder::{get_additional_required_remainder_amount, get_remainder_output},
     types::SelectedTransactionData,
 };
-use crate::{api::input_selection::types::AccumulatedOutputAmounts, secret::types::InputSigningData, Error, Result};
+use crate::{
+    api::input_selection::{remainder::get_storage_deposit_return_outputs, types::AccumulatedOutputAmounts},
+    secret::types::InputSigningData,
+    Error, Result,
+};
 
 /// Select inputs from provided inputs([InputSigningData]) for provided [Output]s, validate amounts and create remainder
 /// output if necessary. Also checks for alias, foundry and nft outputs that there previous output exist in the inputs,
@@ -41,6 +45,7 @@ pub async fn try_select_inputs(
     remainder_address: Option<Address>,
     byte_cost_config: &ByteCostConfig,
     allow_burning: bool,
+    curent_time: u32,
 ) -> Result<SelectedTransactionData> {
     inputs.dedup();
 
@@ -49,6 +54,11 @@ pub async fn try_select_inputs(
         if inputs.len() as u16 > INPUT_COUNT_MAX {
             return Err(Error::ConsolidationRequired(inputs.len()));
         }
+
+        let additional_storage_deposit_return_outputs =
+            get_storage_deposit_return_outputs(inputs.iter(), outputs.iter(), curent_time)?;
+        outputs.extend(additional_storage_deposit_return_outputs.into_iter());
+
         let remainder_data = get_remainder_output(
             inputs.iter(),
             outputs.iter(),
@@ -57,16 +67,18 @@ pub async fn try_select_inputs(
             allow_burning,
         )
         .await?;
+
         if let Some(remainder_data) = &remainder_data {
             outputs.push(remainder_data.output.clone());
-
-            // check if we have too many outputs after adding the remainder output
-            if outputs.len() as u16 > OUTPUT_COUNT_MAX {
-                return Err(Error::BlockError(bee_block::Error::InvalidOutputCount(
-                    TryIntoBoundedU16Error::Truncated(outputs.len()),
-                )));
-            }
         }
+
+        // check if we have too many outputs after adding possible remainder or storage deposit return outputs
+        if outputs.len() as u16 > OUTPUT_COUNT_MAX {
+            return Err(Error::BlockError(bee_block::Error::InvalidOutputCount(
+                TryIntoBoundedU16Error::Truncated(outputs.len()),
+            )));
+        }
+
         return Ok(SelectedTransactionData {
             inputs,
             outputs,
@@ -232,6 +244,11 @@ pub async fn try_select_inputs(
     if current_selected_input_len > INPUT_COUNT_MAX {
         return Err(Error::ConsolidationRequired(current_selected_input_len.into()));
     }
+
+    // Add possible required storage deposit return outputs
+    let additional_storage_deposit_return_outputs =
+        get_storage_deposit_return_outputs(inputs.iter(), outputs.iter(), curent_time)?;
+    outputs.extend(additional_storage_deposit_return_outputs.into_iter());
 
     // create remainder output if necessary
     // get_remainder also checks for amounts and returns an error if we don't have enough

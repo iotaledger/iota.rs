@@ -35,9 +35,8 @@ pub(crate) async fn get_custom_inputs(
     log::debug!("[get_custom_inputs]");
     let mut inputs_data = Vec::new();
 
+    let local_time = block_builder.client.get_time_checked().await?;
     if let Some(inputs) = &block_builder.inputs {
-        let local_time = block_builder.client.get_time_checked().await?;
-
         for input in inputs {
             let output_response = block_builder.client.get_output(input.output_id()).await?;
             let output = Output::try_from(&output_response.output)?;
@@ -92,6 +91,7 @@ pub(crate) async fn get_custom_inputs(
         block_builder.custom_remainder_address,
         byte_cost_config,
         allow_burning,
+        local_time,
     )
     .await?;
     Ok(selected_transaction_data)

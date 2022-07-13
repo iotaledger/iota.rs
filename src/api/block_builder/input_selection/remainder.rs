@@ -1,6 +1,8 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+use std::{cmp::Ordering, collections::HashMap};
+
 use bee_block::{
     address::Address,
     output::{
@@ -21,6 +23,86 @@ use crate::{
     secret::types::InputSigningData,
     Error, Result,
 };
+
+// Get possible required storage deposit return outputs, if there is already an output for the storage deposit return,
+// then don't return a new output for that.
+pub(crate) fn get_storage_deposit_return_outputs<'a>(
+    inputs: impl Iterator<Item = &'a InputSigningData> + Clone,
+    outputs: impl Iterator<Item = &'a Output> + Clone,
+    current_time: u32,
+) -> Result<Vec<Output>> {
+    log::debug!("[get_storage_deposit_return_outputs]");
+
+    // Get inputs with storage deposit return unlock condition
+    let inputs_with_sdr = inputs
+        .filter(|i| i.output.unlock_conditions().unwrap().storage_deposit_return().is_some())
+        .map(|i| i.output.clone())
+        .collect::<Vec<Output>>();
+
+    // There could be multiple sdr outputs required for the same address, so we keep track of the required amount here.
+    let mut required_address_returns: HashMap<Address, u64> = HashMap::new();
+
+    // Exclude expired outputs
+    for input in inputs_with_sdr {
+        let input_unlock_conditions = input
+            .unlock_conditions()
+            .expect("Output needs to have unlock conditions");
+
+        if let Some(expiration) = input_unlock_conditions.expiration() {
+            if current_time >= expiration.timestamp() {
+                // Skip if output is expired, because we then don't have to send the storage deposit return
+                continue;
+            }
+        }
+
+        // Safe to unwrap, since we filtered the outputs base on the sdr
+        let sdr = input_unlock_conditions.storage_deposit_return().unwrap();
+
+        *required_address_returns.entry(*sdr.return_address()).or_default() += sdr.amount();
+    }
+
+    let mut new_sdr_outputs = Vec::new();
+
+    for (return_address, required_return_amount) in required_address_returns {
+        // Check if we already have outputs for this storage deposit return
+        let existing_sdr_amount: u64 = outputs
+            .clone()
+            .filter(|output| {
+                // sdr output must be a basic output with only the AddressUnlockCondition
+                if let Output::Basic(s) = output {
+                    // no native tokens
+                    // only one address unlock
+                    // no features
+                    if let ([], [UnlockCondition::Address(address_unlock_condition)], []) = (
+                        s.native_tokens().as_ref(),
+                        s.unlock_conditions().as_ref(),
+                        s.features().as_ref(),
+                    ) {
+                        // Address needs to be the storage deposit return address
+                        *address_unlock_condition.address() == return_address
+                    } else {
+                        false
+                    }
+                } else {
+                    false
+                }
+            })
+            .map(|o| o.amount())
+            .sum();
+
+        if let Ordering::Greater = required_return_amount.cmp(&existing_sdr_amount) {
+            // create a new output with the missing amount
+            let remaining_amount_to_add = required_return_amount - existing_sdr_amount;
+            new_sdr_outputs.push(
+                BasicOutputBuilder::new_with_amount(remaining_amount_to_add)?
+                    .with_unlock_conditions([UnlockCondition::Address(AddressUnlockCondition::new(return_address))])
+                    .finish_output()?,
+            );
+        }
+    }
+
+    Ok(new_sdr_outputs)
+}
 
 // Get a remainder with amount and native tokens if necessary, if no remainder_address is provided it will be selected
 // from the inputs, also validates the amounts
