@@ -296,7 +296,7 @@ impl SecretManageExt for LedgerSecretManager {
         // if denied by user, it returns with `DeniedByUser` Error
         log::debug!("[LEDGER] await user confirmation");
         ledger.user_confirm()?;
-        
+
         // sign
         let mut signature_bytes = ledger.sign(input_len as u16)?;
 
