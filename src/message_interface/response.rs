@@ -30,179 +30,179 @@ use crate::{api::PreparedTransactionDataDto, builder::NetworkInfo, node_manager:
 #[serde(tag = "type", content = "payload")]
 pub enum Response {
     /// Response for:
-    /// - [`BuildAliasOutput`](crate::message_interface::ClientMethod::BuildAliasOutput)
-    /// - [`BuildBasicOutput`](crate::message_interface::ClientMethod::BuildBasicOutput)
-    /// - [`BuildFoundryOutput`](crate::message_interface::ClientMethod::BuildFoundryOutput)
-    /// - [`BuildNftOutput`](crate::message_interface::ClientMethod::BuildNftOutput)
+    /// - [`BuildAliasOutput`](crate::message_interface::Message::BuildAliasOutput)
+    /// - [`BuildBasicOutput`](crate::message_interface::Message::BuildBasicOutput)
+    /// - [`BuildFoundryOutput`](crate::message_interface::Message::BuildFoundryOutput)
+    /// - [`BuildNftOutput`](crate::message_interface::Message::BuildNftOutput)
     BuiltOutput(OutputDto),
     /// Response for:
-    /// - [`GenerateAddresses`](crate::message_interface::ClientMethod::GenerateAddresses)
+    /// - [`GenerateAddresses`](crate::message_interface::Message::GenerateAddresses)
     GeneratedAddresses(Vec<String>),
     /// Response for:
-    /// - [`GetNode`](crate::message_interface::ClientMethod::GetNode)
+    /// - [`GetNode`](crate::message_interface::Message::GetNode)
     Node(Node),
     /// Response for:
-    /// - [`GetNetworkInfo`](crate::message_interface::ClientMethod::GetNetworkInfo)
+    /// - [`GetNetworkInfo`](crate::message_interface::Message::GetNetworkInfo)
     NetworkInfo(NetworkInfo),
     /// Response for:
-    /// - [`GetNetworkId`](crate::message_interface::ClientMethod::GetNetworkId)
+    /// - [`GetNetworkId`](crate::message_interface::Message::GetNetworkId)
     NetworkId(u64),
     /// Response for:
-    /// - [`GetBech32Hrp`](crate::message_interface::ClientMethod::GetBech32Hrp)
+    /// - [`GetBech32Hrp`](crate::message_interface::Message::GetBech32Hrp)
     Bech32Hrp(String),
     /// Response for:
-    /// - [`GetMinPoWScore`](crate::message_interface::ClientMethod::GetMinPoWScore)
+    /// - [`GetMinPoWScore`](crate::message_interface::Message::GetMinPoWScore)
     MinPoWScore(f64),
     /// Response for:
-    /// - [`GetTipsInterval`](crate::message_interface::ClientMethod::GetTipsInterval)
+    /// - [`GetTipsInterval`](crate::message_interface::Message::GetTipsInterval)
     TipsInterval(u64),
     /// Response for:
-    /// - [`GetLocalPoW`](crate::message_interface::ClientMethod::GetLocalPoW)
+    /// - [`GetLocalPoW`](crate::message_interface::Message::GetLocalPoW)
     LocalPoW(bool),
     /// Response for:
-    /// - [`GetFallbackToLocalPoW`](crate::message_interface::ClientMethod::GetFallbackToLocalPoW)
+    /// - [`GetFallbackToLocalPoW`](crate::message_interface::Message::GetFallbackToLocalPoW)
     FallbackToLocalPoW(bool),
     /// Response for:
-    /// - [`PrepareTransaction`](crate::message_interface::ClientMethod::PrepareTransaction)
+    /// - [`PrepareTransaction`](crate::message_interface::Message::PrepareTransaction)
     PreparedTransactionData(PreparedTransactionDataDto),
     /// Response for:
-    /// - [`SignTransaction`](crate::message_interface::ClientMethod::SignTransaction)
+    /// - [`SignTransaction`](crate::message_interface::Message::SignTransaction)
     SignedTransaction(PayloadDto),
     /// Response for:
-    /// - [`UnsyncedNodes`](crate::message_interface::ClientMethod::UnsyncedNodes)
+    /// - [`UnsyncedNodes`](crate::message_interface::Message::UnsyncedNodes)
     UnsyncedNodes(HashSet<Node>),
     /// Response for:
-    /// - [`GetHealth`](crate::message_interface::ClientMethod::GetHealth)
+    /// - [`GetHealth`](crate::message_interface::Message::GetHealth)
     Health(bool),
     /// Response for:
-    /// - [`GetNodeInfo`](crate::message_interface::ClientMethod::GetNodeInfo)
+    /// - [`GetNodeInfo`](crate::message_interface::Message::GetNodeInfo)
     NodeInfo(NodeInfo),
     /// Response for:
-    /// - [`GetInfo`](crate::message_interface::ClientMethod::GetInfo)
+    /// - [`GetInfo`](crate::message_interface::Message::GetInfo)
     Info(NodeInfoWrapper),
     /// Response for:
-    /// - [`GetPeers`](crate::message_interface::ClientMethod::GetPeers)
+    /// - [`GetPeers`](crate::message_interface::Message::GetPeers)
     Peers(Vec<PeerDto>),
     /// Response for:
-    /// - [`GetTips`](crate::message_interface::ClientMethod::GetTips)
+    /// - [`GetTips`](crate::message_interface::Message::GetTips)
     Tips(Vec<BlockId>),
     /// Response for:
-    /// - [`GetBlock`](crate::message_interface::ClientMethod::GetBlock)
-    /// - [`GenerateBlock`](crate::message_interface::ClientMethod::GenerateBlock)
-    /// - [`GetIncludedBlock`](crate::message_interface::ClientMethod::GetIncludedBlock)
+    /// - [`GetBlock`](crate::message_interface::Message::GetBlock)
+    /// - [`GenerateBlock`](crate::message_interface::Message::GenerateBlock)
+    /// - [`GetIncludedBlock`](crate::message_interface::Message::GetIncludedBlock)
     Block(BlockDto),
     /// Response for:
-    /// - [`PostBlockPayload`](crate::message_interface::ClientMethod::PostBlockPayload)
-    /// - [`Retry`](crate::message_interface::ClientMethod::Retry)
+    /// - [`PostBlockPayload`](crate::message_interface::Message::PostBlockPayload)
+    /// - [`Retry`](crate::message_interface::Message::Retry)
     BlockIdWithBlock(BlockId, BlockDto),
     /// Response for:
-    /// - [`GetBlockMetadata`](crate::message_interface::ClientMethod::GetBlockMetadata)
+    /// - [`GetBlockMetadata`](crate::message_interface::Message::GetBlockMetadata)
     BlockMetadata(BlockMetadataResponse),
     /// Response for:
-    /// - [`GetBlockRaw`](crate::message_interface::ClientMethod::GetBlockRaw)
+    /// - [`GetBlockRaw`](crate::message_interface::Message::GetBlockRaw)
     BlockRaw(Vec<u8>),
     /// Response for:
-    /// - [`GetOutput`](crate::message_interface::ClientMethod::GetOutput)
+    /// - [`GetOutput`](crate::message_interface::Message::GetOutput)
     Output(OutputResponse),
     /// Response for:
-    /// - [`GetOutputMetadata`](crate::message_interface::ClientMethod::GetOutputMetadata)
+    /// - [`GetOutputMetadata`](crate::message_interface::Message::GetOutputMetadata)
     OutputMetadata(OutputMetadataResponse),
     /// Response for:
-    /// - [`GetOutputs`](crate::message_interface::ClientMethod::GetOutputs)
-    /// - [`TryGetOutputs`](crate::message_interface::ClientMethod::TryGetOutputs)
-    /// - [`FindOutputs`](crate::message_interface::ClientMethod::FindOutputs)
+    /// - [`GetOutputs`](crate::message_interface::Message::GetOutputs)
+    /// - [`TryGetOutputs`](crate::message_interface::Message::TryGetOutputs)
+    /// - [`FindOutputs`](crate::message_interface::Message::FindOutputs)
     Outputs(Vec<OutputResponse>),
     /// Response for:
-    /// - [`GetMilestoneById`](crate::message_interface::ClientMethod::GetMilestoneById)
-    /// - [`GetMilestoneByIndex`](crate::message_interface::ClientMethod::GetMilestoneByIndex)
+    /// - [`GetMilestoneById`](crate::message_interface::Message::GetMilestoneById)
+    /// - [`GetMilestoneByIndex`](crate::message_interface::Message::GetMilestoneByIndex)
     Milestone(MilestonePayloadDto),
     /// Response for:
-    /// - [`GetMilestoneByIdRaw`](crate::message_interface::ClientMethod::GetMilestoneByIdRaw)
-    /// - [`GetMilestoneByIndexRaw`](crate::message_interface::ClientMethod::GetMilestoneByIndexRaw)
+    /// - [`GetMilestoneByIdRaw`](crate::message_interface::Message::GetMilestoneByIdRaw)
+    /// - [`GetMilestoneByIndexRaw`](crate::message_interface::Message::GetMilestoneByIndexRaw)
     MilestoneRaw(Vec<u8>),
     /// Response for:
-    /// - [`GetUtxoChangesById`](crate::message_interface::ClientMethod::GetUtxoChangesById)
-    /// - [`GetUtxoChangesByIndex`](crate::message_interface::ClientMethod::GetUtxoChangesByIndex)
+    /// - [`GetUtxoChangesById`](crate::message_interface::Message::GetUtxoChangesById)
+    /// - [`GetUtxoChangesByIndex`](crate::message_interface::Message::GetUtxoChangesByIndex)
     MilestoneUtxoChanges(MilestoneUTXOChanges),
     /// Response for:
-    /// - [`GetReceipts`](crate::message_interface::ClientMethod::GetReceipts)
-    /// - [`GetReceiptsMigratedAt`](crate::message_interface::ClientMethod::GetReceiptsMigratedAt)
+    /// - [`GetReceipts`](crate::message_interface::Message::GetReceipts)
+    /// - [`GetReceiptsMigratedAt`](crate::message_interface::Message::GetReceiptsMigratedAt)
     Receipts(Vec<ReceiptDto>),
     /// Response for:
-    /// - [`GetTreasury`](crate::message_interface::ClientMethod::GetTreasury)
+    /// - [`GetTreasury`](crate::message_interface::Message::GetTreasury)
     Treasury(TreasuryResponse),
     /// Response for:
-    /// - [`AliasOutputId`](crate::message_interface::ClientMethod::AliasOutputId)
-    /// - [`NftOutputId`](crate::message_interface::ClientMethod::NftOutputId)
-    /// - [`FoundryOutputId`](crate::message_interface::ClientMethod::FoundryOutputId)
+    /// - [`AliasOutputId`](crate::message_interface::Message::AliasOutputId)
+    /// - [`NftOutputId`](crate::message_interface::Message::NftOutputId)
+    /// - [`FoundryOutputId`](crate::message_interface::Message::FoundryOutputId)
     OutputId(OutputId),
     /// Response for:
-    /// - [`BasicOutputIds`](crate::message_interface::ClientMethod::BasicOutputIds)
-    /// - [`AliasOutputIds`](crate::message_interface::ClientMethod::AliasOutputIds)
-    /// - [`NftOutputIds`](crate::message_interface::ClientMethod::NftOutputIds)
-    /// - [`FoundryOutputIds`](crate::message_interface::ClientMethod::FoundryOutputIds)
+    /// - [`BasicOutputIds`](crate::message_interface::Message::BasicOutputIds)
+    /// - [`AliasOutputIds`](crate::message_interface::Message::AliasOutputIds)
+    /// - [`NftOutputIds`](crate::message_interface::Message::NftOutputIds)
+    /// - [`FoundryOutputIds`](crate::message_interface::Message::FoundryOutputIds)
     OutputIds(Vec<OutputId>),
     /// Response for:
-    /// - [`FindBlocks`](crate::message_interface::ClientMethod::FindBlocks)
+    /// - [`FindBlocks`](crate::message_interface::Message::FindBlocks)
     Blocks(Vec<BlockDto>),
     /// Response for:
-    /// - [`RetryUntilIncluded`](crate::message_interface::ClientMethod::RetryUntilIncluded)
+    /// - [`RetryUntilIncluded`](crate::message_interface::Message::RetryUntilIncluded)
     RetryUntilIncludedSuccessful(Vec<(BlockId, BlockDto)>),
     /// Response for:
-    /// - [`ConsolidateFunds`](crate::message_interface::ClientMethod::ConsolidateFunds)
+    /// - [`ConsolidateFunds`](crate::message_interface::Message::ConsolidateFunds)
     ConsolidatedFunds(String),
     /// Response for:
-    /// - [`FindInputs`](crate::message_interface::ClientMethod::FindInputs)
+    /// - [`FindInputs`](crate::message_interface::Message::FindInputs)
     Inputs(Vec<UtxoInputDto>),
     /// Response for:
-    /// - [`Reattach`](crate::message_interface::ClientMethod::Reattach)
-    /// - [`ReattachUnchecked`](crate::message_interface::ClientMethod::ReattachUnchecked)
+    /// - [`Reattach`](crate::message_interface::Message::Reattach)
+    /// - [`ReattachUnchecked`](crate::message_interface::Message::ReattachUnchecked)
     Reattached((BlockId, BlockDto)),
     /// Response for:
-    /// - [`Promote`](crate::message_interface::ClientMethod::Promote)
-    /// - [`PromoteUnchecked`](crate::message_interface::ClientMethod::PromoteUnchecked)
+    /// - [`Promote`](crate::message_interface::Message::Promote)
+    /// - [`PromoteUnchecked`](crate::message_interface::Message::PromoteUnchecked)
     Promoted((BlockId, BlockDto)),
     /// Response for:
-    /// - [`Bech32ToHex`](crate::message_interface::ClientMethod::Bech32ToHex)
+    /// - [`Bech32ToHex`](crate::message_interface::Message::Bech32ToHex)
     Bech32ToHex(String),
     /// Response for:
-    /// - [`HexToBech32`](crate::message_interface::ClientMethod::HexToBech32)
-    /// - [`HexPublicKeyToBech32Address`](crate::message_interface::ClientMethod::HexPublicKeyToBech32Address)
+    /// - [`HexToBech32`](crate::message_interface::Message::HexToBech32)
+    /// - [`HexPublicKeyToBech32Address`](crate::message_interface::Message::HexPublicKeyToBech32Address)
     HexToBech32(String),
     /// Response for:
-    /// - [`ParseBech32Address`](crate::message_interface::ClientMethod::ParseBech32Address)
+    /// - [`ParseBech32Address`](crate::message_interface::Message::ParseBech32Address)
     ParsedBech32Address(AddressDto),
     /// Response for:
-    /// - [`IsAddressValid`](crate::message_interface::ClientMethod::IsAddressValid)
+    /// - [`IsAddressValid`](crate::message_interface::Message::IsAddressValid)
     IsAddressValid(bool),
     /// Response for:
-    /// - [`GenerateMnemonic`](crate::message_interface::ClientMethod::GenerateMnemonic)
+    /// - [`GenerateMnemonic`](crate::message_interface::Message::GenerateMnemonic)
     GeneratedMnemonic(String),
     /// Response for:
-    /// - [`MnemonicToHexSeed`](crate::message_interface::ClientMethod::MnemonicToHexSeed)
+    /// - [`MnemonicToHexSeed`](crate::message_interface::Message::MnemonicToHexSeed)
     MnemonicHexSeed(String),
     /// Response for:
-    /// - [`BlockId`](crate::message_interface::ClientMethod::BlockId)
-    /// - [`PostBlock`](crate::message_interface::ClientMethod::PostBlock)
-    /// - [`PostBlockRaw`](crate::message_interface::ClientMethod::PostBlockRaw)
+    /// - [`BlockId`](crate::message_interface::Message::BlockId)
+    /// - [`PostBlock`](crate::message_interface::Message::PostBlock)
+    /// - [`PostBlockRaw`](crate::message_interface::Message::PostBlockRaw)
     BlockId(BlockId),
     /// Response for:
-    /// - [`TransactionId`](crate::message_interface::ClientMethod::TransactionId)
+    /// - [`TransactionId`](crate::message_interface::Message::TransactionId)
     TransactionId(TransactionId),
     /// Response for:
-    /// - [`ComputeAliasId`](crate::message_interface::ClientMethod::ComputeAliasId)
+    /// - [`ComputeAliasId`](crate::message_interface::Message::ComputeAliasId)
     AliasId(AliasId),
     /// Response for:
-    /// - [`ComputeNftId`](crate::message_interface::ClientMethod::ComputeNftId)
+    /// - [`ComputeNftId`](crate::message_interface::Message::ComputeNftId)
     NftId(NftId),
     /// Response for:
-    /// - [`ComputeFoundryId`](crate::message_interface::ClientMethod::ComputeFoundryId)
+    /// - [`ComputeFoundryId`](crate::message_interface::Message::ComputeFoundryId)
     FoundryId(FoundryId),
     /// Response for:
-    /// - [`Faucet`](crate::message_interface::ClientMethod::Faucet)
+    /// - [`Faucet`](crate::message_interface::Message::Faucet)
     Faucet(String),
     /// Response for:
-    /// - [`StoreMnemonic`](crate::message_interface::ClientMethod::StoreMnemonic)
+    /// - [`StoreMnemonic`](crate::message_interface::Message::StoreMnemonic)
     Ok,
     /// Response for any method that returns an error.
     Error(Error),
