@@ -8,7 +8,7 @@
         "type": "git",
         "url": "https://github.com/iotaledger/iota.rs"
     },
-    "author": "Lucas Nogueira <lucas.nogueira@iota.org>",
+    "author": "IOTA Foundation <contact@iota.org>",
     "license": "Apache-2.0",
     "dependencies": {
         "cargo-cp-artifact": "^0.1.5",
