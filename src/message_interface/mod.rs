@@ -177,7 +177,7 @@ mod tests {
 
         let response = message_interface::send_message(&message_handler, generate_block).await;
         match response {
-            Response::GeneratedBlock(block_data) => {
+            Response::Block(block_data) => {
                 println!("{}", serde_json::to_string(&block_data).unwrap());
             }
             response_type => panic!("Unexpected response type: {:?}", response_type),

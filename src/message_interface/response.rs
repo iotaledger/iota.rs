@@ -39,9 +39,6 @@ pub enum Response {
     /// - [`GenerateAddresses`](crate::message_interface::ClientMethod::GenerateAddresses)
     GeneratedAddresses(Vec<String>),
     /// Response for:
-    /// - [`GenerateBlock`](crate::message_interface::ClientMethod::GenerateBlock)
-    GeneratedBlock(BlockDto),
-    /// Response for:
     /// - [`GetNode`](crate::message_interface::ClientMethod::GetNode)
     Node(Node),
     /// Response for:
@@ -91,6 +88,8 @@ pub enum Response {
     Tips(Vec<BlockId>),
     /// Response for:
     /// - [`GetBlock`](crate::message_interface::ClientMethod::GetBlock)
+    /// - [`GenerateBlock`](crate::message_interface::ClientMethod::GenerateBlock)
+    /// - [`GetIncludedBlock`](crate::message_interface::ClientMethod::GetIncludedBlock)
     Block(BlockDto),
     /// Response for:
     /// - [`PostBlockPayload`](crate::message_interface::ClientMethod::PostBlockPayload)
@@ -132,9 +131,6 @@ pub enum Response {
     /// Response for:
     /// - [`GetTreasury`](crate::message_interface::ClientMethod::GetTreasury)
     Treasury(TreasuryResponse),
-    /// Response for:
-    /// - [`GetIncludedBlock`](crate::message_interface::ClientMethod::GetIncludedBlock)
-    IncludedBlock(BlockDto),
     /// Response for:
     /// - [`AliasOutputId`](crate::message_interface::ClientMethod::AliasOutputId)
     /// - [`NftOutputId`](crate::message_interface::ClientMethod::NftOutputId)

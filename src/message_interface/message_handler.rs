@@ -242,9 +242,7 @@ impl ClientMessageHandler {
                     transaction_builder = transaction_builder.set_options(options.clone())?;
                 }
 
-                Ok(Response::GeneratedBlock(BlockDto::from(
-                    &transaction_builder.finish().await?,
-                )))
+                Ok(Response::Block(BlockDto::from(&transaction_builder.finish().await?)))
             }
             ClientMethod::GetNode => Ok(Response::Node(self.client.get_node().await?)),
             ClientMethod::GetNetworkInfo => Ok(Response::NetworkInfo(self.client.get_network_info().await?)),
@@ -387,7 +385,7 @@ impl ClientMessageHandler {
                 self.client.get_receipts_migrated_at(*milestone_index).await?,
             )),
             ClientMethod::GetTreasury => Ok(Response::Treasury(self.client.get_treasury().await?)),
-            ClientMethod::GetIncludedBlock { transaction_id } => Ok(Response::IncludedBlock(BlockDto::from(
+            ClientMethod::GetIncludedBlock { transaction_id } => Ok(Response::Block(BlockDto::from(
                 &self.client.get_included_block(transaction_id).await?,
             ))),
             ClientMethod::BasicOutputIds { query_parameters } => Ok(Response::OutputIds(
