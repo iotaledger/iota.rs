@@ -90,10 +90,6 @@ pub enum Response {
     /// - [`GetTips`](crate::message_interface::ClientMethod::GetTips)
     Tips(Vec<BlockId>),
     /// Response for:
-    /// - [`PostBlockRaw`](crate::message_interface::ClientMethod::PostBlockRaw)
-    /// - [`PostBlock`](crate::message_interface::ClientMethod::PostBlock)
-    PostBlockSuccessful(BlockId),
-    /// Response for:
     /// - [`GetBlock`](crate::message_interface::ClientMethod::GetBlock)
     Block(BlockDto),
     /// Response for:
@@ -191,6 +187,8 @@ pub enum Response {
     MnemonicHexSeed(String),
     /// Response for:
     /// - [`BlockId`](crate::message_interface::ClientMethod::BlockId)
+    /// - [`PostBlock`](crate::message_interface::ClientMethod::PostBlock)
+    /// - [`PostBlockRaw`](crate::message_interface::ClientMethod::PostBlockRaw)
     BlockId(BlockId),
     /// Response for:
     /// - [`TransactionId`](crate::message_interface::ClientMethod::TransactionId)
