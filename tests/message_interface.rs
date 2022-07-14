@@ -9,7 +9,7 @@ use bee_block::{BlockDto, BlockId};
 use dotenv::dotenv;
 use iota_client::{
     api::GetAddressesBuilderOptions as GenerateAddressesOptions,
-    message_interface::{self, ClientMethod, Message, Response},
+    message_interface::{self, Message, Response},
     secret::{GenerateAddressMetadata, SecretManagerDto},
 };
 
@@ -38,10 +38,10 @@ async fn generate_addresses() {
         bech32_hrp: Some("atoi".to_string()),
         metadata: Some(GenerateAddressMetadata { syncing: false }),
     };
-    let message = Message::CallClientMethod(ClientMethod::GenerateAddresses {
+    let message = Message::GenerateAddresses {
         secret_manager: serde_json::from_str::<SecretManagerDto>(&secret_manager).unwrap(),
         options,
-    });
+    };
 
     let response = message_interface::send_message(&message_handler, message).await;
     match response {
@@ -89,10 +89,10 @@ async fn generate_block() {
         metadata: Some(GenerateAddressMetadata { syncing: false }),
     };
 
-    let generate_addresses_message = Message::CallClientMethod(ClientMethod::GenerateAddresses {
+    let generate_addresses_message = Message::GenerateAddresses {
         secret_manager: serde_json::from_str(&secret_manager).unwrap(),
         options,
-    });
+    };
 
     let response = message_interface::send_message(&message_handler, generate_addresses_message).await;
     let addresses = match response {
@@ -105,10 +105,10 @@ async fn generate_block() {
     let amount = 1_000_000;
 
     // Find inputs
-    let find_inputs_message = Message::CallClientMethod(ClientMethod::FindInputs {
+    let find_inputs_message = Message::FindInputs {
         addresses: addresses.clone(),
         amount,
-    });
+    };
 
     let response = message_interface::send_message(&message_handler, find_inputs_message).await;
     let inputs = match response {
@@ -123,10 +123,10 @@ async fn generate_block() {
     let options = format!("{{\"inputs\": {inputs},\"output\": {output}}}");
 
     let options = serde_json::from_str(&options).unwrap();
-    let generate_block = Message::CallClientMethod(ClientMethod::GenerateBlock {
+    let generate_block = Message::GenerateBlock {
         secret_manager: Some(serde_json::from_str(&secret_manager).unwrap()),
         options: Some(options),
-    });
+    };
 
     let response = message_interface::send_message(&message_handler, generate_block).await;
     match response {
@@ -164,7 +164,7 @@ async fn get_block_id() {
         }"#;
 
     let block_dto: BlockDto = serde_json::from_str(block).unwrap();
-    let message = Message::CallClientMethod(ClientMethod::BlockId { block: block_dto });
+    let message = Message::BlockId { block: block_dto };
 
     let response = message_interface::send_message(&message_handler, message).await;
 
@@ -192,10 +192,10 @@ async fn stronghold() {
         "acoustic trophy damage hint search taste love bicycle foster cradle brown govern endless depend situate athlete pudding blame question genius transfer van random vast",
     );
 
-    let message = Message::CallClientMethod(ClientMethod::StoreMnemonic {
+    let message = Message::StoreMnemonic {
         secret_manager: serde_json::from_str(secret_manager_dto).unwrap(),
         mnemonic,
-    });
+    };
     let _response = message_interface::send_message(&message_handler, message).await;
 
     // Generate an address with the stored mnemonic to verify that it's usable
@@ -207,10 +207,10 @@ async fn stronghold() {
         bech32_hrp: Some("rms".to_string()),
         metadata: None,
     };
-    let message = Message::CallClientMethod(ClientMethod::GenerateAddresses {
+    let message = Message::GenerateAddresses {
         secret_manager: serde_json::from_str(secret_manager_dto).unwrap(),
         options,
-    });
+    };
     let response = message_interface::send_message(&message_handler, message).await;
 
     match response {

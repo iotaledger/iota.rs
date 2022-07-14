@@ -10,7 +10,7 @@ use iota_client::api::GetAddressesBuilderOptions;
 #[cfg(feature = "message_interface")]
 use iota_client::message_interface;
 #[cfg(feature = "message_interface")]
-use iota_client::message_interface::{ClientMethod, Message, Response};
+use iota_client::message_interface::{Message, Response};
 #[cfg(feature = "stronghold")]
 use iota_client::secret::stronghold::StrongholdSecretManager;
 #[cfg(all(feature = "message_interface", feature = "stronghold"))]
@@ -23,6 +23,7 @@ use iota_client::{
     secret::{mnemonic::MnemonicSecretManager, SecretManager},
     Client,
 };
+use serde::{Deserialize, Serialize};
 
 #[tokio::test]
 async fn addresses() {
@@ -146,7 +147,6 @@ async fn mnemonic_address_generation_shimmer() {
     );
 }
 
-use serde::{Deserialize, Serialize};
 #[tokio::test]
 async fn address_generation() {
     #[derive(Serialize, Deserialize)]
@@ -238,10 +238,10 @@ async fn address_generation() {
                 bech32_hrp: Some(address.bech32_hrp.to_string()),
                 metadata: None,
             };
-            let message = Message::CallClientMethod(ClientMethod::GenerateAddresses {
+            let message = Message::GenerateAddresses {
                 secret_manager: SecretManagerDto::Mnemonic(address.mnemonic.clone()),
                 options,
-            });
+            };
 
             let response = message_interface::send_message(&message_handler, message).await;
             match response {
@@ -273,10 +273,10 @@ async fn address_generation() {
                 timeout: None,
                 snapshot_path: stronghold_filename.clone(),
             };
-            let message = Message::CallClientMethod(ClientMethod::StoreMnemonic {
+            let message = Message::StoreMnemonic {
                 secret_manager: SecretManagerDto::Stronghold(secret_manager_dto.clone()),
                 mnemonic: address.mnemonic,
-            });
+            };
             let _response = message_interface::send_message(&message_handler, message).await;
 
             let options = GetAddressesBuilderOptions {
@@ -290,10 +290,10 @@ async fn address_generation() {
                 bech32_hrp: Some(address.bech32_hrp.to_string()),
                 metadata: None,
             };
-            let message = Message::CallClientMethod(ClientMethod::GenerateAddresses {
+            let message = Message::GenerateAddresses {
                 secret_manager: SecretManagerDto::Stronghold(secret_manager_dto),
                 options,
-            });
+            };
 
             let response = message_interface::send_message(&message_handler, message).await;
             match response {
