@@ -17,43 +17,43 @@ import type { IAliasOutputBuilderOptions } from '../outputBuilderOptions/aliasOu
 import type { IFoundryOutputBuilderOptions } from '../outputBuilderOptions/foundryOutputOptions';
 import type { INftOutputBuilderOptions } from '../outputBuilderOptions/nftOutputOptions';
 
-export interface __GetInfoPayloadMethod__ {
+export interface __GetInfoMessage__ {
     name: 'GetInfo';
 }
 
-export interface __GetOutputPayloadMethod__ {
+export interface __GetOutputMessage__ {
     name: 'GetOutput';
     data: {
         outputId: string;
     };
 }
 
-export interface __GetBasicOutputIdsPayloadMethod__ {
+export interface __GetBasicOutputIdsMessage__ {
     name: 'BasicOutputIds';
     data: {
         queryParameters: QueryParameter[];
     };
 }
 
-export interface __GetOutputsPayloadMethod__ {
+export interface __GetOutputsMessage__ {
     name: 'GetOutputs';
     data: {
         outputIds: string[];
     };
 }
 
-export interface __GenerateMnemonicPayloadMethod__ {
+export interface __GenerateMnemonicMessage__ {
     name: 'GenerateMnemonic';
 }
 
-export interface __MnemonicToHexSeedPayloadMethod__ {
+export interface __MnemonicToHexSeedMessage__ {
     name: 'MnemonicToHexSeed';
     data: {
         mnemonic: string;
     };
 }
 
-export interface __GenerateAddressesPayloadMethod__ {
+export interface __GenerateAddressesMessage__ {
     name: 'GenerateAddresses';
     data: {
         secretManager: SecretManager;
@@ -61,14 +61,14 @@ export interface __GenerateAddressesPayloadMethod__ {
     };
 }
 
-export interface __PostBlockPayloadMethod__ {
+export interface __PostBlockMessage__ {
     name: 'PostBlock';
     data: {
         block: IBlock;
     };
 }
 
-export interface __GenerateBlockPayloadMethod__ {
+export interface __GenerateBlockMessage__ {
     name: 'GenerateBlock';
     data: {
         secretManager?: SecretManager;
@@ -76,29 +76,29 @@ export interface __GenerateBlockPayloadMethod__ {
     };
 }
 
-export interface __GetTipsPayloadMethod__ {
+export interface __GetTipsMessage__ {
     name: 'GetTips';
 }
 
-export interface __GetNetworkInfoPayloadMethod__ {
+export interface __GetNetworkInfoMessage__ {
     name: 'GetNetworkInfo';
 }
 
-export interface __GetBlockPayloadMethod__ {
+export interface __GetBlockMessage__ {
     name: 'GetBlock';
     data: {
         blockId: BlockId;
     };
 }
 
-export interface __GetBlockMetadataPayloadMethod__ {
+export interface __GetBlockMetadataMessage__ {
     name: 'GetBlockMetadata';
     data: {
         blockId: BlockId;
     };
 }
 
-export interface __FindInputsPayloadMethod__ {
+export interface __FindInputsMessage__ {
     name: 'FindInputs';
     data: {
         addresses: string[];
@@ -106,7 +106,7 @@ export interface __FindInputsPayloadMethod__ {
     };
 }
 
-export interface __FindOutputsPayloadMethod__ {
+export interface __FindOutputsMessage__ {
     name: 'FindOutputs';
     data: {
         outputIds: string[];
@@ -114,7 +114,7 @@ export interface __FindOutputsPayloadMethod__ {
     };
 }
 
-export interface __PrepareTransactionPayloadMethod__ {
+export interface __PrepareTransactionMessage__ {
     name: 'PrepareTransaction';
     data: {
         secretManager?: SecretManager;
@@ -122,7 +122,7 @@ export interface __PrepareTransactionPayloadMethod__ {
     };
 }
 
-export interface __SignTransactionPayloadMethod__ {
+export interface __SignTransactionMessage__ {
     name: 'SignTransaction';
     data: {
         secretManager: SecretManager;
@@ -130,7 +130,7 @@ export interface __SignTransactionPayloadMethod__ {
     };
 }
 
-export interface __StoreMnemonicPayloadMethod__ {
+export interface __StoreMnemonicMessage__ {
     name: 'StoreMnemonic';
     data: {
         secretManager: SecretManager;
@@ -138,63 +138,63 @@ export interface __StoreMnemonicPayloadMethod__ {
     };
 }
 
-export interface __SubmitPayloadPayloadMethod__ {
+export interface __SubmitPayloadMessage__ {
     name: 'SubmitPayload';
     data: {
         payload: PayloadTypes;
     };
 }
 
-export interface __ParseBech32AddressPayloadMethod__ {
+export interface __ParseBech32AddressMessage__ {
     name: 'ParseBech32Address';
     data: {
         address: string;
     };
 }
 
-export interface __BlockIdPayloadMethod__ {
+export interface __BlockIdMessage__ {
     name: 'BlockId';
     data: {
         block: IBlock;
     };
 }
 
-export interface __GetNodePayloadMethod__ {
+export interface __GetNodeMessage__ {
     name: 'GetNode';
 }
 
-export interface __GetNetworkIdPayloadMethod__ {
+export interface __GetNetworkIdMessage__ {
     name: 'GetNetworkId';
 }
 
-export interface __GetBech32HrpPayloadMethod__ {
+export interface __GetBech32HrpMessage__ {
     name: 'GetBech32Hrp';
 }
 
-export interface __GetMinPowScorePayloadMethod__ {
+export interface __GetMinPowScoreMessage__ {
     name: 'GetMinPoWScore';
 }
 
-export interface __GetTipsIntervalPayloadMethod__ {
+export interface __GetTipsIntervalMessage__ {
     name: 'GetTipsInterval';
 }
 
-export interface __GetLocalPowPayloadMethod__ {
+export interface __GetLocalPowMessage__ {
     name: 'GetLocalPoW';
 }
 
-export interface __GetFallbackToLocalPowPayloadMethod__ {
+export interface __GetFallbackToLocalPowMessage__ {
     name: 'GetFallbackToLocalPoW';
 }
 
-export interface __GetHealthPayloadMethod__ {
+export interface __GetHealthMessage__ {
     name: 'GetHealth';
     data: {
         url: string;
     };
 }
 
-export interface __GetNodeInfoPayloadMethod__ {
+export interface __GetNodeInfoMessage__ {
     name: 'GetNodeInfo';
     data: {
         url: string;
@@ -202,81 +202,81 @@ export interface __GetNodeInfoPayloadMethod__ {
     };
 }
 
-export interface __GetPeersPayloadMethod__ {
+export interface __GetPeersMessage__ {
     name: 'GetPeers';
 }
 
-export interface __PostBlockRawPayloadMethod__ {
+export interface __PostBlockRawMessage__ {
     name: 'PostBlockRaw';
     data: {
         block: IBlock;
     };
 }
 
-export interface __GetBlockRawPayloadMethod__ {
+export interface __GetBlockRawMessage__ {
     name: 'GetBlockRaw';
     data: {
         blockId: BlockId;
     };
 }
 
-export interface __GetMilestoneByIdPayloadMethod__ {
+export interface __GetMilestoneByIdMessage__ {
     name: 'GetMilestoneById';
     data: {
         milestoneId: string;
     };
 }
 
-export interface __GetUtxoChangesByIdPayloadMethod__ {
+export interface __GetUtxoChangesByIdMessage__ {
     name: 'GetUtxoChangesById';
     data: {
         milestoneId: string;
     };
 }
-export interface __GetMilestoneByIndexPayloadMethod__ {
+export interface __GetMilestoneByIndexMessage__ {
     name: 'GetMilestoneByIndex';
     data: {
         index: number;
     };
 }
 
-export interface __GetUtxoChangesByIndexPayloadMethod__ {
+export interface __GetUtxoChangesByIndexMessage__ {
     name: 'GetUtxoChangesByIndex';
     data: {
         index: number;
     };
 }
 
-export interface __GetReceiptsPayloadMethod__ {
+export interface __GetReceiptsMessage__ {
     name: 'GetReceipts';
 }
 
-export interface __GetReceiptsMigratedAtPayloadMethod__ {
+export interface __GetReceiptsMigratedAtMessage__ {
     name: 'GetReceiptsMigratedAt';
     data: {
         milestoneIndex: number;
     };
 }
 
-export interface __GetTreasuryPayloadMethod__ {
+export interface __GetTreasuryMessage__ {
     name: 'GetTreasury';
 }
 
-export interface __GetIncludedBlockPayloadMethod__ {
+export interface __GetIncludedBlockMessage__ {
     name: 'GetIncludedBlock';
     data: {
         transactionId: string;
     };
 }
 
-export interface __Bech32ToHexPayloadMethod__ {
+export interface __Bech32ToHexMessage__ {
     name: 'Bech32ToHex';
     data: {
         bech32: string;
     };
 }
 
-export interface __HexToBech32PayloadMethod__ {
+export interface __HexToBech32Message__ {
     name: 'HexToBech32';
     data: {
         hex: string;
@@ -284,7 +284,7 @@ export interface __HexToBech32PayloadMethod__ {
     };
 }
 
-export interface __HexPublicKeyToBech32AddressPayloadMethod__ {
+export interface __HexPublicKeyToBech32AddressMessage__ {
     name: 'HexPublicKeyToBech32Address';
     data: {
         hex: string;
@@ -292,77 +292,77 @@ export interface __HexPublicKeyToBech32AddressPayloadMethod__ {
     };
 }
 
-export interface __IsAddressValidPayloadMethod__ {
+export interface __IsAddressValidMessage__ {
     name: 'IsAddressValid';
     data: {
         address: string;
     };
 }
 
-export interface __AliasOutputIdsPayloadMethod__ {
+export interface __AliasOutputIdsMessage__ {
     name: 'AliasOutputIds';
     data: {
         queryParameters: AliasQueryParameter[];
     };
 }
 
-export interface __AliasOutputIdPayloadMethod__ {
+export interface __AliasOutputIdMessage__ {
     name: 'AliasOutputId';
     data: {
         aliasId: string;
     };
 }
 
-export interface __NftOutputIdsPayloadMethod__ {
+export interface __NftOutputIdsMessage__ {
     name: 'NftOutputIds';
     data: {
         queryParameters: NftQueryParameter[];
     };
 }
 
-export interface __NftOutputIdPayloadMethod__ {
+export interface __NftOutputIdMessage__ {
     name: 'NftOutputId';
     data: {
         nftId: string;
     };
 }
 
-export interface __FoundryOutputIdsPayloadMethod__ {
+export interface __FoundryOutputIdsMessage__ {
     name: 'FoundryOutputIds';
     data: {
         queryParameters: FoundryQueryParameter[];
     };
 }
 
-export interface __FoundryOutputIdPayloadMethod__ {
+export interface __FoundryOutputIdMessage__ {
     name: 'FoundryOutputId';
     data: {
         foundryId: string;
     };
 }
 
-export interface __TryGetOutputsPayloadMethod__ {
+export interface __TryGetOutputsMessage__ {
     name: 'TryGetOutputs';
     data: {
         outputIds: string[];
     };
 }
 
-export interface __FindBlocksPayloadMethod__ {
+export interface __FindBlocksMessage__ {
     name: 'FindBlocks';
     data: {
         blockIds: string[];
     };
 }
 
-export interface __RetryPayloadMethod__ {
+export interface __RetryMessage__ {
     name: 'Retry';
     data: {
         blockId: string;
     };
 }
 
-export interface __RetryUntilIncludedPayloadMethod__ {
+export interface __RetryUntilIncludedMessage__ {
     name: 'RetryUntilIncluded';
     data: {
         blockId: string;
@@ -371,7 +371,7 @@ export interface __RetryUntilIncludedPayloadMethod__ {
     };
 }
 
-export interface __ConsolidateFundsPayloadMethod__ {
+export interface __ConsolidateFundsMessage__ {
     name: 'ConsolidateFunds';
     data: {
         secretManager: SecretManager;
@@ -380,51 +380,54 @@ export interface __ConsolidateFundsPayloadMethod__ {
     };
 }
 
-export interface __ReattachPayloadMethod__ {
+export interface __ReattachMessage__ {
     name: 'Reattach';
     data: {
         blockId: BlockId;
     };
 }
 
-export interface __ReattachUncheckedPayloadMethod__ {
+export interface __ReattachUncheckedMessage__ {
     name: 'ReattachUnchecked';
     data: {
         blockId: BlockId;
     };
 }
 
-export interface __PromotePayloadMethod__ {
+export interface __PromoteMessage__ {
     name: 'Promote';
     data: {
         blockId: BlockId;
     };
 }
 
-export interface __PromoteUncheckedPayloadMethod__ {
+export interface __PromoteUncheckedMessage__ {
     name: 'PromoteUnchecked';
     data: {
         blockId: BlockId;
     };
 }
 
-export interface __UnsyncedNodesPayloadMethod__ {
+export interface __UnsyncedNodesMessage__ {
     name: 'UnsyncedNodes';
 }
 
-export interface __BuildBasicOutputPayloadMethod__ {
+export interface __BuildBasicOutputMessage__ {
     name: 'BuildBasicOutput';
     data: IBasicOutputBuilderOptions;
 }
-export interface __BuildAliasOutputPayloadMethod__ {
+
+export interface __BuildAliasOutputMessage__ {
     name: 'BuildAliasOutput';
     data: IAliasOutputBuilderOptions;
 }
-export interface __BuildFoundryOutputPayloadMethod__ {
+
+export interface __BuildFoundryOutputMessage__ {
     name: 'BuildFoundryOutput';
     data: IFoundryOutputBuilderOptions;
 }
-export interface __BuildNftOutputPayloadMethod__ {
+
+export interface __BuildNftOutputMessage__ {
     name: 'BuildNftOutput';
     data: INftOutputBuilderOptions;
 }

@@ -4,8 +4,7 @@
 import { sendMessageAsync, messageHandlerNew, listen } from './bindings';
 import type {
     IClientOptions,
-    __ClientPayloadMethods__,
-    __SendMessagePayload__,
+    __ClientMessages__,
 } from '../types';
 
 export class MessageHandler {
@@ -15,15 +14,8 @@ export class MessageHandler {
         this.messageHandler = messageHandlerNew(JSON.stringify(options));
     }
 
-    async sendMessage(message: __SendMessagePayload__): Promise<string> {
+    async sendMessage(message: __ClientMessages__): Promise<string> {
         return sendMessageAsync(JSON.stringify(message), this.messageHandler);
-    }
-
-    async callClientMethod(method: __ClientPayloadMethods__): Promise<string> {
-        return this.sendMessage({
-            cmd: 'CallClientMethod',
-            payload: method,
-        });
     }
 
     // MQTT

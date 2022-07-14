@@ -24,6 +24,7 @@ pub struct MessageHandler {
 }
 
 impl Finalize for MessageHandler {}
+
 impl MessageHandler {
     fn new(channel: Channel, options: String) -> Arc<Self> {
         let client_message_handler = crate::RUNTIME
@@ -67,6 +68,7 @@ impl MessageHandler {
             }
         }
     }
+
     fn call_event_callback(&self, event: TopicEvent, callback: Arc<JsCallback>) {
         self.channel.send(move |mut cx| {
             #[derive(Serialize)]
