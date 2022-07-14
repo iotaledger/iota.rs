@@ -13,9 +13,9 @@ categories = [ "cryptography::cryptocurrencies" ]
 
 [dependencies]
 async-trait = { version = "0.1.56", default-features = false }
-bee-block = { git = "https://github.com/iotaledger/bee", rev = "3b66992a29ca6d4434a3af08562b197b14c21541", default-features = false, features = [ "serde", "dto", "std" ] }
-bee-rest-api = { git = "https://github.com/iotaledger/bee", rev = "3b66992a29ca6d4434a3af08562b197b14c21541", default-features = false }
-bee-pow = { git = "https://github.com/iotaledger/bee", rev = "3b66992a29ca6d4434a3af08562b197b14c21541", default-features = false }
+bee-block = { git = "https://github.com/thibault-martinez/bee", rev = "1360ab57e7df12f6eadb49739ce773e39ee7fe40", default-features = false, features = [ "serde", "dto", "std" ] }
+bee-rest-api = { git = "https://github.com/thibault-martinez/bee", rev = "1360ab57e7df12f6eadb49739ce773e39ee7fe40", default-features = false }
+bee-pow = { git = "https://github.com/thibault-martinez/bee", rev = "1360ab57e7df12f6eadb49739ce773e39ee7fe40", default-features = false }
 derive_builder = { version = "0.11.2", default-features = false, features = [ "std" ]}
 futures = { version = "0.3.21", default-features = false, features = [ "thread-pool" ] }
 hex = { version = "0.4.3", default-features = false }

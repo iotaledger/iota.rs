@@ -9,7 +9,10 @@ use backtrace::Backtrace;
 use bee_block::{
     address::dto::AddressDto,
     input::dto::UtxoInputDto,
-    output::{AliasId, FoundryId, NftId},
+    output::{
+        dto::{OutputBuilderAmountDto, OutputDto},
+        AliasId, AliasOutput, BasicOutput, FoundryId, FoundryOutput, NftId, NftOutput, Output,
+    },
     payload::{
         dto::{MilestonePayloadDto, PayloadDto},
         Payload, TransactionPayload,
@@ -23,11 +26,7 @@ use zeroize::Zeroize;
 
 use crate::{
     api::{PreparedTransactionData, PreparedTransactionDataDto},
-    message_interface::{
-        message::Message,
-        output_builder::{build_alias_output, build_basic_output, build_foundry_output, build_nft_output},
-        response::Response,
-    },
+    message_interface::{message::Message, response::Response},
     request_funds_from_faucet,
     secret::SecretManager,
     Client, Result,
@@ -118,9 +117,12 @@ impl ClientMessageHandler {
                 features,
                 immutable_features,
             } => {
-                let output_dto = build_alias_output(
-                    &self.client,
-                    amount.clone(),
+                let output = Output::from(AliasOutput::from_dtos(
+                    if let Some(amount) = amount {
+                        OutputBuilderAmountDto::Amount(amount.to_string())
+                    } else {
+                        OutputBuilderAmountDto::MinimumStorageDeposit(self.client.get_byte_cost_config().await?)
+                    },
                     native_tokens.clone(),
                     alias_id,
                     *state_index,
@@ -129,9 +131,9 @@ impl ClientMessageHandler {
                     unlock_conditions.clone(),
                     features.clone(),
                     immutable_features.clone(),
-                )
-                .await?;
-                Ok(Response::BuiltOutput(output_dto))
+                )?);
+
+                Ok(Response::BuiltOutput(OutputDto::from(&output)))
             }
             Message::BuildBasicOutput {
                 amount,
@@ -139,15 +141,18 @@ impl ClientMessageHandler {
                 unlock_conditions,
                 features,
             } => {
-                let output_dto = build_basic_output(
-                    &self.client,
-                    amount.clone(),
+                let output = Output::from(BasicOutput::from_dtos(
+                    if let Some(amount) = amount {
+                        OutputBuilderAmountDto::Amount(amount.to_string())
+                    } else {
+                        OutputBuilderAmountDto::MinimumStorageDeposit(self.client.get_byte_cost_config().await?)
+                    },
                     native_tokens.clone(),
                     unlock_conditions.clone(),
                     features.clone(),
-                )
-                .await?;
-                Ok(Response::BuiltOutput(output_dto))
+                )?);
+
+                Ok(Response::BuiltOutput(OutputDto::from(&output)))
             }
             Message::BuildFoundryOutput {
                 amount,
@@ -158,18 +163,21 @@ impl ClientMessageHandler {
                 features,
                 immutable_features,
             } => {
-                let output_dto = build_foundry_output(
-                    &self.client,
-                    amount.clone(),
+                let output = Output::from(FoundryOutput::from_dtos(
+                    if let Some(amount) = amount {
+                        OutputBuilderAmountDto::Amount(amount.to_string())
+                    } else {
+                        OutputBuilderAmountDto::MinimumStorageDeposit(self.client.get_byte_cost_config().await?)
+                    },
                     native_tokens.clone(),
                     *serial_number,
                     token_scheme,
                     unlock_conditions.clone(),
                     features.clone(),
                     immutable_features.clone(),
-                )
-                .await?;
-                Ok(Response::BuiltOutput(output_dto))
+                )?);
+
+                Ok(Response::BuiltOutput(OutputDto::from(&output)))
             }
             Message::BuildNftOutput {
                 amount,
@@ -179,17 +187,20 @@ impl ClientMessageHandler {
                 features,
                 immutable_features,
             } => {
-                let output_dto = build_nft_output(
-                    &self.client,
-                    amount.clone(),
+                let output = Output::from(NftOutput::from_dtos(
+                    if let Some(amount) = amount {
+                        OutputBuilderAmountDto::Amount(amount.to_string())
+                    } else {
+                        OutputBuilderAmountDto::MinimumStorageDeposit(self.client.get_byte_cost_config().await?)
+                    },
                     native_tokens.clone(),
                     nft_id,
                     unlock_conditions.clone(),
                     features.clone(),
                     immutable_features.clone(),
-                )
-                .await?;
-                Ok(Response::BuiltOutput(output_dto))
+                )?);
+
+                Ok(Response::BuiltOutput(OutputDto::from(&output)))
             }
             Message::GenerateAddresses {
                 secret_manager,

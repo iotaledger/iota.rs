@@ -5,8 +5,6 @@
 
 mod message;
 mod message_handler;
-/// Output builders for the message interface
-pub mod output_builder;
 mod response;
 
 pub use self::{message::Message, message_handler::ClientMessageHandler, response::Response};
