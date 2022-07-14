@@ -296,16 +296,20 @@ impl SecretManageExt for LedgerSecretManager {
         // if denied by user, it returns with `DeniedByUser` Error
         log::debug!("[LEDGER] await user confirmation");
         ledger.user_confirm()?;
-
+        
         // sign
-        let signature_bytes = ledger.sign(input_len as u16)?;
-        let mut readable = &mut &*signature_bytes;
+        let mut signature_bytes = ledger.sign(input_len as u16)?;
 
         // unpack signature to unlocks
         let mut unlocks = Vec::new();
         for _ in 0..input_len {
-            let unlock = Unlock::unpack_verified(&mut readable).map_err(|_| crate::Error::PackableError)?;
-            unlocks.push(unlock);
+            let unlock = Unlock::unpack_verified(&mut signature_bytes).map_err(|_| crate::Error::PackableError)?;
+            // TODO: replace with SliceUnpacker when available
+            signature_bytes.drain(0..unlock.packed_len());
+            // The ledger nano can return the same SignatureUnlocks multiple times, so only insert it once
+            if !unlocks.contains(&unlock) {
+                unlocks.push(unlock);
+            }
         }
 
         // With blind signing the ledger only returns SignatureUnlocks, so we might have to merge them with
