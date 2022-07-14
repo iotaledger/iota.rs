@@ -309,12 +309,10 @@ impl ClientMessageHandler {
             } => {
                 let mut secret_manager = (&secret_manager).try_into()?;
                 if let SecretManager::Stronghold(secret_manager) = &mut secret_manager {
-                    secret_manager.store_mnemonic(mnemonic.clone()).await?;
+                    secret_manager.store_mnemonic(mnemonic).await?;
                 } else {
                     return Err(crate::Error::SecretManagerMismatch);
                 }
-
-                mnemonic.zeroize();
 
                 Ok(Response::Ok)
             }
