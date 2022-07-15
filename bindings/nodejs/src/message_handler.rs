@@ -1,6 +1,8 @@
 // Copyright 2021-2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+use std::sync::Arc;
+
 use iota_client::{
     bee_block::{
         payload::milestone::{dto::MilestonePayloadDto, option::dto::ReceiptMilestoneOptionDto},
@@ -9,12 +11,9 @@ use iota_client::{
     message_interface::{create_message_handler, ClientMessageHandler, Message, Response},
     MqttPayload, Topic, TopicEvent,
 };
-
 use neon::prelude::*;
 use serde::Serialize;
 use tokio::sync::mpsc::unbounded_channel;
-
-use std::sync::Arc;
 
 type JsCallback = Root<JsFunction<JsObject>>;
 
