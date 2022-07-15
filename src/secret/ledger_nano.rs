@@ -15,7 +15,7 @@ use bee_block::{
     signature::Signature,
     unlock::{AliasUnlock, NftUnlock, ReferenceUnlock, Unlock, Unlocks},
 };
-use iota_ledger::{api::packable::Packable, LedgerBIP32Index};
+use iota_ledger_nano::{api::packable::Packable, LedgerBIP32Index};
 use packable::PackableExt;
 use tokio::sync::Mutex;
 
@@ -79,12 +79,12 @@ impl SecretManage for LedgerSecretManager {
 
         let bip32_account = account_index | HARDENED;
 
-        let bip32 = iota_ledger::LedgerBIP32Index {
+        let bip32 = iota_ledger_nano::LedgerBIP32Index {
             bip32_index: address_indexes.start | HARDENED,
             bip32_change: if internal { 1 } else { 0 } | HARDENED,
         };
         // get ledger
-        let ledger = iota_ledger::get_ledger(coin_type, bip32_account, self.is_simulator)?;
+        let ledger = iota_ledger_nano::get_ledger(coin_type, bip32_account, self.is_simulator)?;
 
         // if it's not for syncing, then it's a new receiving / remainder address
         // that needs shown to the user
@@ -183,7 +183,7 @@ impl SecretManageExt for LedgerSecretManager {
 
             coin_type = Some(bip32_indices[1]);
             account_index = Some(bip32_indices[2]);
-            input_bip32_indices.push(iota_ledger::LedgerBIP32Index {
+            input_bip32_indices.push(iota_ledger_nano::LedgerBIP32Index {
                 bip32_change: bip32_indices[3] | HARDENED,
                 bip32_index: bip32_indices[4] | HARDENED,
             });
@@ -201,7 +201,7 @@ impl SecretManageExt for LedgerSecretManager {
         let essence_bytes = prepared_transaction.essence.pack_to_vec();
         let essence_hash = prepared_transaction.essence.hash().to_vec();
 
-        let ledger = iota_ledger::get_ledger(coin_type, bip32_account, self.is_simulator)?;
+        let ledger = iota_ledger_nano::get_ledger(coin_type, bip32_account, self.is_simulator)?;
         let blind_signing = needs_blind_signing(prepared_transaction, ledger.get_buffer_size());
 
         // if essence + bip32 input indices are larger than the buffer size or the essence contains
@@ -213,7 +213,7 @@ impl SecretManageExt for LedgerSecretManager {
             ledger.prepare_blind_signing(input_bip32_indices, essence_hash)?;
         } else {
             // figure out the remainder address and bip32 index (if there is one)
-            let (remainder_address, remainder_bip32): (Option<&Address>, iota_ledger::LedgerBIP32Index) =
+            let (remainder_address, remainder_bip32): (Option<&Address>, iota_ledger_nano::LedgerBIP32Index) =
                 match &prepared_transaction.remainder {
                     Some(a) => {
                         let remainder_bip32_indices: Vec<u32> = match &a.chain {
@@ -229,13 +229,13 @@ impl SecretManageExt for LedgerSecretManager {
                         };
                         (
                             Some(&a.address),
-                            iota_ledger::LedgerBIP32Index {
+                            iota_ledger_nano::LedgerBIP32Index {
                                 bip32_change: remainder_bip32_indices[3] | HARDENED,
                                 bip32_index: remainder_bip32_indices[4] | HARDENED,
                             },
                         )
                     }
-                    None => (None, iota_ledger::LedgerBIP32Index::default()),
+                    None => (None, iota_ledger_nano::LedgerBIP32Index::default()),
                 };
 
             let mut remainder_index = 0u16;
@@ -335,12 +335,12 @@ impl LedgerSecretManager {
         // lock the mutex
         let _lock = self.mutex.lock().await;
         let transport_type = if self.is_simulator {
-            iota_ledger::TransportTypes::TCP
+            iota_ledger_nano::TransportTypes::TCP
         } else {
-            iota_ledger::TransportTypes::NativeHID
+            iota_ledger_nano::TransportTypes::NativeHID
         };
 
-        let app = match iota_ledger::get_opened_app(&transport_type) {
+        let app = match iota_ledger_nano::get_opened_app(&transport_type) {
             Ok((name, version)) => Some(crate::secret::types::LedgerApp { name, version }),
             _ => None,
         };
@@ -349,7 +349,7 @@ impl LedgerSecretManager {
         // if IOTA or Shimmer app is opened, the call will always succeed, returning information like
         // device, debug-flag, version number, lock-state but here we only are interested in a
         // successful call and the locked-flag
-        let (connected_, locked, blind_signing_enabled, device) = match iota_ledger::get_app_config(&transport_type) {
+        let (connected_, locked, blind_signing_enabled, device) = match iota_ledger_nano::get_app_config(&transport_type) {
             Ok(config) => (
                 true,
                 // locked flag
@@ -363,7 +363,7 @@ impl LedgerSecretManager {
 
         log::info!("get_buffer_size");
         // get buffer size of connected device
-        let buffer_size = match iota_ledger::get_buffer_size(&transport_type) {
+        let buffer_size = match iota_ledger_nano::get_buffer_size(&transport_type) {
             Ok(size) => Some(size),
             Err(_) => None,
         };
