@@ -28,7 +28,7 @@ async function run() {
         const blockId = await client.postBlock(block);
 
         console.log(
-            `Empty block sent: https://explorer.iota.org/devnet/block/${blockId}`,
+            `Empty block sent: ${process.env.EXPLORER_URL}/block/${blockId}`,
         );
     } catch (error) {
         console.error('Error: ', error);

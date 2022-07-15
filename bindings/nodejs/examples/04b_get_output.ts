@@ -21,11 +21,11 @@ async function run() {
 
     try {
         const output = await client.getOutput(
-            '0xc1d95ac9c8c0237c6929faf427556c3562055a7155c6d336ee7891691d5525c90100',
+            '0xa0b9ad3f5aa2bfcaed30cde6e1d572e93b7e8bb5a417f5a7ef3502889b5dbcb40000',
         );
         console.log('Output: ', output);
     } catch (error) {
-        console.error('Eraror: ', error);
+        console.error('Error: ', error);
     }
 }
 

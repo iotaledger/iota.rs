@@ -16,7 +16,6 @@ async function run() {
     const client = new Client({
         // Insert your node URL in the .env.
         nodes: [process.env.NODE_URL],
-        localPow: true,
     });
 
     const options = {
@@ -35,7 +34,7 @@ async function run() {
         const blockId = await client.postBlock(block);
 
         console.log(
-            `Block sent: https://explorer.iota.org/devnet/block/${blockId}\n`,
+            `Block sent: ${process.env.EXPLORER_URL}/block/${blockId}\n`,
         );
 
         const fetchedBlock = await client.getBlock(blockId);

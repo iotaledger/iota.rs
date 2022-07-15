@@ -16,22 +16,23 @@ async function run() {
     const client = new Client({
         // Insert your node URL in the .env.
         nodes: [process.env.NODE_URL],
-        localPow: true,
     });
 
     try {
-        // Create block with no payload
+        // Create block with no payload.
         const block = await client.generateBlock();
         console.log('Block:', block, '\n');
 
-        // Send block
-        const blockId = await client.postBlock(block);
+        // Hash the block to get the block id.
+        const blockId = await client.blockId(block);
 
-        const blockData = await client.getBlock(blockId);
+        // Get the metadata for the block.
         const blockMetadata = await client.getBlockMetadata(blockId);
-
-        console.log('Block data: ', blockData, '\n');
         console.log('Block metadata: ', blockMetadata, '\n');
+
+        // Request the block by it's id.
+        const blockData = await client.getBlock(blockId);
+        console.log('Block data: ', blockData, '\n');
     } catch (error) {
         console.error('Error: ', error);
     }

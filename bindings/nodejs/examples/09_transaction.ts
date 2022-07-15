@@ -52,7 +52,7 @@ async function run() {
         const blockId = await client.postBlock(block);
 
         console.log(
-            `Transaction sent: https://explorer.iota.org/devnet/block/${blockId}`,
+            `Transaction sent: ${process.env.EXPLORER_URL}/block/${blockId}`,
         );
     } catch (error) {
         console.error('Error: ', error);

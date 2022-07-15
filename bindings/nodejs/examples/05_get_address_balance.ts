@@ -17,7 +17,6 @@ async function run() {
     const client = new Client({
         // Insert your node URL in the .env.
         nodes: [process.env.NODE_URL],
-        localPow: true,
     });
 
     try {
@@ -37,7 +36,7 @@ async function run() {
             },
         });
 
-        // Get output ids of outputs that can be controlled by this address without further unlock constraints
+        // Get output ids of basic outputs that can be controlled by this address without further unlock constraints
         const outputIds = await client.basicOutputIds([
             { address: addresses[0] },
             { hasExpirationCondition: false },
@@ -67,7 +66,7 @@ async function run() {
         }
 
         console.log(
-            `Outputs controlled by ${addresses[0]} have: ${totalAmount}i and native tokens: `,
+            `Outputs controlled by ${addresses[0]} have: ${totalAmount}glow and native tokens: `,
             totalNativeTokens,
         );
     } catch (error) {

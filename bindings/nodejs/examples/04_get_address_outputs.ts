@@ -16,11 +16,10 @@ async function run() {
     const client = new Client({
         // Insert your node URL in the .env.
         nodes: [process.env.NODE_URL],
-        localPow: true,
     });
 
     try {
-        // Get output ids of outputs that can be controlled by this address without further unlock constraints
+        // Get output ids of basic outputs that can be controlled by this address without further unlock constraints
         const outputIds = await client.basicOutputIds([
             {
                 address:
@@ -35,7 +34,7 @@ async function run() {
         const addressOutputs = await client.getOutputs(outputIds);
         console.log('Address outputs: ', addressOutputs);
     } catch (error) {
-        console.error('Eraror: ', error);
+        console.error('Error: ', error);
     }
 }
 

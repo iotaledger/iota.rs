@@ -2,10 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { sendMessageAsync, messageHandlerNew, listen } from './bindings';
-import type {
-    IClientOptions,
-    __ClientMessages__,
-} from '../types';
+import type { IClientOptions, __ClientMessages__ } from '../types';
 
 /** The MessageHandler which sends the commands to the Rust side. */
 export class MessageHandler {
