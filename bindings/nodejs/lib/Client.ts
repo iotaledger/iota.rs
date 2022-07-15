@@ -41,6 +41,7 @@ import type {
 } from '@iota/types';
 import type { INodeInfoWrapper } from '../types/nodeInfo';
 
+/** The Client to interact with nodes. */
 export class Client {
     private messageHandler: MessageHandler;
 
@@ -50,6 +51,7 @@ export class Client {
 
     /**
      * Returns the node information together with the url of the used node
+     * @returns { Promise<INodeInfoWrapper> }.
      */
     async getInfo(): Promise<INodeInfoWrapper> {
         const response = await this.messageHandler.sendMessage({

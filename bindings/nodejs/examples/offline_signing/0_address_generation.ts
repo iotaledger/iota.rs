@@ -13,16 +13,13 @@ const ADDRESS_FILE_NAME = __dirname + '/../../offline_signing/addresses.json';
 // In this example we will generate addresses offline which will be used later to find inputs
 async function run() {
     initLogger();
-
-    // client will connect to testnet by default
+    if (!process.env.NODE_URL) {
+        throw new Error('.env NODE_URL is undefined, see .env.example');
+    }
     const offlineClient = new Client({
         offline: true,
-        nodes: [
-            {
-                // Insert your node URL here.
-                url: 'http://localhost:14265/',
-            },
-        ],
+        // Insert your node URL in the .env.
+        nodes: [process.env.NODE_URL],
         localPow: true,
     });
 

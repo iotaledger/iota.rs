@@ -4,9 +4,7 @@
 import type { MessageHandler } from './MessageHandler';
 
 // @ts-ignore: path is set to match runtime transpiled js path
-import addon = require('../../index.node');
-
-const { initLogger, sendMessage, messageHandlerNew, listen } = addon;
+import { initLogger, sendMessage, messageHandlerNew, listen } from '../../index.node';
 
 const sendMessageAsync = (
     message: string,

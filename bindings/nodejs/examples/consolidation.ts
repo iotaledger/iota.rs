@@ -9,16 +9,13 @@ require('dotenv').config({ path: '../.env' });
 // In this example we will consolidate all funds in a range of addresses
 async function run() {
     initLogger();
+    if (!process.env.NODE_URL) {
+        throw new Error('.env NODE_URL is undefined, see .env.example');
+    }
 
-    // client will connect to testnet by default
     const client = new Client({
-        nodes: [
-            {
-                // Insert your node URL here.
-                url: 'http://localhost:14265',
-                disabled: false,
-            },
-        ],
+        // Insert your node URL in the .env.
+        nodes: [process.env.NODE_URL],
         localPow: true,
     });
 

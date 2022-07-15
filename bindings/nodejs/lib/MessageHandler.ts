@@ -7,6 +7,7 @@ import type {
     __ClientMessages__,
 } from '../types';
 
+/** The MessageHandler which sends the commands to the Rust side. */
 export class MessageHandler {
     messageHandler: MessageHandler;
 

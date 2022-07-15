@@ -16,17 +16,11 @@ const SIGNED_TRANSACTION_FILE_NAME =
 // In this example we will sign the prepared transaction
 async function run() {
     initLogger();
-
-    // client will connect to testnet by default
+    if (!process.env.NODE_URL) {
+        throw new Error('.env NODE_URL is undefined, see .env.example');
+    }
     const offlineClient = new Client({
         offline: true,
-        nodes: [
-            {
-                // Insert your node URL here.
-                url: 'http://localhost:14265/',
-            },
-        ],
-        localPow: true,
     });
 
     try {
