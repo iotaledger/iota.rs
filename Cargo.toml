@@ -158,16 +158,28 @@ name = "node_api_indexer_get_basic_outputs"
 path = "examples/node_api_indexer/00_get_basic_outputs.rs"
 
 [[example]]
+name = "node_api_indexer_get_alias_output"
+path = "examples/node_api_indexer/01_get_alias_output.rs"
+
+[[example]]
 name = "node_api_indexer_get_alias_outputs"
-path = "examples/node_api_indexer/01_get_alias_outputs.rs"
+path = "examples/node_api_indexer/02_get_alias_outputs.rs"
+
+[[example]]
+name = "node_api_indexer_get_foundry_output"
+path = "examples/node_api_indexer/03_get_foundry_output.rs"
 
 [[example]]
 name = "node_api_indexer_get_foundry_outputs"
-path = "examples/node_api_indexer/02_get_foundry_outputs.rs"
+path = "examples/node_api_indexer/04_get_foundry_outputs.rs"
+
+[[example]]
+name = "node_api_indexer_get_nft_output"
+path = "examples/node_api_indexer/05_get_nft_output.rs"
 
 [[example]]
 name = "node_api_indexer_get_nft_outputs"
-path = "examples/node_api_indexer/03_get_nft_outputs.rs"
+path = "examples/node_api_indexer/06_get_nft_outputs.rs"
 
 #######
 
