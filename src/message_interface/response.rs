@@ -70,6 +70,7 @@ pub enum Response {
     SignedTransaction(PayloadDto),
     /// Response for:
     /// - [`UnsyncedNodes`](crate::message_interface::Message::UnsyncedNodes)
+    #[cfg(not(target_family = "wasm"))]
     UnsyncedNodes(HashSet<Node>),
     /// Response for:
     /// - [`GetHealth`](crate::message_interface::Message::GetHealth)
