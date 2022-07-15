@@ -4,9 +4,7 @@
 //! Calls `GET api/indexer/v1/outputs/foundry`.
 //! Run: `cargo run --example node_api_indexer_get_foundry_outputs --release -- [NODE URL] [ADDRESS]`.
 
-use std::str::FromStr;
-
-use iota_client::{bee_block::output::FoundryId, node_api::indexer::query_parameters::QueryParameter, Client, Result};
+use iota_client::{node_api::indexer::query_parameters::QueryParameter, Client, Result};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -28,27 +26,21 @@ async fn main() -> Result<()> {
     // Take the address from command line argument or use a default one.
     let alias_address = std::env::args()
         .nth(2)
-        .unwrap_or_else(|| String::from("rms1ppdr9w5wmyg7phcd7q9exv2kvnu5rnwafftsehjpfwd6zxn83938xw83dtr"));
+        .unwrap_or_else(|| String::from("rms1prd5mdmy84mgzwwklzkrl8ym02p2y3dkr8af7lqclnv0pan7274uyjrmwx5"));
 
-    // Get output ids of foundry outputs that can be controlled by this address.
+    // Get output IDs of foundry outputs that can be controlled by this address.
     let output_ids = client
-        .foundry_output_ids(vec![QueryParameter::AliasAddress(alias_address.to_string())])
+        .foundry_output_ids(vec![QueryParameter::AliasAddress(alias_address)])
         .await?;
 
     // Print the address output IDs.
     println!("Address output IDs {output_ids:#?}");
 
-    // Get the outputs by their id.
+    // Get the outputs by their IDs.
     let outputs_responses = client.get_outputs(output_ids).await?;
 
-    println!("Outputs: {outputs_responses:?}",);
-
-    // Get an foundry output by its FoundryId.
-    let foundry_id =
-        FoundryId::from_str("0x085a32ba8ed911e0df0df00b93315664f941cddd4a570cde414b9ba11a678962730100000000")?;
-    let output_id = client.foundry_output_id(foundry_id).await?;
-
-    println!("Foundry output: {output_id}");
+    // Print the outputs.
+    println!("Foundry outputs: {outputs_responses:#?}");
 
     Ok(())
 }

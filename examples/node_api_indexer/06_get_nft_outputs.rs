@@ -4,9 +4,7 @@
 //! Calls `GET api/indexer/v1/outputs/nft`.
 //! Run: `cargo run --example node_api_indexer_get_nft_outputs --release -- [NODE URL] [ADDRESS]`.
 
-use std::str::FromStr;
-
-use iota_client::{bee_block::output::NftId, node_api::indexer::query_parameters::QueryParameter, Client, Result};
+use iota_client::{node_api::indexer::query_parameters::QueryParameter, Client, Result};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -28,12 +26,12 @@ async fn main() -> Result<()> {
     // Take the address from command line argument or use a default one.
     let address = std::env::args()
         .nth(2)
-        .unwrap_or_else(|| String::from("rms1qpllaj0pyveqfkwxmnngz2c488hfdtmfrj3wfkgxtk4gtyrax0jaxzt70zy"));
+        .unwrap_or_else(|| String::from("rms1qrrdjmdkadtcnuw0ue5n9g4fmkelrj3dl26eyeshkha3w3uu0wheu5z5qqz"));
 
-    // Get output ids of outputs that can be controlled by this address without further unlock constraints.
+    // Get output IDs of NFT outputs that can be controlled by this address without further unlock constraints.
     let output_ids = client
         .nft_output_ids(vec![
-            QueryParameter::Address(address.to_string()),
+            QueryParameter::Address(address),
             QueryParameter::HasExpirationCondition(false),
             QueryParameter::HasTimelockCondition(false),
             QueryParameter::HasStorageReturnCondition(false),
@@ -43,16 +41,11 @@ async fn main() -> Result<()> {
     // Print the address output IDs.
     println!("Address output IDs {output_ids:#?}");
 
-    // Get the outputs by their id.
+    // Get the outputs by their IDs.
     let outputs_responses = client.get_outputs(output_ids).await?;
 
-    println!("Nft outputs: {outputs_responses:?}",);
-
-    // Get an nft output by its NftId.
-    let nft_id = NftId::from_str("0x649db5b14ee26d7eb91304cfeaa27cb661e1b05d366623be24d07955e0af6ce1")?;
-    let output_id = client.nft_output_id(nft_id).await?;
-
-    println!("Nft output: {output_id}");
+    // Print the outputs.
+    println!("NFT outputs: {outputs_responses:#?}");
 
     Ok(())
 }

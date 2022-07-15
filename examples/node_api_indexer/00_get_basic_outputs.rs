@@ -26,12 +26,12 @@ async fn main() -> Result<()> {
     // Take the address from command line argument or use a default one.
     let address = std::env::args()
         .nth(2)
-        .unwrap_or_else(|| String::from("rms1qpllaj0pyveqfkwxmnngz2c488hfdtmfrj3wfkgxtk4gtyrax0jaxzt70zy"));
+        .unwrap_or_else(|| String::from("rms1qrrdjmdkadtcnuw0ue5n9g4fmkelrj3dl26eyeshkha3w3uu0wheu5z5qqz"));
 
     // Get output IDs of basic outputs that can be controlled by this address without further unlock constraints.
     let output_ids = client
         .basic_output_ids(vec![
-            QueryParameter::Address(address.to_string()),
+            QueryParameter::Address(address),
             QueryParameter::HasExpirationCondition(false),
             QueryParameter::HasTimelockCondition(false),
             QueryParameter::HasStorageReturnCondition(false),
@@ -44,7 +44,8 @@ async fn main() -> Result<()> {
     // Get the outputs by their IDs.
     let outputs_responses = client.get_outputs(output_ids).await?;
 
-    println!("Outputs: {outputs_responses:?}",);
+    // Print the outputs.
+    println!("Basic outputs: {outputs_responses:#?}");
 
     Ok(())
 }

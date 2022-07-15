@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! Calls `GET api/indexer/v1/outputs/nft/{nftId}`.
-//! Run: `cargo run --example node_api_indexer_get_nft_output --release -- [NODE URL] [ADDRESS]`.
+//! Run: `cargo run --example node_api_indexer_get_nft_output --release -- [NODE URL] [NFT ID]`.
 
 use std::str::FromStr;
 
@@ -25,11 +25,24 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
 
-    // Get an nft output by its NftId.
-    let nft_id = NftId::from_str("0x649db5b14ee26d7eb91304cfeaa27cb661e1b05d366623be24d07955e0af6ce1")?;
+    // Take the NFT ID from command line argument or use a default one.
+    let nft_id = NftId::from_str(
+        &std::env::args()
+            .nth(2)
+            .unwrap_or_else(|| String::from("0xa3691952eaed71f85553f6e94fab82d5ed57301b2308be7c13d1f7df2be98995")),
+    )?;
+
+    // Get the output ID by the NFT ID.
     let output_id = client.nft_output_id(nft_id).await?;
 
-    println!("Nft output: {output_id}");
+    // Print the output ID.
+    println!("NFT output ID: {output_id}");
+
+    // Get the output by its ID.
+    let output_response = client.get_output(&output_id).await?;
+
+    // Print the output response.
+    println!("{output_response:#?}",);
 
     Ok(())
 }

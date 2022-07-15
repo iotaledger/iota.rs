@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! Calls `GET api/indexer/v1/outputs/foundry/{foundryId}`.
-//! Run: `cargo run --example node_api_indexer_get_foundry_output --release -- [NODE URL] [ADDRESS]`.
+//! Run: `cargo run --example node_api_indexer_get_foundry_output --release -- [NODE URL] [FOUNDRY ID]`.
 
 use std::str::FromStr;
 
@@ -25,12 +25,22 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
 
-    // Get an foundry output by its FoundryId.
-    let foundry_id =
-        FoundryId::from_str("0x085a32ba8ed911e0df0df00b93315664f941cddd4a570cde414b9ba11a678962730100000000")?;
+    // Take the foundry ID from command line argument or use a default one.
+    let foundry_id = FoundryId::from_str(&std::env::args().nth(2).unwrap_or_else(|| {
+        String::from("0x08db4db7643d768139d6f8ac3f9c9b7a82a245b619fa9f7c18fcd8f0f67e57abc20100000000")
+    }))?;
+
+    // Get the output ID by the foundry ID.
     let output_id = client.foundry_output_id(foundry_id).await?;
 
-    println!("Foundry output: {output_id}");
+    // Print the output ID.
+    println!("Foundry output ID: {output_id}");
+
+    // Get the output by its ID.
+    let output_response = client.get_output(&output_id).await?;
+
+    // Print the output response.
+    println!("{output_response:#?}",);
 
     Ok(())
 }

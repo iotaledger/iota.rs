@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! Calls `GET api/indexer/v1/outputs/alias/{aliasId}`.
-//! RUn: `cargo run --example node_api_indexer_get_alias_output --release -- [NODE URL] [ADDRESS]`.
+//! RUn: `cargo run --example node_api_indexer_get_alias_output --release -- [NODE URL] [ALIAS ID]`.
 
 use std::str::FromStr;
 
@@ -25,11 +25,24 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
 
-    // Get an alias output by its AliasId.
-    let alias_id = AliasId::from_str("0xd1d1e67e30effbc22671284531a5609b82969b030750468470faf03bf0afcb98")?;
+    // Take the alias ID from command line argument or use a default one.
+    let alias_id = AliasId::from_str(
+        &std::env::args()
+            .nth(2)
+            .unwrap_or_else(|| String::from("0xdb4db7643d768139d6f8ac3f9c9b7a82a245b619fa9f7c18fcd8f0f67e57abc2")),
+    )?;
+
+    // Get the output ID by the alias ID.
     let output_id = client.alias_output_id(alias_id).await?;
 
-    println!("Alias output: {output_id}");
+    // Print the output ID.
+    println!("Alias output ID: {output_id}");
+
+    // Get the output by its ID.
+    let output_response = client.get_output(&output_id).await?;
+
+    // Print the output response.
+    println!("{output_response:#?}",);
 
     Ok(())
 }
