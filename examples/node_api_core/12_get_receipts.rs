@@ -5,9 +5,6 @@
 //! Returns all stored receipts.
 //! Run: `cargo run --example node_api_core_get_receipts --release -- [NODE URL]`.
 
-use std::env;
-
-use dotenv::dotenv;
 use iota_client::{Client, Result};
 
 #[tokio::main]
@@ -15,8 +12,8 @@ async fn main() -> Result<()> {
     // Take the node URL from command line argument or use one from env as default.
     let node_url = std::env::args().nth(1).unwrap_or_else(|| {
         // This example uses dotenv, which is not safe for use in production.
-        dotenv().ok();
-        env::var("NODE_URL").unwrap()
+        dotenv::dotenv().ok();
+        std::env::var("NODE_URL").unwrap()
     });
 
     // Create a client with that node.

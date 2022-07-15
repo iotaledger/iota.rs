@@ -5,9 +5,8 @@
 //! Returns block data as JSON by its identifier.
 //! Run: `cargo run --example node_api_core_get_block --release -- [NODE URL] [BLOCK ID]`.
 
-use std::{env, str::FromStr};
+use std::str::FromStr;
 
-use dotenv::dotenv;
 use iota_client::{bee_block::BlockId, Client, Result};
 
 #[tokio::main]
@@ -15,8 +14,8 @@ async fn main() -> Result<()> {
     // Take the node URL from command line argument or use one from env as default.
     let node_url = std::env::args().nth(1).unwrap_or_else(|| {
         // This example uses dotenv, which is not safe for use in production.
-        dotenv().ok();
-        env::var("NODE_URL").unwrap()
+        dotenv::dotenv().ok();
+        std::env::var("NODE_URL").unwrap()
     });
 
     // Create a client with that node.
