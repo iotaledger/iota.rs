@@ -12,24 +12,24 @@ use iota_client::{Client, Result};
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    // Takes the node URL from command line argument or use one from env as default.
+    // Take the node URL from command line argument or use one from env as default.
     let node_url = std::env::args().nth(1).unwrap_or_else(|| {
         // This example uses dotenv, which is not safe for use in production.
         dotenv().ok();
         env::var("NODE_URL").unwrap()
     });
 
-    // Creates a client instance with that node.
+    // Create a client with that node.
     let client = Client::builder()
         .with_node(&node_url)?
         .with_node_sync_disabled()
         .finish()
         .await?;
 
-    // Sends the request.
+    // Send the request.
     let receipts = client.get_receipts_migrated_at(1_000_000).await?;
 
-    // Prints the response.
+    // Print the response.
     println!("{:#?}", receipts);
 
     Ok(())

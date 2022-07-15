@@ -15,27 +15,29 @@ use iota_client::{
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    // Takes the node URL from command line argument or use one from env as default.
+    // Take the node URL from command line argument or use one from env as default.
     let node_url = std::env::args().nth(1).unwrap_or_else(|| {
         // This example uses dotenv, which is not safe for use in production.
         dotenv().ok();
         env::var("NODE_URL").unwrap()
     });
 
-    // Creates a client instance with that node.
+    // Create a client with that node.
     let client = Client::builder()
         .with_node(&node_url)?
         .with_node_sync_disabled()
         .finish()
         .await?;
 
-    // Creates a block.
-    let block = Block::build(Parents::new(client.get_tips().await?)?).finish()?;
-    // Sends the request.
+    // Get parents for the block.
+    let parents = Parents::new(client.get_tips().await?)?;
+    // Create the block.
+    let block = Block::build(parents).finish()?;
+    // Post the block as JSON.
     let block_id = client.post_block(&block).await?;
 
-    // Prints the response.
-    println!("{:?}", block_id);
+    // Print the block id.
+    println!("Posted: {:?}", block_id);
 
     Ok(())
 }

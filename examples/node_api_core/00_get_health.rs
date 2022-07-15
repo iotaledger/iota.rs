@@ -12,25 +12,25 @@ use iota_client::{Client, Result};
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    // Takes the node URL from command line argument or use one from env as default.
+    // Take the node URL from command line argument or use one from env as default.
     let node_url = std::env::args().nth(1).unwrap_or_else(|| {
         // This example uses dotenv, which is not safe for use in production.
         dotenv().ok();
         env::var("NODE_URL").unwrap()
     });
 
-    // Creates a client instance with that node.
+    // Create a client with that node.
     let client = Client::builder()
         .with_node(&node_url)?
         .with_node_sync_disabled()
         .finish()
         .await?;
 
-    // Sends the request.
+    // Get node health.
     let health = client.get_health(&node_url).await?;
 
-    // Prints the response.
-    println!("Health: {:?}", health);
+    // Print the health status.
+    println!("Health: {health}");
 
     Ok(())
 }
