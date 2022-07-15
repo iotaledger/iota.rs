@@ -32,7 +32,7 @@ public class BaseApi {
         else throw new RuntimeException("OS not supported");
 
         try {
-            NativeUtils.loadLibraryFromJar("/target/" + libraryName);
+            NativeUtils.loadLibraryFromJar("/" + libraryName);
         } catch (IOException e) {
             e.printStackTrace();
             throw new RuntimeException("cannot load native library");
