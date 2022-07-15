@@ -185,7 +185,11 @@ checksum = "c5738be7561b0eeb501ef1d5c5db3f24e01ceb55fededd9b00039aada34966ad"
 [[package]]
 name = "bee-block"
 version = "0.1.0"
+<<<<<<< HEAD
 source = "git+https://github.com/thibault-martinez/bee?rev=1360ab57e7df12f6eadb49739ce773e39ee7fe40#1360ab57e7df12f6eadb49739ce773e39ee7fe40"
+=======
+source = "git+https://github.com/iotaledger/bee?rev=a0790c2d2f3e0f0a648e2c93a197b08d294022f1#a0790c2d2f3e0f0a648e2c93a197b08d294022f1"
+>>>>>>> develop
 dependencies = [
  "bech32",
  "bee-pow",
@@ -209,7 +213,11 @@ dependencies = [
 [[package]]
 name = "bee-ledger"
 version = "0.7.0"
+<<<<<<< HEAD
 source = "git+https://github.com/thibault-martinez/bee?rev=1360ab57e7df12f6eadb49739ce773e39ee7fe40#1360ab57e7df12f6eadb49739ce773e39ee7fe40"
+=======
+source = "git+https://github.com/iotaledger/bee?rev=a0790c2d2f3e0f0a648e2c93a197b08d294022f1#a0790c2d2f3e0f0a648e2c93a197b08d294022f1"
+>>>>>>> develop
 dependencies = [
  "bee-block",
  "packable",
@@ -220,7 +228,11 @@ dependencies = [
 [[package]]
 name = "bee-pow"
 version = "0.2.0"
+<<<<<<< HEAD
 source = "git+https://github.com/thibault-martinez/bee?rev=1360ab57e7df12f6eadb49739ce773e39ee7fe40#1360ab57e7df12f6eadb49739ce773e39ee7fe40"
+=======
+source = "git+https://github.com/iotaledger/bee?rev=a0790c2d2f3e0f0a648e2c93a197b08d294022f1#a0790c2d2f3e0f0a648e2c93a197b08d294022f1"
+>>>>>>> develop
 dependencies = [
  "bee-ternary",
  "iota-crypto",
@@ -230,7 +242,11 @@ dependencies = [
 [[package]]
 name = "bee-rest-api"
 version = "0.2.2"
+<<<<<<< HEAD
 source = "git+https://github.com/thibault-martinez/bee?rev=1360ab57e7df12f6eadb49739ce773e39ee7fe40#1360ab57e7df12f6eadb49739ce773e39ee7fe40"
+=======
+source = "git+https://github.com/iotaledger/bee?rev=a0790c2d2f3e0f0a648e2c93a197b08d294022f1#a0790c2d2f3e0f0a648e2c93a197b08d294022f1"
+>>>>>>> develop
 dependencies = [
  "axum",
  "bee-block",
