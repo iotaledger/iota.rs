@@ -282,14 +282,14 @@ pub enum Error {
 // LedgerMiscError: Everything else.
 // LedgerEssenceTooLarge: Essence with bip32 input indices need more space then the internal buffer is big
 #[cfg(feature = "ledger_nano")]
-impl From<iota_ledger::api::errors::APIError> for Error {
-    fn from(error: iota_ledger::api::errors::APIError) -> Self {
+impl From<iota_ledger_nano::api::errors::APIError> for Error {
+    fn from(error: iota_ledger_nano::api::errors::APIError) -> Self {
         log::info!("ledger error: {}", error);
         match error {
-            iota_ledger::api::errors::APIError::SecurityStatusNotSatisfied => Error::LedgerDongleLocked,
-            iota_ledger::api::errors::APIError::ConditionsOfUseNotSatisfied => Error::LedgerDeniedByUser,
-            iota_ledger::api::errors::APIError::TransportError => Error::LedgerDeviceNotFound,
-            iota_ledger::api::errors::APIError::EssenceTooLarge => Error::LedgerEssenceTooLarge,
+            iota_ledger_nano::api::errors::APIError::SecurityStatusNotSatisfied => Error::LedgerDongleLocked,
+            iota_ledger_nano::api::errors::APIError::ConditionsOfUseNotSatisfied => Error::LedgerDeniedByUser,
+            iota_ledger_nano::api::errors::APIError::TransportError => Error::LedgerDeviceNotFound,
+            iota_ledger_nano::api::errors::APIError::EssenceTooLarge => Error::LedgerEssenceTooLarge,
             _ => Error::LedgerMiscError,
         }
     }
