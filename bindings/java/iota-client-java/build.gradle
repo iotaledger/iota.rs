@@ -24,46 +24,18 @@ test {
     useJUnitPlatform()
 }
 
-sourceSets {
-    main {
-        resources {
-            srcDirs "native/resources"
-        }
-    }
-}
-
 task buildRustRelease(type:Exec){
-    workingDir './native'
+    workingDir 'native'
     commandLine 'cargo', 'build', '--release'
 }
 
-task buildRust(){
-    dependsOn 'buildRustRelease'
-}
-
-task prepareFolders() {
-    dependsOn 'buildRust'
-    mkdir "native/resources/target"
-}
-
-task copyNativeLibrary() {
-    dependsOn 'prepareFolders'
-    doLast {
-        copy {
-            from "native/target/release"
-            include '*.so', '*.dll'
-            into "native/resources/target"
-        }
-    }
-}
-
 jar {
-    dependsOn 'copyNativeLibrary'
+    dependsOn 'buildRustRelease'
 
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
-    from('./native/resources') {
-        include '**/*.*'
+    from('native/target/release') {
+        include '*.so', '*.dylib', '*.dll'
     }
 
     from {
