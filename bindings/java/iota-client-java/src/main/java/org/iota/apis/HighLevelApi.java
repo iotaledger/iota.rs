@@ -31,7 +31,7 @@ public class HighLevelApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.add("outputIds", a);
 
-        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "GetOutputs", o));
+        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand("GetOutputs", o));
 
         List<Map.Entry<Output, OutputMetadata>> outputs = new ArrayList<>();
         for (int i = 0; i < responsePayload.size(); i++) {
@@ -50,7 +50,7 @@ public class HighLevelApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.add("outputIds", a);
 
-        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "TryGetOutputs", o));
+        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand("TryGetOutputs", o));
 
         List<Map.Entry<Output, OutputMetadata>> outputs = new ArrayList<>();
         for (int i = 0; i < responsePayload.size(); i++) {
@@ -69,7 +69,7 @@ public class HighLevelApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.add("blockIds", a);
 
-        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "FindBlocks", o));
+        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand("FindBlocks", o));
 
         Block[] blocks = new Block[responsePayload.size()];
         for (int i = 0; i < responsePayload.size(); i++)
@@ -82,7 +82,7 @@ public class HighLevelApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.addProperty("blockId", blockId.toString());
 
-        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "Retry", o));
+        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand("Retry", o));
 
         return Map.entry(new BlockId(responsePayload.get(0).getAsString()), new Block(responsePayload.get(1).getAsJsonObject()));
     }
@@ -93,7 +93,7 @@ public class HighLevelApi extends BaseApi {
         o.addProperty("interval", interval);
         o.addProperty("maxAttempts", maxAttempts);
 
-        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "RetryUntilIncluded", o));
+        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand("RetryUntilIncluded", o));
 
         LinkedHashMap<BlockId, Block> blocks = new LinkedHashMap<BlockId, Block>();
         for (JsonElement entry : responsePayload) {
@@ -110,7 +110,7 @@ public class HighLevelApi extends BaseApi {
         o.addProperty("accountIndex", accountIndex);
         o.add("addressRange", addressRange.getAsJson());
 
-        String responsePayload = callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "ConsolidateFunds", o)).getAsString();
+        String responsePayload = callBaseApi(new ClientCommand("ConsolidateFunds", o)).getAsString();
 
         return responsePayload;
     }
@@ -123,7 +123,7 @@ public class HighLevelApi extends BaseApi {
         o.add("addresses", a);
         o.addProperty("amount", amount);
 
-        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "FindInputs", o));
+        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand("FindInputs", o));
 
         UtxoInput[] inputs = new UtxoInput[responsePayload.size()];
         for (int i = 0; i < responsePayload.size(); i++)
@@ -144,7 +144,7 @@ public class HighLevelApi extends BaseApi {
         o.add("outputIds", outputIdsJson);
         o.add("addresses", addressesJson);
 
-        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "FindOutputs", o));
+        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand("FindOutputs", o));
 
         List<Map.Entry<Output, OutputMetadata>> outputs = new ArrayList<>();
         for (int i = 0; i < responsePayload.size(); i++) {
@@ -160,7 +160,7 @@ public class HighLevelApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.addProperty("blockId", blockId.toString());
 
-        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "Reattach", o));
+        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand("Reattach", o));
 
         return Map.entry(new BlockId(responsePayload.get(0).getAsString()), new Block(responsePayload.get(1).getAsJsonObject()));
     }
@@ -169,7 +169,7 @@ public class HighLevelApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.addProperty("blockId", blockId.toString());
 
-        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "ReattachUnchecked", o));
+        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand("ReattachUnchecked", o));
 
         return Map.entry(new BlockId(responsePayload.get(0).getAsString()), new Block(responsePayload.get(1).getAsJsonObject()));
     }
@@ -178,7 +178,7 @@ public class HighLevelApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.addProperty("blockId", blockId.toString());
 
-        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "Promote", o));
+        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand("Promote", o));
 
         return Map.entry(new BlockId(responsePayload.get(0).getAsString()), new Block(responsePayload.get(1).getAsJsonObject()));
     }
@@ -187,7 +187,7 @@ public class HighLevelApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.addProperty("blockId", blockId.toString());
 
-        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "PromoteUnchecked", o));
+        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand("PromoteUnchecked", o));
 
         return Map.entry(new BlockId(responsePayload.get(0).getAsString()), new Block(responsePayload.get(1).getAsJsonObject()));
     }
