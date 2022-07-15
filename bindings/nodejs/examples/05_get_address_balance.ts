@@ -57,9 +57,9 @@ async function run() {
             if ('nativeTokens' in output) {
                 output.nativeTokens?.forEach(
                     (token) =>
-                    (totalNativeTokens[token.id] =
-                        (totalNativeTokens[token.id] || 0) +
-                        parseInt(token.amount)),
+                        (totalNativeTokens[token.id] =
+                            (totalNativeTokens[token.id] || 0) +
+                            parseInt(token.amount)),
                 );
             }
 

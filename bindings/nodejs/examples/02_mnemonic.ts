@@ -12,7 +12,7 @@ async function run() {
     initLogger();
     if (!process.env.NODE_URL) {
         throw new Error('.env NODE_URL is undefined, see .env.example');
-    }   
+    }
 
     const client = new Client({
         // Insert your node URL in the .env.
