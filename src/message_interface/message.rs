@@ -120,8 +120,6 @@ pub enum Message {
     },
     /// Get a node candidate from the synced node pool.
     GetNode,
-    // /// Gets the miner to use based on the PoW setting
-    // GetPoWProvider,
     /// Gets the network related information such as network_id and min_pow_score
     GetNetworkInfo,
     /// Gets the network id of the node we're connecting to.
