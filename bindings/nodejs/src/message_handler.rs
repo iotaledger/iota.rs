@@ -1,6 +1,8 @@
 // Copyright 2021-2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+use std::sync::Arc;
+
 use iota_client::{
     bee_block::{
         payload::milestone::{dto::MilestonePayloadDto, option::dto::ReceiptMilestoneOptionDto},
@@ -9,12 +11,9 @@ use iota_client::{
     message_interface::{create_message_handler, ClientMessageHandler, Message, Response},
     MqttPayload, Topic, TopicEvent,
 };
-
 use neon::prelude::*;
 use serde::Serialize;
 use tokio::sync::mpsc::unbounded_channel;
-
-use std::sync::Arc;
 
 type JsCallback = Root<JsFunction<JsObject>>;
 
@@ -24,6 +23,7 @@ pub struct MessageHandler {
 }
 
 impl Finalize for MessageHandler {}
+
 impl MessageHandler {
     fn new(channel: Channel, options: String) -> Arc<Self> {
         let client_message_handler = crate::RUNTIME
@@ -67,6 +67,7 @@ impl MessageHandler {
             }
         }
     }
+
     fn call_event_callback(&self, event: TopicEvent, callback: Arc<JsCallback>) {
         self.channel.send(move |mut cx| {
             #[derive(Serialize)]

@@ -4,9 +4,8 @@
 #![allow(clippy::needless_borrow)]
 
 mod message_handler;
-pub use message_handler::*;
-
 use fern_logger::{logger_init, LoggerConfig, LoggerOutputConfigBuilder};
+pub use message_handler::*;
 use neon::prelude::*;
 use once_cell::sync::Lazy;
 use tokio::runtime::Runtime;

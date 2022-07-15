@@ -16,6 +16,7 @@ use iota_stronghold::{
     procedures::{self, Chain, KeyType, Slip10DeriveInput},
     Location,
 };
+use zeroize::Zeroize;
 
 use super::{
     common::{DERIVE_OUTPUT_RECORD_PATH, PRIVATE_DATA_CLIENT_PATH, SECRET_VAULT_PATH, SEED_RECORD_PATH},
@@ -185,12 +186,13 @@ impl StrongholdAdapter {
     }
 
     /// Store a mnemonic into the Stronghold vault.
-    pub async fn store_mnemonic(&mut self, mnemonic: String) -> Result<()> {
+    pub async fn store_mnemonic(&mut self, mut mnemonic: String) -> Result<()> {
         // Stronghold arguments.
         let output = Location::generic(SECRET_VAULT_PATH, SEED_RECORD_PATH);
 
         // Trim the mnemonic, in case it hasn't been, as otherwise the restored seed would be wrong.
         let trimmed_mnemonic = mnemonic.trim().to_string();
+        mnemonic.zeroize();
 
         // Check if the mnemonic is valid.
         crypto::keys::bip39::wordlist::verify(&trimmed_mnemonic, &crypto::keys::bip39::wordlist::ENGLISH)
