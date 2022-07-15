@@ -1,7 +1,9 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! `cargo run --example node_api_core_get_milestone_by_id_raw --release -- [NODE URL]`.
+//! Calls `GET /api/core/v2/milestones/{milestoneId}`.
+//! Returns milestone data as raw bytes by its identifier.
+//! Run: `cargo run --example node_api_core_get_milestone_by_id_raw --release -- [NODE URL]`.
 
 use std::{env, str::FromStr};
 
@@ -10,15 +12,16 @@ use iota_client::{bee_block::payload::milestone::MilestoneId, Client, Result};
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    // Takes the node URL from command line argument or use localhost as default.
-    let node = std::env::args().nth(1).unwrap_or_else(|| {
+    // Takes the node URL from command line argument or use one from env as default.
+    let node_url = std::env::args().nth(1).unwrap_or_else(|| {
+        // This example uses dotenv, which is not safe for use in production.
         dotenv().ok();
         env::var("NODE_URL").unwrap()
     });
 
     // Creates a client instance with that node.
     let client = Client::builder()
-        .with_node(&node)?
+        .with_node(&node_url)?
         .with_node_sync_disabled()
         .finish()
         .await?;
