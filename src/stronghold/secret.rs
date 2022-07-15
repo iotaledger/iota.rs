@@ -289,16 +289,18 @@ mod tests {
         stronghold_adapter.clear_key().await;
 
         // Address generation returns an error when the key is cleared.
-        assert!(stronghold_adapter
-            .generate_addresses(
-                IOTA_COIN_TYPE,
-                0,
-                0..1,
-                false,
-                GenerateAddressMetadata { syncing: false },
-            )
-            .await
-            .is_err());
+        assert!(
+            stronghold_adapter
+                .generate_addresses(
+                    IOTA_COIN_TYPE,
+                    0,
+                    0..1,
+                    false,
+                    GenerateAddressMetadata { syncing: false },
+                )
+                .await
+                .is_err()
+        );
 
         stronghold_adapter.set_password("drowssap").await.unwrap();
 

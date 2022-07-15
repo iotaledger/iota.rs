@@ -31,7 +31,7 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
                            immutable_features=None):
         """Build an AliasOutput.
         """
-        return self.call_client_method('BuildAliasOutput', {
+        return self.send_message('BuildAliasOutput', {
             'alias_id': alias_id,
             'unlock_conditions': unlock_conditions,
             'amount': amount,
@@ -50,7 +50,7 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
                            features=None):
         """Build a BasicOutput.
         """
-        return self.call_client_method('BuildBasicOutput', {
+        return self.send_message('BuildBasicOutput', {
             'unlock_conditions': unlock_conditions,
             'amount': amount,
             'native_tokens': native_tokens,
@@ -67,7 +67,7 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
                              immutable_features=None):
         """Build a FoundryOutput.
         """
-        return self.call_client_method('BuildFoundryOutput', {
+        return self.send_message('BuildFoundryOutput', {
             'serial_number': serial_number,
             'token_scheme': token_scheme,
             'unlock_conditions': unlock_conditions,
@@ -86,7 +86,7 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
                          immutable_features=None):
         """Build an NftOutput.
         """
-        return self.call_client_method('BuildNftOutput', {
+        return self.send_message('BuildNftOutput', {
             'nft_id': nft_id,
             'unlock_conditions': unlock_conditions,
             'amount': amount,
@@ -98,7 +98,7 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
     def generate_addresses(self, secret_manager, options):
         """Generate addresses.
         """
-        return self.call_client_method('GenerateAddresses', {
+        return self.send_message('GenerateAddresses', {
             'secret_manager': secret_manager,
             'options': options
         })
@@ -106,7 +106,7 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
     def generate_block(self, secret_manager=None, options=None):
         """Generate client block.
         """
-        return self.call_client_method('GenerateBlock', {
+        return self.send_message('GenerateBlock', {
             'secret_manager': secret_manager,
             'options': options
         })
@@ -114,52 +114,52 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
     def get_node(self):
         """Get a node candidate from the synced node pool.
         """
-        return self.call_client_method('GetNode')
+        return self.send_message('GetNode')
 
     def get_network_info(self):
         """Gets the network related information such as network_id and min_pow_score.
         """
-        return self.call_client_method('GetNetworkInfo')
+        return self.send_message('GetNetworkInfo')
 
     def get_network_id(self):
         """Gets the network id of the node we're connecting to.
         """
-        return self.call_client_method('GetNetworkId')
+        return self.send_message('GetNetworkId')
 
     def get_bech32_hrp(self):
         """Returns the bech32_hrp.
         """
-        return self.call_client_method('GetBech32Hrp')
+        return self.send_message('GetBech32Hrp')
 
     def get_min_pow_score(self):
         """Returns the min pow score.
         """
-        return self.call_client_method('GetMinPoWScore')
+        return self.send_message('GetMinPoWScore')
 
     def get_tips_interval(self):
         """Returns the tips interval.
         """
-        return self.call_client_method('GetTipsInterval')
+        return self.send_message('GetTipsInterval')
 
     def get_local_pow(self):
         """Returns if local pow should be used or not.
         """
-        return self.call_client_method('GetLocalPoW')
+        return self.send_message('GetLocalPoW')
 
     def get_fall_back_to_local_pow(self):
         """Get fallback to local proof of work timeout.
         """
-        return self.call_client_method('GetFallbackToLocalPoW')
+        return self.send_message('GetFallbackToLocalPoW')
 
     def unsynced_nodes(self):
         """Returns the unsynced nodes.
         """
-        return self.call_client_method('UnsyncedNodes')
+        return self.send_message('UnsyncedNodes')
 
     def prepare_transaction(self, secret_manager=None, options=None):
         """Prepare a transaction for signing.
         """
-        return self.call_client_method('PrepareTransaction', {
+        return self.send_message('PrepareTransaction', {
             'secret_manager': secret_manager,
             'options': options
         })
@@ -167,7 +167,7 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
     def sign_transaction(self, secret_manager, prepared_transaction_data):
         """Sign a transaction.
         """
-        return self.call_client_method('SignTransaction', {
+        return self.send_message('SignTransaction', {
             'secret_manager': secret_manager,
             'prepared_transaction_data': prepared_transaction_data
         })
@@ -175,7 +175,7 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
     def store_mnemonic(self, secret_manager, mnemonic):
         """Store a mnemonic in the Stronghold vault.
         """
-        return self.call_client_method('StoreMnemonic', {
+        return self.send_message('StoreMnemonic', {
             'secret_manager': secret_manager,
             'mnemonic': mnemonic
         })
@@ -183,6 +183,6 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
     def submit_payload(self, payload_dto):
         """Submit a payload in a block.
         """
-        return self.call_client_method('SubmitPayload', {
+        return self.send_message('SubmitPayload', {
             'payload_dto': payload_dto
         })
