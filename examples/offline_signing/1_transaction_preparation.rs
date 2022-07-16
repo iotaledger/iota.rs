@@ -36,8 +36,7 @@ async fn main() -> Result<()> {
         // Insert your node URL here.
         .with_node(&node_url)?
         .with_node_sync_disabled()
-        .finish()
-        .await?;
+        .finish()?;
 
     // Recovers addresses from example `0_address_generation`.
     let addresses = read_addresses_from_file(ADDRESS_FILE_NAME)?;

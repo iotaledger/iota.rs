@@ -38,7 +38,7 @@ use crate::{
 /// when required. Careful with setting `allow_burning` to `true`, native tokens can get easily burned by accident.
 /// Provided alias, foundry and nft outputs will be used first as inputs and therefore destroyed if not existent in the
 /// output
-pub async fn try_select_inputs(
+pub fn try_select_inputs(
     mut inputs: Vec<InputSigningData>,
     mut outputs: Vec<Output>,
     force_use_all_inputs: bool,
@@ -66,8 +66,7 @@ pub async fn try_select_inputs(
             remainder_address,
             byte_cost_config,
             allow_burning,
-        )
-        .await?;
+        )?;
 
         if let Some(remainder_data) = &remainder_data {
             outputs.push(remainder_data.output.clone());
@@ -276,8 +275,7 @@ pub async fn try_select_inputs(
         remainder_address,
         byte_cost_config,
         allow_burning,
-    )
-    .await?;
+    )?;
     if let Some(remainder_data) = &remainder_data {
         outputs.push(remainder_data.output.clone());
 
@@ -330,7 +328,11 @@ pub(crate) fn sdr_not_expired(output: &Output, current_time: u32) -> Option<&Sto
             };
 
             // We only have to send the storage deposit return back if the output is not expired
-            if !expired { Some(sdr) } else { None }
+            if !expired {
+                Some(sdr)
+            } else {
+                None
+            }
         } else {
             None
         }

@@ -6,12 +6,12 @@
 use std::{env, str::FromStr};
 
 use dotenv::dotenv;
-use iota_client::{bee_block::BlockId, Client};
+use iota_client::{bee_block::BlockId, Client, Result};
 
 /// In this example we will define a custom block parent which be used for promoting
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<()> {
     dotenv().ok();
 
     let node_url = env::var("NODE_URL").unwrap();
@@ -20,9 +20,7 @@ async fn main() {
     let client = Client::builder()
         .with_node(&node_url) // Insert your node URL here
         .unwrap()
-        .finish()
-        .await
-        .unwrap();
+        .finish()?;
 
     let custom_parent = BlockId::from_str("b5634e05a7c665d7f87330a53633f001a5d1d96b346dc98dc225c4d6c204f23b").unwrap();
 
@@ -38,4 +36,6 @@ async fn main() {
         "Empty block sent: https://explorer.iota.org/devnet/block/{}",
         block.id()
     );
+
+    Ok(())
 }

@@ -26,8 +26,7 @@ async fn main() -> Result<()> {
         // Insert your node URL here.
         .with_node(&node_url)?
         .with_node_sync_disabled()
-        .finish()
-        .await?;
+        .finish()?;
 
     let signed_transaction_payload = read_signed_transaction_from_file(SIGNED_TRANSACTION_FILE_NAME)?;
 

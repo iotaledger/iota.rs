@@ -21,8 +21,7 @@ async fn main() -> Result<()> {
         // The nodes needs to have the indexer plugin enabled.
         .with_node(&node)?
         .with_node_sync_disabled()
-        .finish()
-        .await?;
+        .finish()?;
 
     let alias_address = "rms1ppdr9w5wmyg7phcd7q9exv2kvnu5rnwafftsehjpfwd6zxn83938xw83dtr";
 

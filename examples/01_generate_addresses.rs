@@ -25,15 +25,14 @@ async fn main() -> Result<()> {
     let client = Client::builder()
         .with_node(&node_url)? // Insert your node URL here
         .with_node_sync_disabled()
-        .finish()
-        .await?;
+        .finish()?;
 
     let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
         &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
     )?);
 
     // Generate addresses with default account index and range
-    let addresses = client.get_addresses(&secret_manager).finish().await.unwrap();
+    let addresses = client.get_addresses(&secret_manager).finish().await?;
     println!("List of generated public addresses:\n{:?}\n", addresses);
 
     // Generate addresses with custom account index and range

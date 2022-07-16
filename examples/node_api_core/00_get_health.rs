@@ -16,11 +16,7 @@ async fn main() -> Result<()> {
         env::var("NODE_URL").unwrap()
     });
     // Creates a client instance with that node.
-    let client = Client::builder()
-        .with_node(&node)?
-        .with_node_sync_disabled()
-        .finish()
-        .await?;
+    let client = Client::builder().with_node(&node)?.with_node_sync_disabled().finish()?;
 
     // Sends the request.
     let health = client.get_health(&node).await?;

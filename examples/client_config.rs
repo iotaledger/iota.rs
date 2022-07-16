@@ -3,12 +3,12 @@
 
 //! cargo run --example client_config --release
 
-use iota_client::Client;
+use iota_client::{Client, Result};
 
 /// In this example we will create a client from a JSON config
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<()> {
     // Create a client instance
     let client = Client::builder()
         .from_json(
@@ -33,10 +33,10 @@ async fn main() {
              }"#,
         )
         .unwrap()
-        .finish()
-        .await
-        .unwrap();
+        .finish()?;
 
     let info = client.get_info().await.unwrap();
     println!("Node Info: {:?}", info);
+
+    Ok(())
 }
