@@ -22,8 +22,7 @@ async fn main() -> Result<()> {
         // The node needs to have the indexer plugin enabled.
         .with_node(&node_url)?
         .with_node_sync_disabled()
-        .finish()
-        .await?;
+        .finish()?;
 
     // Take the foundry ID from command line argument or use a default one.
     let foundry_id = FoundryId::from_str(&std::env::args().nth(2).unwrap_or_else(|| {
