@@ -18,7 +18,7 @@ use bee_block::{
 
 use crate::{
     api::{types::PreparedTransactionData, ClientBlockBuilder},
-    bee_block::output::AliasId,
+    block::output::AliasId,
     secret::{types::InputSigningData, SecretManageExt},
     Error, Result,
 };

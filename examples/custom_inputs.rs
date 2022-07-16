@@ -6,7 +6,7 @@ use std::env;
 
 use dotenv::dotenv;
 use iota_client::{
-    bee_block::input::UtxoInput,
+    block::input::UtxoInput,
     node_api::indexer::query_parameters::QueryParameter,
     request_funds_from_faucet,
     secret::{mnemonic::MnemonicSecretManager, SecretManager},

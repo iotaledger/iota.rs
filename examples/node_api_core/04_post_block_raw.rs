@@ -7,7 +7,7 @@ use std::env;
 
 use dotenv::dotenv;
 use iota_client::{
-    bee_block::{parent::Parents, Block},
+    block::{parent::Parents, Block},
     Client, Result,
 };
 

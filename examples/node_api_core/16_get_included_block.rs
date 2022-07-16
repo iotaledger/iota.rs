@@ -6,7 +6,7 @@
 use std::{env, str::FromStr};
 
 use dotenv::dotenv;
-use iota_client::{bee_block::payload::transaction::TransactionId, Client, Result};
+use iota_client::{block::payload::transaction::TransactionId, Client, Result};
 
 #[tokio::main]
 async fn main() -> Result<()> {

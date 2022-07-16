@@ -6,7 +6,7 @@
 use std::{env, str::FromStr};
 
 use dotenv::dotenv;
-use iota_client::{bee_block::BlockId, Client, Result};
+use iota_client::{block::BlockId, Client, Result};
 
 /// In this example we will define a custom block parent which be used for promoting
 
