@@ -322,10 +322,10 @@ impl ClientBuilder {
     }
 
     /// Build the Client instance.
-    pub async fn finish(mut self) -> Result<Client> {
+    pub fn finish(mut self) -> Result<Client> {
         // Add default nodes
         if !self.offline {
-            self.node_manager_builder = self.node_manager_builder.add_default_nodes(&self.network_info).await?;
+            self.node_manager_builder = self.node_manager_builder.add_default_nodes(&self.network_info)?;
             // Return error if we don't have a node
             if self.node_manager_builder.nodes.is_empty() && self.node_manager_builder.primary_node.is_none() {
                 return Err(Error::MissingParameter("Node"));

@@ -26,8 +26,7 @@ async fn main() -> Result<()> {
     let client = Client::builder()
         .with_node(&node_url)? // Insert your node URL here
         .with_node_sync_disabled()
-        .finish()
-        .await?;
+        .finish()?;
 
     let ledger_nano = LedgerSecretManager::new(false);
 

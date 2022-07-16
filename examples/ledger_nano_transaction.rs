@@ -16,8 +16,7 @@ async fn main() -> Result<()> {
     let client = Client::builder()
         .with_node("http://localhost:14265")? // Insert your node URL here
         .with_node_sync_disabled()
-        .finish()
-        .await?;
+        .finish()?;
 
     let secret_manager = SecretManager::LedgerNano(LedgerSecretManager::new(true));
 

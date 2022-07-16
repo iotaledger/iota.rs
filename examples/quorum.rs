@@ -29,8 +29,7 @@ async fn main() -> Result<()> {
         .with_quorum(true)
         .with_min_quorum_size(3)
         .with_quorum_threshold(66)
-        .finish()
-        .await?;
+        .finish()?;
 
     let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
         &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),

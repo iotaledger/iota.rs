@@ -8,3 +8,4 @@ out/
 **/dist
 **/client.log
 stronghold
+package-lock.json

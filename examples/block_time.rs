@@ -6,12 +6,12 @@
 use std::env;
 
 use dotenv::dotenv;
-use iota_client::Client;
+use iota_client::{Client, Result};
 
 /// In this example we will send a block and return the time at which it got referenced by a milestone
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<()> {
     dotenv().ok();
 
     let node_url = env::var("NODE_URL").unwrap();
@@ -20,17 +20,14 @@ async fn main() {
     let client = Client::builder()
         .with_node(&node_url) // Insert your node URL here
         .unwrap()
-        .finish()
-        .await
-        .unwrap();
+        .finish()?;
 
     let block = client
         .block()
         .with_tag("Hello")
         .with_data("Tangle".as_bytes().to_vec())
         .finish()
-        .await
-        .unwrap();
+        .await?;
 
     let block_id = block.id();
     println!("Block ID: {}", block_id);
@@ -49,4 +46,6 @@ async fn main() {
         }
         _ => println!("Block is not referenced by a milestone"),
     }
+
+    Ok(())
 }

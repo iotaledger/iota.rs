@@ -208,7 +208,7 @@ impl NodeManagerBuilder {
         self
     }
 
-    pub(crate) async fn add_default_nodes(mut self, network_info: &NetworkInfo) -> Result<Self> {
+    pub(crate) fn add_default_nodes(mut self, network_info: &NetworkInfo) -> Result<Self> {
         let default_testnet_nodes = vec![];
         if self.nodes.is_empty() && self.primary_node.is_none() {
             match network_info.network {

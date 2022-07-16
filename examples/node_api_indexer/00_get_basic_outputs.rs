@@ -20,8 +20,7 @@ async fn main() -> Result<()> {
         // The nodes needs to have the indexer plugin enabled.
         .with_node(&node)?
         .with_node_sync_disabled()
-        .finish()
-        .await?;
+        .finish()?;
 
     let address = "rms1qpllaj0pyveqfkwxmnngz2c488hfdtmfrj3wfkgxtk4gtyrax0jaxzt70zy";
 

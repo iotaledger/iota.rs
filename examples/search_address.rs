@@ -26,9 +26,7 @@ async fn main() -> Result<()> {
     let client = Client::builder()
         .with_node(&node_url) // Insert your node URL here
         .unwrap()
-        .finish()
-        .await
-        .unwrap();
+        .finish()?;
 
     let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
         &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),

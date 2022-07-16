@@ -41,8 +41,7 @@ async fn main() -> Result<()> {
     let client = Client::builder()
         .with_node(&node_url)? // Insert your node URL here
         .with_node_sync_disabled()
-        .finish()
-        .await?;
+        .finish()?;
 
     let secret_manager_1 = SecretManager::Mnemonic(MnemonicSecretManager::try_from_hex_seed(
         &env::var("NON_SECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap(),

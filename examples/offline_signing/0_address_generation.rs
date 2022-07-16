@@ -26,7 +26,7 @@ async fn main() -> Result<()> {
     dotenv().ok();
 
     // Creates a client instance.
-    let offline_client = Client::builder().with_offline_mode().finish().await?;
+    let offline_client = Client::builder().with_offline_mode().finish()?;
     let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
         &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
     )?);

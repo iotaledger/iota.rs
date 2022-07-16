@@ -92,7 +92,6 @@ pub(crate) async fn get_custom_inputs(
         byte_cost_config,
         allow_burning,
         local_time,
-    )
-    .await?;
+    )?;
     Ok(selected_transaction_data)
 }

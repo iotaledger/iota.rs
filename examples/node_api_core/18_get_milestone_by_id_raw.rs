@@ -17,11 +17,7 @@ async fn main() -> Result<()> {
     });
 
     // Creates a client instance with that node.
-    let client = Client::builder()
-        .with_node(&node)?
-        .with_node_sync_disabled()
-        .finish()
-        .await?;
+    let client = Client::builder().with_node(&node)?.with_node_sync_disabled().finish()?;
 
     // Fetches the latest milestone ID from the node.
     let info = client.get_info().await?;

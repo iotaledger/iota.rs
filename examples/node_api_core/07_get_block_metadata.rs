@@ -16,11 +16,7 @@ async fn main() -> Result<()> {
         env::var("NODE_URL").unwrap()
     });
     // Creates a client instance with that node.
-    let client = Client::builder()
-        .with_node(&node)?
-        .with_node_sync_disabled()
-        .finish()
-        .await?;
+    let client = Client::builder().with_node(&node)?.with_node_sync_disabled().finish()?;
 
     // Fetches a block ID from the node.
     let block_id = client.get_tips().await?[0];

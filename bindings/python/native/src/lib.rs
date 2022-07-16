@@ -25,8 +25,7 @@ pub(crate) fn block_on<C: futures::Future>(cb: C) -> C::Output {
 #[pyfunction]
 /// Create message handler for python-side usage.
 pub fn create_message_handler(options: Option<String>) -> Result<ClientMessageHandler> {
-    let message_handler =
-        crate::block_on(async { iota_client::message_interface::create_message_handler(options).await })?;
+    let message_handler = iota_client::message_interface::create_message_handler(options)?;
 
     Ok(ClientMessageHandler {
         client_message_handler: message_handler,

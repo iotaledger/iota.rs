@@ -26,8 +26,7 @@ async fn main() -> Result<()> {
     let client = Client::builder()
         .with_node(&node_url)? // Insert your node URL here
         .with_node_sync_disabled()
-        .finish()
-        .await?;
+        .finish()?;
 
     // First address from the seed below is atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r
     let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_hex_seed(
@@ -72,5 +71,6 @@ async fn main() -> Result<()> {
         "Transaction sent: https://explorer.iota.org/devnet/block/{}",
         block.id()
     );
+
     Ok(())
 }

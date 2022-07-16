@@ -20,8 +20,7 @@ async fn main() -> Result<()> {
         .with_node(&node_url)?
         // .with_permanode("http://18.196.167.57:8000/api/permanode/", None, None)?
         .with_node_sync_disabled()
-        .finish()
-        .await?;
+        .finish()?;
 
     let block = client
         .block()

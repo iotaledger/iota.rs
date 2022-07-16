@@ -102,9 +102,7 @@ pub(crate) async fn get_inputs(
         // could lead to burned native tokens by accident
         false,
         local_time,
-    )
-    .await
-    {
+    ) {
         return Ok(selected_transaction_data);
     };
 
@@ -177,9 +175,7 @@ pub(crate) async fn get_inputs(
                     // could lead to burned native tokens by accident
                     false,
                     local_time,
-                )
-                .await
-                {
+                ) {
                     Ok(r) => r,
                     // for these errors ,just try again in the next round with more addresses which might have more
                     // outputs

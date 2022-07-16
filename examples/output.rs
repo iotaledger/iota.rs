@@ -31,8 +31,7 @@ async fn main() -> Result<()> {
     let client = Client::builder()
         .with_node(&node_url)?
         .with_node_sync_disabled()
-        .finish()
-        .await?;
+        .finish()?;
 
     let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
         &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
@@ -41,11 +40,9 @@ async fn main() -> Result<()> {
     let address = client.get_addresses(&secret_manager).with_range(0..1).get_raw().await?[0];
     request_funds_from_faucet(&faucet_url, &address.to_bech32(client.get_bech32_hrp().await?)).await?;
 
-    let outputs = vec![
-        BasicOutputBuilder::new_with_amount(1_000_000)?
-            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-            .finish_output()?,
-    ];
+    let outputs = vec![BasicOutputBuilder::new_with_amount(1_000_000)?
+        .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
+        .finish_output()?];
 
     let block = client
         .block()

@@ -19,11 +19,7 @@ async fn main() -> Result<()> {
         env::var("NODE_URL").unwrap()
     });
     // Creates a client instance with that node.
-    let client = Client::builder()
-        .with_node(&node)?
-        .with_node_sync_disabled()
-        .finish()
-        .await?;
+    let client = Client::builder().with_node(&node)?.with_node_sync_disabled().finish()?;
 
     // Creates a block.
     let block = Block::build(Parents::new(client.get_tips().await?)?).finish()?;
