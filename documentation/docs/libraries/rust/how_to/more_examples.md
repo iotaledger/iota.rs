@@ -1,1 +1,1 @@
-You can find more advanced examples in the [examples](https://github.com/iotaledger/iota.rs/tree/dev/examples) folder.
+You can find more advanced examples in the [examples](https://github.com/iotaledger/iota.rs/tree/develop/examples) folder.
