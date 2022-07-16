@@ -7,7 +7,7 @@ use std::env;
 
 use dotenv::dotenv;
 use iota_client::{
-    bee_block::{
+    block::{
         address::AliasAddress,
         output::{
             feature::{IssuerFeature, MetadataFeature, SenderFeature},

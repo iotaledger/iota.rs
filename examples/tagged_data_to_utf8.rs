@@ -3,8 +3,7 @@
 
 //! cargo run --example tagged_data_to_utf8 --release
 
-use bee_block::payload::TaggedDataPayload;
-use iota_client::{Client, Result};
+use iota_client::{block::payload::TaggedDataPayload, Client, Result};
 
 /// In this example we will UTF-8 encode the tag and the data of an `TaggedDataPayload`.
 

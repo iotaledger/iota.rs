@@ -4,7 +4,7 @@
 use std::sync::Arc;
 
 use iota_client::{
-    bee_block::{
+    block::{
         payload::milestone::{dto::MilestonePayloadDto, option::dto::ReceiptMilestoneOptionDto},
         BlockDto,
     },

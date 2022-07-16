@@ -37,7 +37,7 @@ use self::{
 };
 use crate::{
     api::{input_selection::types::SelectedTransactionData, types::PreparedTransactionData},
-    bee_block::{input::dto::UtxoInputDto, output::BasicOutputBuilder},
+    block::{input::dto::UtxoInputDto, output::BasicOutputBuilder},
     constants::SHIMMER_COIN_TYPE,
     secret::SecretManager,
     Client, Error, Result,

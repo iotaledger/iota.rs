@@ -9,7 +9,7 @@ use std::{env, fs::File, io::prelude::*, path::Path};
 use dotenv::dotenv;
 use iota_client::{
     api::{verify_semantic, SignedTransactionData, SignedTransactionDataDto},
-    bee_block::{payload::Payload, semantic::ConflictReason},
+    block::{payload::Payload, semantic::ConflictReason},
     Client, Error, Result,
 };
 

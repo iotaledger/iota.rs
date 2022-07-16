@@ -6,7 +6,7 @@
 use std::env;
 
 use dotenv::dotenv;
-use iota_client::{bee_block::payload::Payload, Client, Result};
+use iota_client::{block::payload::Payload, Client, Result};
 
 /// In this example we will send a block with a tagged data payload
 

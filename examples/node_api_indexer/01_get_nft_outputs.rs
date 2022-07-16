@@ -5,9 +5,8 @@
 
 use std::{env, str::FromStr};
 
-use bee_block::output::NftId;
 use dotenv::dotenv;
-use iota_client::{node_api::indexer::query_parameters::QueryParameter, Client, Result};
+use iota_client::{block::output::NftId, node_api::indexer::query_parameters::QueryParameter, Client, Result};
 
 #[tokio::main]
 async fn main() -> Result<()> {
