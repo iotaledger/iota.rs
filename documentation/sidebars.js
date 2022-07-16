@@ -10,7 +10,8 @@
  */
 
 module.exports = {
-  docs: [{
+  docs: [
+  {
     type: 'doc',
     id: 'welcome',
   },
@@ -26,7 +27,8 @@ module.exports = {
     type: 'category',
     label: 'Libraries',
     collapsed: false,
-    items: [{
+    items: [
+    {
       type: 'doc',
       id: 'libraries/overview',
       label: 'Overview',
@@ -41,9 +43,50 @@ module.exports = {
           label: 'Getting Started',
         },
         {
-          type: 'doc',
-          id: 'libraries/rust/examples',
-          label: 'Examples'
+          type: 'category',
+          label: 'How to',
+          items: [
+            {
+              type: 'doc',
+              id: 'libraries/rust/how_to/get_node_info',
+              label: 'Get Node Info',
+            },
+            {
+              type: 'doc',
+              id: 'libraries/rust/how_to/get_block',
+              label: 'Get Block',
+            },
+            {
+              type: 'doc',
+              id: 'libraries/rust/how_to/create_block',
+              label: 'Create Block',
+            },
+            {
+              type: 'doc',
+              id: 'libraries/rust/how_to/post_block',
+              label: 'Post Block',
+            },
+            {
+              type: 'doc',
+              id: 'libraries/rust/how_to/generate_mnemonic',
+              label: 'Generate Mnemonic',
+            },
+            {
+              type: 'doc',
+              id: 'libraries/rust/how_to/generate_addresses',
+              label: 'Generate Addresses',
+            },
+            {
+              type: 'doc',
+              id: 'libraries/rust/how_to/get_output',
+              label: 'Get Output',
+            },
+            {
+              type: 'doc',
+              id: 'libraries/rust/how_to/build_output',
+              label: 'Build Output',
+            },
+          ]
         },
         {
           type: 'doc',
