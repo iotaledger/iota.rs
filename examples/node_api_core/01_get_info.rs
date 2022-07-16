@@ -20,8 +20,7 @@ async fn main() -> Result<()> {
     let client = Client::builder()
         .with_node(&node_url)?
         .with_node_sync_disabled()
-        .finish()
-        .await?;
+        .finish()?;
 
     // Get node info.
     let info = client.get_info().await?;

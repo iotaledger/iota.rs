@@ -38,8 +38,7 @@ async fn main() -> Result<()> {
     let client = Client::builder()
         .with_node(&node_url)?
         .with_node_sync_disabled()
-        .finish()
-        .await?;
+        .finish()?;
 
     let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
         &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
@@ -83,12 +82,10 @@ async fn main() -> Result<()> {
     //////////////////////////////////
     let alias_output_id = get_alias_output_id(block.payload().unwrap());
     let alias_id = AliasId::from(alias_output_id);
-    let outputs = vec![
-        alias_output_builder
-            .with_alias_id(alias_id)
-            .with_state_index(1)
-            .finish_output()?,
-    ];
+    let outputs = vec![alias_output_builder
+        .with_alias_id(alias_id)
+        .with_state_index(1)
+        .finish_output()?];
 
     let block = client
         .block()

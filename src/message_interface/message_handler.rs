@@ -64,7 +64,7 @@ impl ClientMessageHandler {
     /// Creates a new instance of the message handler with the default client manager.
     pub async fn new() -> Result<Self> {
         let instance = Self {
-            client: Client::builder().finish().await?,
+            client: Client::builder().finish()?,
         };
         Ok(instance)
     }

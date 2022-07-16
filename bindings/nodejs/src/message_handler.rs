@@ -26,9 +26,7 @@ impl Finalize for MessageHandler {}
 
 impl MessageHandler {
     fn new(channel: Channel, options: String) -> Arc<Self> {
-        let client_message_handler = crate::RUNTIME
-            .block_on(async move { create_message_handler(Some(options)).await })
-            .expect("error initializing account manager");
+        let client_message_handler = create_message_handler(Some(options)).expect("error initializing account manager");
 
         Arc::new(Self {
             channel,

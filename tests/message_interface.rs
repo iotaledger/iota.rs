@@ -22,9 +22,7 @@ async fn generate_addresses() {
             "offline": true
     }"#
     .to_string();
-    let message_handler = message_interface::create_message_handler(Some(client_config))
-        .await
-        .unwrap();
+    let message_handler = message_interface::create_message_handler(Some(client_config)).unwrap();
 
     let secret_manager = format!(
         "{{\"Mnemonic\":\"{}\"}}",
@@ -71,9 +69,7 @@ async fn generate_block() {
             "offline": true
         }"#
     .to_string();
-    let message_handler = message_interface::create_message_handler(Some(client_config))
-        .await
-        .unwrap();
+    let message_handler = message_interface::create_message_handler(Some(client_config)).unwrap();
 
     // Generate addresses
     let secret_manager = format!(
@@ -140,9 +136,7 @@ async fn generate_block() {
 #[tokio::test]
 async fn get_block_id() {
     let client_config = r#"{"offline": true}"#.to_string();
-    let message_handler = message_interface::create_message_handler(Some(client_config))
-        .await
-        .unwrap();
+    let message_handler = message_interface::create_message_handler(Some(client_config)).unwrap();
 
     let block = r#"
         {
@@ -183,9 +177,7 @@ async fn get_block_id() {
 #[tokio::test]
 async fn stronghold() {
     let client_config = r#"{"offline": true}"#.to_string();
-    let message_handler = message_interface::create_message_handler(Some(client_config))
-        .await
-        .unwrap();
+    let message_handler = message_interface::create_message_handler(Some(client_config)).unwrap();
 
     let secret_manager_dto = r#"{"Stronghold": {"password": "some_hopefully_secure_password", "snapshotPath": "teststronghold.stronghold"}}"#;
     let mnemonic = String::from(

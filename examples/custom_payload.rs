@@ -20,9 +20,7 @@ async fn main() -> Result<()> {
     // Create a client instance
     let client = Client::builder()
         .with_node(&node_url)? // Insert your node URL here
-        .finish()
-        .await
-        .unwrap();
+        .finish()?;
 
     let tagged_data_payload =
         TaggedDataPayload::new("Your tag".as_bytes().to_vec(), "Your data".as_bytes().to_vec()).unwrap();

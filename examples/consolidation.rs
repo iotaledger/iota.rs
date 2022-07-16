@@ -25,7 +25,7 @@ async fn main() -> Result<()> {
 
     let address_range = 0..150;
     // Create a client instance
-    let client = Client::builder().with_node(&node_url)?.finish().await?;
+    let client = Client::builder().with_node(&node_url)?.finish()?;
 
     let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_hex_seed(
         &env::var("NON_SECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap(),

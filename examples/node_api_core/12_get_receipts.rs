@@ -20,8 +20,7 @@ async fn main() -> Result<()> {
     let client = Client::builder()
         .with_node(&node_url)?
         .with_node_sync_disabled()
-        .finish()
-        .await?;
+        .finish()?;
 
     // Send the request.
     let receipts = client.get_receipts().await?;

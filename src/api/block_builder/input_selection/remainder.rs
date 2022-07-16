@@ -87,7 +87,7 @@ pub(crate) fn get_storage_deposit_return_outputs<'a>(
 
 // Get a remainder with amount and native tokens if necessary, if no remainder_address is provided it will be selected
 // from the inputs, also validates the amounts
-pub(crate) async fn get_remainder_output<'a>(
+pub(crate) fn get_remainder_output<'a>(
     inputs: impl Iterator<Item = &'a InputSigningData> + Clone,
     outputs: impl Iterator<Item = &'a Output> + Clone,
     remainder_address: Option<Address>,
