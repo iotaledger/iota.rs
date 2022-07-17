@@ -10,15 +10,28 @@ import org.iota.types.ids.AliasId;
 import java.util.List;
 
 public class AliasOutputBuilderParams {
+
     private String amount;
     private List<NativeToken> nativeTokens;
     private AliasId aliasId;
-    private int stateIndex;
+    private Integer stateIndex;
     private byte[] stateMetadata;
-    private int foundry_counter;
+    private Integer foundry_counter;
     private List<UnlockCondition> unlockConditions;
     private List<Feature> features;
     private List<Feature> immutableFeatures;
+
+    public AliasOutputBuilderParams(String amount, List<NativeToken> nativeTokens, AliasId aliasId, Integer stateIndex, byte[] stateMetadata, Integer foundry_counter, List<UnlockCondition> unlockConditions, List<Feature> features, List<Feature> immutableFeatures) {
+        this.amount = amount;
+        this.nativeTokens = nativeTokens;
+        this.aliasId = aliasId;
+        this.stateIndex = stateIndex;
+        this.stateMetadata = stateMetadata;
+        this.foundry_counter = foundry_counter;
+        this.unlockConditions = unlockConditions;
+        this.features = features;
+        this.immutableFeatures = immutableFeatures;
+    }
 
     public JsonObject getJson() {
         JsonObject o = new JsonObject();
@@ -73,7 +86,7 @@ public class AliasOutputBuilderParams {
                 array.add(feature.getJson());
             o.add("immutableFeatures", array);
         } else {
-            o.add("features", null);
+            o.add("immutableFeatures", null);
         }
 
         return o;

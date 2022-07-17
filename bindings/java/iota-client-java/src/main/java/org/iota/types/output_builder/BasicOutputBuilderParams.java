@@ -9,10 +9,17 @@ import org.iota.types.UnlockCondition;
 import java.util.List;
 
 public class BasicOutputBuilderParams {
+
     private String amount;
     private List<NativeToken> nativeTokens;
     private List<UnlockCondition> unlockConditions;
     private List<Feature> features;
+    public BasicOutputBuilderParams(String amount, List<NativeToken> nativeTokens, List<UnlockCondition> unlockConditions, List<Feature> features) {
+        this.amount = amount;
+        this.nativeTokens = nativeTokens;
+        this.unlockConditions = unlockConditions;
+        this.features = features;
+    }
 
     public JsonObject getJson() {
         JsonObject o = new JsonObject();
@@ -26,6 +33,15 @@ public class BasicOutputBuilderParams {
             o.add("nativeTokens", array);
         } else {
             o.add("nativeTokens", null);
+        }
+
+        if(unlockConditions != null) {
+            JsonArray array = new JsonArray();
+            for(UnlockCondition unlockCondition: unlockConditions)
+                array.add(unlockCondition.getJson());
+            o.add("unlockConditions", array);
+        } else {
+            o.add("unlockConditions", null);
         }
 
         if (features != null) {

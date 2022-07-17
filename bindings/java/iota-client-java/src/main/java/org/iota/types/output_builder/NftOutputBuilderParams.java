@@ -13,11 +13,20 @@ import java.util.List;
 public class NftOutputBuilderParams {
     private String amount;
     private List<NativeToken> nativeTokens;
+
     private NftId nftId;
     private List<UnlockCondition> unlockConditions;
     private List<Feature> features;
     private List<Feature> immutableFeatures;
 
+    public NftOutputBuilderParams(String amount, List<NativeToken> nativeTokens, NftId nftId, List<UnlockCondition> unlockConditions, List<Feature> features, List<Feature> immutableFeatures) {
+        this.amount = amount;
+        this.nativeTokens = nativeTokens;
+        this.nftId = nftId;
+        this.unlockConditions = unlockConditions;
+        this.features = features;
+        this.immutableFeatures = immutableFeatures;
+    }
 
     public JsonObject getJson() {
         JsonObject o = new JsonObject();
@@ -59,7 +68,7 @@ public class NftOutputBuilderParams {
                 array.add(feature.getJson());
             o.add("immutableFeatures", array);
         } else {
-            o.add("features", null);
+            o.add("immutableFeatures", null);
         }
 
         return o;

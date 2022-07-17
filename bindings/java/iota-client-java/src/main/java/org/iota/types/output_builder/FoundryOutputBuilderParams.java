@@ -12,11 +12,22 @@ import java.util.List;
 public class FoundryOutputBuilderParams {
     private String amount;
     private List<NativeToken> nativeTokens;
+
     private int serialNumber;
     private TokenScheme tokenScheme;
     private List<UnlockCondition> unlockConditions;
     private List<Feature> features;
     private List<Feature> immutableFeatures;
+
+    public FoundryOutputBuilderParams(String amount, List<NativeToken> nativeTokens, int serialNumber, TokenScheme tokenScheme, List<UnlockCondition> unlockConditions, List<Feature> features, List<Feature> immutableFeatures) {
+        this.amount = amount;
+        this.nativeTokens = nativeTokens;
+        this.serialNumber = serialNumber;
+        this.tokenScheme = tokenScheme;
+        this.unlockConditions = unlockConditions;
+        this.features = features;
+        this.immutableFeatures = immutableFeatures;
+    }
 
     public JsonObject getJson() {
         JsonObject o = new JsonObject();
@@ -60,7 +71,7 @@ public class FoundryOutputBuilderParams {
                 array.add(feature.getJson());
             o.add("immutableFeatures", array);
         } else {
-            o.add("features", null);
+            o.add("immutableFeatures", null);
         }
 
         return o;
