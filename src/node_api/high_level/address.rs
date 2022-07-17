@@ -1,8 +1,8 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+use bee_api_types::responses::OutputResponse;
 use bee_block::output::{NativeTokens, NativeTokensBuilder, Output};
-use bee_rest_api::types::responses::OutputResponse;
 
 use crate::{node_api::indexer::query_parameters::QueryParameter, Client, Result};
 

@@ -52,9 +52,9 @@ pub mod secret;
 pub mod stronghold;
 pub mod utils;
 
+pub use bee_api_types as api_types;
 pub use bee_block as block;
 pub use bee_pow as pow;
-pub use bee_rest_api as rest_api;
 pub use crypto::{self, keys::slip10::Seed};
 pub use packable;
 pub use url::Url;

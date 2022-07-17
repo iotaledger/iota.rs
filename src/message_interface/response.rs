@@ -4,6 +4,13 @@
 #[cfg(not(target_family = "wasm"))]
 use std::collections::HashSet;
 
+use bee_api_types::{
+    dtos::{PeerDto, ReceiptDto},
+    responses::{
+        BlockMetadataResponse, InfoResponse as NodeInfo, OutputMetadataResponse, OutputResponse, TreasuryResponse,
+        UtxoChangesResponse as MilestoneUTXOChanges,
+    },
+};
 use bee_block::{
     address::dto::AddressDto,
     input::dto::UtxoInputDto,
@@ -13,13 +20,6 @@ use bee_block::{
         transaction::TransactionId,
     },
     BlockDto, BlockId,
-};
-use bee_rest_api::types::{
-    dtos::{PeerDto, ReceiptDto},
-    responses::{
-        BlockMetadataResponse, InfoResponse as NodeInfo, OutputMetadataResponse, OutputResponse, TreasuryResponse,
-        UtxoChangesResponse as MilestoneUTXOChanges,
-    },
 };
 use serde::Serialize;
 

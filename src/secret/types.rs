@@ -5,13 +5,13 @@
 
 use std::str::FromStr;
 
+use bee_api_types::responses::OutputMetadataResponse;
 use bee_block::{
     address::Address,
     output::{dto::OutputDto, Output, OutputId},
     payload::transaction::TransactionId,
     BlockId,
 };
-use bee_rest_api::types::responses::OutputMetadataResponse;
 use crypto::keys::slip10::Chain;
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "stronghold")]

@@ -14,7 +14,7 @@ use std::{
     time::Duration,
 };
 
-use bee_rest_api::types::responses::InfoResponse;
+use bee_api_types::responses::InfoResponse;
 use log::warn;
 use serde_json::Value;
 
