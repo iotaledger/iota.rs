@@ -1,0 +1,52 @@
+---
+title: Getting Started With Rust
+description: Getting started with the official IOTA Client Library Rust library.
+image: /img/logo/iota_mark_light.png
+keywords:
+- Rust
+- install
+- cargo
+- system environment variables
+---
+
+import CodeBlock from '@theme/CodeBlock';
+
+## Requirements
+
+This is a rust library, if you don't have rust installed yet, visit [Install Rust](https://www.rust-lang.org/tools/install).
+
+## Using the library
+
+Using the library is very easy, you just need to add it as dependency in your `Cargo.toml`:
+
+<!-- 
+<CodeBlock className="language-toml">
+    [dependencies]
+    iota-client = { git = "https://github.com/iotaledger/iota.rs", branch = "develop" }
+    tokio = { version = "1.20.0", features = [ "full" ] }
+</CodeBlock> -->
+
+## Example
+
+This example fetches node information
+
+<CodeBlock className="language-rust">
+    use iota_client::{Client, Result};
+
+    #[tokio::main]
+    async fn main() -> Result<()> {
+        // Create a client with that node.
+        let client = Client::builder()
+            .with_node("https://api.alphanet.iotaledger.net/")?
+            .with_node_sync_disabled()
+            .finish()?;
+
+        // Get node info.
+        let info = client.get_info().await?;
+
+        // Print node info.
+        println!("{info:#?}");
+
+        Ok(())
+    }
+</CodeBlock>
