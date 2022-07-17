@@ -1,11 +1,11 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+use bee_api_types::responses::OutputResponse;
 use bee_block::{
     address::Address,
     output::{dto::OutputDto, unlock_condition::dto::UnlockConditionDto, NativeTokensBuilder, NftOutput, Output},
 };
-use bee_rest_api::types::responses::OutputResponse;
 use crypto::keys::slip10::Chain;
 
 use crate::{
