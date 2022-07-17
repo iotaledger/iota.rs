@@ -60,7 +60,7 @@ public class AliasOutputBuilderParams {
             o.add("stateMetadata", null);
         }
 
-        o.addProperty("foundry_counter", foundry_counter);
+        o.addProperty("foundryCounter", foundry_counter);
 
         if(unlockConditions != null) {
             JsonArray array = new JsonArray();
