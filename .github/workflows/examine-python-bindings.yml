@@ -89,10 +89,10 @@ jobs:
       - name: Checkout the Source Code
         uses: actions/checkout@v2
 
-      - name: Set Up Nightly Clippy
+      - name: Set Up Beta Clippy
         uses: ./.github/actions/setup-rust
         with:
-          toolchain: nightly
+          toolchain: beta
           components: clippy
           cache: true
           cache-root: bindings/python/native/
