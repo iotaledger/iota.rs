@@ -45,7 +45,7 @@ public class FoundryOutputBuilderParams {
 
         o.addProperty("serialNumber", serialNumber);
 
-        o.addProperty("tokenScheme", tokenScheme != null ? tokenScheme.toString() : null);
+        o.add("tokenScheme", tokenScheme != null ? tokenScheme.getJson() : null);
 
         if (unlockConditions != null) {
             JsonArray array = new JsonArray();
