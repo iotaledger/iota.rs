@@ -13,8 +13,8 @@ categories = [ "cryptography::cryptocurrencies" ]
 
 [dependencies]
 async-trait = { version = "0.1.56", default-features = false }
-bee-block = { git = "https://github.com/iotaledger/bee", rev = "ff52b003a2c3845e2987d23487a696af106c053c", default-features = false, features = [ "serde", "dto", "std" ] }
 bee-api-types = { git = "https://github.com/iotaledger/bee", rev = "ff52b003a2c3845e2987d23487a696af106c053c", default-features = false }
+bee-block = { git = "https://github.com/iotaledger/bee", rev = "ff52b003a2c3845e2987d23487a696af106c053c", default-features = false, features = [ "serde", "dto", "std" ] }
 bee-pow = { version = "1.0.0-alpha.1", default-features = false }
 derive_builder = { version = "0.11.2", default-features = false, features = [ "std" ]}
 futures = { version = "0.3.21", default-features = false, features = [ "thread-pool" ] }
