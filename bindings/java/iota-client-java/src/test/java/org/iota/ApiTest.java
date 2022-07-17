@@ -12,8 +12,8 @@ import org.junit.jupiter.api.BeforeEach;
 
 public abstract class ApiTest {
 
-    protected static final String DEFAULT_DEVNET_NODE_URL = "http://localhost:14265";
-    protected static final String DEFAULT_DEVNET_FAUCET_URL = "http://localhost:14265";
+    protected static final String DEFAULT_DEVNET_NODE_URL = "https://api.alphanet.iotaledger.net";
+    protected static final String DEFAULT_DEVNET_FAUCET_URL = "https://faucet.alphanet.iotaledger.net/api/enqueue";
     protected static final String DEFAULT_DEVELOPMENT_MNEMONIC = "hidden enroll proud copper decide negative orient asset speed work dolphin atom unhappy game cannon scheme glow kid ring core name still twist actor";
 
     protected Client client;

@@ -7,6 +7,10 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.iota.types.*;
 import org.iota.types.ids.BlockId;
+import org.iota.types.output_builder.AliasOutputBuilderParams;
+import org.iota.types.output_builder.BasicOutputBuilderParams;
+import org.iota.types.output_builder.FoundryOutputBuilderParams;
+import org.iota.types.output_builder.NftOutputBuilderParams;
 import org.iota.types.secret.GenerateAddressesOptions;
 import org.iota.types.secret.GenerateBlockOptions;
 import org.iota.types.secret.SecretManager;
@@ -18,6 +22,38 @@ public class MiscellaneousApi extends BaseApi {
 
     public MiscellaneousApi(ClientConfig clientConfig) {
         super(clientConfig);
+    }
+
+    public Output buildAliasOutput(
+            AliasOutputBuilderParams params
+    ) throws ClientException {
+        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "BuildAliasOutput", params.getJson()));
+
+        return new Output(responsePayload);
+    }
+
+    public Output buildBasicOutput(
+            BasicOutputBuilderParams params
+    ) throws ClientException {
+        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "BuildBasicOutput", params.getJson()));
+
+        return new Output(responsePayload);
+    }
+
+    public Output buildFoundryOutput(
+            FoundryOutputBuilderParams params
+    ) throws ClientException {
+        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "BuildFoundryOutput", params.getJson()));
+
+        return new Output(responsePayload);
+    }
+
+    public Output buildNftOutput(
+            NftOutputBuilderParams params
+    ) throws ClientException {
+        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "BuildNftOutput", params.getJson()));
+
+        return new Output(responsePayload);
     }
 
     public String[] generateAddresses(SecretManager secretManager, GenerateAddressesOptions generateAddressesOptions) throws ClientException {
