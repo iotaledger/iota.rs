@@ -54,22 +54,22 @@ module.exports = {
             {
               type: 'doc',
               id: 'libraries/rust/how_to/get_block',
-              label: 'Get Block',
+              label: 'Get A Block',
             },
             {
               type: 'doc',
               id: 'libraries/rust/how_to/create_block',
-              label: 'Create Block',
+              label: 'Create A Block',
             },
             {
               type: 'doc',
               id: 'libraries/rust/how_to/post_block',
-              label: 'Post Block',
+              label: 'Post A Block',
             },
             {
               type: 'doc',
               id: 'libraries/rust/how_to/generate_mnemonic',
-              label: 'Generate Mnemonic',
+              label: 'Generate A Mnemonic',
             },
             {
               type: 'doc',
@@ -79,12 +79,17 @@ module.exports = {
             {
               type: 'doc',
               id: 'libraries/rust/how_to/get_output',
-              label: 'Get Output',
+              label: 'Get An Output',
             },
             {
               type: 'doc',
               id: 'libraries/rust/how_to/build_output',
-              label: 'Build Output',
+              label: 'Build An Output',
+            },
+            {
+              type: 'doc',
+              id: 'libraries/rust/how_to/prepare_sign_transaction',
+              label: 'Prepare And Sign A Transaction',
             },
           ]
         },
