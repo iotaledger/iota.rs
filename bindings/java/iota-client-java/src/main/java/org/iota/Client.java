@@ -7,6 +7,10 @@ import com.google.gson.JsonObject;
 import org.iota.apis.*;
 import org.iota.types.*;
 import org.iota.types.ids.*;
+import org.iota.types.output_builder.AliasOutputBuilderParams;
+import org.iota.types.output_builder.BasicOutputBuilderParams;
+import org.iota.types.output_builder.FoundryOutputBuilderParams;
+import org.iota.types.output_builder.NftOutputBuilderParams;
 import org.iota.types.responses.NodeInfoResponse;
 import org.iota.types.responses.TreasuryResponse;
 import org.iota.types.responses.UtxoChangesResponse;
@@ -253,6 +257,30 @@ public class Client {
     }
 
     // Miscellaneous APIs
+
+    public Output buildAliasOutput(
+            AliasOutputBuilderParams params
+    ) throws ClientException {
+        return miscellaneousApi.buildAliasOutput(params);
+    }
+
+    public Output buildBasicOutput(
+            BasicOutputBuilderParams params
+    ) throws ClientException {
+        return miscellaneousApi.buildBasicOutput(params);
+    }
+
+    public Output buildFoundryOutput(
+            FoundryOutputBuilderParams params
+    ) throws ClientException {
+        return miscellaneousApi.buildFoundryOutput(params);
+    }
+
+    public Output buildNftOutput(
+            NftOutputBuilderParams params
+    ) throws ClientException {
+        return miscellaneousApi.buildNftOutput(params);
+    }
 
     public String[] generateAddresses(SecretManager secretManager, GenerateAddressesOptions generateAddressesOptions) throws ClientException {
         return miscellaneousApi.generateAddresses(secretManager, generateAddressesOptions);
