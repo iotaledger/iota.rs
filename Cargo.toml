@@ -13,16 +13,16 @@ categories = [ "cryptography::cryptocurrencies" ]
 
 [dependencies]
 async-trait = { version = "0.1.56", default-features = false }
-bee-block = { git = "https://github.com/iotaledger/bee", rev = "a0790c2d2f3e0f0a648e2c93a197b08d294022f1", default-features = false, features = [ "serde", "dto", "std" ] }
-bee-rest-api = { git = "https://github.com/iotaledger/bee", rev = "a0790c2d2f3e0f0a648e2c93a197b08d294022f1", default-features = false }
-bee-pow = { git = "https://github.com/iotaledger/bee", rev = "a0790c2d2f3e0f0a648e2c93a197b08d294022f1", default-features = false }
+bee-block = { git = "https://github.com/iotaledger/bee", rev = "30cab4f02e9f5d72ffe137fd9eb09723b4f0fdb6", default-features = false, features = [ "serde", "dto", "std" ] }
+bee-rest-api = { git = "https://github.com/iotaledger/bee", rev = "30cab4f02e9f5d72ffe137fd9eb09723b4f0fdb6", default-features = false }
+bee-pow = { git = "https://github.com/iotaledger/bee", rev = "30cab4f02e9f5d72ffe137fd9eb09723b4f0fdb6", default-features = false }
 derive_builder = { version = "0.11.2", default-features = false, features = [ "std" ]}
 futures = { version = "0.3.21", default-features = false, features = [ "thread-pool" ] }
 hex = { version = "0.4.3", default-features = false }
 iota-crypto = { version = "0.12.1", default-features = false, features = [ "std", "chacha", "blake2b", "ed25519", "random", "slip10", "bip39", "bip39-en" ] }
 log = { version = "0.4.17", default-features = false }
 num_cpus = { version = "1.13.1", default-features = false }
-packable = { version = "0.4.0", default-features = false, features = [ "serde", "primitive-types", "std" ] }
+packable = { version = "0.5.0", default-features = false, features = [ "serde", "primitive-types", "std" ] }
 primitive-types = { version = "0.11.1", default-features = false }
 regex = { version = "1.5.6", default-features = false, features = [ "std", "unicode-perl" ], optional = true }
 reqwest = { version = "0.11.11", default-features = false, features = [ "json", "blocking" ] }
@@ -37,7 +37,7 @@ rumqttc = { version = "0.12.0", default-features = false, features = [ "websocke
 once_cell = { version = "1.12.0", default-features = false, features = [ "std" ], optional = true }
 
 # ledger hardware wallets
-iota-ledger = { git = "https://github.com/iotaledger/ledger.rs", rev = "414c4b98294afc8863bed1b58c811a77105f7eea", default-features = false, optional = true }
+iota-ledger-nano = { version = "1.0.0-alpha.1", default-features = false, optional = true }
 
 # stronghold secret manager integration
 iota_stronghold = { version = "0.8.1", default-features = false, features = [ "std" ], optional = true }
@@ -58,9 +58,9 @@ bee-ternary = { version = "0.6.0", default-features = false }
 dotenv = { version = "0.15.0", default-features = false }
 
 [features]
-default = [ "tls" ]
+default = [ "tls", "ledger_nano" ]
 mqtt = [ "rumqttc", "once_cell", "regex" ]
-ledger_nano = [ "iota-ledger" ]
+ledger_nano = [ "iota-ledger-nano" ]
 tls = [ "reqwest/rustls-tls" ]
 stronghold = [ "iota_stronghold" ]
 message_interface = [ "backtrace" ]
