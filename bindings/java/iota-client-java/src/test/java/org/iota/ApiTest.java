@@ -12,12 +12,12 @@ import org.junit.jupiter.api.BeforeEach;
 
 public abstract class ApiTest {
 
-    protected static final String DEFAULT_DEVNET_NODE_URL = "https://api.alphanet.iotaledger.net";
-    protected static final String DEFAULT_DEVNET_FAUCET_URL = "https://faucet.alphanet.iotaledger.net/api/enqueue";
+    private static final String DEFAULT_TESTNET_NODE_URL = "http://localhost:14265";
+    protected static final String DEFAULT_TESTNET_FAUCET_URL = "http://localhost:14265";
     protected static final String DEFAULT_DEVELOPMENT_MNEMONIC = "hidden enroll proud copper decide negative orient asset speed work dolphin atom unhappy game cannon scheme glow kid ring core name still twist actor";
 
     protected Client client;
-    protected ClientConfig config = new ClientConfig("{ \"nodes\": [\"" + DEFAULT_DEVNET_NODE_URL + "\" ], \"nodeSyncEnabled\": false}");
+    protected ClientConfig config = new ClientConfig("{ \"nodes\": [\"" + DEFAULT_TESTNET_NODE_URL + "\" ], \"nodeSyncEnabled\": false}");
 
     @BeforeEach
     protected void setUp() {
@@ -25,7 +25,7 @@ public abstract class ApiTest {
     }
 
     protected void requestFundsFromFaucet(String address) throws ClientException {
-        new UtilsApi(config).requestFundsFromFaucet(DEFAULT_DEVNET_FAUCET_URL, address);
+        new UtilsApi(config).requestFundsFromFaucet(DEFAULT_TESTNET_FAUCET_URL, address);
         try {
             Thread.sleep(1000 * 25);
         } catch (InterruptedException e) {
