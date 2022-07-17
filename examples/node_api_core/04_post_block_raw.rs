@@ -6,7 +6,7 @@
 //! Run: `cargo run --example node_api_core_post_block_raw --release -- [NODE URL]`.
 
 use iota_client::{
-    bee_block::{parent::Parents, Block},
+    block::{parent::Parents, Block},
     Client, Result,
 };
 

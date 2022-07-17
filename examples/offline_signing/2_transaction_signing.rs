@@ -15,7 +15,7 @@ use std::{
 use dotenv::dotenv;
 use iota_client::{
     api::{PreparedTransactionData, PreparedTransactionDataDto, SignedTransactionData, SignedTransactionDataDto},
-    bee_block::payload::transaction::TransactionPayload,
+    block::payload::transaction::TransactionPayload,
     secret::{mnemonic::MnemonicSecretManager, SecretManageExt, SecretManager},
     Result,
 };

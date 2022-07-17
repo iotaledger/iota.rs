@@ -6,7 +6,7 @@
 
 use std::str::FromStr;
 
-use iota_client::{bee_block::output::NftId, Client, Result};
+use iota_client::{block::output::NftId, Client, Result};
 
 #[tokio::main]
 async fn main() -> Result<()> {

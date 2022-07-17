@@ -7,7 +7,7 @@ use std::env;
 
 use dotenv::dotenv;
 use iota_client::{
-    bee_block::payload::{Payload, TaggedDataPayload},
+    block::payload::{Payload, TaggedDataPayload},
     Client, Result,
 };
 

@@ -6,7 +6,7 @@
 use std::env;
 
 use dotenv::dotenv;
-use iota_client::{bee_block::payload::transaction::TransactionId, Client, Result};
+use iota_client::{block::payload::transaction::TransactionId, Client, Result};
 
 /// In this example we will fetch all inputs from a given transaction id.
 

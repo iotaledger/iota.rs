@@ -7,7 +7,7 @@
 
 use std::str::FromStr;
 
-use iota_client::{bee_block::BlockId, Client, Result};
+use iota_client::{block::BlockId, Client, Result};
 
 #[tokio::main]
 async fn main() -> Result<()> {
