@@ -32,7 +32,7 @@ async fn main() -> Result<()> {
         client.get_tips().await?[0]
     };
 
-    // Get the block as object.
+    // Get the block.
     let block = client.get_block(&block_id).await?;
 
     // Print the block.

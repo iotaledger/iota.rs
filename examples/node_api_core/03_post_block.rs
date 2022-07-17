@@ -29,7 +29,7 @@ async fn main() -> Result<()> {
     let parents = Parents::new(client.get_tips().await?)?;
     // Create the block.
     let block = Block::build(parents).finish()?;
-    // Post the block as JSON.
+    // Post the block.
     let block_id = client.post_block(&block).await?;
 
     // Print the block id.

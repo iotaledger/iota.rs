@@ -184,6 +184,14 @@ path = "examples/node_api_indexer/06_get_nft_outputs.rs"
 #######
 
 [[example]]
+name = "generate_mnemonic"
+path = "examples/00_generate_mnemonic.rs"
+
+[[example]]
+name = "generate_addresses"
+path = "examples/01_generate_addresses.rs"
+
+[[example]]
 name = "07_mqtt"
 required-features = [ "mqtt" ]
 
