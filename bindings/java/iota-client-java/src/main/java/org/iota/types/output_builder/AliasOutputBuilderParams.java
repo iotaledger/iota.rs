@@ -16,18 +16,18 @@ public class AliasOutputBuilderParams {
     private AliasId aliasId;
     private Integer stateIndex;
     private byte[] stateMetadata;
-    private Integer foundry_counter;
+    private Integer foundryCounter;
     private List<UnlockCondition> unlockConditions;
     private List<Feature> features;
     private List<Feature> immutableFeatures;
 
-    public AliasOutputBuilderParams(String amount, List<NativeToken> nativeTokens, AliasId aliasId, Integer stateIndex, byte[] stateMetadata, Integer foundry_counter, List<UnlockCondition> unlockConditions, List<Feature> features, List<Feature> immutableFeatures) {
+    public AliasOutputBuilderParams(String amount, List<NativeToken> nativeTokens, AliasId aliasId, Integer stateIndex, byte[] stateMetadata, Integer foundryCounter, List<UnlockCondition> unlockConditions, List<Feature> features, List<Feature> immutableFeatures) {
         this.amount = amount;
         this.nativeTokens = nativeTokens;
         this.aliasId = aliasId;
         this.stateIndex = stateIndex;
         this.stateMetadata = stateMetadata;
-        this.foundry_counter = foundry_counter;
+        this.foundryCounter = foundryCounter;
         this.unlockConditions = unlockConditions;
         this.features = features;
         this.immutableFeatures = immutableFeatures;
@@ -60,7 +60,7 @@ public class AliasOutputBuilderParams {
             o.add("stateMetadata", null);
         }
 
-        o.addProperty("foundryCounter", foundry_counter);
+        o.addProperty("foundryCounter", foundryCounter);
 
         if(unlockConditions != null) {
             JsonArray array = new JsonArray();
