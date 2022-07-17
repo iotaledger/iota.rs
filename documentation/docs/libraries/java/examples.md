@@ -2,56 +2,33 @@
 description: Official IOTA Client Library Java API examples.
 image: /img/logo/iota_mark_light.png
 keywords:
-- api
 - Java
-- examples
-- type
-- node
-- client
+- Rust
+- jar
+- Gradle
 ---
-# Examples
-
-It's possible to send transactions with iota.rs, but we strongly recommend to use official `wallet.rs` library together with `stronghold.rs` enclave for value-based transfers. This combination incorporates the best security practices while dealing with seeds, related addresses and `UTXO`. See more information on [wallet docs](https://wiki.iota.org/wallet.rs/welcome).
-
-```bash
-git clone https://github.com/iotaledger/iota.rs
-```
-
-```bash
-cd iota.rs/bindings/java
-```
-
-Examples are all collected in a sample project. By default it runs a node info example, but there are many more.
-
-Run the example like:
-
-Gradle: `./gradlew examples:basic-app:test --info`
-
-Maven: `cd examples/basic-app && mvn test`
+import CodeBlock from '@theme/CodeBlock';
+import get_info from '!!raw-loader!./../../../../bindings/nodejs/examples/01_get_info.ts';
+import mnemonic from '!!raw-loader!./../../../../bindings/nodejs/examples/02_mnemonic.ts';
+import generate_addresses from '!!raw-loader!./../../../../bindings/nodejs/examples/03_generate_addresses.ts';
+import get_address_outputs from '!!raw-loader!./../../../../bindings/nodejs/examples/04_get_address_outputs.ts';
+import b_get_output from '!!raw-loader!./../../../../bindings/nodejs/examples/04b_get_output.ts';
+import get_address_balance from '!!raw-loader!./../../../../bindings/nodejs/examples/05_get_address_balance.ts';
+import simple_block from '!!raw-loader!./../../../../bindings/nodejs/examples/06_simple_block.ts';
+import get_block_data from '!!raw-loader!./../../../../bindings/nodejs/examples/07_get_block_data.ts';
+import data_block from '!!raw-loader!./../../../../bindings/nodejs/examples/08_data_block.ts';
+import transaction from '!!raw-loader!./../../../../bindings/nodejs/examples/09_transaction.ts';
+import mqtt from '!!raw-loader!./../../../../bindings/nodejs/examples/10_mqtt.ts';
 
 
-For the rest of the examples in this document we will be using the `node()` method below:
-```java
-private static Client node() {
-    String nodeUrl = "https://chrysalis-nodes.iota.cafe:443";
-    Client iota = Client.Builder()
-        // Insert your node URL here
-        .withNode(nodeUrl) 
-        // Or instead here but with authentication
-        .withNodeAuth("https://somechrysalisiotanode.com", "jwt_or_null", "name_or_null", "password_or_null")
-        // Choose pow mode
-        .withLocalPow(true)
-        // You can also set a time-out in seconds for the API calls
-        .withRequestTimeout(5)
-        //Then create the Client instance
-        .finish();
-    return iota;
-}
-```
+It's possible to send transactions with the IOTA Client Library, but we strongly recommend to use official `wallet.rs` library together with `stronghold.rs` enclave for value-based transfers. This combination incorporates the best security practices while dealing with seeds, related addresses and `UTXO`. See more information on [wallet docs](https://wiki.iota.org/wallet.rs/welcome).
 
 ***
 
+# Example 1: Get node information
+
 The most basic example is creating a client, and then requesting the information about the node. 
+
 ```java
 Client iota = node();
 
@@ -123,3 +100,9 @@ Messages with Hello index: [32e75774837b2f26f8fee1f2a1f22076fd80b555a6e2515f4f48
 ***
 
 You can find more advanced examples in the [examples](https://github.com/iotaledger/iota.rs/tree/dev/bindings/java/examples/basic-app) folder.
+
+
+
+Run the example like:
+
+Gradle: `./gradlew examples:basic-app:test --info`
