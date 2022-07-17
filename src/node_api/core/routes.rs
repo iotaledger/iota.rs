@@ -5,6 +5,13 @@
 
 use std::str::FromStr;
 
+use bee_api_types::{
+    dtos::{PeerDto, ReceiptDto},
+    responses::{
+        BlockMetadataResponse, BlockResponse, MilestoneResponse, OutputMetadataResponse, OutputResponse, PeersResponse,
+        ReceiptsResponse, SubmitBlockResponse, TipsResponse, TreasuryResponse, UtxoChangesResponse,
+    },
+};
 use bee_block::{
     output::OutputId,
     payload::{
@@ -12,13 +19,6 @@ use bee_block::{
         transaction::TransactionId,
     },
     Block, BlockDto, BlockId,
-};
-use bee_rest_api::types::{
-    dtos::{PeerDto, ReceiptDto},
-    responses::{
-        BlockMetadataResponse, BlockResponse, MilestoneResponse, OutputMetadataResponse, OutputResponse, PeersResponse,
-        ReceiptsResponse, SubmitBlockResponse, TipsResponse, TreasuryResponse, UtxoChangesResponse,
-    },
 };
 use packable::PackableExt;
 use url::Url;

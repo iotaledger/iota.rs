@@ -101,7 +101,7 @@ pub enum Error {
     /// Bee rest api error
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
-    BeeRestApiError(#[from] bee_rest_api::types::error::Error),
+    BeeRestApiError(#[from] bee_api_types::error::Error),
     /// The block doensn't need to be promoted or reattached
     #[error("Block ID `{0}` doesn't need to be promoted or reattached")]
     NoNeedPromoteOrReattach(String),
