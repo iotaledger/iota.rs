@@ -19,6 +19,5 @@ public class GenerateAddresses {
         for (String address : addresses) {
             System.out.println(address);
         }
-
     }
 }
