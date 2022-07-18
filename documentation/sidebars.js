@@ -56,11 +56,11 @@ module.exports = {
               id: 'libraries/rust/how_to/get_block',
               label: 'Get A Block',
             },
-            {
-              type: 'doc',
-              id: 'libraries/rust/how_to/create_block',
-              label: 'Create A Block',
-            },
+            // {
+            //   type: 'doc',
+            //   id: 'libraries/rust/how_to/create_block',
+            //   label: 'Create A Block',
+            // },
             {
               type: 'doc',
               id: 'libraries/rust/how_to/post_block',
@@ -76,21 +76,21 @@ module.exports = {
               id: 'libraries/rust/how_to/generate_addresses',
               label: 'Generate Addresses',
             },
-            {
-              type: 'doc',
-              id: 'libraries/rust/how_to/get_output',
-              label: 'Get An Output',
-            },
-            {
-              type: 'doc',
-              id: 'libraries/rust/how_to/build_output',
-              label: 'Build An Output',
-            },
-            {
-              type: 'doc',
-              id: 'libraries/rust/how_to/prepare_sign_transaction',
-              label: 'Prepare And Sign A Transaction',
-            },
+            // {
+            //   type: 'doc',
+            //   id: 'libraries/rust/how_to/get_output',
+            //   label: 'Get An Output',
+            // },
+            // {
+            //   type: 'doc',
+            //   id: 'libraries/rust/how_to/build_output',
+            //   label: 'Build An Output',
+            // },
+            // {
+            //   type: 'doc',
+            //   id: 'libraries/rust/how_to/prepare_sign_transaction',
+            //   label: 'Prepare And Sign A Transaction',
+            // },
           ]
         },
         {
