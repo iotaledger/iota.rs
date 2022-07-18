@@ -172,7 +172,7 @@ module.exports = {
             },
             {
               type: 'doc',
-              id: 'libraries/rust/how_to/generate_mnemonic',
+              id: 'libraries/java/how_to/generate_mnemonic',
               label: 'Generate A Mnemonic',
             },
             {
@@ -197,11 +197,11 @@ module.exports = {
             // },
           ]
         },
-        {
-          type: 'doc',
-          id: 'libraries/java/api_reference',
-          label: 'API Reference'
-        },
+        // {
+        //   type: 'doc',
+        //   id: 'libraries/java/api_reference',
+        //   label: 'API Reference'
+        // },
       ]
     }
     ]
