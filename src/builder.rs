@@ -18,9 +18,7 @@ use {
 use crate::node_api::mqtt::{BrokerOptions, MqttEvent};
 use crate::{
     client::Client,
-    constants::{
-        DEFAULT_API_TIMEOUT, DEFAULT_REMOTE_POW_API_TIMEOUT, DEFAULT_TIPS_INTERVAL, SHIMMER_TESTNET_BECH32_HRP,
-    },
+    constants::{DEFAULT_API_TIMEOUT, DEFAULT_REMOTE_POW_API_TIMEOUT, DEFAULT_TIPS_INTERVAL},
     error::{Error, Result},
     node_manager::{
         builder::validate_url,
@@ -37,8 +35,8 @@ pub struct NetworkInfo {
     #[serde(rename = "networkId")]
     pub network_id: Option<u64>,
     /// Bech32 HRP
-    #[serde(rename = "bech32HRP", default = "default_bech32_hrp")]
-    pub bech32_hrp: String,
+    #[serde(rename = "bech32HRP", default)]
+    pub bech32_hrp: Option<String>,
     /// Mininum proof of work score
     #[serde(rename = "minPoWScore", default)]
     pub min_pow_score: Option<f64>,
@@ -54,10 +52,6 @@ pub struct NetworkInfo {
     /// Rent structure of the protocol
     #[serde(rename = "rentStructure", default)]
     pub rent_structure: Option<RentStructureResponse>,
-}
-
-fn default_bech32_hrp() -> String {
-    SHIMMER_TESTNET_BECH32_HRP.into()
 }
 
 fn default_local_pow() -> bool {
@@ -124,7 +118,7 @@ impl Default for NetworkInfo {
             min_pow_score: None,
             local_pow: default_local_pow(),
             fallback_to_local_pow: true,
-            bech32_hrp: SHIMMER_TESTNET_BECH32_HRP.into(),
+            bech32_hrp: None,
             tips_interval: DEFAULT_TIPS_INTERVAL,
             rent_structure: None,
         }
