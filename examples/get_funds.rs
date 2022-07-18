@@ -21,8 +21,7 @@ async fn main() -> Result<()> {
 
     // Create a client instance
     let client = Client::builder()
-        .with_node(&node_url) // Insert the node here
-        .unwrap()
+        .with_node(&node_url)? // Insert the node here
         .with_node_sync_disabled()
         .finish()?;
 
@@ -35,8 +34,7 @@ async fn main() -> Result<()> {
         .with_account_index(0)
         .with_range(0..1)
         .finish()
-        .await
-        .unwrap();
+        .await?;
     println!("{}", addresses[0]);
 
     let faucet_response = request_funds_from_faucet(&faucet_url, &addresses[0]).await?;

@@ -75,7 +75,7 @@ async fn main() -> Result<()> {
     //////////////////////////////////
     // move funds from an NFT address
     //////////////////////////////////
-    let nft_output_id = get_nft_output_id(block.payload().unwrap());
+    let nft_output_id = get_nft_output_id(block.payload().unwrap())?;
     let nft_id = NftId::from(nft_output_id);
 
     let nft_address = NftAddress::new(nft_id);
@@ -98,11 +98,12 @@ async fn main() -> Result<()> {
         .with_secret_manager(&secret_manager)
         .with_input(nft_output_id.into())?
         .with_input(output_ids[0].into())?
-        .with_outputs(vec![
-            NftOutputBuilder::new_with_amount(1_000_000 + output.amount(), nft_id)?
-                .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-                .finish_output()?,
-        ])?
+        .with_outputs(vec![NftOutputBuilder::new_with_amount(
+            1_000_000 + output.amount(),
+            nft_id,
+        )?
+        .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
+        .finish_output()?])?
         .finish()
         .await?;
 
@@ -116,14 +117,12 @@ async fn main() -> Result<()> {
     //////////////////////////////////
     // burn NFT
     //////////////////////////////////
-    let nft_output_id = get_nft_output_id(block.payload().unwrap());
+    let nft_output_id = get_nft_output_id(block.payload().unwrap())?;
     let output_response = client.get_output(&nft_output_id).await?;
     let output = Output::try_from(&output_response.output)?;
-    let outputs = vec![
-        BasicOutputBuilder::new_with_amount(output.amount())?
-            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-            .finish_output()?,
-    ];
+    let outputs = vec![BasicOutputBuilder::new_with_amount(output.amount())?
+        .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
+        .finish_output()?];
 
     let block = client
         .block()
@@ -138,13 +137,13 @@ async fn main() -> Result<()> {
 }
 
 // helper function to get the output id for the first NFT output
-fn get_nft_output_id(payload: &Payload) -> OutputId {
+fn get_nft_output_id(payload: &Payload) -> Result<OutputId> {
     match payload {
         Payload::Transaction(tx_payload) => {
             let TransactionEssence::Regular(regular) = tx_payload.essence();
             for (index, output) in regular.outputs().iter().enumerate() {
                 if let Output::Nft(_nft_output) = output {
-                    return OutputId::new(tx_payload.id(), index.try_into().unwrap()).unwrap();
+                    return Ok(OutputId::new(tx_payload.id(), index.try_into().unwrap())?);
                 }
             }
             panic!("No nft output in transaction essence")

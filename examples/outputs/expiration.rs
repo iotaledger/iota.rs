@@ -64,9 +64,10 @@ async fn main() -> Result<()> {
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(receiver_address)))
             // If the receiver does not consume this output, we Unlock after a day to avoid
             // locking our funds forever.
-            .add_unlock_condition(UnlockCondition::Expiration(
-                ExpirationUnlockCondition::new(sender_address, tomorrow).unwrap(),
-            ))
+            .add_unlock_condition(UnlockCondition::Expiration(ExpirationUnlockCondition::new(
+                sender_address,
+                tomorrow,
+            )?))
             .finish_output()?,
     ];
 

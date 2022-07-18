@@ -21,9 +21,8 @@ async fn main() -> Result<()> {
         .with_node_sync_disabled()
         .finish()?;
 
-    let transaction_id = "0xaf7579fb57746219561072c2cc0e4d0fbb8d493d075bd21bf25ae81a450c11ef"
-        .parse::<TransactionId>()
-        .unwrap();
+    let transaction_id =
+        "0xaf7579fb57746219561072c2cc0e4d0fbb8d493d075bd21bf25ae81a450c11ef".parse::<TransactionId>()?;
 
     let inputs = client.inputs_from_transaction_id(&transaction_id).await?;
 

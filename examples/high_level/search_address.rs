@@ -24,34 +24,31 @@ async fn main() -> Result<()> {
 
     // Create a client instance
     let client = Client::builder()
-        .with_node(&node_url) // Insert your node URL here
-        .unwrap()
+        .with_node(&node_url)? // Insert your node URL here
         .finish()?;
 
-    let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
-        &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
-    )?);
+    let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(&env::var(
+        "NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1",
+    )?)?);
 
     let addresses = client
         .get_addresses(&secret_manager)
         .with_account_index(0)
         .with_range(9..10)
         .get_raw()
-        .await
-        .unwrap();
+        .await?;
 
     println!("{:?}", addresses[0]);
 
     let res = search_address(
         &secret_manager,
-        &client.get_bech32_hrp().await.unwrap(),
+        &client.get_bech32_hrp().await?,
         IOTA_COIN_TYPE,
         0,
         0..10,
         &addresses[0],
     )
-    .await
-    .unwrap();
+    .await?;
 
     println!("Address index: {}\nIs internal address: {}", res.0, res.1);
     Ok(())

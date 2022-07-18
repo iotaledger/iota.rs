@@ -67,9 +67,9 @@ async fn main() -> Result<()> {
             ))
             // If the receiver does not consume this output, we Unlock after a day to avoid
             // locking our funds forever.
-            .add_unlock_condition(UnlockCondition::Expiration(
-                ExpirationUnlockCondition::new(address, tomorrow).unwrap(),
-            ))
+            .add_unlock_condition(UnlockCondition::Expiration(ExpirationUnlockCondition::new(
+                address, tomorrow,
+            )?))
             .finish_output()?,
     ];
 
@@ -83,5 +83,6 @@ async fn main() -> Result<()> {
     println!("Transaction sent: {node_url}/api/core/v2/blocks/{}", block.id());
     println!("Block metadata: {node_url}/api/core/v2/blocks/{}/metadata", block.id());
     let _ = client.retry_until_included(&block.id(), None, None).await?;
+
     Ok(())
 }
