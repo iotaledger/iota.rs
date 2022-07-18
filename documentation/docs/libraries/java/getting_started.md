@@ -55,7 +55,7 @@ public class HelloWorld {
 
 # Examples
 
-Please visit the [examples](docs/libraries/java/how_to/examples.md) page for more information on using the IOTA Java Client Library.
+Please visit the [examples](how_to) page for more information on using the IOTA Java Client Library.
 In addition, since the IOTA Java library is similar to the IOTA Rust library, you might also want to look
 into Rust examples.
 
