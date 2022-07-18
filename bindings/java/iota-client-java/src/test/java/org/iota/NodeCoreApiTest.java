@@ -18,7 +18,7 @@ public class NodeCoreApiTest extends ApiTest {
 
     @Test
     public void testGetHealth() throws ClientException {
-        boolean health = client.getHealth(DEFAULT_DEVNET_NODE_URL);
+        boolean health = client.getHealth(DEFAULT_TESTNET_FAUCET_URL);
         System.out.println(health);
     }
 

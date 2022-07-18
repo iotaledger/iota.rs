@@ -11,13 +11,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BuildFoundryOutput {
-
-    private static final String DEFAULT_TESTNET_NODE_URL = "http://localhost:14265";
-    private static ClientConfig config = new ClientConfig("{ \"nodes\": [\"" + DEFAULT_TESTNET_NODE_URL + "\" ], \"nodeSyncEnabled\": false}");
-
     public static void main(String[] args) throws ClientException {
         // Build the client.
-        Client client = new Client(config);
+        Client client = new Client(new ClientConfig("{ \"nodes\": [ \"https://api.testnet.shimmer.network\" ], \"nodeSyncEnabled\": true }"));
 
         // Generate the address
         MnemonicSecretManager secretManager = new MnemonicSecretManager("endorse answer radar about source reunion marriage tag sausage weekend frost daring base attack because joke dream slender leisure group reason prepare broken river");
@@ -53,5 +49,4 @@ public class BuildFoundryOutput {
         System.out.println(output.toString());
 
     }
-
 }

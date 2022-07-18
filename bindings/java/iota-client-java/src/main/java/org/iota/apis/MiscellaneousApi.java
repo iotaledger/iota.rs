@@ -27,7 +27,7 @@ public class MiscellaneousApi extends BaseApi {
     public Output buildAliasOutput(
             AliasOutputBuilderParams params
     ) throws ClientException {
-        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "BuildAliasOutput", params.getJson()));
+        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("BuildAliasOutput", params.getJson()));
 
         return new Output(responsePayload);
     }
@@ -35,7 +35,7 @@ public class MiscellaneousApi extends BaseApi {
     public Output buildBasicOutput(
             BasicOutputBuilderParams params
     ) throws ClientException {
-        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "BuildBasicOutput", params.getJson()));
+        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("BuildBasicOutput", params.getJson()));
 
         return new Output(responsePayload);
     }
@@ -43,7 +43,7 @@ public class MiscellaneousApi extends BaseApi {
     public Output buildFoundryOutput(
             FoundryOutputBuilderParams params
     ) throws ClientException {
-        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "BuildFoundryOutput", params.getJson()));
+        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("BuildFoundryOutput", params.getJson()));
 
         return new Output(responsePayload);
     }
@@ -51,7 +51,7 @@ public class MiscellaneousApi extends BaseApi {
     public Output buildNftOutput(
             NftOutputBuilderParams params
     ) throws ClientException {
-        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand(ClientCommand.CommandType.CallClientMethod, "BuildNftOutput", params.getJson()));
+        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("BuildNftOutput", params.getJson()));
 
         return new Output(responsePayload);
     }
@@ -73,8 +73,8 @@ public class MiscellaneousApi extends BaseApi {
 
     public Block generateBlock(SecretManager secretManager, GenerateBlockOptions options) throws ClientException {
         JsonObject o = new JsonObject();
-        o.add("secretManager", secretManager.getJson());
-        o.add("options", options.getJson());
+        o.add("secretManager", secretManager != null ? secretManager.getJson() : null);
+        o.add("options", options != null ? options.getJson() : null);
 
         JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("GenerateBlock", o));
 
