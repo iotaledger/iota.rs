@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BuildAliasOutput {
-
     public static void main(String[] args) throws ClientException {
         // Build the client.
         Client client = new Client(new ClientConfig("{ \"nodes\": [ \"https://api.testnet.shimmer.network\" ], \"nodeSyncEnabled\": true }"));
@@ -47,5 +46,4 @@ public class BuildAliasOutput {
         System.out.println(output.toString());
 
     }
-
 }

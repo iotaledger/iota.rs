@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BuildFoundryOutput {
-
     public static void main(String[] args) throws ClientException {
         // Build the client.
         Client client = new Client(new ClientConfig("{ \"nodes\": [ \"https://api.testnet.shimmer.network\" ], \"nodeSyncEnabled\": true }"));
@@ -50,5 +49,4 @@ public class BuildFoundryOutput {
         System.out.println(output.toString());
 
     }
-
 }

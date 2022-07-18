@@ -18,7 +18,6 @@ This example shows how to access and migrate the funds located on the incorrectl
 This example will try to migrate funds from the first 50 addresses of the seed.
  */
 public class WrongSeedConversionSecretManager {
-
     public static void main(String[] args) throws ClientException {
         // Build the client.
         Client client = new Client(new ClientConfig("{ \"nodes\": [ \"https://api.testnet.shimmer.network\" ], \"nodeSyncEnabled\": true }"));
@@ -71,5 +70,4 @@ public class WrongSeedConversionSecretManager {
         // Print the block ID.
         System.out.println(blockId);
     }
-
 }

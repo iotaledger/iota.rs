@@ -44,5 +44,4 @@ public class BuildNftOutput {
         System.out.println(output.toString());
 
     }
-
 }

@@ -3,7 +3,6 @@ package node_api_core;
 import org.iota.Client;
 import org.iota.types.ClientConfig;
 import org.iota.types.ClientException;
-import org.iota.types.Receipt;
 import org.iota.types.responses.TreasuryResponse;
 
 public class GetTreasury {
@@ -20,5 +19,4 @@ public class GetTreasury {
         // Print the milestone id.
         System.out.println(response.getMilestoneId());
     }
-
 }

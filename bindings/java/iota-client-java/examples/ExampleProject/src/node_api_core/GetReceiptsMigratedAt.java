@@ -17,8 +17,7 @@ public class GetReceiptsMigratedAt {
         Receipt[] receipts = client.getReceiptsMigratedAt(milestoneIndex);
 
         // Print the receipts.
-        for(Receipt receipt: receipts)
+        for (Receipt receipt : receipts)
             System.out.println(receipt);
     }
-
 }

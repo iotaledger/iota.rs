@@ -34,5 +34,4 @@ public class BuildBasicOutput {
         System.out.println(output.toString());
 
     }
-
 }
