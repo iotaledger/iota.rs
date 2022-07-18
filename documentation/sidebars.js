@@ -197,8 +197,11 @@ module.exports = {
             // },
           ]
         },
-
-
+        {
+          type: 'doc',
+          id: 'libraries/java/api_reference',
+          label: 'API Reference'
+        },
       ]
     }
     ]
