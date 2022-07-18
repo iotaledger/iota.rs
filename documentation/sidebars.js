@@ -144,58 +144,61 @@ module.exports = {
         {
           type: 'doc',
           id: 'libraries/java/getting_started',
-          label: 'Getting Started'
+          label: 'Getting Started',
         },
         {
-          type: 'doc',
-          id: 'libraries/java/how_to/build_output',
-          label: 'Build An Output',
+          type: 'category',
+          label: 'How to',
+          items: [
+            {
+              type: 'doc',
+              id: 'libraries/java/how_to/get_node_info',
+              label: 'Get Node Info',
+            },
+            {
+              type: 'doc',
+              id: 'libraries/java/how_to/get_block',
+              label: 'Get A Block',
+            },
+            {
+              type: 'doc',
+              id: 'libraries/java/how_to/create_block',
+              label: 'Create A Block',
+            },
+            {
+              type: 'doc',
+              id: 'libraries/java/how_to/post_block',
+              label: 'Post A Block',
+            },
+            {
+              type: 'doc',
+              id: 'libraries/rust/how_to/generate_mnemonic',
+              label: 'Generate A Mnemonic',
+            },
+            {
+              type: 'doc',
+              id: 'libraries/java/how_to/generate_addresses',
+              label: 'Generate Addresses',
+            },
+            {
+              type: 'doc',
+              id: 'libraries/java/how_to/get_output',
+              label: 'Get An Output',
+            },
+            {
+              type: 'doc',
+              id: 'libraries/java/how_to/build_output',
+              label: 'Build An Output',
+            },
+            // {
+            //   type: 'doc',
+            //   id: 'libraries/java/how_to/prepare_sign_transaction',
+            //   label: 'Prepare And Sign A Transaction',
+            // },
+          ]
         },
-        {
-          type: 'doc',
-          id: 'libraries/java/how_to/create_block',
-          label: 'Create A Block',
-        },
-        {
-          type: 'doc',
-          id: 'libraries/java/how_to/generate_addresses',
-          label: 'Generate Addresses',
-        },
-        {
-          type: 'doc',
-          id: 'libraries/java/how_to/generate_mnemonic',
-          label: 'Generate A Mnemonic',
-        },
-        {
-          type: 'doc',
-          id: 'libraries/java/how_to/get_block',
-          label: 'Get A Block',
-        },
-        {
-          type: 'doc',
-          id: 'libraries/java/how_to/get_node_info',
-          label: 'Get Node Info',
-        },
-        {
-          type: 'doc',
-          id: 'libraries/java/how_to/get_output',
-          label: 'Get An Output',
-        },
-        {
-          type: 'doc',
-          id: 'libraries/java/how_to/post_block',
-          label: 'Post A Block',
-        },
-        {
-          type: 'doc',
-          id: 'libraries/java/how_to/prepare_sign_transaction',
-          label: 'Prepare And Sign A Transaction',
-        },
-        {
-          type: 'doc',
-          id: 'libraries/java/api_reference',
-          label: 'API Reference'
-        },
+
+
       ]
     }
     ]
