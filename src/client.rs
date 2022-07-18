@@ -268,7 +268,7 @@ impl Client {
     }
 
     /// Gets the network related information such as network_id and min_pow_score
-    /// and if it's the default one, sync it first.
+    /// and if it's the default one, sync it first and set the NetworkInfo.
     pub async fn get_network_info(&self) -> Result<NetworkInfo> {
         let not_synced = self.network_info.read().map_or(true, |info| info.network_id.is_none());
 
@@ -303,22 +303,18 @@ impl Client {
 
     /// returns the bech32_hrp
     pub async fn get_bech32_hrp(&self) -> Result<String> {
-        let bech32_hrp = match self.get_network_info().await?.bech32_hrp {
-            Some(hrp) => hrp,
-            None => self.get_info().await?.node_info.protocol.bech32_hrp,
-        };
-
-        Ok(bech32_hrp)
+        self.get_network_info()
+            .await?
+            .bech32_hrp
+            .ok_or(Error::MissingParameter("Missing bech32_hrp."))
     }
 
     /// returns the min pow score
     pub async fn get_min_pow_score(&self) -> Result<f64> {
-        let min_pow_score = match self.get_network_info().await?.min_pow_score {
-            Some(min_pow_score) => min_pow_score,
-            None => self.get_info().await?.node_info.protocol.min_pow_score,
-        };
-
-        Ok(min_pow_score)
+        self.get_network_info()
+            .await?
+            .min_pow_score
+            .ok_or(Error::MissingParameter("Missing min_pow_score."))
     }
 
     /// returns the tips interval
@@ -337,10 +333,11 @@ impl Client {
 
     /// returns the byte cost configuration
     pub async fn get_byte_cost_config(&self) -> Result<ByteCostConfig> {
-        let rent_structure = match self.get_network_info().await?.rent_structure {
-            Some(rent_structure) => rent_structure,
-            None => self.get_info().await?.node_info.protocol.rent_structure,
-        };
+        let rent_structure = self
+            .get_network_info()
+            .await?
+            .rent_structure
+            .ok_or(Error::MissingParameter("Missing rent_structure."))?;
 
         let byte_cost_config = ByteCostConfigBuilder::new()
             .byte_cost(rent_structure.v_byte_cost)
