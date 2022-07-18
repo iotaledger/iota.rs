@@ -231,9 +231,9 @@ impl Client {
                 if let Ok(mut client_network_info) = network_info.write() {
                     client_network_info.network_id = hash_network(&info.protocol.network_name).ok();
                     // todo update protocol version
-                    client_network_info.min_pow_score = info.protocol.min_pow_score;
-                    client_network_info.bech32_hrp = info.protocol.bech32_hrp.clone();
-                    client_network_info.rent_structure = info.protocol.rent_structure.clone();
+                    client_network_info.min_pow_score = Some(info.protocol.min_pow_score);
+                    client_network_info.bech32_hrp = Some(info.protocol.bech32_hrp.clone());
+                    client_network_info.rent_structure = Some(info.protocol.rent_structure.clone());
                     if !client_network_info.local_pow {
                         if info.features.contains(&"PoW".to_string()) {
                             synced_nodes.insert(node_url.clone());
@@ -268,7 +268,7 @@ impl Client {
     }
 
     /// Gets the network related information such as network_id and min_pow_score
-    /// and if it's the default one, sync it first.
+    /// and if it's the default one, sync it first and set the NetworkInfo.
     pub async fn get_network_info(&self) -> Result<NetworkInfo> {
         let not_synced = self.network_info.read().map_or(true, |info| info.network_id.is_none());
 
@@ -280,9 +280,10 @@ impl Client {
             let network_id = hash_network(&info.protocol.network_name).ok();
             {
                 let mut client_network_info = self.network_info.write().map_err(|_| crate::Error::PoisonError)?;
+                client_network_info.bech32_hrp = Some(info.protocol.bech32_hrp);
+                client_network_info.min_pow_score = Some(info.protocol.min_pow_score);
                 client_network_info.network_id = network_id;
-                client_network_info.min_pow_score = info.protocol.min_pow_score;
-                client_network_info.bech32_hrp = info.protocol.bech32_hrp;
+                client_network_info.rent_structure = Some(info.protocol.rent_structure);
             }
         }
         let res = self
@@ -302,12 +303,18 @@ impl Client {
 
     /// returns the bech32_hrp
     pub async fn get_bech32_hrp(&self) -> Result<String> {
-        Ok(self.get_network_info().await?.bech32_hrp)
+        self.get_network_info()
+            .await?
+            .bech32_hrp
+            .ok_or(Error::MissingParameter("Missing bech32_hrp."))
     }
 
     /// returns the min pow score
     pub async fn get_min_pow_score(&self) -> Result<f64> {
-        Ok(self.get_network_info().await?.min_pow_score)
+        self.get_network_info()
+            .await?
+            .min_pow_score
+            .ok_or(Error::MissingParameter("Missing min_pow_score."))
     }
 
     /// returns the tips interval
@@ -326,7 +333,12 @@ impl Client {
 
     /// returns the byte cost configuration
     pub async fn get_byte_cost_config(&self) -> Result<ByteCostConfig> {
-        let rent_structure = self.get_network_info().await?.rent_structure;
+        let rent_structure = self
+            .get_network_info()
+            .await?
+            .rent_structure
+            .ok_or(Error::MissingParameter("Missing rent_structure."))?;
+
         let byte_cost_config = ByteCostConfigBuilder::new()
             .byte_cost(rent_structure.v_byte_cost)
             .key_factor(rent_structure.v_byte_factor_key)
