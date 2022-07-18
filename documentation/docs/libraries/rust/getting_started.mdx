@@ -1,6 +1,6 @@
 ---
 title: Getting Started With Rust
-description: Getting started with the official IOTA Client Library Rust library.
+description: Getting started with the official IOTA Client Rust library.
 image: /img/logo/iota_mark_light.png
 keywords:
 - Rust
@@ -36,7 +36,7 @@ use iota_client::{Client, Result};
 async fn main() -> Result<()> {
     // Create a client with that node.
     let client = Client::builder()
-        .with_node("https://api.alphanet.iotaledger.net/")?
+        .with_node("https://api.testnet.shimmer.network")?
         .with_node_sync_disabled()
         .finish()?;
 
