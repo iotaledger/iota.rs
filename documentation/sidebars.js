@@ -179,7 +179,7 @@ module.exports = {
         {
           type: 'doc',
           id: 'libraries/java/how_to/get_output',
-          label: 'Get A Output',
+          label: 'Get An Output',
         },
         {
           type: 'doc',
