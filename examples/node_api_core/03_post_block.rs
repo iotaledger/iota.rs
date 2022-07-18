@@ -32,7 +32,7 @@ async fn main() -> Result<()> {
     // Post the block.
     let block_id = client.post_block(&block).await?;
 
-    println!("Posted: {:?}", block_id);
+    println!("Posted: {block_id:?}");
 
     Ok(())
 }
