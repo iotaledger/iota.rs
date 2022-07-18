@@ -72,6 +72,12 @@ jobs:
         working-directory: bindings/nodejs/
         run: yarn install
 
+      - name: Install Required Dependencies (Ubuntu)
+        if: ${{ startsWith(matrix.os, 'ubuntu') }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install libudev-dev libusb-1.0-0-dev
+
       - name: Run Cargo Test
         uses: actions-rs/cargo@v1
         with:
@@ -100,6 +106,12 @@ jobs:
           cache-root: bindings/nodejs/
           cache-job-id: ${{ github.workflow }}-${{ github.job }}
           cache-hash: ${{ hashFiles('.github/workflows/examine-nodejs-bindings.yml') }}
+
+      - name: Install Required Dependencies (Ubuntu)
+        if: ${{ startsWith(matrix.os, 'ubuntu') }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install libudev-dev libusb-1.0-0-dev
 
       - name: Run Clippy
         uses: actions-rs/clippy-check@v1
