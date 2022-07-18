@@ -12,9 +12,6 @@ async function run() {
     if (!process.env.NODE_URL) {
         throw new Error('.env NODE_URL is undefined, see .env.example');
     }
-    if (!process.env.NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1) {
-        throw new Error('.env mnemonic is undefined, see .env.example');
-    }
 
     const client = new Client({
         // Insert your node URL in the .env.
