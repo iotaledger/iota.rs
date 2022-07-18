@@ -1,5 +1,10 @@
 # Changelog
 
+## \[3.0.0-alpha.0]
+
+- Pre-release of the Stardust bindings of iota.rs for Node.JS
+  - [bdb75aa](https://github.com/iotaledger/iota.rs/commit/bdb75aab24ccbde20c439559427d4c14437a3c96) Nodejs docs and examples ([#1128](https://github.com/iotaledger/iota.rs/pull/1128)) on 2022-07-18
+
 ## \[2.2.3]
 
 - Fixes getIncludedMessage().
