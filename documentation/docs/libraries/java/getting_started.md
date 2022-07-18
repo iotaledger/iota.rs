@@ -12,12 +12,13 @@ keywords:
 
 # Getting Started with Java
 
-To use the IOTA Java Client Library in your Java project, you must first build the library as a JAR for your operating
+To use the IOTA Java Client Library in your Java project, you must first build the library JAR for your operating
 system.
 
 ## Build the JAR for your operating system (Linux, macOS, Windows)
 
 **To build your JAR, you must ensure that you have the latest stable version of Rust installed.
+Visit [Install Rust](https://www.rust-lang.org/tools/install) for installing Rust.
 In addition, make sure you have the latest Java Development Kit (JDK) installed.**
 
 1) Clone the repository: `git clone https://github.com/iotaledger/iota.rs`
@@ -54,7 +55,7 @@ public class HelloWorld {
 
 # Examples
 
-Please visit the [examples](examples.md) page for more information on using the IOTA Java Client Library.
+Please visit the [examples](docs/libraries/java/how_to/examples.md) page for more information on using the IOTA Java Client Library.
 In addition, since the IOTA Java library is similar to the IOTA Rust library, you might also want to look
 into Rust examples.
 
