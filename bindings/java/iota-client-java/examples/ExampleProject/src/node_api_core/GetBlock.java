@@ -8,7 +8,7 @@ import org.iota.types.ids.BlockId;
 
 public class GetBlock {
 
-    private static final String DEFAULT_TESTNET_NODE_URL = "http://localhost:14265";
+    private static final String DEFAULT_TESTNET_NODE_URL = "https://api.testnet.shimmer.network";
     private static ClientConfig config = new ClientConfig("{ \"nodes\": [\"" + DEFAULT_TESTNET_NODE_URL + "\" ], \"nodeSyncEnabled\": false}");
 
     public static void main(String[] args) throws ClientException {
