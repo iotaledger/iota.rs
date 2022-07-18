@@ -1,8 +1,8 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! Calls `GET api/indexer/v1/outputs/basic`.
-//! Run: `cargo run --example node_api_indexer_get_basic_outputs --release -- [NODE URL] [ADDRESS]`.
+//! Calls `GET api/indexer/v1/outputs/foundry`.
+//! Run: `cargo run --example node_api_indexer_get_foundry_outputs --release -- [NODE URL] [ADDRESS]`.
 
 use iota_client::{node_api::indexer::query_parameters::QueryParameter, Client, Result};
 
@@ -23,18 +23,13 @@ async fn main() -> Result<()> {
         .finish()?;
 
     // Take the address from command line argument or use a default one.
-    let address = std::env::args()
+    let alias_address = std::env::args()
         .nth(2)
-        .unwrap_or_else(|| String::from("rms1qrrdjmdkadtcnuw0ue5n9g4fmkelrj3dl26eyeshkha3w3uu0wheu5z5qqz"));
+        .unwrap_or_else(|| String::from("rms1prd5mdmy84mgzwwklzkrl8ym02p2y3dkr8af7lqclnv0pan7274uyjrmwx5"));
 
-    // Get output IDs of basic outputs that can be controlled by this address without further unlock constraints.
+    // Get output IDs of foundry outputs that can be controlled by this address.
     let output_ids = client
-        .basic_output_ids(vec![
-            QueryParameter::Address(address),
-            QueryParameter::HasExpirationCondition(false),
-            QueryParameter::HasTimelockCondition(false),
-            QueryParameter::HasStorageReturnCondition(false),
-        ])
+        .foundry_output_ids(vec![QueryParameter::AliasAddress(alias_address)])
         .await?;
 
     println!("Address output IDs {output_ids:#?}");
@@ -42,7 +37,7 @@ async fn main() -> Result<()> {
     // Get the outputs by their IDs.
     let outputs_responses = client.get_outputs(output_ids).await?;
 
-    println!("Basic outputs: {outputs_responses:#?}");
+    println!("Foundry outputs: {outputs_responses:#?}");
 
     Ok(())
 }

@@ -7,7 +7,7 @@ use std::{
     time::Duration,
 };
 
-use bee_rest_api::types::responses::RentStructureResponse;
+use bee_api_types::responses::RentStructureResponse;
 #[cfg(not(target_family = "wasm"))]
 use {
     std::collections::HashSet,

@@ -3,11 +3,11 @@
 
 //! Automatic input selection for transactions
 
+use bee_api_types::responses::OutputResponse;
 use bee_block::{
     address::Address,
     output::{feature::Features, ByteCostConfig, Output},
 };
-use bee_rest_api::types::responses::OutputResponse;
 use crypto::keys::slip10::Chain;
 
 use crate::{

@@ -11,6 +11,10 @@ use std::{
     time::{Duration, SystemTime, UNIX_EPOCH},
 };
 
+use bee_api_types::{
+    dtos::LedgerInclusionStateDto,
+    responses::{InfoResponse as NodeInfo, OutputResponse},
+};
 use bee_block::{
     address::Address,
     input::{Input, UtxoInput, INPUT_COUNT_MAX},
@@ -23,10 +27,6 @@ use bee_block::{
     Block, BlockBuilder, BlockId,
 };
 use bee_pow::providers::NonceProviderBuilder;
-use bee_rest_api::types::{
-    dtos::LedgerInclusionStateDto,
-    responses::{InfoResponse as NodeInfo, OutputResponse},
-};
 use crypto::keys::slip10::Seed;
 #[cfg(target_family = "wasm")]
 use gloo_timers::future::TimeoutFuture;

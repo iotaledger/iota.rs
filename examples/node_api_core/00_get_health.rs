@@ -1,28 +1,31 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! `cargo run --example node_api_core_get_health --release -- [NODE URL]`.
+//! Calls `GET /health`.
+//! Returns the health of the node.
+//! Run: `cargo run --example node_api_core_get_health --release -- [NODE URL]`.
 
-use std::env;
-
-use dotenv::dotenv;
 use iota_client::{Client, Result};
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    // Takes the node URL from command line argument or use localhost as default.
-    let node = std::env::args().nth(1).unwrap_or_else(|| {
-        dotenv().ok();
-        env::var("NODE_URL").unwrap()
+    // Take the node URL from command line argument or use one from env as default.
+    let node_url = std::env::args().nth(1).unwrap_or_else(|| {
+        // This example uses dotenv, which is not safe for use in production.
+        dotenv::dotenv().ok();
+        std::env::var("NODE_URL").unwrap()
     });
-    // Creates a client instance with that node.
-    let client = Client::builder().with_node(&node)?.with_node_sync_disabled().finish()?;
 
-    // Sends the request.
-    let health = client.get_health(&node).await?;
+    // Create a client with that node.
+    let client = Client::builder()
+        .with_node(&node_url)?
+        .with_node_sync_disabled()
+        .finish()?;
 
-    // Prints the response.
-    println!("{:?}", health);
+    // Get node health.
+    let health = client.get_health(&node_url).await?;
+
+    println!("Health: {health}");
 
     Ok(())
 }
