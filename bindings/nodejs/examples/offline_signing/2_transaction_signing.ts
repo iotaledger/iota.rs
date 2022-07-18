@@ -17,16 +17,8 @@ const SIGNED_TRANSACTION_FILE_NAME =
 async function run() {
     initLogger();
 
-    // client will connect to testnet by default
     const offlineClient = new Client({
         offline: true,
-        nodes: [
-            {
-                // Insert your node URL here.
-                url: 'http://localhost:14265/',
-            },
-        ],
-        localPow: true,
     });
 
     try {

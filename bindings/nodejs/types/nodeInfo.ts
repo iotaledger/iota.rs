@@ -47,6 +47,9 @@ export interface INodeInfo {
     plugins: string[];
 }
 
+/**
+ * The status of the node.
+ */
 export interface INodeInfoStatus {
     /**
      * Is the node healthy.
@@ -66,12 +69,18 @@ export interface INodeInfoStatus {
     pruningIndex: number;
 }
 
+/**
+ * The milestone information.
+ */
 export interface IMilestone {
     index: number;
     timestamp: number;
     milestoneId: string;
 }
 
+/**
+ * Information about the base token.
+ */
 export interface IBaseToken {
     name: string;
     tickerSymbol: string;

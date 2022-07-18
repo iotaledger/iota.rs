@@ -13,15 +13,12 @@ const PREPARED_TRANSACTION_FILE_NAME =
 // In this example we will get inputs and prepare a transaction
 async function run() {
     initLogger();
-
-    // client will connect to testnet by default
+    if (!process.env.NODE_URL) {
+        throw new Error('.env NODE_URL is undefined, see .env.example');
+    }
     const onlineClient = new Client({
-        nodes: [
-            {
-                // Insert your node URL here.
-                url: 'http://localhost:14265/',
-            },
-        ],
+        // Insert your node URL in the .env.
+        nodes: [process.env.NODE_URL],
         localPow: true,
     });
 

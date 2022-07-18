@@ -38,6 +38,7 @@ export interface IClientOptions {
     localPow?: boolean;
 }
 
+/** Time duration */
 export interface IDuration {
     secs: number;
     nanos: number;

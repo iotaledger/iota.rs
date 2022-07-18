@@ -23,7 +23,7 @@ async fn main() -> Result<()> {
 
     // Create a client instance.
     let online_client = Client::builder()
-        // Insert your node URL here.
+        // Insert your node URL in the .env.
         .with_node(&node_url)?
         .with_node_sync_disabled()
         .finish()?;

@@ -1,15 +1,26 @@
 // Copyright 2021-2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
+
+/**
+ * Network types.
+ */
 export enum Network {
     Mainnet,
     Testnet,
 }
+
+/**
+ * Basic Auth or JWT.
+ */
 export interface IAuth {
     jwt?: string;
     username?: string;
     password?: string;
 }
 
+/**
+ * Options for the MQTT broker.
+ */
 export interface IMqttBrokerOptions {
     automaticDisconnect?: boolean;
     /** timeout in seconds */
@@ -19,6 +30,9 @@ export interface IMqttBrokerOptions {
     maxReconnectionAttempts?: number;
 }
 
+/**
+ * A node object for the client.
+ */
 export interface INode {
     url: string;
     auth?: IAuth;

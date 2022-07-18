@@ -1,6 +1,7 @@
 // Copyright 2021-2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 import { Client, utf8ToBytes, hexToUtf8, initLogger } from '@iota/client';
+require('dotenv').config({ path: '../.env' });
 
 // Run with command:
 // node ./dist/08_data_block.js
@@ -8,16 +9,13 @@ import { Client, utf8ToBytes, hexToUtf8, initLogger } from '@iota/client';
 // In this example we will send a block with a tagged data payload
 async function run() {
     initLogger();
+    if (!process.env.NODE_URL) {
+        throw new Error('.env NODE_URL is undefined, see .env.example');
+    }
 
-    // client will connect to testnet by default
     const client = new Client({
-        nodes: [
-            {
-                // Insert your node URL here.
-                url: 'http://localhost:14265',
-            },
-        ],
-        localPow: true,
+        // Insert your node URL in the .env.
+        nodes: [process.env.NODE_URL],
     });
 
     const options = {
@@ -36,7 +34,7 @@ async function run() {
         const blockId = await client.postBlock(block);
 
         console.log(
-            `Block sent: https://explorer.iota.org/devnet/block/${blockId}\n`,
+            `Block sent: ${process.env.EXPLORER_URL}/block/${blockId}\n`,
         );
 
         const fetchedBlock = await client.getBlock(blockId);

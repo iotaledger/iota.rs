@@ -1,6 +1,11 @@
 // Copyright 2021-2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
-import { Client, initLogger, SHIMMER_TESTNET_BECH32_HRP } from '@iota/client';
+import {
+    Client,
+    CoinType,
+    initLogger,
+    SHIMMER_TESTNET_BECH32_HRP,
+} from '@iota/client';
 require('dotenv').config({ path: '../.env' });
 
 // Run with command:
@@ -9,16 +14,13 @@ require('dotenv').config({ path: '../.env' });
 // In this example we will create addresses from a mnemonic defined in .env
 async function run() {
     initLogger();
+    if (!process.env.NODE_URL) {
+        throw new Error('.env NODE_URL is undefined, see .env.example');
+    }
 
-    // client will connect to testnet by default
     const client = new Client({
-        nodes: [
-            {
-                // Insert your node URL here.
-                url: 'http://localhost:14265',
-            },
-        ],
-        localPow: true,
+        // Insert your node URL in the .env.
+        nodes: [process.env.NODE_URL],
     });
 
     try {
@@ -29,59 +31,40 @@ async function run() {
             Mnemonic: process.env.NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1,
         };
 
-        // Generate public addresses with default account index and range
-        const defaultAddresses = await client.generateAddresses(
-            secretManager,
-            {},
-        );
-        console.log(
-            'List of generated public addresses:',
-            defaultAddresses,
-            '\n',
-        );
-
-        // Generate public addresses with custom account index and range
-        const customAddresses = await client.generateAddresses(secretManager, {
+        // Generate public address with custom account index and range.
+        const address = await client.generateAddresses(secretManager, {
             accountIndex: 0,
             range: {
                 start: 0,
-                end: 4,
+                end: 1,
             },
         });
-        console.log(
-            'List of generated public addresses:',
-            customAddresses,
-            '\n',
-        );
+        console.log('First public address:', address, '\n');
 
-        // Generate internal addresses with custom account index and range
-        const internalAddresses = await client.generateAddresses(
-            secretManager,
-            {
-                accountIndex: 0,
-                range: {
-                    start: 0,
-                    end: 4,
-                },
-                internal: true,
+        // Generate an internal address with custom account index and range.
+        const internalAddress = await client.generateAddresses(secretManager, {
+            accountIndex: 0,
+            range: {
+                start: 0,
+                end: 1,
             },
-        );
-        console.log(
-            'List of generated internal addresses:',
-            internalAddresses,
-            '\n',
-        );
+            internal: true,
+        });
+        console.log('First internal address:', internalAddress, '\n');
 
-        // Generating addresses with client.generateAddresses(secretManager, {}), will by default get the bech32_hrp (Bech32
-        // human readable part) from the nodeinfo, generating it "offline" requires setting it in the generateAddressesOptions
+        // Generate addresses with providing all inputs, that way it can also be done offline without a node.
         const offlineGeneratedAddresses = await client.generateAddresses(
             secretManager,
             {
+                coinType: CoinType.Shimmer,
                 accountIndex: 0,
                 range: {
                     start: 0,
-                    end: 4,
+                    end: 2,
                 },
+                internal: false,
+                // Generating addresses with client.generateAddresses(secretManager, {}), will by default get the bech32_hrp (Bech32
+                // human readable part) from the nodeinfo, generating it "offline" requires setting it in the generateAddressesOptions
                 bech32Hrp: SHIMMER_TESTNET_BECH32_HRP,
             },
         );
