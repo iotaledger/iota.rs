@@ -153,6 +153,11 @@ jobs:
           cache-job-id: ${{ github.workflow }}-${{ github.job }}
           cache-hash: ${{ hashFiles('.github/workflows/examine-nodejs-bindings.yml') }}
 
+      - name: Install Required Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install libudev-dev libusb-1.0-0-dev
+
       - name: Run Cargo Udeps
         uses: actions-rs/cargo@v1
         with:
@@ -182,6 +187,11 @@ jobs:
         with:
           command: install
           args: --force cargo-license-template
+
+      - name: Install Required Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install libudev-dev libusb-1.0-0-dev
 
       - name: Run Cargo Fmt
         uses: actions-rs/cargo@v1
