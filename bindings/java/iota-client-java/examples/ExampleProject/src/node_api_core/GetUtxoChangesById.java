@@ -10,12 +10,9 @@ import org.iota.types.responses.UtxoChangesResponse;
 
 public class GetUtxoChangesById {
 
-    private static final String DEFAULT_TESTNET_NODE_URL = "https://api.testnet.shimmer.network";
-    private static ClientConfig config = new ClientConfig("{ \"nodes\": [\"" + DEFAULT_TESTNET_NODE_URL + "\" ], \"nodeSyncEnabled\": false}");
-
     public static void main(String[] args) throws ClientException {
         // Build the client.
-        Client client = new Client(config);
+        Client client = new Client(new ClientConfig("{ \"nodes\": [ \"https://api.testnet.shimmer.network\" ], \"nodeSyncEnabled\": true }"));
 
         // Set up a milestone id for this example.
         MilestoneId milestoneId = ExampleUtils.setUpMilestoneId(client);

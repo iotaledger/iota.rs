@@ -39,7 +39,7 @@ import org.iota.types.responses.NodeInfoResponse;
 public class HelloWorld {
     public static void main(String[] args) throws ClientException {
         // Build the client.
-        Client client = new Client(new ClientConfig("{ \"nodes\": [ \"http://localhost:14265\" ], \"nodeSyncEnabled\": true }"));
+        Client client = new Client(new ClientConfig("{ \"nodes\": [ \"https://api.testnet.shimmer.network\" ], \"nodeSyncEnabled\": true }"));
 
         // Get the node information for a given node.
         NodeInfoResponse response = client.getNodeInfo();

@@ -19,12 +19,9 @@ This example will try to migrate funds from the first 50 addresses of the seed.
  */
 public class WrongSeedConversionSecretManager {
 
-    private static final String DEFAULT_TESTNET_NODE_URL = "https://api.testnet.shimmer.network";
-    private static ClientConfig config = new ClientConfig("{ \"nodes\": [\"" + DEFAULT_TESTNET_NODE_URL + "\" ], \"nodeSyncEnabled\": false}");
-
     public static void main(String[] args) throws ClientException {
         // Build the client.
-        Client client = new Client(config);
+        Client client = new Client(new ClientConfig("{ \"nodes\": [ \"https://api.testnet.shimmer.network\" ], \"nodeSyncEnabled\": true }"));
 
         // The hex seed that is affected by the seed conversion bug.
         String hexSeed = "";
