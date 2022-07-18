@@ -35,13 +35,11 @@ async fn main() -> Result<()> {
         ])
         .await?;
 
-    // Print the address output IDs.
     println!("Address output IDs {output_ids:#?}");
 
     // Get the outputs by their IDs.
     let outputs_responses = client.get_outputs(output_ids).await?;
 
-    // Print the outputs.
     println!("Alias outputs: {outputs_responses:#?}");
 
     Ok(())

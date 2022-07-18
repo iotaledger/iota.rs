@@ -25,7 +25,6 @@ async fn main() -> Result<()> {
     // Send the request.
     let treasury = client.get_treasury().await?;
 
-    // Print the response.
     println!("{:#?}", treasury);
 
     Ok(())

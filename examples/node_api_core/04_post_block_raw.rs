@@ -32,7 +32,6 @@ async fn main() -> Result<()> {
     // Post the block as raw bytes.
     let block_id = client.post_block_raw(&block).await?;
 
-    // Print the response.
     println!("Posted: {:?}", block_id);
 
     Ok(())

@@ -34,13 +34,11 @@ async fn main() -> Result<()> {
     // Get the output ID by the alias ID.
     let output_id = client.alias_output_id(alias_id).await?;
 
-    // Print the output ID.
     println!("Alias output ID: {output_id}");
 
     // Get the output by its ID.
     let output_response = client.get_output(&output_id).await?;
 
-    // Print the output response.
     println!("{output_response:#?}",);
 
     Ok(())

@@ -29,7 +29,6 @@ async fn main() -> Result<()> {
     // Send the request.
     let block = client.get_included_block(&transaction_id).await?;
 
-    // Print the response.
     println!("{:#?}", block);
 
     Ok(())

@@ -32,13 +32,11 @@ async fn main() -> Result<()> {
     // Get the output ID by the foundry ID.
     let output_id = client.foundry_output_id(foundry_id).await?;
 
-    // Print the output ID.
     println!("Foundry output ID: {output_id}");
 
     // Get the output by its ID.
     let output_response = client.get_output(&output_id).await?;
 
-    // Print the output response.
     println!("{output_response:#?}",);
 
     Ok(())

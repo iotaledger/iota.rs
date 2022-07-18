@@ -35,7 +35,6 @@ async fn main() -> Result<()> {
     // Get the block.
     let block = client.get_block(&block_id).await?;
 
-    // Print the block.
     println!("{block:#?}");
 
     Ok(())

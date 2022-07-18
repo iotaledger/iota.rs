@@ -25,7 +25,6 @@ async fn main() -> Result<()> {
     // Get tips.
     let tips = client.get_tips().await?;
 
-    // Print the tips.
     println!("Tips: {tips:#?}");
 
     Ok(())

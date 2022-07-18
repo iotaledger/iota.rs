@@ -28,7 +28,6 @@ async fn main() -> Result<()> {
     // Send the request.
     let milestone = client.get_milestone_by_index_raw(milestone_index).await?;
 
-    // Print the response.
     println!("{:?}", milestone);
 
     Ok(())

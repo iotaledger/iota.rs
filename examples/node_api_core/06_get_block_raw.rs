@@ -35,7 +35,6 @@ async fn main() -> Result<()> {
     // Get the block as raw bytes.
     let block = client.get_block_raw(&block_id).await?;
 
-    // Print the block bytes.
     println!("Block bytes: {block:?}");
 
     Ok(())

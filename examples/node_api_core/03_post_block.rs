@@ -32,7 +32,6 @@ async fn main() -> Result<()> {
     // Post the block.
     let block_id = client.post_block(&block).await?;
 
-    // Print the block id.
     println!("Posted: {:?}", block_id);
 
     Ok(())

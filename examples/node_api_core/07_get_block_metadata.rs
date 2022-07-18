@@ -27,7 +27,6 @@ async fn main() -> Result<()> {
     // Send the request.
     let block_metadata = client.get_block_metadata(&block_id).await?;
 
-    // Print the response.
     println!("{:#?}", block_metadata);
 
     Ok(())

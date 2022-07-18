@@ -28,7 +28,6 @@ async fn main() -> Result<()> {
     // Send the request.
     let utxo_changes = client.get_utxo_changes_by_index(milestone_index).await?;
 
-    // Print the response.
     println!("{:#?}", utxo_changes);
 
     Ok(())
