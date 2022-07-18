@@ -321,7 +321,7 @@ Run `cargo run --example node_api_core_get_milestone_by_id_raw --release -- [NOD
 
 Calls `GET /api/core/v2/milestones/{milestoneId}/utxo-changes`.
 
-Gets all UTXO changes of a given milestone by Milestone ID.
+Gets all UTXO changes of a given milestone by milestone identifier.
 
 ## Request
 

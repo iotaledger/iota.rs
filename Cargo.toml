@@ -75,7 +75,7 @@ lto = true
 strip = "symbols"
 
 [package.metadata.cargo-udeps.ignore]
-normal = [ "async-trait", "derive_builder", "slog-stdlog" ]
+normal = [ "async-trait", "derive_builder" ]
 
 # Node API core examples
 
@@ -158,19 +158,38 @@ name = "node_api_indexer_get_basic_outputs"
 path = "examples/node_api_indexer/00_get_basic_outputs.rs"
 
 [[example]]
-name = "node_api_indexer_get_nft_outputs"
-path = "examples/node_api_indexer/01_get_nft_outputs.rs"
+name = "node_api_indexer_get_alias_output"
+path = "examples/node_api_indexer/01_get_alias_output.rs"
 
 [[example]]
 name = "node_api_indexer_get_alias_outputs"
 path = "examples/node_api_indexer/02_get_alias_outputs.rs"
 
 [[example]]
-name = "node_api_indexer_get_foundry_outputs"
-path = "examples/node_api_indexer/03_get_foundry_outputs.rs"
+name = "node_api_indexer_get_foundry_output"
+path = "examples/node_api_indexer/03_get_foundry_output.rs"
 
+[[example]]
+name = "node_api_indexer_get_foundry_outputs"
+path = "examples/node_api_indexer/04_get_foundry_outputs.rs"
+
+[[example]]
+name = "node_api_indexer_get_nft_output"
+path = "examples/node_api_indexer/05_get_nft_output.rs"
+
+[[example]]
+name = "node_api_indexer_get_nft_outputs"
+path = "examples/node_api_indexer/06_get_nft_outputs.rs"
 
 #######
+
+[[example]]
+name = "generate_mnemonic"
+path = "examples/00_generate_mnemonic.rs"
+
+[[example]]
+name = "generate_addresses"
+path = "examples/01_generate_addresses.rs"
 
 [[example]]
 name = "07_mqtt"

@@ -12,7 +12,7 @@ keywords:
 
 There are currently available the following official bindings to `iota.rs`:
 
-- [Rust](rust/getting_started.md) 
+- [Rust](rust/getting_started.mdx) 
 - [Node.js](nodejs/getting_started.md) 
 - [Python](python/getting_started.md) 
 - [Java](java/getting_started.md) 

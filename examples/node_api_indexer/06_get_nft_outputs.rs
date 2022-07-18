@@ -1,8 +1,8 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! Calls `GET api/indexer/v1/outputs/basic`.
-//! Run: `cargo run --example node_api_indexer_get_basic_outputs --release -- [NODE URL] [ADDRESS]`.
+//! Calls `GET api/indexer/v1/outputs/nft`.
+//! Run: `cargo run --example node_api_indexer_get_nft_outputs --release -- [NODE URL] [ADDRESS]`.
 
 use iota_client::{node_api::indexer::query_parameters::QueryParameter, Client, Result};
 
@@ -27,9 +27,9 @@ async fn main() -> Result<()> {
         .nth(2)
         .unwrap_or_else(|| String::from("rms1qrrdjmdkadtcnuw0ue5n9g4fmkelrj3dl26eyeshkha3w3uu0wheu5z5qqz"));
 
-    // Get output IDs of basic outputs that can be controlled by this address without further unlock constraints.
+    // Get output IDs of NFT outputs that can be controlled by this address without further unlock constraints.
     let output_ids = client
-        .basic_output_ids(vec![
+        .nft_output_ids(vec![
             QueryParameter::Address(address),
             QueryParameter::HasExpirationCondition(false),
             QueryParameter::HasTimelockCondition(false),
@@ -42,7 +42,7 @@ async fn main() -> Result<()> {
     // Get the outputs by their IDs.
     let outputs_responses = client.get_outputs(output_ids).await?;
 
-    println!("Basic outputs: {outputs_responses:#?}");
+    println!("NFT outputs: {outputs_responses:#?}");
 
     Ok(())
 }

@@ -25,7 +25,7 @@ pub fn hash_network(network_id_string: &str) -> Result<u64> {
 }
 
 /// Transforms bech32 to hex
-pub fn bech32_to_hex(bech32: &str) -> crate::Result<String> {
+pub fn bech32_to_hex(bech32: &str) -> Result<String> {
     let (_bech32_hrp, address) = Address::try_from_bech32(bech32)?;
     let hex_string = match address {
         Address::Ed25519(ed) => ed.to_string(),
@@ -36,13 +36,13 @@ pub fn bech32_to_hex(bech32: &str) -> crate::Result<String> {
 }
 
 /// Transforms a hex encoded address to a bech32 encoded address
-pub fn hex_to_bech32(hex: &str, bech32_hrp: &str) -> crate::Result<String> {
+pub fn hex_to_bech32(hex: &str, bech32_hrp: &str) -> Result<String> {
     let address: Ed25519Address = hex.parse::<Ed25519Address>()?;
     Ok(Address::Ed25519(address).to_bech32(bech32_hrp))
 }
 
 /// Transforms a hex encoded public key to a bech32 encoded address
-pub fn hex_public_key_to_bech32_address(hex: &str, bech32_hrp: &str) -> crate::Result<String> {
+pub fn hex_public_key_to_bech32_address(hex: &str, bech32_hrp: &str) -> Result<String> {
     let mut public_key = [0u8; Ed25519Address::LENGTH];
     hex::decode_to_slice(&hex, &mut public_key)?;
 
@@ -54,7 +54,7 @@ pub fn hex_public_key_to_bech32_address(hex: &str, bech32_hrp: &str) -> crate::R
 }
 
 /// Returns a valid Address parsed from a String.
-pub fn parse_bech32_address(address: &str) -> crate::Result<Address> {
+pub fn parse_bech32_address(address: &str) -> Result<Address> {
     Ok(Address::try_from_bech32(address)?.1)
 }
 
