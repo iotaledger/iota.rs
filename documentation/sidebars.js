@@ -148,8 +148,48 @@ module.exports = {
         },
         {
           type: 'doc',
-          id: 'libraries/java/examples',
-          label: 'Examples'
+          id: 'libraries/java/how_to/build_output',
+          label: 'Build An Output',
+        },
+        {
+          type: 'doc',
+          id: 'libraries/java/how_to/create_block',
+          label: 'Create A Block',
+        },
+        {
+          type: 'doc',
+          id: 'libraries/java/how_to/generate_addresses',
+          label: 'Generate Addresses',
+        },
+        {
+          type: 'doc',
+          id: 'libraries/java/how_to/generate_mnemonic',
+          label: 'Generate A Mnemonic',
+        },
+        {
+          type: 'doc',
+          id: 'libraries/java/how_to/get_block',
+          label: 'Get A Block',
+        },
+        {
+          type: 'doc',
+          id: 'libraries/java/how_to/get_node_info',
+          label: 'Get Node Info',
+        },
+        {
+          type: 'doc',
+          id: 'libraries/java/how_to/get_output',
+          label: 'Get A Output',
+        },
+        {
+          type: 'doc',
+          id: 'libraries/java/how_to/post_block',
+          label: 'Post A Block',
+        },
+        {
+          type: 'doc',
+          id: 'libraries/java/how_to/prepare_sign_transaction',
+          label: 'Prepare And Sign A Transaction',
         },
         {
           type: 'doc',
