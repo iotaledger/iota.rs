@@ -52,14 +52,3 @@ public class HelloWorld {
     }
 }
 ```
-
-# Examples
-
-Please visit the [examples](how_to) page for more information on using the IOTA Java Client Library.
-In addition, since the IOTA Java library is similar to the IOTA Rust library, you might also want to look
-into Rust examples.
-
-# API Reference
-
-Information about the API reference can be found [here](api_reference.md).
-
