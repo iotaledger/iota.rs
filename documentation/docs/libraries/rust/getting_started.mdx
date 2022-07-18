@@ -19,34 +19,33 @@ This is a rust library, if you don't have rust installed yet, visit [Install Rus
 
 Using the library is very easy, you just need to add it as dependency in your `Cargo.toml`:
 
-<!-- 
-<CodeBlock className="language-toml">
-    [dependencies]
-    iota-client = { git = "https://github.com/iotaledger/iota.rs", branch = "develop" }
-    tokio = { version = "1.20.0", features = [ "full" ] }
-</CodeBlock> -->
+```bash
+[dependencies]
+iota-client = { git = "https://github.com/iotaledger/iota.rs", branch = "develop" }
+tokio = { version = "1.20.0", features = [ "full" ] }
+```
 
 ## Example
 
 This example fetches node information
 
-<CodeBlock className="language-rust">
-    use iota_client::{Client, Result};
+```rust
+use iota_client::{Client, Result};
 
-    #[tokio::main]
-    async fn main() -> Result<()> {
-        // Create a client with that node.
-        let client = Client::builder()
-            .with_node("https://api.alphanet.iotaledger.net/")?
-            .with_node_sync_disabled()
-            .finish()?;
+#[tokio::main]
+async fn main() -> Result<()> {
+    // Create a client with that node.
+    let client = Client::builder()
+        .with_node("https://api.alphanet.iotaledger.net/")?
+        .with_node_sync_disabled()
+        .finish()?;
 
-        // Get node info.
-        let info = client.get_info().await?;
+    // Get node info.
+    let info = client.get_info().await?;
 
-        // Print node info.
-        println!("{info:#?}");
+    // Print node info.
+    println!("{info:#?}");
 
-        Ok(())
-    }
-</CodeBlock>
+    Ok(())
+}
+```
