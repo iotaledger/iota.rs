@@ -19,8 +19,7 @@ use crate::node_api::mqtt::{BrokerOptions, MqttEvent};
 use crate::{
     client::Client,
     constants::{
-        DEFAULT_API_TIMEOUT, DEFAULT_MIN_POW, DEFAULT_REMOTE_POW_API_TIMEOUT, DEFAULT_TIPS_INTERVAL,
-        SHIMMER_TESTNET_BECH32_HRP,
+        DEFAULT_API_TIMEOUT, DEFAULT_REMOTE_POW_API_TIMEOUT, DEFAULT_TIPS_INTERVAL, SHIMMER_TESTNET_BECH32_HRP,
     },
     error::{Error, Result},
     node_manager::{
@@ -41,8 +40,8 @@ pub struct NetworkInfo {
     #[serde(rename = "bech32HRP", default = "default_bech32_hrp")]
     pub bech32_hrp: String,
     /// Mininum proof of work score
-    #[serde(rename = "minPoWScore", default = "default_min_pow_score")]
-    pub min_pow_score: f64,
+    #[serde(rename = "minPoWScore", default)]
+    pub min_pow_score: Option<f64>,
     /// Local proof of work
     #[serde(rename = "localPow", default = "default_local_pow")]
     pub local_pow: bool,
@@ -53,22 +52,12 @@ pub struct NetworkInfo {
     #[serde(rename = "tipsInterval", default = "default_tips_interval")]
     pub tips_interval: u64,
     /// Rent structure of the protocol
-    #[serde(rename = "rentStructure", default = "default_rent_structure")]
-    pub rent_structure: RentStructureResponse,
+    #[serde(rename = "rentStructure", default)]
+    pub rent_structure: Option<RentStructureResponse>,
 }
 
 fn default_bech32_hrp() -> String {
     SHIMMER_TESTNET_BECH32_HRP.into()
-}
-fn default_min_pow_score() -> f64 {
-    DEFAULT_MIN_POW
-}
-fn default_rent_structure() -> RentStructureResponse {
-    RentStructureResponse {
-        v_byte_cost: 500,
-        v_byte_factor_data: 1,
-        v_byte_factor_key: 10,
-    }
 }
 
 fn default_local_pow() -> bool {
@@ -132,12 +121,12 @@ impl Default for NetworkInfo {
         Self {
             network: None,
             network_id: None,
-            min_pow_score: DEFAULT_MIN_POW,
+            min_pow_score: None,
             local_pow: default_local_pow(),
             fallback_to_local_pow: true,
             bech32_hrp: SHIMMER_TESTNET_BECH32_HRP.into(),
             tips_interval: DEFAULT_TIPS_INTERVAL,
-            rent_structure: default_rent_structure(),
+            rent_structure: None,
         }
     }
 }
