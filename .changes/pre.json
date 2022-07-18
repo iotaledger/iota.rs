@@ -1,4 +1,6 @@
 {
-    "tag": "alpha",
-    "changes": []
-} 
+  "tag": "alpha",
+  "changes": [
+    ".changes/pre-release.md"
+  ]
+}
