@@ -68,15 +68,15 @@ jobs:
         if: ${{ startsWith(matrix.os, 'windows') }}
         uses: ./.github/actions/setup-clang
 
-      - name: Run Yarn Install
-        working-directory: bindings/nodejs/
-        run: yarn install
-
       - name: Install Required Dependencies (Ubuntu)
         if: ${{ startsWith(matrix.os, 'ubuntu') }}
         run: |
           sudo apt-get update
           sudo apt-get install libudev-dev libusb-1.0-0-dev
+
+      - name: Run Yarn Install
+        working-directory: bindings/nodejs/
+        run: yarn install
 
       - name: Run Cargo Test
         uses: actions-rs/cargo@v1
@@ -107,8 +107,7 @@ jobs:
           cache-job-id: ${{ github.workflow }}-${{ github.job }}
           cache-hash: ${{ hashFiles('.github/workflows/examine-nodejs-bindings.yml') }}
 
-      - name: Install Required Dependencies (Ubuntu)
-        if: ${{ startsWith(matrix.os, 'ubuntu') }}
+      - name: Install Required Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install libudev-dev libusb-1.0-0-dev
