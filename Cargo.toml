@@ -58,7 +58,7 @@ bee-ternary = { version = "1.0.0-alpha.1", default-features = false }
 dotenv = { version = "0.15.0", default-features = false }
 
 [features]
-default = [ "tls", "ledger_nano" ]
+default = [ "tls" ]
 mqtt = [ "rumqttc", "once_cell", "regex" ]
 ledger_nano = [ "iota-ledger-nano" ]
 tls = [ "reqwest/rustls-tls" ]
