@@ -129,43 +129,43 @@ path = "examples/node_api_core/11_get_output_metadata.rs"
 
 [[example]]
 name = "node_api_core_get_receipts"
-path = "examples/node_api_core/13_get_receipts.rs"
+path = "examples/node_api_core/12_get_receipts.rs"
 
 [[example]]
 name = "node_api_core_get_receipts_migrated_at"
-path = "examples/node_api_core/14_get_receipts_migrated_at.rs"
+path = "examples/node_api_core/13_get_receipts_migrated_at.rs"
 
 [[example]]
 name = "node_api_core_get_treasury"
-path = "examples/node_api_core/15_get_treasury.rs"
+path = "examples/node_api_core/14_get_treasury.rs"
 
 [[example]]
 name = "node_api_core_get_included_block"
-path = "examples/node_api_core/17_get_included_block.rs"
+path = "examples/node_api_core/15_get_included_block.rs"
 
 [[example]]
 name = "node_api_core_get_milestone_by_id"
-path = "examples/node_api_core/18_get_milestone_by_id.rs"
+path = "examples/node_api_core/17_get_milestone_by_id.rs"
 
 [[example]]
 name = "node_api_core_get_milestone_by_id_raw"
-path = "examples/node_api_core/19_get_milestone_by_id_raw.rs"
+path = "examples/node_api_core/18_get_milestone_by_id_raw.rs"
 
 [[example]]
 name = "node_api_core_get_utxo_changes_by_id"
-path = "examples/node_api_core/20_get_utxo_changes_by_id.rs"
+path = "examples/node_api_core/19_get_utxo_changes_by_id.rs"
 
 [[example]]
 name = "node_api_core_get_milestone_by_index"
-path = "examples/node_api_core/21_get_milestone_by_index.rs"
+path = "examples/node_api_core/20_get_milestone_by_index.rs"
 
 [[example]]
 name = "node_api_core_get_milestone_by_index_raw"
-path = "examples/node_api_core/22_get_milestone_by_index_raw.rs"
+path = "examples/node_api_core/21_get_milestone_by_index_raw.rs"
 
 [[example]]
 name = "node_api_core_get_utxo_changes_by_index"
-path = "examples/node_api_core/23_get_utxo_changes_by_index.rs"
+path = "examples/node_api_core/22_get_utxo_changes_by_index.rs"
 
 # Node API indexer examples
 
