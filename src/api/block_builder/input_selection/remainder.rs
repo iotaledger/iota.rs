@@ -51,14 +51,11 @@ pub(crate) fn get_storage_deposit_return_outputs<'a>(
             .filter(|output| {
                 // sdr output must be a basic output with only the AddressUnlockCondition
                 if let Output::Basic(s) = output {
-                    // no native tokens
                     // only one address unlock
                     // no features
-                    if let ([], [UnlockCondition::Address(address_unlock_condition)], []) = (
-                        s.native_tokens().as_ref(),
-                        s.unlock_conditions().as_ref(),
-                        s.features().as_ref(),
-                    ) {
+                    if let ([UnlockCondition::Address(address_unlock_condition)], []) =
+                        (s.unlock_conditions().as_ref(), s.features().as_ref())
+                    {
                         // Address needs to be the storage deposit return address
                         *address_unlock_condition.address() == return_address
                     } else {
