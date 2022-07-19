@@ -9,7 +9,7 @@ use bee_api_types::{
     dtos::{PeerDto, ReceiptDto},
     responses::{
         BlockMetadataResponse, BlockResponse, MilestoneResponse, OutputMetadataResponse, OutputResponse, PeersResponse,
-        ReceiptsResponse, SubmitBlockResponse, TipsResponse, TreasuryResponse, UtxoChangesResponse,
+        ReceiptsResponse, RoutesResponse, SubmitBlockResponse, TipsResponse, TreasuryResponse, UtxoChangesResponse,
     },
 };
 use bee_block::{
@@ -51,6 +51,16 @@ impl Client {
             200 => Ok(true),
             _ => Ok(false),
         }
+    }
+
+    /// Returns the available API route groups of the node.
+    /// GET /api/routes
+    pub async fn get_routes(&self) -> Result<RoutesResponse> {
+        let path = "api/routes";
+
+        self.node_manager
+            .get_request(path, None, self.get_timeout(), false, false)
+            .await
     }
 
     /// Returns general information about the node.
