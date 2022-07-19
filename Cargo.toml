@@ -112,6 +112,14 @@ name = "node_api_core_get_block_metadata"
 path = "examples/node_api_core/07_get_block_metadata.rs"
 
 [[example]]
+name = "node_api_core_get_output"
+path = "examples/node_api_core/08_get_output.rs"
+
+[[example]]
+name = "node_api_core_get_output_raw"
+path = "examples/node_api_core/09_get_output_raw.rs"
+
+[[example]]
 name = "node_api_core_get_receipts"
 path = "examples/node_api_core/12_get_receipts.rs"
 

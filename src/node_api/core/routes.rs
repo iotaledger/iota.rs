@@ -286,13 +286,23 @@ impl Client {
 
     // UTXO routes.
 
-    /// Finds an output by its OutputId (TransactionId + output_index).
+    /// Finds an output, as JSON, by its OutputId (TransactionId + output_index).
     /// GET /api/core/v2/outputs/{outputId}
     pub async fn get_output(&self, output_id: &OutputId) -> Result<OutputResponse> {
         let path = &format!("api/core/v2/outputs/{}", output_id);
 
         self.node_manager
             .get_request(path, None, self.get_timeout(), false, true)
+            .await
+    }
+
+    /// Finds an output, as raw bytes, by its OutputId (TransactionId + output_index).
+    /// GET /api/core/v2/outputs/{outputId}
+    pub async fn get_output_raw(&self, output_id: &OutputId) -> Result<Vec<u8>> {
+        let path = &format!("api/core/v2/outputs/{}", output_id);
+
+        self.node_manager
+            .get_request_bytes(path, None, self.get_timeout())
             .await
     }
 
