@@ -9,7 +9,9 @@ use iota_client::{block::payload::TaggedDataPayload, Client, Result};
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    // `hello` in hexadecimal.
     let tag = hex::decode("68656c6c6f")?;
+    // `world` in hexadecimal.
     let data = hex::decode("776f726c64")?;
 
     let (tag_utf8, data_utf8) = Client::tagged_data_to_utf8(&TaggedDataPayload::new(tag, data)?)?;
