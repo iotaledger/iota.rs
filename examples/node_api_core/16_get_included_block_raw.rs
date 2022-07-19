@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! Calls `GET /api/core/v2/transactions/{transactionId}/included-block`.
-//! Returns the included block, as JSON, of a transaction.
-//! Run: `cargo run --example node_api_core_get_included_block --release -- [NODE URL]`.
+//! Returns the included block, as raw bytes, of a transaction.
+//! Run: `cargo run --example node_api_core_get_included_block_raw --release -- [NODE URL]`.
 
 use std::str::FromStr;
 
@@ -27,9 +27,9 @@ async fn main() -> Result<()> {
     // Transactions get pruned from the node after some time, replace with a new TransactionId.
     let transaction_id = TransactionId::from_str("0xb66fd384cb5755668f1890ea2e41d699db9cf32f3bc422ad3c24ffeb9c7f01d0")?;
     // Send the request.
-    let block = client.get_included_block(&transaction_id).await?;
+    let block_bytes = client.get_included_block_raw(&transaction_id).await?;
 
-    println!("{block:#?}");
+    println!("Block bytes: {block_bytes:?}");
 
     Ok(())
 }

@@ -363,7 +363,7 @@ impl Client {
             .await
     }
 
-    /// Returns the block that was included in the ledger for a given TransactionId.
+    /// Returns the block, as object, that was included in the ledger for a given TransactionId.
     /// GET /api/core/v2/transactions/{transactionId}/included-block
     pub async fn get_included_block(&self, transaction_id: &TransactionId) -> Result<Block> {
         let path = &format!("api/core/v2/transactions/{}/included-block", transaction_id);
@@ -377,6 +377,16 @@ impl Client {
             BlockResponse::Json(dto) => Ok(Block::try_from(&dto)?),
             BlockResponse::Raw(_) => Err(crate::Error::UnexpectedApiResponse),
         }
+    }
+
+    /// Returns the block, as raw bytes, that was included in the ledger for a given TransactionId.
+    /// GET /api/core/v2/transactions/{transactionId}/included-block
+    pub async fn get_included_block_raw(&self, transaction_id: &TransactionId) -> Result<Vec<u8>> {
+        let path = &format!("api/core/v2/transactions/{}/included-block", transaction_id);
+
+        self.node_manager
+            .get_request_bytes(path, None, self.get_timeout())
+            .await
     }
 
     // Milestones routes.

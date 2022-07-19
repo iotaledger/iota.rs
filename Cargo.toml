@@ -13,8 +13,8 @@ categories = [ "cryptography::cryptocurrencies" ]
 
 [dependencies]
 async-trait = { version = "0.1.56", default-features = false }
-bee-api-types = { git = "https://github.com/thibault-martinez/bee", rev = "44689a4fea5b661912032a27476333fdf19b759e", default-features = false }
-bee-block = { git = "https://github.com/thibault-martinez/bee", rev = "44689a4fea5b661912032a27476333fdf19b759e", default-features = false, features = [ "serde", "dto", "std" ] }
+bee-api-types = { git = "https://github.com/iotaledger/bee", rev = "4b1ed2a12d02314125e4e5e85a113121182285a4", default-features = false }
+bee-block = { git = "https://github.com/iotaledger/bee", rev = "4b1ed2a12d02314125e4e5e85a113121182285a4", default-features = false, features = [ "serde", "dto", "std" ] }
 bee-pow = { version = "1.0.0-alpha.1", default-features = false }
 derive_builder = { version = "0.11.2", default-features = false, features = [ "std" ]}
 futures = { version = "0.3.21", default-features = false, features = [ "thread-pool" ] }
@@ -142,6 +142,10 @@ path = "examples/node_api_core/14_get_treasury.rs"
 [[example]]
 name = "node_api_core_get_included_block"
 path = "examples/node_api_core/15_get_included_block.rs"
+
+[[example]]
+name = "node_api_core_get_included_block_raw"
+path = "examples/node_api_core/16_get_included_block_raw.rs"
 
 [[example]]
 name = "node_api_core_get_milestone_by_id"
