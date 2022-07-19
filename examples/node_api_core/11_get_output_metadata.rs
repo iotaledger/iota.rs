@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! Calls `GET /api/core/v2/outputs/{outputId}`.
-//! Find an output, as raw bytes, by its identifier.
-//! Run: `cargo run --example node_api_core_get_output_raw --release -- [NODE URL] [OUTPUT ID]`.
+//! Returns metadata about an output by its identifier.
+//! Run: `cargo run --example node_api_core_get_output_metadata --release -- [NODE URL] [OUTPUT ID]`.
 
 use std::str::FromStr;
 
@@ -30,10 +30,10 @@ async fn main() -> Result<()> {
             String::from("0xb66fd384cb5755668f1890ea2e41d699db9cf32f3bc422ad3c24ffeb9c7f01d00000")
         }))?;
 
-    // Get the output as raw bytes.
-    let output_bytes = client.get_output_raw(&output_id).await?;
+    // Get the output metadata.
+    let output_metadata = client.get_output_metadata(&output_id).await?;
 
-    println!("Output bytes: {output_bytes:?}");
+    println!("{output_metadata:#?}");
 
     Ok(())
 }

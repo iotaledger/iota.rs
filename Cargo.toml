@@ -120,6 +120,10 @@ name = "node_api_core_get_output_raw"
 path = "examples/node_api_core/10_get_output_raw.rs"
 
 [[example]]
+name = "node_api_core_get_output_metadata"
+path = "examples/node_api_core/11_get_output_metadata.rs"
+
+[[example]]
 name = "node_api_core_get_receipts"
 path = "examples/node_api_core/13_get_receipts.rs"
 
