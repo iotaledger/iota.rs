@@ -49,7 +49,9 @@ async fn main() -> Result<()> {
     let addresses = client.get_addresses(&secret_manager).with_range(0..2).get_raw().await?;
     let sender_address = addresses[0];
     let receiver_address = addresses[1];
+
     request_funds_from_faucet(&faucet_url, &sender_address.to_bech32(client.get_bech32_hrp().await?)).await?;
+    tokio::time::sleep(std::time::Duration::from_secs(15)).await;
 
     let tomorrow = (SystemTime::now() + Duration::from_secs(24 * 3600))
         .duration_since(UNIX_EPOCH)

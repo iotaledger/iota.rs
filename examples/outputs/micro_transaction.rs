@@ -47,8 +47,11 @@ async fn main() -> Result<()> {
         &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
     )?);
 
-    let address = client.get_addresses(&secret_manager).with_range(0..1).get_raw().await?[0];
-    request_funds_from_faucet(&faucet_url, &address.to_bech32(client.get_bech32_hrp().await?)).await?;
+    let addresses = client.get_addresses(&secret_manager).with_range(0..2).get_raw().await?;
+    let sender_address = addresses[0];
+    let receiver_address = addresses[1];
+
+    request_funds_from_faucet(&faucet_url, &sender_address.to_bech32(client.get_bech32_hrp().await?)).await?;
     tokio::time::sleep(std::time::Duration::from_secs(15)).await;
 
     let tomorrow = (SystemTime::now() + Duration::from_secs(24 * 3600))
@@ -60,15 +63,16 @@ async fn main() -> Result<()> {
     let outputs = vec![
         // with storage deposit return
         BasicOutputBuilder::new_with_amount(255_100)?
-            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
+            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(receiver_address)))
             // Return 100 less than the original amount.
             .add_unlock_condition(UnlockCondition::StorageDepositReturn(
-                StorageDepositReturnUnlockCondition::new(address, 255_000)?,
+                StorageDepositReturnUnlockCondition::new(sender_address, 255_000)?,
             ))
             // If the receiver does not consume this output, we Unlock after a day to avoid
             // locking our funds forever.
             .add_unlock_condition(UnlockCondition::Expiration(ExpirationUnlockCondition::new(
-                address, tomorrow,
+                sender_address,
+                tomorrow,
             )?))
             .finish_output()?,
     ];
