@@ -4,6 +4,7 @@ import type { IUTXOInput, OutputTypes } from '@iota/types';
 import type { CoinType } from '../lib';
 import type { IRange } from './range';
 
+/** Options to generate a new block, possibly with payloads */
 export interface IGenerateBlockOptions {
     coinType?: CoinType;
     accountIndex?: number;
@@ -24,6 +25,7 @@ export interface IGenerateBlockOptions {
     allowBurning?: boolean;
 }
 
+/** Address with base coin amount */
 export interface IClientBlockBuilderOutputAddress {
     address: string;
     amount: string;

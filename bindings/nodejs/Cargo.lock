@@ -121,7 +121,6 @@ dependencies = [
  "bitflags",
  "bytes",
  "futures-util",
- "headers",
  "http",
  "http-body",
  "hyper",
@@ -183,9 +182,21 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c5738be7561b0eeb501ef1d5c5db3f24e01ceb55fededd9b00039aada34966ad"
 
 [[package]]
+name = "bee-api-types"
+version = "1.0.0-alpha.1"
+source = "git+https://github.com/iotaledger/bee?rev=ff52b003a2c3845e2987d23487a696af106c053c#ff52b003a2c3845e2987d23487a696af106c053c"
+dependencies = [
+ "axum",
+ "bee-block",
+ "bee-ledger-types",
+ "serde",
+ "thiserror",
+]
+
+[[package]]
 name = "bee-block"
 version = "0.1.0"
-source = "git+https://github.com/iotaledger/bee?rev=a0790c2d2f3e0f0a648e2c93a197b08d294022f1#a0790c2d2f3e0f0a648e2c93a197b08d294022f1"
+source = "git+https://github.com/iotaledger/bee?rev=ff52b003a2c3845e2987d23487a696af106c053c#ff52b003a2c3845e2987d23487a696af106c053c"
 dependencies = [
  "bech32",
  "bee-pow",
@@ -207,20 +218,20 @@ dependencies = [
 ]
 
 [[package]]
-name = "bee-ledger"
-version = "0.7.0"
-source = "git+https://github.com/iotaledger/bee?rev=a0790c2d2f3e0f0a648e2c93a197b08d294022f1#a0790c2d2f3e0f0a648e2c93a197b08d294022f1"
+name = "bee-ledger-types"
+version = "1.0.0-alpha.1"
+source = "git+https://github.com/iotaledger/bee?rev=ff52b003a2c3845e2987d23487a696af106c053c#ff52b003a2c3845e2987d23487a696af106c053c"
 dependencies = [
  "bee-block",
  "packable",
  "thiserror",
- "time-helper",
 ]
 
 [[package]]
 name = "bee-pow"
-version = "0.2.0"
-source = "git+https://github.com/iotaledger/bee?rev=a0790c2d2f3e0f0a648e2c93a197b08d294022f1#a0790c2d2f3e0f0a648e2c93a197b08d294022f1"
+version = "1.0.0-alpha.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d8e36e724dc98f8671c4f674b8419785def4ea81ad7af4fba061ff11724210c1"
 dependencies = [
  "bee-ternary",
  "iota-crypto",
@@ -228,22 +239,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "bee-rest-api"
-version = "0.2.2"
-source = "git+https://github.com/iotaledger/bee?rev=a0790c2d2f3e0f0a648e2c93a197b08d294022f1#a0790c2d2f3e0f0a648e2c93a197b08d294022f1"
-dependencies = [
- "axum",
- "bee-block",
- "bee-ledger",
- "serde",
- "thiserror",
-]
-
-[[package]]
 name = "bee-ternary"
-version = "0.6.0"
+version = "1.0.0-alpha.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b0b9489a68e42231e9f4f1443c765d3f80433a52101510ab413e6a9cd2240d21"
+checksum = "a9252b65ddd9a863b0efc06ddab6c26334ecbe00fb8fa47bbde10babda2981b2"
 dependencies = [
  "autocfg",
  "num-traits",
@@ -833,31 +832,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "headers"
-version = "0.3.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4cff78e5788be1e0ab65b04d306b2ed5092c815ec97ec70f4ebd5aee158aa55d"
-dependencies = [
- "base64",
- "bitflags",
- "bytes",
- "headers-core",
- "http",
- "httpdate",
- "mime",
- "sha-1 0.10.0",
-]
-
-[[package]]
-name = "headers-core"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e7f66481bfee273957b1f20485a4ff3362987f85b2c236580d81b4eb7a326429"
-dependencies = [
- "http",
-]
-
-[[package]]
 name = "hermit-abi"
 version = "0.1.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1029,9 +1003,9 @@ version = "1.1.1"
 dependencies = [
  "async-trait",
  "backtrace",
+ "bee-api-types",
  "bee-block",
  "bee-pow",
- "bee-rest-api",
  "bee-ternary",
  "derive_builder",
  "futures",
@@ -1057,9 +1031,9 @@ dependencies = [
 
 [[package]]
 name = "iota-crypto"
-version = "0.12.1"
+version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f03717e934972fad6f1c9b4cd25f662e1753b58a7f76e3dceadeb646e034b252"
+checksum = "538b238fbd6fa732f526f6401656fa6a366598b9fe1ca35185e47f3978369707"
 dependencies = [
  "aead",
  "bee-ternary",
@@ -1279,9 +1253,9 @@ checksum = "ff011a302c396a5197692431fc1948019154afc178baf7d8e37367442a4601cf"
 
 [[package]]
 name = "packable"
-version = "0.4.0"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "332ecf21e38a8f3afce70f005b638c67759686a5e3e12d1859c56d0687f164d3"
+checksum = "ffe491a88c5c4c77f5e02c92901c011ec4368e4ea1b4aff5c1a4bdaf3a087354"
 dependencies = [
  "autocfg",
  "packable-derive",
@@ -1291,9 +1265,9 @@ dependencies = [
 
 [[package]]
 name = "packable-derive"
-version = "0.4.0"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7cfe1637c03253dfa99917b97dcb646a540cad292b18fdc72e9a0d0dd29f165e"
+checksum = "715f215a9cb02dd40282e4544148d0b3cb21010561e4588f0790ae9f1f61c041"
 dependencies = [
  "proc-macro-crate",
  "proc-macro-error",
@@ -1804,17 +1778,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "sha-1"
-version = "0.10.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "028f48d513f9678cda28f6e4064755b3fbb2af6acd672f2c209b62323f7aea0f"
-dependencies = [
- "cfg-if",
- "cpufeatures 0.2.2",
- "digest 0.10.3",
-]
-
-[[package]]
 name = "sha2"
 version = "0.9.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2137,7 +2100,7 @@ dependencies = [
  "log",
  "rand",
  "rustls",
- "sha-1 0.9.8",
+ "sha-1",
  "thiserror",
  "url",
  "utf-8",
