@@ -30,7 +30,7 @@ async fn main() -> Result<()> {
     // Send the request.
     let milestone = client.get_milestone_by_id(&milestone_id).await?;
 
-    println!("{:#?}", milestone);
+    println!("{milestone:#?}");
 
     Ok(())
 }

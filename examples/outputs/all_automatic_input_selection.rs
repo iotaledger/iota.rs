@@ -99,9 +99,9 @@ async fn main() -> Result<()> {
     //////////////////////////////////
     // create foundry output, native tokens and nft
     //////////////////////////////////
-    let alias_output_id_1 = get_alias_output_id(block.payload().unwrap());
+    let alias_output_id_1 = get_alias_output_id(block.payload().unwrap())?;
     let alias_id = AliasId::from(alias_output_id_1);
-    let nft_output_id = get_nft_output_id(block.payload().unwrap());
+    let nft_output_id = get_nft_output_id(block.payload().unwrap())?;
     let nft_id = NftId::from(nft_output_id);
     let token_scheme = TokenScheme::Simple(SimpleTokenScheme::new(U256::from(50), U256::from(0), U256::from(100))?);
     let foundry_id = FoundryId::build(
@@ -208,13 +208,13 @@ async fn main() -> Result<()> {
 }
 
 // helper function to get the output id for the first alias output
-fn get_alias_output_id(payload: &Payload) -> OutputId {
+fn get_alias_output_id(payload: &Payload) -> Result<OutputId> {
     match payload {
         Payload::Transaction(tx_payload) => {
             let TransactionEssence::Regular(regular) = tx_payload.essence();
             for (index, output) in regular.outputs().iter().enumerate() {
                 if let Output::Alias(_alias_output) = output {
-                    return OutputId::new(tx_payload.id(), index.try_into().unwrap()).unwrap();
+                    return Ok(OutputId::new(tx_payload.id(), index.try_into().unwrap())?);
                 }
             }
             panic!("No alias output in transaction essence")
@@ -224,13 +224,13 @@ fn get_alias_output_id(payload: &Payload) -> OutputId {
 }
 
 // helper function to get the output id for the first NFT output
-fn get_nft_output_id(payload: &Payload) -> OutputId {
+fn get_nft_output_id(payload: &Payload) -> Result<OutputId> {
     match payload {
         Payload::Transaction(tx_payload) => {
             let TransactionEssence::Regular(regular) = tx_payload.essence();
             for (index, output) in regular.outputs().iter().enumerate() {
                 if let Output::Nft(_nft_output) = output {
-                    return OutputId::new(tx_payload.id(), index.try_into().unwrap()).unwrap();
+                    return Ok(OutputId::new(tx_payload.id(), index.try_into().unwrap())?);
                 }
             }
             panic!("No nft output in transaction essence")

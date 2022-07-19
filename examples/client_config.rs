@@ -31,11 +31,10 @@ async fn main() -> Result<()> {
                    "nanos":0
                 }
              }"#,
-        )
-        .unwrap()
+        )?
         .finish()?;
 
-    let info = client.get_info().await.unwrap();
+    let info = client.get_info().await?;
     println!("Node Info: {:?}", info);
 
     Ok(())

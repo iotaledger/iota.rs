@@ -80,7 +80,7 @@ async fn main() -> Result<()> {
     //////////////////////////////////
     // create second transaction with the actual AliasId (BLAKE2b-160 hash of the Output ID that created the alias)
     //////////////////////////////////
-    let alias_output_id = get_alias_output_id(block.payload().unwrap());
+    let alias_output_id = get_alias_output_id(block.payload().unwrap())?;
     let alias_id = AliasId::from(alias_output_id);
     let outputs = vec![
         alias_output_builder
@@ -105,13 +105,13 @@ async fn main() -> Result<()> {
 }
 
 // helper function to get the output id for the first alias output
-fn get_alias_output_id(payload: &Payload) -> OutputId {
+fn get_alias_output_id(payload: &Payload) -> Result<OutputId> {
     match payload {
         Payload::Transaction(tx_payload) => {
             let TransactionEssence::Regular(regular) = tx_payload.essence();
             for (index, output) in regular.outputs().iter().enumerate() {
                 if let Output::Alias(_alias_output) = output {
-                    return OutputId::new(tx_payload.id(), index.try_into().unwrap()).unwrap();
+                    return Ok(OutputId::new(tx_payload.id(), index.try_into().unwrap())?);
                 }
             }
             panic!("No alias output in transaction essence")

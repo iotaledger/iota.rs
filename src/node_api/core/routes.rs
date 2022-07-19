@@ -9,7 +9,7 @@ use bee_api_types::{
     dtos::{PeerDto, ReceiptDto},
     responses::{
         BlockMetadataResponse, BlockResponse, MilestoneResponse, OutputMetadataResponse, OutputResponse, PeersResponse,
-        ReceiptsResponse, SubmitBlockResponse, TipsResponse, TreasuryResponse, UtxoChangesResponse,
+        ReceiptsResponse, RoutesResponse, SubmitBlockResponse, TipsResponse, TreasuryResponse, UtxoChangesResponse,
     },
 };
 use bee_block::{
@@ -51,6 +51,16 @@ impl Client {
             200 => Ok(true),
             _ => Ok(false),
         }
+    }
+
+    /// Returns the available API route groups of the node.
+    /// GET /api/routes
+    pub async fn get_routes(&self) -> Result<RoutesResponse> {
+        let path = "api/routes";
+
+        self.node_manager
+            .get_request(path, None, self.get_timeout(), false, false)
+            .await
     }
 
     /// Returns general information about the node.
@@ -286,13 +296,23 @@ impl Client {
 
     // UTXO routes.
 
-    /// Finds an output by its OutputId (TransactionId + output_index).
+    /// Finds an output, as JSON, by its OutputId (TransactionId + output_index).
     /// GET /api/core/v2/outputs/{outputId}
     pub async fn get_output(&self, output_id: &OutputId) -> Result<OutputResponse> {
         let path = &format!("api/core/v2/outputs/{}", output_id);
 
         self.node_manager
             .get_request(path, None, self.get_timeout(), false, true)
+            .await
+    }
+
+    /// Finds an output, as raw bytes, by its OutputId (TransactionId + output_index).
+    /// GET /api/core/v2/outputs/{outputId}
+    pub async fn get_output_raw(&self, output_id: &OutputId) -> Result<Vec<u8>> {
+        let path = &format!("api/core/v2/outputs/{}", output_id);
+
+        self.node_manager
+            .get_request_bytes(path, None, self.get_timeout())
             .await
     }
 
@@ -343,7 +363,7 @@ impl Client {
             .await
     }
 
-    /// Returns the block that was included in the ledger for a given TransactionId.
+    /// Returns the block, as object, that was included in the ledger for a given TransactionId.
     /// GET /api/core/v2/transactions/{transactionId}/included-block
     pub async fn get_included_block(&self, transaction_id: &TransactionId) -> Result<Block> {
         let path = &format!("api/core/v2/transactions/{}/included-block", transaction_id);
@@ -357,6 +377,16 @@ impl Client {
             BlockResponse::Json(dto) => Ok(Block::try_from(&dto)?),
             BlockResponse::Raw(_) => Err(crate::Error::UnexpectedApiResponse),
         }
+    }
+
+    /// Returns the block, as raw bytes, that was included in the ledger for a given TransactionId.
+    /// GET /api/core/v2/transactions/{transactionId}/included-block
+    pub async fn get_included_block_raw(&self, transaction_id: &TransactionId) -> Result<Vec<u8>> {
+        let path = &format!("api/core/v2/transactions/{}/included-block", transaction_id);
+
+        self.node_manager
+            .get_request_bytes(path, None, self.get_timeout())
+            .await
     }
 
     // Milestones routes.

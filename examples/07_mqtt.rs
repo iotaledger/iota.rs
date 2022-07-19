@@ -53,8 +53,7 @@ async fn main() -> Result<()> {
                 tx.lock().unwrap().send(()).unwrap();
             },
         )
-        .await
-        .unwrap();
+        .await?;
 
     for i in 0..10 {
         rx.recv().unwrap();

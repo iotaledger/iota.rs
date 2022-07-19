@@ -18,19 +18,12 @@ async fn main() -> Result<()> {
 
     // Create a client instance
     let client = Client::builder()
-        .with_node(&node_url) // Insert your node URL here
-        .unwrap()
+        .with_node(&node_url)? // Insert your node URL here
         .finish()?;
 
-    let custom_parent = BlockId::from_str("b5634e05a7c665d7f87330a53633f001a5d1d96b346dc98dc225c4d6c204f23b").unwrap();
+    let custom_parent = BlockId::from_str("b5634e05a7c665d7f87330a53633f001a5d1d96b346dc98dc225c4d6c204f23b")?;
 
-    let block = client
-        .block()
-        .with_parents(vec![custom_parent])
-        .unwrap()
-        .finish()
-        .await
-        .unwrap();
+    let block = client.block().with_parents(vec![custom_parent])?.finish().await?;
 
     println!(
         "Empty block sent: https://explorer.iota.org/devnet/block/{}",

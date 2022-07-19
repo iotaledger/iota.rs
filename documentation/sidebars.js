@@ -76,11 +76,11 @@ module.exports = {
               id: 'libraries/rust/how_to/generate_addresses',
               label: 'Generate Addresses',
             },
-            // {
-            //   type: 'doc',
-            //   id: 'libraries/rust/how_to/get_output',
-            //   label: 'Get An Output',
-            // },
+            {
+              type: 'doc',
+              id: 'libraries/rust/how_to/get_output',
+              label: 'Get An Output',
+            },
             // {
             //   type: 'doc',
             //   id: 'libraries/rust/how_to/build_output',

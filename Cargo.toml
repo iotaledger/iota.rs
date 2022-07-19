@@ -13,8 +13,8 @@ categories = [ "cryptography::cryptocurrencies" ]
 
 [dependencies]
 async-trait = { version = "0.1.56", default-features = false }
-bee-api-types = { git = "https://github.com/iotaledger/bee", rev = "ff52b003a2c3845e2987d23487a696af106c053c", default-features = false }
-bee-block = { git = "https://github.com/iotaledger/bee", rev = "ff52b003a2c3845e2987d23487a696af106c053c", default-features = false, features = [ "serde", "dto", "std" ] }
+bee-api-types = { git = "https://github.com/iotaledger/bee", rev = "4b1ed2a12d02314125e4e5e85a113121182285a4", default-features = false }
+bee-block = { git = "https://github.com/iotaledger/bee", rev = "4b1ed2a12d02314125e4e5e85a113121182285a4", default-features = false, features = [ "serde", "dto", "std" ] }
 bee-pow = { version = "1.0.0-alpha.1", default-features = false }
 derive_builder = { version = "0.11.2", default-features = false, features = [ "std" ]}
 futures = { version = "0.3.21", default-features = false, features = [ "thread-pool" ] }
@@ -84,32 +84,48 @@ name = "node_api_core_get_health"
 path = "examples/node_api_core/00_get_health.rs"
 
 [[example]]
+name = "node_api_core_get_routes"
+path = "examples/node_api_core/01_get_routes.rs"
+
+[[example]]
 name = "node_api_core_get_info"
-path = "examples/node_api_core/01_get_info.rs"
+path = "examples/node_api_core/02_get_info.rs"
 
 [[example]]
 name = "node_api_core_get_tips"
-path = "examples/node_api_core/02_get_tips.rs"
+path = "examples/node_api_core/03_get_tips.rs"
 
 [[example]]
 name = "node_api_core_post_block"
-path = "examples/node_api_core/03_post_block.rs"
+path = "examples/node_api_core/04_post_block.rs"
 
 [[example]]
 name = "node_api_core_post_block_raw"
-path = "examples/node_api_core/04_post_block_raw.rs"
+path = "examples/node_api_core/05_post_block_raw.rs"
 
 [[example]]
 name = "node_api_core_get_block"
-path = "examples/node_api_core/05_get_block.rs"
+path = "examples/node_api_core/06_get_block.rs"
 
 [[example]]
 name = "node_api_core_get_block_raw"
-path = "examples/node_api_core/06_get_block_raw.rs"
+path = "examples/node_api_core/07_get_block_raw.rs"
 
 [[example]]
 name = "node_api_core_get_block_metadata"
-path = "examples/node_api_core/07_get_block_metadata.rs"
+path = "examples/node_api_core/08_get_block_metadata.rs"
+
+[[example]]
+name = "node_api_core_get_output"
+path = "examples/node_api_core/09_get_output.rs"
+
+[[example]]
+name = "node_api_core_get_output_raw"
+path = "examples/node_api_core/10_get_output_raw.rs"
+
+[[example]]
+name = "node_api_core_get_output_metadata"
+path = "examples/node_api_core/11_get_output_metadata.rs"
 
 [[example]]
 name = "node_api_core_get_receipts"
@@ -125,7 +141,11 @@ path = "examples/node_api_core/14_get_treasury.rs"
 
 [[example]]
 name = "node_api_core_get_included_block"
-path = "examples/node_api_core/16_get_included_block.rs"
+path = "examples/node_api_core/15_get_included_block.rs"
+
+[[example]]
+name = "node_api_core_get_included_block_raw"
+path = "examples/node_api_core/16_get_included_block_raw.rs"
 
 [[example]]
 name = "node_api_core_get_milestone_by_id"

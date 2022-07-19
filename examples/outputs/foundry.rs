@@ -89,7 +89,7 @@ async fn main() -> Result<()> {
     //////////////////////////////////////////////////
     // create foundry output and mint 70 native tokens
     //////////////////////////////////////////////////
-    let alias_output_id = get_alias_output_id(block.payload().unwrap());
+    let alias_output_id = get_alias_output_id(block.payload().unwrap())?;
     let alias_id = AliasId::from(alias_output_id);
     let token_scheme = TokenScheme::Simple(SimpleTokenScheme::new(
         U256::from(70u8),
@@ -148,8 +148,8 @@ async fn main() -> Result<()> {
         ImmutableAliasAddressUnlockCondition::new(AliasAddress::from(alias_id)),
     ));
 
-    let alias_output_id = get_alias_output_id(block.payload().unwrap());
-    let foundry_output_id = get_foundry_output_id(block.payload().unwrap());
+    let alias_output_id = get_alias_output_id(block.payload().unwrap())?;
+    let foundry_output_id = get_foundry_output_id(block.payload().unwrap())?;
     let outputs = vec![
         alias_output_builder
             .clone()
@@ -185,8 +185,8 @@ async fn main() -> Result<()> {
     let basic_output_builder = BasicOutputBuilder::new_with_amount(1_000_000)?
         .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)));
 
-    let alias_output_id = get_alias_output_id(block.payload().unwrap());
-    let foundry_output_id = get_foundry_output_id(block.payload().unwrap());
+    let alias_output_id = get_alias_output_id(block.payload().unwrap())?;
+    let foundry_output_id = get_foundry_output_id(block.payload().unwrap())?;
     let outputs = vec![
         alias_output_builder
             .clone()
@@ -227,7 +227,7 @@ async fn main() -> Result<()> {
     //////////////////////////////////
     // send native token without foundry
     //////////////////////////////////
-    let basic_output_id = get_basic_output_id_with_native_tokens(block.payload().unwrap());
+    let basic_output_id = get_basic_output_id_with_native_tokens(block.payload().unwrap())?;
     let outputs = vec![
         basic_output_builder
             .clone()
@@ -251,7 +251,7 @@ async fn main() -> Result<()> {
     //////////////////////////////////
     // burn native token without foundry
     //////////////////////////////////
-    let basic_output_id = get_basic_output_id_with_native_tokens(block.payload().unwrap());
+    let basic_output_id = get_basic_output_id_with_native_tokens(block.payload().unwrap())?;
     let outputs = vec![
         basic_output_builder
             .add_native_token(NativeToken::new(token_id, U256::from(30u8))?)
@@ -276,13 +276,13 @@ async fn main() -> Result<()> {
 }
 
 // helper function to get the output id for the first alias output
-fn get_alias_output_id(payload: &Payload) -> OutputId {
+fn get_alias_output_id(payload: &Payload) -> Result<OutputId> {
     match payload {
         Payload::Transaction(tx_payload) => {
             let TransactionEssence::Regular(regular) = tx_payload.essence();
             for (index, output) in regular.outputs().iter().enumerate() {
                 if let Output::Alias(_alias_output) = output {
-                    return OutputId::new(tx_payload.id(), index.try_into().unwrap()).unwrap();
+                    return Ok(OutputId::new(tx_payload.id(), index.try_into().unwrap())?);
                 }
             }
             panic!("No alias output in transaction essence")
@@ -292,13 +292,13 @@ fn get_alias_output_id(payload: &Payload) -> OutputId {
 }
 
 // helper function to get the output id for the first foundry output
-fn get_foundry_output_id(payload: &Payload) -> OutputId {
+fn get_foundry_output_id(payload: &Payload) -> Result<OutputId> {
     match payload {
         Payload::Transaction(tx_payload) => {
             let TransactionEssence::Regular(regular) = tx_payload.essence();
             for (index, output) in regular.outputs().iter().enumerate() {
                 if let Output::Foundry(_foundry_output) = output {
-                    return OutputId::new(tx_payload.id(), index.try_into().unwrap()).unwrap();
+                    return Ok(OutputId::new(tx_payload.id(), index.try_into().unwrap())?);
                 }
             }
             panic!("No foundry output in transaction essence")
@@ -308,14 +308,14 @@ fn get_foundry_output_id(payload: &Payload) -> OutputId {
 }
 
 // helper function to get the output id for the first basic output with native tokens
-fn get_basic_output_id_with_native_tokens(payload: &Payload) -> OutputId {
+fn get_basic_output_id_with_native_tokens(payload: &Payload) -> Result<OutputId> {
     match payload {
         Payload::Transaction(tx_payload) => {
             let TransactionEssence::Regular(regular) = tx_payload.essence();
             for (index, output) in regular.outputs().iter().enumerate() {
                 if let Output::Basic(basic_output) = output {
                     if !basic_output.native_tokens().is_empty() {
-                        return OutputId::new(tx_payload.id(), index.try_into().unwrap()).unwrap();
+                        return Ok(OutputId::new(tx_payload.id(), index.try_into().unwrap())?);
                     }
                 }
             }

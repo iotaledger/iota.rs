@@ -22,14 +22,12 @@ async fn main() -> Result<()> {
         .with_node(&node_url)? // Insert your node URL here
         .finish()?;
 
-    let tagged_data_payload =
-        TaggedDataPayload::new("Your tag".as_bytes().to_vec(), "Your data".as_bytes().to_vec()).unwrap();
+    let tagged_data_payload = TaggedDataPayload::new("Your tag".as_bytes().to_vec(), "Your data".as_bytes().to_vec())?;
 
     let block = client
         .block()
         .finish_block(Some(Payload::TaggedData(Box::new(tagged_data_payload))))
-        .await
-        .unwrap();
+        .await?;
 
     println!("Block ID: {}", block.id());
     Ok(())

@@ -1,9 +1,9 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! Calls `GET /api/core/v2/treasury`.
-//! Returns information about the treasury.
-//! Run: `cargo run --example node_api_core_get_treasury --release -- [NODE URL]`.
+//! Calls `GET /api/core/v2/blocks/{blockId}/metadata`.
+//! Finds the metadata of a given block.
+//! Run: `cargo run --example node_api_core_get_block_metadata --release -- [NODE URL]`.
 
 use iota_client::{Client, Result};
 
@@ -22,10 +22,12 @@ async fn main() -> Result<()> {
         .with_node_sync_disabled()
         .finish()?;
 
+    // Fetch a block ID from the node.
+    let block_id = client.get_tips().await?[0];
     // Send the request.
-    let treasury = client.get_treasury().await?;
+    let block_metadata = client.get_block_metadata(&block_id).await?;
 
-    println!("{treasury:#?}");
+    println!("{block_metadata:#?}");
 
     Ok(())
 }

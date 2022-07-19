@@ -1,14 +1,11 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! Calls `POST /api/core/v2/blocks`.
-//! Submits a block as a JSON payload.
-//! Run: `cargo run --example node_api_core_post_block --release -- [NODE URL]`.
+//! Calls `GET /api/routes`.
+//! Returns the available API route groups of the node.
+//! Run: `cargo run --example node_api_core_get_routes --release -- [NODE URL]`.
 
-use iota_client::{
-    block::{parent::Parents, Block},
-    Client, Result,
-};
+use iota_client::{Client, Result};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -25,14 +22,10 @@ async fn main() -> Result<()> {
         .with_node_sync_disabled()
         .finish()?;
 
-    // Get parents for the block.
-    let parents = Parents::new(client.get_tips().await?)?;
-    // Create the block.
-    let block = Block::build(parents).finish()?;
-    // Post the block.
-    let block_id = client.post_block(&block).await?;
+    // Get routes.
+    let routes = client.get_routes().await?;
 
-    println!("Posted: {:?}", block_id);
+    println!("{routes:#?}");
 
     Ok(())
 }

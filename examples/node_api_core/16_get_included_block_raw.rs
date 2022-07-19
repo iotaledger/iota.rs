@@ -1,13 +1,13 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! Calls `GET /api/core/v2/milestones/{milestoneId}/utxo-changes`.
-//! Gets all UTXO changes of a given milestone by milestone identifier.
-//! Run: `cargo run --example node_api_core_get_utxo_changes_by_id --release -- [NODE URL]`.
+//! Calls `GET /api/core/v2/transactions/{transactionId}/included-block`.
+//! Returns the included block, as raw bytes, of a transaction.
+//! Run: `cargo run --example node_api_core_get_included_block_raw --release -- [NODE URL]`.
 
 use std::str::FromStr;
 
-use iota_client::{block::payload::milestone::MilestoneId, Client, Result};
+use iota_client::{block::payload::transaction::TransactionId, Client, Result};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -24,13 +24,12 @@ async fn main() -> Result<()> {
         .with_node_sync_disabled()
         .finish()?;
 
-    // Fetch the latest milestone ID from the node.
-    let info = client.get_info().await?;
-    let milestone_id = MilestoneId::from_str(&info.node_info.status.latest_milestone.milestone_id)?;
+    // Transactions get pruned from the node after some time, replace with a new TransactionId.
+    let transaction_id = TransactionId::from_str("0xb66fd384cb5755668f1890ea2e41d699db9cf32f3bc422ad3c24ffeb9c7f01d0")?;
     // Send the request.
-    let utxo_changes = client.get_utxo_changes_by_id(&milestone_id).await?;
+    let block_bytes = client.get_included_block_raw(&transaction_id).await?;
 
-    println!("{utxo_changes:#?}");
+    println!("Block bytes: {block_bytes:?}");
 
     Ok(())
 }

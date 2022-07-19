@@ -223,7 +223,7 @@ checksum = "c5738be7561b0eeb501ef1d5c5db3f24e01ceb55fededd9b00039aada34966ad"
 [[package]]
 name = "bee-api-types"
 version = "1.0.0-alpha.1"
-source = "git+https://github.com/iotaledger/bee?rev=ff52b003a2c3845e2987d23487a696af106c053c#ff52b003a2c3845e2987d23487a696af106c053c"
+source = "git+https://github.com/iotaledger/bee?rev=4b1ed2a12d02314125e4e5e85a113121182285a4#4b1ed2a12d02314125e4e5e85a113121182285a4"
 dependencies = [
  "axum",
  "bee-block",
@@ -234,8 +234,8 @@ dependencies = [
 
 [[package]]
 name = "bee-block"
-version = "0.1.0"
-source = "git+https://github.com/iotaledger/bee?rev=ff52b003a2c3845e2987d23487a696af106c053c#ff52b003a2c3845e2987d23487a696af106c053c"
+version = "1.0.0-beta.1"
+source = "git+https://github.com/iotaledger/bee?rev=4b1ed2a12d02314125e4e5e85a113121182285a4#4b1ed2a12d02314125e4e5e85a113121182285a4"
 dependencies = [
  "bech32 0.9.0",
  "bee-pow",
@@ -258,8 +258,8 @@ dependencies = [
 
 [[package]]
 name = "bee-ledger-types"
-version = "1.0.0-alpha.1"
-source = "git+https://github.com/iotaledger/bee?rev=ff52b003a2c3845e2987d23487a696af106c053c#ff52b003a2c3845e2987d23487a696af106c053c"
+version = "1.0.0-beta.1"
+source = "git+https://github.com/iotaledger/bee?rev=4b1ed2a12d02314125e4e5e85a113121182285a4#4b1ed2a12d02314125e4e5e85a113121182285a4"
 dependencies = [
  "bee-block",
  "packable",

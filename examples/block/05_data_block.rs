@@ -34,7 +34,7 @@ async fn main() -> Result<()> {
     let fetched_block = client.get_block(&block.id()).await?;
     println!("{:#?}\n", fetched_block);
 
-    if let Payload::TaggedData(payload) = fetched_block.payload().as_ref().unwrap() {
+    if let Payload::TaggedData(payload) = fetched_block.payload().as_ref()? {
         println!(
             "Data: {}",
             String::from_utf8(payload.data().to_vec()).expect("Found invalid UTF-8")

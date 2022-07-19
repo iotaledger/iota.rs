@@ -1,11 +1,14 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! Calls `GET /api/core/v2/blocks/{blockId}/metadata`.
-//! Finds the metadata of a given block.
-//! Run: `cargo run --example node_api_core_get_block_metadata --release -- [NODE URL]`.
+//! Calls `POST /api/core/v2/blocks`.
+//! Submits a block as a JSON payload.
+//! Run: `cargo run --example node_api_core_post_block --release -- [NODE URL]`.
 
-use iota_client::{Client, Result};
+use iota_client::{
+    block::{parent::Parents, Block},
+    Client, Result,
+};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -22,12 +25,14 @@ async fn main() -> Result<()> {
         .with_node_sync_disabled()
         .finish()?;
 
-    // Fetch a block ID from the node.
-    let block_id = client.get_tips().await?[0];
-    // Send the request.
-    let block_metadata = client.get_block_metadata(&block_id).await?;
+    // Get parents for the block.
+    let parents = Parents::new(client.get_tips().await?)?;
+    // Create the block.
+    let block = Block::build(parents).finish()?;
+    // Post the block.
+    let block_id = client.post_block(&block).await?;
 
-    println!("{:#?}", block_metadata);
+    println!("Posted: {block_id:?}");
 
     Ok(())
 }

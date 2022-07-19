@@ -18,8 +18,7 @@ async fn main() -> Result<()> {
 
     // Create a client instance
     let client = Client::builder()
-        .with_node(&node_url) // Insert your node URL here
-        .unwrap()
+        .with_node(&node_url)? // Insert your node URL here
         .finish()?;
 
     let block = client
@@ -32,12 +31,12 @@ async fn main() -> Result<()> {
     let block_id = block.id();
     println!("Block ID: {}", block_id);
 
-    let _ = client.retry_until_included(&block_id, None, None).await.unwrap();
+    let _ = client.retry_until_included(&block_id, None, None).await?;
 
-    let metadata = client.get_block_metadata(&block_id).await.unwrap();
+    let metadata = client.get_block_metadata(&block_id).await?;
     match metadata.referenced_by_milestone_index {
         Some(ms_index) => {
-            let ms = client.get_milestone_by_index(ms_index).await.unwrap();
+            let ms = client.get_milestone_by_index(ms_index).await?;
             println!(
                 "Block got referenced by milestone {} at {}",
                 ms_index,

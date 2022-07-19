@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! Calls `GET /api/core/v2/transactions/{transactionId}/included-block`.
-//! Returns the included block of a transaction.
+//! Returns the included block, as JSON, of a transaction.
 //! Run: `cargo run --example node_api_core_get_included_block --release -- [NODE URL]`.
 
 use std::str::FromStr;
@@ -29,7 +29,7 @@ async fn main() -> Result<()> {
     // Send the request.
     let block = client.get_included_block(&transaction_id).await?;
 
-    println!("{:#?}", block);
+    println!("{block:#?}");
 
     Ok(())
 }

@@ -24,7 +24,7 @@ async fn main() -> Result<()> {
     dotenv().ok();
     let mnemonic = env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap();
     // The mnemonic only needs to be stored the first time
-    stronghold_secret_manager.store_mnemonic(mnemonic).await.unwrap();
+    stronghold_secret_manager.store_mnemonic(mnemonic).await?;
 
     // Generate addresses with custom account index and range
     let addresses = GetAddressesBuilder::new(&SecretManager::Stronghold(stronghold_secret_manager))
