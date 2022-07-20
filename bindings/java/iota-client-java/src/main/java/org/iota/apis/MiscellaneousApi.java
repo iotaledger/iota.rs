@@ -146,7 +146,7 @@ public class MiscellaneousApi extends BaseApi {
     public TransactionPayload signTransaction(SecretManager secretManager, PreparedTransactionData preparedTransactionData) throws ClientException {
         JsonObject o = new JsonObject();
         o.add("secretManager", secretManager.getJson());
-        o.add("preparedTransactionData", preparedTransactionData.getJson());
+        o.add("preparedTransactionData", preparedTransactionData.toJson());
 
         JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("SignTransaction", o));
 
@@ -163,7 +163,7 @@ public class MiscellaneousApi extends BaseApi {
 
     public Map.Entry<BlockId, Block> postBlockPayload(BlockPayload payload) throws ClientException {
         JsonObject o = new JsonObject();
-        o.add("payload", payload.getJson());
+        o.add("payload", payload.toJson());
 
         JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand("PostBlockPayload", o));
 

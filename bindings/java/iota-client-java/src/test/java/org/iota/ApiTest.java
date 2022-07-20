@@ -41,7 +41,7 @@ public abstract class ApiTest {
         for(OutputId outputId: client.getBasicOutputIds(new NodeIndexerApi.QueryParams())) {
             try {
                 OutputMetadata metadata = client.getOutputMetadata(outputId);
-                TransactionId ret = new TransactionId(metadata.getJson().get("transactionId").getAsString());
+                TransactionId ret = new TransactionId(metadata.toJson().get("transactionId").getAsString());
                 client.getIncludedBlock(ret);
                 return ret;
             } catch (ClientException e) { ; }

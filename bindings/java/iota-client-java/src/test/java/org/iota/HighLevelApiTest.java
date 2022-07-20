@@ -66,7 +66,7 @@ public class HighLevelApiTest extends ApiTest {
     @Test
     public void testConsolidateFunds() throws ClientException {
         SecretManager secretManager = new MnemonicSecretManager(DEFAULT_DEVELOPMENT_MNEMONIC);
-        String address = client.generateAddresses(secretManager, new GenerateAddressesOptions().withRange(0, 1))[0];
+        String address = client.generateAddresses(secretManager, new GenerateAddressesOptions().withRange(new Range(0, 1)))[0];
         requestFundsFromFaucet(address);
         String consolidatedAddress = client.consolidateFunds(secretManager, 0, new Range(0, 5));
         System.out.println(consolidatedAddress);
@@ -75,7 +75,7 @@ public class HighLevelApiTest extends ApiTest {
     @Test
     public void testFindInputs() throws ClientException {
         SecretManager secretManager = new MnemonicSecretManager(DEFAULT_DEVELOPMENT_MNEMONIC);
-        String[] addresses = client.generateAddresses(secretManager, new GenerateAddressesOptions().withRange(0, 5));
+        String[] addresses = client.generateAddresses(secretManager, new GenerateAddressesOptions().withRange(new Range(0, 5)));
         requestFundsFromFaucet(addresses[0]);
         UtxoInput[] inputs = client.findInputs(addresses, 1000);
         for (UtxoInput id : inputs)
@@ -85,7 +85,7 @@ public class HighLevelApiTest extends ApiTest {
     @Test
     public void testFindOutputs() throws ClientException {
         SecretManager secretManager = new MnemonicSecretManager(DEFAULT_DEVELOPMENT_MNEMONIC);
-        String[] addresses = client.generateAddresses(secretManager, new GenerateAddressesOptions().withRange(0, 5));
+        String[] addresses = client.generateAddresses(secretManager, new GenerateAddressesOptions().withRange(new Range(0, 5)));
         requestFundsFromFaucet(addresses[0]);
         for (Map.Entry e : client.findOutputs(new OutputId[]{}, addresses)) {
             System.out.println(e.getKey());

@@ -19,21 +19,53 @@ public class AliasOutputBuilderParams {
     private Feature[] features;
     private Feature[] immutableFeatures;
 
-    public AliasOutputBuilderParams(String amount, NativeToken[] nativeTokens, AliasId aliasId, Integer stateIndex, byte[] stateMetadata, Integer foundryCounter, UnlockCondition[] unlockConditions, Feature[] features, Feature[] immutableFeatures) {
+    public AliasOutputBuilderParams withAmount(String amount) {
         this.amount = amount;
+        return this;
+    }
+
+    public AliasOutputBuilderParams withNativeTokens(NativeToken[] nativeTokens) {
         this.nativeTokens = nativeTokens;
+        return this;
+    }
+
+    public AliasOutputBuilderParams withAliasId(AliasId aliasId) {
         this.aliasId = aliasId;
+        return this;
+    }
+
+    public AliasOutputBuilderParams withStateIndex(Integer stateIndex) {
         this.stateIndex = stateIndex;
+        return this;
+    }
+
+    public AliasOutputBuilderParams withStateMetadata(byte[] stateMetadata) {
         this.stateMetadata = stateMetadata;
+        return this;
+    }
+
+    public AliasOutputBuilderParams withFoundryCounter(Integer foundryCounter) {
         this.foundryCounter = foundryCounter;
+        return this;
+    }
+
+    public AliasOutputBuilderParams withUnlockConditions(UnlockCondition[] unlockConditions) {
         this.unlockConditions = unlockConditions;
+        return this;
+    }
+
+    public AliasOutputBuilderParams withFeatures(Feature[] features) {
         this.features = features;
+        return this;
+    }
+
+    public AliasOutputBuilderParams withImmutableFeatures(Feature[] immutableFeatures) {
         this.immutableFeatures = immutableFeatures;
+        return this;
     }
 
     public JsonObject getJson() {
         JsonObject o = new JsonObject();
-
         o.addProperty("amount", amount);
         o.add("nativeTokens", JsonUtils.toJson(nativeTokens));
         o.addProperty("aliasId", aliasId != null ? aliasId.toString() : null);

@@ -13,22 +13,22 @@ public class GenerateAddressesOptions {
     private String bech32Hrp;
     private GenerateAddressMetadata metadata;
 
-    public GenerateAddressesOptions withCoinType(int coinType) {
+    public GenerateAddressesOptions withCoinType(Integer coinType) {
         this.coinType = coinType;
         return this;
     }
 
-    public GenerateAddressesOptions withAccountIndex(int accountIndex) {
+    public GenerateAddressesOptions withAccountIndex(Integer accountIndex) {
         this.accountIndex = accountIndex;
         return this;
     }
 
-    public GenerateAddressesOptions withRange(int start, int end) {
-        range = new Range(start, end);
+    public GenerateAddressesOptions withRange(Range range) {
+        this.range = range;
         return this;
     }
 
-    public GenerateAddressesOptions withInternal(boolean internal) {
+    public GenerateAddressesOptions withInternal(Boolean internal) {
         this.internal = internal;
         return this;
     }

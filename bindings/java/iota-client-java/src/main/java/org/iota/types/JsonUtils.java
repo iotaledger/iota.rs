@@ -1,10 +1,10 @@
 package org.iota.types;
 
 import com.google.gson.JsonArray;
-import org.iota.types.AbstractObject;
 import org.iota.types.ids.AbstractId;
 
 public class JsonUtils<T> {
+
     public static JsonArray toJson(AbstractId[] array) {
         if (array != null) {
             JsonArray a = new JsonArray();
@@ -16,17 +16,19 @@ public class JsonUtils<T> {
             return null;
         }
     }
+
     public static JsonArray toJson(AbstractObject[] array) {
         if (array != null) {
             JsonArray a = new JsonArray();
             for (AbstractObject o : array) {
-                a.add(o.getJson());
+                a.add(o.toJson());
             }
             return a;
         } else {
             return null;
         }
     }
+
     public static JsonArray toJson(String[] array) {
         if (array != null) {
             JsonArray a = new JsonArray();

@@ -48,7 +48,7 @@ public class NodeCoreApi extends BaseApi {
 
     public BlockId postBlock(Block block) throws ClientException {
         JsonObject o = new JsonObject();
-        o.add("block", block.getJson());
+        o.add("block", block.toJson());
 
         String responsePayload = callBaseApi(new ClientCommand("PostBlock", o)).getAsString();
         return new BlockId(responsePayload);

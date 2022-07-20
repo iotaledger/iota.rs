@@ -10,6 +10,7 @@ import org.iota.types.UtxoInput;
 import org.iota.types.ids.BlockId;
 
 public class GenerateBlockOptions {
+
     private Integer coinType;
     private Integer accountIndex;
     private Integer initialAddressIndex;
