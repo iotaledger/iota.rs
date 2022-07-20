@@ -14,7 +14,6 @@ public class BuildFoundryOutput {
         Client client = new Client(new ClientConfig().withNodes(new String[]{"https://api.testnet.shimmer.network"}));
 
         // Configure a simple foundry output.
-        MnemonicSecretManager secretManager = new MnemonicSecretManager("endorse answer radar about source reunion marriage tag sausage weekend frost daring base attack because joke dream slender leisure group reason prepare broken river");
         AliasId aliasId = new AliasId("0xa5c28d5baa951de05e375fb19134ea51a918f03acc2d0cee011a42b298d3effa");
         int serialNumber = 1;
         NativeToken[] nativeTokens = new NativeToken[]{new NativeToken("{ id: '0x081e6439529b020328c08224b43172f282cb16649d50c891fa156365323667e47a0100000000', amount: '0x32' }")};
