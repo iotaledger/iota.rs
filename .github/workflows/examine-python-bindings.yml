@@ -75,6 +75,12 @@ jobs:
           python3 -m pip install --upgrade setuptools pip wheel
           python3 -m pip install tox-gh-actions
 
+      - name: Install required packages (Ubuntu)
+        if: ${{ startsWith(matrix.os, 'ubuntu') }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install libudev-dev libusb-1.0-0-dev
+
       # Tox will run cargo test.
       - name: Run Tox
         working-directory: bindings/python/native/
@@ -98,6 +104,11 @@ jobs:
           cache-root: bindings/python/native/
           cache-job-id: ${{ github.workflow }}-${{ github.job }}
           cache-hash: ${{ hashFiles('.github/workflows/examine-python-bindings.yml') }}
+
+      - name: Install required packages (Ubuntu)
+        run: |
+          sudo apt-get update
+          sudo apt-get install libudev-dev libusb-1.0-0-dev
 
       - name: Run Clippy
         uses: actions-rs/clippy-check@v1
@@ -126,6 +137,11 @@ jobs:
           cache-root: bindings/python/native/
           cache-job-id: ${{ github.workflow }}-${{ github.job }}
           cache-hash: ${{ hashFiles('.github/workflows/examine-python-bindings.yml') }}
+
+      - name: Install required packages (Ubuntu)
+        run: |
+          sudo apt-get update
+          sudo apt-get install libudev-dev libusb-1.0-0-dev
 
       - name: Run Cargo Udeps
         uses: actions-rs/cargo@v1

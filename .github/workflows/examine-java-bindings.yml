@@ -2,8 +2,7 @@ name: Examine the Java Bindings
 on:
   push:
     branches:
-      # disabled until Java binding is updated
-      # - develop
+      - develop
       - dev
     paths:
       - ".github/workflows/examine-java-bindings.yml"
@@ -15,8 +14,7 @@ on:
       - "Cargo.lock"
   pull_request:
     branches:
-      # disabled until Java binding is updated
-      # - develop
+      - develop
       - dev
     paths:
       - ".github/workflows/examine-java-bindings.yml"
@@ -72,6 +70,12 @@ jobs:
         if: ${{ startsWith(matrix.os, 'windows') }}
         uses: ./.github/actions/setup-clang
 
+      - name: Install Required Dependencies (Ubuntu)
+        if: ${{ startsWith(matrix.os, 'ubuntu') }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install libudev-dev libusb-1.0-0-dev
+
       - name: Run Cargo Test
         uses: actions-rs/cargo@v1
         with:
@@ -101,6 +105,11 @@ jobs:
           cache-job-id: ${{ github.workflow }}-${{ github.job }}
           cache-hash: ${{ hashFiles('.github/workflows/examine-java-bindings.yml') }}
 
+      - name: Install Required Dependencies (Ubuntu)
+        run: |
+          sudo apt-get update
+          sudo apt-get install libudev-dev libusb-1.0-0-dev
+
       - name: Run Clippy
         uses: actions-rs/clippy-check@v1
         with:
@@ -128,6 +137,11 @@ jobs:
           cache-root: bindings/java/native/
           cache-job-id: ${{ github.workflow }}-${{ github.job }}
           cache-hash: ${{ hashFiles('.github/workflows/examine-java-bindings.yml') }}
+
+      - name: Install Required Dependencies (Ubuntu)
+        run: |
+          sudo apt-get update
+          sudo apt-get install libudev-dev libusb-1.0-0-dev
 
       - name: Run Cargo Udeps
         uses: actions-rs/cargo@v1
