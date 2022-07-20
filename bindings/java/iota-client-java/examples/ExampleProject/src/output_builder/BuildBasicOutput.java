@@ -9,13 +9,10 @@ import org.iota.types.output_builder.BasicOutputBuilderParams;
 import org.iota.types.secret.GenerateAddressesOptions;
 import org.iota.types.secret.MnemonicSecretManager;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class BuildBasicOutput {
     public static void main(String[] args) throws ClientException {
         // Build the client.
-        Client client = new Client(new ClientConfig("{ \"nodes\": [ \"https://api.testnet.shimmer.network\" ], \"nodeSyncEnabled\": true }"));
+        Client client = new Client(new ClientConfig().withNodes(new String[]{"https://api.testnet.shimmer.network"}));
 
         // Generate the address
         MnemonicSecretManager secretManager = new MnemonicSecretManager("endorse answer radar about source reunion marriage tag sausage weekend frost daring base attack because joke dream slender leisure group reason prepare broken river");
@@ -23,8 +20,7 @@ public class BuildBasicOutput {
 
         // Configure a simple basic output.
         String amount = "1000000";
-        List<UnlockCondition> unlockConditions = new ArrayList<>();
-        unlockConditions.add(new UnlockCondition("{ type: 0, address: { type: 0, pubKeyHash: \"" + hexAddress + "\"} }"));
+        UnlockCondition[] unlockConditions = new UnlockCondition[]{new UnlockCondition("{ type: 0, address: { type: 0, pubKeyHash: \"" + hexAddress + "\"} }")};
         BasicOutputBuilderParams params = new BasicOutputBuilderParams(amount, null, unlockConditions, null);
 
         // Build the output.

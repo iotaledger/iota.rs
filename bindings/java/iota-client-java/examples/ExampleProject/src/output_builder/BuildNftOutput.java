@@ -10,13 +10,10 @@ import org.iota.types.output_builder.NftOutputBuilderParams;
 import org.iota.types.secret.GenerateAddressesOptions;
 import org.iota.types.secret.MnemonicSecretManager;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class BuildNftOutput {
     public static void main(String[] args) throws ClientException {
         // Build the client.
-        Client client = new Client(new ClientConfig("{ \"nodes\": [ \"https://api.testnet.shimmer.network\" ], \"nodeSyncEnabled\": true }"));
+        Client client = new Client(new ClientConfig().withNodes(new String[]{"https://api.testnet.shimmer.network"}));
 
         // Generate the address
         MnemonicSecretManager secretManager = new MnemonicSecretManager("endorse answer radar about source reunion marriage tag sausage weekend frost daring base attack because joke dream slender leisure group reason prepare broken river");
@@ -25,8 +22,7 @@ public class BuildNftOutput {
         // Configure a simple NFT output.
         NftId nftId = new NftId("0x7ffec9e1233204d9c6dce6812b1539ee96af691ca2e4d9065daa85907d33e5d3");
 
-        List<UnlockCondition> unlockConditions = new ArrayList<>();
-        unlockConditions.add(new UnlockCondition("{ type: 0, address: { type: 0, pubKeyHash: \"" + hexAddress + "\" } }"));
+        UnlockCondition[] unlockConditions = new UnlockCondition[]{new UnlockCondition("{ type: 0, address: { type: 0, pubKeyHash: \"" + hexAddress + "\" } }")};
 
         NftOutputBuilderParams params = new NftOutputBuilderParams(
                 null,

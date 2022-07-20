@@ -12,7 +12,7 @@ import java.util.Map;
 public class GetOutputs {
     public static void main(String[] args) throws ClientException {
         // Build the client.
-        Client client = new Client(new ClientConfig("{ \"nodes\": [ \"https://api.testnet.shimmer.network\" ], \"nodeSyncEnabled\": true }"));
+        Client client = new Client(new ClientConfig().withNodes(new String[]{"https://api.testnet.shimmer.network"}));
 
         // Get the output for the given output id.
         Map.Entry<Output, OutputMetadata> outputData = client.getOutput(new OutputId("..."));

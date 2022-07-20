@@ -20,7 +20,7 @@ This example will try to migrate funds from the first 50 addresses of the seed.
 public class WrongSeedConversionSecretManager {
     public static void main(String[] args) throws ClientException {
         // Build the client.
-        Client client = new Client(new ClientConfig("{ \"nodes\": [ \"https://api.testnet.shimmer.network\" ], \"nodeSyncEnabled\": true }"));
+        Client client = new Client(new ClientConfig().withNodes(new String[]{"https://api.testnet.shimmer.network"}));
 
         // The hex seed that is affected by the seed conversion bug.
         String hexSeed = "";
@@ -62,7 +62,7 @@ public class WrongSeedConversionSecretManager {
         GenerateBlockOptions.ClientBlockBuilderOutputAddress output = new GenerateBlockOptions.ClientBlockBuilderOutputAddress(receiverAddress, Integer.toString(amountToMigrate));
 
         // Build block
-        Block b = client.generateBlock(wrongSecretManager, new GenerateBlockOptions().withInputs(inputs).withOutput(output));
+        Block b = client.generateBlock(wrongSecretManager, new GenerateBlockOptions().withInputs(inputs.stream().toArray(UtxoInput[]::new)).withOutput(output));
 
         // Post the block
         BlockId blockId = client.postBlock(b);

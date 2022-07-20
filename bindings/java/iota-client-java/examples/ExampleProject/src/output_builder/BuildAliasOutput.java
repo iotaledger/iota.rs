@@ -16,7 +16,7 @@ import java.util.List;
 public class BuildAliasOutput {
     public static void main(String[] args) throws ClientException {
         // Build the client.
-        Client client = new Client(new ClientConfig("{ \"nodes\": [ \"https://api.testnet.shimmer.network\" ], \"nodeSyncEnabled\": true }"));
+        Client client = new Client(new ClientConfig().withNodes(new String[]{"https://api.testnet.shimmer.network"}));
 
         // Generate the address
         MnemonicSecretManager secretManager = new MnemonicSecretManager("endorse answer radar about source reunion marriage tag sausage weekend frost daring base attack because joke dream slender leisure group reason prepare broken river");
@@ -24,9 +24,10 @@ public class BuildAliasOutput {
 
         // Configure a simple alias output.
         AliasId aliasId = new AliasId("0xa5c28d5baa951de05e375fb19134ea51a918f03acc2d0cee011a42b298d3effa");
-        List<UnlockCondition> unlockConditions = new ArrayList<>();
-        unlockConditions.add(new UnlockCondition("{ type: 4, address: { type: 0, pubKeyHash: \"" + hexAddress + "\" } }"));
-        unlockConditions.add(new UnlockCondition("{ type: 5, address: { type: 0, pubKeyHash: \"" + hexAddress + "\" } }"));
+        UnlockCondition[] unlockConditions = new UnlockCondition[] {
+                new UnlockCondition("{ type: 4, address: { type: 0, pubKeyHash: \"" + hexAddress + "\" } }"),
+                new UnlockCondition("{ type: 5, address: { type: 0, pubKeyHash: \"" + hexAddress + "\" } }")
+        };
         AliasOutputBuilderParams params = new AliasOutputBuilderParams(
                 null,
                 null,
