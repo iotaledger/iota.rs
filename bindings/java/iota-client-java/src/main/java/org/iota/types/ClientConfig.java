@@ -11,22 +11,22 @@ public class ClientConfig {
     private String primaryPoWNode;
     private String[] nodes;
     private String[] permanodes;
-    private boolean nodeSyncEnabled = true;
-    private NodeSyncInterval nodeSyncInterval = new NodeSyncInterval().withSecs(60);
-    private boolean quorum;
-    private int minQuorumSize = 3;
-    private int quorumThreshold = 66;
+    private Boolean nodeSyncEnabled;
+    private NodeSyncInterval nodeSyncInterval;
+    private Boolean quorum;
+    private Integer minQuorumSize;
+    private Integer quorumThreshold;
     private String network;
     private String networkId;
-    private String bech32HRP = "rms";
-    private double minPoWScore = 4000.0;
-    private boolean localPow = true;
-    private boolean fallbackToLocalPow = true;
-    private int tipsInterval = 15;
-    private RentStructure rentStructure = new RentStructure(500, 10, 1);
-    private ApiTimeout apiTimeout = new ApiTimeout().withSecs(15);
-    private RemotePowTimeout remotePowTimeout = new RemotePowTimeout().withSecs(100);
-    private boolean offline;
+    private String bech32HRP;
+    private Double minPoWScore;
+    private Boolean localPow;
+    private Boolean fallbackToLocalPow;
+    private Integer tipsInterval;
+    private RentStructure rentStructure;
+    private ApiTimeout apiTimeout;
+    private RemotePowTimeout remotePowTimeout;
+    private Boolean offline;
     private Integer powWorkerCount;
 
     public String getPrimaryNode() {
@@ -289,28 +289,48 @@ public class ClientConfig {
 
     public JsonObject getJson() {
         JsonObject o = new JsonObject();
-        o.addProperty("primaryNode", primaryNode);
-        o.addProperty("primaryPoWNode", primaryPoWNode);
-        o.add("nodes", JsonUtils.toJson(nodes));
-        o.add("permanodes", JsonUtils.toJson(permanodes));
-        o.addProperty("nodeSyncEnabled", nodeSyncEnabled);
-        o.add("nodeSyncInterval", nodeSyncInterval != null ? nodeSyncInterval.getJson() : null);
-        o.addProperty("quorum", quorum);
-        o.addProperty("minQuorumSize", minQuorumSize);
-        o.addProperty("quorumThreshold", quorumThreshold);
-        o.addProperty("network", network);
-        o.addProperty("networkId", networkId);
-        o.addProperty("bech32HRP", bech32HRP);
-        o.addProperty("minPoWScore", minPoWScore);
-        o.addProperty("localPow", localPow);
-        o.addProperty("fallbackToLocalPow", fallbackToLocalPow);
-        o.addProperty("tipsInterval", tipsInterval);
-        o.add("rentStructure", rentStructure != null ? rentStructure.getJson() : null);
-        o.add("apiTimeout", apiTimeout != null ? apiTimeout.getJson() : null);
-        o.add("remotePowTimeout", remotePowTimeout != null ? remotePowTimeout.getJson() : null);
-        o.addProperty("offline", offline);
-        o.addProperty("powWorkerCount", powWorkerCount);
+        if (primaryNode != null)
+            o.addProperty("primaryNode", primaryNode);
+        if (primaryPoWNode != null)
+            o.addProperty("primaryPoWNode", primaryPoWNode);
+        if (nodes != null)
+            o.add("nodes", JsonUtils.toJson(nodes));
+        if (permanodes != null)
+            o.add("permanodes", JsonUtils.toJson(permanodes));
+        if (nodeSyncEnabled != null)
+            o.addProperty("nodeSyncEnabled", nodeSyncEnabled);
+        if (nodeSyncInterval != null)
+            o.add("nodeSyncInterval", nodeSyncInterval.getJson());
+        if (quorum != null)
+            o.addProperty("quorum", quorum);
+        if (minQuorumSize != null)
+            o.addProperty("minQuorumSize", minQuorumSize);
+        if (quorumThreshold != null)
+            o.addProperty("quorumThreshold", quorumThreshold);
+        if (network != null)
+            o.addProperty("network", network);
+        if (networkId != null)
+            o.addProperty("networkId", networkId);
+        if (bech32HRP != null)
+            o.addProperty("bech32HRP", bech32HRP);
+        if (minPoWScore != null)
+            o.addProperty("minPoWScore", minPoWScore);
+        if (localPow != null)
+            o.addProperty("localPow", localPow);
+        if (fallbackToLocalPow != null)
+            o.addProperty("fallbackToLocalPow", fallbackToLocalPow);
+        if (tipsInterval != null)
+            o.addProperty("tipsInterval", tipsInterval);
+        if (rentStructure != null)
+            o.add("rentStructure", rentStructure.getJson());
+        if (apiTimeout != null)
+            o.add("apiTimeout", apiTimeout.getJson());
+        if (offline != null)
+            o.addProperty("offline", offline);
+        if (powWorkerCount != null)
+            o.addProperty("powWorkerCount", powWorkerCount);
 
+        System.out.println(o.toString());
         return o;
     }
 
