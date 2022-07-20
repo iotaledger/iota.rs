@@ -6,7 +6,6 @@ package org.iota.types.secret;
 import com.google.gson.JsonObject;
 
 public class GenerateAddressesOptions {
-
     private Integer coinType;
     private Integer accountIndex;
     private Range range;
@@ -52,6 +51,7 @@ public class GenerateAddressesOptions {
         o.addProperty("internal", internal);
         o.addProperty("bech32Hrp", bech32Hrp);
         o.add("metadata", metadata != null ? metadata.getAsJson() : null);
+
         return o;
     }
 
@@ -66,6 +66,7 @@ public class GenerateAddressesOptions {
         public JsonObject getAsJson() {
             JsonObject o = new JsonObject();
             o.addProperty("syncing", syncing);
+
             return o;
         }
     }

@@ -43,7 +43,7 @@ public class BaseApi {
     private static native String callNativeLibrary(String clientConfig, String clientCommand);
 
     protected JsonElement callBaseApi(ClientCommand command) throws ClientException {
-        String jsonResponse = callNativeLibrary(clientConfig.toString(), command.toString());
+        String jsonResponse = callNativeLibrary(clientConfig.getJson().toString(), command.toString());
         ClientResponse response = new Gson().fromJson(jsonResponse, ClientResponse.class);
 
         switch (response.type) {

@@ -3,28 +3,25 @@
 
 package org.iota.types.secret;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import org.iota.types.JsonUtils;
 import org.iota.types.Output;
 import org.iota.types.UtxoInput;
 import org.iota.types.ids.BlockId;
 
-import java.util.List;
-
 public class GenerateBlockOptions {
-
     private Integer coinType;
     private Integer accountIndex;
     private Integer initialAddressIndex;
-    private List<UtxoInput> inputs;
+    private UtxoInput[] inputs;
     private Range inputRange;
     private ClientBlockBuilderOutputAddress output;
     private ClientBlockBuilderOutputAddress outputHex;
-    private List<Output> outputs;
+    private Output[] outputs;
     private String customRemainderAddress;
     private byte[] tag;
     private byte[] data;
-    private List<BlockId> parents;
+    private BlockId[] parents;
     private Boolean allowBurning;
 
     public GenerateBlockOptions withCoinType(Integer coinType) {
@@ -42,7 +39,7 @@ public class GenerateBlockOptions {
         return this;
     }
 
-    public GenerateBlockOptions withInputs(List<UtxoInput> inputs) {
+    public GenerateBlockOptions withInputs(UtxoInput[] inputs) {
         this.inputs = inputs;
         return this;
     }
@@ -62,7 +59,7 @@ public class GenerateBlockOptions {
         return this;
     }
 
-    public GenerateBlockOptions withOutputs(List<Output> outputs) {
+    public GenerateBlockOptions withOutputs(Output[] outputs) {
         this.outputs = outputs;
         return this;
     }
@@ -82,7 +79,7 @@ public class GenerateBlockOptions {
         return this;
     }
 
-    public GenerateBlockOptions withParents(List<BlockId> parents) {
+    public GenerateBlockOptions withParents(BlockId[] parents) {
         this.parents = parents;
         return this;
     }
@@ -93,7 +90,6 @@ public class GenerateBlockOptions {
     }
 
     public static class ClientBlockBuilderOutputAddress {
-
         private String address;
         private String amount;
 
@@ -106,68 +102,25 @@ public class GenerateBlockOptions {
             JsonObject o = new JsonObject();
             o.addProperty("address", address);
             o.addProperty("amount", amount);
+
             return o;
         }
     }
 
     public JsonObject getJson() {
         JsonObject o = new JsonObject();
-
         o.addProperty("coinType", coinType);
         o.addProperty("accountIndex", accountIndex);
         o.addProperty("initialAddressIndex", initialAddressIndex);
-
-        if(inputs != null) {
-            JsonArray array = new JsonArray();
-            for(UtxoInput input: inputs)
-                array.add(input.getJson());
-            o.add("inputs", array);
-        } else {
-            o.add("inputs", null);
-        }
-
+        o.add("inputs", JsonUtils.toJson(inputs));
         o.add("inputRange", inputRange != null ? inputRange.getAsJson() : null);
         o.add("output", output != null ? output.getAsJson() : null);
         o.add("outputHex", outputHex != null ? outputHex.getAsJson() : null);
-
-        if(outputs != null) {
-            JsonArray array = new JsonArray();
-            for(Output output: outputs)
-                array.add(output.getJson());
-            o.add("outputs", array);
-        } else {
-            o.add("outputs", null);
-        }
-
+        o.add("outputs", JsonUtils.toJson(outputs));
         o.addProperty("customRemainderAddress", customRemainderAddress);
-
-        if(tag != null) {
-            JsonArray array = new JsonArray();
-            for(byte tagByte: tag)
-                array.add(tagByte & 0xFF);
-            o.add("tag", array);
-        } else {
-            o.add("tag", null);
-        }
-
-        if(data != null) {
-            JsonArray array = new JsonArray();
-            for(byte dataByte: data)
-                array.add(dataByte & 0xFF);
-            o.add("data", array);
-        } else {
-            o.add("data", null);
-        }
-
-        if(parents != null) {
-            JsonArray array = new JsonArray();
-            for(BlockId parent: parents)
-                array.add(parent.toString());
-            o.add("parents", array);
-        } else {
-            o.add("parents", null);
-        }
-
+        o.add("tag", JsonUtils.toJson(tag));
+        o.add("data", JsonUtils.toJson(data));
+        o.add("parents", JsonUtils.toJson(parents));
         o.addProperty("allowBurning", allowBurning);
 
         return o;

@@ -34,6 +34,7 @@ public class Range {
         JsonObject o = new JsonObject();
         o.addProperty("start", start);
         o.addProperty("end", end);
+
         return o;
     }
 }

@@ -55,13 +55,8 @@ public class NodeCoreApi extends BaseApi {
     }
 
     public BlockId postBlockRaw(byte[] blockBytes) throws ClientException {
-        JsonArray a = new JsonArray();
-
-        for(byte blockByte: blockBytes)
-            a.add(blockByte & 0xFF);
-
         JsonObject o = new JsonObject();
-        o.add("blockBytes", a);
+        o.add("blockBytes", JsonUtils.toJson(blockBytes));
 
         String responsePayload = callBaseApi(new ClientCommand("PostBlockRaw", o)).getAsString();
         return new BlockId(responsePayload);

@@ -25,11 +25,8 @@ public class HighLevelApi extends BaseApi {
     }
 
     public List<Map.Entry<Output, OutputMetadata>> getOutputs(OutputId[] outputIds) throws ClientException {
-        JsonArray a = new JsonArray();
-        for (OutputId id : outputIds)
-            a.add(id.toString());
         JsonObject o = new JsonObject();
-        o.add("outputIds", a);
+        o.add("outputIds", JsonUtils.toJson(outputIds));
 
         JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand("GetOutputs", o));
 
@@ -44,11 +41,8 @@ public class HighLevelApi extends BaseApi {
     }
 
     public List<Map.Entry<Output, OutputMetadata>> tryGetOutputs(OutputId[] outputIds) throws ClientException {
-        JsonArray a = new JsonArray();
-        for (OutputId id : outputIds)
-            a.add(id.toString());
         JsonObject o = new JsonObject();
-        o.add("outputIds", a);
+        o.add("outputIds", JsonUtils.toJson(outputIds));
 
         JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand("TryGetOutputs", o));
 
@@ -63,11 +57,8 @@ public class HighLevelApi extends BaseApi {
     }
 
     public Block[] findBlocks(BlockId[] blockIds) throws ClientException {
-        JsonArray a = new JsonArray();
-        for (BlockId id : blockIds)
-            a.add(id.toString());
         JsonObject o = new JsonObject();
-        o.add("blockIds", a);
+        o.add("blockIds", JsonUtils.toJson(blockIds));
 
         JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand("FindBlocks", o));
 
@@ -116,11 +107,8 @@ public class HighLevelApi extends BaseApi {
     }
 
     public UtxoInput[] findInputs(String[] addresses, int amount) throws ClientException {
-        JsonArray a = new JsonArray();
-        for (String address : addresses)
-            a.add(address);
         JsonObject o = new JsonObject();
-        o.add("addresses", a);
+        o.add("addresses", JsonUtils.toJson(addresses));
         o.addProperty("amount", amount);
 
         JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand("FindInputs", o));
@@ -133,16 +121,9 @@ public class HighLevelApi extends BaseApi {
     }
 
     public List<Map.Entry<Output, OutputMetadata>> findOutputs(OutputId[] outputIds, String[] addresses) throws ClientException {
-        JsonArray outputIdsJson = new JsonArray();
-        JsonArray addressesJson = new JsonArray();
-        for (OutputId outputId : outputIds)
-            outputIdsJson.add(outputId.toString());
-        for (String address : addresses)
-            addressesJson.add(address);
-
         JsonObject o = new JsonObject();
-        o.add("outputIds", outputIdsJson);
-        o.add("addresses", addressesJson);
+        o.add("outputIds", JsonUtils.toJson(outputIds));
+        o.add("addresses", JsonUtils.toJson(addresses));
 
         JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand("FindOutputs", o));
 
