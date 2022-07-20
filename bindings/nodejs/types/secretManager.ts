@@ -3,7 +3,8 @@
 
 /** Secret manager that uses a Ledger Nano hardware wallet or Speculos simulator. */
 export interface LedgerNanoSecretManager {
-    isSimulator: boolean;
+    /** boolean indicates whether it's a simulator or not. */
+    LedgerNano: boolean;
 }
 
 /** Secret manager that uses only a mnemonic. */

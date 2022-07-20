@@ -6,7 +6,9 @@ require('dotenv').config({ path: '../.env' });
 // Run with command:
 // node ./dist/ledger_nano.js
 
-// In this example we will consolidate all funds in a range of addresses
+// In this example we will get the ledger status and generate an address
+// To use the ledger nano simulator clone https://github.com/iotaledger/ledger-shimmer-app, run `git submodule init && git submodule update --recursive`,
+// then `./build.sh -m nanos|nanox|nanosplus -s` and use `true` in `LedgerSecretManager::new(true)`.
 async function run() {
     initLogger();
     if (!process.env.NODE_URL) {
@@ -16,25 +18,29 @@ async function run() {
     const client = new Client({
         // Insert your node URL in the .env.
         nodes: [process.env.NODE_URL],
-        localPow: true,
     });
-
-    const addressRange = {
-        start: 0,
-        end: 10,
-    };
 
     try {
         const isSimulator = false;
 
-        const secretManager = {
-            Ledger: isSimulator,
-        };
+        const secretManager = { LedgerNano: isSimulator };
 
         const ledgerStatus = await client.getLedgerStatus(
             isSimulator,
         );
+
         console.log(ledgerStatus);
+
+        const address = await client.generateAddresses(secretManager, {
+            accountIndex: 0,
+            range: {
+                start: 0,
+                end: 1,
+            },
+        });
+
+        console.log('First public address:', address, '\n');
+
     } catch (error) {
         console.error('Error: ', error);
     }
