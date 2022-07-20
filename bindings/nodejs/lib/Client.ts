@@ -260,9 +260,7 @@ export class Client {
     /**
      * Get the status of a Ledger Nano
      */
-    async getLedgerStatus(
-        isSimulator: boolean,
-    ): Promise<LedgerStatus> {
+    async getLedgerStatus(isSimulator: boolean): Promise<LedgerStatus> {
         const response = await this.messageHandler.sendMessage({
             name: 'GetLedgerStatus',
             data: {

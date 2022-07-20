@@ -25,9 +25,7 @@ async function run() {
 
         const secretManager = { LedgerNano: isSimulator };
 
-        const ledgerStatus = await client.getLedgerStatus(
-            isSimulator,
-        );
+        const ledgerStatus = await client.getLedgerStatus(isSimulator);
 
         console.log(ledgerStatus);
 
@@ -40,7 +38,6 @@ async function run() {
         });
 
         console.log('First public address:', address, '\n');
-
     } catch (error) {
         console.error('Error: ', error);
     }
