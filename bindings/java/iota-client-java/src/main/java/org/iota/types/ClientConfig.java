@@ -330,7 +330,6 @@ public class ClientConfig {
         if (powWorkerCount != null)
             o.addProperty("powWorkerCount", powWorkerCount);
 
-        System.out.println(o.toString());
         return o;
     }
 
