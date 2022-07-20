@@ -11,13 +11,13 @@ public class GetBlockRaw {
         // Build the client.
         Client client = new Client(new ClientConfig().withNodes(new String[]{"https://api.testnet.shimmer.network"}));
 
-        // Get a block id for which the block can be requested.
+        // Set up a block ID for this example.
         BlockId blockId = ExampleUtils.setUpBlockId(client);
 
-        // Get the block.
+        // Get the block bytes.
         byte[] blockBytes = client.getBlockRaw(blockId);
 
-        // Print the bytes
+        // Print the block bytes.
         System.out.println(Hex.encodeHex(blockBytes));
     }
 }

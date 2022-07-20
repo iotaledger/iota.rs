@@ -10,7 +10,7 @@ public class CreateBlock {
         // Build the client.
         Client client = new Client(new ClientConfig().withNodes(new String[]{"https://api.testnet.shimmer.network"}));
 
-        // Set up the most simple block.
+        // Create the most simple block.
         Block b = client.generateBlock(null, null);
 
         // Print the block.

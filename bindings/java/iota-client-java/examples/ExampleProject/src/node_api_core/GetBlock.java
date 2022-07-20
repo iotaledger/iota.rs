@@ -11,7 +11,7 @@ public class GetBlock {
         // Build the client.
         Client client = new Client(new ClientConfig().withNodes(new String[]{"https://api.testnet.shimmer.network"}));
 
-        // Set up a block for this example.
+        // Set up a block ID for this example.
         BlockId blockId = ExampleUtils.setUpBlockId(client);
 
         // Get the block.

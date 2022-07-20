@@ -11,7 +11,7 @@ public class GetMilestoneById {
         // Build the client.
         Client client = new Client(new ClientConfig().withNodes(new String[]{"https://api.testnet.shimmer.network"}));
 
-        // Set up a milestone id for this example.
+        // Set up a milestone ID for this example.
         MilestoneId milestoneId = ExampleUtils.setUpMilestoneId(client);
 
         // Get the milestone.

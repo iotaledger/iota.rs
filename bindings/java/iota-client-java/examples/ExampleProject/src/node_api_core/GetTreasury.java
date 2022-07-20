@@ -16,7 +16,7 @@ public class GetTreasury {
         // Print the amount.
         System.out.println(response.getAmount());
 
-        // Print the milestone id.
+        // Print the milestone ID.
         System.out.println(response.getMilestoneId());
     }
 }

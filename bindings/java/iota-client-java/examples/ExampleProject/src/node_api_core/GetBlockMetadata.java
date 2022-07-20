@@ -11,10 +11,10 @@ public class GetBlockMetadata {
         // Build the client.
         Client client = new Client(new ClientConfig().withNodes(new String[]{"https://api.testnet.shimmer.network"}));
 
-        // Set up a block for this example.
+        // Set up a block ID for this example.
         BlockId blockId = ExampleUtils.setUpBlockId(client);
 
-        // Get the bytes of the block.
+        // Get the block metadata.
         BlockMetadata blockMetadata = client.getBlockMetadata(blockId);
 
         // Print the block metadata.

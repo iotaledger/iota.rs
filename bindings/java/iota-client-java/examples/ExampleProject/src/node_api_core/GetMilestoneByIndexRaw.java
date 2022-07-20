@@ -13,10 +13,10 @@ public class GetMilestoneByIndexRaw {
         // Set up a milestone index for this example.
         int milestoneIndex = ExampleUtils.setUpMilestoneIndex(client);
 
-        // Get the milestone.
+        // Get the milestone bytes.
         byte[] milestoneBytes = client.getMilestoneByIndexRaw(milestoneIndex);
 
-        // Print the bytes
+        // Print the milestone bytes.
         System.out.println(Hex.encodeHex(milestoneBytes));
     }
 }

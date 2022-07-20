@@ -11,7 +11,7 @@ public class PostBlock {
         // Build the client.
         Client client = new Client(new ClientConfig().withNodes(new String[]{"https://api.testnet.shimmer.network"}));
 
-        // Set up a block.
+        // Set up a block for this example.
         Block b = ExampleUtils.setUpBlock(client);
 
         // Post the block.

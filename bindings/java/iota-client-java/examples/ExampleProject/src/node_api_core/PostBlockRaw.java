@@ -10,7 +10,7 @@ public class PostBlockRaw {
         // Build the client.
         Client client = new Client(new ClientConfig().withNodes(new String[]{"https://api.testnet.shimmer.network"}));
 
-        // Set up a block.
+        // Set up a block for this example.
         byte[] blockBytes = ExampleUtils.setUpBlockRaw(client);
 
         // Post the block.
