@@ -1,6 +1,11 @@
 // Copyright 2021-2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+/** Secret manager that uses a Ledger Nano hardware wallet or Speculos simulator. */
+export interface LedgerNanoSecretManager {
+    isSimulator: boolean;
+}
+
 /** Secret manager that uses only a mnemonic. */
 export interface MnemonicSecretManager {
     Mnemonic: string;
@@ -15,4 +20,7 @@ export interface StrongholdSecretManager {
 }
 
 /** Supported secret managers */
-export type SecretManager = MnemonicSecretManager | StrongholdSecretManager;
+export type SecretManager =
+    | LedgerNanoSecretManager
+    | MnemonicSecretManager
+    | StrongholdSecretManager;

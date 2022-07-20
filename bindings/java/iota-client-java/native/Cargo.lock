@@ -146,7 +146,7 @@ checksum = "c5738be7561b0eeb501ef1d5c5db3f24e01ceb55fededd9b00039aada34966ad"
 [[package]]
 name = "bee-api-types"
 version = "1.0.0-alpha.1"
-source = "git+https://github.com/iotaledger/bee?rev=ff52b003a2c3845e2987d23487a696af106c053c#ff52b003a2c3845e2987d23487a696af106c053c"
+source = "git+https://github.com/iotaledger/bee?rev=4b1ed2a12d02314125e4e5e85a113121182285a4#4b1ed2a12d02314125e4e5e85a113121182285a4"
 dependencies = [
  "axum",
  "bee-block",
@@ -157,8 +157,8 @@ dependencies = [
 
 [[package]]
 name = "bee-block"
-version = "0.1.0"
-source = "git+https://github.com/iotaledger/bee?rev=ff52b003a2c3845e2987d23487a696af106c053c#ff52b003a2c3845e2987d23487a696af106c053c"
+version = "1.0.0-beta.1"
+source = "git+https://github.com/iotaledger/bee?rev=4b1ed2a12d02314125e4e5e85a113121182285a4#4b1ed2a12d02314125e4e5e85a113121182285a4"
 dependencies = [
  "bech32 0.9.0",
  "bee-pow",
@@ -166,7 +166,7 @@ dependencies = [
  "bitflags",
  "bytemuck",
  "derive_more",
- "hashbrown 0.12.1",
+ "hashbrown 0.12.3",
  "hex",
  "iota-crypto",
  "iterator-sorted",
@@ -181,8 +181,8 @@ dependencies = [
 
 [[package]]
 name = "bee-ledger-types"
-version = "1.0.0-alpha.1"
-source = "git+https://github.com/iotaledger/bee?rev=ff52b003a2c3845e2987d23487a696af106c053c#ff52b003a2c3845e2987d23487a696af106c053c"
+version = "1.0.0-beta.1"
+source = "git+https://github.com/iotaledger/bee?rev=4b1ed2a12d02314125e4e5e85a113121182285a4#4b1ed2a12d02314125e4e5e85a113121182285a4"
 dependencies = [
  "bee-block",
  "packable",
@@ -270,9 +270,9 @@ checksum = "87c5fdd0166095e1d463fc6cc01aa8ce547ad77a4e84d42eb6762b084e28067e"
 
 [[package]]
 name = "bytemuck"
-version = "1.9.1"
+version = "1.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cdead85bdec19c194affaeeb670c0e41fe23de31459efd1c174d049269cf02cc"
+checksum = "c53dfa917ec274df8ed3c572698f381a24eef2efba9492d797301b72b6db408a"
 
 [[package]]
 name = "byteorder"
@@ -744,9 +744,9 @@ checksum = "ab5ef0d4909ef3724cc8cce6ccc8572c5c817592e9285f5464f8e86f8bd3726e"
 
 [[package]]
 name = "hashbrown"
-version = "0.12.1"
+version = "0.12.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "db0d4cf898abf0081f964436dc980e96670a0f36863e4b83aaacdb65c9d7ccc3"
+checksum = "8a9ee70c43aaf417c914396645a0fa852624801b24ebb7ae78fe8272889ac888"
 dependencies = [
  "ahash",
 ]

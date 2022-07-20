@@ -14,6 +14,7 @@ import type {
     __GetBlockMetadataMessage__,
     __FindInputsMessage__,
     __FindOutputsMessage__,
+    __GetLedgerStatusMessage__,
     __PrepareTransactionMessage__,
     __SignTransactionMessage__,
     __SubmitPayloadMessage__,
@@ -82,6 +83,7 @@ export type __ClientMessages__ =
     | __GetBlockMetadataMessage__
     | __FindInputsMessage__
     | __FindOutputsMessage__
+    | __GetLedgerStatusMessage__
     | __PrepareTransactionMessage__
     | __SignTransactionMessage__
     | __StoreMnemonicMessage__

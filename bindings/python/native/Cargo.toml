@@ -16,7 +16,7 @@ name = "iota_client"
 crate-type = [ "cdylib" ]
 
 [dependencies]
-iota-client = { path = "../../../", default-features = false, features = [ "message_interface" ] }
+iota-client = { path = "../../../", default-features = false, features = [ "ledger_nano", "message_interface", "tls" ] }
 
 futures = { version = "0.3.21", default-features = false }
 once_cell = { version = "1.13.0", default-features = false, features = [ "std" ] }

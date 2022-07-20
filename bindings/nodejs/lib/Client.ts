@@ -20,6 +20,7 @@ import type {
     FoundryQueryParameter,
     NftQueryParameter,
     AliasQueryParameter,
+    LedgerStatus,
 } from '../types';
 import type {
     IUTXOInput,
@@ -250,6 +251,22 @@ export class Client {
             data: {
                 outputIds,
                 addresses,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Get the status of a Ledger Nano
+     */
+    async getLedgerStatus(
+        isSimulator: boolean,
+    ): Promise<LedgerStatus> {
+        const response = await this.messageHandler.sendMessage({
+            name: 'GetLedgerStatus',
+            data: {
+                isSimulator,
             },
         });
 
