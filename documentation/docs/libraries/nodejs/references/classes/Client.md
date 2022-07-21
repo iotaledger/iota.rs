@@ -21,6 +21,7 @@ The Client to interact with nodes.
 - [getBlockMetadata](Client.md#getblockmetadata)
 - [findInputs](Client.md#findinputs)
 - [findOutputs](Client.md#findoutputs)
+- [getLedgerStatus](Client.md#getledgerstatus)
 - [prepareTransaction](Client.md#preparetransaction)
 - [storeMnemonic](Client.md#storemnemonic)
 - [signTransaction](Client.md#signtransaction)
@@ -325,6 +326,24 @@ the request amount exceeds individual node limit.
 #### Returns
 
 `Promise`<`IOutputResponse`[]\>
+
+___
+
+### getLedgerStatus
+
+▸ **getLedgerStatus**(`isSimulator`): `Promise`<[`LedgerStatus`](../interfaces/LedgerStatus.md)\>
+
+Get the status of a Ledger Nano
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `isSimulator` | `boolean` |
+
+#### Returns
+
+`Promise`<[`LedgerStatus`](../interfaces/LedgerStatus.md)\>
 
 ___
 

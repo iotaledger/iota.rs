@@ -103,6 +103,12 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
 
+      - name: Install required packages (Ubuntu)
+        if: ${{ startsWith(matrix.os, 'ubuntu') }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install libudev-dev libusb-1.0-0-dev
+
       - name: Run Yarn Install
         working-directory: bindings/nodejs/
         run: yarn install
@@ -145,6 +151,12 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: '14'
+
+      - name: Install required packages (Ubuntu)
+        if: ${{ startsWith(matrix.os, 'ubuntu') }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install libudev-dev libusb-1.0-0-dev
 
       - name: Run Yarn Install
         working-directory: bindings/nodejs/

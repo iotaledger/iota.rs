@@ -133,6 +133,15 @@ public class MiscellaneousApi extends BaseApi {
         return nodes;
     }
 
+    public LedgerStatus getLedgerStatus(boolean isSimulator) throws ClientException {
+        JsonObject o = new JsonObject();
+        o.add("isSimulator", isSimulator);
+
+        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("GetLedgerStatus", o));
+
+        return new LedgerStatus(responsePayload);
+    }
+
     public PreparedTransactionData prepareTransaction(SecretManager secretManager, GenerateBlockOptions generateBlockOptions) throws ClientException {
         JsonObject o = new JsonObject();
         o.add("secretManager", secretManager.getJson());

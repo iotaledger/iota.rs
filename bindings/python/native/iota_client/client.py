@@ -156,6 +156,11 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
         """
         return self.send_message('UnsyncedNodes')
 
+    def get_ledger_status(self, is_simulator):
+        """Returns the Ledger Status.
+        """
+        return self.send_message('GetLedgerStatus', { 'is_simulator': is_simulator })
+
     def prepare_transaction(self, secret_manager=None, options=None):
         """Prepare a transaction for signing.
         """

@@ -10,6 +10,7 @@
 ### Enumerations
 
 - [CoinType](enums/CoinType.md)
+- [LedgerDeviceType](enums/LedgerDeviceType.md)
 - [Network](enums/Network.md)
 
 ### Functions
@@ -36,6 +37,8 @@
 - [IGenerateAddressMetadata](interfaces/IGenerateAddressMetadata.md)
 - [IGenerateBlockOptions](interfaces/IGenerateBlockOptions.md)
 - [IClientBlockBuilderOutputAddress](interfaces/IClientBlockBuilderOutputAddress.md)
+- [LedgerStatus](interfaces/LedgerStatus.md)
+- [LedgerApp](interfaces/LedgerApp.md)
 - [IAuth](interfaces/IAuth.md)
 - [IMqttBrokerOptions](interfaces/IMqttBrokerOptions.md)
 - [INode](interfaces/INode.md)
@@ -49,6 +52,7 @@
 - [IPreparedTransactionData](interfaces/IPreparedTransactionData.md)
 - [IInputSigningData](interfaces/IInputSigningData.md)
 - [IRange](interfaces/IRange.md)
+- [LedgerNanoSecretManager](interfaces/LedgerNanoSecretManager.md)
 - [MnemonicSecretManager](interfaces/MnemonicSecretManager.md)
 - [StrongholdSecretManager](interfaces/StrongholdSecretManager.md)
 
@@ -169,6 +173,6 @@ ___
 
 ### SecretManager
 
-Ƭ **SecretManager**: [`MnemonicSecretManager`](interfaces/MnemonicSecretManager.md) \| [`StrongholdSecretManager`](interfaces/StrongholdSecretManager.md)
+Ƭ **SecretManager**: [`LedgerNanoSecretManager`](interfaces/LedgerNanoSecretManager.md) \| [`MnemonicSecretManager`](interfaces/MnemonicSecretManager.md) \| [`StrongholdSecretManager`](interfaces/StrongholdSecretManager.md)
 
 Supported secret managers
