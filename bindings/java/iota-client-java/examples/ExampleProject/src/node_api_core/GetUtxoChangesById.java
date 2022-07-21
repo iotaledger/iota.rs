@@ -10,9 +10,9 @@ import org.iota.types.responses.UtxoChangesResponse;
 public class GetUtxoChangesById {
     public static void main(String[] args) throws ClientException {
         // Build the client.
-        Client client = new Client(new ClientConfig("{ \"nodes\": [ \"https://api.testnet.shimmer.network\" ], \"nodeSyncEnabled\": true }"));
+        Client client = new Client(new ClientConfig().withNodes(new String[]{"https://api.testnet.shimmer.network"}));
 
-        // Set up a milestone id for this example.
+        // Set up a milestone ID for this example.
         MilestoneId milestoneId = ExampleUtils.setUpMilestoneId(client);
 
         // Get the UTXO changes.

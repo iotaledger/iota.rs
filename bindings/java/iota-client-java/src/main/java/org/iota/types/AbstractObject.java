@@ -24,7 +24,7 @@ public class AbstractObject {
         this.jsonObject = element.getAsJsonObject();
     }
 
-    public JsonObject getJson() {
+    public JsonObject toJson() {
         return jsonObject;
     }
 

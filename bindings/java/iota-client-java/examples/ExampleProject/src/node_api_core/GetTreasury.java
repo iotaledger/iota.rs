@@ -8,7 +8,7 @@ import org.iota.types.responses.TreasuryResponse;
 public class GetTreasury {
     public static void main(String[] args) throws ClientException {
         // Build the client.
-        Client client = new Client(new ClientConfig("{ \"nodes\": [ \"https://api.testnet.shimmer.network\" ], \"nodeSyncEnabled\": true }"));
+        Client client = new Client(new ClientConfig().withNodes(new String[]{"https://api.testnet.shimmer.network"}));
 
         // Get the treasury.
         TreasuryResponse response = client.getTreasury();
@@ -16,7 +16,7 @@ public class GetTreasury {
         // Print the amount.
         System.out.println(response.getAmount());
 
-        // Print the milestone id.
+        // Print the milestone ID.
         System.out.println(response.getMilestoneId());
     }
 }

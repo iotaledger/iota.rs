@@ -1,76 +1,61 @@
 package org.iota.types.output_builder;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.iota.types.Feature;
+import org.iota.types.JsonUtils;
 import org.iota.types.NativeToken;
-import org.iota.types.TokenScheme;
 import org.iota.types.UnlockCondition;
 import org.iota.types.ids.NftId;
 
-import java.util.List;
-
 public class NftOutputBuilderParams {
+
     private String amount;
-    private List<NativeToken> nativeTokens;
-
+    private NativeToken[] nativeTokens;
     private NftId nftId;
-    private List<UnlockCondition> unlockConditions;
-    private List<Feature> features;
-    private List<Feature> immutableFeatures;
+    private UnlockCondition[] unlockConditions;
+    private Feature[] features;
+    private Feature[] immutableFeatures;
 
-    public NftOutputBuilderParams(String amount, List<NativeToken> nativeTokens, NftId nftId, List<UnlockCondition> unlockConditions, List<Feature> features, List<Feature> immutableFeatures) {
+    public NftOutputBuilderParams withAmount(String amount) {
         this.amount = amount;
+        return this;
+    }
+
+    public NftOutputBuilderParams withNativeTokens(NativeToken[] nativeTokens) {
         this.nativeTokens = nativeTokens;
+        return this;
+    }
+
+    public NftOutputBuilderParams withNftId(NftId nftId) {
         this.nftId = nftId;
+        return this;
+    }
+
+    public NftOutputBuilderParams withUnlockConditions(UnlockCondition[] unlockConditions) {
         this.unlockConditions = unlockConditions;
+        return this;
+    }
+
+    public NftOutputBuilderParams withFeatures(Feature[] features) {
         this.features = features;
+        return this;
+    }
+
+    public NftOutputBuilderParams withImmutableFeatures(Feature[] immutableFeatures) {
         this.immutableFeatures = immutableFeatures;
+        return this;
     }
 
     public JsonObject getJson() {
         JsonObject o = new JsonObject();
-
         o.addProperty("amount", amount);
-
-        if(nativeTokens != null) {
-            JsonArray array = new JsonArray();
-            for(NativeToken nativeToken: nativeTokens)
-                array.add(nativeToken.getJson());
-            o.add("nativeTokens", array);
-        } else {
-            o.add("nativeTokens", null);
-        }
-
-        o.addProperty("nftId",  nftId != null ? nftId.toString() : null);
-
-        if(unlockConditions != null) {
-            JsonArray array = new JsonArray();
-            for(UnlockCondition unlockCondition: unlockConditions)
-                array.add(unlockCondition.getJson());
-            o.add("unlockConditions", array);
-        } else {
-            o.add("unlockConditions", null);
-        }
-
-        if(features != null) {
-            JsonArray array = new JsonArray();
-            for(Feature feature: features)
-                array.add(feature.getJson());
-            o.add("features", array);
-        } else {
-            o.add("features", null);
-        }
-
-        if(immutableFeatures != null) {
-            JsonArray array = new JsonArray();
-            for(Feature feature: immutableFeatures)
-                array.add(feature.getJson());
-            o.add("immutableFeatures", array);
-        } else {
-            o.add("immutableFeatures", null);
-        }
+        o.add("nativeTokens", JsonUtils.toJson(nativeTokens));
+        o.addProperty("nftId", nftId != null ? nftId.toString() : null);
+        o.add("unlockConditions", JsonUtils.toJson(unlockConditions));
+        o.add("features", JsonUtils.toJson(features));
+        o.add("immutableFeatures", JsonUtils.toJson(immutableFeatures));
 
         return o;
     }
+
 }

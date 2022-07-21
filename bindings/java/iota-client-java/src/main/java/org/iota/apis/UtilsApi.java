@@ -78,7 +78,7 @@ public class UtilsApi extends BaseApi {
 
     public BlockId computeBlockId(Block block) throws ClientException {
         JsonObject o = new JsonObject();
-        o.add("block", block.getJson());
+        o.add("block", block.toJson());
 
         String responsePayload = callBaseApi(new ClientCommand("BlockId", o)).getAsString();
 
@@ -87,7 +87,7 @@ public class UtilsApi extends BaseApi {
 
     public TransactionId getTransactionId(TransactionPayload payload) throws ClientException {
         JsonObject o = new JsonObject();
-        o.add("payload", payload.getJson());
+        o.add("payload", payload.toJson());
 
         String responsePayload = callBaseApi(new ClientCommand("TransactionId", o)).getAsString();
 

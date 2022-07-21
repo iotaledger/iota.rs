@@ -48,20 +48,15 @@ public class NodeCoreApi extends BaseApi {
 
     public BlockId postBlock(Block block) throws ClientException {
         JsonObject o = new JsonObject();
-        o.add("block", block.getJson());
+        o.add("block", block.toJson());
 
         String responsePayload = callBaseApi(new ClientCommand("PostBlock", o)).getAsString();
         return new BlockId(responsePayload);
     }
 
     public BlockId postBlockRaw(byte[] blockBytes) throws ClientException {
-        JsonArray a = new JsonArray();
-
-        for(byte blockByte: blockBytes)
-            a.add(blockByte & 0xFF);
-
         JsonObject o = new JsonObject();
-        o.add("blockBytes", a);
+        o.add("blockBytes", JsonUtils.toJson(blockBytes));
 
         String responsePayload = callBaseApi(new ClientCommand("PostBlockRaw", o)).getAsString();
         return new BlockId(responsePayload);

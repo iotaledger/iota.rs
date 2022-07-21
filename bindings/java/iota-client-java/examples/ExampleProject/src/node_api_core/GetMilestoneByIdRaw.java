@@ -9,15 +9,15 @@ import org.iota.types.ids.MilestoneId;
 public class GetMilestoneByIdRaw {
     public static void main(String[] args) throws ClientException {
         // Build the client.
-        Client client = new Client(new ClientConfig("{ \"nodes\": [ \"https://api.testnet.shimmer.network\" ], \"nodeSyncEnabled\": true }"));
+        Client client = new Client(new ClientConfig().withNodes(new String[]{"https://api.testnet.shimmer.network"}));
 
-        // Set up a milestone id for this example.
+        // Set up a milestone ID for this example.
         MilestoneId milestoneId = ExampleUtils.setUpMilestoneId(client);
 
-        // Get the milestone.
+        // Get the milestone bytes.
         byte[] milestoneBytes = client.getMilestoneByIdRaw(milestoneId);
 
-        // Print the bytes
+        // Print the milestone bytes.
         System.out.println(Hex.encodeHex(milestoneBytes));
     }
 }

@@ -8,7 +8,7 @@ import org.iota.types.responses.NodeInfoResponse;
 public class GetInfo {
     public static void main(String[] args) throws ClientException {
         // Build the client.
-        Client client = new Client(new ClientConfig("{ \"nodes\": [ \"https://api.testnet.shimmer.network\" ], \"nodeSyncEnabled\": true }"));
+        Client client = new Client(new ClientConfig().withNodes(new String[]{"https://api.testnet.shimmer.network"}));
 
         // Get the node information for a given node.
         NodeInfoResponse response = client.getNodeInfo();

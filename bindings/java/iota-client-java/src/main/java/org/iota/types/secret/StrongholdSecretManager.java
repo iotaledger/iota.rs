@@ -35,6 +35,7 @@ public class StrongholdSecretManager extends SecretManager {
 
         JsonObject o = new JsonObject();
         o.add("Stronghold", dto);
+
         return o;
     }
 }

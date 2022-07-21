@@ -1,78 +1,62 @@
 package org.iota.types.output_builder;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import org.iota.types.Feature;
-import org.iota.types.NativeToken;
-import org.iota.types.TokenScheme;
-import org.iota.types.UnlockCondition;
-
-import java.util.List;
+import org.iota.types.*;
 
 public class FoundryOutputBuilderParams {
-    private String amount;
-    private List<NativeToken> nativeTokens;
 
+    private String amount;
+    private NativeToken[] nativeTokens;
     private int serialNumber;
     private TokenScheme tokenScheme;
-    private List<UnlockCondition> unlockConditions;
-    private List<Feature> features;
-    private List<Feature> immutableFeatures;
+    private UnlockCondition[] unlockConditions;
+    private Feature[] features;
+    private Feature[] immutableFeatures;
 
-    public FoundryOutputBuilderParams(String amount, List<NativeToken> nativeTokens, int serialNumber, TokenScheme tokenScheme, List<UnlockCondition> unlockConditions, List<Feature> features, List<Feature> immutableFeatures) {
+    public FoundryOutputBuilderParams withAmount(String amount) {
         this.amount = amount;
+        return this;
+    }
+
+    public FoundryOutputBuilderParams withNativeTokens(NativeToken[] nativeTokens) {
         this.nativeTokens = nativeTokens;
+        return this;
+    }
+
+    public FoundryOutputBuilderParams withSerialNumber(int serialNumber) {
         this.serialNumber = serialNumber;
+        return this;
+    }
+
+    public FoundryOutputBuilderParams withTokenScheme(TokenScheme tokenScheme) {
         this.tokenScheme = tokenScheme;
+        return this;
+    }
+
+    public FoundryOutputBuilderParams withUnlockConditions(UnlockCondition[] unlockConditions) {
         this.unlockConditions = unlockConditions;
+        return this;
+    }
+
+    public FoundryOutputBuilderParams withFeatures(Feature[] features) {
         this.features = features;
+        return this;
+    }
+
+    public FoundryOutputBuilderParams withImmutableFeatures(Feature[] immutableFeatures) {
         this.immutableFeatures = immutableFeatures;
+        return this;
     }
 
     public JsonObject getJson() {
         JsonObject o = new JsonObject();
-
         o.addProperty("amount", amount);
-
-        if (nativeTokens != null) {
-            JsonArray array = new JsonArray();
-            for (NativeToken nativeToken : nativeTokens)
-                array.add(nativeToken.getJson());
-            o.add("nativeTokens", array);
-        } else {
-            o.add("nativeTokens", null);
-        }
-
+        o.add("nativeTokens", JsonUtils.toJson(nativeTokens));
         o.addProperty("serialNumber", serialNumber);
-
-        o.add("tokenScheme", tokenScheme != null ? tokenScheme.getJson() : null);
-
-        if (unlockConditions != null) {
-            JsonArray array = new JsonArray();
-            for (UnlockCondition unlockCondition : unlockConditions)
-                array.add(unlockCondition.getJson());
-            o.add("unlockConditions", array);
-        } else {
-            o.add("unlockConditions", null);
-        }
-
-        if (features != null) {
-            JsonArray array = new JsonArray();
-            for (Feature feature : features)
-                array.add(feature.getJson());
-            o.add("features", array);
-        } else {
-            o.add("features", null);
-        }
-
-        if (immutableFeatures != null) {
-            JsonArray array = new JsonArray();
-            for (Feature feature : immutableFeatures)
-                array.add(feature.getJson());
-            o.add("immutableFeatures", array);
-        } else {
-            o.add("immutableFeatures", null);
-        }
+        o.add("tokenScheme", tokenScheme != null ? tokenScheme.toJson() : null);
+        o.add("unlockConditions", JsonUtils.toJson(unlockConditions));
+        o.add("features", JsonUtils.toJson(features));
+        o.add("immutableFeatures", JsonUtils.toJson(immutableFeatures));
 
         return o;
     }

@@ -1,16 +1,9 @@
 package org.iota;
 
-import org.iota.apis.NodeIndexerApi;
-import org.iota.types.Block;
 import org.iota.types.ClientException;
-import org.iota.types.UtxoInput;
-import org.iota.types.ids.BlockId;
-import org.iota.types.ids.OutputId;
 import org.iota.types.secret.GenerateAddressesOptions;
-import org.iota.types.secret.MnemonicSecretManager;
-import org.iota.types.secret.SeedSecretManager;
 import org.iota.types.secret.Range;
-import org.iota.types.secret.SecretManager;
+import org.iota.types.secret.SeedSecretManager;
 import org.junit.jupiter.api.Test;
 
 public class AddressDerivation extends ApiTest {
@@ -28,10 +21,10 @@ public class AddressDerivation extends ApiTest {
         SeedSecretManager correctSecretManager = new SeedSecretManager(hexSeed);
 
         // Generate the first address.
-        String wrongAddress = client.hexToBech32(client.bech32ToHex(client.generateAddresses(wrongSecretManager, new GenerateAddressesOptions().withRange(0, 1).withCoinType(4218))[0]), "atoi");
-        String correctAddress = client.hexToBech32(client.bech32ToHex(client.generateAddresses(correctSecretManager, new GenerateAddressesOptions().withRange(0, 1).withCoinType(4218))[0]), "atoi");
+        String wrongAddress = client.hexToBech32(client.bech32ToHex(client.generateAddresses(wrongSecretManager, new GenerateAddressesOptions().withRange(new Range(0, 1)).withCoinType(4218))[0]), "atoi");
+        String correctAddress = client.hexToBech32(client.bech32ToHex(client.generateAddresses(correctSecretManager, new GenerateAddressesOptions().withRange(new Range(0, 1)).withCoinType(4218))[0]), "atoi");
 
-        if(wrongAddress.equals("atoi1qzzj3wa2c0m0mpe6s2v004037sjhyk7zgr7hj3umwgnanr9xy6c92qyz3c8") && correctAddress.equals("atoi1qp5dzudmpxxz7xxlzez8w5ttefeanhpf9rju48ds5y2ellp6aauuztf0dyd")) {
+        if (wrongAddress.equals("atoi1qzzj3wa2c0m0mpe6s2v004037sjhyk7zgr7hj3umwgnanr9xy6c92qyz3c8") && correctAddress.equals("atoi1qp5dzudmpxxz7xxlzez8w5ttefeanhpf9rju48ds5y2ellp6aauuztf0dyd")) {
             System.out.println("success");
         }
     }

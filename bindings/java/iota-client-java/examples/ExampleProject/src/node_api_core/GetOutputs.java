@@ -9,13 +9,18 @@ import org.iota.types.ids.OutputId;
 
 import java.util.Map;
 
+import static node_api_core.ExampleUtils.setUpOutputId;
+
 public class GetOutputs {
     public static void main(String[] args) throws ClientException {
         // Build the client.
-        Client client = new Client(new ClientConfig("{ \"nodes\": [ \"https://api.testnet.shimmer.network\" ], \"nodeSyncEnabled\": true }"));
+        Client client = new Client(new ClientConfig().withNodes(new String[]{"https://api.testnet.shimmer.network"}));
 
+        // Set up a output ID for this example.
+        OutputId outputId = setUpOutputId(client);
+        
         // Get the output for the given output id.
-        Map.Entry<Output, OutputMetadata> outputData = client.getOutput(new OutputId("..."));
+        Map.Entry<Output, OutputMetadata> outputData = client.getOutput(outputId);
 
         // Print the output and its metadata.
         System.out.println(outputData.getKey());
