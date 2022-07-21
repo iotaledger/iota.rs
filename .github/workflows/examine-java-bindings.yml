@@ -83,7 +83,7 @@ jobs:
           args: --manifest-path bindings/java/iota-client-java/native/Cargo.toml --all-features --release
 
       - name: Run Gradle Test
-        working-directory: bindings/java/
+        working-directory: bindings/java/iota-client-java/
         run: ./gradlew test
 
   lint:
