@@ -54,7 +54,7 @@ jobs:
         with:
           toolchain: nightly
           cache: true
-          cache-root: bindings/java/native/
+          cache-root: bindings/java/iota-client-java/native/
           cache-job-id: ${{ github.workflow }}-${{ github.job }}-${{ matrix.os }}-${{ matrix.java }}
           cache-hash: ${{ hashFiles('.github/workflows/examine-java-bindings.yml') }}
 
@@ -80,7 +80,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --manifest-path bindings/java/native/Cargo.toml --all-features --release
+          args: --manifest-path bindings/java/iota-client-java/native/Cargo.toml --all-features --release
 
       - name: Run Gradle Test
         working-directory: bindings/java/
@@ -101,7 +101,7 @@ jobs:
           toolchain: beta
           components: clippy
           cache: true
-          cache-root: bindings/java/native/
+          cache-root: bindings/java/iota-client-java/native/
           cache-job-id: ${{ github.workflow }}-${{ github.job }}
           cache-hash: ${{ hashFiles('.github/workflows/examine-java-bindings.yml') }}
 
@@ -114,7 +114,7 @@ jobs:
         uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          args: --manifest-path bindings/java/native/Cargo.toml --all-features --all-targets -- --deny warnings
+          args: --manifest-path bindings/java/iota-client-java/native/Cargo.toml --all-features --all-targets -- --deny warnings
           name: Clippy Results for the Java Bindings
 
       # TODO: Lint the Java code too
@@ -134,7 +134,7 @@ jobs:
           toolchain: nightly
           cache: true
           install: cargo-udeps
-          cache-root: bindings/java/native/
+          cache-root: bindings/java/iota-client-java/native/
           cache-job-id: ${{ github.workflow }}-${{ github.job }}
           cache-hash: ${{ hashFiles('.github/workflows/examine-java-bindings.yml') }}
 
@@ -147,7 +147,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: udeps
-          args: --manifest-path bindings/java/native/Cargo.toml --all-targets --all-features
+          args: --manifest-path bindings/java/iota-client-java/native/Cargo.toml --all-targets --all-features
 
       # TODO: Check gradle too
 
@@ -177,7 +177,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: fmt
-          args: --manifest-path bindings/java/native/Cargo.toml --all -- --check
+          args: --manifest-path bindings/java/iota-client-java/native/Cargo.toml --all -- --check
 
       - name: Run cargo-license-template
         uses: actions-rs/cargo@v1
