@@ -114,7 +114,7 @@ jobs:
         uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          args: --manifest-path bindings/java/iota-client-java/native/Cargo --all-features --all-targets -- --deny warnings
+          args: --manifest-path bindings/java/iota-client-java/native/Cargo.toml --all-features --all-targets -- --deny warnings
           name: Clippy Results for the Java Bindings
 
       # TODO: Lint the Java code too
@@ -147,7 +147,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: udeps
-          args: --manifest-path bindings/java/iota-client-java/native/Cargo --all-targets --all-features
+          args: --manifest-path bindings/java/iota-client-java/native/Cargo.toml --all-targets --all-features
 
       # TODO: Check gradle too
 
@@ -177,7 +177,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: fmt
-          args: --manifest-path bindings/java/iota-client-java/native/Cargo --all -- --check
+          args: --manifest-path bindings/java/iota-client-java/native/Cargo.toml --all -- --check
 
       - name: Run cargo-license-template
         uses: actions-rs/cargo@v1
