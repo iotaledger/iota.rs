@@ -327,11 +327,7 @@ pub(crate) fn sdr_not_expired(output: &Output, current_time: u32) -> Option<&Sto
             };
 
             // We only have to send the storage deposit return back if the output is not expired
-            if !expired {
-                Some(sdr)
-            } else {
-                None
-            }
+            if !expired { Some(sdr) } else { None }
         } else {
             None
         }

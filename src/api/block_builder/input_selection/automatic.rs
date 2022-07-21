@@ -73,8 +73,8 @@ fn is_output_address_unlockable(output: &Output, address: &Address, local_time: 
 }
 
 impl<'a> ClientBlockBuilder<'a> {
-    /// Searches inputs for provided outputs, by requesting the outputs from the account addresses or for alias/foundry/nft
-    /// outputs get the latest state with their alias/nft id. Forwards to [try_select_inputs()]
+    /// Searches inputs for provided outputs, by requesting the outputs from the account addresses or for
+    /// alias/foundry/nft outputs get the latest state with their alias/nft id. Forwards to [try_select_inputs()]
     pub(crate) async fn get_inputs(&self, rent_structure: &RentStructure) -> Result<SelectedTransactionData> {
         log::debug!("[get_inputs]");
         let account_index = self.account_index;
