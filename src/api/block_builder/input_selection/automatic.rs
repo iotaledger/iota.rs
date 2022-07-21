@@ -6,7 +6,7 @@
 use bee_api_types::responses::OutputResponse;
 use bee_block::{
     address::Address,
-    output::{feature::Features, ByteCostConfig, Output},
+    output::{feature::Features, RentStructure, Output},
 };
 use crypto::keys::slip10::Chain;
 
@@ -76,7 +76,7 @@ fn is_output_address_unlockable(output: &Output, address: &Address, local_time: 
 /// outputs get the latest state with their alias/nft id. Forwards to [try_select_inputs()]
 pub(crate) async fn get_inputs(
     block_builder: &ClientBlockBuilder<'_>,
-    byte_cost_config: &ByteCostConfig,
+    rent_structure: &RentStructure,
 ) -> Result<SelectedTransactionData> {
     log::debug!("[get_inputs]");
     let account_index = block_builder.account_index;
@@ -97,7 +97,7 @@ pub(crate) async fn get_inputs(
         block_builder.outputs.clone(),
         force_use_all_inputs,
         block_builder.custom_remainder_address,
-        byte_cost_config,
+        rent_structure,
         // Don't allow burning of native tokens during automatic input selection, because otherwise it
         // could lead to burned native tokens by accident
         false,
@@ -170,7 +170,7 @@ pub(crate) async fn get_inputs(
                     block_builder.outputs.clone(),
                     force_use_all_inputs,
                     block_builder.custom_remainder_address,
-                    byte_cost_config,
+                    rent_structure,
                     // Don't allow burning of native tokens during automatic input selection, because otherwise it
                     // could lead to burned native tokens by accident
                     false,

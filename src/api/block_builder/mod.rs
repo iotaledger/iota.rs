@@ -13,7 +13,7 @@ use bee_block::{
     output::{
         dto::OutputDto,
         unlock_condition::{AddressUnlockCondition, UnlockCondition},
-        AliasId, ByteCostConfig, Output, OUTPUT_COUNT_RANGE,
+        AliasId, RentStructure, Output, OUTPUT_COUNT_RANGE,
     },
     payload::{Payload, TaggedDataPayload},
     Block, BlockId,
@@ -408,15 +408,15 @@ impl<'a> ClientBlockBuilder<'a> {
     async fn get_custom_inputs(
         &self,
         governance_transition: Option<HashSet<AliasId>>,
-        byte_cost_config: &ByteCostConfig,
+        rent_structure: &RentStructure,
         allow_burning: bool,
     ) -> Result<SelectedTransactionData> {
-        get_custom_inputs(self, governance_transition, byte_cost_config, allow_burning).await
+        get_custom_inputs(self, governance_transition, rent_structure, allow_burning).await
     }
 
     // Searches inputs for an amount which a user wants to spend, also checks that it doesn't create dust
-    async fn get_inputs(&self, byte_cost_config: &ByteCostConfig) -> Result<SelectedTransactionData> {
-        get_inputs(self, byte_cost_config).await
+    async fn get_inputs(&self, rent_structure: &RentStructure) -> Result<SelectedTransactionData> {
+        get_inputs(self, rent_structure).await
     }
 
     /// Prepare a transaction

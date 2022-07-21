@@ -15,7 +15,7 @@ use bee_block::{
     input::INPUT_COUNT_MAX,
     output::{
         unlock_condition::{AddressUnlockCondition, StorageDepositReturnUnlockCondition},
-        BasicOutputBuilder, ByteCost, ByteCostConfig, NativeTokens, Output, UnlockCondition, OUTPUT_COUNT_MAX,
+        BasicOutputBuilder, Rent, RentStructure, NativeTokens, Output, UnlockCondition, OUTPUT_COUNT_MAX,
     },
 };
 use packable::{bounded::TryIntoBoundedU16Error, PackableExt};
@@ -43,7 +43,7 @@ pub fn try_select_inputs(
     mut outputs: Vec<Output>,
     force_use_all_inputs: bool,
     remainder_address: Option<Address>,
-    byte_cost_config: &ByteCostConfig,
+    rent_structure: &RentStructure,
     allow_burning: bool,
     current_time: u32,
 ) -> Result<SelectedTransactionData> {
@@ -64,7 +64,7 @@ pub fn try_select_inputs(
             inputs.iter(),
             outputs.iter(),
             remainder_address,
-            byte_cost_config,
+            rent_structure,
             allow_burning,
         )?;
 
@@ -179,7 +179,7 @@ pub fn try_select_inputs(
             selected_input_amount,
             &selected_input_native_tokens,
             &required,
-            byte_cost_config,
+            rent_structure,
         )?;
 
         if selected_input_amount < required.amount || additional_required_remainder_amount > 0 {
@@ -228,7 +228,7 @@ pub fn try_select_inputs(
             selected_input_amount,
             &selected_input_native_tokens,
             &required,
-            byte_cost_config,
+            rent_structure,
         )?;
 
         if selected_input_amount < required.amount || additional_required_remainder_amount > 0 {
@@ -273,7 +273,7 @@ pub fn try_select_inputs(
         selected_inputs.iter(),
         outputs.iter(),
         remainder_address,
-        byte_cost_config,
+        rent_structure,
         allow_burning,
     )?;
     if let Some(remainder_data) = &remainder_data {
@@ -298,7 +298,7 @@ pub fn try_select_inputs(
 
 /// Computes the minimum amount that an output needs to have, when native tokens are sent with [AddressUnlockCondition].
 pub fn minimum_storage_deposit(
-    config: &ByteCostConfig,
+    config: &RentStructure,
     address: &Address,
     native_tokens: &Option<NativeTokens>,
 ) -> Result<u64> {
@@ -314,7 +314,7 @@ pub fn minimum_storage_deposit(
         .add_unlock_condition(address_condition)
         .finish_output()?;
 
-    Ok(basic_output.byte_cost(config))
+    Ok(basic_output.rent_cost(config))
 }
 
 /// Get the `StorageDepositReturnUnlockCondition`, if not expired
