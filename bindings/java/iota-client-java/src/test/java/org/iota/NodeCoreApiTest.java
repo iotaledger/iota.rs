@@ -10,7 +10,7 @@ import org.iota.types.ids.OutputId;
 import org.iota.types.responses.NodeInfoResponse;
 import org.iota.types.responses.TreasuryResponse;
 import org.iota.types.responses.UtxoChangesResponse;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -139,7 +139,7 @@ public class NodeCoreApiTest extends ApiTest {
     }
 
     @Test
-    @Ignore
+    @Disabled
     public void testGetPeers() throws ClientException {
         for (Peer peer : client.getPeers())
             System.out.println(peer);
