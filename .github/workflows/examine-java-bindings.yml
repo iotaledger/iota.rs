@@ -41,9 +41,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows-latest, macos-latest, ubuntu-latest]
-        # java: ['8', '11', '17']
-        # FIXME: Make tests work on the newer Java LTS version 17. (#782)
-        java: ["8", "11"]
+        java: ["11", "17"]
 
     steps:
       - name: Checkout the Source Code
