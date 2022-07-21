@@ -21,77 +21,79 @@ use crate::{
     Result,
 };
 
-/// If custom inputs are provided we check if they are unspent, get the balance and search the Ed25519 addresses for
-/// them with the provided input_range so we can later sign them.
-/// Forwards to [try_select_inputs()] with `force_use_all_inputs` set to true, so all inputs will be included in the
-/// transaction, even if not required for the provided outputs.
-/// Careful with setting `allow_burning` to `true`, native tokens can get easily burned by accident.
-pub(crate) async fn get_custom_inputs(
-    block_builder: &ClientBlockBuilder<'_>,
-    governance_transition: Option<HashSet<AliasId>>,
-    rent_structure: &RentStructure,
-    allow_burning: bool,
-) -> Result<SelectedTransactionData> {
-    log::debug!("[get_custom_inputs]");
-    let mut inputs_data = Vec::new();
+impl<'a> ClientBlockBuilder<'a> {
+    /// If custom inputs are provided we check if they are unspent, get the balance and search the Ed25519 addresses for
+    /// them with the provided input_range so we can later sign them.
+    /// Forwards to [try_select_inputs()] with `force_use_all_inputs` set to true, so all inputs will be included in the
+    /// transaction, even if not required for the provided outputs.
+    /// Careful with setting `allow_burning` to `true`, native tokens can get easily burned by accident.
+    pub(crate) async fn get_custom_inputs(
+        &self,
+        governance_transition: Option<HashSet<AliasId>>,
+        rent_structure: &RentStructure,
+        allow_burning: bool,
+    ) -> Result<SelectedTransactionData> {
+        log::debug!("[get_custom_inputs]");
+        let mut inputs_data = Vec::new();
 
-    let local_time = block_builder.client.get_time_checked().await?;
-    if let Some(inputs) = &block_builder.inputs {
-        for input in inputs {
-            let output_response = block_builder.client.get_output(input.output_id()).await?;
-            let output = Output::try_from(&output_response.output)?;
+        let local_time = self.client.get_time_checked().await?;
+        if let Some(inputs) = &self.inputs {
+            for input in inputs {
+                let output_response = self.client.get_output(input.output_id()).await?;
+                let output = Output::try_from(&output_response.output)?;
 
-            if !output_response.metadata.is_spent {
-                let (_output_amount, output_address) = ClientBlockBuilder::get_output_amount_and_address(
-                    &output,
-                    governance_transition.clone(),
-                    local_time,
-                )?;
+                if !output_response.metadata.is_spent {
+                    let (_output_amount, output_address) = ClientBlockBuilder::get_output_amount_and_address(
+                        &output,
+                        governance_transition.clone(),
+                        local_time,
+                    )?;
 
-                let bech32_hrp = block_builder.client.get_bech32_hrp().await?;
-                let (address_index, internal) = match block_builder.secret_manager {
-                    Some(secret_manager) => {
-                        match output_address {
-                            Address::Ed25519(_) => {
-                                search_address(
-                                    secret_manager,
-                                    &bech32_hrp,
-                                    block_builder.coin_type,
-                                    block_builder.account_index,
-                                    block_builder.input_range.clone(),
-                                    &output_address,
-                                )
-                                .await?
+                    let bech32_hrp = self.client.get_bech32_hrp().await?;
+                    let (address_index, internal) = match self.secret_manager {
+                        Some(secret_manager) => {
+                            match output_address {
+                                Address::Ed25519(_) => {
+                                    search_address(
+                                        secret_manager,
+                                        &bech32_hrp,
+                                        self.coin_type,
+                                        self.account_index,
+                                        self.input_range.clone(),
+                                        &output_address,
+                                    )
+                                    .await?
+                                }
+                                // Alias and NFT addresses can't be generated from a private key
+                                _ => (0, false),
                             }
-                            // Alias and NFT addresses can't be generated from a private key
-                            _ => (0, false),
                         }
-                    }
-                    None => (0, false),
-                };
-                inputs_data.push(InputSigningData {
-                    output,
-                    output_metadata: OutputMetadata::try_from(&output_response.metadata)?,
-                    chain: Some(Chain::from_u32_hardened(vec![
-                        HD_WALLET_TYPE,
-                        block_builder.coin_type,
-                        block_builder.account_index,
-                        internal as u32,
-                        address_index,
-                    ])),
-                    bech32_address: output_address.to_bech32(&bech32_hrp),
-                });
+                        None => (0, false),
+                    };
+                    inputs_data.push(InputSigningData {
+                        output,
+                        output_metadata: OutputMetadata::try_from(&output_response.metadata)?,
+                        chain: Some(Chain::from_u32_hardened(vec![
+                            HD_WALLET_TYPE,
+                            self.coin_type,
+                            self.account_index,
+                            internal as u32,
+                            address_index,
+                        ])),
+                        bech32_address: output_address.to_bech32(&bech32_hrp),
+                    });
+                }
             }
         }
+        let selected_transaction_data = try_select_inputs(
+            inputs_data,
+            self.outputs.clone(),
+            true,
+            self.custom_remainder_address,
+            rent_structure,
+            allow_burning,
+            local_time,
+        )?;
+        Ok(selected_transaction_data)
     }
-    let selected_transaction_data = try_select_inputs(
-        inputs_data,
-        block_builder.outputs.clone(),
-        true,
-        block_builder.custom_remainder_address,
-        rent_structure,
-        allow_burning,
-        local_time,
-    )?;
-    Ok(selected_transaction_data)
 }

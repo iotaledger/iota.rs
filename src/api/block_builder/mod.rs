@@ -13,7 +13,7 @@ use bee_block::{
     output::{
         dto::OutputDto,
         unlock_condition::{AddressUnlockCondition, UnlockCondition},
-        AliasId, Output, RentStructure, OUTPUT_COUNT_RANGE,
+        AliasId, Output, OUTPUT_COUNT_RANGE,
     },
     payload::{Payload, TaggedDataPayload},
     Block, BlockId,
@@ -31,12 +31,7 @@ use {
 };
 
 pub use self::transaction::verify_semantic;
-use self::{
-    input_selection::{get_custom_inputs, get_inputs},
-    transaction::{prepare_transaction, sign_transaction},
-};
 use crate::{
-    api::{input_selection::types::SelectedTransactionData, types::PreparedTransactionData},
     block::{input::dto::UtxoInputDto, output::BasicOutputBuilder},
     constants::SHIMMER_COIN_TYPE,
     secret::SecretManager,
@@ -400,33 +395,6 @@ impl<'a> ClientBlockBuilder<'a> {
         };
 
         Ok((amount, *unlock_conditions.locked_address(address, local_time)))
-    }
-
-    // If custom inputs are provided we check if they are unspent, get the balance and search the address for it,
-    // governance_transition makes only a difference for alias outputs
-    // Careful with setting `allow_burning` to `true`, native tokens can get easily burned by accident.
-    async fn get_custom_inputs(
-        &self,
-        governance_transition: Option<HashSet<AliasId>>,
-        rent_structure: &RentStructure,
-        allow_burning: bool,
-    ) -> Result<SelectedTransactionData> {
-        get_custom_inputs(self, governance_transition, rent_structure, allow_burning).await
-    }
-
-    // Searches inputs for an amount which a user wants to spend, also checks that it doesn't create dust
-    async fn get_inputs(&self, rent_structure: &RentStructure) -> Result<SelectedTransactionData> {
-        get_inputs(self, rent_structure).await
-    }
-
-    /// Prepare a transaction
-    pub async fn prepare_transaction(&self) -> Result<PreparedTransactionData> {
-        prepare_transaction(self).await
-    }
-
-    /// Sign the transaction
-    pub async fn sign_transaction(&self, prepared_transaction_data: PreparedTransactionData) -> Result<Payload> {
-        sign_transaction(self, prepared_transaction_data).await
     }
 
     /// Consume the builder and get the API result
