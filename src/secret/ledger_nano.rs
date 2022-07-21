@@ -10,7 +10,7 @@ use std::{collections::HashMap, ops::Range};
 use async_trait::async_trait;
 use bee_block::{
     address::{Address, AliasAddress, Ed25519Address, NftAddress},
-    output::{Output, UnlockCondition},
+    output::Output,
     payload::transaction::TransactionEssence,
     signature::Signature,
     unlock::{AliasUnlock, NftUnlock, ReferenceUnlock, Unlock, Unlocks},
