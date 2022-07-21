@@ -7,7 +7,7 @@ use bee_block::{
     address::Address,
     output::{
         unlock_condition::{AddressUnlockCondition, UnlockCondition, UnlockConditions},
-        BasicOutputBuilder, ByteCostConfig, NativeTokensBuilder, Output,
+        BasicOutputBuilder, NativeTokensBuilder, Output, RentStructure,
     },
 };
 
@@ -91,7 +91,7 @@ pub(crate) fn get_remainder_output<'a>(
     inputs: impl Iterator<Item = &'a InputSigningData> + Clone,
     outputs: impl Iterator<Item = &'a Output> + Clone,
     remainder_address: Option<Address>,
-    byte_cost_config: &ByteCostConfig,
+    rent_structure: &RentStructure,
     allow_burning: bool,
 ) -> Result<Option<RemainderData>> {
     log::debug!("[get_remainder]");
@@ -135,7 +135,7 @@ pub(crate) fn get_remainder_output<'a>(
         }
         let remainder = remainder_output_builder.finish_output()?;
         // Check if output has enough amount to cover the storage deposit
-        remainder.verify_storage_deposit(byte_cost_config)?;
+        remainder.verify_storage_deposit(rent_structure)?;
         Some(RemainderData {
             output: remainder,
             chain: address_chain,
@@ -176,7 +176,7 @@ pub(crate) fn get_additional_required_remainder_amount(
     selected_input_amount: u64,
     selected_input_native_tokens: &NativeTokensBuilder,
     required_accumulated_amounts: &AccumulatedOutputAmounts,
-    byte_cost_config: &ByteCostConfig,
+    rent_structure: &RentStructure,
 ) -> crate::Result<u64> {
     let additional_required_remainder_amount = {
         if selected_input_amount > required_accumulated_amounts.amount {
@@ -187,7 +187,7 @@ pub(crate) fn get_additional_required_remainder_amount(
             )?;
 
             let required_deposit = minimum_storage_deposit(
-                byte_cost_config,
+                rent_structure,
                 &match remainder_address {
                     Some(a) => a,
                     None => get_remainder_address(selected_inputs.iter())?.0,

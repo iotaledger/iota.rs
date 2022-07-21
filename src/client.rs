@@ -18,7 +18,7 @@ use bee_api_types::{
 use bee_block::{
     address::Address,
     input::{Input, UtxoInput, INPUT_COUNT_MAX},
-    output::{ByteCostConfig, ByteCostConfigBuilder, Output, OutputId},
+    output::{Output, OutputId, RentStructure, RentStructureBuilder},
     parent::Parents,
     payload::{
         transaction::{TransactionEssence, TransactionId},
@@ -331,20 +331,20 @@ impl Client {
             .map_or(NetworkInfo::default().local_pow, |info| info.local_pow)
     }
 
-    /// returns the byte cost configuration
-    pub async fn get_byte_cost_config(&self) -> Result<ByteCostConfig> {
+    /// returns the rent structure
+    pub async fn get_rent_structure(&self) -> Result<RentStructure> {
         let rent_structure = self
             .get_network_info()
             .await?
             .rent_structure
             .ok_or(Error::MissingParameter("Missing rent_structure."))?;
 
-        let byte_cost_config = ByteCostConfigBuilder::new()
+        let rent_structure = RentStructureBuilder::new()
             .byte_cost(rent_structure.v_byte_cost)
             .key_factor(rent_structure.v_byte_factor_key)
             .data_factor(rent_structure.v_byte_factor_data)
             .finish();
-        Ok(byte_cost_config)
+        Ok(rent_structure)
     }
 
     pub(crate) fn get_timeout(&self) -> Duration {

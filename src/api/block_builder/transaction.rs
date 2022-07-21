@@ -26,12 +26,12 @@ use crate::{
 /// Prepare a transaction
 pub async fn prepare_transaction(block_builder: &ClientBlockBuilder<'_>) -> Result<PreparedTransactionData> {
     log::debug!("[prepare_transaction]");
-    let byte_cost_config = block_builder.client.get_byte_cost_config().await?;
+    let rent_structure = block_builder.client.get_rent_structure().await?;
 
     let mut governance_transition: Option<HashSet<AliasId>> = None;
     for output in &block_builder.outputs {
         // Check if the outputs have enough amount to cover the storage deposit
-        output.verify_storage_deposit(&byte_cost_config)?;
+        output.verify_storage_deposit(&rent_structure)?;
         if let Output::Alias(x) = output {
             if x.state_index() > 0 {
                 // Check if the transaction is a governance_transition, by checking if the new index is the same as
@@ -53,10 +53,10 @@ pub async fn prepare_transaction(block_builder: &ClientBlockBuilder<'_>) -> Resu
     // Inputselection
     let selected_transaction_data = if block_builder.inputs.is_some() {
         block_builder
-            .get_custom_inputs(governance_transition, &byte_cost_config, block_builder.allow_burning)
+            .get_custom_inputs(governance_transition, &rent_structure, block_builder.allow_burning)
             .await?
     } else {
-        block_builder.get_inputs(&byte_cost_config).await?
+        block_builder.get_inputs(&rent_structure).await?
     };
 
     // Build transaction payload

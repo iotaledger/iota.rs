@@ -111,7 +111,7 @@ impl ClientMessageHandler {
                     if let Some(amount) = amount {
                         OutputBuilderAmountDto::Amount(amount)
                     } else {
-                        OutputBuilderAmountDto::MinimumStorageDeposit(self.client.get_byte_cost_config().await?)
+                        OutputBuilderAmountDto::MinimumStorageDeposit(self.client.get_rent_structure().await?)
                     },
                     native_tokens,
                     &alias_id,
@@ -135,7 +135,7 @@ impl ClientMessageHandler {
                     if let Some(amount) = amount {
                         OutputBuilderAmountDto::Amount(amount)
                     } else {
-                        OutputBuilderAmountDto::MinimumStorageDeposit(self.client.get_byte_cost_config().await?)
+                        OutputBuilderAmountDto::MinimumStorageDeposit(self.client.get_rent_structure().await?)
                     },
                     native_tokens,
                     unlock_conditions,
@@ -157,7 +157,7 @@ impl ClientMessageHandler {
                     if let Some(amount) = amount {
                         OutputBuilderAmountDto::Amount(amount)
                     } else {
-                        OutputBuilderAmountDto::MinimumStorageDeposit(self.client.get_byte_cost_config().await?)
+                        OutputBuilderAmountDto::MinimumStorageDeposit(self.client.get_rent_structure().await?)
                     },
                     native_tokens,
                     serial_number,
@@ -181,7 +181,7 @@ impl ClientMessageHandler {
                     if let Some(amount) = amount {
                         OutputBuilderAmountDto::Amount(amount)
                     } else {
-                        OutputBuilderAmountDto::MinimumStorageDeposit(self.client.get_byte_cost_config().await?)
+                        OutputBuilderAmountDto::MinimumStorageDeposit(self.client.get_rent_structure().await?)
                     },
                     native_tokens,
                     &nft_id,
