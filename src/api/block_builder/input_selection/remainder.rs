@@ -7,7 +7,7 @@ use bee_block::{
     address::Address,
     output::{
         unlock_condition::{AddressUnlockCondition, UnlockCondition, UnlockConditions},
-        BasicOutputBuilder, RentStructure, NativeTokensBuilder, Output,
+        BasicOutputBuilder, NativeTokensBuilder, Output, RentStructure,
     },
 };
 

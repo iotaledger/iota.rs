@@ -6,7 +6,7 @@
 use bee_api_types::responses::OutputResponse;
 use bee_block::{
     address::Address,
-    output::{feature::Features, RentStructure, Output},
+    output::{feature::Features, Output, RentStructure},
 };
 use crypto::keys::slip10::Chain;
 

@@ -13,7 +13,7 @@ use bee_block::{
     output::{
         dto::OutputDto,
         unlock_condition::{AddressUnlockCondition, UnlockCondition},
-        AliasId, RentStructure, Output, OUTPUT_COUNT_RANGE,
+        AliasId, Output, RentStructure, OUTPUT_COUNT_RANGE,
     },
     payload::{Payload, TaggedDataPayload},
     Block, BlockId,

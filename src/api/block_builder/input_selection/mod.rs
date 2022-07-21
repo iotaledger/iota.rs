@@ -15,7 +15,7 @@ use bee_block::{
     input::INPUT_COUNT_MAX,
     output::{
         unlock_condition::{AddressUnlockCondition, StorageDepositReturnUnlockCondition},
-        BasicOutputBuilder, Rent, RentStructure, NativeTokens, Output, UnlockCondition, OUTPUT_COUNT_MAX,
+        BasicOutputBuilder, NativeTokens, Output, Rent, RentStructure, UnlockCondition, OUTPUT_COUNT_MAX,
     },
 };
 use packable::{bounded::TryIntoBoundedU16Error, PackableExt};
