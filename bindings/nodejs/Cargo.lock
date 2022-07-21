@@ -248,18 +248,6 @@ name = "bee-block"
 version = "1.0.0-beta.1"
 source = "git+https://github.com/iotaledger/bee?rev=4b1ed2a12d02314125e4e5e85a113121182285a4#4b1ed2a12d02314125e4e5e85a113121182285a4"
 dependencies = [
- "axum",
- "bee-block",
- "bee-ledger-types",
- "serde",
- "thiserror",
-]
-
-[[package]]
-name = "bee-block"
-version = "1.0.0-beta.1"
-source = "git+https://github.com/iotaledger/bee?rev=4b1ed2a12d02314125e4e5e85a113121182285a4#4b1ed2a12d02314125e4e5e85a113121182285a4"
-dependencies = [
  "bech32 0.9.0",
  "bee-pow",
  "bee-ternary",
@@ -296,7 +284,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d8e36e724dc98f8671c4f674b8419785def4ea81ad7af4fba061ff11724210c1"
 dependencies = [
  "bee-ternary",
- "iota-crypto",
+ "iota-crypto 0.13.0",
  "thiserror",
 ]
 
@@ -1010,6 +998,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "heck"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2540771e65fc8cb83cd6e8a237f70c319bd5c29f78ed1084ba5d50eeac86f7f9"
+
+[[package]]
 name = "hermit-abi"
 version = "0.1.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1231,9 +1225,19 @@ dependencies = [
 
 [[package]]
 name = "iota-crypto"
-version = "0.13.0"
+version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "538b238fbd6fa732f526f6401656fa6a366598b9fe1ca35185e47f3978369707"
+checksum = "ee273ae67ff1bc7c59317c0ab280e0e76259e6bd83e140ac4c2ecebec994f740"
+dependencies = [
+ "blake2 0.9.2",
+ "digest 0.9.0",
+]
+
+[[package]]
+name = "iota-crypto"
+version = "0.12.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f03717e934972fad6f1c9b4cd25f662e1753b58a7f76e3dceadeb646e034b252"
 dependencies = [
  "aead",
  "aes",
@@ -2085,9 +2089,9 @@ checksum = "388a1df253eca08550bef6c72392cfe7c30914bf41df5269b68cbd6ff8f570a3"
 
 [[package]]
 name = "serde"
-version = "1.0.139"
+version = "1.0.140"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0171ebb889e45aa68b44aee0859b3eede84c6f5f5c228e6f140c0b2a0a46cad6"
+checksum = "fc855a42c7967b7c369eb5860f7164ef1f6f81c20c7cc1141f2a604e18723b03"
 dependencies = [
  "serde_derive",
 ]
@@ -2103,9 +2107,9 @@ dependencies = [
 
 [[package]]
 name = "serde_derive"
-version = "1.0.139"
+version = "1.0.140"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dc1d3230c1de7932af58ad8ffbe1d784bd55efd5a9d84ac24f69c72d83543dfb"
+checksum = "6f2122636b9fe3b81f1cb25099fcf2d3f542cdb1d45940d56c713158884a05da"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2920,9 +2924,9 @@ dependencies = [
 
 [[package]]
 name = "zeroize"
-version = "1.5.6"
+version = "1.5.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "20b578acffd8516a6c3f2a1bdefc1ec37e547bb4e0fb8b6b01a4cafc886b4442"
+checksum = "c394b5bd0c6f669e7275d9c20aa90ae064cb22e75a1cad54e1b34088034b149f"
 dependencies = [
  "zeroize_derive",
 ]
