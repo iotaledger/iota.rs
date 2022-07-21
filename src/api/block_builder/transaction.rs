@@ -23,109 +23,103 @@ use crate::{
     Error, Result,
 };
 
-/// Prepare a transaction
-pub async fn prepare_transaction(block_builder: &ClientBlockBuilder<'_>) -> Result<PreparedTransactionData> {
-    log::debug!("[prepare_transaction]");
-    let rent_structure = block_builder.client.get_rent_structure().await?;
+impl<'a> ClientBlockBuilder<'a> {
+    /// Prepare a transaction
+    pub async fn prepare_transaction(&self) -> Result<PreparedTransactionData> {
+        log::debug!("[prepare_transaction]");
+        let rent_structure = self.client.get_rent_structure().await?;
 
-    let mut governance_transition: Option<HashSet<AliasId>> = None;
-    for output in &block_builder.outputs {
-        // Check if the outputs have enough amount to cover the storage deposit
-        output.verify_storage_deposit(&rent_structure)?;
-        if let Output::Alias(x) = output {
-            if x.state_index() > 0 {
-                // Check if the transaction is a governance_transition, by checking if the new index is the same as
-                // the previous index
-                let output_id = block_builder.client.alias_output_id(*x.alias_id()).await?;
-                let output_response = block_builder.client.get_output(&output_id).await?;
-                if let OutputDto::Alias(output) = output_response.output {
-                    // A governance transition is identified by an unchanged State Index in next state.
-                    if x.state_index() == output.state_index {
-                        let mut transitions = HashSet::new();
-                        transitions.insert(AliasId::try_from(&output.alias_id)?);
-                        governance_transition.replace(transitions);
+        let mut governance_transition: Option<HashSet<AliasId>> = None;
+        for output in &self.outputs {
+            // Check if the outputs have enough amount to cover the storage deposit
+            output.verify_storage_deposit(&rent_structure)?;
+            if let Output::Alias(x) = output {
+                if x.state_index() > 0 {
+                    // Check if the transaction is a governance_transition, by checking if the new index is the same as
+                    // the previous index
+                    let output_id = self.client.alias_output_id(*x.alias_id()).await?;
+                    let output_response = self.client.get_output(&output_id).await?;
+                    if let OutputDto::Alias(output) = output_response.output {
+                        // A governance transition is identified by an unchanged State Index in next state.
+                        if x.state_index() == output.state_index {
+                            let mut transitions = HashSet::new();
+                            transitions.insert(AliasId::try_from(&output.alias_id)?);
+                            governance_transition.replace(transitions);
+                        }
                     }
                 }
             }
         }
-    }
 
-    // Inputselection
-    let selected_transaction_data = if block_builder.inputs.is_some() {
-        block_builder
-            .get_custom_inputs(governance_transition, &rent_structure, block_builder.allow_burning)
-            .await?
-    } else {
-        block_builder.get_inputs(&rent_structure).await?
-    };
+        // Inputselection
+        let selected_transaction_data = if self.inputs.is_some() {
+            self.get_custom_inputs(governance_transition, &rent_structure, self.allow_burning)
+                .await?
+        } else {
+            self.get_inputs(&rent_structure).await?
+        };
 
-    // Build transaction payload
-    let inputs_commitment = InputsCommitment::new(selected_transaction_data.inputs.iter().map(|i| &i.output));
+        // Build transaction payload
+        let inputs_commitment = InputsCommitment::new(selected_transaction_data.inputs.iter().map(|i| &i.output));
 
-    let mut essence =
-        RegularTransactionEssence::builder(block_builder.client.get_network_id().await?, inputs_commitment);
-    let inputs = selected_transaction_data
-        .inputs
-        .iter()
-        .map(|i| {
-            Ok(Input::Utxo(UtxoInput::new(
-                i.output_metadata.transaction_id,
-                i.output_metadata.output_index,
-            )?))
+        let mut essence = RegularTransactionEssence::builder(self.client.get_network_id().await?, inputs_commitment);
+        let inputs = selected_transaction_data
+            .inputs
+            .iter()
+            .map(|i| {
+                Ok(Input::Utxo(UtxoInput::new(
+                    i.output_metadata.transaction_id,
+                    i.output_metadata.output_index,
+                )?))
+            })
+            .collect::<Result<Vec<Input>>>()?;
+        essence = essence.with_inputs(inputs);
+
+        essence = essence.with_outputs(selected_transaction_data.outputs);
+
+        // Add tagged data payload if tag set
+        if let Some(index) = self.tag.clone() {
+            let tagged_data_payload = TaggedDataPayload::new(index.to_vec(), self.data.clone().unwrap_or_default())?;
+            essence = essence.with_payload(Payload::TaggedData(Box::new(tagged_data_payload)));
+        }
+        let regular_essence = essence.finish()?;
+        let essence = TransactionEssence::Regular(regular_essence);
+
+        Ok(PreparedTransactionData {
+            essence,
+            inputs_data: selected_transaction_data.inputs,
+            remainder: selected_transaction_data.remainder,
         })
-        .collect::<Result<Vec<Input>>>()?;
-    essence = essence.with_inputs(inputs);
-
-    essence = essence.with_outputs(selected_transaction_data.outputs);
-
-    // Add tagged data payload if tag set
-    if let Some(index) = block_builder.tag.clone() {
-        let tagged_data_payload =
-            TaggedDataPayload::new(index.to_vec(), block_builder.data.clone().unwrap_or_default())?;
-        essence = essence.with_payload(Payload::TaggedData(Box::new(tagged_data_payload)));
-    }
-    let regular_essence = essence.finish()?;
-    let essence = TransactionEssence::Regular(regular_essence);
-
-    Ok(PreparedTransactionData {
-        essence,
-        inputs_data: selected_transaction_data.inputs,
-        remainder: selected_transaction_data.remainder,
-    })
-}
-
-/// Sign the transaction
-pub async fn sign_transaction(
-    block_builder: &ClientBlockBuilder<'_>,
-    prepared_transaction_data: PreparedTransactionData,
-) -> Result<Payload> {
-    log::debug!("[sign_transaction]");
-    let mut input_addresses = Vec::new();
-    for input_signing_data in &prepared_transaction_data.inputs_data {
-        let (_bech32_hrp, address) = Address::try_from_bech32(&input_signing_data.bech32_address)?;
-        input_addresses.push(address);
-    }
-    let secret_manager = block_builder
-        .secret_manager
-        .ok_or(Error::MissingParameter("secret manager"))?;
-    let unlocks = secret_manager
-        .sign_transaction_essence(
-            // IOTA_COIN_TYPE,
-            // block_builder.account_index.unwrap_or(0),
-            &prepared_transaction_data,
-        )
-        .await?;
-    let tx_payload = TransactionPayload::new(prepared_transaction_data.essence.clone(), unlocks)?;
-
-    let local_time = block_builder.client.get_time_checked().await?;
-
-    let conflict = verify_semantic(&prepared_transaction_data.inputs_data, &tx_payload, local_time)?;
-
-    if conflict != ConflictReason::None {
-        return Err(Error::TransactionSemantic(conflict));
     }
 
-    Ok(Payload::Transaction(Box::new(tx_payload)))
+    /// Sign the transaction
+    pub async fn sign_transaction(&self, prepared_transaction_data: PreparedTransactionData) -> Result<Payload> {
+        log::debug!("[sign_transaction]");
+        let mut input_addresses = Vec::new();
+        for input_signing_data in &prepared_transaction_data.inputs_data {
+            let (_bech32_hrp, address) = Address::try_from_bech32(&input_signing_data.bech32_address)?;
+            input_addresses.push(address);
+        }
+        let secret_manager = self.secret_manager.ok_or(Error::MissingParameter("secret manager"))?;
+        let unlocks = secret_manager
+            .sign_transaction_essence(
+                // IOTA_COIN_TYPE,
+                // self.account_index.unwrap_or(0),
+                &prepared_transaction_data,
+            )
+            .await?;
+        let tx_payload = TransactionPayload::new(prepared_transaction_data.essence.clone(), unlocks)?;
+
+        let local_time = self.client.get_time_checked().await?;
+
+        let conflict = verify_semantic(&prepared_transaction_data.inputs_data, &tx_payload, local_time)?;
+
+        if conflict != ConflictReason::None {
+            return Err(Error::TransactionSemantic(conflict));
+        }
+
+        Ok(Payload::Transaction(Box::new(tx_payload)))
+    }
 }
 
 // TODO @thibault-martinez: this is very cumbersome with the current state, will refactor.

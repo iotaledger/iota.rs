@@ -20,7 +20,6 @@ use bee_block::{
 };
 use packable::{bounded::TryIntoBoundedU16Error, PackableExt};
 
-pub(crate) use self::{automatic::get_inputs, manual::get_custom_inputs};
 use self::{
     native_token_helpers::{get_minted_and_melted_native_tokens, get_remainder_native_tokens, missing_native_tokens},
     output_data::get_accumulated_output_amounts,
@@ -328,7 +327,11 @@ pub(crate) fn sdr_not_expired(output: &Output, current_time: u32) -> Option<&Sto
             };
 
             // We only have to send the storage deposit return back if the output is not expired
-            if !expired { Some(sdr) } else { None }
+            if !expired {
+                Some(sdr)
+            } else {
+                None
+            }
         } else {
             None
         }
