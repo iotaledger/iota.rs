@@ -17,7 +17,7 @@ describe.skip('Milestone methods', () => {
         const info = await client.getInfo();
         const milestoneId = info.nodeInfo.status.confirmedMilestone.milestoneId;
 
-        const milestone = await client.getMilestoneById(milestoneId);
+        const milestone = await client.getMilestoneById(milestoneId!);
 
         expect(milestone.index).toEqual(
             info.nodeInfo.status.confirmedMilestone.index,
@@ -29,7 +29,7 @@ describe.skip('Milestone methods', () => {
         const milestoneId = info.nodeInfo.status.confirmedMilestone.milestoneId;
 
         const milestoneUtxoChanges = await client.getUtxoChangesById(
-            milestoneId,
+            milestoneId!,
         );
 
         expect(milestoneUtxoChanges.index).toEqual(

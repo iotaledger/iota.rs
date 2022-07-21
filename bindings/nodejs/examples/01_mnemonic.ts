@@ -3,7 +3,7 @@
 import { Client, initLogger } from '@iota/client';
 
 // Run with command:
-// node ./dist/02_mnemonic.js
+// node ./dist/01_mnemonic.js
 
 // In this example we will generate a random BIP39 mnemonic
 async function run() {

@@ -4,7 +4,7 @@ import { Client, initLogger } from '@iota/client';
 require('dotenv').config({ path: '../.env' });
 
 // Run with command:
-// node ./dist/01_get_info.js
+// node ./dist/00_get_info.js
 
 // In this example we will get information about the node
 async function run() {

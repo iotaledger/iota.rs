@@ -1,52 +1,48 @@
 {
-  "name": "@iota/client",
-  "version": "3.0.0-alpha.0",
-  "description": "Node.js binding to the client library",
-  "main": "out/lib/index.js",
-  "types": "out/lib/index.d.ts",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/iotaledger/iota.rs"
-  },
-  "author": "IOTA Foundation <contact@iota.org>",
-  "license": "Apache-2.0",
-  "dependencies": {
-    "cargo-cp-artifact": "^0.1.5",
-    "prebuild-install": "^5.3.3"
-  },
-  "scripts": {
-    "lint": "eslint --ignore-path .eslintignore --ext .js,.ts .",
-    "format": "prettier --ignore-path .eslintignore -w {,*/**/}*.{ts,js,json}",
-    "format-check": "prettier --ignore-path .eslintignore -c {,*/**/}*.{ts,js,json}",
-    "install": "prebuild-install --tag-prefix nodejs-binding-v || npm run rebuild",
-    "build": "npm run build:neon && tsc",
-    "build:neon": "cargo-cp-artifact -nc ./index.node -- cargo build --release --message-format=json-render-diagnostics",
-    "rebuild": "npm run build:neon && tsc && node scripts/strip.js",
-    "prebuild:node": "prebuild --prepack scripts/node-neon-build.js --strip",
-    "prebuild:electron": "node scripts/electron-prebuild.js",
-    "build:docs": "jsdoc2md lib/*.ts --configure ./jsdoc2md.json > ../../documentation/docs/libraries/nodejs/api_reference.md",
-    "test": "jest --forceExit"
-  },
-  "devDependencies": {
-    "@babel/plugin-proposal-class-properties": "^7.18.6",
-    "@babel/plugin-proposal-object-rest-spread": "^7.18.6",
-    "@babel/preset-env": "^7.18.6",
-    "@babel/preset-typescript": "^7.18.6",
-    "@iota/types": "^1.0.0-beta.9",
-    "@types/jest": "^27.4.1",
-    "@typescript-eslint/eslint-plugin": "^5.19.0",
-    "@typescript-eslint/parser": "^5.19.0",
-    "dotenv": "^16.0.0",
-    "electron-build-env": "^0.2.0",
-    "eslint": "^8.13.0",
-    "eslint-config-prettier": "^8.5.0",
-    "jest": "^27.5.1",
-    "jest-matcher-utils": "^28.0.2",
-    "jsdoc-babel": "^0.5.0",
-    "jsdoc-to-markdown": "^7.1.1",
-    "prebuild": "^10.0.1",
-    "prettier": "^2.6.2",
-    "ts-jest": "^27.1.4",
-    "typescript": "^4.7.4"
-  }
+    "name": "@iota/client",
+    "version": "3.0.0-alpha.0",
+    "description": "Node.js binding to the client library",
+    "main": "out/lib/index.js",
+    "types": "out/lib/index.d.ts",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/iotaledger/iota.rs"
+    },
+    "author": "IOTA Foundation <contact@iota.org>",
+    "license": "Apache-2.0",
+    "dependencies": {
+        "cargo-cp-artifact": "^0.1.5",
+        "@iota/types": "^1.0.0-beta.9",
+        "prebuild-install": "^5.3.3"
+    },
+    "scripts": {
+        "lint": "eslint --ignore-path .eslintignore --ext .js,.ts .",
+        "format": "prettier --ignore-path .eslintignore -w {,*/**/}*.{ts,js,json}",
+        "format-check": "prettier --ignore-path .eslintignore -c {,*/**/}*.{ts,js,json}",
+        "install": "prebuild-install --tag-prefix nodejs-binding-v || npm run rebuild",
+        "build": "npm run build:neon && tsc",
+        "build:neon": "cargo-cp-artifact -nc ./index.node -- cargo build --release --message-format=json-render-diagnostics",
+        "rebuild": "npm run build:neon && tsc && node scripts/strip.js",
+        "prebuild:node": "prebuild --prepack scripts/node-neon-build.js --strip",
+        "prebuild:electron": "node scripts/electron-prebuild.js",
+        "docs-wiki-build": "typedoc --githubPages false  --disableSources --excludePrivate --excludeInternal --excludeNotDocumented --plugin typedoc-plugin-markdown --theme markdown --hideBreadcrumbs --entryDocument api_ref.md --readme none --hideGenerator --sort source-order --exclude ./**/src/index.ts --out ../../documentation/docs/libraries/nodejs/references/ ./lib/index.ts",
+        "test": "jest --forceExit"
+    },
+    "devDependencies": {
+        "@types/jest": "^27.5.2",
+        "@typescript-eslint/eslint-plugin": "^5.30.7",
+        "@typescript-eslint/parser": "^5.30.7",
+        "dotenv": "^16.0.1",
+        "electron-build-env": "^0.2.0",
+        "eslint": "^8.20.0",
+        "eslint-config-prettier": "^8.5.0",
+        "jest": "^27.5.1",
+        "jest-matcher-utils": "^28.1.3",
+        "prebuild": "^10.0.1",
+        "prettier": "^2.7.1",
+        "ts-jest": "^27.1.5",
+        "typedoc": "^0.23.8",
+        "typedoc-plugin-markdown": "^3.13.3",
+        "typescript": "^4.7.4"
+    }
 }

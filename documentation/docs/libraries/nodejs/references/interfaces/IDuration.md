@@ -1,0 +1,3 @@
+# Interface: IDuration
+
+Time duration
