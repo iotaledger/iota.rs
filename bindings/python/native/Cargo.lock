@@ -71,7 +71,6 @@ dependencies = [
  "bitflags",
  "bytes",
  "futures-util",
- "headers",
  "http",
  "http-body",
  "hyper",
@@ -133,9 +132,21 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c5738be7561b0eeb501ef1d5c5db3f24e01ceb55fededd9b00039aada34966ad"
 
 [[package]]
+name = "bee-api-types"
+version = "1.0.0-alpha.1"
+source = "git+https://github.com/iotaledger/bee?rev=4b1ed2a12d02314125e4e5e85a113121182285a4#4b1ed2a12d02314125e4e5e85a113121182285a4"
+dependencies = [
+ "axum",
+ "bee-block",
+ "bee-ledger-types",
+ "serde",
+ "thiserror",
+]
+
+[[package]]
 name = "bee-block"
-version = "0.1.0"
-source = "git+https://github.com/iotaledger/bee?rev=a0790c2d2f3e0f0a648e2c93a197b08d294022f1#a0790c2d2f3e0f0a648e2c93a197b08d294022f1"
+version = "1.0.0-beta.1"
+source = "git+https://github.com/iotaledger/bee?rev=4b1ed2a12d02314125e4e5e85a113121182285a4#4b1ed2a12d02314125e4e5e85a113121182285a4"
 dependencies = [
  "bech32",
  "bee-pow",
@@ -143,7 +154,7 @@ dependencies = [
  "bitflags",
  "bytemuck",
  "derive_more",
- "hashbrown 0.12.1",
+ "hashbrown 0.12.3",
  "hex",
  "iota-crypto",
  "iterator-sorted",
@@ -157,20 +168,20 @@ dependencies = [
 ]
 
 [[package]]
-name = "bee-ledger"
-version = "0.7.0"
-source = "git+https://github.com/iotaledger/bee?rev=a0790c2d2f3e0f0a648e2c93a197b08d294022f1#a0790c2d2f3e0f0a648e2c93a197b08d294022f1"
+name = "bee-ledger-types"
+version = "1.0.0-beta.1"
+source = "git+https://github.com/iotaledger/bee?rev=4b1ed2a12d02314125e4e5e85a113121182285a4#4b1ed2a12d02314125e4e5e85a113121182285a4"
 dependencies = [
  "bee-block",
  "packable",
  "thiserror",
- "time-helper",
 ]
 
 [[package]]
 name = "bee-pow"
-version = "0.2.0"
-source = "git+https://github.com/iotaledger/bee?rev=a0790c2d2f3e0f0a648e2c93a197b08d294022f1#a0790c2d2f3e0f0a648e2c93a197b08d294022f1"
+version = "1.0.0-alpha.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d8e36e724dc98f8671c4f674b8419785def4ea81ad7af4fba061ff11724210c1"
 dependencies = [
  "bee-ternary",
  "iota-crypto",
@@ -178,22 +189,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "bee-rest-api"
-version = "0.2.2"
-source = "git+https://github.com/iotaledger/bee?rev=a0790c2d2f3e0f0a648e2c93a197b08d294022f1#a0790c2d2f3e0f0a648e2c93a197b08d294022f1"
-dependencies = [
- "axum",
- "bee-block",
- "bee-ledger",
- "serde",
- "thiserror",
-]
-
-[[package]]
 name = "bee-ternary"
-version = "0.6.0"
+version = "1.0.0-alpha.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b0b9489a68e42231e9f4f1443c765d3f80433a52101510ab413e6a9cd2240d21"
+checksum = "a9252b65ddd9a863b0efc06ddab6c26334ecbe00fb8fa47bbde10babda2981b2"
 dependencies = [
  "autocfg",
  "num-traits",
@@ -259,9 +258,9 @@ checksum = "87c5fdd0166095e1d463fc6cc01aa8ce547ad77a4e84d42eb6762b084e28067e"
 
 [[package]]
 name = "bytemuck"
-version = "1.9.1"
+version = "1.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cdead85bdec19c194affaeeb670c0e41fe23de31459efd1c174d049269cf02cc"
+checksum = "c53dfa917ec274df8ed3c572698f381a24eef2efba9492d797301b72b6db408a"
 
 [[package]]
 name = "byteorder"
@@ -679,36 +678,11 @@ checksum = "ab5ef0d4909ef3724cc8cce6ccc8572c5c817592e9285f5464f8e86f8bd3726e"
 
 [[package]]
 name = "hashbrown"
-version = "0.12.1"
+version = "0.12.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "db0d4cf898abf0081f964436dc980e96670a0f36863e4b83aaacdb65c9d7ccc3"
+checksum = "8a9ee70c43aaf417c914396645a0fa852624801b24ebb7ae78fe8272889ac888"
 dependencies = [
  "ahash",
-]
-
-[[package]]
-name = "headers"
-version = "0.3.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4cff78e5788be1e0ab65b04d306b2ed5092c815ec97ec70f4ebd5aee158aa55d"
-dependencies = [
- "base64",
- "bitflags",
- "bytes",
- "headers-core",
- "http",
- "httpdate",
- "mime",
- "sha-1",
-]
-
-[[package]]
-name = "headers-core"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e7f66481bfee273957b1f20485a4ff3362987f85b2c236580d81b4eb7a326429"
-dependencies = [
- "http",
 ]
 
 [[package]]
@@ -876,9 +850,9 @@ version = "1.1.1"
 dependencies = [
  "async-trait",
  "backtrace",
+ "bee-api-types",
  "bee-block",
  "bee-pow",
- "bee-rest-api",
  "bee-ternary",
  "derive_builder",
  "futures",
@@ -913,9 +887,9 @@ dependencies = [
 
 [[package]]
 name = "iota-crypto"
-version = "0.12.1"
+version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f03717e934972fad6f1c9b4cd25f662e1753b58a7f76e3dceadeb646e034b252"
+checksum = "538b238fbd6fa732f526f6401656fa6a366598b9fe1ca35185e47f3978369707"
 dependencies = [
  "aead",
  "bee-ternary",
@@ -1057,9 +1031,9 @@ dependencies = [
 
 [[package]]
 name = "num-traits"
-version = "0.2.14"
+version = "0.2.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9a64b1ec5cda2586e284722486d802acf1f7dbdc623e2bfc57e65ca1cd099290"
+checksum = "578ede34cf02f8924ab9447f50c28075b4d3e5b269972345e7e0372b38c6cdcd"
 dependencies = [
  "autocfg",
 ]
@@ -1071,15 +1045,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "19e64526ebdee182341572e50e9ad03965aa510cd94427a4549448f285e957a1"
 dependencies = [
  "hermit-abi",
- "libc",
-]
-
-[[package]]
-name = "num_threads"
-version = "0.1.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "aba1801fb138d8e85e11d0fc70baf4fe1cdfffda7c6cd34a854905df588e5ed0"
-dependencies = [
  "libc",
 ]
 
@@ -1106,9 +1071,9 @@ checksum = "624a8340c38c1b80fd549087862da4ba43e08858af025b236e509b6649fc13d5"
 
 [[package]]
 name = "packable"
-version = "0.4.0"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "332ecf21e38a8f3afce70f005b638c67759686a5e3e12d1859c56d0687f164d3"
+checksum = "ffe491a88c5c4c77f5e02c92901c011ec4368e4ea1b4aff5c1a4bdaf3a087354"
 dependencies = [
  "autocfg",
  "packable-derive",
@@ -1118,9 +1083,9 @@ dependencies = [
 
 [[package]]
 name = "packable-derive"
-version = "0.4.0"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7cfe1637c03253dfa99917b97dcb646a540cad292b18fdc72e9a0d0dd29f165e"
+checksum = "715f215a9cb02dd40282e4544148d0b3cb21010561e4588f0790ae9f1f61c041"
 dependencies = [
  "proc-macro-crate",
  "proc-macro-error",
@@ -1492,9 +1457,9 @@ checksum = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd"
 
 [[package]]
 name = "serde"
-version = "1.0.137"
+version = "1.0.139"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "61ea8d54c77f8315140a05f4c7237403bf38b72704d031543aa1d16abbf517d1"
+checksum = "0171ebb889e45aa68b44aee0859b3eede84c6f5f5c228e6f140c0b2a0a46cad6"
 dependencies = [
  "serde_derive",
 ]
@@ -1510,9 +1475,9 @@ dependencies = [
 
 [[package]]
 name = "serde_derive"
-version = "1.0.137"
+version = "1.0.139"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1f26faba0c3959972377d3b2d306ee9f71faee9714294e41bb777f83f88578be"
+checksum = "dc1d3230c1de7932af58ad8ffbe1d784bd55efd5a9d84ac24f69c72d83543dfb"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1540,17 +1505,6 @@ dependencies = [
  "itoa",
  "ryu",
  "serde",
-]
-
-[[package]]
-name = "sha-1"
-version = "0.10.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "028f48d513f9678cda28f6e4064755b3fbb2af6acd672f2c209b62323f7aea0f"
-dependencies = [
- "cfg-if",
- "cpufeatures 0.2.2",
- "digest 0.10.3",
 ]
 
 [[package]]
@@ -1676,26 +1630,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
-]
-
-[[package]]
-name = "time"
-version = "0.3.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "004cbc98f30fa233c61a38bc77e96a9106e65c88f2d3bef182ae952027e5753d"
-dependencies = [
- "itoa",
- "libc",
- "num_threads",
-]
-
-[[package]]
-name = "time-helper"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "17c30f0091717eeeff0b556d830302d5563de8b72fd49127aa5899a06a369808"
-dependencies = [
- "time",
 ]
 
 [[package]]

@@ -24,6 +24,8 @@ use futures::{Future, FutureExt};
 use tokio::sync::mpsc::UnboundedSender;
 use zeroize::Zeroize;
 
+#[cfg(feature = "ledger_nano")]
+use crate::secret::ledger_nano::LedgerSecretManager;
 use crate::{
     api::{PreparedTransactionData, PreparedTransactionDataDto},
     message_interface::{message::Message, response::Response},
@@ -111,7 +113,7 @@ impl ClientMessageHandler {
                     if let Some(amount) = amount {
                         OutputBuilderAmountDto::Amount(amount)
                     } else {
-                        OutputBuilderAmountDto::MinimumStorageDeposit(self.client.get_byte_cost_config().await?)
+                        OutputBuilderAmountDto::MinimumStorageDeposit(self.client.get_rent_structure().await?)
                     },
                     native_tokens,
                     &alias_id,
@@ -135,7 +137,7 @@ impl ClientMessageHandler {
                     if let Some(amount) = amount {
                         OutputBuilderAmountDto::Amount(amount)
                     } else {
-                        OutputBuilderAmountDto::MinimumStorageDeposit(self.client.get_byte_cost_config().await?)
+                        OutputBuilderAmountDto::MinimumStorageDeposit(self.client.get_rent_structure().await?)
                     },
                     native_tokens,
                     unlock_conditions,
@@ -157,7 +159,7 @@ impl ClientMessageHandler {
                     if let Some(amount) = amount {
                         OutputBuilderAmountDto::Amount(amount)
                     } else {
-                        OutputBuilderAmountDto::MinimumStorageDeposit(self.client.get_byte_cost_config().await?)
+                        OutputBuilderAmountDto::MinimumStorageDeposit(self.client.get_rent_structure().await?)
                     },
                     native_tokens,
                     serial_number,
@@ -181,7 +183,7 @@ impl ClientMessageHandler {
                     if let Some(amount) = amount {
                         OutputBuilderAmountDto::Amount(amount)
                     } else {
-                        OutputBuilderAmountDto::MinimumStorageDeposit(self.client.get_byte_cost_config().await?)
+                        OutputBuilderAmountDto::MinimumStorageDeposit(self.client.get_rent_structure().await?)
                     },
                     native_tokens,
                     &nft_id,
@@ -250,6 +252,12 @@ impl ClientMessageHandler {
             Message::GetFallbackToLocalPoW => Ok(Response::FallbackToLocalPoW(
                 self.client.get_fallback_to_local_pow().await,
             )),
+            #[cfg(feature = "ledger_nano")]
+            Message::GetLedgerStatus { is_simulator } => {
+                let ledger_nano = LedgerSecretManager::new(is_simulator);
+
+                Ok(Response::LedgerStatus(ledger_nano.get_ledger_status().await))
+            }
             Message::PrepareTransaction {
                 secret_manager,
                 options,

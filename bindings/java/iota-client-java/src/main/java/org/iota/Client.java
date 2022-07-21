@@ -327,6 +327,10 @@ public class Client {
         return miscellaneousApi.getUnsyncedNodes();
     }
 
+    public LedgerStatus getLedgerStatus(boolean isSimulator) throws ClientException {
+        return miscellaneousApi.getLedgerStatus(isSimulator);
+    }
+
     public PreparedTransactionData prepareTransaction(SecretManager secretManager, GenerateBlockOptions generateBlockOptions) throws ClientException {
         return miscellaneousApi.prepareTransaction(secretManager, generateBlockOptions);
     }

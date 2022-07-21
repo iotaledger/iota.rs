@@ -7,7 +7,7 @@ use std::collections::HashSet;
 
 use bee_block::{
     address::Address,
-    output::{AliasId, ByteCostConfig, Output},
+    output::{AliasId, Output, RentStructure},
 };
 use crypto::keys::slip10::Chain;
 
@@ -29,7 +29,7 @@ use crate::{
 pub(crate) async fn get_custom_inputs(
     block_builder: &ClientBlockBuilder<'_>,
     governance_transition: Option<HashSet<AliasId>>,
-    byte_cost_config: &ByteCostConfig,
+    rent_structure: &RentStructure,
     allow_burning: bool,
 ) -> Result<SelectedTransactionData> {
     log::debug!("[get_custom_inputs]");
@@ -89,7 +89,7 @@ pub(crate) async fn get_custom_inputs(
         block_builder.outputs.clone(),
         true,
         block_builder.custom_remainder_address,
-        byte_cost_config,
+        rent_structure,
         allow_burning,
         local_time,
     )?;

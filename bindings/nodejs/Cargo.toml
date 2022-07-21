@@ -18,7 +18,7 @@ exclude = [ "artifacts.json", "index.node" ]
 crate-type = [ "cdylib" ]
 
 [dependencies]
-iota-client = { path = "../../", features = [ "message_interface", "mqtt" ] }
+iota-client = { path = "../../", default-features = false, features = [ "ledger_nano", "message_interface", "mqtt", "stronghold", "tls" ] }
 
 backtrace = { version = "0.3.66", default-features = false }
 fern-logger = { version = "0.5.0", default-features = false }

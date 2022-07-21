@@ -2,8 +2,7 @@ name: Examine the Java Bindings
 on:
   push:
     branches:
-      # disabled until Java binding is updated
-      # - develop
+      - develop
       - dev
     paths:
       - ".github/workflows/examine-java-bindings.yml"
@@ -15,8 +14,7 @@ on:
       - "Cargo.lock"
   pull_request:
     branches:
-      # disabled until Java binding is updated
-      # - develop
+      - develop
       - dev
     paths:
       - ".github/workflows/examine-java-bindings.yml"
@@ -31,7 +29,7 @@ on:
   workflow_dispatch:
 
 concurrency: 
-  group: ${{ github.head_ref || github.ref_name }} 
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
 jobs:
@@ -56,7 +54,7 @@ jobs:
         with:
           toolchain: nightly
           cache: true
-          cache-root: bindings/java/native/
+          cache-root: bindings/java/iota-client-java/native/
           cache-job-id: ${{ github.workflow }}-${{ github.job }}-${{ matrix.os }}-${{ matrix.java }}
           cache-hash: ${{ hashFiles('.github/workflows/examine-java-bindings.yml') }}
 
@@ -72,15 +70,23 @@ jobs:
         if: ${{ startsWith(matrix.os, 'windows') }}
         uses: ./.github/actions/setup-clang
 
+      - name: Install Required Dependencies (Ubuntu)
+        if: ${{ startsWith(matrix.os, 'ubuntu') }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install libudev-dev libusb-1.0-0-dev
+
       - name: Run Cargo Test
         uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --manifest-path bindings/java/native/Cargo.toml --all-features --release
+          args: --manifest-path bindings/java/iota-client-java/native/Cargo.toml --all-features --release
 
       - name: Run Gradle Test
-        working-directory: bindings/java/
-        run: ./gradlew test
+        working-directory: bindings/java/iota-client-java/
+        run: |
+          chmod +x gradlew
+          ./gradlew test
 
   lint:
     name: Lint
@@ -97,15 +103,20 @@ jobs:
           toolchain: beta
           components: clippy
           cache: true
-          cache-root: bindings/java/native/
+          cache-root: bindings/java/iota-client-java/native/
           cache-job-id: ${{ github.workflow }}-${{ github.job }}
           cache-hash: ${{ hashFiles('.github/workflows/examine-java-bindings.yml') }}
+
+      - name: Install Required Dependencies (Ubuntu)
+        run: |
+          sudo apt-get update
+          sudo apt-get install libudev-dev libusb-1.0-0-dev
 
       - name: Run Clippy
         uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          args: --manifest-path bindings/java/native/Cargo.toml --all-features --all-targets -- --deny warnings
+          args: --manifest-path bindings/java/iota-client-java/native/Cargo.toml --all-features --all-targets -- --deny warnings
           name: Clippy Results for the Java Bindings
 
       # TODO: Lint the Java code too
@@ -125,15 +136,20 @@ jobs:
           toolchain: nightly
           cache: true
           install: cargo-udeps
-          cache-root: bindings/java/native/
+          cache-root: bindings/java/iota-client-java/native/
           cache-job-id: ${{ github.workflow }}-${{ github.job }}
           cache-hash: ${{ hashFiles('.github/workflows/examine-java-bindings.yml') }}
+
+      - name: Install Required Dependencies (Ubuntu)
+        run: |
+          sudo apt-get update
+          sudo apt-get install libudev-dev libusb-1.0-0-dev
 
       - name: Run Cargo Udeps
         uses: actions-rs/cargo@v1
         with:
           command: udeps
-          args: --manifest-path bindings/java/native/Cargo.toml --all-targets --all-features
+          args: --manifest-path bindings/java/iota-client-java/native/Cargo.toml --all-targets --all-features
 
       # TODO: Check gradle too
 
@@ -163,7 +179,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: fmt
-          args: --manifest-path bindings/java/native/Cargo.toml --all -- --check
+          args: --manifest-path bindings/java/iota-client-java/native/Cargo.toml --all -- --check
 
       - name: Run cargo-license-template
         uses: actions-rs/cargo@v1
@@ -195,6 +211,6 @@ jobs:
         with:
           command: audit
           # NOTE: Workspace
-          args: --file bindings/java/Cargo.lock --deny warnings
+          args: --file bindings/java/iota-client-java/native/Cargo.lock --deny warnings
 
       # TODO: Check the Java code too

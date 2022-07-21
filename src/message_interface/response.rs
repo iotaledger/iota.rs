@@ -23,6 +23,8 @@ use bee_block::{
 };
 use serde::Serialize;
 
+#[cfg(feature = "ledger_nano")]
+use crate::secret::LedgerStatus;
 use crate::{api::PreparedTransactionDataDto, builder::NetworkInfo, node_manager::node::Node, Error, NodeInfoWrapper};
 
 /// The response message.
@@ -62,6 +64,10 @@ pub enum Response {
     /// Response for:
     /// - [`GetFallbackToLocalPoW`](crate::message_interface::Message::GetFallbackToLocalPoW)
     FallbackToLocalPoW(bool),
+    /// Response for:
+    /// - [`GetLedgerStatus`](crate::message_interface::Message::GetLedgerStatus)
+    #[cfg(feature = "ledger_nano")]
+    LedgerStatus(LedgerStatus),
     /// Response for:
     /// - [`PrepareTransaction`](crate::message_interface::Message::PrepareTransaction)
     PreparedTransactionData(PreparedTransactionDataDto),

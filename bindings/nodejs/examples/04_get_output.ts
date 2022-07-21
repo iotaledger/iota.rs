@@ -4,7 +4,7 @@ import { Client, initLogger } from '@iota/client';
 require('dotenv').config({ path: '../.env' });
 
 // Run with command:
-// node ./dist/04b_get_output.js
+// node ./dist/04_get_output.js
 
 // In this example we will get output from a known outputId
 async function run() {

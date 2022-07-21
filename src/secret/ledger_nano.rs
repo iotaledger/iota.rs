@@ -119,16 +119,8 @@ pub fn needs_blind_signing(prepared_transaction: &PreparedTransactionData, buffe
         TransactionEssence::Regular(essence) => {
             for output in essence.outputs().iter() {
                 // only basic outputs allowed
-                if let Output::Basic(s) = output {
-                    // no native tokens
-                    // only one address unlock
-                    // no features
-                    if let ([], [UnlockCondition::Address(_)], []) = (
-                        s.native_tokens().as_ref(),
-                        s.unlock_conditions().as_ref(),
-                        s.features().as_ref(),
-                    ) {
-                        // all fine, continue with next output
+                if let Output::Basic(output) = output {
+                    if output.simple_deposit_address().is_some() {
                         continue;
                     }
                 }

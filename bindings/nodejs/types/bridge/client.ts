@@ -114,6 +114,13 @@ export interface __FindOutputsMessage__ {
     };
 }
 
+export interface __GetLedgerStatusMessage__ {
+    name: 'GetLedgerStatus';
+    data: {
+        isSimulator: boolean;
+    };
+}
+
 export interface __PrepareTransactionMessage__ {
     name: 'PrepareTransaction';
     data: {
