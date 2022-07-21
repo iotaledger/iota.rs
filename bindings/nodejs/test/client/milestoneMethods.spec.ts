@@ -17,24 +17,28 @@ describe.skip('Milestone methods', () => {
         const info = await client.getInfo();
         const milestoneId = info.nodeInfo.status.confirmedMilestone.milestoneId;
 
-        const milestone = await client.getMilestoneById(milestoneId!);
+        if (milestoneId !== undefined) {
+            const milestone = await client.getMilestoneById(milestoneId);
 
-        expect(milestone.index).toEqual(
-            info.nodeInfo.status.confirmedMilestone.index,
-        );
+            expect(milestone.index).toEqual(
+                info.nodeInfo.status.confirmedMilestone.index,
+            );
+        }
     });
 
     it('gets all UTXO changes of a given milestone by milestone ID', async () => {
         const info = await client.getInfo();
         const milestoneId = info.nodeInfo.status.confirmedMilestone.milestoneId;
 
-        const milestoneUtxoChanges = await client.getUtxoChangesById(
-            milestoneId!,
-        );
+        if (milestoneId !== undefined) {
+            const milestoneUtxoChanges = await client.getUtxoChangesById(
+                milestoneId,
+            );
 
-        expect(milestoneUtxoChanges.index).toEqual(
-            info.nodeInfo.status.confirmedMilestone.index,
-        );
+            expect(milestoneUtxoChanges.index).toEqual(
+                info.nodeInfo.status.confirmedMilestone.index,
+            );
+        }
     });
 
     it('gets milestone by given milestone index', async () => {
