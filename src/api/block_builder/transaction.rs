@@ -102,11 +102,7 @@ impl<'a> ClientBlockBuilder<'a> {
         }
         let secret_manager = self.secret_manager.ok_or(Error::MissingParameter("secret manager"))?;
         let unlocks = secret_manager
-            .sign_transaction_essence(
-                // IOTA_COIN_TYPE,
-                // self.account_index.unwrap_or(0),
-                &prepared_transaction_data,
-            )
+            .sign_transaction_essence(&prepared_transaction_data)
             .await?;
         let tx_payload = TransactionPayload::new(prepared_transaction_data.essence.clone(), unlocks)?;
 
