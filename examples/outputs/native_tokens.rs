@@ -62,9 +62,7 @@ async fn main() -> Result<()> {
 
     // Replace with the token ID of native tokens you own.
     let token_id: [u8; 38] =
-        hex::decode("08e68f7616cd4948efebc6a77c4f935eaed770ac53869cba56d104f2b472a8836d0100000000")?
-            .try_into()
-            .unwrap();
+        prefix_hex::decode("0x08e68f7616cd4948efebc6a77c4f935eaed770ac53869cba56d104f2b472a8836d0100000000")?;
 
     let outputs = vec![
         // Without StorageDepositReturnUnlockCondition, the receiver will get the amount of the output and the native

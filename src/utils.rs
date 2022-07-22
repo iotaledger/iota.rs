@@ -41,10 +41,9 @@ pub fn hex_to_bech32(hex: &str, bech32_hrp: &str) -> Result<String> {
     Ok(Address::Ed25519(address).to_bech32(bech32_hrp))
 }
 
-/// Transforms a hex encoded public key to a bech32 encoded address
+/// Transforms a prefix hex encoded public key to a bech32 encoded address
 pub fn hex_public_key_to_bech32_address(hex: &str, bech32_hrp: &str) -> Result<String> {
-    let mut public_key = [0u8; Ed25519Address::LENGTH];
-    hex::decode_to_slice(&hex, &mut public_key)?;
+    let public_key: [u8; Ed25519Address::LENGTH] = prefix_hex::decode(hex)?;
 
     let address = Blake2b256::digest(&public_key)
         .try_into()
@@ -82,7 +81,7 @@ pub fn mnemonic_to_hex_seed(mnemonic: &str) -> Result<String> {
         .map_err(|e| crate::Error::InvalidMnemonic(format!("{:?}", e)))?;
     let mut mnemonic_seed = [0u8; 64];
     crypto::keys::bip39::mnemonic_to_seed(mnemonic, "", &mut mnemonic_seed);
-    Ok(hex::encode(mnemonic_seed))
+    Ok(prefix_hex::encode(mnemonic_seed))
 }
 
 /// Returns a seed for a mnemonic.

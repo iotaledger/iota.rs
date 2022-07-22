@@ -82,10 +82,10 @@ pub enum Error {
     /// Error on API request
     #[error("Node error: {0}")]
     NodeError(String),
-    /// Hex string convert error
+    /// Prefix xex string convert error
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
-    FromHexError(#[from] hex::FromHexError),
+    FromHexError(#[from] prefix_hex::Error),
     /// Block types error
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]

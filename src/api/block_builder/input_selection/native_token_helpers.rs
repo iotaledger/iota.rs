@@ -111,9 +111,7 @@ mod tests {
     #[test]
     fn nativ_token() {
         let token_id_bytes: [u8; 38] =
-            hex::decode("08e68f7616cd4948efebc6a77c4f935eaed770ac53869cba56d104f2b472a8836d0100000000")
-                .unwrap()
-                .try_into()
+            prefix_hex::decode("0x08e68f7616cd4948efebc6a77c4f935eaed770ac53869cba56d104f2b472a8836d0100000000")
                 .unwrap();
         let token_id = TokenId::from(token_id_bytes);
 
