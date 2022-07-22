@@ -12,7 +12,11 @@ This secret manager gives access to the funds located on the incorrectly derived
 public class WrongSeedConversionSecretManager extends SeedSecretManager {
     
     public WrongSeedConversionSecretManager(String hexSeed) {
-        super(Hex.encodeHexString(hexSeed.getBytes()));
+        // Remove the prefix hex
+        if (hexSeed.startsWith("0x")) {
+            hexSeed = hexSeed.replace("0x", "");
+        }
+        super(Hex.encodeHexString(hexSeed.substring(2).getBytes()));
     }
 
 }
