@@ -1136,7 +1136,7 @@ dependencies = [
 
 [[package]]
 name = "iota-client"
-version = "1.1.1"
+version = "2.0.0-beta.1"
 dependencies = [
  "async-trait",
  "backtrace",
@@ -1959,9 +1959,9 @@ checksum = "a2333e6df6d6598f2b1974829f853c2b4c5f4a6e503c10af918081aa6f8564e1"
 
 [[package]]
 name = "serde"
-version = "1.0.139"
+version = "1.0.140"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0171ebb889e45aa68b44aee0859b3eede84c6f5f5c228e6f140c0b2a0a46cad6"
+checksum = "fc855a42c7967b7c369eb5860f7164ef1f6f81c20c7cc1141f2a604e18723b03"
 dependencies = [
  "serde_derive",
 ]
@@ -1977,9 +1977,9 @@ dependencies = [
 
 [[package]]
 name = "serde_derive"
-version = "1.0.139"
+version = "1.0.140"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dc1d3230c1de7932af58ad8ffbe1d784bd55efd5a9d84ac24f69c72d83543dfb"
+checksum = "6f2122636b9fe3b81f1cb25099fcf2d3f542cdb1d45940d56c713158884a05da"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2754,9 +2754,9 @@ dependencies = [
 
 [[package]]
 name = "zeroize"
-version = "1.5.6"
+version = "1.5.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "20b578acffd8516a6c3f2a1bdefc1ec37e547bb4e0fb8b6b01a4cafc886b4442"
+checksum = "c394b5bd0c6f669e7275d9c20aa90ae064cb22e75a1cad54e1b34088034b149f"
 dependencies = [
  "zeroize_derive",
 ]
