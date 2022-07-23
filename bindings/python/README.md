@@ -53,7 +53,7 @@ LOCAL_NODE_URL = "http://0.0.0.0:14265"
 # NOTE! Load the seed from your env path instead
 # NEVER assign the seed directly in your codes!
 # DO NOT USE THIS!!:
-# SEED = "256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2"
+# SEED = "0x256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2"
 
 # USE THIS INSTEAD
 SEED = os.getenv('MY_IOTA_SEED')

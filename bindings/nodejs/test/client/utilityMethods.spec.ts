@@ -45,7 +45,7 @@ describe('Client utility methods', () => {
 
     it('converts hex public key to bech32 address', async () => {
         const hexPublicKey =
-            '2baaf3bca8ace9f862e60184bd3e79df25ff230f7eaaa4c7f03daa9833ba854a';
+            '0x2baaf3bca8ace9f862e60184bd3e79df25ff230f7eaaa4c7f03daa9833ba854a';
 
         const address = await offlineClient.hexPublicKeyToBech32Address(
             hexPublicKey,

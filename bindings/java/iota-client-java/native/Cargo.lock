@@ -145,9 +145,9 @@ checksum = "c5738be7561b0eeb501ef1d5c5db3f24e01ceb55fededd9b00039aada34966ad"
 
 [[package]]
 name = "bee-api-types"
-version = "1.0.0-beta.1"
+version = "1.0.0-beta.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dfc6aeb5477ba979e80e4de1cda0a54fd8f203f85daf60a9de22df081d7db1b3"
+checksum = "a3df8dc5e56178ad5d138bcbb1c830a6948a0beaa853d3b1b4d02b1e914606e6"
 dependencies = [
  "axum",
  "bee-block",
@@ -158,9 +158,9 @@ dependencies = [
 
 [[package]]
 name = "bee-block"
-version = "1.0.0-beta.2"
+version = "1.0.0-beta.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2c4859bc56b81c4085e18dc7242b6126f3c45063ee33e28735e7e65b1574ff53"
+checksum = "561813c7a9f01ab55042f5dbbfc4672b1a91711814c3d226c2b7729a20fa8521"
 dependencies = [
  "bech32 0.9.0",
  "bee-pow",
@@ -183,9 +183,9 @@ dependencies = [
 
 [[package]]
 name = "bee-ledger-types"
-version = "1.0.0-beta.2"
+version = "1.0.0-beta.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1c7bba7b997d7f1bee2177fb9ac7dad50808ed878c5be0af1a8b779d68c8d7b8"
+checksum = "f71691001d120a2dc1223b1330fedf84fe3e09c121eb18940d9aec2954c08343"
 dependencies = [
  "bee-block",
  "packable",
@@ -950,13 +950,13 @@ dependencies = [
  "derive_builder",
  "futures",
  "gloo-timers",
- "hex",
  "instant",
  "iota-crypto",
  "iota-ledger-nano",
  "log",
  "num_cpus",
  "packable",
+ "prefix-hex",
  "primitive-types",
  "reqwest",
  "serde",

@@ -14,7 +14,7 @@ public class AddressDerivation extends ApiTest {
         Client client = new Client(config);
 
         // The hex seed that is affected by the seed conversion bug.
-        String hexSeed = "4e4f4e5345435552455f5553455f4f465f444556454c4f504d454e545f534545445f31";
+        String hexSeed = "0x4e4f4e5345435552455f5553455f4f465f444556454c4f504d454e545f534545445f31";
 
         // Test the hex seed with the wrong + valid seed secret manager.
         org.iota.types.secret.WrongSeedConversionSecretManager wrongSecretManager = new org.iota.types.secret.WrongSeedConversionSecretManager(hexSeed);
