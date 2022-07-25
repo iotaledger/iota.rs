@@ -63,7 +63,7 @@ public class HighLevelApiTest extends ApiTest {
         GenerateBlockOptions.ClientBlockBuilderOutputAddress output = new GenerateBlockOptions.ClientBlockBuilderOutputAddress(addresses[1], Integer.toString(1000000));
         Block b = client.generateBlock(secretManager, new GenerateBlockOptions().withOutput(output));
         BlockId id = client.postBlock(b);
-        LinkedHashMap<BlockId, Block> ret = client.retryUntilIncluded(id, 1, 10);
+        LinkedHashMap<BlockId, Block> ret = client.retryUntilIncluded(id, 2, 15);
         for(BlockId i : ret.keySet())
             System.out.println(i);
     }
