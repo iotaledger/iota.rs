@@ -50,7 +50,7 @@ async fn generate_addresses() {
 
 #[tokio::test]
 #[should_panic]
-async fn generate_block() {
+async fn build_and_post_block() {
     // This test uses dotenv, which is not safe for use in production
     dotenv().ok();
 
@@ -119,12 +119,12 @@ async fn generate_block() {
     let options = format!("{{\"inputs\": {inputs},\"output\": {output}}}");
 
     let options = serde_json::from_str(&options).unwrap();
-    let generate_block = Message::BuildAndPostBlock {
+    let build_and_post_block = Message::BuildAndPostBlock {
         secret_manager: Some(serde_json::from_str(&secret_manager).unwrap()),
         options: Some(options),
     };
 
-    let response = message_interface::send_message(&message_handler, generate_block).await;
+    let response = message_interface::send_message(&message_handler, build_and_post_block).await;
     match response {
         Response::BlockIdWithBlock(block_data) => {
             println!("{}", serde_json::to_string(&block_data).unwrap());

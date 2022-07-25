@@ -95,10 +95,10 @@ pub enum Response {
     Tips(Vec<BlockId>),
     /// Response for:
     /// - [`GetBlock`](crate::message_interface::Message::GetBlock)
-    /// - [`GenerateBlock`](crate::message_interface::Message::GenerateBlock)
     /// - [`GetIncludedBlock`](crate::message_interface::Message::GetIncludedBlock)
     Block(BlockDto),
     /// Response for:
+    /// - [`BuildAndPostBlock`](crate::message_interface::Message::BuildAndPostBlock)
     /// - [`PostBlockPayload`](crate::message_interface::Message::PostBlockPayload)
     /// - [`Retry`](crate::message_interface::Message::Retry)
     BlockIdWithBlock(BlockId, BlockDto),

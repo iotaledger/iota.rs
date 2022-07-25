@@ -27,17 +27,17 @@ async function run() {
         const secretManager = { Mnemonic: mnemonic };
 
         // Create block with tagged payload
-        const block = await client.generateBlock(secretManager, options);
-        console.log('Block:', block, '\n');
-
-        // Send block
-        const blockId = await client.postBlock(block);
+        const blockIdAndBlock = await client.buildAndPostBlock(
+            secretManager,
+            options,
+        );
+        console.log('Block:', blockIdAndBlock, '\n');
 
         console.log(
-            `Block sent: ${process.env.EXPLORER_URL}/block/${blockId}\n`,
+            `Block sent: ${process.env.EXPLORER_URL}/block/${blockIdAndBlock[0]}\n`,
         );
 
-        const fetchedBlock = await client.getBlock(blockId);
+        const fetchedBlock = await client.getBlock(blockIdAndBlock[0]);
         console.log('Block data: ', fetchedBlock);
 
         const payload = fetchedBlock.payload;

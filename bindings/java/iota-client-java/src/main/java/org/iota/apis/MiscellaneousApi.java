@@ -12,7 +12,7 @@ import org.iota.types.output_builder.BasicOutputBuilderParams;
 import org.iota.types.output_builder.FoundryOutputBuilderParams;
 import org.iota.types.output_builder.NftOutputBuilderParams;
 import org.iota.types.secret.GenerateAddressesOptions;
-import org.iota.types.secret.GenerateBlockOptions;
+import org.iota.types.secret.BuildBlockOptions;
 import org.iota.types.secret.SecretManager;
 
 import java.util.AbstractMap;
@@ -71,7 +71,7 @@ public class MiscellaneousApi extends BaseApi {
         return addresses;
     }
 
-    public Map.Entry<BlockId, Block> buildAndPostBlock(SecretManager secretManager, GenerateBlockOptions options) throws ClientException {
+    public Map.Entry<BlockId, Block> buildAndPostBlock(SecretManager secretManager, BuildBlockOptions options) throws ClientException {
         JsonObject o = new JsonObject();
         o.add("secretManager", secretManager != null ? secretManager.getJson() : null);
         o.add("options", options != null ? options.getJson() : null);
@@ -144,10 +144,10 @@ public class MiscellaneousApi extends BaseApi {
         return new LedgerStatus(responsePayload);
     }
 
-    public PreparedTransactionData prepareTransaction(SecretManager secretManager, GenerateBlockOptions generateBlockOptions) throws ClientException {
+    public PreparedTransactionData prepareTransaction(SecretManager secretManager, BuildBlockOptions buildBlockOptions) throws ClientException {
         JsonObject o = new JsonObject();
         o.add("secretManager", secretManager.getJson());
-        o.add("generateBlockOptions", generateBlockOptions.getJson());
+        o.add("buildBlockOptions", buildBlockOptions.getJson());
 
         JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("PrepareTransaction", o));
 

@@ -60,8 +60,8 @@ public class HighLevelApiTest extends ApiTest {
         SecretManager secretManager = new MnemonicSecretManager(client.generateMnemonic());
         String[] addresses = client.generateAddresses(secretManager, new GenerateAddressesOptions().withRange(new Range(0, 2)));
         requestFundsFromFaucet(addresses[0]);
-        GenerateBlockOptions.ClientBlockBuilderOutputAddress output = new GenerateBlockOptions.ClientBlockBuilderOutputAddress(addresses[1], Integer.toString(1000000));
-        Map.Entry<BlockId, Block> entry = client.buildAndPostBlock(secretManager, new GenerateBlockOptions().withOutput(output));
+        BuildBlockOptions.ClientBlockBuilderOutputAddress output = new BuildBlockOptions.ClientBlockBuilderOutputAddress(addresses[1], Integer.toString(1000000));
+        Map.Entry<BlockId, Block> entry = client.buildAndPostBlock(secretManager, new BuildBlockOptions().withOutput(output));
         LinkedHashMap<BlockId, Block> ret = client.retryUntilIncluded(entry.getKey(), 2, 15);
         for(BlockId i : ret.keySet())
             System.out.println(i);

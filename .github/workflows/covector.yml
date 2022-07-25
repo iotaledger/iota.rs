@@ -75,8 +75,8 @@ jobs:
 
   nodejs-binding-prebuild:
     name: Build Prebuilt Binaries for Node.js
-    if: ${{ needs.version-or-publish.outputs.successfulPublish == 'true' }}
     needs: version-or-publish
+    if: needs.version-or-publish.outputs.successfulPublish == 'true'
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -85,8 +85,16 @@ jobs:
         # (which is used by neon-sys) sadly fails to recognize it. As a mitigation, we still run the
         # tests on Windows 2019, until we can figure out a way to fix the problem.
         # NOTE: Using Ubuntu 18.04 to provide glibc compatibility. (#588)
-        os: [ubuntu-18.04, macos-latest, windows-2019]
-        node: ['14', '16', '18']
+        os: [ubuntu-18.04, ubuntu-latest, macos-latest, windows-2019]
+        node-version: ['14.x', '16.x', '18.x']
+        exclude:
+          # GLIBC_2.28 is only available with a newer ubuntu version
+          - os: ubuntu-18.04
+            node-version: ['18.x']
+        exclude:
+          # ubuntu-18.04 is needed for for node 14.x and 16.x
+          - os: ubuntu-latest
+            node-version: ['14.x', '16.x']
 
     steps:
       - name: Checkout the Source Code
@@ -123,9 +131,7 @@ jobs:
 
   electron-binding-prebuild:
     name: Build Prebuilt Binaries for Electron
-    # if: ${{ needs.version-or-publish.outputs.successfulPublish == 'true' }}
-    # FIXME: Temporary unsupported. (#782)
-    if: ${{ false }}
+    if: needs.version-or-publish.outputs.successfulPublish == 'true'
     needs: version-or-publish
     runs-on: ${{ matrix.os }}
     strategy:

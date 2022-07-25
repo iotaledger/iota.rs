@@ -4,7 +4,7 @@ import { MessageHandler } from './MessageHandler';
 import type {
     IClientOptions,
     IGenerateAddressesOptions,
-    IGenerateBlockOptions,
+    IBuildBlockOptions,
     QueryParameter,
     IPreparedTransactionData,
     BlockId,
@@ -150,13 +150,13 @@ export class Client {
         return JSON.parse(response).payload;
     }
 
-    /** Generate client block */
-    async generateBlock(
+    /** Build and post a block */
+    async buildAndPostBlock(
         secretManager?: SecretManager,
-        options?: IGenerateBlockOptions,
-    ): Promise<IBlock> {
+        options?: IBuildBlockOptions,
+    ): Promise<[BlockId, IBlock]> {
         const response = await this.messageHandler.sendMessage({
-            name: 'GenerateBlock',
+            name: 'BuildAndPostBlock',
             data: {
                 secretManager,
                 options,
@@ -276,7 +276,7 @@ export class Client {
      */
     async prepareTransaction(
         secretManager?: SecretManager,
-        options?: IGenerateBlockOptions,
+        options?: IBuildBlockOptions,
     ): Promise<IPreparedTransactionData> {
         const response = await this.messageHandler.sendMessage({
             name: 'PrepareTransaction',

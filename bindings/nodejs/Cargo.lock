@@ -233,8 +233,9 @@ checksum = "c5738be7561b0eeb501ef1d5c5db3f24e01ceb55fededd9b00039aada34966ad"
 
 [[package]]
 name = "bee-api-types"
-version = "1.0.0-alpha.1"
-source = "git+https://github.com/iotaledger/bee?rev=4b1ed2a12d02314125e4e5e85a113121182285a4#4b1ed2a12d02314125e4e5e85a113121182285a4"
+version = "1.0.0-beta.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a3df8dc5e56178ad5d138bcbb1c830a6948a0beaa853d3b1b4d02b1e914606e6"
 dependencies = [
  "axum",
  "bee-block",
@@ -245,8 +246,9 @@ dependencies = [
 
 [[package]]
 name = "bee-block"
-version = "1.0.0-beta.1"
-source = "git+https://github.com/iotaledger/bee?rev=4b1ed2a12d02314125e4e5e85a113121182285a4#4b1ed2a12d02314125e4e5e85a113121182285a4"
+version = "1.0.0-beta.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "561813c7a9f01ab55042f5dbbfc4672b1a91711814c3d226c2b7729a20fa8521"
 dependencies = [
  "bech32 0.9.0",
  "bee-pow",
@@ -269,8 +271,9 @@ dependencies = [
 
 [[package]]
 name = "bee-ledger-types"
-version = "1.0.0-beta.1"
-source = "git+https://github.com/iotaledger/bee?rev=4b1ed2a12d02314125e4e5e85a113121182285a4#4b1ed2a12d02314125e4e5e85a113121182285a4"
+version = "1.0.0-beta.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f71691001d120a2dc1223b1330fedf84fe3e09c121eb18940d9aec2954c08343"
 dependencies = [
  "bee-block",
  "packable",
@@ -1191,7 +1194,7 @@ dependencies = [
 
 [[package]]
 name = "iota-client"
-version = "1.1.1"
+version = "2.0.0-beta.1"
 dependencies = [
  "async-trait",
  "backtrace",
@@ -1202,7 +1205,6 @@ dependencies = [
  "derive_builder",
  "futures",
  "gloo-timers",
- "hex",
  "instant",
  "iota-crypto 0.13.0",
  "iota-ledger-nano",
@@ -1211,6 +1213,7 @@ dependencies = [
  "num_cpus",
  "once_cell",
  "packable",
+ "prefix-hex",
  "primitive-types",
  "regex",
  "reqwest",

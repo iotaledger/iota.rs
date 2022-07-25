@@ -1,7 +1,7 @@
 import type { IBlock, PayloadTypes } from '@iota/types';
 import type { SecretManager } from '../secretManager';
 import type { IGenerateAddressesOptions } from '../generateAddressesOptions';
-import type { IGenerateBlockOptions } from '../generateBlockOptions';
+import type { IBuildBlockOptions } from '../buildBlockOptions';
 import type { BlockId } from '../blockId';
 import type { IPreparedTransactionData } from '../preparedTransactionData';
 import type {
@@ -68,11 +68,11 @@ export interface __PostBlockMessage__ {
     };
 }
 
-export interface __GenerateBlockMessage__ {
-    name: 'GenerateBlock';
+export interface __BuildAndPostBlockMessage__ {
+    name: 'BuildAndPostBlock';
     data: {
         secretManager?: SecretManager;
-        options?: IGenerateBlockOptions;
+        options?: IBuildBlockOptions;
     };
 }
 
@@ -125,7 +125,7 @@ export interface __PrepareTransactionMessage__ {
     name: 'PrepareTransaction';
     data: {
         secretManager?: SecretManager;
-        options?: IGenerateBlockOptions;
+        options?: IBuildBlockOptions;
     };
 }
 

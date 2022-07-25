@@ -15,7 +15,7 @@ import org.iota.types.responses.NodeInfoResponse;
 import org.iota.types.responses.TreasuryResponse;
 import org.iota.types.responses.UtxoChangesResponse;
 import org.iota.types.secret.GenerateAddressesOptions;
-import org.iota.types.secret.GenerateBlockOptions;
+import org.iota.types.secret.BuildBlockOptions;
 import org.iota.types.secret.Range;
 import org.iota.types.secret.SecretManager;
 
@@ -286,7 +286,7 @@ public class Client {
         return miscellaneousApi.generateAddresses(secretManager, generateAddressesOptions);
     }
 
-    public Map.Entry<BlockId, Block> buildAndPostBlock(SecretManager secretManager, GenerateBlockOptions options) throws ClientException {
+    public Map.Entry<BlockId, Block> buildAndPostBlock(SecretManager secretManager, BuildBlockOptions options) throws ClientException {
         return miscellaneousApi.buildAndPostBlock(secretManager, options);
     }
 
@@ -331,8 +331,8 @@ public class Client {
         return miscellaneousApi.getLedgerStatus(isSimulator);
     }
 
-    public PreparedTransactionData prepareTransaction(SecretManager secretManager, GenerateBlockOptions generateBlockOptions) throws ClientException {
-        return miscellaneousApi.prepareTransaction(secretManager, generateBlockOptions);
+    public PreparedTransactionData prepareTransaction(SecretManager secretManager, BuildBlockOptions buildBlockOptions) throws ClientException {
+        return miscellaneousApi.prepareTransaction(secretManager, buildBlockOptions);
     }
 
     public TransactionPayload signTransaction(SecretManager secretManager, PreparedTransactionData preparedTransactionData) throws ClientException {

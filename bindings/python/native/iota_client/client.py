@@ -103,10 +103,10 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
             'options': options
         })
 
-    def generate_block(self, secret_manager=None, options=None):
-        """Generate client block.
+    def build_and_post_block(self, secret_manager=None, options=None):
+        """Build and post a block.
         """
-        return self.send_message('GenerateBlock', {
+        return self.send_message('BuildAndPostBlock', {
             'secret_manager': secret_manager,
             'options': options
         })

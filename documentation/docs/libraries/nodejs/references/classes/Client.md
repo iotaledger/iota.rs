@@ -14,7 +14,7 @@ The Client to interact with nodes.
 - [generateMnemonic](Client.md#generatemnemonic)
 - [mnemonicToHexSeed](Client.md#mnemonictohexseed)
 - [generateAddresses](Client.md#generateaddresses)
-- [generateBlock](Client.md#generateblock)
+- [buildAndPostBlock](Client.md#buildandpostblock)
 - [getTips](Client.md#gettips)
 - [postBlock](Client.md#postblock)
 - [getBlock](Client.md#getblock)
@@ -204,22 +204,22 @@ Generate addresses
 
 ___
 
-### generateBlock
+### buildAndPostBlock
 
-▸ **generateBlock**(`secretManager?`, `options?`): `Promise`<`IBlock`\>
+▸ **buildAndPostBlock**(`secretManager?`, `options?`): `Promise`<[`string`, `IBlock`]\>
 
-Generate client block
+Build and post a block
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
 | `secretManager?` | [`SecretManager`](../api_ref.md#secretmanager) |
-| `options?` | [`IGenerateBlockOptions`](../interfaces/IGenerateBlockOptions.md) |
+| `options?` | [`IBuildBlockOptions`](../interfaces/IBuildBlockOptions.md) |
 
 #### Returns
 
-`Promise`<`IBlock`\>
+`Promise`<[`string`, `IBlock`]\>
 
 ___
 
@@ -358,7 +358,7 @@ Prepare a transaction for signing
 | Name | Type |
 | :------ | :------ |
 | `secretManager?` | [`SecretManager`](../api_ref.md#secretmanager) |
-| `options?` | [`IGenerateBlockOptions`](../interfaces/IGenerateBlockOptions.md) |
+| `options?` | [`IBuildBlockOptions`](../interfaces/IBuildBlockOptions.md) |
 
 #### Returns
 

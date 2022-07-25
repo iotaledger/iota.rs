@@ -9,7 +9,7 @@ import org.iota.types.Output;
 import org.iota.types.UtxoInput;
 import org.iota.types.ids.BlockId;
 
-public class GenerateBlockOptions {
+public class BuildBlockOptions {
 
     private Integer coinType;
     private Integer accountIndex;
@@ -25,67 +25,67 @@ public class GenerateBlockOptions {
     private BlockId[] parents;
     private Boolean allowBurning;
 
-    public GenerateBlockOptions withCoinType(Integer coinType) {
+    public BuildBlockOptions withCoinType(Integer coinType) {
         this.coinType = coinType;
         return this;
     }
 
-    public GenerateBlockOptions withAccountIndex(Integer accountIndex) {
+    public BuildBlockOptions withAccountIndex(Integer accountIndex) {
         this.accountIndex = accountIndex;
         return this;
     }
 
-    public GenerateBlockOptions withInitialAddressIndex(Integer initialAddressIndex) {
+    public BuildBlockOptions withInitialAddressIndex(Integer initialAddressIndex) {
         this.initialAddressIndex = initialAddressIndex;
         return this;
     }
 
-    public GenerateBlockOptions withInputs(UtxoInput[] inputs) {
+    public BuildBlockOptions withInputs(UtxoInput[] inputs) {
         this.inputs = inputs;
         return this;
     }
 
-    public GenerateBlockOptions withInputRange(Range inputRange) {
+    public BuildBlockOptions withInputRange(Range inputRange) {
         this.inputRange = inputRange;
         return this;
     }
 
-    public GenerateBlockOptions withOutput(ClientBlockBuilderOutputAddress output) {
+    public BuildBlockOptions withOutput(ClientBlockBuilderOutputAddress output) {
         this.output = output;
         return this;
     }
 
-    public GenerateBlockOptions withOutputHex(ClientBlockBuilderOutputAddress outputHex) {
+    public BuildBlockOptions withOutputHex(ClientBlockBuilderOutputAddress outputHex) {
         this.outputHex = outputHex;
         return this;
     }
 
-    public GenerateBlockOptions withOutputs(Output[] outputs) {
+    public BuildBlockOptions withOutputs(Output[] outputs) {
         this.outputs = outputs;
         return this;
     }
 
-    public GenerateBlockOptions withCustomRemainderAddress(String customRemainderAddress) {
+    public BuildBlockOptions withCustomRemainderAddress(String customRemainderAddress) {
         this.customRemainderAddress = customRemainderAddress;
         return this;
     }
 
-    public GenerateBlockOptions withTag(byte[] tag) {
+    public BuildBlockOptions withTag(byte[] tag) {
         this.tag = tag;
         return this;
     }
 
-    public GenerateBlockOptions withData(byte[] data) {
+    public BuildBlockOptions withData(byte[] data) {
         this.data = data;
         return this;
     }
 
-    public GenerateBlockOptions withParents(BlockId[] parents) {
+    public BuildBlockOptions withParents(BlockId[] parents) {
         this.parents = parents;
         return this;
     }
 
-    public GenerateBlockOptions withAllowBurning(Boolean allowBurning) {
+    public BuildBlockOptions withAllowBurning(Boolean allowBurning) {
         this.allowBurning = allowBurning;
         return this;
     }

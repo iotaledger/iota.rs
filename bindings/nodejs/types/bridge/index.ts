@@ -7,7 +7,7 @@ import type {
     __MnemonicToHexSeedMessage__,
     __GenerateAddressesMessage__,
     __PostBlockMessage__,
-    __GenerateBlockMessage__,
+    __BuildAndPostBlockMessage__,
     __GetTipsMessage__,
     __GetNetworkInfoMessage__,
     __GetBlockMessage__,
@@ -76,7 +76,7 @@ export type __ClientMessages__ =
     | __MnemonicToHexSeedMessage__
     | __GenerateAddressesMessage__
     | __PostBlockMessage__
-    | __GenerateBlockMessage__
+    | __BuildAndPostBlockMessage__
     | __GetTipsMessage__
     | __GetNetworkInfoMessage__
     | __GetBlockMessage__

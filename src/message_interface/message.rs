@@ -22,7 +22,7 @@ use serde::Deserialize;
 
 use crate::{
     api::{
-        ClientBlockBuilderOptions as GenerateBlockOptions, GetAddressesBuilderOptions as GenerateAddressesOptions,
+        ClientBlockBuilderOptions as BuildBlockOptions, GetAddressesBuilderOptions as GenerateAddressesOptions,
         PreparedTransactionDataDto,
     },
     node_api::indexer::query_parameters::QueryParameter,
@@ -116,7 +116,7 @@ pub enum Message {
         #[serde(rename = "secretManager")]
         secret_manager: Option<SecretManagerDto>,
         /// Options
-        options: Option<GenerateBlockOptions>,
+        options: Option<BuildBlockOptions>,
     },
     /// Get a node candidate from the synced node pool.
     GetNode,
@@ -151,7 +151,7 @@ pub enum Message {
         #[serde(rename = "secretManager")]
         secret_manager: Option<SecretManagerDto>,
         /// Options
-        options: Option<GenerateBlockOptions>,
+        options: Option<BuildBlockOptions>,
     },
     /// Sign a transaction
     SignTransaction {

@@ -136,36 +136,28 @@ describe.skip('Main examples', () => {
     });
 
     it('sends a block', async () => {
-        const block = await client.generateBlock();
+        const blockIdAndBlock = await client.buildAndPostBlock();
 
-        const blockId = await client.postBlock(block);
-
-        expect(blockId).toBeValidBlockId();
+        expect(blockIdAndBlock[0]).toBeValidBlockId();
     });
 
     it('gets block data', async () => {
-        const block = await client.generateBlock();
+        const blockIdAndBlock = await client.buildAndPostBlock();
 
-        // Send block
-        const blockId = await client.postBlock(block);
+        const blockData = await client.getBlock(blockIdAndBlock[0]);
+        const blockMetadata = await client.getBlockMetadata(blockIdAndBlock[0]);
 
-        const blockData = await client.getBlock(blockId);
-        const blockMetadata = await client.getBlockMetadata(blockId);
-
-        expect(blockData).toStrictEqual<IBlock>(block);
+        expect(blockData).toStrictEqual<IBlock>(blockIdAndBlock[1]);
         expect(blockMetadata.blockId).toBeValidBlockId();
     });
 
     it('sends a block with a tagged data payload', async () => {
-        const block = await client.generateBlock(secretManager, {
+        const blockIdAndBlock = await client.buildAndPostBlock(secretManager, {
             tag: utf8ToBytes('Hello'),
             data: utf8ToBytes('Tangle'),
         });
 
-        // Send block
-        const blockId = await client.postBlock(block);
-
-        const fetchedBlock = await client.getBlock(blockId);
+        const fetchedBlock = await client.getBlock(blockIdAndBlock[0]);
 
         expect(fetchedBlock.payload).toStrictEqual<ITaggedDataPayload>({
             type: 5,
@@ -182,16 +174,13 @@ describe.skip('Main examples', () => {
             },
         });
 
-        const block = await client.generateBlock(secretManager, {
+        const blockIdAndBlock = await client.buildAndPostBlock(secretManager, {
             output: {
                 address: addresses[0],
                 amount: '1000000',
             },
         });
 
-        // Send transaction
-        const blockId = await client.postBlock(block);
-
-        expect(blockId).toBeValidBlockId();
+        expect(blockIdAndBlock[0]).toBeValidBlockId();
     });
 });

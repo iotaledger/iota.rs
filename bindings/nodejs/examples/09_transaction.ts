@@ -40,19 +40,16 @@ async function run() {
 
         // We prepare the transaction
         // Insert the output address and amount to spend. The amount cannot be zero.
-        const block = await client.generateBlock(secretManager, {
+        const blockIdAndBlock = await client.buildAndPostBlock(secretManager, {
             output: {
                 address: addresses[0],
                 amount: '1000000',
             },
         });
-        console.log('Block: ', block, '\n');
-
-        // Send transaction
-        const blockId = await client.postBlock(block);
+        console.log('Block: ', blockIdAndBlock, '\n');
 
         console.log(
-            `Transaction sent: ${process.env.EXPLORER_URL}/block/${blockId}`,
+            `Transaction sent: ${process.env.EXPLORER_URL}/block/${blockIdAndBlock[0]}`,
         );
     } catch (error) {
         console.error('Error: ', error);
