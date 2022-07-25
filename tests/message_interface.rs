@@ -126,8 +126,8 @@ async fn build_and_post_block() {
 
     let response = message_interface::send_message(&message_handler, build_and_post_block).await;
     match response {
-        Response::BlockIdWithBlock(block_data) => {
-            println!("{}", serde_json::to_string(&block_data).unwrap());
+        Response::BlockIdWithBlock(block_id, block_data) => {
+            println!("{block_id}: {}", serde_json::to_string(&block_data).unwrap());
         }
         response_type => panic!("Unexpected response type: {:?}", response_type),
     }
