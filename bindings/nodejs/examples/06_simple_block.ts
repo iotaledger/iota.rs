@@ -21,14 +21,11 @@ async function run() {
 
     try {
         // Create block with no payload
-        const block = await client.generateBlock();
-        console.log('Block:', block, '\n');
-
-        // Send block
-        const blockId = await client.postBlock(block);
+        const blockIdAndBlock = await client.buildAndPostBlock();
+        console.log('Block:', blockIdAndBlock, '\n');
 
         console.log(
-            `Empty block sent: ${process.env.EXPLORER_URL}/block/${blockId}`,
+            `Empty block sent: ${process.env.EXPLORER_URL}/block/${blockIdAndBlock[0]}`,
         );
     } catch (error) {
         console.error('Error: ', error);

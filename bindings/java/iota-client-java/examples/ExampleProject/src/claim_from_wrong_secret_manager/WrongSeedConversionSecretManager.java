@@ -7,7 +7,7 @@ import org.iota.types.*;
 import org.iota.types.ids.BlockId;
 import org.iota.types.ids.OutputId;
 import org.iota.types.secret.GenerateAddressesOptions;
-import org.iota.types.secret.GenerateBlockOptions;
+import org.iota.types.secret.BuildBlockOptions;
 import org.iota.types.secret.Range;
 import org.iota.types.secret.SeedSecretManager;
 
@@ -62,10 +62,10 @@ public class WrongSeedConversionSecretManager {
 
         // Build the output for the transaction.
         String receiverAddress = client.generateAddresses(new SeedSecretManager(hexSeed), new GenerateAddressesOptions().withRange(new Range(0, 1)))[0];
-        GenerateBlockOptions.ClientBlockBuilderOutputAddress output = new GenerateBlockOptions.ClientBlockBuilderOutputAddress(receiverAddress, Integer.toString(amountToMigrate));
+        BuildBlockOptions.ClientBlockBuilderOutputAddress output = new BuildBlockOptions.ClientBlockBuilderOutputAddress(receiverAddress, Integer.toString(amountToMigrate));
 
         // Build block.
-        Block b = client.generateBlock(wrongSecretManager, new GenerateBlockOptions().withInputs(inputs.stream().toArray(UtxoInput[]::new)).withOutput(output));
+        Block b = client.buildAndPostBlock(wrongSecretManager, new BuildBlockOptions().withInputs(inputs.stream().toArray(UtxoInput[]::new)).withOutput(output));
 
         // Post the block.
         BlockId blockId = client.postBlock(b);

@@ -212,12 +212,12 @@ impl ClientMessageHandler {
                     .await?;
                 Ok(Response::GeneratedAddresses(addresses))
             }
-            Message::GenerateBlock {
+            Message::BuildAndPostBlock {
                 secret_manager,
                 options,
             } => {
                 // Prepare transaction
-                let mut transaction_builder = self.client.block();
+                let mut block_builder = self.client.block();
 
                 let secret_manager: Option<SecretManager> = match secret_manager {
                     Some(secret_manager) => {
@@ -233,14 +233,17 @@ impl ClientMessageHandler {
                 };
 
                 if let Some(secret_manager) = &secret_manager {
-                    transaction_builder = transaction_builder.with_secret_manager(secret_manager);
+                    block_builder = block_builder.with_secret_manager(secret_manager);
                 }
 
                 if let Some(options) = options {
-                    transaction_builder = transaction_builder.set_options(options)?;
+                    block_builder = block_builder.set_options(options)?;
                 }
 
-                Ok(Response::Block(BlockDto::from(&transaction_builder.finish().await?)))
+                let block = block_builder.finish().await?;
+                let block_id = block.id();
+
+                Ok(Response::BlockIdWithBlock(block_id, BlockDto::from(&block)))
             }
             Message::GetNode => Ok(Response::Node(self.client.get_node().await?)),
             Message::GetNetworkInfo => Ok(Response::NetworkInfo(self.client.get_network_info().await?)),

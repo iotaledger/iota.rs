@@ -1,15 +1,15 @@
-# Interface: IGenerateBlockOptions
+# Interface: IBuildBlockOptions
 
-Options to generate a new block, possibly with payloads
+Options to build a new block, possibly with payloads
 
 ## Table of contents
 
 ### Properties
 
-- [output](IGenerateBlockOptions.md#output)
-- [outputHex](IGenerateBlockOptions.md#outputhex)
-- [parents](IGenerateBlockOptions.md#parents)
-- [allowBurning](IGenerateBlockOptions.md#allowburning)
+- [output](IBuildBlockOptions.md#output)
+- [outputHex](IBuildBlockOptions.md#outputhex)
+- [parents](IBuildBlockOptions.md#parents)
+- [allowBurning](IBuildBlockOptions.md#allowburning)
 
 ## Properties
 

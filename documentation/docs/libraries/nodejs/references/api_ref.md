@@ -31,12 +31,12 @@
 
 ### Interfaces
 
+- [IBuildBlockOptions](interfaces/IBuildBlockOptions.md)
+- [IClientBlockBuilderOutputAddress](interfaces/IClientBlockBuilderOutputAddress.md)
 - [IClientOptions](interfaces/IClientOptions.md)
 - [IDuration](interfaces/IDuration.md)
 - [IGenerateAddressesOptions](interfaces/IGenerateAddressesOptions.md)
 - [IGenerateAddressMetadata](interfaces/IGenerateAddressMetadata.md)
-- [IGenerateBlockOptions](interfaces/IGenerateBlockOptions.md)
-- [IClientBlockBuilderOutputAddress](interfaces/IClientBlockBuilderOutputAddress.md)
 - [LedgerStatus](interfaces/LedgerStatus.md)
 - [LedgerApp](interfaces/LedgerApp.md)
 - [IAuth](interfaces/IAuth.md)
