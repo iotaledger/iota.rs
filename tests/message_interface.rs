@@ -119,14 +119,14 @@ async fn generate_block() {
     let options = format!("{{\"inputs\": {inputs},\"output\": {output}}}");
 
     let options = serde_json::from_str(&options).unwrap();
-    let generate_block = Message::GenerateBlock {
+    let generate_block = Message::BuildAndPostBlock {
         secret_manager: Some(serde_json::from_str(&secret_manager).unwrap()),
         options: Some(options),
     };
 
     let response = message_interface::send_message(&message_handler, generate_block).await;
     match response {
-        Response::Block(block_data) => {
+        Response::BlockIdWithBlock(block_data) => {
             println!("{}", serde_json::to_string(&block_data).unwrap());
         }
         response_type => panic!("Unexpected response type: {:?}", response_type),

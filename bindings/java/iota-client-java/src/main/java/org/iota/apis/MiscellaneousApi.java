@@ -71,16 +71,18 @@ public class MiscellaneousApi extends BaseApi {
         return addresses;
     }
 
-    public Block generateBlock(SecretManager secretManager, GenerateBlockOptions options) throws ClientException {
+    public Map.Entry<BlockId, Block> buildAndPostBlock(SecretManager secretManager, GenerateBlockOptions options) throws ClientException {
         JsonObject o = new JsonObject();
         o.add("secretManager", secretManager != null ? secretManager.getJson() : null);
         o.add("options", options != null ? options.getJson() : null);
 
-        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("GenerateBlock", o));
+        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand("BuildAndPostBlock", o));
 
-        return new Block(responsePayload);
+        BlockId blockId = new BlockId(responsePayload.get(0).getAsString());
+        Block block = new Block(responsePayload.get(1).getAsJsonObject());
+
+        return new AbstractMap.SimpleEntry<>(blockId, block);
     }
-
 
     public Node getNode() throws ClientException {
         JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("GetNode"));

@@ -286,8 +286,8 @@ public class Client {
         return miscellaneousApi.generateAddresses(secretManager, generateAddressesOptions);
     }
 
-    public Block generateBlock(SecretManager secretManager, GenerateBlockOptions options) throws ClientException {
-        return miscellaneousApi.generateBlock(secretManager, options);
+    public Map.Entry<BlockId, Block> buildAndPostBlock(SecretManager secretManager, GenerateBlockOptions options) throws ClientException {
+        return miscellaneousApi.buildAndPostBlock(secretManager, options);
     }
 
 

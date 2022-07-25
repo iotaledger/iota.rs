@@ -11,7 +11,7 @@ public class CreateBlock {
         Client client = new Client(new ClientConfig().withNodes(new String[]{"https://api.testnet.shimmer.network"}));
 
         // Create the most simple block.
-        Block b = client.generateBlock(null, null);
+        Map.Entry<BlockId, Block> b = client.buildAndPostBlock(null, null);
 
         // Print the block.
         System.out.println(b);

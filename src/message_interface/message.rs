@@ -110,8 +110,8 @@ pub enum Message {
         /// Addresses generation options
         options: GenerateAddressesOptions,
     },
-    /// Generate client block
-    GenerateBlock {
+    /// Build and post a block
+    BuildAndPostBlock {
         /// Secret manager
         #[serde(rename = "secretManager")]
         secret_manager: Option<SecretManagerDto>,
