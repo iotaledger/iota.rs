@@ -35,10 +35,10 @@ pub struct NetworkInfo {
     #[serde(rename = "networkId")]
     pub network_id: Option<u64>,
     /// Bech32 HRP
-    #[serde(rename = "bech32HRP", default)]
+    #[serde(rename = "bech32Hrp", default)]
     pub bech32_hrp: Option<String>,
     /// Mininum proof of work score
-    #[serde(rename = "minPoWScore", default)]
+    #[serde(rename = "minPowScore", default)]
     pub min_pow_score: Option<f64>,
     /// Local proof of work
     #[serde(rename = "localPow", default = "default_local_pow")]
@@ -189,7 +189,7 @@ impl ClientBuilder {
         Ok(self)
     }
 
-    /// Adds an IOTA node by its URL to be used as primary PoW node (for remote PoW), with optional jwt and or basic
+    /// Adds an IOTA node by its URL to be used as primary PoW node (for remote Pow), with optional jwt and or basic
     /// authentication
     pub fn with_primary_pow_node(mut self, url: &str, auth: Option<NodeAuth>) -> Result<Self> {
         self.node_manager_builder = self.node_manager_builder.with_primary_pow_node(url, auth)?;

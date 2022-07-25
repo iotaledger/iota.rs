@@ -30,7 +30,7 @@ pub struct NodeManagerBuilder {
     #[serde(rename = "primaryNode")]
     pub primary_node: Option<NodeDto>,
     /// Node which will be tried first when using remote PoW, even before the primary_node
-    #[serde(rename = "primaryPoWNode")]
+    #[serde(rename = "primaryPowNode")]
     pub primary_pow_node: Option<NodeDto>,
     /// Nodes
     #[serde(default)]

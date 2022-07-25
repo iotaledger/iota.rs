@@ -23,8 +23,8 @@ describe.skip('Main examples', () => {
     it('gets info about the node', async () => {
         const info = await client.getInfo();
 
-        expect(info.nodeInfo.protocol.bech32HRP).toBe('rms');
-        expect(info.nodeInfo.protocol.minPoWScore).toBe(1000);
+        expect(info.nodeInfo.protocol.bech32Hrp).toBe('rms');
+        expect(info.nodeInfo.protocol.minPowScore).toBe(1000);
     });
 
     it('generates a mnemonic', async () => {

@@ -134,7 +134,7 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
     def get_min_pow_score(self):
         """Returns the min pow score.
         """
-        return self.send_message('GetMinPoWScore')
+        return self.send_message('GetMinPowScore')
 
     def get_tips_interval(self):
         """Returns the tips interval.
@@ -144,12 +144,12 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
     def get_local_pow(self):
         """Returns if local pow should be used or not.
         """
-        return self.send_message('GetLocalPoW')
+        return self.send_message('GetLocalPow')
 
     def get_fall_back_to_local_pow(self):
         """Get fallback to local proof of work timeout.
         """
-        return self.send_message('GetFallbackToLocalPoW')
+        return self.send_message('GetFallbackToLocalPow')
 
     def unsynced_nodes(self):
         """Returns the unsynced nodes.

@@ -276,7 +276,7 @@ impl NodeManager {
         query: Option<&str>,
         timeout: Duration,
     ) -> Result<Vec<u8>> {
-        // primary_pow_node should only be used for post request with remote PoW
+        // primary_pow_node should only be used for post request with remote Pow
         // Get node urls and set path
         let nodes = self.get_nodes(path, query, false, false).await?;
         let mut error = None;
@@ -317,7 +317,7 @@ impl NodeManager {
         // primary_pow_node should only be used for post request with remote PoW
         let nodes = self.get_nodes(path, None, !local_pow, false).await?;
         if nodes.is_empty() {
-            return Err(Error::NodeError("No available nodes with remote PoW".into()));
+            return Err(Error::NodeError("No available nodes with remote Pow".into()));
         }
         let mut error = None;
         // Send requests
@@ -353,7 +353,7 @@ impl NodeManager {
         // primary_pow_node should only be used for post request with remote PoW
         let nodes = self.get_nodes(path, None, !local_pow, false).await?;
         if nodes.is_empty() {
-            return Err(Error::NodeError("No available nodes with remote PoW".into()));
+            return Err(Error::NodeError("No available nodes with remote Pow".into()));
         }
         let mut error = None;
         // Send requests

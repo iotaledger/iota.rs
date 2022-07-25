@@ -6,7 +6,7 @@ Struct containing network and PoW related information
 
 ### Properties
 
-- [minPoWScore](INetworkInfo.md#minpowscore)
+- [minPowScore](INetworkInfo.md#minpowscore)
 - [localPow](INetworkInfo.md#localpow)
 - [fallbackToLocalPow](INetworkInfo.md#fallbacktolocalpow)
 - [tipsInterval](INetworkInfo.md#tipsinterval)
@@ -14,9 +14,9 @@ Struct containing network and PoW related information
 
 ## Properties
 
-### minPoWScore
+### minPowScore
 
-• **minPoWScore**: `number`
+• **minPowScore**: `number`
 
 Mininum proof of work score
 

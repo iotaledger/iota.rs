@@ -307,8 +307,8 @@ public class Client {
         return miscellaneousApi.getBech32Hrp();
     }
 
-    public float getMinPoWScore() throws ClientException {
-        return miscellaneousApi.getMinPoWScore();
+    public float getMinPowScore() throws ClientException {
+        return miscellaneousApi.getMinPowScore();
     }
 
     public int getTipsInterval() throws ClientException {
@@ -319,8 +319,8 @@ public class Client {
         return miscellaneousApi.getLocalPow();
     }
 
-    public boolean getFallbackToLocalPoW() throws ClientException {
-        return miscellaneousApi.isFallbackToLocalPoW();
+    public boolean getFallbackToLocalPow() throws ClientException {
+        return miscellaneousApi.isFallbackToLocalPow();
     }
 
     public Node[] getUnsyncedNodes() throws ClientException {

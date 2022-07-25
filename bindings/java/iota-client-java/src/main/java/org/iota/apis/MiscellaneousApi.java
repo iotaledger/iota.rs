@@ -104,8 +104,8 @@ public class MiscellaneousApi extends BaseApi {
         return responsePayload;
     }
 
-    public float getMinPoWScore() throws ClientException {
-        Float responsePayload = callBaseApi(new ClientCommand("GetMinPoWScore")).getAsFloat();
+    public float getMinPowScore() throws ClientException {
+        Float responsePayload = callBaseApi(new ClientCommand("GetMinPowScore")).getAsFloat();
         return responsePayload;
     }
 
@@ -115,12 +115,12 @@ public class MiscellaneousApi extends BaseApi {
     }
 
     public boolean getLocalPow() throws ClientException {
-        Boolean responsePayload = callBaseApi(new ClientCommand("GetLocalPoW")).getAsBoolean();
+        Boolean responsePayload = callBaseApi(new ClientCommand("GetLocalPow")).getAsBoolean();
         return responsePayload;
     }
 
-    public boolean isFallbackToLocalPoW() throws ClientException {
-        Boolean responsePayload = callBaseApi(new ClientCommand("GetFallbackToLocalPoW")).getAsBoolean();
+    public boolean isFallbackToLocalPow() throws ClientException {
+        Boolean responsePayload = callBaseApi(new ClientCommand("GetFallbackToLocalPow")).getAsBoolean();
         return responsePayload;
     }
 

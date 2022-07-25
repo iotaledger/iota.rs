@@ -178,7 +178,7 @@ pub enum Error {
     /// Invalid mnemonic error
     #[error("Invalid mnemonic {0}")]
     InvalidMnemonic(String),
-    /// PoW error
+    /// Pow error
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
     PowError(#[from] bee_pow::providers::miner::Error),

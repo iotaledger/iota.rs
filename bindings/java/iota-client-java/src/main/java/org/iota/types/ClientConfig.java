@@ -8,7 +8,7 @@ import com.google.gson.JsonObject;
 public class ClientConfig {
 
     private String primaryNode;
-    private String primaryPoWNode;
+    private String primaryPowNode;
     private String[] nodes;
     private String[] permanodes;
     private Boolean nodeSyncEnabled;
@@ -18,8 +18,8 @@ public class ClientConfig {
     private Integer quorumThreshold;
     private String network;
     private String networkId;
-    private String bech32HRP;
-    private Double minPoWScore;
+    private String bech32Hrp;
+    private Double minPowScore;
     private Boolean localPow;
     private Boolean fallbackToLocalPow;
     private Integer tipsInterval;
@@ -38,12 +38,12 @@ public class ClientConfig {
         return this;
     }
 
-    public String getPrimaryPoWNode() {
-        return primaryPoWNode;
+    public String getPrimaryPowNode() {
+        return primaryPowNode;
     }
 
-    public ClientConfig withPrimaryPoWNode(String primaryPoWNode) {
-        this.primaryPoWNode = primaryPoWNode;
+    public ClientConfig withPrimaryPowNode(String primaryPowNode) {
+        this.primaryPowNode = primaryPowNode;
         return this;
     }
 
@@ -128,21 +128,21 @@ public class ClientConfig {
         return this;
     }
 
-    public String getBech32HRP() {
-        return bech32HRP;
+    public String getBech32Hrp() {
+        return bech32Hrp;
     }
 
-    public ClientConfig withBech32HRP(String bech32HRP) {
-        this.bech32HRP = bech32HRP;
+    public ClientConfig withBech32Hrp(String bech32Hrp) {
+        this.bech32Hrp = bech32Hrp;
         return this;
     }
 
-    public double getMinPoWScore() {
-        return minPoWScore;
+    public double getMinPowScore() {
+        return minPowScore;
     }
 
-    public ClientConfig withMinPoWScore(double minPoWScore) {
-        this.minPoWScore = minPoWScore;
+    public ClientConfig withMinPowScore(double minPowScore) {
+        this.minPowScore = minPowScore;
         return this;
     }
 
@@ -291,8 +291,8 @@ public class ClientConfig {
         JsonObject o = new JsonObject();
         if (primaryNode != null)
             o.addProperty("primaryNode", primaryNode);
-        if (primaryPoWNode != null)
-            o.addProperty("primaryPoWNode", primaryPoWNode);
+        if (primaryPowNode != null)
+            o.addProperty("primaryPowNode", primaryPowNode);
         if (nodes != null)
             o.add("nodes", JsonUtils.toJson(nodes));
         if (permanodes != null)
@@ -311,10 +311,10 @@ public class ClientConfig {
             o.addProperty("network", network);
         if (networkId != null)
             o.addProperty("networkId", networkId);
-        if (bech32HRP != null)
-            o.addProperty("bech32HRP", bech32HRP);
-        if (minPoWScore != null)
-            o.addProperty("minPoWScore", minPoWScore);
+        if (bech32Hrp != null)
+            o.addProperty("bech32Hrp", bech32Hrp);
+        if (minPowScore != null)
+            o.addProperty("minPowScore", minPowScore);
         if (localPow != null)
             o.addProperty("localPow", localPow);
         if (fallbackToLocalPow != null)
