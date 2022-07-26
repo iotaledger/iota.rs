@@ -194,18 +194,17 @@ impl NodeManager {
                                 200 => {
                                     // Handle node_info extra because we also want to return the url
                                     if path == "api/core/v2/info" {
-                                        if let Ok(node_info) = serde_json::from_str::<InfoResponse>(&res_text) {
-                                            let wrapper = crate::client::NodeInfoWrapper {
-                                                node_info,
-                                                url: format!(
-                                                    "{}://{}",
-                                                    node.url.scheme(),
-                                                    node.url.host_str().unwrap_or("")
-                                                ),
-                                            };
-                                            let serde_res = serde_json::to_string(&wrapper)?;
-                                            return Ok(serde_json::from_str(&serde_res)?);
-                                        }
+                                        let node_info = serde_json::from_str::<InfoResponse>(&res_text)?;
+                                        let wrapper = crate::client::NodeInfoWrapper {
+                                            node_info,
+                                            url: format!(
+                                                "{}://{}",
+                                                node.url.scheme(),
+                                                node.url.host_str().unwrap_or("")
+                                            ),
+                                        };
+                                        let serde_res = serde_json::to_string(&wrapper)?;
+                                        return Ok(serde_json::from_str(&serde_res)?);
                                     }
 
                                     match serde_json::from_str::<T>(&res_text) {
