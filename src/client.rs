@@ -56,7 +56,10 @@ use crate::{
         ClientBlockBuilder, GetAddressesBuilder,
     },
     builder::{ClientBuilder, NetworkInfo},
-    constants::{DEFAULT_API_TIMEOUT, DEFAULT_TIPS_INTERVAL, FIVE_MINUTES_IN_SECONDS},
+    constants::{
+        DEFAULT_API_TIMEOUT, DEFAULT_RETRY_UNTIL_INCLUDED_INTERVAL, DEFAULT_RETRY_UNTIL_INCLUDED_MAX_AMOUNT,
+        DEFAULT_TIPS_INTERVAL, FIVE_MINUTES_IN_SECONDS,
+    },
     error::{Error, Result},
     node_api::{high_level::GetAddressBuilder, indexer::query_parameters::QueryParameter},
     node_manager::node::{Node, NodeAuth},
@@ -536,13 +539,21 @@ impl Client {
         let mut block_ids = vec![*block_id];
         // Reattached Blocks that get returned
         let mut blocks_with_id = Vec::new();
-        for _ in 0..max_attempts.unwrap_or(40) {
+        for _ in 0..max_attempts.unwrap_or(DEFAULT_RETRY_UNTIL_INCLUDED_MAX_AMOUNT) {
             #[cfg(target_family = "wasm")]
             {
-                TimeoutFuture::new((interval.unwrap_or(5) * 1000).try_into().unwrap()).await;
+                TimeoutFuture::new(
+                    (interval.unwrap_or(DEFAULT_RETRY_UNTIL_INCLUDED_INTERVAL) * 1000)
+                        .try_into()
+                        .unwrap(),
+                )
+                .await;
             }
             #[cfg(not(target_family = "wasm"))]
-            sleep(Duration::from_secs(interval.unwrap_or(5))).await;
+            sleep(Duration::from_secs(
+                interval.unwrap_or(DEFAULT_RETRY_UNTIL_INCLUDED_INTERVAL),
+            ))
+            .await;
             // Check inclusion state for each attachment
             let block_ids_len = block_ids.len();
             let mut conflicting = false;
