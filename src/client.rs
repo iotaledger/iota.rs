@@ -235,7 +235,7 @@ impl Client {
                     client_network_info.bech32_hrp = Some(info.protocol.bech32_hrp.clone());
                     client_network_info.rent_structure = Some(info.protocol.rent_structure.clone());
                     if !client_network_info.local_pow {
-                        if info.features.contains(&"PoW".to_string()) {
+                        if info.features.contains(&"Pow".to_string()) {
                             synced_nodes.insert(node_url.clone());
                         }
                     } else {
@@ -260,7 +260,7 @@ impl Client {
         pool.into_iter().next().ok_or(Error::SyncedNodePoolEmpty)
     }
 
-    /// Gets the miner to use based on the PoW setting
+    /// Gets the miner to use based on the Pow setting
     pub async fn get_pow_provider(&self) -> ClientMiner {
         ClientMinerBuilder::new()
             .with_local_pow(self.get_local_pow().await)
@@ -272,7 +272,7 @@ impl Client {
     pub async fn get_network_info(&self) -> Result<NetworkInfo> {
         let not_synced = self.network_info.read().map_or(true, |info| info.network_id.is_none());
 
-        // For WASM we don't have the node syncing process, which updates the network_info every 60 seconds, but the PoW
+        // For WASM we don't have the node syncing process, which updates the network_info every 60 seconds, but the Pow
         // difficulty or the byte cost could change via a milestone, so we request the nodeinfo every time, so we don't
         // create invalid transactions/blocks
         if not_synced || cfg!(target_family = "wasm") {
@@ -729,7 +729,7 @@ impl Client {
 
         // Post the modified
         let block_id = self.post_block_raw(&reattach_block).await?;
-        // Get block if we use remote PoW, because the node will change parents and nonce
+        // Get block if we use remote Pow, because the node will change parents and nonce
         let block = if self.get_local_pow().await {
             reattach_block
         } else {
@@ -762,7 +762,7 @@ impl Client {
             .map_err(|_| Error::TransactionError)?;
 
         let block_id = self.post_block_raw(&promote_block).await?;
-        // Get block if we use remote PoW, because the node will change parents and nonce
+        // Get block if we use remote Pow, because the node will change parents and nonce
         let block = if self.get_local_pow().await {
             promote_block
         } else {

@@ -127,13 +127,13 @@ pub enum Message {
     /// Returns the bech32_hrp
     GetBech32Hrp,
     /// Returns the min pow score
-    GetMinPoWScore,
+    GetMinPowScore,
     /// Returns the tips interval
     GetTipsInterval,
     /// Returns if local pow should be used or not
-    GetLocalPoW,
+    GetLocalPow,
     /// Get fallback to local proof of work timeout
-    GetFallbackToLocalPoW,
+    GetFallbackToLocalPow,
     /// returns the unsynced nodes.
     #[cfg(not(target_family = "wasm"))]
     UnsyncedNodes,

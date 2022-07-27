@@ -116,9 +116,9 @@ impl Client {
                 if let Error::NodeError(e) = e {
                     let fallback_to_local_pow = self.get_fallback_to_local_pow().await;
                     // hornet and bee return different error blocks
-                    if (e == *"No available nodes with remote PoW"
+                    if (e == *"No available nodes with remote Pow"
                         || e.contains("proof of work is not enabled")
-                        || e.contains("`PoW` not enabled"))
+                        || e.contains("`Pow` not enabled"))
                         && fallback_to_local_pow
                     {
                         // Without this we get:within `impl Future<Output = [async output]>`, the trait `Send` is not
@@ -188,7 +188,7 @@ impl Client {
             self.get_remote_pow_timeout()
         };
 
-        // fallback to local PoW if remote PoW fails
+        // fallback to local Pow if remote Pow fails
         let resp = match self
             .node_manager
             .post_request_bytes::<SubmitBlockResponse>(path, timeout, &block.pack_to_vec(), local_pow)
@@ -199,9 +199,9 @@ impl Client {
                 if let Error::NodeError(e) = e {
                     let fallback_to_local_pow = self.get_fallback_to_local_pow().await;
                     // hornet and bee return different error blocks
-                    if (e == *"No available nodes with remote PoW"
+                    if (e == *"No available nodes with remote Pow"
                         || e.contains("proof of work is not enabled")
-                        || e.contains("`PoW` not enabled"))
+                        || e.contains("`Pow` not enabled"))
                         && fallback_to_local_pow
                     {
                         // Without this we get:within `impl Future<Output = [async output]>`, the trait `Send` is not

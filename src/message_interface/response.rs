@@ -53,17 +53,17 @@ pub enum Response {
     /// - [`GetBech32Hrp`](crate::message_interface::Message::GetBech32Hrp)
     Bech32Hrp(String),
     /// Response for:
-    /// - [`GetMinPoWScore`](crate::message_interface::Message::GetMinPoWScore)
-    MinPoWScore(f64),
+    /// - [`GetMinPowScore`](crate::message_interface::Message::GetMinPowScore)
+    MinPowScore(f64),
     /// Response for:
     /// - [`GetTipsInterval`](crate::message_interface::Message::GetTipsInterval)
     TipsInterval(u64),
     /// Response for:
-    /// - [`GetLocalPoW`](crate::message_interface::Message::GetLocalPoW)
-    LocalPoW(bool),
+    /// - [`GetLocalPow`](crate::message_interface::Message::GetLocalPow)
+    LocalPow(bool),
     /// Response for:
-    /// - [`GetFallbackToLocalPoW`](crate::message_interface::Message::GetFallbackToLocalPoW)
-    FallbackToLocalPoW(bool),
+    /// - [`GetFallbackToLocalPow`](crate::message_interface::Message::GetFallbackToLocalPow)
+    FallbackToLocalPow(bool),
     /// Response for:
     /// - [`GetLedgerStatus`](crate::message_interface::Message::GetLedgerStatus)
     #[cfg(feature = "ledger_nano")]

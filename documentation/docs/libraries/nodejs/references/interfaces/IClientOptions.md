@@ -8,7 +8,7 @@ Options for the client builder
 
 - [offline](IClientOptions.md#offline)
 - [primaryNode](IClientOptions.md#primarynode)
-- [primaryPoWNode](IClientOptions.md#primarypownode)
+- [primaryPowNode](IClientOptions.md#primarypownode)
 - [nodeSyncEnabled](IClientOptions.md#nodesyncenabled)
 - [nodeSyncInterval](IClientOptions.md#nodesyncinterval)
 - [quorum](IClientOptions.md#quorum)
@@ -39,9 +39,9 @@ Node which will be tried first for all requests
 
 ___
 
-### primaryPoWNode
+### primaryPowNode
 
-• `Optional` **primaryPoWNode**: `string` \| [`INode`](INode.md)
+• `Optional` **primaryPowNode**: `string` \| [`INode`](INode.md)
 
 Node which will be tried first when using remote PoW, even before the primary_node
 

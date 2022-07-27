@@ -13,7 +13,7 @@ categories = [ "cryptography::cryptocurrencies" ]
 
 [dependencies]
 async-trait = { version = "0.1.56", default-features = false }
-bee-api-types = { version = "1.0.0-beta.2", default-features = false }
+bee-api-types = { version = "1.0.0-beta.3", default-features = false }
 bee-block = { version = "1.0.0-beta.3", default-features = false, features = [ "serde", "dto", "std" ] }
 bee-pow = { version = "1.0.0-alpha.1", default-features = false }
 derive_builder = { version = "0.11.2", default-features = false, features = [ "std" ]}

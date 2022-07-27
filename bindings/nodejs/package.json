@@ -12,7 +12,7 @@
     "license": "Apache-2.0",
     "dependencies": {
         "cargo-cp-artifact": "^0.1.5",
-        "@iota/types": "^1.0.0-beta.9",
+        "@iota/types": "^1.0.0-beta.10",
         "prebuild-install": "^5.3.3"
     },
     "scripts": {
@@ -30,8 +30,8 @@
     },
     "devDependencies": {
         "@types/jest": "^27.5.2",
-        "@typescript-eslint/eslint-plugin": "^5.30.7",
-        "@typescript-eslint/parser": "^5.30.7",
+        "@typescript-eslint/eslint-plugin": "^5.31.0",
+        "@typescript-eslint/parser": "^5.31.0",
         "dotenv": "^16.0.1",
         "electron-build-env": "^0.2.0",
         "eslint": "^8.20.0",
@@ -41,8 +41,8 @@
         "prebuild": "^10.0.1",
         "prettier": "^2.7.1",
         "ts-jest": "^27.1.5",
-        "typedoc": "^0.23.8",
-        "typedoc-plugin-markdown": "^3.13.3",
+        "typedoc": "^0.23.9",
+        "typedoc-plugin-markdown": "^3.13.4",
         "typescript": "^4.7.4"
     }
 }

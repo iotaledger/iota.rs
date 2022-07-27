@@ -249,10 +249,10 @@ impl ClientMessageHandler {
             Message::GetNetworkInfo => Ok(Response::NetworkInfo(self.client.get_network_info().await?)),
             Message::GetNetworkId => Ok(Response::NetworkId(self.client.get_network_id().await?)),
             Message::GetBech32Hrp => Ok(Response::Bech32Hrp(self.client.get_bech32_hrp().await?)),
-            Message::GetMinPoWScore => Ok(Response::MinPoWScore(self.client.get_min_pow_score().await?)),
+            Message::GetMinPowScore => Ok(Response::MinPowScore(self.client.get_min_pow_score().await?)),
             Message::GetTipsInterval => Ok(Response::TipsInterval(self.client.get_tips_interval().await)),
-            Message::GetLocalPoW => Ok(Response::LocalPoW(self.client.get_local_pow().await)),
-            Message::GetFallbackToLocalPoW => Ok(Response::FallbackToLocalPoW(
+            Message::GetLocalPow => Ok(Response::LocalPow(self.client.get_local_pow().await)),
+            Message::GetFallbackToLocalPow => Ok(Response::FallbackToLocalPow(
                 self.client.get_fallback_to_local_pow().await,
             )),
             #[cfg(feature = "ledger_nano")]

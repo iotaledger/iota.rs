@@ -90,10 +90,12 @@ jobs:
         exclude:
           # GLIBC_2.28 is only available with a newer ubuntu version
           - os: ubuntu-18.04
-            node-version: ['18.x']
+            node-version: '18.x'
           # ubuntu-18.04 is needed for for node 14.x and 16.x
           - os: ubuntu-latest
-            node-version: ['14.x', '16.x']
+            node-version: '14.x'
+          - os: ubuntu-latest
+            node-version: '16.x'
 
     steps:
       - name: Checkout the Source Code

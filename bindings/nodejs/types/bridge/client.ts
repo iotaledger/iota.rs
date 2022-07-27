@@ -179,7 +179,7 @@ export interface __GetBech32HrpMessage__ {
 }
 
 export interface __GetMinPowScoreMessage__ {
-    name: 'GetMinPoWScore';
+    name: 'GetMinPowScore';
 }
 
 export interface __GetTipsIntervalMessage__ {
@@ -187,11 +187,11 @@ export interface __GetTipsIntervalMessage__ {
 }
 
 export interface __GetLocalPowMessage__ {
-    name: 'GetLocalPoW';
+    name: 'GetLocalPow';
 }
 
 export interface __GetFallbackToLocalPowMessage__ {
-    name: 'GetFallbackToLocalPoW';
+    name: 'GetFallbackToLocalPow';
 }
 
 export interface __GetHealthMessage__ {

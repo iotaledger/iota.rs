@@ -405,7 +405,7 @@ export class Client {
      */
     async getMinPowScore(): Promise<number> {
         const response = await this.messageHandler.sendMessage({
-            name: 'GetMinPoWScore',
+            name: 'GetMinPowScore',
         });
 
         return JSON.parse(response).payload;
@@ -427,7 +427,7 @@ export class Client {
      */
     async getLocalPow(): Promise<boolean> {
         const response = await this.messageHandler.sendMessage({
-            name: 'GetLocalPoW',
+            name: 'GetLocalPow',
         });
 
         return JSON.parse(response).payload;
@@ -438,7 +438,7 @@ export class Client {
      */
     async getFallbackToLocalPow(): Promise<boolean> {
         const response = await this.messageHandler.sendMessage({
-            name: 'GetFallbackToLocalPoW',
+            name: 'GetFallbackToLocalPow',
         });
 
         return JSON.parse(response).payload;
