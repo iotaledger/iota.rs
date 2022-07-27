@@ -222,9 +222,9 @@ checksum = "c5738be7561b0eeb501ef1d5c5db3f24e01ceb55fededd9b00039aada34966ad"
 
 [[package]]
 name = "bee-api-types"
-version = "1.0.0-beta.3"
+version = "1.0.0-beta.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "aef944f0af59a74f23f759bd607280af063906e58dff41d01803338487d3026e"
+checksum = "8d8c1d70108dde51cd3e3877248b4f302de4913e410c70f56ce2e267d54ed16a"
 dependencies = [
  "axum",
  "bee-block",
@@ -235,9 +235,9 @@ dependencies = [
 
 [[package]]
 name = "bee-block"
-version = "1.0.0-beta.3"
+version = "1.0.0-beta.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "561813c7a9f01ab55042f5dbbfc4672b1a91711814c3d226c2b7729a20fa8521"
+checksum = "400e3fbac56e7c7e4d69af820f18a02e4ee89d8cf52a5b2e267b0b9d2d85d7f7"
 dependencies = [
  "bech32 0.9.0",
  "bee-pow",
@@ -252,6 +252,7 @@ dependencies = [
  "packable",
  "prefix-hex",
  "primitive-types",
+ "rand",
  "serde",
  "serde-big-array",
  "serde_json",

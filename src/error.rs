@@ -51,6 +51,9 @@ pub enum Error {
         "The wallet account has enough funds, but splitted on too many outputs: {0}, max. is 128, consolidate them"
     )]
     ConsolidationRequired(usize),
+    /// Missing input for utxo chain
+    #[error("Missing input: {0}")]
+    MissingInput(String),
     /// Missing required parameters
     #[error("Must provide required parameter: {0}")]
     MissingParameter(&'static str),

@@ -15,7 +15,8 @@ use bee_block::{
     input::INPUT_COUNT_MAX,
     output::{
         unlock_condition::{AddressUnlockCondition, StorageDepositReturnUnlockCondition},
-        BasicOutputBuilder, NativeTokens, Output, Rent, RentStructure, UnlockCondition, OUTPUT_COUNT_MAX,
+        AliasOutputBuilder, BasicOutputBuilder, FoundryOutputBuilder, NativeTokens, NftOutputBuilder, Output, Rent,
+        RentStructure, UnlockCondition, OUTPUT_COUNT_MAX,
     },
 };
 use packable::{bounded::TryIntoBoundedU16Error, PackableExt};
@@ -109,6 +110,84 @@ pub fn try_select_inputs(
     // 1. get alias, foundry or nft inputs (because amount and native tokens of these outputs will also be available for
     // the outputs)
     for input_signing_data in utxo_chain_outputs {
+        // Only add outputs if also exisiting on the output side or if burning is allowed
+        let minimum_required_storage_deposit = input_signing_data.output.rent_cost(rent_structure);
+        let output_id = input_signing_data.output_id()?;
+
+        match &input_signing_data.output {
+            Output::Nft(nft_input) => {
+                // or if an output contains an nft output with the same nft id
+                let is_required = outputs.iter().any(|output| {
+                    if let Output::Nft(nft_output) = output {
+                        nft_input.nft_id().or_from_output_id(output_id) == *nft_output.nft_id()
+                    } else {
+                        false
+                    }
+                });
+                if !is_required {
+                    // Don't add if it doesn't give us any amount or native tokens
+                    if input_signing_data.output.amount() == minimum_required_storage_deposit
+                        && nft_input.native_tokens().is_empty()
+                    {
+                        continue;
+                    }
+                    // else add output to outputs with minimum_required_storage_deposit
+                    let new_output = NftOutputBuilder::from(nft_input)
+                        .with_nft_id(nft_input.nft_id().or_from_output_id(output_id))
+                        .with_amount(minimum_required_storage_deposit)?
+                        .finish_output()?;
+                    outputs.push(new_output);
+                }
+            }
+            Output::Alias(alias_input) => {
+                // Don't add if output has not the same AliasId, so we don't burn it
+                if !outputs.iter().any(|output| {
+                    if let Output::Alias(alias_output) = output {
+                        alias_input.alias_id().or_from_output_id(output_id) == *alias_output.alias_id()
+                    } else {
+                        false
+                    }
+                }) {
+                    // Don't add if it doesn't give us any amount or native tokens
+                    if input_signing_data.output.amount() == minimum_required_storage_deposit
+                        && alias_input.native_tokens().is_empty()
+                    {
+                        continue;
+                    }
+                    // else add output to outputs with minimum_required_storage_deposit
+                    let new_output = AliasOutputBuilder::from(alias_input)
+                        .with_alias_id(alias_input.alias_id().or_from_output_id(output_id))
+                        .with_state_index(alias_input.state_index() + 1)
+                        .with_amount(minimum_required_storage_deposit)?
+                        .finish_output()?;
+                    outputs.push(new_output);
+                }
+            }
+            Output::Foundry(foundry_input) => {
+                // Don't add if output has not the same FoundryId, so we don't burn it
+                if !outputs.iter().any(|output| {
+                    if let Output::Foundry(foundry_output) = output {
+                        foundry_input.id() == foundry_output.id()
+                    } else {
+                        false
+                    }
+                }) {
+                    // Don't add if it doesn't give us any amount or native tokens
+                    if input_signing_data.output.amount() == minimum_required_storage_deposit
+                        && foundry_input.native_tokens().is_empty()
+                    {
+                        continue;
+                    }
+                    // else add output to outputs with minimum_required_storage_deposit
+                    let new_output = FoundryOutputBuilder::from(foundry_input)
+                        .with_amount(minimum_required_storage_deposit)?
+                        .finish_output()?;
+                    outputs.push(new_output);
+                }
+            }
+            _ => {}
+        }
+
         let output = &input_signing_data.output;
         selected_input_amount += output.amount();
 
@@ -122,6 +201,77 @@ pub fn try_select_inputs(
         }
 
         selected_inputs.push(input_signing_data.clone());
+
+        // Updated required value with possible new input
+        let input_outputs = inputs.iter().map(|i| &i.output);
+        required = get_accumulated_output_amounts(&input_outputs.clone(), outputs.iter())?;
+    }
+
+    // Validate that we have the required inputs for alias and nft outputs
+    for output in &outputs {
+        match output {
+            Output::Alias(alias_output) => {
+                // New created output requires no specific input
+                let alias_id = alias_output.alias_id();
+                if alias_id.is_null() {
+                    continue;
+                }
+
+                if !selected_inputs.iter().any(|data| {
+                    if let Output::Alias(input_alias_output) = &data.output {
+                        input_alias_output
+                            .alias_id()
+                            .or_from_output_id(data.output_id().expect("Invalid output id"))
+                            == *alias_id
+                    } else {
+                        false
+                    }
+                }) {
+                    return Err(crate::Error::MissingInput(format!(
+                        "Missing alias input for {alias_id}"
+                    )));
+                }
+            }
+            Output::Foundry(foundry_output) => {
+                let required_alias = foundry_output.alias_address().alias_id();
+                if !selected_inputs.iter().any(|data| {
+                    if let Output::Alias(input_alias_output) = &data.output {
+                        input_alias_output
+                            .alias_id()
+                            .or_from_output_id(data.output_id().expect("Invalid output id"))
+                            == *required_alias
+                    } else {
+                        false
+                    }
+                }) {
+                    return Err(crate::Error::MissingInput(format!(
+                        "Missing alias input {required_alias} for foundry {}",
+                        foundry_output.id()
+                    )));
+                }
+            }
+            Output::Nft(nft_output) => {
+                // New created output requires no specific input
+                let nft_id = nft_output.nft_id();
+                if nft_id.is_null() {
+                    continue;
+                }
+
+                if !selected_inputs.iter().any(|data| {
+                    if let Output::Nft(input_nft_output) = &data.output {
+                        input_nft_output
+                            .nft_id()
+                            .or_from_output_id(data.output_id().expect("Invalid output id"))
+                            == *nft_id
+                    } else {
+                        false
+                    }
+                }) {
+                    return Err(crate::Error::MissingInput(format!("Missing nft input for {nft_id}")));
+                }
+            }
+            _ => {}
+        }
     }
 
     // 2. get basic inputs for the required native tokens (because the amount of these outputs will also be available in

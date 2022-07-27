@@ -14,7 +14,7 @@ categories = [ "cryptography::cryptocurrencies" ]
 [dependencies]
 async-trait = { version = "0.1.56", default-features = false }
 bee-api-types = { version = "1.0.0-beta.3", default-features = false }
-bee-block = { version = "1.0.0-beta.3", default-features = false, features = [ "serde", "dto", "std" ] }
+bee-block = { version = "1.0.0-beta.5", default-features = false, features = [ "serde", "dto", "std" ] }
 bee-pow = { version = "1.0.0-alpha.1", default-features = false }
 derive_builder = { version = "0.11.2", default-features = false, features = [ "std" ]}
 futures = { version = "0.3.21", default-features = false, features = [ "thread-pool" ] }
@@ -56,6 +56,7 @@ bee-ternary = { version = "1.0.0-alpha.1", default-features = false }
 
 [dev-dependencies]
 dotenv = { version = "0.15.0", default-features = false }
+bee-block = { version = "1.0.0-beta.5", default-features = false, features = [ "rand", "std" ] }
 
 [features]
 default = [ "tls" ]
