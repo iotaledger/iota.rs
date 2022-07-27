@@ -1,6 +1,8 @@
 {
   "tag": "alpha",
   "changes": [
+    ".changes/buildAndPostBlock.md",
+    ".changes/pow-hrp-renaming.md",
     ".changes/pre-release.md"
   ]
 }

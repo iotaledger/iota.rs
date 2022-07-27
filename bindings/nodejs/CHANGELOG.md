@@ -1,5 +1,12 @@
 # Changelog
 
+## \[3.0.0-alpha.1]
+
+- Rename generateBlock to buildAndPostBlock.
+  - [4fcb685](https://github.com/iotaledger/iota.rs/commit/4fcb685082d6741a5e8c00ae44e1e70503b586d7) Pow hrp renaming ([#1163](https://github.com/iotaledger/iota.rs/pull/1163)) on 2022-07-27
+- Rename PoW to Pow and HRP to Hrp.
+  - [4fcb685](https://github.com/iotaledger/iota.rs/commit/4fcb685082d6741a5e8c00ae44e1e70503b586d7) Pow hrp renaming ([#1163](https://github.com/iotaledger/iota.rs/pull/1163)) on 2022-07-27
+
 ## \[3.0.0-alpha.0]
 
 - Pre-release of the Stardust bindings of iota.rs for Node.JS
