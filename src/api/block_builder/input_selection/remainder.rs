@@ -150,7 +150,12 @@ pub(crate) fn get_remainder_address<'a>(
 ) -> Result<(Address, Option<Chain>)> {
     for input in inputs {
         // todo: check expiration with time, for now we just ignore outputs with an expiration unlock condition here
-        if let Some(_) = input.output.unlock_conditions().and_then(UnlockConditions::expiration) {
+        if input
+            .output
+            .unlock_conditions()
+            .and_then(UnlockConditions::expiration)
+            .is_some()
+        {
             continue;
         }
         if let Some(address_unlock_condition) = input.output.unlock_conditions().and_then(UnlockConditions::address) {
