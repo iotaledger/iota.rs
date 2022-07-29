@@ -124,7 +124,7 @@ pub fn try_select_inputs(
                         false
                     }
                 });
-                if !is_required {
+                if !is_required && !allow_burning {
                     // Don't add if it doesn't give us any amount or native tokens
                     if input_signing_data.output.amount() == minimum_required_storage_deposit
                         && nft_input.native_tokens().is_empty()
@@ -147,7 +147,8 @@ pub fn try_select_inputs(
                     } else {
                         false
                     }
-                }) {
+                }) && !allow_burning
+                {
                     // Don't add if it doesn't give us any amount or native tokens
                     if input_signing_data.output.amount() == minimum_required_storage_deposit
                         && alias_input.native_tokens().is_empty()
@@ -171,7 +172,8 @@ pub fn try_select_inputs(
                     } else {
                         false
                     }
-                }) {
+                }) && !allow_burning
+                {
                     // Don't add if it doesn't give us any amount or native tokens
                     if input_signing_data.output.amount() == minimum_required_storage_deposit
                         && foundry_input.native_tokens().is_empty()

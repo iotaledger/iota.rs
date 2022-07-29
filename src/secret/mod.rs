@@ -313,7 +313,7 @@ impl SecretManager {
                     // address already at this point, because the reference index needs to be lower
                     // than the current block index
                     if !input_address.is_ed25519() {
-                        return Err(crate::Error::MissingInputWithEd25519UnlockCondition);
+                        return Err(crate::Error::MissingInputWithEd25519Address);
                     }
 
                     let block = self

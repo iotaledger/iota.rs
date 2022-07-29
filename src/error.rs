@@ -197,9 +197,9 @@ pub enum Error {
     /// Specifically used for `TryInfo` implementations for `SecretManager`.
     #[error("cannot unwrap a SecretManager: type mismatch!")]
     SecretManagerMismatch,
-    /// No input with matching ed25519 unlock condition provided
-    #[error("No input with matching ed25519 unlock condition provided")]
-    MissingInputWithEd25519UnlockCondition,
+    /// No input with matching ed25519 address provided
+    #[error("No input with matching ed25519 address provided")]
+    MissingInputWithEd25519Address,
     /// Ledger transport error
     #[cfg(feature = "ledger_nano")]
     #[error("ledger transport error")]

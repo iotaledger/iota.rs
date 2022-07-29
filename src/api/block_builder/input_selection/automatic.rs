@@ -292,7 +292,7 @@ async fn get_inputs_for_sender_and_issuer(
             }
 
             if !found_output {
-                return Err(Error::MissingInputWithEd25519UnlockCondition);
+                return Err(Error::MissingInputWithEd25519Address);
             }
         }
     }

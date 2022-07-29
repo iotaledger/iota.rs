@@ -404,18 +404,16 @@ fn merge_unlocks(
                 // address already at this point, because the reference index needs to be lower
                 // than the current block index
                 if !input_address.is_ed25519() {
-                    return Err(crate::Error::MissingInputWithEd25519UnlockCondition);
+                    return Err(crate::Error::MissingInputWithEd25519Address);
                 }
 
-                let unlock = unlocks
-                    .next()
-                    .ok_or(crate::Error::MissingInputWithEd25519UnlockCondition)?;
+                let unlock = unlocks.next().ok_or(crate::Error::MissingInputWithEd25519Address)?;
 
                 if let Unlock::Signature(signature_unlock) = &unlock {
                     let Signature::Ed25519(ed25519_signature) = signature_unlock.signature();
                     let ed25519_address = match input_address {
                         Address::Ed25519(ed25519_address) => ed25519_address,
-                        _ => return Err(crate::Error::MissingInputWithEd25519UnlockCondition),
+                        _ => return Err(crate::Error::MissingInputWithEd25519Address),
                     };
                     ed25519_signature.is_valid(&hashed_essence, &ed25519_address)?;
                 }
