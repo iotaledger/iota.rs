@@ -1,5 +1,9 @@
 # Changelog
 
+## \[3.0.0-alpha.2]
+
+- Improve handling for utxo chains in input selection.
+
 ## \[3.0.0-alpha.1]
 
 - Rename generateBlock to buildAndPostBlock.
