@@ -3,6 +3,7 @@
   "changes": [
     ".changes/buildAndPostBlock.md",
     ".changes/pow-hrp-renaming.md",
-    ".changes/pre-release.md"
+    ".changes/pre-release.md",
+    ".changes/utxo chain inputs.md"
   ]
 }
