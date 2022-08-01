@@ -1,16 +1,21 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use bee_block::output::unlock_condition::{GovernorAddressUnlockCondition, StateControllerAddressUnlockCondition};
+use bee_block::output::{
+    unlock_condition::{GovernorAddressUnlockCondition, StateControllerAddressUnlockCondition},
+    SimpleTokenScheme, TokenScheme,
+};
 use iota_client::{
     block::{
-        address::Address,
+        address::{Address, AliasAddress},
         output::{
-            unlock_condition::{AddressUnlockCondition, UnlockCondition},
-            AliasId, AliasOutputBuilder, BasicOutputBuilder, NftId, NftOutputBuilder, Output,
+            unlock_condition::{AddressUnlockCondition, ImmutableAliasAddressUnlockCondition, UnlockCondition},
+            AliasId, AliasOutputBuilder, BasicOutputBuilder, FoundryOutputBuilder, NativeToken, NftId,
+            NftOutputBuilder, Output,
         },
         rand::{block::rand_block_id, transaction::rand_transaction_id},
     },
+    constants::SHIMMER_TESTNET_BECH32_HRP,
     secret::types::{InputSigningData, OutputMetadata},
 };
 
@@ -52,6 +57,24 @@ fn build_alias_output(alias_id: AliasId, bech32_address: &str, amount: u64) -> O
         .unwrap()
 }
 
+fn build_foundry_output(
+    alias_id: AliasId,
+    amount: u64,
+    token_scheme: SimpleTokenScheme,
+    native_token: Option<NativeToken>,
+) -> Output {
+    let mut foundry_output_builder =
+        FoundryOutputBuilder::new_with_amount(amount, 0, TokenScheme::Simple(token_scheme))
+            .unwrap()
+            .add_unlock_condition(UnlockCondition::ImmutableAliasAddress(
+                ImmutableAliasAddressUnlockCondition::new(AliasAddress::new(alias_id)),
+            ));
+    if let Some(native_token) = native_token {
+        foundry_output_builder = foundry_output_builder.add_native_token(native_token);
+    }
+    foundry_output_builder.finish_output().unwrap()
+}
+
 fn build_input_signing_data_most_basic_outputs(outputs: Vec<(&str, u64)>) -> Vec<InputSigningData> {
     outputs
         .into_iter()
@@ -70,7 +93,7 @@ fn build_input_signing_data_most_basic_outputs(outputs: Vec<(&str, u64)>) -> Vec
                 ledger_index: 0,
             },
             chain: None,
-            bech32_address: String::new(),
+            bech32_address: bech32_address.to_string(),
         })
         .collect()
 }
@@ -93,7 +116,7 @@ fn build_input_signing_data_nft_outputs(outputs: Vec<(NftId, &str, u64)>) -> Vec
                 ledger_index: 0,
             },
             chain: None,
-            bech32_address: String::new(),
+            bech32_address: bech32_address.to_string(),
         })
         .collect()
 }
@@ -116,7 +139,34 @@ fn build_input_signing_data_alias_outputs(outputs: Vec<(AliasId, &str, u64)>) ->
                 ledger_index: 0,
             },
             chain: None,
-            bech32_address: String::new(),
+            bech32_address: Address::Alias(AliasAddress::new(alias_id)).to_bech32(SHIMMER_TESTNET_BECH32_HRP),
         })
+        .collect()
+}
+
+fn build_input_signing_data_foundry_outputs(
+    outputs: Vec<(AliasId, u64, SimpleTokenScheme, Option<NativeToken>)>,
+) -> Vec<InputSigningData> {
+    outputs
+        .into_iter()
+        .map(
+            |(alias_id, amount, simple_token_scheme, native_token)| InputSigningData {
+                output: build_foundry_output(alias_id, amount, simple_token_scheme, native_token),
+                output_metadata: OutputMetadata {
+                    block_id: rand_block_id(),
+                    transaction_id: rand_transaction_id(),
+                    output_index: 0,
+                    is_spent: false,
+                    milestone_index_spent: None,
+                    milestone_timestamp_spent: None,
+                    transaction_id_spent: None,
+                    milestone_index_booked: 0,
+                    milestone_timestamp_booked: 0,
+                    ledger_index: 0,
+                },
+                chain: None,
+                bech32_address: Address::Alias(AliasAddress::new(alias_id)).to_bech32(SHIMMER_TESTNET_BECH32_HRP),
+            },
+        )
         .collect()
 }

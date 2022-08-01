@@ -294,6 +294,7 @@ impl SecretManager {
         let mut blocks = Vec::new();
         let mut block_indexes = HashMap::<Address, usize>::new();
 
+        // Assuming inputs_data is ordered by address type
         for (current_block_index, input) in prepared_transaction_data.inputs_data.iter().enumerate() {
             // Get the address that is required to unlock the input
             let (_, input_address) = Address::try_from_bech32(&input.bech32_address)?;

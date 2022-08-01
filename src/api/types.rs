@@ -24,7 +24,7 @@ use crate::{
 pub struct PreparedTransactionData {
     /// Transaction essence
     pub essence: TransactionEssence,
-    /// Required address information for signing
+    /// Required input information for signing. Inputs need to be ordered by address type
     #[serde(rename = "inputsData")]
     pub inputs_data: Vec<InputSigningData>,
     /// Optional remainder output information

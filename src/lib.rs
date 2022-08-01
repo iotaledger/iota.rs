@@ -6,18 +6,21 @@
 //! High-level functions are accessible via the [`Client`][client::Client].
 //!
 //! ## Sending a block without a payload
-//!  ```compile_fail
+//!  ```
+//! # use iota_client::{Client, Result};
+//! # #[tokio::main]
+//! # async fn main() -> Result<()> {
 //! let client = Client::builder()
 //!    .with_node("http://localhost:14265")?
-//!    .finish()
-//!    .await?;
+//!    .finish()?;
 //!
-//! let block = iota
+//! let block = client
 //!    .block()
 //!    .finish()
 //!    .await?;
 //!
 //! println!("Block sent {}", block.id());
+//! # Ok(())}
 //! ```
 
 #![deny(unused_extern_crates)]
