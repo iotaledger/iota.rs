@@ -6,7 +6,7 @@
 //! High-level functions are accessible via the [`Client`][client::Client].
 //!
 //! ## Sending a block without a payload
-//!  ```
+//!  ```no_run
 //! # use iota_client::{Client, Result};
 //! # #[tokio::main]
 //! # async fn main() -> Result<()> {
