@@ -149,14 +149,32 @@ pub(crate) fn get_remainder_address<'a>(
     inputs: impl Iterator<Item = &'a InputSigningData>,
 ) -> Result<(Address, Option<Chain>)> {
     for input in inputs {
+        // todo: check expiration with time, for now we just ignore outputs with an expiration unlock condition here
+        if input
+            .output
+            .unlock_conditions()
+            .and_then(UnlockConditions::expiration)
+            .is_some()
+        {
+            continue;
+        }
         if let Some(address_unlock_condition) = input.output.unlock_conditions().and_then(UnlockConditions::address) {
             if address_unlock_condition.address().is_ed25519() {
                 return Ok((*address_unlock_condition.address(), input.chain.clone()));
             }
         }
+        if let Some(governor_address_unlock_condition) = input
+            .output
+            .unlock_conditions()
+            .and_then(UnlockConditions::governor_address)
+        {
+            if governor_address_unlock_condition.address().is_ed25519() {
+                return Ok((*governor_address_unlock_condition.address(), input.chain.clone()));
+            }
+        }
     }
 
-    Err(Error::MissingInputWithEd25519UnlockCondition)
+    Err(Error::MissingInputWithEd25519Address)
 }
 
 // Get additional required storage deposit amount for the remainder output

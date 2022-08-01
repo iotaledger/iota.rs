@@ -51,6 +51,9 @@ pub enum Error {
         "The wallet account has enough funds, but splitted on too many outputs: {0}, max. is 128, consolidate them"
     )]
     ConsolidationRequired(usize),
+    /// Missing input for utxo chain
+    #[error("Missing input: {0}")]
+    MissingInput(String),
     /// Missing required parameters
     #[error("Must provide required parameter: {0}")]
     MissingParameter(&'static str),
@@ -194,9 +197,9 @@ pub enum Error {
     /// Specifically used for `TryInfo` implementations for `SecretManager`.
     #[error("cannot unwrap a SecretManager: type mismatch!")]
     SecretManagerMismatch,
-    /// No input with matching ed25519 unlock condition provided
-    #[error("No input with matching ed25519 unlock condition provided")]
-    MissingInputWithEd25519UnlockCondition,
+    /// No input with matching ed25519 address provided
+    #[error("No input with matching ed25519 address provided")]
+    MissingInputWithEd25519Address,
     /// Ledger transport error
     #[cfg(feature = "ledger_nano")]
     #[error("ledger transport error")]
