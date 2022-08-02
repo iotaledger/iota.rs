@@ -316,7 +316,7 @@ impl ClientMessageHandler {
             #[cfg(feature = "stronghold")]
             Message::StoreMnemonic {
                 secret_manager,
-                mut mnemonic,
+                mnemonic,
             } => {
                 let mut secret_manager = (&secret_manager).try_into()?;
                 if let SecretManager::Stronghold(secret_manager) = &mut secret_manager {
