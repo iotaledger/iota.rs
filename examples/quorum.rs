@@ -23,9 +23,9 @@ async fn main() -> Result<()> {
     let node_url = env::var("NODE_URL").unwrap();
 
     let client = Client::builder()
-        .with_node("https://api.lb-0.h.chrysalis-devnet.iota.cafe/")?
+        .with_node("https://api.testnet.shimmer.network")?
         .with_node(&node_url)?
-        .with_node("https://api.thin-hornet-1.h.chrysalis-devnet.iota.cafe/")?
+        .with_node("http://localhost:14265")?
         .with_quorum(true)
         .with_min_quorum_size(3)
         .with_quorum_threshold(66)
