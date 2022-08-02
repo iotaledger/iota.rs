@@ -1,7 +1,7 @@
 from iota_client import IotaClient, client
 
 # The node url
-url = 'https://api.lb-0.h.chrysalis-devnet.iota.cafe'
+url = 'https://api.testnet.shimmer.network'
 
 # The client option
 options = {'nodes': [],

@@ -12,8 +12,7 @@ use iota_client::{Client, MqttEvent, MqttPayload, Result, Topic};
 async fn main() -> Result<()> {
     // Create a client instance
     let mut client = Client::builder()
-        // todo: replace url when we have a public testnet
-        .with_node("https://chrysalis-nodes.iota.cafe/")?
+        .with_node("https://api.testnet.shimmer.network")?
         .with_node_sync_disabled()
         // .with_mqtt_broker_options(BrokerOptions::new().use_ws(false))
         .finish()?;
