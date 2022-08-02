@@ -137,7 +137,7 @@ public class MiscellaneousApi extends BaseApi {
 
     public LedgerStatus getLedgerStatus(boolean isSimulator) throws ClientException {
         JsonObject o = new JsonObject();
-        o.addProperty("isSimulator", isSimulator);
+        o.addProperty("LedgerNano", isSimulator);
 
         JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("GetLedgerStatus", o));
 
