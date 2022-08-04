@@ -25,9 +25,7 @@ async fn main() -> Result<()> {
     });
 
     // Create a client with that node.
-    let client = Client::builder()
-        .with_node(&node_url)?
-        .finish()?;
+    let client = Client::builder().with_node(&node_url)?.finish()?;
 
     // Get node info.
     let info = client.get_info().await?;
