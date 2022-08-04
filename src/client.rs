@@ -38,7 +38,7 @@ use {
     tokio::{
         runtime::Runtime,
         sync::broadcast::{Receiver, Sender},
-        time::{sleep, Duration as TokioDuration},
+        time::sleep,
     },
 };
 #[cfg(feature = "mqtt")]
@@ -165,13 +165,6 @@ impl Client {
         network_info: Arc<RwLock<NetworkInfo>>,
         mut kill: Receiver<()>,
     ) {
-        let node_sync_interval = TokioDuration::from_nanos(
-            node_sync_interval
-                .as_nanos()
-                .try_into()
-                .unwrap_or(DEFAULT_TIPS_INTERVAL),
-        );
-
         runtime.spawn(async move {
             loop {
                 tokio::select! {
@@ -193,6 +186,7 @@ impl Client {
         nodes: &HashSet<Node>,
         network_info: &Arc<RwLock<NetworkInfo>>,
     ) {
+        log::debug!("sync_nodes");
         let mut synced_nodes = HashSet::new();
         let mut network_nodes: HashMap<String, Vec<(NodeInfo, Node)>> = HashMap::new();
         for node in nodes {
@@ -218,7 +212,11 @@ impl Client {
                             }
                         },
                     }
+                } else {
+                    log::debug!("{} is not healthy: {:?}", node.url, info);
                 }
+            } else {
+                log::error!("Couldn't get the nodeinfo from {}", node.url);
             }
         }
         // Get network_id with the most nodes
