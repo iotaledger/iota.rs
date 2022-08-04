@@ -14,7 +14,7 @@ pub(crate) const DEFAULT_RETRY_UNTIL_INCLUDED_MAX_AMOUNT: u64 = 40;
 /// new part of the Tangle
 pub(crate) const DEFAULT_TIPS_INTERVAL: u64 = 5;
 /// Interval in which the nodeinfo will be requested and healty nodes will be added to the synced node pool
-pub(crate) const NODE_SYNC_INTERVAL: Duration = Duration::from_secs(60);
+pub(crate) const NODE_SYNC_INTERVAL: Duration = Duration::from_secs(15);
 pub(crate) const DEFAULT_MIN_QUORUM_SIZE: usize = 3;
 pub(crate) const DEFAULT_QUORUM_THRESHOLD: usize = 66;
 #[cfg(not(target_family = "wasm"))]
