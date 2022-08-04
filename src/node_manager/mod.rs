@@ -69,7 +69,7 @@ impl NodeManager {
         use_primary_pow_node: bool,
         prefer_permanode: bool,
     ) -> Result<Vec<Node>> {
-        let mut nodes_with_modified_url = Vec::new();
+        let mut nodes_with_modified_url = HashSet::new();
 
         if prefer_permanode || (path == "api/core/v2/blocks" && query.is_some()) {
             if let Some(permanodes) = self.permanodes.clone() {
@@ -79,7 +79,7 @@ impl NodeManager {
                 for mut permanode in permanodes {
                     permanode.url.set_path(&format!("{}{}", permanode.url.path(), path));
                     permanode.url.set_query(query);
-                    nodes_with_modified_url.push(permanode);
+                    nodes_with_modified_url.insert(permanode);
                 }
             }
         }
@@ -88,14 +88,14 @@ impl NodeManager {
             if let Some(mut pow_node) = self.primary_pow_node.clone() {
                 pow_node.url.set_path(path);
                 pow_node.url.set_query(query);
-                nodes_with_modified_url.push(pow_node);
+                nodes_with_modified_url.insert(pow_node);
             }
         }
 
         if let Some(mut primary_node) = self.primary_node.clone() {
             primary_node.url.set_path(path);
             primary_node.url.set_query(query);
-            nodes_with_modified_url.push(primary_node);
+            nodes_with_modified_url.insert(primary_node);
         }
 
         let nodes = if self.node_sync_enabled {
@@ -114,7 +114,7 @@ impl NodeManager {
         for mut node in nodes {
             node.url.set_path(path);
             node.url.set_query(query);
-            nodes_with_modified_url.push(node);
+            nodes_with_modified_url.insert(node);
         }
 
         // remove disabled nodes
@@ -123,7 +123,7 @@ impl NodeManager {
             return Err(crate::Error::SyncedNodePoolEmpty);
         }
 
-        Ok(nodes_with_modified_url)
+        Ok(nodes_with_modified_url.into_iter().collect())
     }
 
     pub(crate) async fn get_request<T: serde::de::DeserializeOwned + std::fmt::Debug + serde::Serialize>(
