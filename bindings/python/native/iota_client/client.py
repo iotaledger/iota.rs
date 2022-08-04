@@ -1,6 +1,6 @@
 import iota_client
 from iota_client._node_core_api import NodeCoreAPI
-from iota_client._node_indexr_api import NodeIndexerAPI
+from iota_client._node_indexer_api import NodeIndexerAPI
 from iota_client._high_level_api import HighLevelAPI
 from iota_client._utils import Utils
 from json import dumps
@@ -32,15 +32,15 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
         """Build an AliasOutput.
         """
         return self.send_message('BuildAliasOutput', {
-            'alias_id': alias_id,
-            'unlock_conditions': unlock_conditions,
+            'aliasId': alias_id,
+            'unlockConditions': unlock_conditions,
             'amount': amount,
-            'native_tokens': native_tokens,
-            'state_index': state_index,
-            'state_metadata': state_metadata,
-            'foundry_counter': foundry_counter,
+            'nativeTokens': native_tokens,
+            'stateIndex': state_index,
+            'stateMetadata': state_metadata,
+            'foundryCounter': foundry_counter,
             'features': features,
-            'immutable_features': immutable_features
+            'immutableFeatures': immutable_features
         })
 
     def build_basic_output(self,
@@ -51,9 +51,9 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
         """Build a BasicOutput.
         """
         return self.send_message('BuildBasicOutput', {
-            'unlock_conditions': unlock_conditions,
+            'unlockConditions': unlock_conditions,
             'amount': amount,
-            'native_tokens': native_tokens,
+            'nativeTokens': native_tokens,
             'features': features,
         })
 
@@ -70,11 +70,11 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
         return self.send_message('BuildFoundryOutput', {
             'serial_number': serial_number,
             'token_scheme': token_scheme,
-            'unlock_conditions': unlock_conditions,
+            'unlockConditions': unlock_conditions,
             'amount': amount,
-            'native_tokens': native_tokens,
+            'nativeTokens': native_tokens,
             'features': features,
-            'immutable_features': immutable_features
+            'immutableFeatures': immutable_features
         })
 
     def build_nft_output(self,
@@ -87,19 +87,19 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
         """Build an NftOutput.
         """
         return self.send_message('BuildNftOutput', {
-            'nft_id': nft_id,
-            'unlock_conditions': unlock_conditions,
+            'nftId': nft_id,
+            'unlockConditions': unlock_conditions,
             'amount': amount,
-            'native_tokens': native_tokens,
+            'nativeTokens': native_tokens,
             'features': features,
-            'immutable_features': immutable_features
+            'immutableFeatures': immutable_features
         })
 
     def generate_addresses(self, secret_manager, options):
         """Generate addresses.
         """
         return self.send_message('GenerateAddresses', {
-            'secret_manager': secret_manager,
+            'secretManager': secret_manager,
             'options': options
         })
 
@@ -107,7 +107,7 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
         """Build and post a block.
         """
         return self.send_message('BuildAndPostBlock', {
-            'secret_manager': secret_manager,
+            'secretManager': secret_manager,
             'options': options
         })
 
@@ -165,7 +165,7 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
         """Prepare a transaction for signing.
         """
         return self.send_message('PrepareTransaction', {
-            'secret_manager': secret_manager,
+            'secretManager': secret_manager,
             'options': options
         })
 
@@ -173,7 +173,7 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
         """Sign a transaction.
         """
         return self.send_message('SignTransaction', {
-            'secret_manager': secret_manager,
+            'secretManager': secret_manager,
             'prepared_transaction_data': prepared_transaction_data
         })
 
@@ -181,7 +181,7 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
         """Store a mnemonic in the Stronghold vault.
         """
         return self.send_message('StoreMnemonic', {
-            'secret_manager': secret_manager,
+            'secretManager': secret_manager,
             'mnemonic': mnemonic
         })
 

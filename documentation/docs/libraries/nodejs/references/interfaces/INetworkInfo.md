@@ -34,7 +34,7 @@ ___
 
 • **fallbackToLocalPow**: `boolean`
 
-Fallback to local proof of work if the node doesn't support remote PoW
+Fallback to local proof of work if the node doesn't support remote Pow
 
 ___
 

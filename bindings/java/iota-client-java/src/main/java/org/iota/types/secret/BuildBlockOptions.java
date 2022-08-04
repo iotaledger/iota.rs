@@ -20,8 +20,8 @@ public class BuildBlockOptions {
     private ClientBlockBuilderOutputAddress outputHex;
     private Output[] outputs;
     private String customRemainderAddress;
-    private byte[] tag;
-    private byte[] data;
+    private String tag;
+    private String data;
     private BlockId[] parents;
     private Boolean allowBurning;
 
@@ -70,12 +70,12 @@ public class BuildBlockOptions {
         return this;
     }
 
-    public BuildBlockOptions withTag(byte[] tag) {
+    public BuildBlockOptions withTag(String tag) {
         this.tag = tag;
         return this;
     }
 
-    public BuildBlockOptions withData(byte[] data) {
+    public BuildBlockOptions withData(String data) {
         this.data = data;
         return this;
     }
@@ -119,8 +119,8 @@ public class BuildBlockOptions {
         o.add("outputHex", outputHex != null ? outputHex.getAsJson() : null);
         o.add("outputs", JsonUtils.toJson(outputs));
         o.addProperty("customRemainderAddress", customRemainderAddress);
-        o.add("tag", JsonUtils.toJson(tag));
-        o.add("data", JsonUtils.toJson(data));
+        o.add("tag", tag);
+        o.add("data", data);
         o.add("parents", JsonUtils.toJson(parents));
         o.addProperty("allowBurning", allowBurning);
 
