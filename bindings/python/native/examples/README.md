@@ -30,3 +30,6 @@ Example:
 
 ## All in one example
 `python3 setup.py bdist_wheel && python3 -m pip install dist/iota_client-0.1.0-cp310-cp310-linux_x86_64.whl --force-reinstall && python3 examples/00_get_info.py`
+
+## Build docs
+`pydoc-markdown -p iota_client > README.md`

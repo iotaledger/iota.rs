@@ -12,5 +12,19 @@ def send_message_routine(func):
 
         # Send message to the Rust library
         response = iota_client.send_message(args[0].handle, message)
-        return json.loads(response)['payload']
+
+        json_response = json.loads(response)
+
+        if "type" in json_response:
+            if json_response["type"] == "Error":
+                raise IotaClientError(json_response['payload'])
+
+        if "payload" in json_response:
+            return json_response['payload']
+        else:
+            return response
     return wrapper
+
+class IotaClientError(Exception):
+    """iota-client error"""
+    pass
