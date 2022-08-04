@@ -55,8 +55,9 @@ gloo-timers = { version = "0.2.4", default-features = false, features = [ "futur
 bee-ternary = { version = "1.0.0-alpha.1", default-features = false }
 
 [dev-dependencies]
-dotenv = { version = "0.15.0", default-features = false }
 bee-block = { version = "1.0.0-beta.5", default-features = false, features = [ "rand", "std" ] }
+dotenv = { version = "0.15.0", default-features = false }
+fern-logger = { version = "0.5.0", default-features = false }
 
 [features]
 default = [ "tls" ]
