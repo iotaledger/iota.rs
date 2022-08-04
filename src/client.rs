@@ -213,8 +213,10 @@ impl Client {
                         },
                     }
                 } else {
-                    log::debug!("{} is not healthy: {:?}", node.url.as_ref(), info);
+                    log::debug!("{} is not healthy: {:?}", node.url, info);
                 }
+            } else {
+                log::error!("Couldn't get the nodeinfo from {}", node.url);
             }
         }
         // Get network_id with the most nodes
