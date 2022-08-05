@@ -10,7 +10,7 @@ class Utils(BaseAPI):
             'bech32': bech32
         })
 
-    def bech32_to_hex(self, hex, bech32_hrp):
+    def hex_to_bech32(self, hex, bech32_hrp):
         """Transforms a hex encoded address to a bech32 encoded address.
         """
         return self.send_message('HexToBech32', {

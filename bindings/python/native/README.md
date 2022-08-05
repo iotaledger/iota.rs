@@ -24,12 +24,12 @@ def bech32_to_hex(bech32)
 
 Transforms bech32 to hex.
 
-<a id="iota_client._utils.Utils.bech32_to_hex"></a>
+<a id="iota_client._utils.Utils.hex_to_bech32"></a>
 
-#### bech32\_to\_hex
+#### hex\_to\_bech32
 
 ```python
-def bech32_to_hex(hex, bech32_hrp)
+def hex_to_bech32(hex, bech32_hrp)
 ```
 
 Transforms a hex encoded address to a bech32 encoded address.
