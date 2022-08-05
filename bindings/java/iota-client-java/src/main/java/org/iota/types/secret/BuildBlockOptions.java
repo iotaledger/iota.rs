@@ -119,8 +119,8 @@ public class BuildBlockOptions {
         o.add("outputHex", outputHex != null ? outputHex.getAsJson() : null);
         o.add("outputs", JsonUtils.toJson(outputs));
         o.addProperty("customRemainderAddress", customRemainderAddress);
-        o.add("tag", tag);
-        o.add("data", data);
+        o.addProperty("tag", tag);
+        o.addProperty("data", data);
         o.add("parents", JsonUtils.toJson(parents));
         o.addProperty("allowBurning", allowBurning);
 
