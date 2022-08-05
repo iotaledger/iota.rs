@@ -1,5 +1,12 @@
 # Changelog
 
+## \[3.0.0-alpha.3]
+
+- Update @iota/types to fix types.
+  - [e86dfa2](https://github.com/iotaledger/iota.rs/commit/e86dfa22fc36e8e09e458a9147bf5fc5a2222860) Update @iota/types ([#1175](https://github.com/iotaledger/iota.rs/pull/1175)) on 2022-08-05
+- Accept hex encoded strings for tag and data fields.
+  - [e86dfa2](https://github.com/iotaledger/iota.rs/commit/e86dfa22fc36e8e09e458a9147bf5fc5a2222860) Update @iota/types ([#1175](https://github.com/iotaledger/iota.rs/pull/1175)) on 2022-08-05
+
 ## \[3.0.0-alpha.2]
 
 - Improve handling for utxo chains in input selection.
