@@ -1,5 +1,10 @@
 # Changelog
 
+## \[3.0.0-alpha.4]
+
+- Fix IBuildBlockOptions.
+  - [7a5c445](https://github.com/iotaledger/iota.rs/commit/7a5c4459650e8b9f0b551178474d885bc7aad57e) Add debug logs for message_interface ([#1177](https://github.com/iotaledger/iota.rs/pull/1177)) on 2022-08-05
+
 ## \[3.0.0-alpha.3]
 
 - Update @iota/types to fix types.

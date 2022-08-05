@@ -3,6 +3,7 @@
   "changes": [
     ".changes/buildAndPostBlock.md",
     ".changes/bump-iota-types.md",
+    ".changes/fix-blockbuildoptions.md",
     ".changes/pow-hrp-renaming.md",
     ".changes/pre-release.md",
     ".changes/tag-data-string.md",
