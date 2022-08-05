@@ -15,32 +15,51 @@ keywords:
 In a production setup, do not store passwords in the host's environment variables or in the source code. See our [backup and security recommendations](https://wiki.iota.org/chrysalis-docs/guides/backup_security) for production setups.
 :::
 
+## Requirements
+
+Python 3
+
+pip>=19.1
+setuptools-rust>=0.10.2
+
+`Rust` and `Cargo`, to compile the binding. Install them [here](https://doc.rust-lang.org/cargo/getting-started/installation.html).
+
 ## Installation
-Easiest way how to get python binding up and running is to leverage pre-built python libraries for linux/macos/windows that can be installed to your python environment (3.6+) via `pip`. The binding is automagically generated using github [actions](https://github.com/iotaledger/iota.rs/actions/workflows/python_binding_publish.yml).
 
-The latest artifacts for major python versions can be also grabbed using [nighly.link service](https://nightly.link/iotaledger/iota.rs/workflows/python_binding_publish/dev). Download zip file for the given os and pyversion, unpack wheel file (`.whl`) and install it via `pip`:
+### Build the wheel file
+- Go to `iota.rs/bindings/python/native`
+- `python3 setup.py bdist_wheel`
 
-```bash
-pip install <wheel_file>
-```
+### Create a virtual environment and use it (optional)
+- `python3 -m venv .venv`
+- `source .venv/bin/activate`
 
-Once it has been properly installed you can double check it using `pip`:
-```bash
-pip list
-```
+### Install the wheel file
+`python3 -m pip install dist/[your built wheel file]`
 
-You should see the similar output:
-```plaintext
-Package                    Version
--------------------------- -------
-iota-client-python           0.2.0a3
-```
-Once installed in the given python environment you are all set and can start hacking using python binding!
+Example:
+- `python3 -m pip install dist/iota_client-0.1.0-cp310-cp310-linux_x86_64.whl`
 
-## Usage
+### Run examples
+`python3 example/[example file]`
+
+Example: 
+- `python3 examples/00_get_info.py`
+
+### To deactivate the virtual environment (optional)
+- `deactivate`
+
+## Getting Started
+
+After you installed the library, you can create a `IotaClient` instance and interface with it.
 
 ```python
-import iota_client
-print(iota_client.__doc__)
-print(dir(iota_client))
+from iota_client import IotaClient
+
+# Create an IotaClient instance
+client = IotaClient({'nodes': ['https://api.testnet.shimmer.network']})
+
+# Get the node info
+node_info = client.get_info()
+print(f'{node_info}')
 ```
