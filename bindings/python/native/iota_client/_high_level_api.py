@@ -7,7 +7,7 @@ class HighLevelAPI(BaseAPI):
         """Fetch OutputResponse from provided OutputIds (requests are sent in parallel).
         """
         return self.send_message('GetOutputs', {
-            'output_ids': output_ids
+            'outputIds': output_ids
         })
 
     def try_get_outputs(self, output_ids):
@@ -15,21 +15,21 @@ class HighLevelAPI(BaseAPI):
            Requests are sent in parallel and errors are ignored, can be useful for spent outputs.
         """
         return self.send_message('TryGetOutputs', {
-            'output_ids': output_ids
+            'outputIds': output_ids
         })
 
     def find_blocks(self, block_ids):
         """Find all blocks by provided block IDs.
         """
         return self.send_message('FindBlocks', {
-            'block_ids': block_ids
+            'blockIds': block_ids
         })
 
     def retry(self, block_id):
         """Retries (promotes or reattaches) a block for provided block id. Block should only be
            retried only if they are valid and haven't been confirmed for a while.
         """
-        return self.send_message('Retry', {'block_id': block_id})
+        return self.send_message('Retry', {'blockId': block_id})
 
     def retry_until_included(self, block_id, interval=None, max_attempts=None):
         """Retries (promotes or reattaches) a block for provided block id until it's included (referenced by a
@@ -37,9 +37,9 @@ class HighLevelAPI(BaseAPI):
            position and additional reattached blocks.
         """
         return self.send_message('RetryUntilIncluded', {
-            'block_id': block_id,
+            'blockId': block_id,
             'interval': interval,
-            'max_attempts': max_attempts
+            'maxAttempts': max_attempts
         })
 
     def consolidate_funds(self, secret_manager, account_index, address_range):
@@ -47,9 +47,9 @@ class HighLevelAPI(BaseAPI):
            Returns the address to which the funds got consolidated, if any were available.
         """
         return self.send_message('ConsolidateFunds', {
-            'secret_manager': secret_manager,
-            'account_index': account_index,
-            'address_range': address_range
+            'secretManager': secret_manager,
+            'accountIndex': account_index,
+            'addressRange': address_range
         })
 
     def find_inputs(self, addresses, amount):
@@ -65,7 +65,7 @@ class HighLevelAPI(BaseAPI):
            the request amount exceeds individual node limit.
         """
         return self.send_message('FindOutputs', {
-            'output_ids': output_ids,
+            'outputIds': output_ids,
             'addresses': addresses
         })
 
@@ -74,14 +74,14 @@ class HighLevelAPI(BaseAPI):
            confirmed for a while.
         """
         return self.send_message('Reattach', {
-            'block_id': block_id
+            'blockId': block_id
         })
 
     def reattach_unchecked(self, block_id):
         """Reattach a block without checking if it should be reattached.
         """
         return self.send_message('ReattachUnchecked', {
-            'block_id': block_id
+            'blockId': block_id
         })
 
     def promote(self, block_id):
@@ -89,12 +89,12 @@ class HighLevelAPI(BaseAPI):
            method should error out and should not allow unnecessary promotions.
         """
         return self.send_message('Promote', {
-            'block_id': block_id
+            'blockId': block_id
         })
 
     def promote_unchecked(self, block_id):
         """Promote a block without checking if it should be promoted.
         """
         return self.send_message('PromoteUnchecked', {
-            'block_id': block_id
+            'blockId': block_id
         })

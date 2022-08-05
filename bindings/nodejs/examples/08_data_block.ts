@@ -1,6 +1,6 @@
 // Copyright 2021-2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
-import { Client, utf8ToBytes, hexToUtf8, initLogger } from '@iota/client';
+import { Client, hexToUtf8, initLogger, utf8ToHex } from '@iota/client';
 require('dotenv').config({ path: '../.env' });
 
 // Run with command:
@@ -19,8 +19,8 @@ async function run() {
     });
 
     const options = {
-        tag: utf8ToBytes('Hello'),
-        data: utf8ToBytes('Tangle'),
+        tag: utf8ToHex('Hello'),
+        data: utf8ToHex('Tangle'),
     };
     try {
         const mnemonic = await client.generateMnemonic();

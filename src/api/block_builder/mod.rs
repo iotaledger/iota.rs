@@ -50,7 +50,7 @@ pub struct ClientBlockBuilder<'a> {
     input_range: Range<u32>,
     outputs: Vec<Output>,
     custom_remainder_address: Option<Address>,
-    tag: Option<Box<[u8]>>,
+    tag: Option<Vec<u8>>,
     data: Option<Vec<u8>>,
     parents: Option<Vec<BlockId>>,
     allow_burning: bool,
@@ -89,10 +89,10 @@ pub struct ClientBlockBuilderOptions {
     pub outputs: Option<Vec<OutputDto>>,
     /// Custom remainder address
     pub custom_remainder_address: Option<String>,
-    /// Tag
-    pub tag: Option<Box<[u8]>>,
-    /// Data
-    pub data: Option<Vec<u8>>,
+    /// Hex encoded tag
+    pub tag: Option<String>,
+    /// Hex encoded data
+    pub data: Option<String>,
     /// Parents
     pub parents: Option<Vec<BlockId>>,
     /// Allow burning of native tokens
@@ -222,8 +222,8 @@ impl<'a> ClientBlockBuilder<'a> {
     }
 
     /// Set tagged_data to the builder
-    pub fn with_tag<I: AsRef<[u8]>>(mut self, tag: I) -> Self {
-        self.tag.replace(tag.as_ref().into());
+    pub fn with_tag(mut self, tag: Vec<u8>) -> Self {
+        self.tag.replace(tag);
         self
     }
 
@@ -303,11 +303,11 @@ impl<'a> ClientBlockBuilder<'a> {
         }
 
         if let Some(tag) = options.tag {
-            self = self.with_tag(tag);
+            self = self.with_tag(prefix_hex::decode(&tag)?);
         }
 
         if let Some(data) = options.data {
-            self = self.with_data(data);
+            self = self.with_data(prefix_hex::decode(&data)?);
         }
 
         if let Some(parents) = options.parents {

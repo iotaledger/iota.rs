@@ -44,49 +44,49 @@ class NodeCoreAPI(BaseAPI):
         """Post block.
         """
         return self.send_message('GetBlock', {
-            'block_id': block_id
+            'blockId': block_id
         })
 
     def get_block_metadata(self, block_id):
         """Get block metadata with block_id.
         """
         return self.send_message('GetBlockMetadata', {
-            'block_id': block_id
+            'blockId': block_id
         })
 
     def get_block_raw(self, block_id):
         """Get block raw.
         """
         return self.send_message('GetBlockRaw', {
-            'block_id': block_id
+            'blockId': block_id
         })
 
     def get_output(self, output_id):
         """Get output.
         """
         return self.send_message('GetOutput', {
-            'output_id': output_id
+            'outputId': output_id
         })
 
     def get_output_metadata(self, output_id):
         """Get output metadata.
         """
         return self.send_message('GetOutputMetadata', {
-            'output_id': output_id
+            'outputId': output_id
         })
 
     def get_milestone_by_id(self, milestone_id):
         """Get the milestone by the given milestone id.
         """
         return self.send_message('GetMilestoneById', {
-            'milestone_id': milestone_id
+            'milestoneId': milestone_id
         })
 
     def get_milestone_by_id_raw(self, milestone_id):
         """Get the raw milestone by the given milestone id.
         """
         return self.send_message('GetMilestoneByIdRaw', {
-            'milestone_id': milestone_id
+            'milestoneId': milestone_id
         })
 
     def get_milestone_by_index(self, index):
@@ -107,7 +107,7 @@ class NodeCoreAPI(BaseAPI):
         """Get the UTXO changes by the given milestone id.
         """
         return self.send_message('GetUtxoChangesById', {
-            'milestone_id': milestone_id
+            'milestoneId': milestone_id
         })
 
     def get_utxo_changes_by_index(self, index):
@@ -126,7 +126,7 @@ class NodeCoreAPI(BaseAPI):
         """Get the receipts by the given milestone index.
         """
         return self.send_message('GetReceiptsMigratedAt', {
-            'milestone_index': milestone_index
+            'milestoneIndex': milestone_index
         })
 
     def get_treasury(self):
@@ -138,5 +138,5 @@ class NodeCoreAPI(BaseAPI):
         """Returns the included block of the transaction.
         """
         return self.send_message('GetIncludedBlock', {
-            'transaction_id': transaction_id
+            'transactionId': transaction_id
         })

@@ -36,7 +36,7 @@ async fn setup_tagged_data_block() -> BlockId {
 
     client
         .block()
-        .with_tag("Hello")
+        .with_tag("Hello".as_bytes().to_vec())
         .with_data("Tangle".as_bytes().to_vec())
         .finish()
         .await

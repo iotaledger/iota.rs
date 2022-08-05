@@ -27,7 +27,7 @@ async function run() {
         const blockMetadata = await client.getBlockMetadata(blockIdAndBlock[0]);
         console.log('Block metadata: ', blockMetadata, '\n');
 
-        // Request the block by it's id.
+        // Request the block by its id.
         const blockData = await client.getBlock(blockIdAndBlock[0]);
         console.log('Block data: ', blockData, '\n');
     } catch (error) {

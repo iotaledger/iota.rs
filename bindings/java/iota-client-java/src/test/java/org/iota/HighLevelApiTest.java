@@ -12,6 +12,7 @@ import org.iota.types.ids.OutputId;
 import org.iota.types.secret.*;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -22,7 +23,9 @@ public class HighLevelApiTest extends ApiTest {
     @Test
     public void testGetOutputs() throws ClientException {
         OutputId[] outputs = client.getBasicOutputIds(new NodeIndexerApi.QueryParams());
-        for (Map.Entry e : client.getOutputs(outputs)) {
+        // Limit outputs to 5 to not send thousands of requests
+        OutputId[] limited_outputs = Arrays.copyOfRange(outputs, 0, 5);
+        for (Map.Entry e : client.getOutputs(limited_outputs)) {
             System.out.println(e.getKey());
         }
     }
@@ -30,7 +33,9 @@ public class HighLevelApiTest extends ApiTest {
     @Test
     public void testTryGetOutputs() throws ClientException {
         OutputId[] outputs = client.getBasicOutputIds(new NodeIndexerApi.QueryParams());
-        for (Map.Entry e : client.tryGetOutputs(outputs)) {
+        // Limit outputs to 5 to not send thousands of requests
+        OutputId[] limited_outputs = Arrays.copyOfRange(outputs, 0, 5);
+        for (Map.Entry e : client.tryGetOutputs(limited_outputs)) {
             System.out.println(e.getKey());
         }
     }
