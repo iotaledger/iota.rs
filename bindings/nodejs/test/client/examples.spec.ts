@@ -1,5 +1,5 @@
 import type { IBlock, IOutputResponse, ITaggedDataPayload } from '@iota/types';
-import { Client, utf8ToBytes, utf8ToHex } from '../../lib';
+import { Client, utf8ToHex } from '../../lib';
 import '../customMatchers';
 import 'dotenv/config';
 import * as addressOutputs from '../fixtures/addressOutputs.json';
@@ -153,8 +153,8 @@ describe.skip('Main examples', () => {
 
     it('sends a block with a tagged data payload', async () => {
         const blockIdAndBlock = await client.buildAndPostBlock(secretManager, {
-            tag: utf8ToBytes('Hello'),
-            data: utf8ToBytes('Tangle'),
+            tag: utf8ToHex('Hello'),
+            data: utf8ToHex('Tangle'),
         });
 
         const fetchedBlock = await client.getBlock(blockIdAndBlock[0]);

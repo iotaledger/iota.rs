@@ -17,8 +17,8 @@ export interface IBuildBlockOptions {
     outputHex?: IClientBlockBuilderOutputAddress;
     outputs?: OutputTypes[];
     customRemainderAddress?: string;
-    tag?: number[];
-    data?: number[];
+    tag?: string;
+    data?: string;
     /** Parent block IDs */
     parents?: string[];
     /** Allow burning of native tokens */

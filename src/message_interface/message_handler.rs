@@ -83,12 +83,69 @@ impl ClientMessageHandler {
         #[cfg(target_family = "wasm")] response_tx: Sender<Response>,
         #[cfg(not(target_family = "wasm"))] response_tx: UnboundedSender<Response>,
     ) {
+        match &message {
+            // Don't log secrets
+            Message::GenerateAddresses {
+                secret_manager: _,
+                options,
+            } => {
+                log::debug!("Response: GenerateAddresses{{ secret_manager: <omitted>, options: {options:?} }}")
+            }
+            Message::BuildAndPostBlock {
+                secret_manager: _,
+                options,
+            } => {
+                log::debug!("Response: BuildAndPostBlock{{ secret_manager: <omitted>, options: {options:?} }}")
+            }
+            Message::PrepareTransaction {
+                secret_manager: _,
+                options,
+            } => {
+                log::debug!("Response: PrepareTransaction{{ secret_manager: <omitted>, options: {options:?} }}")
+            }
+            Message::SignTransaction {
+                secret_manager: _,
+                prepared_transaction_data,
+            } => {
+                log::debug!(
+                    "Response: SignTransaction{{ secret_manager: <omitted>, prepared_transaction_data: {prepared_transaction_data:?} }}"
+                )
+            }
+            Message::StoreMnemonic { .. } => {
+                log::debug!("Response: StoreMnemonic{{ <omitted> }}")
+            }
+            Message::ConsolidateFunds {
+                secret_manager: _,
+                account_index,
+                address_range,
+            } => {
+                log::debug!(
+                    "Response: ConsolidateFunds{{ secret_manager: <omitted>, account_index: {account_index:?}, address_range: {address_range:?} }}"
+                )
+            }
+            Message::MnemonicToHexSeed { .. } => {
+                log::debug!("Response: MnemonicToHexSeed{{ <omitted> }}")
+            }
+            _ => log::debug!("Message: {:?}", message),
+        }
+
         let result = convert_async_panics(|| async { self.handle_message(message).await }).await;
 
         let response = match result {
             Ok(r) => r,
             Err(e) => Response::Error(e),
         };
+
+        match response {
+            // Don't log secrets
+            Response::GeneratedMnemonic { .. } => {
+                log::debug!("Response: GeneratedMnemonic(<omitted>)")
+            }
+            Response::MnemonicHexSeed { .. } => {
+                log::debug!("Response: MnemonicHexSeed(<omitted>)")
+            }
+            _ => log::debug!("Response: {:?}", response),
+        }
 
         let _ = response_tx.send(response);
     }

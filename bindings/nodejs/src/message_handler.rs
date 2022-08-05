@@ -35,7 +35,6 @@ impl MessageHandler {
     }
 
     async fn send_message(&self, serialized_message: String) -> (String, bool) {
-        log::debug!("{}", serialized_message);
         match serde_json::from_str::<Message>(&serialized_message) {
             Ok(message) => {
                 let (response_tx, mut response_rx) = unbounded_channel();
@@ -116,7 +115,6 @@ pub fn send_message(mut cx: FunctionContext) -> JsResult<JsUndefined> {
 
     crate::RUNTIME.spawn(async move {
         let (response, is_error) = message_handler.send_message(message).await;
-        log::debug!("{:?}", response);
         message_handler.channel.send(move |mut cx| {
             let cb = callback.into_inner(&mut cx);
             let this = cx.undefined();
