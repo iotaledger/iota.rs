@@ -111,6 +111,7 @@ impl ClientMessageHandler {
                     "Response: SignTransaction{{ secret_manager: <omitted>, prepared_transaction_data: {prepared_transaction_data:?} }}"
                 )
             }
+            #[cfg(feature = "stronghold")]
             Message::StoreMnemonic { .. } => {
                 log::debug!("Response: StoreMnemonic{{ <omitted> }}")
             }
