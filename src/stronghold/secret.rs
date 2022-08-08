@@ -187,6 +187,11 @@ impl StrongholdAdapter {
 
     /// Store a mnemonic into the Stronghold vault.
     pub async fn store_mnemonic(&mut self, mut mnemonic: String) -> Result<()> {
+        // The key needs to be supplied first.
+        if self.key_provider.lock().await.is_none() {
+            return Err(Error::StrongholdKeyCleared);
+        };
+
         // Stronghold arguments.
         let output = Location::generic(SECRET_VAULT_PATH, SEED_RECORD_PATH);
 
@@ -198,18 +203,13 @@ impl StrongholdAdapter {
         crypto::keys::bip39::wordlist::verify(&trimmed_mnemonic, &crypto::keys::bip39::wordlist::ENGLISH)
             .map_err(|e| crate::Error::InvalidMnemonic(format!("{:?}", e)))?;
 
-        // Try to load the snapshot to see if we're creating a new Stronghold vault or not.
-        self.read_stronghold_snapshot().await?;
-
-        // If the snapshot has successfully been loaded, then we need to check if there has been a
-        // mnemonic stored in Stronghold or not to prevent overwriting it.
-        if self.snapshot_loaded
-            && self
-                .stronghold
-                .lock()
-                .await
-                .get_client(PRIVATE_DATA_CLIENT_PATH)?
-                .record_exists(&output)?
+        // We need to check if there has been a mnemonic stored in Stronghold or not to prevent overwriting it.
+        if self
+            .stronghold
+            .lock()
+            .await
+            .get_client(PRIVATE_DATA_CLIENT_PATH)?
+            .record_exists(&output)?
         {
             return Err(crate::Error::StrongholdMnemonicAlreadyStored);
         }
@@ -219,9 +219,6 @@ impl StrongholdAdapter {
 
         // Persist Stronghold to the disk
         self.write_stronghold_snapshot(None).await?;
-
-        // Now we consider that the snapshot has been loaded; it's just in a reversed order.
-        self.snapshot_loaded = true;
 
         Ok(())
     }
