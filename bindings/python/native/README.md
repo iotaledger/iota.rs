@@ -6,8 +6,8 @@ Python binding to the iota.rs client library.
 
 Python 3
 
-pip>=19.1
-setuptools-rust>=0.10.2
+pip>=22.2.2
+setuptools-rust>=1.4.1
 
 `Rust` and `Cargo`, to compile the binding. Install them [here](https://doc.rust-lang.org/cargo/getting-started/installation.html).
 

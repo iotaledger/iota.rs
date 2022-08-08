@@ -15,7 +15,7 @@ class Utils(BaseAPI):
         """
         return self.send_message('HexToBech32', {
             'hex': hex,
-            'bech32_hrp': bech32_hrp
+            'bech32Hrp': bech32_hrp
         })
 
     def hex_public_key_to_beh32_address(self, hex, bech32_hrp=None):
@@ -23,7 +23,7 @@ class Utils(BaseAPI):
         """
         return self.send_message('HexPublicKeyToBech32Address', {
             'hex': hex,
-            'bech32_hrp': bech32_hrp
+            'bech32Hrp': bech32_hrp
         })
 
     def parse_bech32_address(self, address):
