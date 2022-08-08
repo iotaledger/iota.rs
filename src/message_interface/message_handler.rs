@@ -26,12 +26,12 @@ use zeroize::Zeroize;
 
 #[cfg(feature = "ledger_nano")]
 use crate::secret::ledger_nano::LedgerSecretManager;
+#[cfg(feature = "stronghold")]
+use crate::secret::SecretManager;
 use crate::{
     api::{PreparedTransactionData, PreparedTransactionDataDto},
     message_interface::{message::Message, response::Response},
-    request_funds_from_faucet,
-    secret::SecretManager,
-    Client, Result,
+    request_funds_from_faucet, Client, Result,
 };
 
 fn panic_to_response_message(panic: Box<dyn Any>) -> Response {
