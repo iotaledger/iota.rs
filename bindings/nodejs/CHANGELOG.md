@@ -1,5 +1,10 @@
 # Changelog
 
+## \[3.0.0-alpha.5]
+
+- Don't include tests in published package.
+  - [78a29ec](https://github.com/iotaledger/iota.rs/commit/78a29ec506516a8263920ee65f356e7992c898aa) Don't include tests in published package ([#1180](https://github.com/iotaledger/iota.rs/pull/1180)) on 2022-08-08
+
 ## \[3.0.0-alpha.4]
 
 - Fix IBuildBlockOptions.
