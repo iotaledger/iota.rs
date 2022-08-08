@@ -11,8 +11,9 @@
   "author": "IOTA Foundation <contact@iota.org>",
   "license": "Apache-2.0",
   "dependencies": {
-    "cargo-cp-artifact": "^0.1.5",
     "@iota/types": "^1.0.0-beta.11",
+    "@types/node": "^18.6.4",
+    "cargo-cp-artifact": "^0.1.5",
     "prebuild-install": "^5.3.3"
   },
   "scripts": {
