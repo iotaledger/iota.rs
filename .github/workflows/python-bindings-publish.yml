@@ -27,9 +27,7 @@ jobs:
       matrix:
         # Using Ubuntu 18.04 to provide glibc compatibility. (#588)
         os: [ubuntu-18.04, macos-latest, windows-latest]
-        # FIXME: Temporary limit to Python 3.6, as this is controlled by the feature gate for PyO3,
-        # which is currently just 3.6. (#782)
-        python: ['3.6']
+        python-version: ['3.10']
         include:
           - os: ubuntu-18.04
             identifier: linux
