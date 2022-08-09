@@ -628,9 +628,9 @@ impl Client {
                     .get_address()
                     .outputs(vec![
                         QueryParameter::Address(address.to_string()),
-                        QueryParameter::HasExpirationCondition(false),
-                        QueryParameter::HasTimelockCondition(false),
-                        QueryParameter::HasStorageReturnCondition(false),
+                        QueryParameter::HasExpiration(false),
+                        QueryParameter::HasTimelock(false),
+                        QueryParameter::HasStorageDepositReturn(false),
                     ])
                     .await?,
             );
@@ -694,9 +694,9 @@ impl Client {
                 .get_address()
                 .outputs(vec![
                     QueryParameter::Address(address.to_string()),
-                    QueryParameter::HasExpirationCondition(false),
-                    QueryParameter::HasTimelockCondition(false),
-                    QueryParameter::HasStorageReturnCondition(false),
+                    QueryParameter::HasExpiration(false),
+                    QueryParameter::HasTimelock(false),
+                    QueryParameter::HasStorageDepositReturn(false),
                 ])
                 .await?;
             output_metadata.extend(address_outputs.into_iter());

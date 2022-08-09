@@ -32,7 +32,7 @@ async fn address_outputs(block_builder: &ClientBlockBuilder<'_>, address: String
             .client
             .basic_output_ids(vec![
                 QueryParameter::Address(address.clone()),
-                QueryParameter::HasStorageReturnCondition(false),
+                QueryParameter::HasStorageDepositReturn(false),
             ])
             .await?,
     );
@@ -43,8 +43,8 @@ async fn address_outputs(block_builder: &ClientBlockBuilder<'_>, address: String
             .client
             .basic_output_ids(vec![
                 QueryParameter::ExpirationReturnAddress(address),
-                QueryParameter::HasExpirationCondition(true),
-                QueryParameter::HasStorageReturnCondition(false),
+                QueryParameter::HasExpiration(true),
+                QueryParameter::HasStorageDepositReturn(false),
             ])
             .await?,
     );

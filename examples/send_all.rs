@@ -51,9 +51,9 @@ async fn main() -> Result<()> {
                     .await?[0]
                     .clone(),
             ),
-            QueryParameter::HasExpirationCondition(false),
-            QueryParameter::HasTimelockCondition(false),
-            QueryParameter::HasStorageReturnCondition(false),
+            QueryParameter::HasExpiration(false),
+            QueryParameter::HasTimelock(false),
+            QueryParameter::HasStorageDepositReturn(false),
         ])
         .await?;
 

@@ -52,9 +52,9 @@ pub async fn consolidate_funds(
                 .get_address()
                 .outputs(vec![
                     QueryParameter::Address(address.to_string()),
-                    QueryParameter::HasExpirationCondition(false),
-                    QueryParameter::HasTimelockCondition(false),
-                    QueryParameter::HasStorageReturnCondition(false),
+                    QueryParameter::HasExpiration(false),
+                    QueryParameter::HasTimelock(false),
+                    QueryParameter::HasStorageDepositReturn(false),
                 ])
                 .await?;
 

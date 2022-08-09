@@ -7,12 +7,12 @@
 export type QueryParameter =
     | Address
     | AliasAddress
-    | HasStorageReturnCondition
-    | StorageReturnAddress
-    | HasTimelockCondition
+    | HasStorageDepositReturn
+    | StorageDepositReturnAddress
+    | HasTimelock
     | TimelockedBefore
     | TimelockedAfter
-    | HasExpirationCondition
+    | HasExpiration
     | ExpiresBefore
     | ExpiresAfter
     | ExpirationReturnAddress
@@ -38,12 +38,12 @@ export type FoundryQueryParameter = AliasAddress | CommonQueryParameters;
 export type NftQueryParameter =
     | Address
     | AliasAddress
-    | HasStorageReturnCondition
-    | StorageReturnAddress
-    | HasTimelockCondition
+    | HasStorageDepositReturn
+    | StorageDepositReturnAddress
+    | HasTimelock
     | TimelockedBefore
     | TimelockedAfter
-    | HasExpirationCondition
+    | HasExpiration
     | ExpiresBefore
     | ExpiresAfter
     | ExpirationReturnAddress
@@ -69,19 +69,19 @@ interface Address {
 interface AliasAddress {
     aliasAddress: string;
 }
-/** Filters outputs based on the presence of storage return unlockcondition. */
-interface HasStorageReturnCondition {
-    hasStorageReturnCondition: boolean;
+/** Filters outputs based on the presence of storage deposit return unlock condition. */
+interface HasStorageDepositReturn {
+    hasStorageDepositReturn: boolean;
 }
 /** Filter outputs based on the presence of a specific Bech32-encoded return address
- * in the storage return unlock condition.
+ * in the storage deposit return unlock condition.
  */
-interface StorageReturnAddress {
-    storageReturnAddress: string;
+interface StorageDepositReturnAddress {
+    storageDepositReturnAddress: string;
 }
 /** Filters outputs based on the presence of timelock unlock condition. */
-interface HasTimelockCondition {
-    hasTimelockCondition: boolean;
+interface HasTimelock {
+    hasTimelock: boolean;
 }
 /** Return outputs that are timelocked before a certain Unix timestamp. */
 interface TimelockedBefore {
@@ -93,8 +93,8 @@ interface TimelockedAfter {
 }
 
 /** Filters outputs based on the presence of expiration unlock condition. */
-interface HasExpirationCondition {
-    hasExpirationCondition: boolean;
+interface HasExpiration {
+    hasExpiration: boolean;
 }
 /** Filters outputs based on the presence of native tokens. */
 interface HasNativeTokens {

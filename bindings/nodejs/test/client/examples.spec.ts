@@ -56,9 +56,9 @@ describe.skip('Main examples', () => {
                 address:
                     'rms1qpllaj0pyveqfkwxmnngz2c488hfdtmfrj3wfkgxtk4gtyrax0jaxzt70zy',
             },
-            { hasExpirationCondition: false },
-            { hasTimelockCondition: false },
-            { hasStorageReturnCondition: false },
+            { hasExpiration: false },
+            { hasTimelock: false },
+            { hasStorageDepositReturn: false },
         ]);
 
         outputIds.forEach((id) => expect(id).toBeValidOutputId());
@@ -94,9 +94,9 @@ describe.skip('Main examples', () => {
         // Get output ids of outputs that can be controlled by this address without further unlock constraints
         const outputIds = await client.basicOutputIds([
             { address: addresses[0] },
-            { hasExpirationCondition: false },
-            { hasTimelockCondition: false },
-            { hasStorageReturnCondition: false },
+            { hasExpiration: false },
+            { hasTimelock: false },
+            { hasStorageDepositReturn: false },
         ]);
         outputIds.forEach((id) => expect(id).toBeValidOutputId());
 
