@@ -1,5 +1,22 @@
 # Changelog
 
+## \[3.0.0-alpha.6]
+
+- Rename getLedgerStatus to getLedgerNanoStatus.
+  - [c744d77](https://github.com/iotaledger/iota.rs/commit/c744d777192e0d4dd67f374b0617ec8f6b35bac3) Rename get_ledger_status to get_ledger_nano_status ([#1185](https://github.com/iotaledger/iota.rs/pull/1185)) on 2022-08-09
+
+- Rename indexer query parameters:
+
+- "hasStorageReturnCondition" => "hasStorageDepositReturn"
+
+- "storageReturnAddress" => "storageDepositReturnAddress"
+
+- "hasExpirationCondition" => "hasExpiration"
+
+- "hasTimelockCondition" => "hasTimelock"
+
+- [c744d77](https://github.com/iotaledger/iota.rs/commit/c744d777192e0d4dd67f374b0617ec8f6b35bac3) Rename get_ledger_status to get_ledger_nano_status ([#1185](https://github.com/iotaledger/iota.rs/pull/1185)) on 2022-08-09
+
 ## \[3.0.0-alpha.5]
 
 - Don't include tests in published package.
