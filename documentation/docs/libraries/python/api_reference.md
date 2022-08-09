@@ -346,12 +346,12 @@ def unsynced_nodes()
 
 Returns the unsynced nodes.
 
-<a id="iota_client.client.IotaClient.get_ledger_status"></a>
+<a id="iota_client.client.IotaClient.get_ledger_nano_status"></a>
 
 #### get\_ledger\_status
 
 ```python
-def get_ledger_status(is_simulator)
+def get_ledger_nano_status(is_simulator)
 ```
 
 Returns the Ledger Status.

@@ -1,5 +1,5 @@
 /** The status of a Ledger Nano */
-export interface LedgerStatus {
+export interface LedgerNanoStatus {
     connected: boolean;
     locked: boolean;
     blindSigningEnabled: boolean;

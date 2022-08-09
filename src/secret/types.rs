@@ -85,7 +85,7 @@ pub enum LedgerDeviceType {
 
 /// The Ledger device status.
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct LedgerStatus {
+pub struct LedgerNanoStatus {
     /// Ledger is available and ready to be used.
     pub(crate) connected: bool,
     /// Ledger is connected and locked.
@@ -102,7 +102,7 @@ pub struct LedgerStatus {
     pub(crate) buffer_size: Option<usize>,
 }
 
-impl LedgerStatus {
+impl LedgerNanoStatus {
     /// Ledger is available and ready to be used.
     pub fn connected(&self) -> bool {
         self.connected

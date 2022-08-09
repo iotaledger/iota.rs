@@ -12,7 +12,7 @@ is_simulator = True
 secret_manager = LedgerNanoSecretManager(is_simulator)
 
 # Get the Ledger Nano status.
-ledger_nano_status = client.get_ledger_status(is_simulator)
+ledger_nano_status = client.get_ledger_nano_status(is_simulator)
 
 print(f'Ledger Nano status: {ledger_nano_status}')
 

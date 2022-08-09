@@ -4,7 +4,7 @@ export * from './clientOptions';
 export * from './buildBlockOptions';
 export * from './generateAddressesOptions';
 export * from './queryParameters';
-export * from './ledgerStatus';
+export * from './ledgerNanoStatus';
 export * from './network';
 export * from './nodeInfo';
 export * from './outputBuilderOptions';

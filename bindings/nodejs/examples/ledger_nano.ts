@@ -25,9 +25,9 @@ async function run() {
 
         const secretManager = { LedgerNano: isSimulator };
 
-        const ledgerStatus = await client.getLedgerStatus(isSimulator);
+        const ledgerNanoStatus = await client.getLedgerNanoStatus(isSimulator);
 
-        console.log(ledgerStatus);
+        console.log(ledgerNanoStatus);
 
         const address = await client.generateAddresses(secretManager, {
             accountIndex: 0,

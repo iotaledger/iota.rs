@@ -114,8 +114,8 @@ export interface __FindOutputsMessage__ {
     };
 }
 
-export interface __GetLedgerStatusMessage__ {
-    name: 'GetLedgerStatus';
+export interface __GetLedgerNanoStatusMessage__ {
+    name: 'GetLedgerNanoStatus';
     data: {
         isSimulator: boolean;
     };

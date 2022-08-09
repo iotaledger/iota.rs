@@ -25,7 +25,7 @@ use bee_block::{
     output::Output,
     unlock::{AliasUnlock, NftUnlock, ReferenceUnlock, Unlock, Unlocks},
 };
-pub use types::{GenerateAddressMetadata, LedgerStatus};
+pub use types::{GenerateAddressMetadata, LedgerNanoStatus};
 use zeroize::ZeroizeOnDrop;
 
 #[cfg(feature = "ledger_nano")]

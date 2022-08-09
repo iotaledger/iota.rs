@@ -5,13 +5,13 @@ package org.iota.types;
 
 import com.google.gson.JsonObject;
 
-public class LedgerStatus extends AbstractObject {
+public class LedgerNanoStatus extends AbstractObject {
 
-    public LedgerStatus(JsonObject jsonObject) {
+    public LedgerNanoStatus(JsonObject jsonObject) {
         super(jsonObject);
     }
 
-    public LedgerStatus(String jsonObject) {
+    public LedgerNanoStatus(String jsonObject) {
         super(jsonObject);
     }
 
