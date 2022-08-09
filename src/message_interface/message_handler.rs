@@ -314,10 +314,10 @@ impl ClientMessageHandler {
                 self.client.get_fallback_to_local_pow().await,
             )),
             #[cfg(feature = "ledger_nano")]
-            Message::GetLedgerStatus { is_simulator } => {
+            Message::GetLedgerNanoStatus { is_simulator } => {
                 let ledger_nano = LedgerSecretManager::new(is_simulator);
 
-                Ok(Response::LedgerStatus(ledger_nano.get_ledger_status().await))
+                Ok(Response::LedgerNanoStatus(ledger_nano.get_ledger_nano_status().await))
             }
             Message::PrepareTransaction {
                 secret_manager,

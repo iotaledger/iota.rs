@@ -138,9 +138,9 @@ pub enum Message {
     #[cfg(not(target_family = "wasm"))]
     UnsyncedNodes,
     /// Get the ledger status
-    /// Expected response: [`LedgerStatus`](crate::message_interface::Response::LedgerStatus)
+    /// Expected response: [`LedgerNanoStatus`](crate::message_interface::Response::LedgerNanoStatus)
     #[cfg(feature = "ledger_nano")]
-    GetLedgerStatus {
+    GetLedgerNanoStatus {
         /// To use a Ledger Speculos simulator, pass `true` to `is_simulator`; `false` otherwise.
         #[serde(rename = "isSimulator")]
         is_simulator: bool,

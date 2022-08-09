@@ -26,7 +26,7 @@ use super::{types::InputSigningData, GenerateAddressMetadata, SecretManage, Secr
 use crate::{
     secret::{
         types::{LedgerApp, LedgerDeviceType},
-        LedgerStatus, PreparedTransactionData, RemainderData,
+        LedgerNanoStatus, PreparedTransactionData, RemainderData,
     },
     Error, Result,
 };
@@ -321,8 +321,8 @@ impl LedgerSecretManager {
     }
 
     /// Get Ledger hardware status.
-    pub async fn get_ledger_status(&self) -> LedgerStatus {
-        log::info!("ledger get_opened_app");
+    pub async fn get_ledger_nano_status(&self) -> LedgerNanoStatus {
+        log::debug!("get_ledger_nano_status");
         // lock the mutex
         let _lock = self.mutex.lock().await;
         let transport_type = if self.is_simulator {
@@ -331,12 +331,13 @@ impl LedgerSecretManager {
             TransportTypes::NativeHID
         };
 
+        log::debug!("get_opened_app");
         let app = match get_opened_app(&transport_type) {
             Ok((name, version)) => Some(LedgerApp { name, version }),
             _ => None,
         };
 
-        log::info!("get_app_config");
+        log::debug!("get_app_config");
         // if IOTA or Shimmer app is opened, the call will always succeed, returning information like
         // device, debug-flag, version number, lock-state but here we only are interested in a
         // successful call and the locked-flag
@@ -352,7 +353,7 @@ impl LedgerSecretManager {
             Err(_) => (false, false, false, None),
         };
 
-        log::info!("get_buffer_size");
+        log::debug!("get_buffer_size");
         // get buffer size of connected device
         let buffer_size = match get_buffer_size(&transport_type) {
             Ok(size) => Some(size),
@@ -363,7 +364,7 @@ impl LedgerSecretManager {
         // connected_ is in this case false, even tough the ledger is connected, that's why we always return true if we
         // got the app
         let connected = if app.is_some() { true } else { connected_ };
-        LedgerStatus {
+        LedgerNanoStatus {
             connected,
             locked,
             blind_signing_enabled,

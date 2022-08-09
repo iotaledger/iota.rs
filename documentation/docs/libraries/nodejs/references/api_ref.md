@@ -37,7 +37,7 @@
 - [IDuration](interfaces/IDuration.md)
 - [IGenerateAddressesOptions](interfaces/IGenerateAddressesOptions.md)
 - [IGenerateAddressMetadata](interfaces/IGenerateAddressMetadata.md)
-- [LedgerStatus](interfaces/LedgerStatus.md)
+- [LedgerNanoStatus](interfaces/LedgerNanoStatus.md)
 - [LedgerApp](interfaces/LedgerApp.md)
 - [IAuth](interfaces/IAuth.md)
 - [IMqttBrokerOptions](interfaces/IMqttBrokerOptions.md)

@@ -135,13 +135,13 @@ public class MiscellaneousApi extends BaseApi {
         return nodes;
     }
 
-    public LedgerStatus getLedgerStatus(boolean isSimulator) throws ClientException {
+    public LedgerNanoStatus getLedgerNanoStatus(boolean isSimulator) throws ClientException {
         JsonObject o = new JsonObject();
         o.addProperty("LedgerNano", isSimulator);
 
-        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("GetLedgerStatus", o));
+        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("GetLedgerNanoStatus", o));
 
-        return new LedgerStatus(responsePayload);
+        return new LedgerNanoStatus(responsePayload);
     }
 
     public PreparedTransactionData prepareTransaction(SecretManager secretManager, BuildBlockOptions buildBlockOptions) throws ClientException {

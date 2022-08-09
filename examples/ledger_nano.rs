@@ -30,7 +30,7 @@ async fn main() -> Result<()> {
 
     let ledger_nano = LedgerSecretManager::new(false);
 
-    println!("{:?}", ledger_nano.get_ledger_status().await);
+    println!("{:?}", ledger_nano.get_ledger_nano_status().await);
 
     let secret_manager = SecretManager::LedgerNano(ledger_nano);
 
