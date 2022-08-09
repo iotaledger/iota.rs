@@ -159,7 +159,7 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
     def get_ledger_status(self, is_simulator):
         """Returns the Ledger Status.
         """
-        return self.send_message('GetLedgerStatus', { 'is_simulator': is_simulator })
+        return self.send_message('GetLedgerStatus', { 'isSimulator': is_simulator })
 
     def prepare_transaction(self, secret_manager=None, options=None):
         """Prepare a transaction for signing.
@@ -174,7 +174,7 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
         """
         return self.send_message('SignTransaction', {
             'secretManager': secret_manager,
-            'prepared_transaction_data': prepared_transaction_data
+            'preparedTransactionData': prepared_transaction_data
         })
 
     def store_mnemonic(self, secret_manager, mnemonic):
@@ -189,5 +189,5 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
         """Submit a payload in a block.
         """
         return self.send_message('SubmitPayload', {
-            'payload_dto': payload_dto
+            'payloadDto': payload_dto
         })

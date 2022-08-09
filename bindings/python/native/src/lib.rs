@@ -10,6 +10,7 @@
 pub mod types;
 use std::sync::Mutex;
 
+use fern_logger::{logger_init, LoggerConfig, LoggerOutputConfigBuilder};
 use iota_client::message_interface::Message;
 use once_cell::sync::OnceCell;
 use pyo3::{prelude::*, wrap_pyfunction};
@@ -20,6 +21,15 @@ pub(crate) fn block_on<C: futures::Future>(cb: C) -> C::Output {
     static INSTANCE: OnceCell<Mutex<Runtime>> = OnceCell::new();
     let runtime = INSTANCE.get_or_init(|| Mutex::new(Runtime::new().unwrap()));
     runtime.lock().unwrap().block_on(cb)
+}
+
+#[pyfunction]
+/// Init the logger of wallet library.
+pub fn init_logger(config: String) -> PyResult<()> {
+    let output_config: LoggerOutputConfigBuilder = serde_json::from_str(&config).expect("invalid logger config");
+    let config = LoggerConfig::build().with_output(output_config).finish();
+    logger_init(config).expect("failed to init logger");
+    Ok(())
 }
 
 #[pyfunction]
@@ -50,6 +60,7 @@ pub fn send_message(handle: &ClientMessageHandler, message: String) -> Result<St
 /// IOTA Client implemented in Rust for Python binding.
 #[pymodule]
 fn iota_client(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
+    m.add_function(wrap_pyfunction!(init_logger, m)?).unwrap();
     m.add_function(wrap_pyfunction!(create_message_handler, m)?).unwrap();
     m.add_function(wrap_pyfunction!(send_message, m)?).unwrap();
     Ok(())

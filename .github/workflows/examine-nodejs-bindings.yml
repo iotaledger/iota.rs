@@ -45,7 +45,7 @@ jobs:
 
     steps:
       - name: Checkout the Source Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set Up Nightly Rust
         uses: ./.github/actions/setup-rust
@@ -95,7 +95,7 @@ jobs:
 
     steps:
       - name: Checkout the Source Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set Up Beta Clippy
         uses: ./.github/actions/setup-rust
@@ -141,7 +141,7 @@ jobs:
 
     steps:
       - name: Checkout the Source Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Install Cargo-udeps with Nightly Rust
         uses: ./.github/actions/setup-rust
@@ -173,7 +173,7 @@ jobs:
 
     steps:
       - name: Checkout the Source Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set Up Nightly Rustfmt
         uses: ./.github/actions/setup-rust
@@ -226,7 +226,7 @@ jobs:
 
     steps:
       - name: Checkout the Source Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Install Cargo-audit with Nightly Rust
         uses: ./.github/actions/setup-rust
