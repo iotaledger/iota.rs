@@ -69,12 +69,12 @@ interface Address {
 interface AliasAddress {
     aliasAddress: string;
 }
-/** Filters outputs based on the presence of storage return unlockcondition. */
+/** Filters outputs based on the presence of storage deposit return unlock condition. */
 interface HasStorageDepositReturn {
     hasStorageDepositReturn: boolean;
 }
 /** Filter outputs based on the presence of a specific Bech32-encoded return address
- * in the storage return unlock condition.
+ * in the storage deposit return unlock condition.
  */
 interface StorageDepositReturnAddress {
     storageDepositReturnAddress: string;

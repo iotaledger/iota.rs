@@ -75,7 +75,7 @@ pub enum QueryParameter {
     HasExpiration(bool),
     /// Filters outputs based on the presence of native tokens.
     HasNativeTokens(bool),
-    /// Filters outputs based on the presence of storage return unlock condition.
+    /// Filters outputs based on the presence of storage deposit return unlock condition.
     HasStorageDepositReturn(bool),
     /// Filters outputs based on the presence of timelock unlock condition.
     HasTimelock(bool),
@@ -92,7 +92,8 @@ pub enum QueryParameter {
     Sender(String),
     /// Filters outputs based on bech32-encoded state controller address.
     StateController(String),
-    /// Filters outputs based on the presence of a specific return address in the storage return unlock condition.
+    /// Filters outputs based on the presence of a specific return address in the storage deposit return unlock
+    /// condition.
     StorageDepositReturnAddress(String),
     /// Filters outputs based on matching Tag Block.
     Tag(String),
