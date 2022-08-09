@@ -45,7 +45,7 @@ jobs:
 
     steps:
       - name: Checkout the Source Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set Up Nightly Rust
         uses: ./.github/actions/setup-rust
@@ -57,7 +57,7 @@ jobs:
           cache-hash: ${{ hashFiles('.github/workflows/examine-python-bindings.yml') }}
 
       - name: Set Up Python ${{ matrix.python }} and Pip Cache
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python }}
           cache: pip
@@ -91,7 +91,7 @@ jobs:
 
     steps:
       - name: Checkout the Source Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set Up Beta Clippy
         uses: ./.github/actions/setup-rust
@@ -124,7 +124,7 @@ jobs:
 
     steps:
       - name: Checkout the Source Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Install Cargo-udeps with Nightly Rust
         uses: ./.github/actions/setup-rust
@@ -156,7 +156,7 @@ jobs:
 
     steps:
       - name: Checkout the Source Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set Up Nightly Rustfmt
         uses: ./.github/actions/setup-rust
@@ -191,7 +191,7 @@ jobs:
 
     steps:
       - name: Checkout the Source Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Install Cargo-audit with Nightly Rust
         uses: ./.github/actions/setup-rust
