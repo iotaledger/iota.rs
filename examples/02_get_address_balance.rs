@@ -44,9 +44,9 @@ async fn main() -> Result<()> {
     let output_ids = client
         .basic_output_ids(vec![
             QueryParameter::Address(addresses[0].clone()),
-            QueryParameter::HasExpirationCondition(false),
-            QueryParameter::HasTimelockCondition(false),
-            QueryParameter::HasStorageReturnCondition(false),
+            QueryParameter::HasExpiration(false),
+            QueryParameter::HasTimelock(false),
+            QueryParameter::HasStorageDepositReturn(false),
         ])
         .await?;
 

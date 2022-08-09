@@ -23,8 +23,8 @@ macro_rules! verify_query_parameters {
 impl Client {
     /// Get basic outputs filtered by the given parameters.
     /// GET with query parameter returns all outputIDs that fit these filter criteria.
-    /// Query parameters: "address", "hasStorageDepositReturnCondition", "storageReturnAddress",
-    /// "hasExpirationCondition", "expiresBefore", "expiresAfter", "hasTimelockCondition", "timelockedBefore",
+    /// Query parameters: "address", "hasStorageDepositReturn", "storageDepositReturnAddress",
+    /// "hasExpiration", "expiresBefore", "expiresAfter", "hasTimelock", "timelockedBefore",
     /// "timelockedAfter", "sender", "tag", "createdBefore" and "createdAfter". Returns an empty Vec if no results
     /// are found. api/indexer/v1/outputs/basic
     pub async fn basic_output_ids(&self, query_parameters: Vec<QueryParameter>) -> Result<Vec<OutputId>> {
@@ -36,12 +36,12 @@ impl Client {
             QueryParameter::HasNativeTokens,
             QueryParameter::MinNativeTokenCount,
             QueryParameter::MaxNativeTokenCount,
-            QueryParameter::HasStorageReturnCondition,
-            QueryParameter::StorageReturnAddress,
-            QueryParameter::HasTimelockCondition,
+            QueryParameter::HasStorageDepositReturn,
+            QueryParameter::StorageDepositReturnAddress,
+            QueryParameter::HasTimelock,
             QueryParameter::TimelockedBefore,
             QueryParameter::TimelockedAfter,
-            QueryParameter::HasExpirationCondition,
+            QueryParameter::HasExpiration,
             QueryParameter::ExpiresBefore,
             QueryParameter::ExpiresAfter,
             QueryParameter::ExpirationReturnAddress,
@@ -133,8 +133,8 @@ impl Client {
     }
 
     /// Get NFT outputs filtered by the given parameters.
-    /// Query parameters: "address", "hasStorageDepositReturnCondition", "storageReturnAddress",
-    /// "hasExpirationCondition", "expiresBefore", "expiresAfter", "hasTimelockCondition", "timelockedBefore",
+    /// Query parameters: "address", "hasStorageDepositReturn", "storageDepositReturnAddress",
+    /// "hasExpiration", "expiresBefore", "expiresAfter", "hasTimelock", "timelockedBefore",
     /// "timelockedAfter", "issuer", "sender", "tag", "createdBefore", "createdAfter"
     /// Returns an empty list if no results are found.
     /// api/indexer/v1/outputs/nft
@@ -147,12 +147,12 @@ impl Client {
             QueryParameter::HasNativeTokens,
             QueryParameter::MinNativeTokenCount,
             QueryParameter::MaxNativeTokenCount,
-            QueryParameter::HasStorageReturnCondition,
-            QueryParameter::StorageReturnAddress,
-            QueryParameter::HasTimelockCondition,
+            QueryParameter::HasStorageDepositReturn,
+            QueryParameter::StorageDepositReturnAddress,
+            QueryParameter::HasTimelock,
             QueryParameter::TimelockedBefore,
             QueryParameter::TimelockedAfter,
-            QueryParameter::HasExpirationCondition,
+            QueryParameter::HasExpiration,
             QueryParameter::ExpiresBefore,
             QueryParameter::ExpiresAfter,
             QueryParameter::ExpirationReturnAddress,

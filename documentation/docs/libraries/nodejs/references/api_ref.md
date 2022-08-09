@@ -141,7 +141,7 @@ ___
 
 ### QueryParameter
 
-Ƭ **QueryParameter**: `Address` \| `AliasAddress` \| `HasStorageReturnCondition` \| `StorageReturnAddress` \| `HasTimelockCondition` \| `TimelockedBefore` \| `TimelockedAfter` \| `HasExpirationCondition` \| `ExpiresBefore` \| `ExpiresAfter` \| `ExpirationReturnAddress` \| `Sender` \| `Tag` \| `Issuer` \| `StateController` \| `Governor` \| `CommonQueryParameters`
+Ƭ **QueryParameter**: `Address` \| `AliasAddress` \| `HasStorageDepositReturn` \| `StorageDepositReturnAddress` \| `HasTimelock` \| `TimelockedBefore` \| `TimelockedAfter` \| `HasExpiration` \| `ExpiresBefore` \| `ExpiresAfter` \| `ExpirationReturnAddress` \| `Sender` \| `Tag` \| `Issuer` \| `StateController` \| `Governor` \| `CommonQueryParameters`
 
 Query parameter for filtering output requests
 
@@ -165,7 +165,7 @@ ___
 
 ### NftQueryParameter
 
-Ƭ **NftQueryParameter**: `Address` \| `AliasAddress` \| `HasStorageReturnCondition` \| `StorageReturnAddress` \| `HasTimelockCondition` \| `TimelockedBefore` \| `TimelockedAfter` \| `HasExpirationCondition` \| `ExpiresBefore` \| `ExpiresAfter` \| `ExpirationReturnAddress` \| `Sender` \| `Tag` \| `CommonQueryParameters`
+Ƭ **NftQueryParameter**: `Address` \| `AliasAddress` \| `HasStorageDepositReturn` \| `StorageDepositReturnAddress` \| `HasTimelock` \| `TimelockedBefore` \| `TimelockedAfter` \| `HasExpiration` \| `ExpiresBefore` \| `ExpiresAfter` \| `ExpirationReturnAddress` \| `Sender` \| `Tag` \| `CommonQueryParameters`
 
 Query parameters for filtering Nft Outputs
 

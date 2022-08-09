@@ -25,9 +25,9 @@ async function run() {
                 address:
                     'rms1qpllaj0pyveqfkwxmnngz2c488hfdtmfrj3wfkgxtk4gtyrax0jaxzt70zy',
             },
-            { hasExpirationCondition: false },
-            { hasTimelockCondition: false },
-            { hasStorageReturnCondition: false },
+            { hasExpiration: false },
+            { hasTimelock: false },
+            { hasStorageDepositReturn: false },
         ]);
         console.log('Output ids: ', outputIds, '\n');
 
