@@ -13,10 +13,12 @@ Python binding to the iota.rs client library.
 - Go to `iota.rs/bindings/python/native`
 
 ### Create a virtual environment and use it (optional)
-- `python3 -m venv iota_client_venv && source iota_client_venv/bin/activate`
+- `python3 -m venv iota_client_venv`
+- `source iota_client_venv/bin/activate`; Windows: `.\iota_client_venv\Scripts\activate`
 
 ### Install required dependencies and build the wheel
-- `pip install -r requirements-dev.txt && pip install .`
+- `pip install -r requirements-dev.txt`
+- `pip install .`
 
 ### Run examples
 `python3 example/[example file]`

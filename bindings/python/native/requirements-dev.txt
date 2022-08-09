@@ -1,4 +1,3 @@
-pip>=22.2.2
 pytest>=7.1.2
 setuptools-rust>=1.4.1
 wheel>=0.37.1
