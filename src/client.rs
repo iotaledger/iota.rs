@@ -224,7 +224,6 @@ impl Client {
             for (info, node_url) in nodes.iter() {
                 if let Ok(mut client_network_info) = network_info.write() {
                     client_network_info.network_id = hash_network(&info.protocol.network_name).ok();
-                    // todo update protocol version
                     client_network_info.min_pow_score = Some(info.protocol.min_pow_score);
                     client_network_info.bech32_hrp = Some(info.protocol.bech32_hrp.clone());
                     client_network_info.rent_structure = Some(info.protocol.rent_structure.clone());
@@ -417,7 +416,6 @@ impl Client {
     // Node core API
     //////////////////////////////////////////////////////////////////////
 
-    // todo: only used during syncing, can it be replaced with the other node info function?
     /// GET /api/core/v2/info endpoint
     pub async fn get_node_info(url: &str, auth: Option<NodeAuth>) -> Result<NodeInfo> {
         let mut url = crate::node_manager::builder::validate_url(Url::parse(url)?)?;
