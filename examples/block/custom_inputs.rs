@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example custom_inputs --release
+
 use iota_client::{
     block::input::UtxoInput,
     node_api::indexer::query_parameters::QueryParameter,

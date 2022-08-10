@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example get_funds --release
+
 use iota_client::{
     secret::{mnemonic::MnemonicSecretManager, SecretManager},
     utils::request_funds_from_faucet,

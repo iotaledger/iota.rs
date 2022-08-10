@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example custom_remainder_address --release
+
 use iota_client::{
     node_api::indexer::query_parameters::QueryParameter,
     request_funds_from_faucet,
