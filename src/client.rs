@@ -228,7 +228,7 @@ impl Client {
                     client_network_info.bech32_hrp = Some(info.protocol.bech32_hrp.clone());
                     client_network_info.rent_structure = Some(info.protocol.rent_structure.clone());
                     if !client_network_info.local_pow {
-                        if info.features.contains(&"Pow".to_string()) {
+                        if info.features.contains(&"PoW".to_string()) {
                             synced_nodes.insert(node_url.clone());
                         }
                     } else {

@@ -3,9 +3,8 @@
 
 //! cargo run --example stronghold --features=stronghold --release
 
-use std::{env, path::PathBuf};
+use std::path::PathBuf;
 
-use dotenv::dotenv;
 use iota_client::{
     api::GetAddressesBuilder,
     constants::{SHIMMER_COIN_TYPE, SHIMMER_TESTNET_BECH32_HRP},
@@ -21,8 +20,8 @@ async fn main() -> Result<()> {
         .try_build(PathBuf::from("test.stronghold"))?;
 
     // This example uses dotenv, which is not safe for use in production
-    dotenv().ok();
-    let mnemonic = env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap();
+    dotenv::dotenv().ok();
+    let mnemonic = std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap();
     // The mnemonic only needs to be stored the first time
     stronghold_secret_manager.store_mnemonic(mnemonic).await?;
 

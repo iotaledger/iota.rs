@@ -4,9 +4,8 @@
 //! In this example we send the signed transaction in a block.
 //! `cargo run --example 3_send_block --release`.
 
-use std::{env, fs::File, io::prelude::*, path::Path};
+use std::{fs::File, io::prelude::*, path::Path};
 
-use dotenv::dotenv;
 use iota_client::{
     api::{verify_semantic, SignedTransactionData, SignedTransactionDataDto},
     block::{payload::Payload, semantic::ConflictReason},
@@ -17,9 +16,9 @@ const SIGNED_TRANSACTION_FILE_NAME: &str = "examples/offline_signing/signed_tran
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    dotenv().ok();
+    dotenv::dotenv().ok();
 
-    let node_url = env::var("NODE_URL").unwrap();
+    let node_url = std::env::var("NODE_URL").unwrap();
 
     // Create a client instance.
     let online_client = Client::builder()
@@ -52,7 +51,7 @@ async fn main() -> Result<()> {
 
     println!(
         "Transaction sent: {}/block/{}",
-        env::var("EXPLORER_URL").unwrap(),
+        std::env::var("EXPLORER_URL").unwrap(),
         block.id()
     );
 

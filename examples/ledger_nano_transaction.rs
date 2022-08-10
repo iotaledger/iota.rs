@@ -3,9 +3,6 @@
 
 //! cargo run --example ledger_nano_transaction --features=ledger_nano --release
 
-use std::env;
-
-use dotenv::dotenv;
 use iota_client::{
     secret::{ledger_nano::LedgerSecretManager, SecretManager},
     Client, Result,
@@ -15,9 +12,9 @@ use iota_client::{
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    dotenv().ok();
+    dotenv::dotenv().ok();
 
-    let node_url = env::var("NODE_URL").unwrap();
+    let node_url = std::env::var("NODE_URL").unwrap();
 
     // Create a client instance
     let client = Client::builder()

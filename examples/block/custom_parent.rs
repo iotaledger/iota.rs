@@ -3,18 +3,15 @@
 
 //! cargo run --example custom_parent --release
 
-use std::env;
-
-use dotenv::dotenv;
 use iota_client::{Client, Result};
 
 /// In this example we will define a custom block parent which be used for promoting
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    dotenv().ok();
+    dotenv::dotenv().ok();
 
-    let node_url = env::var("NODE_URL").unwrap();
+    let node_url = std::env::var("NODE_URL").unwrap();
 
     // Create a client instance
     let client = Client::builder()
@@ -27,7 +24,7 @@ async fn main() -> Result<()> {
 
     println!(
         "Empty block sent: {}/block/{}",
-        env::var("EXPLORER_URL").unwrap(),
+        std::env::var("EXPLORER_URL").unwrap(),
         block.id()
     );
 
