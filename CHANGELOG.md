@@ -19,6 +19,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security -->
 
+## Unreleased - YYYY-MM-DD
+
+### Changed
+
+- Use NativeTokensBuilder::finish_vec to lift some unnecessary 64 Native Tokens limits;
+
 ## 2.0.0-beta.1 - 2022-08-11
 
 First beta release.
