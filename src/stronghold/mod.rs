@@ -48,7 +48,6 @@
 
 mod common;
 mod db;
-mod encryption;
 mod secret;
 
 use std::{path::PathBuf, sync::Arc, time::Duration};
