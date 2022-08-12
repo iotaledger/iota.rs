@@ -84,7 +84,8 @@ impl<'a> ClientBlockBuilder<'a> {
 
         // First get inputs for utxo chains (alias, foundry, nft outputs)
         let mut available_inputs = get_utxo_chains_inputs(self, &self.outputs).await?;
-        let (force_use_all_inputs, required_ed25519_inputs) = get_inputs_for_sender_and_issuer(self).await?;
+        let (force_use_all_inputs, required_ed25519_inputs) =
+            get_inputs_for_sender_and_issuer(self, &available_inputs).await?;
         available_inputs.extend(required_ed25519_inputs.into_iter());
 
         let local_time = self.client.get_time_checked().await?;
@@ -174,7 +175,7 @@ impl<'a> ClientBlockBuilder<'a> {
                         local_time,
                     ) {
                         Ok(r) => r,
-                        // for these errors ,just try again in the next round with more addresses which might have more
+                        // for these errors, just try again in the next round with more addresses which might have more
                         // outputs
                         Err(err @ crate::Error::NotEnoughBalance { .. }) => {
                             cached_error.replace(err);
@@ -228,21 +229,67 @@ impl<'a> ClientBlockBuilder<'a> {
 
 async fn get_inputs_for_sender_and_issuer(
     block_builder: &ClientBlockBuilder<'_>,
+    utxo_chain_inputs: &[InputSigningData],
 ) -> Result<(bool, Vec<InputSigningData>)> {
     log::debug!("[get_inputs_for_sender_and_issuer]");
     let mut force_use_all_inputs = false;
     let mut required_ed25519_inputs = Vec::new();
     let bech32_hrp = block_builder.client.get_bech32_hrp().await?;
+    let local_time = block_builder.client.get_time_checked().await?;
 
     // get Ed25519 address if there is a Sender or Issuer block, because we then need to unlock an output with this
     // address
     let mut required_ed25519_addresses = Vec::new();
     for output in &block_builder.outputs {
         if let Some(sender_feature) = output.features().and_then(Features::sender) {
-            required_ed25519_addresses.push(sender_feature.address());
+            // Only add sender, if not already present in the utxo chain inputs
+            if !utxo_chain_inputs.iter().any(|input_data| {
+                let unlock_conditions = input_data
+                    .output
+                    .unlock_conditions()
+                    .expect("Output needs to have unlock_conditions");
+
+                // All possible addresses
+                let mut addresses = Vec::new();
+                if let Some(address) = unlock_conditions.state_controller_address() {
+                    addresses.push(address.address());
+                };
+                if let Some(address) = unlock_conditions.governor_address() {
+                    addresses.push(address.address());
+                };
+                if let Some(address) = unlock_conditions.address() {
+                    let unlock_address = unlock_conditions.locked_address(address.address(), local_time);
+                    addresses.push(unlock_address);
+                }
+                addresses.contains(&sender_feature.address())
+            }) {
+                required_ed25519_addresses.push(sender_feature.address());
+            }
         }
         if let Some(issuer_feature) = output.immutable_features().and_then(Features::issuer) {
-            required_ed25519_addresses.push(issuer_feature.address());
+            // Only add sender, if not already present in the utxo chain inputs
+            if !utxo_chain_inputs.iter().any(|input_data| {
+                let unlock_conditions = input_data
+                    .output
+                    .unlock_conditions()
+                    .expect("Output needs to have unlock_conditions");
+
+                // All possible addresses
+                let mut addresses = Vec::new();
+                if let Some(address) = unlock_conditions.state_controller_address() {
+                    addresses.push(address.address());
+                };
+                if let Some(address) = unlock_conditions.governor_address() {
+                    addresses.push(address.address());
+                };
+                if let Some(address) = unlock_conditions.address() {
+                    let unlock_address = unlock_conditions.locked_address(address.address(), local_time);
+                    addresses.push(unlock_address);
+                }
+                addresses.contains(&issuer_feature.address())
+            }) {
+                required_ed25519_addresses.push(issuer_feature.address());
+            }
         }
     }
 
@@ -264,7 +311,6 @@ async fn get_inputs_for_sender_and_issuer(
 
             let address = Address::Ed25519(*address);
             let address_outputs = address_outputs(block_builder, address.to_bech32(&bech32_hrp)).await?;
-            let local_time = block_builder.client.get_time_checked().await?;
 
             let mut found_output = false;
             for output_response in address_outputs {
