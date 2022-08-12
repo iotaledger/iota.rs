@@ -14,7 +14,7 @@ categories = [ "cryptography::cryptocurrencies" ]
 [dependencies]
 async-trait = { version = "0.1.57", default-features = false }
 bee-api-types = { version = "1.0.0-beta.4", default-features = false }
-bee-block = { version = "1.0.0-beta.5", default-features = false, features = [ "serde", "dto", "std" ] }
+bee-block = { version = "1.0.0-beta.6", default-features = false, features = [ "serde", "dto", "std" ] }
 bee-pow = { version = "1.0.0-alpha.1", default-features = false }
 derive_builder = { version = "0.11.2", default-features = false, features = [ "std" ]}
 futures = { version = "0.3.21", default-features = false, features = [ "thread-pool" ] }
@@ -55,7 +55,7 @@ gloo-timers = { version = "0.2.4", default-features = false, features = [ "futur
 bee-ternary = { version = "1.0.0-alpha.1", default-features = false }
 
 [dev-dependencies]
-bee-block = { version = "1.0.0-beta.5", default-features = false, features = [ "rand" ] }
+bee-block = { version = "1.0.0-beta.6", default-features = false, features = [ "rand" ] }
 dotenv = { version = "0.15.0", default-features = false }
 fern-logger = { version = "0.5.0", default-features = false }
 
