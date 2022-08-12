@@ -1,0 +1,166 @@
+// Copyright 2022 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
+
+//! cargo run --example alias_alias --release
+
+use std::env;
+
+use bee_block::address::{Address, AliasAddress};
+use dotenv::dotenv;
+use iota_client::{
+    block::{
+        output::{
+            feature::{IssuerFeature, MetadataFeature, SenderFeature},
+            unlock_condition::{
+                GovernorAddressUnlockCondition, StateControllerAddressUnlockCondition, UnlockCondition,
+            },
+            AliasId, AliasOutputBuilder, Feature, Output, OutputId,
+        },
+        payload::{transaction::TransactionEssence, Payload},
+    },
+    request_funds_from_faucet,
+    secret::{mnemonic::MnemonicSecretManager, SecretManager},
+    Client, Result,
+};
+
+/// In this example we will create an alias output
+
+#[tokio::main]
+async fn main() -> Result<()> {
+    // This example uses dotenv, which is not safe for use in production!
+    // Configure your own mnemonic in the ".env" file. Since the output amount cannot be zero, the seed must contain
+    // non-zero balance.
+    dotenv().ok();
+
+    let node_url = env::var("NODE_URL").unwrap();
+    let faucet_url = env::var("FAUCET_URL").unwrap();
+
+    // Create a client instance.
+    let client = Client::builder()
+        .with_node(&node_url)?
+        .with_node_sync_disabled()
+        .finish()?;
+
+    let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
+        &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
+    )?);
+
+    let address = client.get_addresses(&secret_manager).with_range(0..1).get_raw().await?[0];
+    request_funds_from_faucet(&faucet_url, &address.to_bech32(client.get_bech32_hrp().await?)).await?;
+    tokio::time::sleep(std::time::Duration::from_secs(15)).await;
+
+    //////////////////////////////////
+    // create two new alias output
+    //////////////////////////////////
+    let alias_output_builder_1 = AliasOutputBuilder::new_with_amount(1_000_000, AliasId::null())?
+        .add_feature(Feature::Sender(SenderFeature::new(address)))
+        .add_feature(Feature::Metadata(MetadataFeature::new(vec![1, 2, 3])?))
+        .add_immutable_feature(Feature::Issuer(IssuerFeature::new(address)))
+        .add_unlock_condition(UnlockCondition::StateControllerAddress(
+            StateControllerAddressUnlockCondition::new(address),
+        ))
+        .add_unlock_condition(UnlockCondition::GovernorAddress(GovernorAddressUnlockCondition::new(
+            address,
+        )));
+
+    let outputs = vec![alias_output_builder_1.clone().finish_output()?];
+
+    let block_1 = client
+        .block()
+        .with_secret_manager(&secret_manager)
+        .with_outputs(outputs)?
+        .finish()
+        .await?;
+
+    println!(
+        "Transaction with new alias 1 output sent: {node_url}/api/core/v2/blocks/{}",
+        block_1.id()
+    );
+    let _ = client.retry_until_included(&block_1.id(), None, None).await?;
+
+    //////////////////////////////////
+    // create second transaction with the actual AliasId (BLAKE2b-160 hash of the Output ID that created the alias) and
+    // make a new alias output controlled by the first one
+    //////////////////////////////////
+    let alias_output_id = get_new_alias_output_id(block_1.payload().unwrap())?;
+    let alias_id_1 = AliasId::from(alias_output_id);
+
+    let alias_1_address = Address::Alias(AliasAddress::new(alias_id_1));
+
+    let alias_output_builder_2 = AliasOutputBuilder::new_with_amount(1_000_000, AliasId::null())?
+        // .add_feature(Feature::Sender(SenderFeature::new(address)))
+        // .add_feature(Feature::Metadata(MetadataFeature::new(vec![1, 2, 3])?))
+        // .add_immutable_feature(Feature::Issuer(IssuerFeature::new(address)))
+        .add_unlock_condition(UnlockCondition::StateControllerAddress(
+            StateControllerAddressUnlockCondition::new(alias_1_address),
+        ))
+        .add_unlock_condition(UnlockCondition::GovernorAddress(GovernorAddressUnlockCondition::new(
+            alias_1_address,
+        )));
+
+    let outputs = vec![
+        alias_output_builder_1
+            .with_alias_id(alias_id_1)
+            .with_state_index(1)
+            .finish_output()?,
+        alias_output_builder_2.clone().finish_output()?,
+    ];
+
+    let block_2 = client
+        .block()
+        .with_secret_manager(&secret_manager)
+        // .with_input(alias_output_id.into())?
+        .with_outputs(outputs)?
+        .finish()
+        .await?;
+    println!(
+        "Transaction with alias id set sent: {node_url}/api/core/v2/blocks/{}",
+        block_2.id()
+    );
+    let _ = client.retry_until_included(&block_2.id(), None, None).await?;
+
+    //////////////////////////////////
+    // create third transaction with the actual AliasId (BLAKE2b-160 hash of the Output ID that created the alias) for
+    // the second alias output
+    //////////////////////////////////
+    let alias_output_id = get_new_alias_output_id(block_2.payload().unwrap())?;
+    let alias_id_2 = AliasId::from(alias_output_id);
+    let outputs = vec![
+        alias_output_builder_2
+            .with_alias_id(alias_id_2)
+            .with_state_index(1)
+            .finish_output()?,
+    ];
+
+    let block = client
+        .block()
+        .with_secret_manager(&secret_manager)
+        // .with_input(alias_output_id.into())?
+        .with_outputs(outputs)?
+        .finish()
+        .await?;
+    println!(
+        "Transaction with alias id set sent: {node_url}/api/core/v2/blocks/{}",
+        block.id()
+    );
+    let _ = client.retry_until_included(&block.id(), None, None).await?;
+    Ok(())
+}
+
+// helper function to get the output id for the first alias output
+fn get_new_alias_output_id(payload: &Payload) -> Result<OutputId> {
+    match payload {
+        Payload::Transaction(tx_payload) => {
+            let TransactionEssence::Regular(regular) = tx_payload.essence();
+            for (index, output) in regular.outputs().iter().enumerate() {
+                if let Output::Alias(alias_output) = output {
+                    if alias_output.alias_id().is_null() {
+                        return Ok(OutputId::new(tx_payload.id(), index.try_into().unwrap())?);
+                    }
+                }
+            }
+            panic!("No new alias output in transaction essence")
+        }
+        _ => panic!("No tx payload"),
+    }
+}

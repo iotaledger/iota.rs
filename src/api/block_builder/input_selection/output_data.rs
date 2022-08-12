@@ -68,24 +68,22 @@ pub(crate) async fn get_utxo_chains_inputs(
                     let output_id = client.alias_output_id(*alias_output.alias_id()).await?;
                     let output_response = client.get_output(&output_id).await?;
                     if let OutputDto::Alias(output) = &output_response.output {
-                        if let OutputDto::Alias(alias_output_dto) = &output_response.output {
-                            for unlock_condition in &alias_output_dto.unlock_conditions {
-                                // A governance transition is identified by an unchanged State Index in next
-                                // state.
-                                if alias_output.state_index() == output.state_index {
-                                    if let UnlockConditionDto::GovernorAddress(governor_unlock_condition_dto) =
-                                        unlock_condition
-                                    {
-                                        let address = Address::try_from(&governor_unlock_condition_dto.address)?;
-                                        utxo_chains.push((address, output_response.clone()));
-                                    }
-                                } else if let UnlockConditionDto::StateControllerAddress(
-                                    state_controller_unlock_condition_dto,
-                                ) = unlock_condition
+                        for unlock_condition in &output.unlock_conditions {
+                            // A governance transition is identified by an unchanged State Index in next
+                            // state.
+                            if alias_output.state_index() == output.state_index {
+                                if let UnlockConditionDto::GovernorAddress(governor_unlock_condition_dto) =
+                                    unlock_condition
                                 {
-                                    let address = Address::try_from(&state_controller_unlock_condition_dto.address)?;
+                                    let address = Address::try_from(&governor_unlock_condition_dto.address)?;
                                     utxo_chains.push((address, output_response.clone()));
                                 }
+                            } else if let UnlockConditionDto::StateControllerAddress(
+                                state_controller_unlock_condition_dto,
+                            ) = unlock_condition
+                            {
+                                let address = Address::try_from(&state_controller_unlock_condition_dto.address)?;
+                                utxo_chains.push((address, output_response.clone()));
                             }
                         }
                     }
@@ -132,6 +130,75 @@ pub(crate) async fn get_utxo_chains_inputs(
                 }
             }
             _ => {}
+        }
+    }
+
+    // Get recursive owned alias or nft outputs
+    let mut unprocessed_alias_nft_addresses = std::collections::HashSet::new();
+
+    for (unlock_address, _output_response) in utxo_chains.clone() {
+        unprocessed_alias_nft_addresses.insert(unlock_address);
+    }
+
+    while !unprocessed_alias_nft_addresses.is_empty() {
+        for (unlock_address, _output_response) in utxo_chains.clone() {
+            if !unprocessed_alias_nft_addresses.contains(&unlock_address) {
+                continue;
+            }
+            match unlock_address {
+                Address::Alias(address) => {
+                    let output_id = client.alias_output_id(*address.alias_id()).await?;
+                    let output_response = client.get_output(&output_id).await?;
+                    if let OutputDto::Alias(alias_output_dto) = &output_response.output {
+                        for unlock_condition in &alias_output_dto.unlock_conditions {
+                            // State transition if we add them to inputs
+                            if let UnlockConditionDto::StateControllerAddress(state_controller_unlock_condition_dto) =
+                                unlock_condition
+                            {
+                                let address = Address::try_from(&state_controller_unlock_condition_dto.address)?;
+                                // Add address to unprocessed_alias_nft_addresses so we get the required output there
+                                // also
+                                match address {
+                                    Address::Alias(_) | Address::Nft(_) => {
+                                        unprocessed_alias_nft_addresses.insert(address);
+                                    }
+                                    _ => {}
+                                }
+                                utxo_chains.push((address, output_response.clone()));
+                            }
+                        }
+                    }
+                }
+                Address::Nft(address) => {
+                    let output_id = client.nft_output_id(*address.nft_id()).await?;
+                    let output_response = client.get_output(&output_id).await?;
+                    if let OutputDto::Nft(nft_output) = &output_response.output {
+                        let nft_output = NftOutput::try_from(nft_output)?;
+                        let output_address = nft_output
+                            .unlock_conditions()
+                            .address()
+                            .expect("Nft output needs to have an address unlock condition")
+                            .address();
+
+                        let local_time = block_builder.client.get_time_checked().await?;
+
+                        let unlock_address = nft_output
+                            .unlock_conditions()
+                            .locked_address(output_address, local_time);
+                        // Add address to unprocessed_alias_nft_addresses so we get the required output there also
+                        match unlock_address {
+                            Address::Alias(_) | Address::Nft(_) => {
+                                unprocessed_alias_nft_addresses.insert(*unlock_address);
+                            }
+                            _ => {}
+                        }
+                        utxo_chains.push((*unlock_address, output_response.clone()));
+                    }
+                }
+                _ => {}
+            }
+            // Remove processed addresses
+            unprocessed_alias_nft_addresses.remove(&unlock_address);
         }
     }
 

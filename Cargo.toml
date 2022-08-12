@@ -290,6 +290,10 @@ name = "alias"
 path = "examples/outputs/alias.rs"
 
 [[example]]
+name = "alias_alias"
+path = "examples/outputs/alias_alias.rs"
+
+[[example]]
 name = "basic"
 path = "examples/outputs/basic.rs"
 
