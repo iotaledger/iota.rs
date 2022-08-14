@@ -18,20 +18,14 @@ use bee_block::{
     payload::{Payload, TaggedDataPayload},
     Block, BlockId,
 };
-#[cfg(target_family = "wasm")]
-use gloo_timers::future::TimeoutFuture;
-use packable::bounded::{TryIntoBoundedU16Error, TryIntoBoundedU8Error};
-#[cfg(not(target_family = "wasm"))]
-use {
-    crate::api::{do_pow, miner::ClientMinerBuilder, pow::finish_pow},
-    bee_pow::providers::NonceProviderBuilder,
-    packable::PackableExt,
-    std::time::Duration,
-    tokio::time::sleep,
+use packable::{
+    bounded::{TryIntoBoundedU16Error, TryIntoBoundedU8Error},
+    PackableExt,
 };
 
 pub use self::transaction::verify_semantic;
 use crate::{
+    api::do_pow,
     block::{input::dto::UtxoInputDto, output::BasicOutputBuilder},
     constants::SHIMMER_COIN_TYPE,
     secret::SecretManager,
@@ -417,40 +411,24 @@ impl<'a> ClientBlockBuilder<'a> {
 
     /// Builds the final block and posts it to the node
     pub async fn finish_block(self, payload: Option<Payload>) -> Result<Block> {
-        #[cfg(target_family = "wasm")]
-        let final_block = {
-            let parent_block_ids = match self.parents {
-                Some(parents) => parents,
-                _ => self.client.get_tips().await?,
-            };
-            let min_pow_score = self.client.get_min_pow_score().await?;
-            let network_id = self.client.get_network_id().await?;
-            crate::api::pow::finish_single_thread_pow(
-                self.client,
-                network_id,
-                Some(parent_block_ids),
-                payload,
-                min_pow_score,
-            )
-            .await?
-        };
-        #[cfg(not(target_family = "wasm"))]
+        // Do not replace parents with the latest tips if they are set explicitly,
+        // necessary for block promotion.
         let final_block = match self.parents {
             Some(mut parents) => {
-                // Sort parents
                 parents.sort_unstable_by_key(PackableExt::pack_to_vec);
                 parents.dedup();
 
                 let min_pow_score = self.client.get_min_pow_score().await?;
-                let mut client_miner = ClientMinerBuilder::new().with_local_pow(self.client.get_local_pow().await);
-                if let Some(worker_count) = self.client.pow_worker_count {
-                    client_miner = client_miner.with_worker_count(worker_count);
-                }
-                do_pow(client_miner.finish(), min_pow_score, payload, parents)?
-                    .1
-                    .ok_or_else(|| Error::Pow("final block pow failed.".to_string()))?
+                let miner = self.client.get_pow_provider().await;
+                do_pow(miner, min_pow_score, payload, parents)?
             }
-            None => finish_pow(self.client, payload).await?,
+            None => {
+                #[cfg(target_family = "wasm")]
+                let block = crate::api::pow::finish_single_threaded_pow(self.client, payload).await?;
+                #[cfg(not(target_family = "wasm"))]
+                let block = crate::api::pow::finish_multi_threaded_pow(self.client, payload).await?;
+                block
+            }
         };
 
         let block_id = self.client.post_block_raw(&final_block).await?;
@@ -465,10 +443,10 @@ impl<'a> ClientBlockBuilder<'a> {
                     return Ok(block);
                 }
                 #[cfg(not(target_family = "wasm"))]
-                sleep(Duration::from_millis(time * 50)).await;
+                tokio::time::sleep(std::time::Duration::from_millis(time * 50)).await;
                 #[cfg(target_family = "wasm")]
                 {
-                    TimeoutFuture::new((time * 50).try_into().unwrap()).await;
+                    gloo_timers::future::TimeoutFuture::new((time * 50).try_into().unwrap()).await;
                 }
             }
             self.client.get_block(&block_id).await
