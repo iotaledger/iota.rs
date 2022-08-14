@@ -114,7 +114,7 @@ pub async fn finish_single_threaded_pow(client: &Client, payload: Option<Payload
 
         // The nonce defaults to 0 on errors (from the tips interval elapsing),
         // we need to re-run proof-of-work with new parents.
-        if block.nonce() == 0 && !local_pow {
+        if block.nonce() == 0 && local_pow {
             parent_blocks = client.get_tips().await?;
         } else {
             return Ok(block);
