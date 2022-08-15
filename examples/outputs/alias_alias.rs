@@ -7,6 +7,7 @@ use std::env;
 
 use bee_block::address::{Address, AliasAddress};
 use dotenv::dotenv;
+use fern_logger::{logger_init, LoggerConfig, LoggerOutputConfigBuilder};
 use iota_client::{
     block::{
         output::{
@@ -22,11 +23,19 @@ use iota_client::{
     secret::{mnemonic::MnemonicSecretManager, SecretManager},
     Client, Result,
 };
-
+use log::LevelFilter;
 /// In this example we will create an alias output
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    // Generates a client.log file with logs for debugging
+    let logger_output_config = LoggerOutputConfigBuilder::new()
+        .name("client.log")
+        .target_exclusions(&["h2", "hyper", "rustls"])
+        .level_filter(LevelFilter::Debug);
+    let config = LoggerConfig::build().with_output(logger_output_config).finish();
+    logger_init(config).unwrap();
+
     // This example uses dotenv, which is not safe for use in production!
     // Configure your own mnemonic in the ".env" file. Since the output amount cannot be zero, the seed must contain
     // non-zero balance.
@@ -90,7 +99,7 @@ async fn main() -> Result<()> {
     let alias_output_builder_2 = AliasOutputBuilder::new_with_amount(1_000_000, AliasId::null())?
         // .add_feature(Feature::Sender(SenderFeature::new(address)))
         // .add_feature(Feature::Metadata(MetadataFeature::new(vec![1, 2, 3])?))
-        // .add_immutable_feature(Feature::Issuer(IssuerFeature::new(address)))
+        .add_immutable_feature(Feature::Issuer(IssuerFeature::new(address)))
         .add_unlock_condition(UnlockCondition::StateControllerAddress(
             StateControllerAddressUnlockCondition::new(alias_1_address),
         ))
@@ -127,6 +136,7 @@ async fn main() -> Result<()> {
     let alias_id_2 = AliasId::from(alias_output_id);
     let outputs = vec![
         alias_output_builder_2
+            .clone()
             .with_alias_id(alias_id_2)
             .with_state_index(1)
             .finish_output()?,
@@ -140,7 +150,31 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
     println!(
-        "Transaction with alias id set sent: {node_url}/api/core/v2/blocks/{}",
+        "Transaction with alias 2 id set sent: {node_url}/api/core/v2/blocks/{}",
+        block.id()
+    );
+    let _ = client.retry_until_included(&block.id(), None, None).await?;
+
+    //////////////////////////////////
+    // create fourth transaction with the second alias output updated
+    //////////////////////////////////
+    let outputs = vec![
+        alias_output_builder_2
+            .with_alias_id(alias_id_2)
+            .with_state_index(2)
+            .with_state_metadata(vec![1])
+            .finish_output()?,
+    ];
+
+    let block = client
+        .block()
+        .with_secret_manager(&secret_manager)
+        // .with_input(alias_output_id.into())?
+        .with_outputs(outputs)?
+        .finish()
+        .await?;
+    println!(
+        "Transaction with state metadata updated sent: {node_url}/api/core/v2/blocks/{}",
         block.id()
     );
     let _ = client.retry_until_included(&block.id(), None, None).await?;
