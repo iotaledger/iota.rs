@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use bee_api_types::responses::OutputResponse;
-use bee_block::output::{NativeTokens, NativeTokensBuilder, Output};
+use bee_block::output::{NativeToken, NativeTokensBuilder, Output};
 
 use crate::{node_api::indexer::query_parameters::QueryParameter, Client, Result};
 
@@ -14,7 +14,7 @@ pub struct AddressBalance {
     /// IOTA balance
     pub balance: u64,
     /// native tokens
-    pub native_tokens: NativeTokens,
+    pub native_tokens: Vec<NativeToken>,
     /// The ledger index at which the outputs were retrieved
     #[serde(rename = "ledgerIndex", default)]
     pub ledger_index: u32,
@@ -71,7 +71,7 @@ impl<'a> GetAddressBuilder<'a> {
             address: address.to_string(),
             balance: total_balance,
             ledger_index,
-            native_tokens: native_tokens_builder.finish()?,
+            native_tokens: native_tokens_builder.finish_vec()?,
         })
     }
 

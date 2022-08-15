@@ -69,7 +69,7 @@ async fn main() -> Result<()> {
         "Outputs controlled by {} have: {:?}i and native tokens: {:?}",
         addresses[0],
         total_amount,
-        total_native_tokens.finish()?
+        total_native_tokens.finish_vec()?
     );
     Ok(())
 }
