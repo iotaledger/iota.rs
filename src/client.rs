@@ -263,8 +263,10 @@ impl Client {
             .finish();
         #[cfg(not(target_family = "wasm"))]
         let miner = {
-            let mut miner = crate::api::miner::ClientMiner::builder().with_local_pow(local_pow);
-            // Do not set worker_count here, breaks Java bindings!
+            let mut miner = crate::api::miner::ClientMinerBuilder::new().with_local_pow(local_pow);
+            if let Some(worker_count) = self.pow_worker_count {
+                miner = miner.with_worker_count(worker_count)
+            }
             miner.finish()
         };
         miner
