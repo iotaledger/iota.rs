@@ -35,7 +35,7 @@ impl DatabaseProvider for StrongholdAdapter {
         let buffer = key_provider.try_unlock()?;
         let buffer_ref = buffer.borrow();
 
-        Ok(Some(chacha::aead_decrypt(&data, buffer_ref.deref())?))
+        Ok(Some(chacha::aead_decrypt(buffer_ref.deref(), &data)?))
     }
 
     async fn insert(&mut self, k: &[u8], v: &[u8]) -> Result<Option<Vec<u8>>> {
@@ -49,7 +49,7 @@ impl DatabaseProvider for StrongholdAdapter {
             let buffer = key_provider.try_unlock()?;
             let buffer_ref = buffer.borrow();
 
-            chacha::aead_encrypt(v, buffer_ref.deref())?
+            chacha::aead_encrypt(buffer_ref.deref(), v)?
         };
 
         Ok(self

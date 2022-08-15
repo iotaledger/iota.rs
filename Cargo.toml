@@ -18,7 +18,7 @@ bee-block = { version = "1.0.0-beta.6", default-features = false, features = [ "
 bee-pow = { version = "1.0.0-alpha.1", default-features = false }
 derive_builder = { version = "0.11.2", default-features = false, features = [ "std" ]}
 futures = { version = "0.3.21", default-features = false, features = [ "thread-pool" ] }
-iota-crypto = { git = "https://github.com/thibault-martinez/crypto.rs", rev = "ab2231b383044b4b5099c7608698287965476a62", default-features = false, features = [ "std", "chacha", "blake2b", "ed25519", "random", "slip10", "bip39", "bip39-en" ] }
+iota-crypto = { git = "https://github.com/thibault-martinez/crypto.rs", rev = "75fdf00896ba8811c2d06ef713db3e21e7630198", default-features = false, features = [ "std", "chacha", "blake2b", "ed25519", "random", "slip10", "bip39", "bip39-en" ] }
 log = { version = "0.4.17", default-features = false }
 num_cpus = { version = "1.13.1", default-features = false }
 packable = { version = "0.5.0", default-features = false, features = [ "serde", "primitive-types", "std" ] }

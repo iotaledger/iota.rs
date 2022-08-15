@@ -1196,7 +1196,7 @@ dependencies = [
  "futures",
  "gloo-timers",
  "instant",
- "iota-crypto 0.13.0 (git+https://github.com/thibault-martinez/crypto.rs?rev=ab2231b383044b4b5099c7608698287965476a62)",
+ "iota-crypto 0.13.0 (git+https://github.com/thibault-martinez/crypto.rs?rev=75fdf00896ba8811c2d06ef713db3e21e7630198)",
  "iota-ledger-nano",
  "iota_stronghold",
  "log",
@@ -1266,7 +1266,7 @@ dependencies = [
 [[package]]
 name = "iota-crypto"
 version = "0.13.0"
-source = "git+https://github.com/thibault-martinez/crypto.rs?rev=ab2231b383044b4b5099c7608698287965476a62#ab2231b383044b4b5099c7608698287965476a62"
+source = "git+https://github.com/thibault-martinez/crypto.rs?rev=75fdf00896ba8811c2d06ef713db3e21e7630198#75fdf00896ba8811c2d06ef713db3e21e7630198"
 dependencies = [
  "aead",
  "blake2 0.10.4",
