@@ -14,7 +14,7 @@ use packable::PackableExt;
 #[cfg(target_family = "wasm")]
 use wasm_miner::SingleThreadedMiner;
 #[cfg(not(target_family = "wasm"))]
-use {crate::api::miner::ClientMinerBuilder, bee_pow::providers::miner::MinerCancel};
+use {crate::api::miner::ClientMiner, bee_pow::providers::miner::MinerCancel};
 
 use crate::{Client, Error, Result};
 
@@ -53,9 +53,7 @@ pub async fn finish_multi_threaded_pow(client: &Client, payload: Option<Payload>
         parent_blocks.dedup();
         let time_thread = std::thread::spawn(move || Ok(pow_timeout(tips_interval, cancel)));
         let pow_thread = std::thread::spawn(move || {
-            let mut client_miner = ClientMinerBuilder::new()
-                .with_local_pow(local_pow)
-                .with_cancel(cancel_2);
+            let mut client_miner = ClientMiner::builder().with_local_pow(local_pow).with_cancel(cancel_2);
             if let Some(worker_count) = pow_worker_count {
                 client_miner = client_miner.with_worker_count(worker_count);
             }
