@@ -21,12 +21,7 @@ async fn main() -> Result<()> {
         .with_node(&node_url)? // Insert your node URL here
         .finish()?;
 
-    let block = client
-        .block()
-        .with_tag("Hello")
-        .with_data("Tangle".as_bytes().to_vec())
-        .finish()
-        .await?;
+    let block = client.block().finish().await?;
 
     let block_id = block.id();
     println!("Block ID: {}", block_id);

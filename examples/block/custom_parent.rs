@@ -26,7 +26,7 @@ async fn main() -> Result<()> {
     let block = client.block().with_parents(vec![custom_parent])?.finish().await?;
 
     println!(
-        "Empty block sent: https://explorer.iota.org/devnet/block/{}",
+        "Empty block sent: https://explorer.testnet.shimmer.network/testnet/block/{}",
         block.id()
     );
 

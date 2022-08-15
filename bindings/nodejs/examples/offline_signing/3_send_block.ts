@@ -33,7 +33,7 @@ async function run() {
         const blockId = await onlineClient.blockId(block);
 
         console.log(
-            'Transaction sent: https://explorer.iota.org/devnet/block/' +
+            'Transaction sent: https://explorer.testnet.shimmer.network/testnet/block/' +
                 blockId,
         );
     } catch (error) {
