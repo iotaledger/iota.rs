@@ -51,7 +51,11 @@ mod db;
 mod encryption;
 mod secret;
 
-use std::{path::PathBuf, sync::Arc, time::Duration};
+use std::{
+    path::{Path, PathBuf},
+    sync::Arc,
+    time::Duration,
+};
 
 use derive_builder::Builder;
 use iota_stronghold::{KeyProvider, SnapshotPath, Stronghold};
@@ -287,7 +291,7 @@ impl StrongholdAdapter {
         }
 
         // In case something goes wrong we can recover from the snapshot.
-        self.write_stronghold_snapshot().await?;
+        self.write_stronghold_snapshot(None).await?;
 
         // If there are keys to re-encrypt, we iterate over the requested keys and attempt to re-encrypt the
         // corresponding values.
@@ -374,7 +378,7 @@ impl StrongholdAdapter {
         }
 
         // Rewrite the snapshot to finish the password changing process.
-        self.write_stronghold_snapshot().await?;
+        self.write_stronghold_snapshot(None).await?;
 
         // Restart the key clearing task.
         if let Some(timeout) = self.timeout {
@@ -482,12 +486,13 @@ impl StrongholdAdapter {
         Ok(())
     }
 
-    /// Persist Stronghold to a snapshot at `snapshot_path`.
+    /// Persist Stronghold to a snapshot at a provided `snapshot_path` or at the Stronghold's own `snapshot_path` if
+    /// None.
     ///
     /// It doesn't unload the snapshot; see also [`unload_stronghold_snapshot()`].
     ///
     /// [`unload_stronghold_snapshot()`]: Self::unload_stronghold_snapshot()
-    pub async fn write_stronghold_snapshot(&mut self) -> Result<()> {
+    pub async fn write_stronghold_snapshot(&mut self, snapshot_path: Option<&Path>) -> Result<()> {
         // The key and the snapshot path need to be supplied first.
         let locked_key_provider = self.key_provider.lock().await;
         let key_provider = if let Some(key_provider) = &*locked_key_provider {
@@ -496,10 +501,10 @@ impl StrongholdAdapter {
             return Err(Error::StrongholdKeyCleared);
         };
 
-        self.stronghold
-            .lock()
-            .await
-            .commit(&SnapshotPath::from_path(&self.snapshot_path), key_provider)?;
+        self.stronghold.lock().await.commit(
+            &SnapshotPath::from_path(snapshot_path.unwrap_or(&self.snapshot_path)),
+            key_provider,
+        )?;
 
         Ok(())
     }
@@ -516,7 +521,7 @@ impl StrongholdAdapter {
     /// documentation](self) for more details.
     pub async fn unload_stronghold_snapshot(&mut self) -> Result<()> {
         // Flush Stronghold.
-        self.write_stronghold_snapshot().await?;
+        self.write_stronghold_snapshot(None).await?;
 
         self.stronghold.lock().await.clear()?;
 

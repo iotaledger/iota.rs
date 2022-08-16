@@ -218,7 +218,7 @@ impl StrongholdAdapter {
         self.bip39_recover(trimmed_mnemonic, None, output).await?;
 
         // Persist Stronghold to the disk
-        self.write_stronghold_snapshot().await?;
+        self.write_stronghold_snapshot(None).await?;
 
         // Now we consider that the snapshot has been loaded; it's just in a reversed order.
         self.snapshot_loaded = true;
