@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Change `ClientMinerBuilder::default()` to match `new()` and default `local_pow` to `true`;
 - Rename `finish_pow` to `finish_multi_threaded_pow`;
 - Rename `finish_single_thread_pow` to `finish_single_threaded_pow`;
+- Rename `minimum_storage_deposit` to `minimum_storage_deposit_basic_output`;
 
 ### Removed
 - Removed `snapshot_loaded` field from StrongholdAdapter;
