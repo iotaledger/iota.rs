@@ -34,6 +34,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Rename `finish_pow` to `finish_multi_threaded_pow`;
 - Rename `finish_single_thread_pow` to `finish_single_threaded_pow`;
 
+### Removed
+- Removed `snapshot_loaded` field from StrongholdAdapter;
+
 ### Fixed
 
 - Fix `Client::get_time_checked()` panic on Wasm.
