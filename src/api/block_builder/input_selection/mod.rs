@@ -9,8 +9,10 @@ mod native_token_helpers;
 mod output_data;
 mod remainder;
 pub mod types;
+use std::{collections::HashSet, ops::Deref};
+
 use bee_block::{
-    address::{Address, AliasAddress, NftAddress},
+    address::{Address, AliasAddress, Ed25519Address, NftAddress},
     input::INPUT_COUNT_MAX,
     output::{
         unlock_condition::{
@@ -21,7 +23,7 @@ use bee_block::{
         RentStructure, UnlockCondition, OUTPUT_COUNT_MAX,
     },
 };
-use packable::{bounded::TryIntoBoundedU16Error, PackableExt};
+use packable::bounded::TryIntoBoundedU16Error;
 
 use self::{
     native_token_helpers::{get_minted_and_melted_native_tokens, get_remainder_native_tokens, missing_native_tokens},
@@ -111,188 +113,217 @@ pub fn try_select_inputs(
 
     // 1. get alias, foundry or nft inputs (because amount and native tokens of these outputs will also be available for
     // the outputs)
-    for input_signing_data in utxo_chain_outputs {
-        // Only add outputs if also exisiting on the output side or if burning is allowed
-        let minimum_required_storage_deposit = input_signing_data.output.rent_cost(rent_structure);
-        let output_id = input_signing_data.output_id()?;
+    // check the inputs in a loop, because if we add an an output which requres another alias or nft output to unlock
+    // it, then we might have to add this also
 
-        match &input_signing_data.output {
-            Output::Nft(nft_input) => {
-                let nft_id = nft_input.nft_id().or_from_output_id(output_id);
-                // or if an output contains an nft output with the same nft id
-                let is_required = outputs.iter().any(|output| {
-                    if let Output::Nft(nft_output) = output {
-                        nft_id == *nft_output.nft_id()
-                    } else {
-                        false
-                    }
-                });
-                if !is_required && !allow_burning {
-                    let nft_address = Address::Nft(NftAddress::new(nft_id));
-                    let nft_required_in_unlock_condition = outputs.iter().any(|output| {
-                        // check if alias address is in unlock condition
-                        if let Some(unlock_conditions) = output.unlock_conditions() {
-                            if let Some(UnlockCondition::Address(address_unlock_condition)) =
-                                unlock_conditions.get(AddressUnlockCondition::KIND)
-                            {
-                                if &nft_address
-                                    == unlock_conditions
-                                        .locked_address(address_unlock_condition.address(), current_time)
-                                {
-                                    return true;
-                                }
-                            }
-                            if let Some(UnlockCondition::StateControllerAddress(state_controller_unlock_condition)) =
-                                unlock_conditions.get(StateControllerAddressUnlockCondition::KIND)
-                            {
-                                if &nft_address == state_controller_unlock_condition.address() {
-                                    return true;
-                                }
-                            }
-                            if let Some(UnlockCondition::GovernorAddress(governor_controller_unlock_condition)) =
-                                unlock_conditions.get(GovernorAddressUnlockCondition::KIND)
-                            {
-                                if &nft_address == governor_controller_unlock_condition.address() {
-                                    return true;
-                                }
-                            }
-                            false
+    // Set to true so it runs at least once
+    let mut added_new_outputs = true;
+    let mut added_output_for_input_signing_data = HashSet::new();
+    let mut added_input_signing_data = HashSet::new();
+
+    while added_new_outputs {
+        let outputs_len_beginning = outputs.len();
+
+        for input_signing_data in &utxo_chain_outputs {
+            let output_id = input_signing_data.output_id()?;
+
+            // Skip inputs where we already added the required output
+            if added_output_for_input_signing_data.contains(&output_id) {
+                continue;
+            }
+            let minimum_required_storage_deposit = input_signing_data.output.rent_cost(rent_structure);
+
+            match &input_signing_data.output {
+                Output::Nft(nft_input) => {
+                    let nft_id = nft_input.nft_id().or_from_output_id(output_id);
+                    // or if an output contains an nft output with the same nft id
+                    let is_required = outputs.iter().any(|output| {
+                        if let Output::Nft(nft_output) = output {
+                            nft_id == *nft_output.nft_id()
                         } else {
                             false
                         }
                     });
-
-                    // Don't add if it doesn't give us any amount or native tokens
-                    if !nft_required_in_unlock_condition
-                        && input_signing_data.output.amount() == minimum_required_storage_deposit
-                        && nft_input.native_tokens().is_empty()
-                    {
-                        continue;
-                    }
-                    // else add output to outputs with minimum_required_storage_deposit
-                    let new_output = NftOutputBuilder::from(nft_input)
-                        .with_nft_id(nft_input.nft_id().or_from_output_id(output_id))
-                        .with_amount(minimum_required_storage_deposit)?
-                        .finish_output()?;
-                    outputs.push(new_output);
-                }
-            }
-            Output::Alias(alias_input) => {
-                let alias_id = alias_input.alias_id().or_from_output_id(output_id);
-                // Don't add if output has not the same AliasId, so we don't burn it
-                if !outputs.iter().any(|output| {
-                    if let Output::Alias(alias_output) = output {
-                        alias_id == *alias_output.alias_id()
-                    } else {
-                        false
-                    }
-                }) && !allow_burning
-                {
-                    let alias_address = Address::Alias(AliasAddress::new(alias_id));
-                    let alias_required_in_unlock_condition = outputs.iter().any(|output| {
-                        // check if alias address is in unlock condition
-                        if let Some(unlock_conditions) = output.unlock_conditions() {
-                            if let Some(UnlockCondition::Address(address_unlock_condition)) =
-                                unlock_conditions.get(AddressUnlockCondition::KIND)
-                            {
-                                if &alias_address
-                                    == unlock_conditions
-                                        .locked_address(address_unlock_condition.address(), current_time)
+                    if !is_required && !allow_burning {
+                        let nft_address = Address::Nft(NftAddress::new(nft_id));
+                        let nft_required_in_unlock_condition = outputs.iter().any(|output| {
+                            // check if alias address is in unlock condition
+                            if let Some(unlock_conditions) = output.unlock_conditions() {
+                                if let Some(UnlockCondition::Address(address_unlock_condition)) =
+                                    unlock_conditions.get(AddressUnlockCondition::KIND)
                                 {
-                                    return true;
+                                    if &nft_address
+                                        == unlock_conditions
+                                            .locked_address(address_unlock_condition.address(), current_time)
+                                    {
+                                        return true;
+                                    }
                                 }
-                            }
-                            if let Some(UnlockCondition::StateControllerAddress(state_controller_unlock_condition)) =
-                                unlock_conditions.get(StateControllerAddressUnlockCondition::KIND)
-                            {
-                                if &alias_address == state_controller_unlock_condition.address() {
-                                    return true;
+                                if let Some(UnlockCondition::StateControllerAddress(
+                                    state_controller_unlock_condition,
+                                )) = unlock_conditions.get(StateControllerAddressUnlockCondition::KIND)
+                                {
+                                    if &nft_address == state_controller_unlock_condition.address() {
+                                        return true;
+                                    }
                                 }
-                            }
-                            if let Some(UnlockCondition::GovernorAddress(governor_controller_unlock_condition)) =
-                                unlock_conditions.get(GovernorAddressUnlockCondition::KIND)
-                            {
-                                if &alias_address == governor_controller_unlock_condition.address() {
-                                    return true;
+                                if let Some(UnlockCondition::GovernorAddress(governor_controller_unlock_condition)) =
+                                    unlock_conditions.get(GovernorAddressUnlockCondition::KIND)
+                                {
+                                    if &nft_address == governor_controller_unlock_condition.address() {
+                                        return true;
+                                    }
                                 }
+                                false
+                            } else {
+                                false
                             }
-                            if let Some(UnlockCondition::ImmutableAliasAddress(
-                                immutable_alias_address_unlock_condition,
-                            )) = unlock_conditions.get(ImmutableAliasAddressUnlockCondition::KIND)
-                            {
-                                if &alias_address == immutable_alias_address_unlock_condition.address() {
-                                    return true;
-                                }
-                            }
-                            false
+                        });
+
+                        // Don't add if it doesn't give us any amount or native tokens
+                        if !nft_required_in_unlock_condition
+                            && input_signing_data.output.amount() == minimum_required_storage_deposit
+                            && nft_input.native_tokens().is_empty()
+                        {
+                            continue;
+                        }
+                        // else add output to outputs with minimum_required_storage_deposit
+                        let new_output = NftOutputBuilder::from(nft_input)
+                            .with_nft_id(nft_input.nft_id().or_from_output_id(output_id))
+                            .with_amount(minimum_required_storage_deposit)?
+                            .finish_output()?;
+                        outputs.push(new_output);
+                        added_output_for_input_signing_data.insert(output_id);
+                    }
+                }
+                Output::Alias(alias_input) => {
+                    let alias_id = alias_input.alias_id().or_from_output_id(output_id);
+                    // Don't add if output has not the same AliasId, so we don't burn it
+                    if !outputs.iter().any(|output| {
+                        if let Output::Alias(alias_output) = output {
+                            alias_id == *alias_output.alias_id()
                         } else {
                             false
                         }
-                    });
-
-                    // Don't add if it doesn't give us any amount or native tokens
-                    if !alias_required_in_unlock_condition
-                        && input_signing_data.output.amount() == minimum_required_storage_deposit
-                        && alias_input.native_tokens().is_empty()
+                    }) && !allow_burning
                     {
-                        continue;
-                    }
+                        let alias_address = Address::Alias(AliasAddress::new(alias_id));
+                        let alias_required_in_unlock_condition = outputs.iter().any(|output| {
+                            // check if alias address is in unlock condition
+                            if let Some(unlock_conditions) = output.unlock_conditions() {
+                                if let Some(UnlockCondition::Address(address_unlock_condition)) =
+                                    unlock_conditions.get(AddressUnlockCondition::KIND)
+                                {
+                                    if &alias_address
+                                        == unlock_conditions
+                                            .locked_address(address_unlock_condition.address(), current_time)
+                                    {
+                                        return true;
+                                    }
+                                }
+                                if let Some(UnlockCondition::StateControllerAddress(
+                                    state_controller_unlock_condition,
+                                )) = unlock_conditions.get(StateControllerAddressUnlockCondition::KIND)
+                                {
+                                    if &alias_address == state_controller_unlock_condition.address() {
+                                        return true;
+                                    }
+                                }
+                                if let Some(UnlockCondition::GovernorAddress(governor_controller_unlock_condition)) =
+                                    unlock_conditions.get(GovernorAddressUnlockCondition::KIND)
+                                {
+                                    if &alias_address == governor_controller_unlock_condition.address() {
+                                        return true;
+                                    }
+                                }
+                                if let Some(UnlockCondition::ImmutableAliasAddress(
+                                    immutable_alias_address_unlock_condition,
+                                )) = unlock_conditions.get(ImmutableAliasAddressUnlockCondition::KIND)
+                                {
+                                    if &alias_address == immutable_alias_address_unlock_condition.address() {
+                                        return true;
+                                    }
+                                }
+                                false
+                            } else {
+                                false
+                            }
+                        });
 
-                    // else add output to outputs with minimum_required_storage_deposit
-                    let new_output = AliasOutputBuilder::from(alias_input)
-                        .with_alias_id(alias_input.alias_id().or_from_output_id(output_id))
-                        .with_state_index(alias_input.state_index() + 1)
-                        .with_amount(minimum_required_storage_deposit)?
-                        .finish_output()?;
-                    outputs.push(new_output);
-                }
-            }
-            Output::Foundry(foundry_input) => {
-                // Don't add if output has not the same FoundryId, so we don't burn it
-                if !outputs.iter().any(|output| {
-                    if let Output::Foundry(foundry_output) = output {
-                        foundry_input.id() == foundry_output.id()
-                    } else {
-                        false
+                        // Don't add if it doesn't give us any amount or native tokens
+                        if !alias_required_in_unlock_condition
+                            && input_signing_data.output.amount() == minimum_required_storage_deposit
+                            && alias_input.native_tokens().is_empty()
+                        {
+                            continue;
+                        }
+
+                        // else add output to outputs with minimum_required_storage_deposit
+                        let new_output = AliasOutputBuilder::from(alias_input)
+                            .with_alias_id(alias_input.alias_id().or_from_output_id(output_id))
+                            .with_state_index(alias_input.state_index() + 1)
+                            .with_amount(minimum_required_storage_deposit)?
+                            .finish_output()?;
+                        outputs.push(new_output);
+                        added_output_for_input_signing_data.insert(output_id);
                     }
-                }) && !allow_burning
-                {
-                    // Don't add if it doesn't give us any amount or native tokens
-                    if input_signing_data.output.amount() == minimum_required_storage_deposit
-                        && foundry_input.native_tokens().is_empty()
+                }
+                Output::Foundry(foundry_input) => {
+                    // Don't add if output has not the same FoundryId, so we don't burn it
+                    if !outputs.iter().any(|output| {
+                        if let Output::Foundry(foundry_output) = output {
+                            foundry_input.id() == foundry_output.id()
+                        } else {
+                            false
+                        }
+                    }) && !allow_burning
                     {
-                        continue;
+                        // Don't add if it doesn't give us any amount or native tokens
+                        if input_signing_data.output.amount() == minimum_required_storage_deposit
+                            && foundry_input.native_tokens().is_empty()
+                        {
+                            continue;
+                        }
+                        // else add output to outputs with minimum_required_storage_deposit
+                        let new_output = FoundryOutputBuilder::from(foundry_input)
+                            .with_amount(minimum_required_storage_deposit)?
+                            .finish_output()?;
+                        outputs.push(new_output);
+                        added_output_for_input_signing_data.insert(output_id);
                     }
-                    // else add output to outputs with minimum_required_storage_deposit
-                    let new_output = FoundryOutputBuilder::from(foundry_input)
-                        .with_amount(minimum_required_storage_deposit)?
-                        .finish_output()?;
-                    outputs.push(new_output);
                 }
+                _ => {}
             }
-            _ => {}
+
+            // Don't add inputs multiple times
+            if !added_input_signing_data.contains(&output_id) {
+                let output = &input_signing_data.output;
+                selected_input_amount += output.amount();
+
+                if let Some(output_native_tokens) = output.native_tokens() {
+                    selected_input_native_tokens.add_native_tokens(output_native_tokens.clone())?;
+                }
+
+                if let Some(sdr) = sdr_not_expired(output, current_time) {
+                    // add sdr to required amount, because we have to send it back
+                    required.amount += sdr.amount();
+                }
+
+                selected_inputs.push(input_signing_data.deref().clone());
+                added_input_signing_data.insert(output_id);
+
+                // Updated required value with possible new input
+                let input_outputs = inputs.iter().map(|i| &i.output);
+                required = get_accumulated_output_amounts(&input_outputs.clone(), outputs.iter())?;
+            }
         }
 
-        let output = &input_signing_data.output;
-        selected_input_amount += output.amount();
-
-        if let Some(output_native_tokens) = output.native_tokens() {
-            selected_input_native_tokens.add_native_tokens(output_native_tokens.clone())?;
-        }
-
-        if let Some(sdr) = sdr_not_expired(output, current_time) {
-            // add sdr to required amount, because we have to send it back
-            required.amount += sdr.amount();
-        }
-
-        selected_inputs.push(input_signing_data.clone());
-
-        // Updated required value with possible new input
-        let input_outputs = inputs.iter().map(|i| &i.output);
-        required = get_accumulated_output_amounts(&input_outputs.clone(), outputs.iter())?;
+        // If the output amount changed, we added at least one new one
+        added_new_outputs = outputs_len_beginning < outputs.len();
     }
 
     // Validate that we have the required inputs for alias and nft outputs
+    // todo: check if the outputs for alias/nft addresses are there and sender/issuer features
     for output in &outputs {
         match output {
             Output::Alias(alias_output) => {
@@ -521,18 +552,109 @@ pub fn try_select_inputs(
         }
     }
 
-    // sort inputs so ed25519 address unlocks will be first, safe to unwrap since we encoded it before
-    selected_inputs.sort_unstable_by_key(|a| Address::try_from_bech32(&a.bech32_address).unwrap().1.pack_to_vec());
+    let sorted_inputs = sort_input_signing_data(selected_inputs)?;
+
     Ok(SelectedTransactionData {
-        inputs: selected_inputs,
+        inputs: sorted_inputs,
         outputs,
         remainder: remainder_data,
     })
 }
 
-/// Computes the minimum storage deposit amount that a basic output needs to have with an [AddressUnlockCondition] and
-/// optional [NativeTokens].
-pub fn minimum_storage_deposit_basic_output(
+// Inputs need to be sorted because the reference unlock conditions can only reference a lower index
+fn sort_input_signing_data(inputs: Vec<InputSigningData>) -> crate::Result<Vec<InputSigningData>> {
+    // filter for ed25519 address first, safe to unwrap since we encoded it before
+    let mut sorted_inputs = inputs
+        .clone()
+        .into_iter()
+        .filter(|input| Address::try_from_bech32(&input.bech32_address).unwrap().1.kind() == Ed25519Address::KIND)
+        .collect::<Vec<InputSigningData>>();
+
+    for input in &inputs {
+        // Don't add outputs duplicated
+        if sorted_inputs
+            .iter()
+            .any(|i| i.output_id().unwrap() == input.output_id().unwrap())
+        {
+            continue;
+        }
+
+        match sorted_inputs.iter().position(|input_signing_data| {
+            match Address::try_from_bech32(&input.bech32_address) {
+                Ok((_, unlock_address)) => match unlock_address {
+                    Address::Alias(unlock_address) => {
+                        if let Output::Alias(alias_output) = &input_signing_data.output {
+                            *unlock_address.alias_id()
+                                == alias_output
+                                    .alias_id()
+                                    .or_from_output_id(input_signing_data.output_id().expect("Invalid output id"))
+                        } else {
+                            false
+                        }
+                    }
+                    Address::Nft(unlock_address) => {
+                        if let Output::Nft(nft_output) = &input_signing_data.output {
+                            *unlock_address.nft_id()
+                                == nft_output
+                                    .nft_id()
+                                    .or_from_output_id(input_signing_data.output_id().expect("Invalid output id"))
+                        } else {
+                            false
+                        }
+                    }
+                    _ => false,
+                },
+                _ => false,
+            }
+        }) {
+            Some(position) => {
+                // Insert after the output we need
+                sorted_inputs.insert(position + 1, input.clone());
+            }
+            None => {
+                // insert before address
+                let alias_or_nft_address = match &input.output {
+                    Output::Alias(alias_output) => Some(Address::Alias(AliasAddress::new(
+                        alias_output
+                            .alias_id()
+                            .or_from_output_id(input.output_id().expect("Invalid output id")),
+                    ))),
+                    Output::Nft(nft_output) => Some(Address::Nft(NftAddress::new(
+                        nft_output
+                            .nft_id()
+                            .or_from_output_id(input.output_id().expect("Invalid output id")),
+                    ))),
+                    _ => None,
+                };
+
+                if let Some(alias_or_nft_address) = alias_or_nft_address {
+                    // Check for existing outputs for this address, and insert before
+                    match sorted_inputs.iter().position(|input_signing_data| {
+                        Address::try_from_bech32(&input_signing_data.bech32_address)
+                            .expect("Safe to unwrap, we encoded it before")
+                            .1
+                            == alias_or_nft_address
+                    }) {
+                        Some(position) => {
+                            // Insert before the output with this address required for unlocking
+                            sorted_inputs.insert(position, input.clone());
+                        }
+                        // just push output
+                        None => sorted_inputs.push(input.clone()),
+                    }
+                } else {
+                    // just push basic or foundry output
+                    sorted_inputs.push(input.clone());
+                }
+            }
+        }
+    }
+
+    Ok(sorted_inputs)
+}
+
+/// Computes the minimum amount that an output needs to have, when native tokens are sent with [AddressUnlockCondition].
+pub fn minimum_storage_deposit(
     config: &RentStructure,
     address: &Address,
     native_tokens: &Option<NativeTokens>,

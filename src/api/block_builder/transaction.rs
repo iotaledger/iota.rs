@@ -105,7 +105,7 @@ impl<'a> ClientBlockBuilder<'a> {
         let conflict = verify_semantic(&prepared_transaction_data.inputs_data, &tx_payload, local_time)?;
 
         if conflict != ConflictReason::None {
-            log::debug!("[sign_transaction] conflict: {conflict:?} for {:?}", tx_payload);
+            log::debug!("[sign_transaction] conflict: {conflict:?} for {:#?}", tx_payload);
             return Err(Error::TransactionSemantic(conflict));
         }
 

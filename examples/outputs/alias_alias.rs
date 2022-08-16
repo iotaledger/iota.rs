@@ -11,7 +11,7 @@ use fern_logger::{logger_init, LoggerConfig, LoggerOutputConfigBuilder};
 use iota_client::{
     block::{
         output::{
-            feature::{IssuerFeature, MetadataFeature, SenderFeature},
+            feature::{IssuerFeature, SenderFeature},
             unlock_condition::{
                 GovernorAddressUnlockCondition, StateControllerAddressUnlockCondition, UnlockCondition,
             },
@@ -24,7 +24,7 @@ use iota_client::{
     Client, Result,
 };
 use log::LevelFilter;
-/// In this example we will create an alias output
+/// In this example we will create three alias output, where the first one can controll the other two (recursive)
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -50,29 +50,37 @@ async fn main() -> Result<()> {
         .with_node_sync_disabled()
         .finish()?;
 
+    let mnemonic = Client::generate_mnemonic()?;
+    // TODO UNDO
     let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
-        &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
+        &mnemonic, // &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
     )?);
 
     let address = client.get_addresses(&secret_manager).with_range(0..1).get_raw().await?[0];
-    request_funds_from_faucet(&faucet_url, &address.to_bech32(client.get_bech32_hrp().await?)).await?;
+    println!(
+        "{}",
+        request_funds_from_faucet(&faucet_url, &address.to_bech32(client.get_bech32_hrp().await?)).await?
+    );
     tokio::time::sleep(std::time::Duration::from_secs(15)).await;
 
-    //////////////////////////////////
-    // create two new alias output
-    //////////////////////////////////
-    let alias_output_builder_1 = AliasOutputBuilder::new_with_amount(1_000_000, AliasId::null())?
-        .add_feature(Feature::Sender(SenderFeature::new(address)))
-        .add_feature(Feature::Metadata(MetadataFeature::new(vec![1, 2, 3])?))
-        .add_immutable_feature(Feature::Issuer(IssuerFeature::new(address)))
-        .add_unlock_condition(UnlockCondition::StateControllerAddress(
-            StateControllerAddressUnlockCondition::new(address),
-        ))
-        .add_unlock_condition(UnlockCondition::GovernorAddress(GovernorAddressUnlockCondition::new(
-            address,
-        )));
+    let rent_structure = client.get_rent_structure().await?;
 
-    let outputs = vec![alias_output_builder_1.clone().finish_output()?];
+    //////////////////////////////////
+    // create three new alias outputs
+    //////////////////////////////////
+    let alias_output_builder =
+        AliasOutputBuilder::new_with_minimum_storage_deposit(rent_structure.clone(), AliasId::null())?
+            .add_feature(Feature::Sender(SenderFeature::new(address)))
+            .with_state_metadata(vec![1, 2, 3])
+            .add_immutable_feature(Feature::Issuer(IssuerFeature::new(address)))
+            .add_unlock_condition(UnlockCondition::StateControllerAddress(
+                StateControllerAddressUnlockCondition::new(address),
+            ))
+            .add_unlock_condition(UnlockCondition::GovernorAddress(GovernorAddressUnlockCondition::new(
+                address,
+            )));
+
+    let outputs = vec![alias_output_builder.clone().finish_output()?; 3];
 
     let block_1 = client
         .block()
@@ -82,119 +90,138 @@ async fn main() -> Result<()> {
         .await?;
 
     println!(
-        "Transaction with new alias 1 output sent: {node_url}/api/core/v2/blocks/{}",
+        "Transaction with new alias outputs sent: {node_url}/api/core/v2/blocks/{}",
         block_1.id()
     );
     let _ = client.retry_until_included(&block_1.id(), None, None).await?;
 
     //////////////////////////////////
     // create second transaction with the actual AliasId (BLAKE2b-160 hash of the Output ID that created the alias) and
-    // make a new alias output controlled by the first one
+    // make both alias outputs controlled by the first one
     //////////////////////////////////
-    let alias_output_id = get_new_alias_output_id(block_1.payload().unwrap())?;
-    let alias_id_1 = AliasId::from(alias_output_id);
+    let alias_output_ids = get_new_alias_output_ids(block_1.payload().unwrap())?;
+    let alias_id_0 = AliasId::from(alias_output_ids[0]);
+    let alias_id_1 = AliasId::from(alias_output_ids[1]);
+    let alias_id_2 = AliasId::from(alias_output_ids[2]);
 
+    let alias_0_address = Address::Alias(AliasAddress::new(alias_id_0));
     let alias_1_address = Address::Alias(AliasAddress::new(alias_id_1));
 
-    let alias_output_builder_2 = AliasOutputBuilder::new_with_amount(1_000_000, AliasId::null())?
-        // .add_feature(Feature::Sender(SenderFeature::new(address)))
-        // .add_feature(Feature::Metadata(MetadataFeature::new(vec![1, 2, 3])?))
-        .add_immutable_feature(Feature::Issuer(IssuerFeature::new(address)))
-        .add_unlock_condition(UnlockCondition::StateControllerAddress(
-            StateControllerAddressUnlockCondition::new(alias_1_address),
-        ))
-        .add_unlock_condition(UnlockCondition::GovernorAddress(GovernorAddressUnlockCondition::new(
-            alias_1_address,
-        )));
-
     let outputs = vec![
-        alias_output_builder_1
+        // make second alias output be contolled by the first one
+        alias_output_builder
+            .clone()
             .with_alias_id(alias_id_1)
-            .with_state_index(1)
+            .with_state_index(0)
+            .replace_unlock_condition(UnlockCondition::StateControllerAddress(
+                StateControllerAddressUnlockCondition::new(alias_0_address),
+            ))?
+            .replace_unlock_condition(UnlockCondition::GovernorAddress(GovernorAddressUnlockCondition::new(
+                alias_0_address,
+            )))?
             .finish_output()?,
-        alias_output_builder_2.clone().finish_output()?,
+        // make third alias output be contolled by the second one (indirectly also by the first one then)
+        alias_output_builder
+            .clone()
+            .with_alias_id(alias_id_2)
+            .with_state_index(0)
+            .replace_unlock_condition(UnlockCondition::StateControllerAddress(
+                StateControllerAddressUnlockCondition::new(alias_1_address),
+            ))?
+            .replace_unlock_condition(UnlockCondition::GovernorAddress(GovernorAddressUnlockCondition::new(
+                alias_1_address,
+            )))?
+            .finish_output()?,
     ];
 
     let block_2 = client
         .block()
         .with_secret_manager(&secret_manager)
-        // .with_input(alias_output_id.into())?
         .with_outputs(outputs)?
         .finish()
         .await?;
     println!(
-        "Transaction with alias id set sent: {node_url}/api/core/v2/blocks/{}",
+        "Transaction with alias id set and ownserhip assigned to the first alias sent: {node_url}/api/core/v2/blocks/{}",
         block_2.id()
     );
     let _ = client.retry_until_included(&block_2.id(), None, None).await?;
 
     //////////////////////////////////
-    // create third transaction with the actual AliasId (BLAKE2b-160 hash of the Output ID that created the alias) for
-    // the second alias output
+    // create third transaction with the third alias output updated
     //////////////////////////////////
-    let alias_output_id = get_new_alias_output_id(block_2.payload().unwrap())?;
-    let alias_id_2 = AliasId::from(alias_output_id);
     let outputs = vec![
-        alias_output_builder_2
+        alias_output_builder
             .clone()
             .with_alias_id(alias_id_2)
             .with_state_index(1)
+            .with_state_metadata(vec![3, 2, 1])
+            .replace_unlock_condition(UnlockCondition::StateControllerAddress(
+                StateControllerAddressUnlockCondition::new(alias_1_address),
+            ))?
+            .replace_unlock_condition(UnlockCondition::GovernorAddress(GovernorAddressUnlockCondition::new(
+                alias_1_address,
+            )))?
             .finish_output()?,
     ];
 
-    let block = client
+    let block_3 = client
         .block()
         .with_secret_manager(&secret_manager)
-        // .with_input(alias_output_id.into())?
         .with_outputs(outputs)?
         .finish()
         .await?;
     println!(
-        "Transaction with alias 2 id set sent: {node_url}/api/core/v2/blocks/{}",
-        block.id()
+        "Transaction with state metadata of the third alias updated sent: {node_url}/api/core/v2/blocks/{}",
+        block_3.id()
     );
-    let _ = client.retry_until_included(&block.id(), None, None).await?;
+    let _ = client.retry_until_included(&block_3.id(), None, None).await?;
 
     //////////////////////////////////
-    // create fourth transaction with the second alias output updated
+    // create fourth transaction with the third alias output updated
     //////////////////////////////////
     let outputs = vec![
-        alias_output_builder_2
+        alias_output_builder
             .with_alias_id(alias_id_2)
             .with_state_index(2)
-            .with_state_metadata(vec![1])
+            .with_state_metadata(vec![2, 1, 3])
+            .replace_unlock_condition(UnlockCondition::StateControllerAddress(
+                StateControllerAddressUnlockCondition::new(alias_1_address),
+            ))?
+            .replace_unlock_condition(UnlockCondition::GovernorAddress(GovernorAddressUnlockCondition::new(
+                alias_1_address,
+            )))?
             .finish_output()?,
     ];
 
-    let block = client
+    let block_3 = client
         .block()
         .with_secret_manager(&secret_manager)
-        // .with_input(alias_output_id.into())?
         .with_outputs(outputs)?
         .finish()
         .await?;
     println!(
-        "Transaction with state metadata updated sent: {node_url}/api/core/v2/blocks/{}",
-        block.id()
+        "Transaction with state metadata of the third alias updated sent: {node_url}/api/core/v2/blocks/{}",
+        block_3.id()
     );
-    let _ = client.retry_until_included(&block.id(), None, None).await?;
+    let _ = client.retry_until_included(&block_3.id(), None, None).await?;
     Ok(())
 }
 
-// helper function to get the output id for the first alias output
-fn get_new_alias_output_id(payload: &Payload) -> Result<OutputId> {
+// helper function to get the output ids for new created alias outputs (alias id is null)
+fn get_new_alias_output_ids(payload: &Payload) -> Result<Vec<OutputId>> {
+    let mut output_ids = Vec::new();
     match payload {
         Payload::Transaction(tx_payload) => {
             let TransactionEssence::Regular(regular) = tx_payload.essence();
             for (index, output) in regular.outputs().iter().enumerate() {
                 if let Output::Alias(alias_output) = output {
                     if alias_output.alias_id().is_null() {
-                        return Ok(OutputId::new(tx_payload.id(), index.try_into().unwrap())?);
+                        output_ids.push(OutputId::new(tx_payload.id(), index.try_into().unwrap())?);
                     }
                 }
             }
-            panic!("No new alias output in transaction essence")
         }
         _ => panic!("No tx payload"),
     }
+    Ok(output_ids)
 }

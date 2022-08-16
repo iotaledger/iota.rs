@@ -142,6 +142,7 @@ pub(crate) async fn get_utxo_chains_inputs(
 
     while !unprocessed_alias_nft_addresses.is_empty() {
         for (unlock_address, _output_response) in utxo_chains.clone() {
+            // Skip already processed addresses
             if !unprocessed_alias_nft_addresses.contains(&unlock_address) {
                 continue;
             }
@@ -195,7 +196,7 @@ pub(crate) async fn get_utxo_chains_inputs(
                         utxo_chains.push((*unlock_address, output_response.clone()));
                     }
                 }
-                _ => {}
+                _ => {} // do nothing with ed25519 addresses
             }
             // Remove processed addresses
             unprocessed_alias_nft_addresses.remove(&unlock_address);
