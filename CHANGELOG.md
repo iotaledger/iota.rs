@@ -24,10 +24,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Add `SingleThreadedMiner`, `SingleThreadedMinerBuilder` for Wasm;
+- Add `snapshot_path: Option<&Path>` parameters to `StrongholdAdapter::write_stronghold_snapshot`;
 
 ### Changed
 
-- Use NativeTokensBuilder::finish_vec to lift some unnecessary 64 Native Tokens limits;
+- Use `NativeTokensBuilder::finish_vec` to lift some unnecessary 64 Native Tokens limits;
 - Change `Client::get_pow_provider()` to return `SingleThreadedMiner` on Wasm, otherwise `ClientMiner`, to fix `promote`, `reattach`, and `retry_until_included` for Wasm;
 - Change `ClientMinerBuilder::default()` to match `new()` and default `local_pow` to `true`;
 - Rename `finish_pow` to `finish_multi_threaded_pow`;
