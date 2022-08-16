@@ -3,10 +3,10 @@
 
 //! cargo run --example custom_parent --release
 
-use std::{env, str::FromStr};
+use std::env;
 
 use dotenv::dotenv;
-use iota_client::{block::BlockId, Client, Result};
+use iota_client::{Client, Result};
 
 /// In this example we will define a custom block parent which be used for promoting
 
@@ -21,12 +21,13 @@ async fn main() -> Result<()> {
         .with_node(&node_url)? // Insert your node URL here
         .finish()?;
 
-    let custom_parent = BlockId::from_str("b5634e05a7c665d7f87330a53633f001a5d1d96b346dc98dc225c4d6c204f23b")?;
+    let custom_parent = client.get_tips().await?[0];
 
     let block = client.block().with_parents(vec![custom_parent])?.finish().await?;
 
     println!(
-        "Empty block sent: https://explorer.testnet.shimmer.network/testnet/block/{}",
+        "Empty block sent: {}/block/{}",
+        env::var("EXPLORER_URL").unwrap(),
         block.id()
     );
 

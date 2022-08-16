@@ -33,7 +33,7 @@ async function run() {
         const blockId = await onlineClient.blockId(block);
 
         console.log(
-            'Transaction sent: https://explorer.testnet.shimmer.network/testnet/block/' +
+            `Transaction sent: ${process.env.EXPLORER_URL}/block/` +
                 blockId,
         );
     } catch (error) {

@@ -24,7 +24,8 @@ async fn main() -> Result<()> {
     let block = client.block().finish().await?;
 
     println!(
-        "Empty block sent: https://explorer.testnet.shimmer.network/testnet/block/{}",
+        "Empty block sent: {}/block/{}",
+        env::var("EXPLORER_URL").unwrap(),
         block.id()
     );
     Ok(())

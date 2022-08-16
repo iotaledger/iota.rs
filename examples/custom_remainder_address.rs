@@ -68,7 +68,8 @@ async fn main() -> Result<()> {
         .await?;
 
     println!(
-        "Transaction sent: https://explorer.testnet.shimmer.network/testnet/block/{}",
+        "Transaction sent: {}/block/{}",
+        env::var("EXPLORER_URL").unwrap(),
         block.id()
     );
 

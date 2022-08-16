@@ -28,10 +28,7 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
 
-    println!(
-        "Block sent https://explorer.testnet.shimmer.network/testnet/block/{}\n",
-        block.id()
-    );
+    println!("Block sent: {}/block/{}", env::var("EXPLORER_URL").unwrap(), block.id());
 
     let fetched_block = client.get_block(&block.id()).await?;
     println!("{:#?}\n", fetched_block);
