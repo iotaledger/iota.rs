@@ -486,7 +486,8 @@ impl StrongholdAdapter {
         Ok(())
     }
 
-    /// Persist Stronghold to a snapshot at a provided `snapshot_path` or at the Stronghold's own `snapshot_path` if None.
+    /// Persist Stronghold to a snapshot at a provided `snapshot_path` or at the Stronghold's own `snapshot_path` if
+    /// None.
     ///
     /// It doesn't unload the snapshot; see also [`unload_stronghold_snapshot()`].
     ///
