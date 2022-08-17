@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security -->
 
-## Unreleased - YYYY-MM-DD
+## 2.0.0-beta.2 - 2022-08-17
 
 ### Added
 
@@ -36,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Rename `minimum_storage_deposit` to `minimum_storage_deposit_basic_output`;
 
 ### Removed
+
 - Removed `snapshot_loaded` field from StrongholdAdapter;
 
 ### Fixed
