@@ -61,15 +61,16 @@ pub(crate) fn sort_input_signing_data(inputs: Vec<InputSigningData>) -> crate::R
     let mut sorted_inputs = inputs
         .clone()
         .into_iter()
+        // PANIC: safe to unwrap as we encoded the address before
         .filter(|input| Address::try_from_bech32(&input.bech32_address).unwrap().1.kind() == Ed25519Address::KIND)
         .collect::<Vec<InputSigningData>>();
 
     for input in &inputs {
         // Don't add outputs duplicated
-        if sorted_inputs
-            .iter()
-            .any(|i| i.output_id().unwrap() == input.output_id().unwrap())
-        {
+        if sorted_inputs.iter().any(|i| {
+            i.output_metadata.transaction_id == input.output_metadata.transaction_id
+                && i.output_metadata.output_index == input.output_metadata.output_index
+        }) {
             continue;
         }
 
