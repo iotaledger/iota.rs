@@ -230,6 +230,38 @@ name = "stronghold"
 required-features = [ "stronghold" ]
 
 [[example]]
+name = "block_time"
+path = "examples/block/block_time.rs"
+
+[[example]]
+name = "custom_inputs"
+path = "examples/block/custom_inputs.rs"
+
+[[example]]
+name = "custom_parent"
+path = "examples/block/custom_parent.rs"
+
+[[example]]
+name = "custom_payload"
+path = "examples/block/custom_payload.rs"
+
+[[example]]
+name = "data_block"
+path = "examples/block/data_block.rs"
+
+[[example]]
+name = "output"
+path = "examples/block/output.rs"
+
+[[example]]
+name = "simple_block"
+path = "examples/block/simple_block.rs"
+
+[[example]]
+name = "transaction"
+path = "examples/block/transaction.rs"
+
+[[example]]
 name = "0_address_generation"
 path = "examples/offline_signing/0_address_generation.rs"
 

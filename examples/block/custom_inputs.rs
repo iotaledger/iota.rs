@@ -59,7 +59,8 @@ async fn main() -> Result<()> {
         .await?;
 
     println!(
-        "Transaction sent: https://explorer.iota.org/devnet/block/{}",
+        "Transaction sent: {}/block/{}",
+        env::var("EXPLORER_URL").unwrap(),
         block.id()
     );
     Ok(())
