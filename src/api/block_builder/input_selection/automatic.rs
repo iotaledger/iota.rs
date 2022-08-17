@@ -3,6 +3,8 @@
 
 //! Automatic input selection for transactions
 
+use std::collections::HashSet;
+
 use bee_api_types::responses::OutputResponse;
 use bee_block::{
     address::Address,
@@ -239,34 +241,18 @@ async fn get_inputs_for_sender_and_issuer(
 
     // get Ed25519 address if there is a Sender or Issuer block, because we then need to unlock an output with this
     // address
-    let mut required_ed25519_addresses = Vec::new();
+    let mut all_required_ed25519_addresses = HashSet::new();
     for output in &block_builder.outputs {
-        if let Some(sender_feature) = output.features().and_then(Features::sender) {
-            // Only add sender, if not already present in the utxo chain inputs
-            if !utxo_chain_inputs.iter().any(|input_data| {
-                let unlock_conditions = input_data
-                    .output
-                    .unlock_conditions()
-                    .expect("Output needs to have unlock_conditions");
+        let mut required_addresses = HashSet::new();
 
-                // All possible addresses
-                let mut addresses = Vec::new();
-                if let Some(address) = unlock_conditions.state_controller_address() {
-                    addresses.push(address.address());
-                };
-                if let Some(address) = unlock_conditions.governor_address() {
-                    addresses.push(address.address());
-                };
-                if let Some(address) = unlock_conditions.address() {
-                    let unlock_address = unlock_conditions.locked_address(address.address(), local_time);
-                    addresses.push(unlock_address);
-                }
-                addresses.contains(&sender_feature.address())
-            }) {
-                required_ed25519_addresses.push(sender_feature.address());
-            }
+        if let Some(sender_feature) = output.features().and_then(Features::sender) {
+            required_addresses.insert(sender_feature.address());
         }
         if let Some(issuer_feature) = output.immutable_features().and_then(Features::issuer) {
+            required_addresses.insert(issuer_feature.address());
+        }
+
+        for required_address in required_addresses {
             // Only add sender, if not already present in the utxo chain inputs
             if !utxo_chain_inputs.iter().any(|input_data| {
                 let unlock_conditions = input_data
@@ -274,7 +260,7 @@ async fn get_inputs_for_sender_and_issuer(
                     .unlock_conditions()
                     .expect("Output needs to have unlock_conditions");
 
-                // All possible addresses
+                // All possible places for Ed25519 addresses which can unlock an output
                 let mut addresses = Vec::new();
                 if let Some(address) = unlock_conditions.state_controller_address() {
                     addresses.push(address.address());
@@ -286,15 +272,14 @@ async fn get_inputs_for_sender_and_issuer(
                     let unlock_address = unlock_conditions.locked_address(address.address(), local_time);
                     addresses.push(unlock_address);
                 }
-                addresses.contains(&issuer_feature.address())
+                addresses.contains(&required_address)
             }) {
-                required_ed25519_addresses.push(issuer_feature.address());
+                all_required_ed25519_addresses.insert(required_address);
             }
         }
     }
 
-    required_ed25519_addresses.dedup();
-    for address in required_ed25519_addresses {
+    for address in all_required_ed25519_addresses {
         if let Address::Ed25519(address) = address {
             let (address_index, internal) = search_address(
                 block_builder
