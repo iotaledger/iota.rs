@@ -3,9 +3,6 @@
 
 //! cargo run --example 02_get_address_balance --release
 
-use std::env;
-
-use dotenv::dotenv;
 use iota_client::{
     block::output::{NativeTokensBuilder, Output},
     node_api::indexer::query_parameters::QueryParameter,
@@ -19,9 +16,9 @@ use iota_client::{
 #[tokio::main]
 async fn main() -> Result<()> {
     // This example uses dotenv, which is not safe for use in production
-    dotenv().ok();
+    dotenv::dotenv().ok();
 
-    let node_url = env::var("NODE_URL").unwrap();
+    let node_url = std::env::var("NODE_URL").unwrap();
 
     // Create a client instance
     let client = Client::builder()
@@ -30,7 +27,7 @@ async fn main() -> Result<()> {
         .finish()?;
 
     let secret_manager =
-        MnemonicSecretManager::try_from_mnemonic(&env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap())?;
+        MnemonicSecretManager::try_from_mnemonic(&std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap())?;
 
     // Generate the first address
     let addresses = client

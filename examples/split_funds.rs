@@ -3,9 +3,6 @@
 
 //! cargo run --example split_funds --release
 
-use std::env;
-
-use dotenv::dotenv;
 use iota_client::{
     request_funds_from_faucet,
     secret::{mnemonic::MnemonicSecretManager, SecretManager},
@@ -19,10 +16,10 @@ async fn main() -> Result<()> {
     // This example uses dotenv, which is not safe for use in production
     // Configure your own mnemonic in ".env". Since the output amount cannot be zero, the mnemonic must contain non-zero
     // balance
-    dotenv().ok();
+    dotenv::dotenv().ok();
 
-    let node_url = env::var("NODE_URL").unwrap();
-    let faucet_url = env::var("FAUCET_URL").unwrap();
+    let node_url = std::env::var("NODE_URL").unwrap();
+    let faucet_url = std::env::var("FAUCET_URL").unwrap();
 
     let client = Client::builder()
         .with_node(&node_url)?
@@ -30,7 +27,7 @@ async fn main() -> Result<()> {
         .finish()?;
 
     let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
-        &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
+        &std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
     )?);
 
     let address = client.get_addresses(&secret_manager).with_range(0..1).get_raw().await?[0];

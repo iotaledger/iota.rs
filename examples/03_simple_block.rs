@@ -3,18 +3,15 @@
 
 //! cargo run --example 03_simple_block --release
 
-use std::env;
-
-use dotenv::dotenv;
 use iota_client::{Client, Result};
 
 /// In this example we will send a block without a payload
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    dotenv().ok();
+    dotenv::dotenv().ok();
 
-    let node_url = env::var("NODE_URL").unwrap();
+    let node_url = std::env::var("NODE_URL").unwrap();
 
     let client = Client::builder()
         .with_node(&node_url)?
@@ -26,7 +23,7 @@ async fn main() -> Result<()> {
 
     println!(
         "Empty block sent: {}/block/{}",
-        env::var("EXPLORER_URL").unwrap(),
+        std::env::var("EXPLORER_URL").unwrap(),
         block.id()
     );
     Ok(())

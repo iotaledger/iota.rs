@@ -5,13 +5,11 @@
 //! `cargo run --example 1_transaction_preparation --release`.
 
 use std::{
-    env,
     fs::File,
     io::{prelude::*, BufWriter},
     path::Path,
 };
 
-use dotenv::dotenv;
 use iota_client::{
     api::{PreparedTransactionData, PreparedTransactionDataDto},
     Client, Result,
@@ -22,9 +20,9 @@ const PREPARED_TRANSACTION_FILE_NAME: &str = "examples/offline_signing/prepared_
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    dotenv().ok();
+    dotenv::dotenv().ok();
 
-    let node_url = env::var("NODE_URL").unwrap();
+    let node_url = std::env::var("NODE_URL").unwrap();
 
     // Address to which we want to send the amount.
     let address = "rms1qruzprxum2934lr3p77t96pzlecxv8pjzvtjrzdcgh2f5exa22n6ga0vm69";

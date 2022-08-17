@@ -24,7 +24,6 @@ impl Response {
         self.0.json().await.map_err(Into::into)
     }
 
-    // TODO is this really needed ?
     pub(crate) async fn into_text(self) -> Result<String> {
         self.0.text().await.map_err(Into::into)
     }

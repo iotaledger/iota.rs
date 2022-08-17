@@ -42,7 +42,6 @@ pub enum Error {
     /// The wallet account doesn't have enough native tokens
     #[error("The wallet account doesn't have enough native tokens, missing: {0:?}")]
     NotEnoughNativeTokens(NativeTokens),
-    // todo get missing amount (storage deposit for an output with this amount of native tokens)
     /// The wallet account doesn't have enough balance for an output with the remaining native tokens.
     #[error("The wallet account doesn't have enough balance for an output with the remaining native tokens.")]
     NoBalanceForNativeTokenRemainder,

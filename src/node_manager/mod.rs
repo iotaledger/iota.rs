@@ -188,53 +188,47 @@ impl NodeManager {
             for node in nodes {
                 match self.http_client.get(node.clone(), timeout).await {
                     Ok(res) => {
-                        let status = res.status();
-                        if let Ok(res_text) = res.into_text().await {
-                            match status {
-                                200 => {
-                                    // Handle node_info extra because we also want to return the url
-                                    if path == "api/core/v2/info" {
-                                        let node_info = serde_json::from_str::<InfoResponse>(&res_text)?;
-                                        let wrapper = crate::client::NodeInfoWrapper {
-                                            node_info,
-                                            url: format!(
-                                                "{}://{}",
-                                                node.url.scheme(),
-                                                node.url.host_str().unwrap_or("")
-                                            ),
-                                        };
-                                        let serde_res = serde_json::to_string(&wrapper)?;
-                                        return Ok(serde_json::from_str(&serde_res)?);
-                                    }
+                        match res.status() {
+                            200 => {
+                                // Handle node_info extra because we also want to return the url
+                                if path == "api/core/v2/info" {
+                                    let node_info: InfoResponse = res.into_json().await?;
+                                    let wrapper = crate::client::NodeInfoWrapper {
+                                        node_info,
+                                        url: format!("{}://{}", node.url.scheme(), node.url.host_str().unwrap_or("")),
+                                    };
+                                    let serde_res = serde_json::to_string(&wrapper)?;
+                                    return Ok(serde_json::from_str(&serde_res)?);
+                                }
 
-                                    match serde_json::from_str::<T>(&res_text) {
-                                        Ok(result_data) => {
-                                            let counters =
-                                                result.entry(serde_json::to_string(&result_data)?).or_insert(0);
-                                            *counters += 1;
-                                            result_counter += 1;
-                                            // Without quorum it's enough if we got one response
-                                            if !self.quorum
+                                match res.into_json::<T>().await {
+                                    Ok(result_data) => {
+                                        let counters = result.entry(serde_json::to_string(&result_data)?).or_insert(0);
+                                        *counters += 1;
+                                        result_counter += 1;
+                                        // Without quorum it's enough if we got one response
+                                        if !self.quorum
                                             || result_counter >= self.min_quorum_size
                                             || !need_quorum
                                             // with query we ignore quorum because the nodes can store a different amount of history
                                             || query.is_some()
-                                            {
-                                                break;
-                                            }
-                                        }
-                                        Err(e) => {
-                                            error.replace(e.into());
+                                        {
+                                            break;
                                         }
                                     }
-                                }
-
-                                _ => {
-                                    error.replace(crate::Error::NodeError(res_text));
+                                    Err(e) => {
+                                        error.replace(e);
+                                    }
                                 }
                             }
-                        } else {
-                            warn!("Couldn't convert noderesult to text");
+
+                            _ => {
+                                error.replace(crate::Error::NodeError(
+                                    res.into_text()
+                                        .await
+                                        .unwrap_or_else(|_| "Couldn't convert node response into text".to_string()),
+                                ));
+                            }
                         }
                     }
                     Err(Error::ResponseError { code: 404, .. }) => {
@@ -323,16 +317,17 @@ impl NodeManager {
         for node in nodes {
             match self.http_client.post_bytes(node, timeout, body).await {
                 Ok(res) => {
-                    let status = res.status();
-                    if let Ok(res_text) = res.into_text().await {
-                        match status {
-                            200 | 201 => match serde_json::from_str(&res_text) {
-                                Ok(res) => return Ok(res),
-                                Err(e) => error.replace(e.into()),
-                            },
-                            _ => error.replace(crate::Error::NodeError(res_text)),
-                        };
-                    }
+                    match res.status() {
+                        200 | 201 => match res.into_json::<T>().await {
+                            Ok(res) => return Ok(res),
+                            Err(e) => error.replace(e),
+                        },
+                        _ => error.replace(crate::Error::NodeError(
+                            res.into_text()
+                                .await
+                                .unwrap_or_else(|_| "Couldn't convert node response into text".to_string()),
+                        )),
+                    };
                 }
                 Err(e) => {
                     error.replace(crate::Error::NodeError(e.to_string()));
@@ -359,16 +354,17 @@ impl NodeManager {
         for node in nodes {
             match self.http_client.post_json(node, timeout, json.clone()).await {
                 Ok(res) => {
-                    let status = res.status();
-                    if let Ok(res_text) = res.into_text().await {
-                        match status {
-                            200 | 201 => match serde_json::from_str(&res_text) {
-                                Ok(res) => return Ok(res),
-                                Err(e) => error.replace(e.into()),
-                            },
-                            _ => error.replace(crate::Error::NodeError(res_text)),
-                        };
-                    }
+                    match res.status() {
+                        200 | 201 => match res.into_json::<T>().await {
+                            Ok(res) => return Ok(res),
+                            Err(e) => error.replace(e),
+                        },
+                        _ => error.replace(crate::Error::NodeError(
+                            res.into_text()
+                                .await
+                                .unwrap_or_else(|_| "Couldn't convert node response into text".to_string()),
+                        )),
+                    };
                 }
                 Err(e) => {
                     error.replace(crate::Error::NodeError(e.to_string()));

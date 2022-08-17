@@ -3,9 +3,6 @@
 
 //! cargo run --example transaction --release
 
-use std::env;
-
-use dotenv::dotenv;
 use iota_client::{
     secret::{mnemonic::MnemonicSecretManager, SecretManager},
     Client, Result,
@@ -18,9 +15,9 @@ async fn main() -> Result<()> {
     // This example uses dotenv, which is not safe for use in production
     // Configure your own mnemonic in ".env". Since the output amount cannot be zero, the mnemonic must contain non-zero
     // balance
-    dotenv().ok();
+    dotenv::dotenv().ok();
 
-    let node_url = env::var("NODE_URL").unwrap();
+    let node_url = std::env::var("NODE_URL").unwrap();
 
     let client = Client::builder()
         .with_node(&node_url)?
@@ -28,7 +25,7 @@ async fn main() -> Result<()> {
         .finish()?;
 
     let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
-        &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
+        &std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
     )?);
 
     let block = client
@@ -45,7 +42,7 @@ async fn main() -> Result<()> {
 
     println!(
         "Transaction sent: {}/block/{}",
-        env::var("EXPLORER_URL").unwrap(),
+        std::env::var("EXPLORER_URL").unwrap(),
         block.id()
     );
 

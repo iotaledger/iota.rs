@@ -6,13 +6,11 @@
 //! `cargo run --example 0_address_generation --release`.
 
 use std::{
-    env,
     fs::File,
     io::{BufWriter, Write},
     path::Path,
 };
 
-use dotenv::dotenv;
 use iota_client::{
     constants::SHIMMER_TESTNET_BECH32_HRP,
     secret::{mnemonic::MnemonicSecretManager, SecretManager},
@@ -23,12 +21,12 @@ const ADDRESS_FILE_NAME: &str = "examples/offline_signing/addresses.json";
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    dotenv().ok();
+    dotenv::dotenv().ok();
 
     // Creates a client instance.
     let offline_client = Client::builder().with_offline_mode().finish()?;
     let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
-        &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
+        &std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
     )?);
 
     // Generates addresses offline.

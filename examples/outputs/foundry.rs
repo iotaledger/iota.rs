@@ -3,9 +3,6 @@
 
 //! cargo run --example foundry --release
 
-use std::env;
-
-use dotenv::dotenv;
 use iota_client::{
     block::{
         address::AliasAddress,
@@ -34,10 +31,10 @@ async fn main() -> Result<()> {
     // This example uses dotenv, which is not safe for use in production!
     // Configure your own mnemonic in the ".env" file. Since the output amount cannot be zero, the seed must contain
     // non-zero balance.
-    dotenv().ok();
+    dotenv::dotenv().ok();
 
-    let node_url = env::var("NODE_URL").unwrap();
-    let faucet_url = env::var("FAUCET_URL").unwrap();
+    let node_url = std::env::var("NODE_URL").unwrap();
+    let faucet_url = std::env::var("FAUCET_URL").unwrap();
 
     // Create a client instance.
     let client = Client::builder()
@@ -46,7 +43,7 @@ async fn main() -> Result<()> {
         .finish()?;
 
     let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
-        &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
+        &std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
     )?);
 
     let address = client.get_addresses(&secret_manager).with_range(0..1).get_raw().await?[0];

@@ -2,9 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example get_funds --release
-use std::env;
 
-use dotenv::dotenv;
 use iota_client::{
     secret::{mnemonic::MnemonicSecretManager, SecretManager},
     utils::request_funds_from_faucet,
@@ -14,10 +12,10 @@ use iota_client::{
 #[tokio::main]
 async fn main() -> Result<()> {
     // This example uses dotenv, which is not safe for use in production
-    dotenv().ok();
+    dotenv::dotenv().ok();
 
-    let node_url = env::var("NODE_URL").unwrap();
-    let faucet_url = env::var("FAUCET_URL").unwrap();
+    let node_url = std::env::var("NODE_URL").unwrap();
+    let faucet_url = std::env::var("FAUCET_URL").unwrap();
 
     // Create a client instance
     let client = Client::builder()
@@ -26,7 +24,7 @@ async fn main() -> Result<()> {
         .finish()?;
 
     let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
-        &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
+        &std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
     )?);
 
     let addresses = client
