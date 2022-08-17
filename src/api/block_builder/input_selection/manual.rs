@@ -26,7 +26,8 @@ impl<'a> ClientBlockBuilder<'a> {
     /// them with the provided input_range so we can later sign them.
     /// Forwards to [try_select_inputs()] with `force_use_all_inputs` set to true, so all inputs will be included in the
     /// transaction, even if not required for the provided outputs.
-    /// Careful with setting `allow_burning` to `true`, native tokens can get easily burned by accident.
+    /// Careful with setting `allow_burning` to `true`, native tokens, nfts or alias outputs can get easily burned by
+    /// accident.
     pub(crate) async fn get_custom_inputs(
         &self,
         governance_transition: Option<HashSet<AliasId>>,
