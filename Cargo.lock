@@ -1131,7 +1131,7 @@ dependencies = [
 
 [[package]]
 name = "iota-client"
-version = "2.0.0-beta.1"
+version = "2.0.0-beta.2"
 dependencies = [
  "async-trait",
  "backtrace",
