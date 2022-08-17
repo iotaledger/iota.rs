@@ -10,23 +10,21 @@ use bee_block::{
             AddressUnlockCondition, GovernorAddressUnlockCondition, ImmutableAliasAddressUnlockCondition,
             StateControllerAddressUnlockCondition, StorageDepositReturnUnlockCondition,
         },
-        BasicOutputBuilder, NativeTokens, Output, Rent, RentStructure, UnlockCondition,
+        BasicOutputBuilder, NativeTokens, Output, OutputAmount, Rent, RentStructure, UnlockCondition,
     },
 };
 
 use crate::{secret::types::InputSigningData, Result};
 
-/// Computes the minimum amount that an output needs to have, when native tokens are sent with [AddressUnlockCondition].
-pub fn minimum_storage_deposit(
+/// Computes the minimum storage deposit amount that a basic output needs to have with an [AddressUnlockCondition] and
+/// optional [NativeTokens].
+pub fn minimum_storage_deposit_basic_output(
     config: &RentStructure,
     address: &Address,
     native_tokens: &Option<NativeTokens>,
 ) -> Result<u64> {
     let address_condition = UnlockCondition::Address(AddressUnlockCondition::new(*address));
-    // Safety: This can never fail because the amount will always be within the valid range. Also, the actual value is
-    // not important, we are only interested in the storage requirements of the type.
-    // todo: use `OutputAmount::MIN` when public, see https://github.com/iotaledger/bee/issues/1238
-    let mut basic_output_builder = BasicOutputBuilder::new_with_amount(1_000_000_000)?;
+    let mut basic_output_builder = BasicOutputBuilder::new_with_amount(OutputAmount::MIN)?;
     if let Some(native_tokens) = native_tokens {
         basic_output_builder = basic_output_builder.with_native_tokens(native_tokens.clone());
     }

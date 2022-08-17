@@ -15,7 +15,7 @@ use crate::{
     api::{
         input_selection::{
             get_accumulated_output_amounts, get_minted_and_melted_native_tokens, get_remainder_native_tokens,
-            helpers::{minimum_storage_deposit, sdr_not_expired},
+            helpers::{minimum_storage_deposit_basic_output, sdr_not_expired},
             AccumulatedOutputAmounts,
         },
         RemainderData,

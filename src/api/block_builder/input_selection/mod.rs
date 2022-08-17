@@ -19,7 +19,7 @@ use bee_block::{
         AliasOutputBuilder, FoundryOutputBuilder, NftOutputBuilder, Output, Rent, RentStructure, OUTPUT_COUNT_MAX,
     },
 };
-pub use helpers::minimum_storage_deposit;
+pub use helpers::minimum_storage_deposit_basic_output;
 use packable::bounded::TryIntoBoundedU16Error;
 
 use self::{
