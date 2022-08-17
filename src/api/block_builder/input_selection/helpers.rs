@@ -6,10 +6,7 @@
 use bee_block::{
     address::{Address, AliasAddress, Ed25519Address, NftAddress},
     output::{
-        unlock_condition::{
-            AddressUnlockCondition, GovernorAddressUnlockCondition, ImmutableAliasAddressUnlockCondition,
-            StateControllerAddressUnlockCondition, StorageDepositReturnUnlockCondition,
-        },
+        unlock_condition::{AddressUnlockCondition, StorageDepositReturnUnlockCondition},
         BasicOutputBuilder, NativeTokens, Output, OutputAmount, Rent, RentStructure, UnlockCondition,
     },
 };
@@ -151,30 +148,22 @@ pub(crate) fn sort_input_signing_data(inputs: Vec<InputSigningData>) -> crate::R
 // Check if an address is required for unlockig an output in any unlock condition
 pub(crate) fn output_contains_address(output: &Output, address: &Address, current_time: u32) -> bool {
     if let Some(unlock_conditions) = output.unlock_conditions() {
-        if let Some(UnlockCondition::Address(address_unlock_condition)) =
-            unlock_conditions.get(AddressUnlockCondition::KIND)
-        {
+        if let Some(address_unlock_condition) = unlock_conditions.address() {
             if address == unlock_conditions.locked_address(address_unlock_condition.address(), current_time) {
                 return true;
             }
         }
-        if let Some(UnlockCondition::StateControllerAddress(state_controller_unlock_condition)) =
-            unlock_conditions.get(StateControllerAddressUnlockCondition::KIND)
-        {
+        if let Some(state_controller_unlock_condition) = unlock_conditions.state_controller_address() {
             if address == state_controller_unlock_condition.address() {
                 return true;
             }
         }
-        if let Some(UnlockCondition::GovernorAddress(governor_controller_unlock_condition)) =
-            unlock_conditions.get(GovernorAddressUnlockCondition::KIND)
-        {
+        if let Some(governor_controller_unlock_condition) = unlock_conditions.governor_address() {
             if address == governor_controller_unlock_condition.address() {
                 return true;
             }
         }
-        if let Some(UnlockCondition::ImmutableAliasAddress(immutable_alias_address_unlock_condition)) =
-            unlock_conditions.get(ImmutableAliasAddressUnlockCondition::KIND)
-        {
+        if let Some(immutable_alias_address_unlock_condition) = unlock_conditions.immutable_alias_address() {
             if address == immutable_alias_address_unlock_condition.address() {
                 return true;
             }
