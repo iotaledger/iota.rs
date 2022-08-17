@@ -1,13 +1,12 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! cargo run --example alias_alias --release
+//! cargo run --example recursive_alias --release
 
 use std::env;
 
 use bee_block::address::{Address, AliasAddress};
 use dotenv::dotenv;
-use fern_logger::{logger_init, LoggerConfig, LoggerOutputConfigBuilder};
 use iota_client::{
     block::{
         output::{
@@ -23,19 +22,11 @@ use iota_client::{
     secret::{mnemonic::MnemonicSecretManager, SecretManager},
     Client, Result,
 };
-use log::LevelFilter;
+
 /// In this example we will create three alias output, where the first one can controll the other two (recursive)
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    // Generates a client.log file with logs for debugging
-    let logger_output_config = LoggerOutputConfigBuilder::new()
-        .name("client.log")
-        .target_exclusions(&["h2", "hyper", "rustls"])
-        .level_filter(LevelFilter::Debug);
-    let config = LoggerConfig::build().with_output(logger_output_config).finish();
-    logger_init(config).unwrap();
-
     // This example uses dotenv, which is not safe for use in production!
     // Configure your own mnemonic in the ".env" file. Since the output amount cannot be zero, the seed must contain
     // non-zero balance.
@@ -50,10 +41,8 @@ async fn main() -> Result<()> {
         .with_node_sync_disabled()
         .finish()?;
 
-    let mnemonic = Client::generate_mnemonic()?;
-    // TODO UNDO
     let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
-        &mnemonic, // &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
+        &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
     )?);
 
     let address = client.get_addresses(&secret_manager).with_range(0..1).get_raw().await?[0];
@@ -61,6 +50,7 @@ async fn main() -> Result<()> {
         "{}",
         request_funds_from_faucet(&faucet_url, &address.to_bech32(client.get_bech32_hrp().await?)).await?
     );
+    // Wait some time for the faucet transaction
     tokio::time::sleep(std::time::Duration::from_secs(15)).await;
 
     let rent_structure = client.get_rent_structure().await?;
@@ -120,7 +110,7 @@ async fn main() -> Result<()> {
                 alias_0_address,
             )))?
             .finish_output()?,
-        // make third alias output be contolled by the second one (indirectly also by the first one then)
+        // make third alias output be controlled by the second one (indirectly also by the first one)
         alias_output_builder
             .clone()
             .with_alias_id(alias_id_2)
@@ -177,7 +167,7 @@ async fn main() -> Result<()> {
     let _ = client.retry_until_included(&block_3.id(), None, None).await?;
 
     //////////////////////////////////
-    // create fourth transaction with the third alias output updated
+    // create fourth transaction with the third alias output updated again
     //////////////////////////////////
     let outputs = vec![
         alias_output_builder
@@ -200,7 +190,7 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
     println!(
-        "Transaction with state metadata of the third alias updated sent: {node_url}/api/core/v2/blocks/{}",
+        "Another transaction with state metadata of the third alias updated sent: {node_url}/api/core/v2/blocks/{}",
         block_3.id()
     );
     let _ = client.retry_until_included(&block_3.id(), None, None).await?;

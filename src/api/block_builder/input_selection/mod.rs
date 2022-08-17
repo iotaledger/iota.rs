@@ -51,6 +51,11 @@ pub fn try_select_inputs(
     allow_burning: bool,
     current_time: u32,
 ) -> Result<SelectedTransactionData> {
+    log::debug!("[try_select_inputs]");
+    if inputs.is_empty() {
+        return Err(crate::Error::NoInputs);
+    }
+
     inputs.sort_by_key(|a| (a.output_metadata.transaction_id, a.output_metadata.output_index));
     inputs.dedup_by_key(|a| (a.output_metadata.transaction_id, a.output_metadata.output_index));
 

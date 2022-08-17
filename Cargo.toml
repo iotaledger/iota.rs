@@ -290,8 +290,8 @@ name = "alias"
 path = "examples/outputs/alias.rs"
 
 [[example]]
-name = "alias_alias"
-path = "examples/outputs/alias_alias.rs"
+name = "recursive_alias"
+path = "examples/outputs/recursive_alias.rs"
 
 [[example]]
 name = "basic"
