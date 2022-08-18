@@ -345,7 +345,7 @@ impl<'a> ClientBlockBuilder<'a> {
     pub fn get_output_amount_and_address(
         output: &Output,
         governance_transition: Option<HashSet<AliasId>>,
-        local_time: u32,
+        current_time: u32,
     ) -> Result<(u64, Address)> {
         let (amount, address, unlock_conditions) = match output {
             Output::Treasury(_) => return Err(Error::OutputError("Treasury output is no supported")),
@@ -388,7 +388,7 @@ impl<'a> ClientBlockBuilder<'a> {
             }
         };
 
-        Ok((amount, *unlock_conditions.locked_address(address, local_time)))
+        Ok((amount, *unlock_conditions.locked_address(address, current_time)))
     }
 
     /// Consume the builder and get the API result

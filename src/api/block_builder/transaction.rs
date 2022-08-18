@@ -100,9 +100,9 @@ impl<'a> ClientBlockBuilder<'a> {
             .await?;
         let tx_payload = TransactionPayload::new(prepared_transaction_data.essence.clone(), unlocks)?;
 
-        let local_time = self.client.get_time_checked().await?;
+        let current_time = self.client.get_time_checked().await?;
 
-        let conflict = verify_semantic(&prepared_transaction_data.inputs_data, &tx_payload, local_time)?;
+        let conflict = verify_semantic(&prepared_transaction_data.inputs_data, &tx_payload, current_time)?;
 
         if conflict != ConflictReason::None {
             log::debug!("[sign_transaction] conflict: {conflict:?} for {:#?}", tx_payload);
@@ -118,7 +118,7 @@ impl<'a> ClientBlockBuilder<'a> {
 pub fn verify_semantic(
     input_signing_data: &[InputSigningData],
     transaction: &TransactionPayload,
-    local_time: u32,
+    current_time: u32,
 ) -> crate::Result<ConflictReason> {
     let transaction_id = transaction.id();
     let TransactionEssence::Regular(essence) = transaction.essence();
@@ -140,7 +140,7 @@ pub fn verify_semantic(
         essence,
         inputs.iter().map(|(id, input)| (id, *input)),
         transaction.unlocks(),
-        local_time,
+        current_time,
     );
 
     semantic_validation(context, inputs.as_slice(), transaction.unlocks()).map_err(Error::BlockError)

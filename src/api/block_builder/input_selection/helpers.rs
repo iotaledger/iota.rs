@@ -7,7 +7,7 @@ use bee_block::{
     address::{Address, AliasAddress, Ed25519Address, NftAddress},
     output::{
         unlock_condition::{AddressUnlockCondition, StorageDepositReturnUnlockCondition},
-        BasicOutputBuilder, NativeTokens, Output, OutputAmount, Rent, RentStructure, UnlockCondition,
+        BasicOutputBuilder, NativeTokens, Output, OutputAmount, OutputId, Rent, RentStructure, UnlockCondition,
     },
 };
 
@@ -146,29 +146,78 @@ pub(crate) fn sort_input_signing_data(inputs: Vec<InputSigningData>) -> crate::R
 }
 
 // Check if an address is required for unlockig an output in any unlock condition
-pub(crate) fn output_contains_address(output: &Output, address: &Address, current_time: u32) -> bool {
+// Also returns true if the output is an alias or foundry address and the address to search for matches this one
+pub(crate) fn output_contains_address(
+    output: &Output,
+    output_id: OutputId,
+    required_address: &Address,
+    current_time: u32,
+) -> bool {
+    // Check alias and nft addresses
+    match output {
+        Output::Alias(alias_output) => {
+            if *required_address
+                == Address::Alias(AliasAddress::new(alias_output.alias_id().or_from_output_id(output_id)))
+            {
+                return true;
+            }
+        }
+        Output::Nft(nft_output) => {
+            if *required_address == Address::Nft(NftAddress::new(nft_output.nft_id().or_from_output_id(output_id))) {
+                return true;
+            }
+        }
+        _ => {}
+    }
+
+    // Check unlock conditions
     if let Some(unlock_conditions) = output.unlock_conditions() {
         if let Some(address_unlock_condition) = unlock_conditions.address() {
-            if address == unlock_conditions.locked_address(address_unlock_condition.address(), current_time) {
+            if required_address == unlock_conditions.locked_address(address_unlock_condition.address(), current_time) {
                 return true;
             }
         }
         if let Some(state_controller_unlock_condition) = unlock_conditions.state_controller_address() {
-            if address == state_controller_unlock_condition.address() {
+            if required_address == state_controller_unlock_condition.address() {
                 return true;
             }
         }
         if let Some(governor_controller_unlock_condition) = unlock_conditions.governor_address() {
-            if address == governor_controller_unlock_condition.address() {
+            if required_address == governor_controller_unlock_condition.address() {
                 return true;
             }
         }
         if let Some(immutable_alias_address_unlock_condition) = unlock_conditions.immutable_alias_address() {
-            if address == immutable_alias_address_unlock_condition.address() {
+            if required_address == immutable_alias_address_unlock_condition.address() {
                 return true;
             }
         }
     }
 
     false
+}
+
+pub(crate) fn is_basic_output_address_unlockable(output: &Output, address: &Address, current_time: u32) -> bool {
+    match output {
+        Output::Basic(_) => {
+            if let Some(unlock_conditions) = output.unlock_conditions() {
+                if unlock_conditions.is_time_locked(current_time) {
+                    return false;
+                }
+
+                if let Some(expiration) = unlock_conditions.expiration() {
+                    if let Some(expiration_address) = expiration.return_address_expired(current_time) {
+                        return expiration_address == address;
+                    }
+                }
+
+                // PANIC: safe to unwrap as basic outputs always have an address.
+                unlock_conditions.address().unwrap().address() == address
+            } else {
+                // Should not happen anyway as there should always be at least the address unlock condition.
+                false
+            }
+        }
+        _ => false,
+    }
 }

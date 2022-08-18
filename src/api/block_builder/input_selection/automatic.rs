@@ -3,20 +3,17 @@
 
 //! Automatic input selection for transactions
 
-use std::collections::HashSet;
-
 use bee_api_types::responses::OutputResponse;
 use bee_block::{
     address::Address,
-    output::{feature::Features, Output, RentStructure},
+    output::{Output, RentStructure},
 };
 use crypto::keys::slip10::Chain;
 
 use crate::{
     api::{
-        address::search_address,
-        block_builder::input_selection::{output_data::get_utxo_chains_inputs, types::SelectedTransactionData},
-        input_selection::try_select_inputs,
+        block_builder::input_selection::types::SelectedTransactionData,
+        input_selection::{helpers::is_basic_output_address_unlockable, try_select_inputs},
         ClientBlockBuilder, ADDRESS_GAP_RANGE,
     },
     constants::HD_WALLET_TYPE,
@@ -25,56 +22,35 @@ use crate::{
     Error, Result,
 };
 
-async fn address_outputs(block_builder: &ClientBlockBuilder<'_>, address: String) -> Result<Vec<OutputResponse>> {
-    let mut output_ids = Vec::new();
-
-    // First request to get all basic outputs that can directly be unlocked by the address.
-    output_ids.extend(
-        block_builder
-            .client
-            .basic_output_ids(vec![
-                QueryParameter::Address(address.clone()),
-                QueryParameter::HasStorageDepositReturn(false),
-            ])
-            .await?,
-    );
-
-    // Second request to get all basic outputs that can be unlocked by the address through the expiration condition.
-    output_ids.extend(
-        block_builder
-            .client
-            .basic_output_ids(vec![
-                QueryParameter::ExpirationReturnAddress(address),
-                QueryParameter::HasExpiration(true),
-                QueryParameter::HasStorageDepositReturn(false),
-            ])
-            .await?,
-    );
-
-    block_builder.client.get_outputs(output_ids).await
-}
-
-fn is_output_address_unlockable(output: &Output, address: &Address, local_time: u32) -> bool {
-    if let Some(unlock_conditions) = output.unlock_conditions() {
-        if unlock_conditions.is_time_locked(local_time) {
-            return false;
-        }
-
-        if let Some(expiration) = unlock_conditions.expiration() {
-            if let Some(expiration_address) = expiration.return_address_expired(local_time) {
-                return expiration_address == address;
-            }
-        }
-
-        // PANIC: safe to unwrap as basic outputs always have an address.
-        unlock_conditions.address().unwrap().address() == address
-    } else {
-        // Should not happen anyway as there should always be at least the address unlock condition.
-        false
-    }
-}
-
 impl<'a> ClientBlockBuilder<'a> {
+    // Get basic outputs for an address
+    pub(crate) async fn address_outputs(&self, address: String) -> Result<Vec<OutputResponse>> {
+        let mut output_ids = Vec::new();
+
+        // First request to get all basic outputs that can directly be unlocked by the address.
+        output_ids.extend(
+            self.client
+                .basic_output_ids(vec![
+                    QueryParameter::Address(address.clone()),
+                    QueryParameter::HasStorageDepositReturn(false),
+                ])
+                .await?,
+        );
+
+        // Second request to get all basic outputs that can be unlocked by the address through the expiration condition.
+        output_ids.extend(
+            self.client
+                .basic_output_ids(vec![
+                    QueryParameter::ExpirationReturnAddress(address),
+                    QueryParameter::HasExpiration(true),
+                    QueryParameter::HasStorageDepositReturn(false),
+                ])
+                .await?,
+        );
+
+        self.client.get_outputs(output_ids).await
+    }
+
     /// Searches inputs for provided outputs, by requesting the outputs from the account addresses or for
     /// alias/foundry/nft outputs get the latest state with their alias/nft id. Forwards to [try_select_inputs()]
     pub(crate) async fn get_inputs(&self, rent_structure: &RentStructure) -> Result<SelectedTransactionData> {
@@ -85,12 +61,12 @@ impl<'a> ClientBlockBuilder<'a> {
         let mut cached_error = None;
 
         // First get inputs for utxo chains (alias, foundry, nft outputs)
-        let mut available_inputs = get_utxo_chains_inputs(self, &self.outputs).await?;
-        let (force_use_all_inputs, required_ed25519_inputs) =
-            get_inputs_for_sender_and_issuer(self, &available_inputs).await?;
-        available_inputs.extend(required_ed25519_inputs.into_iter());
+        let mut available_inputs = self.get_utxo_chains_inputs(&self.outputs).await?;
+        let (force_use_all_inputs, required_inputs_for_sender_or_issuer) =
+            self.get_inputs_for_sender_and_issuer(&available_inputs).await?;
+        available_inputs.extend(required_inputs_for_sender_or_issuer.into_iter());
 
-        let local_time = self.client.get_time_checked().await?;
+        let current_time = self.client.get_time_checked().await?;
 
         // Try to select inputs with required inputs for utxo chains alone before requesting more inputs from addresses
         if let Ok(selected_transaction_data) = try_select_inputs(
@@ -102,7 +78,7 @@ impl<'a> ClientBlockBuilder<'a> {
             // Don't allow burning of native tokens during automatic input selection, because otherwise it
             // could lead to burned native tokens by accident
             false,
-            local_time,
+            current_time,
         ) {
             return Ok(selected_transaction_data);
         };
@@ -131,7 +107,7 @@ impl<'a> ClientBlockBuilder<'a> {
             // For each address, get the address outputs
             let mut address_index = gap_index;
             for (index, (str_address, internal)) in public_and_internal_addresses.iter().enumerate() {
-                let address_outputs = address_outputs(self, str_address.to_string()).await?;
+                let address_outputs = self.address_outputs(str_address.to_string()).await?;
 
                 // If there are more than 20 (ADDRESS_GAP_RANGE) consecutive empty addresses, then we stop
                 // looking up the addresses belonging to the seed. Note that we don't
@@ -150,7 +126,7 @@ impl<'a> ClientBlockBuilder<'a> {
                         let output = Output::try_from(&output_response.output)?;
                         let address = Address::try_from_bech32(str_address)?.1;
 
-                        if is_output_address_unlockable(&output, &address, local_time) {
+                        if is_basic_output_address_unlockable(&output, &address, current_time) {
                             available_inputs.push(InputSigningData {
                                 output,
                                 output_metadata: OutputMetadata::try_from(&output_response.metadata)?,
@@ -174,7 +150,7 @@ impl<'a> ClientBlockBuilder<'a> {
                         // Don't allow burning of native tokens during automatic input selection, because otherwise it
                         // could lead to burned native tokens by accident
                         false,
-                        local_time,
+                        current_time,
                     ) {
                         Ok(r) => r,
                         // for these errors, just try again in the next round with more addresses which might have more
@@ -227,115 +203,4 @@ impl<'a> ClientBlockBuilder<'a> {
 
         Ok(selected_transaction_data)
     }
-}
-
-async fn get_inputs_for_sender_and_issuer(
-    block_builder: &ClientBlockBuilder<'_>,
-    utxo_chain_inputs: &[InputSigningData],
-) -> Result<(bool, Vec<InputSigningData>)> {
-    log::debug!("[get_inputs_for_sender_and_issuer]");
-    let mut force_use_all_inputs = false;
-    let mut required_ed25519_inputs = Vec::new();
-    let bech32_hrp = block_builder.client.get_bech32_hrp().await?;
-    let local_time = block_builder.client.get_time_checked().await?;
-
-    // get Ed25519 address if there is a Sender or Issuer block, because we then need to unlock an output with this
-    // address
-    let mut all_required_ed25519_addresses = HashSet::new();
-    for output in &block_builder.outputs {
-        let mut required_addresses = HashSet::new();
-
-        if let Some(sender_feature) = output.features().and_then(Features::sender) {
-            required_addresses.insert(sender_feature.address());
-        }
-
-        // Issuer address only needs to be unlocked when the utxo chain is newly created
-        let utxo_chain_creation = match &output {
-            Output::Alias(alias_output) => alias_output.alias_id().is_null(),
-            Output::Nft(nft_output) => nft_output.nft_id().is_null(),
-            _ => false,
-        };
-        if utxo_chain_creation {
-            if let Some(issuer_feature) = output.immutable_features().and_then(Features::issuer) {
-                required_addresses.insert(issuer_feature.address());
-            }
-        }
-
-        for required_address in required_addresses {
-            // Only add sender, if not already present in the utxo chain inputs
-            if !utxo_chain_inputs.iter().any(|input_data| {
-                let unlock_conditions = input_data
-                    .output
-                    .unlock_conditions()
-                    .expect("Output needs to have unlock_conditions");
-
-                // All possible places for Ed25519 addresses which can unlock an output
-                let mut addresses = Vec::new();
-                if let Some(address) = unlock_conditions.state_controller_address() {
-                    addresses.push(address.address());
-                };
-                if let Some(address) = unlock_conditions.governor_address() {
-                    addresses.push(address.address());
-                };
-                if let Some(address) = unlock_conditions.address() {
-                    let unlock_address = unlock_conditions.locked_address(address.address(), local_time);
-                    addresses.push(unlock_address);
-                }
-                addresses.contains(&required_address)
-            }) {
-                all_required_ed25519_addresses.insert(required_address);
-            }
-        }
-    }
-
-    for address in all_required_ed25519_addresses {
-        if let Address::Ed25519(address) = address {
-            let (address_index, internal) = search_address(
-                block_builder
-                    .secret_manager
-                    .ok_or(Error::MissingParameter("secret manager"))?,
-                &bech32_hrp,
-                block_builder.coin_type,
-                block_builder.account_index,
-                block_builder.input_range.clone(),
-                &Address::Ed25519(*address),
-            )
-            .await?;
-            // if we didn't return with an error, then the address was found
-
-            let address = Address::Ed25519(*address);
-            let address_outputs = address_outputs(block_builder, address.to_bech32(&bech32_hrp)).await?;
-
-            let mut found_output = false;
-            for output_response in address_outputs {
-                let output = Output::try_from(&output_response.output)?;
-
-                if is_output_address_unlockable(&output, &address, local_time) {
-                    required_ed25519_inputs.push(InputSigningData {
-                        output: Output::try_from(&output_response.output)?,
-                        output_metadata: OutputMetadata::try_from(&output_response.metadata)?,
-                        chain: Some(Chain::from_u32_hardened(vec![
-                            HD_WALLET_TYPE,
-                            block_builder.coin_type,
-                            block_builder.account_index,
-                            internal as u32,
-                            address_index,
-                        ])),
-                        bech32_address: address.to_bech32(&bech32_hrp),
-                    });
-                    // we want to include all outputs, because another output might be better balance wise,
-                    // but will not unlock the address we need
-                    force_use_all_inputs = true;
-                    found_output = true;
-                    break;
-                }
-            }
-
-            if !found_output {
-                return Err(Error::MissingInputWithEd25519Address);
-            }
-        }
-    }
-
-    Ok((force_use_all_inputs, required_ed25519_inputs))
 }

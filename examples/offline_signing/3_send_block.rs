@@ -29,12 +29,12 @@ async fn main() -> Result<()> {
 
     let signed_transaction_payload = read_signed_transaction_from_file(SIGNED_TRANSACTION_FILE_NAME)?;
 
-    let local_time = online_client.get_time_checked().await?;
+    let current_time = online_client.get_time_checked().await?;
 
     let conflict = verify_semantic(
         &signed_transaction_payload.inputs_data,
         &signed_transaction_payload.transaction_payload,
-        local_time,
+        current_time,
     )?;
 
     if conflict != ConflictReason::None {

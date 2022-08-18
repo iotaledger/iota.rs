@@ -9,7 +9,9 @@ mod manual;
 mod native_token_helpers;
 mod output_data;
 mod remainder;
+mod sender_issuer;
 pub mod types;
+mod utxo_chains;
 use std::{collections::HashSet, ops::Deref};
 
 use bee_block::{
@@ -154,7 +156,7 @@ pub fn try_select_inputs(
                         let nft_address = Address::Nft(NftAddress::new(nft_id));
                         let nft_required_in_unlock_condition = outputs.iter().any(|output| {
                             // check if alias address is in unlock condition
-                            output_contains_address(output, &nft_address, current_time)
+                            output_contains_address(output, output_id, &nft_address, current_time)
                         });
 
                         // Don't add if it doesn't give us any amount or native tokens
@@ -187,7 +189,7 @@ pub fn try_select_inputs(
                         let alias_address = Address::Alias(AliasAddress::new(alias_id));
                         let alias_required_in_unlock_condition = outputs.iter().any(|output| {
                             // check if alias address is in unlock condition
-                            output_contains_address(output, &alias_address, current_time)
+                            output_contains_address(output, output_id, &alias_address, current_time)
                         });
 
                         // Don't add if it doesn't give us any amount or native tokens

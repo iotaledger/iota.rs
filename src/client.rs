@@ -626,13 +626,13 @@ impl Client {
         }
 
         let mut basic_outputs = Vec::new();
-        let local_time = self.get_time_checked().await?;
+        let current_time = self.get_time_checked().await?;
 
         for output_resp in available_outputs {
             let (amount, _) = ClientBlockBuilder::get_output_amount_and_address(
                 &Output::try_from(&output_resp.output)?,
                 None,
-                local_time,
+                current_time,
             )?;
             basic_outputs.push((
                 UtxoInput::new(
@@ -765,7 +765,7 @@ impl Client {
     /// Returns the local time checked with the timestamp of the latest milestone, if the difference is larger than 5
     /// minutes an error is returned to prevent locking outputs by accident for a wrong time.
     pub async fn get_time_checked(&self) -> Result<u32> {
-        let local_time = {
+        let current_time = {
             #[cfg(all(target_arch = "wasm32", not(target_os = "wasi")))]
             let now = instant::SystemTime::now().duration_since(instant::SystemTime::UNIX_EPOCH);
             #[cfg(not(all(target_arch = "wasm32", not(target_os = "wasi"))))]
@@ -778,14 +778,14 @@ impl Client {
         let latest_ms_timestamp = status_response.latest_milestone.timestamp;
         // Check the local time is in the range of +-5 minutes of the node to prevent locking funds by accident
         if !(latest_ms_timestamp - FIVE_MINUTES_IN_SECONDS..latest_ms_timestamp + FIVE_MINUTES_IN_SECONDS)
-            .contains(&local_time)
+            .contains(&current_time)
         {
             return Err(Error::TimeNotSynced {
-                local_time,
+                current_time,
                 milestone_timestamp: latest_ms_timestamp,
             });
         }
-        Ok(local_time)
+        Ok(current_time)
     }
 
     //////////////////////////////////////////////////////////////////////

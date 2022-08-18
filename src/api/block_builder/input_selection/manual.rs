@@ -37,7 +37,7 @@ impl<'a> ClientBlockBuilder<'a> {
         log::debug!("[get_custom_inputs]");
         let mut inputs_data = Vec::new();
 
-        let local_time = self.client.get_time_checked().await?;
+        let current_time = self.client.get_time_checked().await?;
         if let Some(inputs) = &self.inputs {
             for input in inputs {
                 let output_response = self.client.get_output(input.output_id()).await?;
@@ -47,7 +47,7 @@ impl<'a> ClientBlockBuilder<'a> {
                     let (_output_amount, output_address) = ClientBlockBuilder::get_output_amount_and_address(
                         &output,
                         governance_transition.clone(),
-                        local_time,
+                        current_time,
                     )?;
 
                     let bech32_hrp = self.client.get_bech32_hrp().await?;
@@ -93,7 +93,7 @@ impl<'a> ClientBlockBuilder<'a> {
             self.custom_remainder_address,
             rent_structure,
             allow_burning,
-            local_time,
+            current_time,
         )?;
         Ok(selected_transaction_data)
     }
