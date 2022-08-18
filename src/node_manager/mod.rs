@@ -69,36 +69,33 @@ impl NodeManager {
         use_primary_pow_node: bool,
         prefer_permanode: bool,
     ) -> Result<Vec<Node>> {
-        let mut nodes_with_modified_url = HashSet::new();
+        let mut nodes_with_modified_url: Vec<Node> = Vec::new();
 
         if prefer_permanode || (path == "api/core/v2/blocks" && query.is_some()) {
             if let Some(permanodes) = self.permanodes.clone() {
-                // remove api/core/v2/ since permanodes can have custom keyspaces
-                // https://editor.swagger.io/?url=https://raw.githubusercontent.com/iotaledger/chronicle.rs/main/docs/api.yaml
-                let path = &path["api/core/v2/".len()..];
-                for mut permanode in permanodes {
-                    permanode.url.set_path(&format!("{}{}", permanode.url.path(), path));
-                    permanode.url.set_query(query);
-                    nodes_with_modified_url.insert(permanode);
+                for permanode in permanodes {
+                    if !nodes_with_modified_url.iter().any(|n| n.url == permanode.url) {
+                        nodes_with_modified_url.push(permanode);
+                    }
                 }
             }
         }
 
         if use_primary_pow_node {
-            if let Some(mut pow_node) = self.primary_pow_node.clone() {
-                pow_node.url.set_path(path);
-                pow_node.url.set_query(query);
-                nodes_with_modified_url.insert(pow_node);
+            if let Some(pow_node) = self.primary_pow_node.clone() {
+                if !nodes_with_modified_url.iter().any(|n| n.url == pow_node.url) {
+                    nodes_with_modified_url.push(pow_node);
+                }
             }
         }
 
-        if let Some(mut primary_node) = self.primary_node.clone() {
-            primary_node.url.set_path(path);
-            primary_node.url.set_query(query);
-            nodes_with_modified_url.insert(primary_node);
+        if let Some(primary_node) = self.primary_node.clone() {
+            if !nodes_with_modified_url.iter().any(|n| n.url == primary_node.url) {
+                nodes_with_modified_url.push(primary_node);
+            }
         }
 
-        let nodes = if self.node_sync_enabled {
+        let nodes_random_order = if self.node_sync_enabled {
             #[cfg(not(target_family = "wasm"))]
             {
                 self.synced_nodes.read().map_err(|_| crate::Error::PoisonError)?.clone()
@@ -111,19 +108,31 @@ impl NodeManager {
             self.nodes.clone()
         };
 
-        for mut node in nodes {
-            node.url.set_path(path);
-            node.url.set_query(query);
-            nodes_with_modified_url.insert(node);
+        // Add remaining nodes in random order
+        for node in nodes_random_order {
+            if !nodes_with_modified_url.iter().any(|n| n.url == node.url) {
+                nodes_with_modified_url.push(node);
+            }
         }
 
         // remove disabled nodes
         nodes_with_modified_url.retain(|n| !n.disabled);
+
         if nodes_with_modified_url.is_empty() {
             return Err(crate::Error::SyncedNodePoolEmpty);
         }
 
-        Ok(nodes_with_modified_url.into_iter().collect())
+        // Set path and query parameters
+        nodes_with_modified_url = nodes_with_modified_url
+            .into_iter()
+            .map(|mut node| {
+                node.url.set_path(path);
+                node.url.set_query(query);
+                node
+            })
+            .collect();
+
+        Ok(nodes_with_modified_url)
     }
 
     pub(crate) async fn get_request<T: serde::de::DeserializeOwned + std::fmt::Debug + serde::Serialize>(
