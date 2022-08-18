@@ -89,22 +89,12 @@ pub(crate) fn sdr_not_expired(output: &Output, current_time: u32) -> Option<&Sto
 // Inputs need to be sorted before signing, because the reference unlock conditions can only reference a lower index
 pub(crate) fn sort_input_signing_data(inputs: Vec<InputSigningData>) -> crate::Result<Vec<InputSigningData>> {
     // filter for ed25519 address first, safe to unwrap since we encoded it before
-    let mut sorted_inputs = inputs
-        .clone()
+    let (mut sorted_inputs, alias_nft_address_inputs): (Vec<InputSigningData>, Vec<InputSigningData>) = inputs
         .into_iter()
         // PANIC: safe to unwrap as we encoded the address before
-        .filter(|input| Address::try_from_bech32(&input.bech32_address).unwrap().1.kind() == Ed25519Address::KIND)
-        .collect::<Vec<InputSigningData>>();
+        .partition(|input| Address::try_from_bech32(&input.bech32_address).unwrap().1.kind() == Ed25519Address::KIND);
 
-    for input in &inputs {
-        // Don't add outputs duplicated
-        if sorted_inputs.iter().any(|i| {
-            i.output_metadata.transaction_id == input.output_metadata.transaction_id
-                && i.output_metadata.output_index == input.output_metadata.output_index
-        }) {
-            continue;
-        }
-
+    for input in &alias_nft_address_inputs {
         match sorted_inputs.iter().position(|input_signing_data| {
             match Address::try_from_bech32(&input.bech32_address) {
                 Ok((_, unlock_address)) => match unlock_address {
