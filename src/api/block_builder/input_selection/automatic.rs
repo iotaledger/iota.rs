@@ -248,8 +248,17 @@ async fn get_inputs_for_sender_and_issuer(
         if let Some(sender_feature) = output.features().and_then(Features::sender) {
             required_addresses.insert(sender_feature.address());
         }
-        if let Some(issuer_feature) = output.immutable_features().and_then(Features::issuer) {
-            required_addresses.insert(issuer_feature.address());
+
+        // Issuer address only needs to be unlocked when the utxo chain is newly created
+        let utxo_chain_creation = match &output {
+            Output::Alias(alias_output) => alias_output.alias_id().is_null(),
+            Output::Nft(nft_output) => nft_output.nft_id().is_null(),
+            _ => false,
+        };
+        if utxo_chain_creation {
+            if let Some(issuer_feature) = output.immutable_features().and_then(Features::issuer) {
+                required_addresses.insert(issuer_feature.address());
+            }
         }
 
         for required_address in required_addresses {
