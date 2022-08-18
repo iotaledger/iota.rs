@@ -94,38 +94,37 @@ pub(crate) fn sort_input_signing_data(inputs: Vec<InputSigningData>) -> crate::R
         // PANIC: safe to unwrap as we encoded the address before
         .partition(|input| Address::try_from_bech32(&input.bech32_address).unwrap().1.kind() == Ed25519Address::KIND);
 
-    for input in &alias_nft_address_inputs {
-        match sorted_inputs.iter().position(|input_signing_data| {
-            match Address::try_from_bech32(&input.bech32_address) {
-                Ok((_, unlock_address)) => match unlock_address {
-                    Address::Alias(unlock_address) => {
-                        if let Output::Alias(alias_output) = &input_signing_data.output {
-                            *unlock_address.alias_id()
-                                == alias_output
-                                    .alias_id()
-                                    .or_from_output_id(input_signing_data.output_id().expect("Invalid output id"))
-                        } else {
-                            false
-                        }
+    for input in alias_nft_address_inputs {
+        let input_address = Address::try_from_bech32(&input.bech32_address);
+        match sorted_inputs.iter().position(|input_signing_data| match input_address {
+            Ok((_, unlock_address)) => match unlock_address {
+                Address::Alias(unlock_address) => {
+                    if let Output::Alias(alias_output) = &input_signing_data.output {
+                        *unlock_address.alias_id()
+                            == alias_output
+                                .alias_id()
+                                .or_from_output_id(input_signing_data.output_id().expect("Invalid output id"))
+                    } else {
+                        false
                     }
-                    Address::Nft(unlock_address) => {
-                        if let Output::Nft(nft_output) = &input_signing_data.output {
-                            *unlock_address.nft_id()
-                                == nft_output
-                                    .nft_id()
-                                    .or_from_output_id(input_signing_data.output_id().expect("Invalid output id"))
-                        } else {
-                            false
-                        }
+                }
+                Address::Nft(unlock_address) => {
+                    if let Output::Nft(nft_output) = &input_signing_data.output {
+                        *unlock_address.nft_id()
+                            == nft_output
+                                .nft_id()
+                                .or_from_output_id(input_signing_data.output_id().expect("Invalid output id"))
+                    } else {
+                        false
                     }
-                    _ => false,
-                },
+                }
                 _ => false,
-            }
+            },
+            _ => false,
         }) {
             Some(position) => {
                 // Insert after the output we need
-                sorted_inputs.insert(position + 1, input.clone());
+                sorted_inputs.insert(position + 1, input);
             }
             None => {
                 // insert before address
@@ -153,14 +152,14 @@ pub(crate) fn sort_input_signing_data(inputs: Vec<InputSigningData>) -> crate::R
                     }) {
                         Some(position) => {
                             // Insert before the output with this address required for unlocking
-                            sorted_inputs.insert(position, input.clone());
+                            sorted_inputs.insert(position, input);
                         }
                         // just push output
-                        None => sorted_inputs.push(input.clone()),
+                        None => sorted_inputs.push(input),
                     }
                 } else {
                     // just push basic or foundry output
-                    sorted_inputs.push(input.clone());
+                    sorted_inputs.push(input);
                 }
             }
         }
