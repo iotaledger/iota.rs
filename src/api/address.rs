@@ -27,7 +27,7 @@ pub struct GetAddressesBuilder<'a> {
 }
 
 /// Get address builder from string
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Default, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct GetAddressesBuilderOptions {
     /// Coin type
