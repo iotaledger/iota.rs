@@ -95,6 +95,7 @@ impl NodeManager {
             }
         }
 
+        // Add other nodes in random order, so they are not always used in the same order
         let nodes_random_order = if self.node_sync_enabled {
             #[cfg(not(target_family = "wasm"))]
             {
