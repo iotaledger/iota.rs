@@ -23,7 +23,7 @@ use iota_client::{
     Client, Result,
 };
 
-/// In this example we will create three alias output, where the first one can controll the other two (recursive)
+/// In this example we will create three alias output, where the first one can controll the other two (recursively)
 
 #[tokio::main]
 async fn main() -> Result<()> {

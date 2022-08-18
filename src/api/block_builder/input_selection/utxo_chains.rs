@@ -23,6 +23,8 @@ impl<'a> ClientBlockBuilder<'a> {
         log::debug!("[get_utxo_chains_inputs]");
         let client = self.client;
         let bech32_hrp = client.get_bech32_hrp().await?;
+        let current_time = self.client.get_time_checked().await?;
+
         let mut utxo_chains: Vec<(Address, OutputResponse)> = Vec::new();
         for output in outputs {
             match output {
@@ -69,8 +71,6 @@ impl<'a> ClientBlockBuilder<'a> {
                                 .expect("Nft output needs to have an address unlock condition")
                                 .address();
 
-                            let current_time = self.client.get_time_checked().await?;
-
                             let unlock_address = nft_output
                                 .unlock_conditions()
                                 .locked_address(output_address, current_time);
@@ -101,7 +101,7 @@ impl<'a> ClientBlockBuilder<'a> {
             }
         }
 
-        // Get recursive owned alias or nft outputs
+        // Get recursively owned alias or nft outputs
         get_alias_and_nfts_recursively(self.client, &mut utxo_chains).await?;
 
         let mut utxo_chain_inputs = Vec::new();
@@ -145,7 +145,7 @@ impl<'a> ClientBlockBuilder<'a> {
     }
 }
 
-/// Get recursively owned alias and nft outputs
+/// Get recursively owned alias and nft outputs and add them to the utxo_chains
 pub(crate) async fn get_alias_and_nfts_recursively(
     client: &Client,
     utxo_chains: &mut Vec<(Address, OutputResponse)>,

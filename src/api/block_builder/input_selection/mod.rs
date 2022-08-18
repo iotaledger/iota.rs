@@ -7,7 +7,6 @@ mod automatic;
 mod helpers;
 mod manual;
 mod native_token_helpers;
-mod output_data;
 mod remainder;
 mod sender_issuer;
 pub mod types;
@@ -25,8 +24,8 @@ pub use helpers::minimum_storage_deposit_basic_output;
 use packable::bounded::TryIntoBoundedU16Error;
 
 use self::{
+    helpers::get_accumulated_output_amounts,
     native_token_helpers::{get_minted_and_melted_native_tokens, get_remainder_native_tokens, missing_native_tokens},
-    output_data::get_accumulated_output_amounts,
     remainder::{get_additional_required_remainder_amount, get_remainder_output},
     types::SelectedTransactionData,
 };
