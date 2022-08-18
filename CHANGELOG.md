@@ -39,6 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - Removed `snapshot_loaded` field from StrongholdAdapter;
 - Removed `outputs()` field from GetAddressBuilder;
+- Primary node usage;
 
 ### Fixed
 
