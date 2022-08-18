@@ -117,11 +117,10 @@ impl ClientMessageHandler {
             }
             Message::ConsolidateFunds {
                 secret_manager: _,
-                account_index,
-                address_range,
+                generate_addresses_options,
             } => {
                 log::debug!(
-                    "Response: ConsolidateFunds{{ secret_manager: <omitted>, account_index: {account_index:?}, address_range: {address_range:?} }}"
+                    "Response: ConsolidateFunds{{ secret_manager: <omitted>, generate_addresses_options: {generate_addresses_options:?} }}"
                 )
             }
             Message::MnemonicToHexSeed { .. } => {
@@ -474,13 +473,12 @@ impl ClientMessageHandler {
             }
             Message::ConsolidateFunds {
                 secret_manager,
-                account_index,
-                address_range,
+                generate_addresses_options,
             } => {
                 let secret_manager = (&secret_manager).try_into()?;
                 Ok(Response::ConsolidatedFunds(
                     self.client
-                        .consolidate_funds(&secret_manager, account_index, address_range)
+                        .consolidate_funds(&secret_manager, generate_addresses_options)
                         .await?,
                 ))
             }

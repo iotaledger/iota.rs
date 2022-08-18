@@ -1021,7 +1021,7 @@ ___
 
 ### consolidateFunds
 
-▸ **consolidateFunds**(`secretManager`, `accountIndex`, `addressRange?`): `Promise`<`string`\>
+▸ **consolidateFunds**(`secretManager`, `generateAddressesOptions`): `Promise`<`string`\>
 
 Function to consolidate all funds from a range of addresses to the address with the lowest index in that range
 Returns the address to which the funds got consolidated, if any were available
@@ -1031,8 +1031,7 @@ Returns the address to which the funds got consolidated, if any were available
 | Name | Type |
 | :------ | :------ |
 | `secretManager` | [`SecretManager`](../api_ref.md#secretmanager) |
-| `accountIndex` | `number` |
-| `addressRange?` | [`IRange`](../interfaces/IRange.md) |
+| `generateAddressesOptions` | [`IGenerateAddressesOptions`](../interfaces/IGenerateAddressesOptions.md) |
 
 #### Returns
 
