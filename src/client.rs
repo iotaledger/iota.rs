@@ -5,7 +5,6 @@
 
 use std::{
     collections::HashSet,
-    ops::Range,
     str::FromStr,
     sync::{Arc, RwLock},
     time::Duration,
@@ -607,17 +606,6 @@ impl Client {
         Err(Error::TangleInclusionError(block_id.to_string()))
     }
 
-    /// Function to consolidate all funds from a range of addresses to the address with the lowest index in that range
-    /// Returns the address to which the funds got consolidated, if any were available
-    pub async fn consolidate_funds(
-        &self,
-        secret_manager: &SecretManager,
-        account_index: u32,
-        address_range: Range<u32>,
-    ) -> crate::Result<String> {
-        crate::api::consolidate_funds(self, secret_manager, account_index, address_range).await
-    }
-
     /// Function to find inputs from addresses for a provided amount (useful for offline signing), ignoring outputs with
     /// additional unlock conditions
     pub async fn find_inputs(&self, addresses: Vec<String>, amount: u64) -> Result<Vec<UtxoInput>> {
@@ -625,17 +613,16 @@ impl Client {
         let mut available_outputs = Vec::new();
 
         for address in addresses {
-            available_outputs.extend_from_slice(
-                &self
-                    .get_address()
-                    .outputs(vec![
-                        QueryParameter::Address(address.to_string()),
-                        QueryParameter::HasExpiration(false),
-                        QueryParameter::HasTimelock(false),
-                        QueryParameter::HasStorageDepositReturn(false),
-                    ])
-                    .await?,
-            );
+            let basic_output_ids = self
+                .basic_output_ids(vec![
+                    QueryParameter::Address(address.to_string()),
+                    QueryParameter::HasExpiration(false),
+                    QueryParameter::HasTimelock(false),
+                    QueryParameter::HasStorageDepositReturn(false),
+                ])
+                .await?;
+
+            available_outputs.extend(self.get_outputs(basic_output_ids).await?);
         }
 
         let mut basic_outputs = Vec::new();
@@ -686,25 +673,25 @@ impl Client {
     /// Find all outputs based on the requests criteria. This method will try to query multiple nodes if
     /// the request amount exceeds individual node limit.
     pub async fn find_outputs(&self, output_ids: &[OutputId], addresses: &[String]) -> Result<Vec<OutputResponse>> {
-        let mut output_metadata = self.get_outputs(output_ids.to_vec()).await?;
+        let mut output_responses = self.get_outputs(output_ids.to_vec()).await?;
 
         // Use `get_address()` API to get the address outputs first,
         // then collect the `UtxoInput` in the HashSet.
         for address in addresses {
             // Get output ids of outputs that can be controlled by this address without further unlock constraints
-            let address_outputs = self
-                .get_address()
-                .outputs(vec![
+            let basic_output_ids = self
+                .basic_output_ids(vec![
                     QueryParameter::Address(address.to_string()),
                     QueryParameter::HasExpiration(false),
                     QueryParameter::HasTimelock(false),
                     QueryParameter::HasStorageDepositReturn(false),
                 ])
                 .await?;
-            output_metadata.extend(address_outputs.into_iter());
+
+            output_responses.extend(self.get_outputs(basic_output_ids).await?);
         }
 
-        Ok(output_metadata.clone())
+        Ok(output_responses.clone())
     }
 
     /// Reattaches blocks for provided block id. Blocks can be reattached only if they are valid and haven't been

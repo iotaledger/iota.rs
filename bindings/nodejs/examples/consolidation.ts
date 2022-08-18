@@ -1,6 +1,6 @@
 // Copyright 2021-2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
-import { Client, initLogger } from '@iota/client';
+import { Client, CoinType, initLogger } from '@iota/client';
 require('dotenv').config({ path: '../.env' });
 
 // Run with command:
@@ -36,11 +36,15 @@ async function run() {
         };
 
         // Here all funds will be sent to the address with the lowest index in the range
-        const address = await client.consolidateFunds(
-            secretManager,
-            0,
-            addressRange,
-        );
+        const address = await client.consolidateFunds(secretManager, {
+            coinType: CoinType.Shimmer,
+            accountIndex: 0,
+            range: {
+                start: 0,
+                end: 2,
+            },
+            internal: false,
+        });
         console.log('Funds consolidated to: ', address);
     } catch (error) {
         console.error('Error: ', error);

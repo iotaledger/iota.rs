@@ -34,9 +34,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Rename `finish_pow` to `finish_multi_threaded_pow`;
 - Rename `finish_single_thread_pow` to `finish_single_threaded_pow`;
 - Rename `minimum_storage_deposit` to `minimum_storage_deposit_basic_output`;
+- Accept `GenerateAddressesOptions` in `consolidate_funds()` instead of `account_index` and `address_range`;
 
 ### Removed
 - Removed `snapshot_loaded` field from StrongholdAdapter;
+- Removed `outputs()` field from GetAddressBuilder;
 
 ### Fixed
 

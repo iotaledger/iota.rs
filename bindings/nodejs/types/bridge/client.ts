@@ -382,8 +382,7 @@ export interface __ConsolidateFundsMessage__ {
     name: 'ConsolidateFunds';
     data: {
         secretManager: SecretManager;
-        accountIndex: number;
-        addressRange?: IRange;
+        generateAddressesOptions: IGenerateAddressesOptions;
     };
 }
 

@@ -42,14 +42,13 @@ class HighLevelAPI(BaseAPI):
             'maxAttempts': max_attempts
         })
 
-    def consolidate_funds(self, secret_manager, account_index, address_range):
+    def consolidate_funds(self, secret_manager, generate_addresses_options):
         """Function to consolidate all funds from a range of addresses to the address with the lowest index in that range
            Returns the address to which the funds got consolidated, if any were available.
         """
         return self.send_message('ConsolidateFunds', {
             'secretManager': secret_manager,
-            'accountIndex': account_index,
-            'addressRange': address_range
+            'generateAddressesOptions': generate_addresses_options,
         })
 
     def find_inputs(self, addresses, amount):
