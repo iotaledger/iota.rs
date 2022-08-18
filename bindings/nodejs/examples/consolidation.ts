@@ -19,11 +19,6 @@ async function run() {
         localPow: true,
     });
 
-    const addressRange = {
-        start: 0,
-        end: 10,
-    };
-
     try {
         if (!process.env.NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1) {
             throw new Error('.env mnemonic is undefined, see .env.example');
@@ -41,7 +36,7 @@ async function run() {
             accountIndex: 0,
             range: {
                 start: 0,
-                end: 2,
+                end: 10,
             },
             internal: false,
         });
