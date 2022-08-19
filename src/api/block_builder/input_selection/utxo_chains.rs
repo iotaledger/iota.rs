@@ -6,7 +6,7 @@
 use bee_api_types::responses::OutputResponse;
 use bee_block::{
     address::Address,
-    output::{dto::OutputDto, unlock_condition::dto::UnlockConditionDto, NftOutput, Output},
+    output::{dto::OutputDto, AliasOutput, FoundryOutput, NftOutput, Output},
 };
 use crypto::keys::slip10::Chain;
 
@@ -36,24 +36,15 @@ impl<'a> ClientBlockBuilder<'a> {
                         // as the previous index
                         let output_id = client.alias_output_id(*alias_output.alias_id()).await?;
                         let output_response = client.get_output(&output_id).await?;
-                        if let OutputDto::Alias(output) = &output_response.output {
-                            for unlock_condition in &output.unlock_conditions {
-                                // A governance transition is identified by an unchanged State Index in next
-                                // state.
-                                if alias_output.state_index() == output.state_index {
-                                    if let UnlockConditionDto::GovernorAddress(governor_unlock_condition_dto) =
-                                        unlock_condition
-                                    {
-                                        let address = Address::try_from(&governor_unlock_condition_dto.address)?;
-                                        utxo_chains.push((address, output_response.clone()));
-                                    }
-                                } else if let UnlockConditionDto::StateControllerAddress(
-                                    state_controller_unlock_condition_dto,
-                                ) = unlock_condition
-                                {
-                                    let address = Address::try_from(&state_controller_unlock_condition_dto.address)?;
-                                    utxo_chains.push((address, output_response.clone()));
-                                }
+                        if let OutputDto::Alias(alias_output_dto) = &output_response.output {
+                            let alias_output = AliasOutput::try_from(alias_output_dto)?;
+
+                            // A governance transition is identified by an unchanged State Index in next
+                            // state.
+                            if alias_output.state_index() == alias_output.state_index() {
+                                utxo_chains.push((*alias_output.governor_address(), output_response.clone()));
+                            } else {
+                                utxo_chains.push((*alias_output.state_controller_address(), output_response.clone()));
                             }
                         }
                     }
@@ -83,17 +74,10 @@ impl<'a> ClientBlockBuilder<'a> {
                     // if it's the first foundry output, then we can't have it as input
                     if let Ok(output_id) = client.foundry_output_id(foundry_output.id()).await {
                         let output_response = client.get_output(&output_id).await?;
-                        if let OutputDto::Foundry(foundry_output) = &output_response.output {
-                            for unlock_condition in &foundry_output.unlock_conditions {
-                                if let UnlockConditionDto::ImmutableAliasAddress(
-                                    immutable_alias_address_unlock_condition_dto,
-                                ) = unlock_condition
-                                {
-                                    let address =
-                                        Address::try_from(&immutable_alias_address_unlock_condition_dto.address)?;
-                                    utxo_chains.push((address, output_response.clone()));
-                                }
-                            }
+                        if let OutputDto::Foundry(foundry_output_dto) = &output_response.output {
+                            let foundry_output = FoundryOutput::try_from(foundry_output_dto)?;
+                            utxo_chains
+                                .push((Address::Alias(*foundry_output.alias_address()), output_response.clone()));
                         }
                     }
                 }
@@ -155,8 +139,8 @@ pub(crate) async fn get_alias_and_nft_outputs_recursively(
 
     let mut unprocessed_alias_nft_addresses = std::collections::HashSet::new();
 
-    for (unlock_address, _output_response) in utxo_chains.clone() {
-        unprocessed_alias_nft_addresses.insert(unlock_address);
+    for (unlock_address, _output_response) in utxo_chains.iter() {
+        unprocessed_alias_nft_addresses.insert(*unlock_address);
     }
 
     while !unprocessed_alias_nft_addresses.is_empty() {
@@ -170,19 +154,18 @@ pub(crate) async fn get_alias_and_nft_outputs_recursively(
                     let output_id = client.alias_output_id(*address.alias_id()).await?;
                     let output_response = client.get_output(&output_id).await?;
                     if let OutputDto::Alias(alias_output_dto) = &output_response.output {
-                        for unlock_condition in &alias_output_dto.unlock_conditions {
-                            // State transition if we add them to inputs
-                            if let UnlockConditionDto::StateControllerAddress(state_controller_unlock_condition_dto) =
-                                unlock_condition
-                            {
-                                let address = Address::try_from(&state_controller_unlock_condition_dto.address)?;
-                                // Add address to unprocessed_alias_nft_addresses so we get the required output there
-                                // also
-                                if address.is_alias() || address.is_nft() {
-                                    unprocessed_alias_nft_addresses.insert(address);
-                                }
-                                utxo_chains.push((address, output_response.clone()));
+                        let alias_output = AliasOutput::try_from(alias_output_dto)?;
+                        // State transition if we add them to inputs
+                        if let Some(state_controller_unlock_condition) =
+                            alias_output.unlock_conditions().state_controller_address()
+                        {
+                            let unlock_address = state_controller_unlock_condition.address();
+                            // Add address to unprocessed_alias_nft_addresses so we get the required output there
+                            // also
+                            if unlock_address.is_alias() || unlock_address.is_nft() {
+                                unprocessed_alias_nft_addresses.insert(*unlock_address);
                             }
+                            utxo_chains.push((*unlock_address, output_response.clone()));
                         }
                     }
                 }
