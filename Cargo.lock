@@ -213,7 +213,7 @@ dependencies = [
  "derive_more",
  "hashbrown",
  "hex",
- "iota-crypto 0.13.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "iota-crypto 0.13.0",
  "iterator-sorted",
  "packable",
  "prefix-hex",
@@ -243,7 +243,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d8e36e724dc98f8671c4f674b8419785def4ea81ad7af4fba061ff11724210c1"
 dependencies = [
  "bee-ternary",
- "iota-crypto 0.13.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "iota-crypto 0.13.0",
  "thiserror",
 ]
 
@@ -1145,7 +1145,7 @@ dependencies = [
  "futures",
  "gloo-timers",
  "instant",
- "iota-crypto 0.13.0 (git+https://github.com/thibault-martinez/crypto.rs?rev=75fdf00896ba8811c2d06ef713db3e21e7630198)",
+ "iota-crypto 0.14.0",
  "iota-ledger-nano",
  "iota_stronghold",
  "log",
@@ -1214,8 +1214,9 @@ dependencies = [
 
 [[package]]
 name = "iota-crypto"
-version = "0.13.0"
-source = "git+https://github.com/thibault-martinez/crypto.rs?rev=75fdf00896ba8811c2d06ef713db3e21e7630198#75fdf00896ba8811c2d06ef713db3e21e7630198"
+version = "0.14.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "aee0fbdc68c475a78fd19a6509280b25166499f1bfe087a81237813e7b951667"
 dependencies = [
  "aead",
  "blake2 0.10.4",
