@@ -377,12 +377,7 @@ impl<'a> ClientBlockBuilder<'a> {
                 Address::Alias(*output.alias_address()),
                 output.unlock_conditions(),
             ),
-            Output::Nft(ref output) => {
-                // PANIC: safe to unwrap as NftOutput has to have an AddressUnlockCondition.
-                let address = output.unlock_conditions().address().unwrap();
-
-                (output.amount(), *address.address(), output.unlock_conditions())
-            }
+            Output::Nft(ref output) => (output.amount(), *output.address(), output.unlock_conditions()),
         };
 
         Ok((amount, *unlock_conditions.locked_address(&address, current_time)))

@@ -59,15 +59,10 @@ impl<'a> ClientBlockBuilder<'a> {
                         let output_response = client.get_output(&output_id).await?;
                         if let OutputDto::Nft(nft_output) = &output_response.output {
                             let nft_output = NftOutput::try_from(nft_output)?;
-                            let output_address = nft_output
-                                .unlock_conditions()
-                                .address()
-                                .expect("Nft output needs to have an address unlock condition")
-                                .address();
 
                             let unlock_address = nft_output
                                 .unlock_conditions()
-                                .locked_address(output_address, current_time);
+                                .locked_address(nft_output.address(), current_time);
 
                             utxo_chains.push((*unlock_address, output_response));
                         }
