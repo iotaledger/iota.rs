@@ -124,14 +124,10 @@ impl NodeManager {
         }
 
         // Set path and query parameters
-        nodes_with_modified_url = nodes_with_modified_url
-            .into_iter()
-            .map(|mut node| {
-                node.url.set_path(path);
-                node.url.set_query(query);
-                node
-            })
-            .collect();
+        nodes_with_modified_url.iter_mut().for_each(|node| {
+            node.url.set_path(path);
+            node.url.set_query(query);
+        });
 
         Ok(nodes_with_modified_url)
     }
