@@ -1,7 +1,7 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! sender and issuer feature input selection
+//! input selection for utxo chains
 
 use bee_api_types::responses::OutputResponse;
 use bee_block::{
@@ -102,7 +102,7 @@ impl<'a> ClientBlockBuilder<'a> {
         }
 
         // Get recursively owned alias or nft outputs
-        get_alias_and_nfts_recursively(self.client, &mut utxo_chains).await?;
+        get_alias_and_nft_outputs_recursively(self.client, &mut utxo_chains).await?;
 
         let mut utxo_chain_inputs = Vec::new();
         for (unlock_address, output_response) in utxo_chains {
@@ -146,11 +146,11 @@ impl<'a> ClientBlockBuilder<'a> {
 }
 
 /// Get recursively owned alias and nft outputs and add them to the utxo_chains
-pub(crate) async fn get_alias_and_nfts_recursively(
+pub(crate) async fn get_alias_and_nft_outputs_recursively(
     client: &Client,
     utxo_chains: &mut Vec<(Address, OutputResponse)>,
 ) -> Result<()> {
-    log::debug!("[get_alias_and_nfts_recursively]");
+    log::debug!("[get_alias_and_nft_outputs_recursively]");
     let current_time = client.get_time_checked().await?;
 
     let mut unprocessed_alias_nft_addresses = std::collections::HashSet::new();
