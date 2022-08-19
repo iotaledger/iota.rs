@@ -1,7 +1,7 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! sender and issuer feature input selection
+//! sender and issuer features input selection
 
 use std::collections::HashSet;
 
