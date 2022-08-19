@@ -108,7 +108,7 @@ impl<'a> ClientBlockBuilder<'a> {
                         _ => None,
                     }
                 }
-                // Assuming default
+                // Assuming default for offline signing
                 None => Some((0, false)),
             };
 

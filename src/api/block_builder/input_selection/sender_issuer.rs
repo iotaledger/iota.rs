@@ -54,7 +54,7 @@ impl<'a> ClientBlockBuilder<'a> {
             }
 
             for required_address in required_addresses {
-                // Only add sender/issuer, if not already present in the utxo chain inputs
+                // Only add if not already present in the utxo chain inputs
                 if !utxo_chain_inputs.iter().any(|input_data| {
                     output_contains_address(
                         &input_data.output,
@@ -157,7 +157,7 @@ impl<'a> ClientBlockBuilder<'a> {
                                         _ => None,
                                     }
                                 }
-                                // Assuming default
+                                // Assuming default for offline signing
                                 None => Some((0, false)),
                             };
 
@@ -224,7 +224,7 @@ impl<'a> ClientBlockBuilder<'a> {
                                         _ => None,
                                     }
                                 }
-                                // Assuming default
+                                // Assuming default for offline signing
                                 None => Some((0, false)),
                             };
 
