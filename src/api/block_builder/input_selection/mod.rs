@@ -120,7 +120,7 @@ pub fn try_select_inputs(
 
     // 1. get alias, foundry or nft inputs (because amount and native tokens of these outputs will also be available for
     // the outputs)
-    // check the inputs in a loop, because if we add an an output which requres another alias or nft output to unlock
+    // check the inputs in a loop, because if we add an an output which requires another alias or nft output to unlock
     // it, then we might have to add this also
 
     // Set to true so it runs at least once
