@@ -3,10 +3,13 @@
 
 //! input selection for utxo chains
 
+use std::str::FromStr;
+
 use bee_api_types::responses::OutputResponse;
 use bee_block::{
-    address::Address,
-    output::{dto::OutputDto, AliasOutput, FoundryOutput, NftOutput, Output},
+    address::{Address, AliasAddress, NftAddress},
+    output::{dto::OutputDto, AliasOutput, FoundryOutput, NftOutput, Output, OutputId},
+    payload::transaction::TransactionId,
 };
 use crypto::keys::slip10::Chain;
 
@@ -29,7 +32,7 @@ impl<'a> ClientBlockBuilder<'a> {
         for output in outputs {
             match output {
                 Output::Alias(alias_output) => {
-                    // if the state_index is null then there can't be a previous output and it can also not be a
+                    // if the alias id is null then there can't be a previous output and it can also not be a
                     // governance transition
                     if !alias_output.alias_id().is_null() {
                         // Check if the transaction is a governance_transition, by checking if the new index is the same
@@ -42,9 +45,9 @@ impl<'a> ClientBlockBuilder<'a> {
                             // A governance transition is identified by an unchanged State Index in next
                             // state.
                             if alias_output.state_index() == alias_output.state_index() {
-                                utxo_chains.push((*alias_output.governor_address(), output_response.clone()));
+                                utxo_chains.push((*alias_output.governor_address(), output_response));
                             } else {
-                                utxo_chains.push((*alias_output.state_controller_address(), output_response.clone()));
+                                utxo_chains.push((*alias_output.state_controller_address(), output_response));
                             }
                         }
                     }
@@ -66,7 +69,7 @@ impl<'a> ClientBlockBuilder<'a> {
                                 .unlock_conditions()
                                 .locked_address(output_address, current_time);
 
-                            utxo_chains.push((*unlock_address, output_response.clone()));
+                            utxo_chains.push((*unlock_address, output_response));
                         }
                     }
                 }
@@ -76,8 +79,7 @@ impl<'a> ClientBlockBuilder<'a> {
                         let output_response = client.get_output(&output_id).await?;
                         if let OutputDto::Foundry(foundry_output_dto) = &output_response.output {
                             let foundry_output = FoundryOutput::try_from(foundry_output_dto)?;
-                            utxo_chains
-                                .push((Address::Alias(*foundry_output.alias_address()), output_response.clone()));
+                            utxo_chains.push((Address::Alias(*foundry_output.alias_address()), output_response));
                         }
                     }
                 }
@@ -137,18 +139,40 @@ pub(crate) async fn get_alias_and_nft_outputs_recursively(
     log::debug!("[get_alias_and_nft_outputs_recursively]");
     let current_time = client.get_time_checked().await?;
 
-    let mut unprocessed_alias_nft_addresses = std::collections::HashSet::new();
+    let mut processed_alias_nft_addresses = std::collections::HashSet::new();
 
-    for (unlock_address, _output_response) in utxo_chains.iter() {
-        unprocessed_alias_nft_addresses.insert(*unlock_address);
+    // Add addresses for alias and nft outputs we already have
+    for (_unlock_address, output_response) in utxo_chains.iter() {
+        let output_id = OutputId::new(
+            TransactionId::from_str(&output_response.metadata.transaction_id)?,
+            output_response.metadata.output_index,
+        )?;
+
+        match Output::try_from(&output_response.output)? {
+            Output::Alias(alias_output) => {
+                processed_alias_nft_addresses.insert(Address::Alias(AliasAddress::new(
+                    alias_output.alias_id().or_from_output_id(output_id),
+                )));
+            }
+            Output::Nft(nft_output) => {
+                processed_alias_nft_addresses.insert(Address::Nft(NftAddress::new(
+                    nft_output.nft_id().or_from_output_id(output_id),
+                )));
+            }
+            _ => {}
+        }
     }
 
-    while !unprocessed_alias_nft_addresses.is_empty() {
-        for (unlock_address, _output_response) in utxo_chains.clone() {
-            // Skip already processed addresses
-            if !unprocessed_alias_nft_addresses.contains(&unlock_address) {
-                continue;
-            }
+    let mut processed_utxo_chains = Vec::new();
+
+    // Make the outputs response optional, because we don't know it yet for new required outputs
+    let mut utxo_chain_optional_response: Vec<(Address, Option<OutputResponse>)> =
+        utxo_chains.iter_mut().map(|(a, o)| (*a, Some(o.clone()))).collect();
+
+    // Get alias or nft addresses when needed or just add the input again
+    while let Some((unlock_address, output_response)) = utxo_chain_optional_response.pop() {
+        // Don't request outputs for addresses where we already have the output
+        if processed_alias_nft_addresses.insert(unlock_address) {
             match unlock_address {
                 Address::Alias(address) => {
                     let output_id = client.alias_output_id(*address.alias_id()).await?;
@@ -156,13 +180,13 @@ pub(crate) async fn get_alias_and_nft_outputs_recursively(
                     if let OutputDto::Alias(alias_output_dto) = &output_response.output {
                         let alias_output = AliasOutput::try_from(alias_output_dto)?;
                         // State transition if we add them to inputs
-                        let unlock_address = alias_output.state_controller_address();
+                        let alias_unlock_address = alias_output.state_controller_address();
                         // Add address to unprocessed_alias_nft_addresses so we get the required output there
                         // also
-                        if unlock_address.is_alias() || unlock_address.is_nft() {
-                            unprocessed_alias_nft_addresses.insert(*unlock_address);
+                        if alias_unlock_address.is_alias() || alias_unlock_address.is_nft() {
+                            utxo_chain_optional_response.push((*alias_unlock_address, None));
                         }
-                        utxo_chains.push((*unlock_address, output_response.clone()));
+                        processed_utxo_chains.push((*alias_unlock_address, output_response));
                     }
                 }
                 Address::Nft(address) => {
@@ -170,28 +194,27 @@ pub(crate) async fn get_alias_and_nft_outputs_recursively(
                     let output_response = client.get_output(&output_id).await?;
                     if let OutputDto::Nft(nft_output) = &output_response.output {
                         let nft_output = NftOutput::try_from(nft_output)?;
-                        let output_address = nft_output
-                            .unlock_conditions()
-                            .address()
-                            .expect("Nft output needs to have an address unlock condition")
-                            .address();
-
                         let unlock_address = nft_output
                             .unlock_conditions()
-                            .locked_address(output_address, current_time);
+                            .locked_address(nft_output.address(), current_time);
                         // Add address to unprocessed_alias_nft_addresses so we get the required output there also
                         if unlock_address.is_alias() || unlock_address.is_nft() {
-                            unprocessed_alias_nft_addresses.insert(*unlock_address);
+                            utxo_chain_optional_response.push((*unlock_address, None));
                         }
-                        utxo_chains.push((*unlock_address, output_response.clone()));
+                        processed_utxo_chains.push((*unlock_address, output_response));
                     }
                 }
-                _ => {} // do nothing with ed25519 addresses
+                _ => {}
             }
-            // Remove processed addresses
-            unprocessed_alias_nft_addresses.remove(&unlock_address);
+        }
+
+        // Add if the output_response is available
+        if let Some(output_response) = output_response {
+            processed_utxo_chains.push((unlock_address, output_response));
         }
     }
+
+    *utxo_chains = processed_utxo_chains;
 
     Ok(())
 }
