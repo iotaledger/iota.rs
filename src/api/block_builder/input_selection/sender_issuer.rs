@@ -35,10 +35,18 @@ impl<'a> ClientBlockBuilder<'a> {
 
         let mut all_required_addresses = HashSet::new();
         for output in &self.outputs {
-            let mut required_addresses = HashSet::new();
-
             if let Some(sender_feature) = output.features().and_then(Features::sender) {
-                required_addresses.insert(sender_feature.address());
+                // Only add if not already present in the utxo chain inputs
+                if !utxo_chain_inputs.iter().any(|input_data| {
+                    output_contains_address(
+                        &input_data.output,
+                        input_data.output_id().expect("Invalid output id in input signing data"),
+                        sender_feature.address(),
+                        current_time,
+                    )
+                }) {
+                    all_required_addresses.insert(sender_feature.address());
+                }
             }
 
             // Issuer address only needs to be unlocked when the utxo chain is newly created
@@ -49,21 +57,17 @@ impl<'a> ClientBlockBuilder<'a> {
             };
             if utxo_chain_creation {
                 if let Some(issuer_feature) = output.immutable_features().and_then(Features::issuer) {
-                    required_addresses.insert(issuer_feature.address());
-                }
-            }
-
-            for required_address in required_addresses {
-                // Only add if not already present in the utxo chain inputs
-                if !utxo_chain_inputs.iter().any(|input_data| {
-                    output_contains_address(
-                        &input_data.output,
-                        input_data.output_id().expect("Invalid output id in input signing data"),
-                        required_address,
-                        current_time,
-                    )
-                }) {
-                    all_required_addresses.insert(required_address);
+                    // Only add if not already present in the utxo chain inputs
+                    if !utxo_chain_inputs.iter().any(|input_data| {
+                        output_contains_address(
+                            &input_data.output,
+                            input_data.output_id().expect("Invalid output id in input signing data"),
+                            issuer_feature.address(),
+                            current_time,
+                        )
+                    }) {
+                        all_required_addresses.insert(issuer_feature.address());
+                    }
                 }
             }
         }
