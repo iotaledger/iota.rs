@@ -61,7 +61,7 @@ impl<'a> ClientBlockBuilder<'a> {
         let mut cached_error = None;
 
         // First get inputs for utxo chains (alias, foundry, nft outputs)
-        let mut available_inputs = self.get_utxo_chains_inputs(&self.outputs).await?;
+        let mut available_inputs = self.get_utxo_chains_inputs(self.outputs.iter()).await?;
         let (force_use_all_inputs, required_inputs_for_sender_or_issuer) =
             self.get_inputs_for_sender_and_issuer(&available_inputs).await?;
         available_inputs.extend(required_inputs_for_sender_or_issuer.into_iter());

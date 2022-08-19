@@ -22,7 +22,10 @@ use crate::{
 
 impl<'a> ClientBlockBuilder<'a> {
     /// Get inputs for utxo chains
-    pub(crate) async fn get_utxo_chains_inputs(&self, outputs: &[Output]) -> Result<Vec<InputSigningData>> {
+    pub(crate) async fn get_utxo_chains_inputs(
+        &self,
+        outputs: impl Iterator<Item = &'a Output> + Clone,
+    ) -> Result<Vec<InputSigningData>> {
         log::debug!("[get_utxo_chains_inputs]");
         let client = self.client;
         let bech32_hrp = client.get_bech32_hrp().await?;
@@ -87,10 +90,10 @@ impl<'a> ClientBlockBuilder<'a> {
 
         let mut utxo_chain_inputs = Vec::new();
         for (unlock_address, output_response) in utxo_chains {
-            let (address_index, internal) = match self.secret_manager {
+            let address_index_internal = match self.secret_manager {
                 Some(secret_manager) => {
                     match unlock_address {
-                        Address::Ed25519(_) => {
+                        Address::Ed25519(_) => Some(
                             search_address(
                                 secret_manager,
                                 &bech32_hrp,
@@ -99,25 +102,28 @@ impl<'a> ClientBlockBuilder<'a> {
                                 self.input_range.clone(),
                                 &unlock_address,
                             )
-                            .await?
-                        }
+                            .await?,
+                        ),
                         // Alias and NFT addresses can't be generated from a private key
-                        _ => (0, false),
+                        _ => None,
                     }
                 }
-                None => (0, false),
+                // Assuming default
+                None => Some((0, false)),
             };
 
             utxo_chain_inputs.push(InputSigningData {
                 output: Output::try_from(&output_response.output)?,
                 output_metadata: OutputMetadata::try_from(&output_response.metadata)?,
-                chain: Some(Chain::from_u32_hardened(vec![
-                    HD_WALLET_TYPE,
-                    self.coin_type,
-                    self.account_index,
-                    internal as u32,
-                    address_index,
-                ])),
+                chain: address_index_internal.map(|(address_index, internal)| {
+                    Chain::from_u32_hardened(vec![
+                        HD_WALLET_TYPE,
+                        self.coin_type,
+                        self.account_index,
+                        internal as u32,
+                        address_index,
+                    ])
+                }),
                 bech32_address: unlock_address.to_bech32(&bech32_hrp),
             });
         }

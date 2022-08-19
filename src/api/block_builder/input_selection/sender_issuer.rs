@@ -139,10 +139,10 @@ impl<'a> ClientBlockBuilder<'a> {
                             let alias_output = AliasOutput::try_from(alias_output_dto)?;
                             // State transition if we add them to inputs
                             let unlock_address = alias_output.state_controller_address();
-                            let (address_index, internal) = match self.secret_manager {
+                            let address_index_internal = match self.secret_manager {
                                 Some(secret_manager) => {
                                     match unlock_address {
-                                        Address::Ed25519(_) => {
+                                        Address::Ed25519(_) => Some(
                                             search_address(
                                                 secret_manager,
                                                 &bech32_hrp,
@@ -151,25 +151,28 @@ impl<'a> ClientBlockBuilder<'a> {
                                                 self.input_range.clone(),
                                                 unlock_address,
                                             )
-                                            .await?
-                                        }
+                                            .await?,
+                                        ),
                                         // Alias and NFT addresses can't be generated from a private key
-                                        _ => (0, false),
+                                        _ => None,
                                     }
                                 }
-                                None => (0, false),
+                                // Assuming default
+                                None => Some((0, false)),
                             };
 
                             required_inputs.push(InputSigningData {
                                 output: Output::try_from(&output_response.output)?,
                                 output_metadata: OutputMetadata::try_from(&output_response.metadata)?,
-                                chain: Some(Chain::from_u32_hardened(vec![
-                                    HD_WALLET_TYPE,
-                                    self.coin_type,
-                                    self.account_index,
-                                    internal as u32,
-                                    address_index,
-                                ])),
+                                chain: address_index_internal.map(|(address_index, internal)| {
+                                    Chain::from_u32_hardened(vec![
+                                        HD_WALLET_TYPE,
+                                        self.coin_type,
+                                        self.account_index,
+                                        internal as u32,
+                                        address_index,
+                                    ])
+                                }),
                                 bech32_address: unlock_address.to_bech32(&bech32_hrp),
                             });
                         }
@@ -203,10 +206,10 @@ impl<'a> ClientBlockBuilder<'a> {
                                 .unlock_conditions()
                                 .locked_address(nft_output.address(), current_time);
 
-                            let (address_index, internal) = match self.secret_manager {
+                            let address_index_internal = match self.secret_manager {
                                 Some(secret_manager) => {
                                     match unlock_address {
-                                        Address::Ed25519(_) => {
+                                        Address::Ed25519(_) => Some(
                                             search_address(
                                                 secret_manager,
                                                 &bech32_hrp,
@@ -215,25 +218,28 @@ impl<'a> ClientBlockBuilder<'a> {
                                                 self.input_range.clone(),
                                                 unlock_address,
                                             )
-                                            .await?
-                                        }
+                                            .await?,
+                                        ),
                                         // Alias and NFT addresses can't be generated from a private key
-                                        _ => (0, false),
+                                        _ => None,
                                     }
                                 }
-                                None => (0, false),
+                                // Assuming default
+                                None => Some((0, false)),
                             };
 
                             required_inputs.push(InputSigningData {
                                 output: Output::try_from(&output_response.output)?,
                                 output_metadata: OutputMetadata::try_from(&output_response.metadata)?,
-                                chain: Some(Chain::from_u32_hardened(vec![
-                                    HD_WALLET_TYPE,
-                                    self.coin_type,
-                                    self.account_index,
-                                    internal as u32,
-                                    address_index,
-                                ])),
+                                chain: address_index_internal.map(|(address_index, internal)| {
+                                    Chain::from_u32_hardened(vec![
+                                        HD_WALLET_TYPE,
+                                        self.coin_type,
+                                        self.account_index,
+                                        internal as u32,
+                                        address_index,
+                                    ])
+                                }),
                                 bech32_address: unlock_address.to_bech32(&bech32_hrp),
                             });
                         }
@@ -246,12 +252,7 @@ impl<'a> ClientBlockBuilder<'a> {
         // no need to check for sender and issuer again, since these outputs already exist and we don't set new features
         // for them
         let utxo_chain_inputs = self
-            .get_utxo_chains_inputs(
-                &required_inputs
-                    .iter()
-                    .map(|i| i.output.clone())
-                    .collect::<Vec<Output>>(),
-            )
+            .get_utxo_chains_inputs(required_inputs.iter().map(|i| &i.output))
             .await?;
         required_inputs.extend(utxo_chain_inputs.into_iter());
 

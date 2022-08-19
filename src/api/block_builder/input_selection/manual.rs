@@ -51,10 +51,10 @@ impl<'a> ClientBlockBuilder<'a> {
                     )?;
 
                     let bech32_hrp = self.client.get_bech32_hrp().await?;
-                    let (address_index, internal) = match self.secret_manager {
+                    let address_index_internal = match self.secret_manager {
                         Some(secret_manager) => {
                             match output_address {
-                                Address::Ed25519(_) => {
+                                Address::Ed25519(_) => Some(
                                     search_address(
                                         secret_manager,
                                         &bech32_hrp,
@@ -63,24 +63,28 @@ impl<'a> ClientBlockBuilder<'a> {
                                         self.input_range.clone(),
                                         &output_address,
                                     )
-                                    .await?
-                                }
+                                    .await?,
+                                ),
                                 // Alias and NFT addresses can't be generated from a private key
-                                _ => (0, false),
+                                _ => None,
                             }
                         }
-                        None => (0, false),
+                        // Assuming default
+                        None => Some((0, false)),
                     };
+
                     inputs_data.push(InputSigningData {
                         output,
                         output_metadata: OutputMetadata::try_from(&output_response.metadata)?,
-                        chain: Some(Chain::from_u32_hardened(vec![
-                            HD_WALLET_TYPE,
-                            self.coin_type,
-                            self.account_index,
-                            internal as u32,
-                            address_index,
-                        ])),
+                        chain: address_index_internal.map(|(address_index, internal)| {
+                            Chain::from_u32_hardened(vec![
+                                HD_WALLET_TYPE,
+                                self.coin_type,
+                                self.account_index,
+                                internal as u32,
+                                address_index,
+                            ])
+                        }),
                         bech32_address: output_address.to_bech32(&bech32_hrp),
                     });
                 }
