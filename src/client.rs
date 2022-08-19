@@ -5,10 +5,9 @@
 
 use std::{
     collections::HashSet,
-    ops::Range,
     str::FromStr,
     sync::{Arc, RwLock},
-    time::{Duration, SystemTime, UNIX_EPOCH},
+    time::Duration,
 };
 
 use bee_api_types::{
@@ -19,28 +18,15 @@ use bee_block::{
     address::Address,
     input::{Input, UtxoInput, INPUT_COUNT_MAX},
     output::{Output, OutputId, RentStructure, RentStructureBuilder},
-    parent::Parents,
     payload::{
         transaction::{TransactionEssence, TransactionId},
         Payload, TaggedDataPayload,
     },
-    Block, BlockBuilder, BlockId,
+    Block, BlockId,
 };
-use bee_pow::providers::NonceProviderBuilder;
+use bee_pow::providers::{NonceProvider, NonceProviderBuilder};
 use crypto::keys::slip10::Seed;
-#[cfg(target_family = "wasm")]
-use gloo_timers::future::TimeoutFuture;
 use url::Url;
-#[cfg(not(target_family = "wasm"))]
-use {
-    crate::api::finish_pow,
-    std::collections::HashMap,
-    tokio::{
-        runtime::Runtime,
-        sync::broadcast::{Receiver, Sender},
-        time::sleep,
-    },
-};
 #[cfg(feature = "mqtt")]
 use {
     crate::node_api::mqtt::TopicEvent,
@@ -49,12 +35,18 @@ use {
     rumqttc::AsyncClient as MqttClient,
     tokio::sync::watch::{Receiver as WatchReceiver, Sender as WatchSender},
 };
+#[cfg(not(target_family = "wasm"))]
+use {
+    std::collections::HashMap,
+    tokio::{
+        runtime::Runtime,
+        sync::broadcast::{Receiver, Sender},
+        time::sleep,
+    },
+};
 
 use crate::{
-    api::{
-        miner::{ClientMiner, ClientMinerBuilder},
-        ClientBlockBuilder, GetAddressesBuilder,
-    },
+    api::{do_pow, ClientBlockBuilder, GetAddressesBuilder},
     builder::{ClientBuilder, NetworkInfo},
     constants::{
         DEFAULT_API_TIMEOUT, DEFAULT_RETRY_UNTIL_INCLUDED_INTERVAL, DEFAULT_RETRY_UNTIL_INCLUDED_MAX_AMOUNT,
@@ -231,12 +223,11 @@ impl Client {
             for (info, node_url) in nodes.iter() {
                 if let Ok(mut client_network_info) = network_info.write() {
                     client_network_info.network_id = hash_network(&info.protocol.network_name).ok();
-                    // todo update protocol version
                     client_network_info.min_pow_score = Some(info.protocol.min_pow_score);
                     client_network_info.bech32_hrp = Some(info.protocol.bech32_hrp.clone());
                     client_network_info.rent_structure = Some(info.protocol.rent_structure.clone());
                     if !client_network_info.local_pow {
-                        if info.features.contains(&"Pow".to_string()) {
+                        if info.features.contains(&"PoW".to_string()) {
                             synced_nodes.insert(node_url.clone());
                         }
                     } else {
@@ -262,10 +253,21 @@ impl Client {
     }
 
     /// Gets the miner to use based on the Pow setting
-    pub async fn get_pow_provider(&self) -> ClientMiner {
-        ClientMinerBuilder::new()
-            .with_local_pow(self.get_local_pow().await)
-            .finish()
+    pub async fn get_pow_provider(&self) -> impl NonceProvider {
+        let local_pow: bool = self.get_local_pow().await;
+        #[cfg(target_family = "wasm")]
+        let miner = crate::api::wasm_miner::SingleThreadedMiner::builder()
+            .local_pow(local_pow)
+            .finish();
+        #[cfg(not(target_family = "wasm"))]
+        let miner = {
+            let mut miner = crate::api::miner::ClientMiner::builder().with_local_pow(local_pow);
+            if let Some(worker_count) = self.pow_worker_count {
+                miner = miner.with_worker_count(worker_count)
+            }
+            miner.finish()
+        };
+        miner
     }
 
     /// Gets the network related information such as network_id and min_pow_score
@@ -413,7 +415,6 @@ impl Client {
     // Node core API
     //////////////////////////////////////////////////////////////////////
 
-    // todo: only used during syncing, can it be replaced with the other node info function?
     /// GET /api/core/v2/info endpoint
     pub async fn get_node_info(url: &str, auth: Option<NodeAuth>) -> Result<NodeInfo> {
         let mut url = crate::node_manager::builder::validate_url(Url::parse(url)?)?;
@@ -540,7 +541,7 @@ impl Client {
         for _ in 0..max_attempts.unwrap_or(DEFAULT_RETRY_UNTIL_INCLUDED_MAX_AMOUNT) {
             #[cfg(target_family = "wasm")]
             {
-                TimeoutFuture::new(
+                gloo_timers::future::TimeoutFuture::new(
                     (interval.unwrap_or(DEFAULT_RETRY_UNTIL_INCLUDED_INTERVAL) * 1000)
                         .try_into()
                         .unwrap(),
@@ -605,17 +606,6 @@ impl Client {
         Err(Error::TangleInclusionError(block_id.to_string()))
     }
 
-    /// Function to consolidate all funds from a range of addresses to the address with the lowest index in that range
-    /// Returns the address to which the funds got consolidated, if any were available
-    pub async fn consolidate_funds(
-        &self,
-        secret_manager: &SecretManager,
-        account_index: u32,
-        address_range: Range<u32>,
-    ) -> crate::Result<String> {
-        crate::api::consolidate_funds(self, secret_manager, account_index, address_range).await
-    }
-
     /// Function to find inputs from addresses for a provided amount (useful for offline signing), ignoring outputs with
     /// additional unlock conditions
     pub async fn find_inputs(&self, addresses: Vec<String>, amount: u64) -> Result<Vec<UtxoInput>> {
@@ -623,17 +613,16 @@ impl Client {
         let mut available_outputs = Vec::new();
 
         for address in addresses {
-            available_outputs.extend_from_slice(
-                &self
-                    .get_address()
-                    .outputs(vec![
-                        QueryParameter::Address(address.to_string()),
-                        QueryParameter::HasExpiration(false),
-                        QueryParameter::HasTimelock(false),
-                        QueryParameter::HasStorageDepositReturn(false),
-                    ])
-                    .await?,
-            );
+            let basic_output_ids = self
+                .basic_output_ids(vec![
+                    QueryParameter::Address(address.to_string()),
+                    QueryParameter::HasExpiration(false),
+                    QueryParameter::HasTimelock(false),
+                    QueryParameter::HasStorageDepositReturn(false),
+                ])
+                .await?;
+
+            available_outputs.extend(self.get_outputs(basic_output_ids).await?);
         }
 
         let mut basic_outputs = Vec::new();
@@ -684,25 +673,25 @@ impl Client {
     /// Find all outputs based on the requests criteria. This method will try to query multiple nodes if
     /// the request amount exceeds individual node limit.
     pub async fn find_outputs(&self, output_ids: &[OutputId], addresses: &[String]) -> Result<Vec<OutputResponse>> {
-        let mut output_metadata = self.get_outputs(output_ids.to_vec()).await?;
+        let mut output_responses = self.get_outputs(output_ids.to_vec()).await?;
 
         // Use `get_address()` API to get the address outputs first,
         // then collect the `UtxoInput` in the HashSet.
         for address in addresses {
             // Get output ids of outputs that can be controlled by this address without further unlock constraints
-            let address_outputs = self
-                .get_address()
-                .outputs(vec![
+            let basic_output_ids = self
+                .basic_output_ids(vec![
                     QueryParameter::Address(address.to_string()),
                     QueryParameter::HasExpiration(false),
                     QueryParameter::HasTimelock(false),
                     QueryParameter::HasStorageDepositReturn(false),
                 ])
                 .await?;
-            output_metadata.extend(address_outputs.into_iter());
+
+            output_responses.extend(self.get_outputs(basic_output_ids).await?);
         }
 
-        Ok(output_metadata.clone())
+        Ok(output_responses.clone())
     }
 
     /// Reattaches blocks for provided block id. Blocks can be reattached only if they are valid and haven't been
@@ -723,16 +712,11 @@ impl Client {
         let reattach_block = {
             #[cfg(target_family = "wasm")]
             {
-                let tips = self.get_tips().await?;
-                let mut block_builder = BlockBuilder::<ClientMiner>::new(Parents::new(tips)?);
-                if let Some(p) = block.payload().to_owned() {
-                    block_builder = block_builder.with_payload(p.clone())
-                }
-                block_builder.finish().map_err(Error::BlockError)?
+                crate::api::finish_single_threaded_pow(self, block.payload().cloned()).await?
             }
             #[cfg(not(target_family = "wasm"))]
             {
-                finish_pow(self, block.payload().cloned()).await?
+                crate::api::finish_multi_threaded_pow(self, block.payload().cloned()).await?
             }
         };
 
@@ -760,18 +744,16 @@ impl Client {
 
     /// Promote a block without checking if it should be promoted
     pub async fn promote_unchecked(&self, block_id: &BlockId) -> Result<(BlockId, Block)> {
-        // Create a new block (zero value block) for which one tip would be the actual block
+        // Create a new block (zero value block) for which one tip would be the actual block.
         let mut tips = self.get_tips().await?;
         let min_pow_score = self.get_min_pow_score().await?;
         tips.push(*block_id);
 
-        let promote_block = BlockBuilder::<ClientMiner>::new(Parents::new(tips)?)
-            .with_nonce_provider(self.get_pow_provider().await, min_pow_score)
-            .finish()
-            .map_err(|_| Error::TransactionError)?;
+        let miner = self.get_pow_provider().await;
+        let promote_block = do_pow(miner, min_pow_score, None, tips).map_err(|_| Error::TransactionError)?;
 
         let block_id = self.post_block_raw(&promote_block).await?;
-        // Get block if we use remote Pow, because the node will change parents and nonce
+        // Get block if we use remote Pow, because the node will change parents and nonce.
         let block = if self.get_local_pow().await {
             promote_block
         } else {
@@ -783,10 +765,15 @@ impl Client {
     /// Returns the local time checked with the timestamp of the latest milestone, if the difference is larger than 5
     /// minutes an error is returned to prevent locking outputs by accident for a wrong time.
     pub async fn get_time_checked(&self) -> Result<u32> {
-        let local_time = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .expect("Time went backwards")
-            .as_secs() as u32;
+        let local_time = {
+            #[cfg(all(target_arch = "wasm32", not(target_os = "wasi")))]
+            let now = instant::SystemTime::now().duration_since(instant::SystemTime::UNIX_EPOCH);
+            #[cfg(not(all(target_arch = "wasm32", not(target_os = "wasi"))))]
+            let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH);
+
+            now.expect("Time went backwards").as_secs() as u32
+        };
+
         let status_response = self.get_info().await?.node_info.status;
         let latest_ms_timestamp = status_response.latest_milestone.timestamp;
         // Check the local time is in the range of +-5 minutes of the node to prevent locking funds by accident

@@ -3,9 +3,6 @@
 
 //! cargo run --example custom_payload --release
 
-use std::env;
-
-use dotenv::dotenv;
 use iota_client::{
     block::payload::{Payload, TaggedDataPayload},
     Client, Result,
@@ -13,9 +10,9 @@ use iota_client::{
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    dotenv().ok();
+    dotenv::dotenv().ok();
 
-    let node_url = env::var("NODE_URL").unwrap();
+    let node_url = std::env::var("NODE_URL").unwrap();
 
     // Create a client instance
     let client = Client::builder()

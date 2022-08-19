@@ -3,9 +3,6 @@
 
 //! cargo run --example search_address --release
 
-use std::env;
-
-use dotenv::dotenv;
 use iota_client::{
     api::search_address,
     constants::IOTA_COIN_TYPE,
@@ -18,16 +15,16 @@ use iota_client::{
 #[tokio::main]
 async fn main() -> Result<()> {
     // This example uses dotenv, which is not safe for use in production
-    dotenv().ok();
+    dotenv::dotenv().ok();
 
-    let node_url = env::var("NODE_URL").unwrap();
+    let node_url = std::env::var("NODE_URL").unwrap();
 
     // Create a client instance
     let client = Client::builder()
         .with_node(&node_url)? // Insert your node URL here
         .finish()?;
 
-    let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(&env::var(
+    let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(&std::env::var(
         "NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1",
     )?)?);
 

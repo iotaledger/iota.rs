@@ -13,7 +13,7 @@ categories = [ "cryptography::cryptocurrencies" ]
 
 [dependencies]
 async-trait = { version = "0.1.57", default-features = false }
-bee-api-types = { version = "1.0.0-beta.4", default-features = false }
+bee-api-types = { version = "1.0.0-beta.5", default-features = false }
 bee-block = { version = "1.0.0-beta.6", default-features = false, features = [ "serde", "dto", "std" ] }
 bee-pow = { version = "1.0.0-alpha.1", default-features = false }
 derive_builder = { version = "0.11.2", default-features = false, features = [ "std" ]}
@@ -51,7 +51,7 @@ tokio = { version = "1.20.1", default-features = false, features = [ "macros", "
 [target.'cfg(target_family = "wasm")'.dependencies]
 instant = { version = "0.1.12", default-features = false }
 gloo-timers = { version = "0.2.4", default-features = false, features = [ "futures" ] }
-# single thread pow for wasm
+# Single-threaded PoW for Wasm.
 bee-ternary = { version = "1.0.0-alpha.1", default-features = false }
 
 [dev-dependencies]
@@ -228,6 +228,38 @@ required-features = [ "ledger_nano" ]
 [[example]]
 name = "stronghold"
 required-features = [ "stronghold" ]
+
+[[example]]
+name = "block_time"
+path = "examples/block/block_time.rs"
+
+[[example]]
+name = "custom_inputs"
+path = "examples/block/custom_inputs.rs"
+
+[[example]]
+name = "custom_parent"
+path = "examples/block/custom_parent.rs"
+
+[[example]]
+name = "custom_payload"
+path = "examples/block/custom_payload.rs"
+
+[[example]]
+name = "data_block"
+path = "examples/block/data_block.rs"
+
+[[example]]
+name = "output"
+path = "examples/block/output.rs"
+
+[[example]]
+name = "simple_block"
+path = "examples/block/simple_block.rs"
+
+[[example]]
+name = "transaction"
+path = "examples/block/transaction.rs"
 
 [[example]]
 name = "0_address_generation"

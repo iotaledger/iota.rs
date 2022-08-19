@@ -348,7 +348,7 @@ Returns the unsynced nodes.
 
 <a id="iota_client.client.IotaClient.get_ledger_nano_status"></a>
 
-#### get\_ledger\_status
+#### get\_ledger\_nano\_status
 
 ```python
 def get_ledger_nano_status(is_simulator)
@@ -467,7 +467,7 @@ position and additional reattached blocks.
 #### consolidate\_funds
 
 ```python
-def consolidate_funds(secret_manager, account_index, address_range)
+def consolidate_funds(secret_manager, generate_addresses_options)
 ```
 
 Function to consolidate all funds from a range of addresses to the address with the lowest index in that range

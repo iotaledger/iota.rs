@@ -12,9 +12,13 @@ use iota_client::{
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    dotenv::dotenv().ok();
+
+    let node_url = std::env::var("NODE_URL").unwrap();
+
     // Create a client instance
     let client = Client::builder()
-        .with_node("http://localhost:14265")? // Insert your node URL here
+        .with_node(&node_url)? // Insert your node URL here
         .with_node_sync_disabled()
         .finish()?;
 

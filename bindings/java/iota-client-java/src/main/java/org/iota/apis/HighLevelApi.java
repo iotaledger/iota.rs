@@ -95,11 +95,10 @@ public class HighLevelApi extends BaseApi {
         return blocks;
     }
 
-    public String consolidateFunds(SecretManager secretManager, int accountIndex, Range addressRange) throws ClientException {
+    public String consolidateFunds(SecretManager secretManager, GenerateAddressesOptions generateAddressesOptions) throws ClientException {
         JsonObject o = new JsonObject();
         o.add("secretManager", secretManager.getJson());
-        o.addProperty("accountIndex", accountIndex);
-        o.add("addressRange", addressRange.getAsJson());
+        o.add("generateAddressesOptions", generateAddressesOptions.getAsJson());
 
         String responsePayload = callBaseApi(new ClientCommand("ConsolidateFunds", o)).getAsString();
 

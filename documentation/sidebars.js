@@ -56,11 +56,11 @@ module.exports = {
               id: 'libraries/rust/how_to/get_block',
               label: 'Get A Block',
             },
-            // {
-            //   type: 'doc',
-            //   id: 'libraries/rust/how_to/create_block',
-            //   label: 'Create A Block',
-            // },
+            {
+              type: 'doc',
+              id: 'libraries/rust/how_to/create_block',
+              label: 'Create A Block',
+            },
             {
               type: 'doc',
               id: 'libraries/rust/how_to/post_block',

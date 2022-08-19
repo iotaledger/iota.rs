@@ -3,30 +3,22 @@
 
 //! cargo run --example block_time --release
 
-use std::env;
-
-use dotenv::dotenv;
 use iota_client::{Client, Result};
 
 /// In this example we will send a block and return the time at which it got referenced by a milestone
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    dotenv().ok();
+    dotenv::dotenv().ok();
 
-    let node_url = env::var("NODE_URL").unwrap();
+    let node_url = std::env::var("NODE_URL").unwrap();
 
     // Create a client instance
     let client = Client::builder()
         .with_node(&node_url)? // Insert your node URL here
         .finish()?;
 
-    let block = client
-        .block()
-        .with_tag("Hello")
-        .with_data("Tangle".as_bytes().to_vec())
-        .finish()
-        .await?;
+    let block = client.block().finish().await?;
 
     let block_id = block.id();
     println!("Block ID: {}", block_id);

@@ -178,8 +178,8 @@ public class Client {
         return highLevelApi.retryUntilIncluded(blockId, interval, maxAttempts);
     }
 
-    public String consolidateFunds(SecretManager secretManager, int accountIndex, Range addressRange) throws ClientException {
-        return highLevelApi.consolidateFunds(secretManager, accountIndex, addressRange);
+    public String consolidateFunds(SecretManager secretManager, GenerateAddressesOptions generateAddressesOptions) throws ClientException {
+        return highLevelApi.consolidateFunds(secretManager, generateAddressesOptions);
     }
 
     public UtxoInput[] findInputs(String[] addresses, int amount) throws ClientException {

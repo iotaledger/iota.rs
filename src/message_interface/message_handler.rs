@@ -26,12 +26,12 @@ use zeroize::Zeroize;
 
 #[cfg(feature = "ledger_nano")]
 use crate::secret::ledger_nano::LedgerSecretManager;
+#[cfg(feature = "stronghold")]
+use crate::secret::SecretManager;
 use crate::{
     api::{PreparedTransactionData, PreparedTransactionDataDto},
     message_interface::{message::Message, response::Response},
-    request_funds_from_faucet,
-    secret::SecretManager,
-    Client, Result,
+    request_funds_from_faucet, Client, Result,
 };
 
 fn panic_to_response_message(panic: Box<dyn Any>) -> Response {
@@ -117,11 +117,10 @@ impl ClientMessageHandler {
             }
             Message::ConsolidateFunds {
                 secret_manager: _,
-                account_index,
-                address_range,
+                generate_addresses_options,
             } => {
                 log::debug!(
-                    "Response: ConsolidateFunds{{ secret_manager: <omitted>, account_index: {account_index:?}, address_range: {address_range:?} }}"
+                    "Response: ConsolidateFunds{{ secret_manager: <omitted>, generate_addresses_options: {generate_addresses_options:?} }}"
                 )
             }
             Message::MnemonicToHexSeed { .. } => {
@@ -256,12 +255,7 @@ impl ClientMessageHandler {
                 secret_manager,
                 options,
             } => {
-                let mut secret_manager = (&secret_manager).try_into()?;
-                // If we use stronghold we need to read the snapshot in case it hasn't been done already
-                #[cfg(feature = "stronghold")]
-                if let SecretManager::Stronghold(stronghold_secret_manager) = &mut secret_manager {
-                    stronghold_secret_manager.read_stronghold_snapshot().await?;
-                }
+                let secret_manager = (&secret_manager).try_into()?;
                 let addresses = self
                     .client
                     .get_addresses(&secret_manager)
@@ -277,16 +271,8 @@ impl ClientMessageHandler {
                 // Prepare transaction
                 let mut block_builder = self.client.block();
 
-                let secret_manager: Option<SecretManager> = match secret_manager {
-                    Some(secret_manager) => {
-                        let mut secret_manager = (&secret_manager).try_into()?;
-                        // If we use stronghold we need to read the snapshot in case it hasn't been done already
-                        #[cfg(feature = "stronghold")]
-                        if let SecretManager::Stronghold(stronghold_secret_manager) = &mut secret_manager {
-                            stronghold_secret_manager.read_stronghold_snapshot().await?;
-                        }
-                        Some(secret_manager)
-                    }
+                let secret_manager = match secret_manager {
+                    Some(secret_manager) => Some((&secret_manager).try_into()?),
                     None => None,
                 };
 
@@ -326,15 +312,7 @@ impl ClientMessageHandler {
                 let mut block_builder = self.client.block();
 
                 let secret_manager = match secret_manager {
-                    Some(secret_manager) => {
-                        let mut secret_manager = (&secret_manager).try_into()?;
-                        // If we use stronghold we need to read the snapshot in case it hasn't been done already
-                        #[cfg(feature = "stronghold")]
-                        if let SecretManager::Stronghold(stronghold_secret_manager) = &mut secret_manager {
-                            stronghold_secret_manager.read_stronghold_snapshot().await?;
-                        }
-                        Some(secret_manager)
-                    }
+                    Some(secret_manager) => Some((&secret_manager).try_into()?),
                     None => None,
                 };
 
@@ -356,12 +334,7 @@ impl ClientMessageHandler {
             } => {
                 let mut block_builder = self.client.block();
 
-                let mut secret_manager = (&secret_manager).try_into()?;
-                // If we use stronghold we need to read the snapshot in case it hasn't been done already
-                #[cfg(feature = "stronghold")]
-                if let SecretManager::Stronghold(stronghold_secret_manager) = &mut secret_manager {
-                    stronghold_secret_manager.read_stronghold_snapshot().await?;
-                }
+                let secret_manager = (&secret_manager).try_into()?;
 
                 block_builder = block_builder.with_secret_manager(&secret_manager);
 
@@ -500,18 +473,12 @@ impl ClientMessageHandler {
             }
             Message::ConsolidateFunds {
                 secret_manager,
-                account_index,
-                address_range,
+                generate_addresses_options,
             } => {
-                let mut secret_manager = (&secret_manager).try_into()?;
-                // If we use stronghold we need to read the snapshot in case it hasn't been done already
-                #[cfg(feature = "stronghold")]
-                if let SecretManager::Stronghold(stronghold_secret_manager) = &mut secret_manager {
-                    stronghold_secret_manager.read_stronghold_snapshot().await?;
-                }
+                let secret_manager = (&secret_manager).try_into()?;
                 Ok(Response::ConsolidatedFunds(
                     self.client
-                        .consolidate_funds(&secret_manager, account_index, address_range)
+                        .consolidate_funds(&secret_manager, generate_addresses_options)
                         .await?,
                 ))
             }

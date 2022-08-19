@@ -2,9 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example custom_inputs --release
-use std::env;
 
-use dotenv::dotenv;
 use iota_client::{
     block::input::UtxoInput,
     node_api::indexer::query_parameters::QueryParameter,
@@ -19,10 +17,10 @@ use iota_client::{
 #[tokio::main]
 async fn main() -> Result<()> {
     // This example uses dotenv, which is not safe for use in production
-    dotenv().ok();
+    dotenv::dotenv().ok();
 
-    let node_url = env::var("NODE_URL").unwrap();
-    let faucet_url = env::var("FAUCET_URL").unwrap();
+    let node_url = std::env::var("NODE_URL").unwrap();
+    let faucet_url = std::env::var("FAUCET_URL").unwrap();
 
     // Create a client instance
     let client = Client::builder()
@@ -32,7 +30,7 @@ async fn main() -> Result<()> {
 
     // First address from the seed below is atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r
     let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_hex_seed(
-        &env::var("NON_SECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap(),
+        &std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap(),
     )?);
 
     let addresses = client.get_addresses(&secret_manager).with_range(0..1).finish().await?;
@@ -59,7 +57,8 @@ async fn main() -> Result<()> {
         .await?;
 
     println!(
-        "Transaction sent: https://explorer.iota.org/devnet/block/{}",
+        "Transaction sent: {}/block/{}",
+        std::env::var("EXPLORER_URL").unwrap(),
         block.id()
     );
     Ok(())

@@ -130,20 +130,9 @@ impl Client {
                             client_network_info.local_pow = true;
                         }
                         #[cfg(not(target_family = "wasm"))]
-                        let block_res = crate::api::finish_pow(self, block.payload().cloned()).await;
+                        let block_res = crate::api::finish_multi_threaded_pow(self, block.payload().cloned()).await;
                         #[cfg(target_family = "wasm")]
-                        let block_res = {
-                            let min_pow_score = self.get_min_pow_score().await?;
-                            let network_id = self.get_network_id().await?;
-                            crate::api::finish_single_thread_pow(
-                                self,
-                                network_id,
-                                None,
-                                block.payload().cloned(),
-                                min_pow_score,
-                            )
-                            .await
-                        };
+                        let block_res = crate::api::finish_single_threaded_pow(self, block.payload().cloned()).await;
                         let block_with_local_pow = match block_res {
                             Ok(block) => {
                                 // reset local PoW state
@@ -213,20 +202,9 @@ impl Client {
                             client_network_info.local_pow = true;
                         }
                         #[cfg(not(target_family = "wasm"))]
-                        let block_res = crate::api::finish_pow(self, block.payload().cloned()).await;
+                        let block_res = crate::api::finish_multi_threaded_pow(self, block.payload().cloned()).await;
                         #[cfg(target_family = "wasm")]
-                        let block_res = {
-                            let min_pow_score = self.get_min_pow_score().await?;
-                            let network_id = self.get_network_id().await?;
-                            crate::api::finish_single_thread_pow(
-                                self,
-                                network_id,
-                                None,
-                                block.payload().cloned(),
-                                min_pow_score,
-                            )
-                            .await
-                        };
+                        let block_res = crate::api::finish_single_threaded_pow(self, block.payload().cloned()).await;
                         let block_with_local_pow = match block_res {
                             Ok(block) => {
                                 // reset local PoW state

@@ -3,9 +3,6 @@
 
 //! cargo run --example quorum --release
 
-use std::env;
-
-use dotenv::dotenv;
 use iota_client::{
     node_api::indexer::query_parameters::QueryParameter,
     secret::{mnemonic::MnemonicSecretManager, SecretManager},
@@ -18,9 +15,9 @@ use iota_client::{
 #[tokio::main]
 async fn main() -> Result<()> {
     // This example uses dotenv, which is not safe for use in production
-    dotenv().ok();
+    dotenv::dotenv().ok();
 
-    let node_url = env::var("NODE_URL").unwrap();
+    let node_url = std::env::var("NODE_URL").unwrap();
 
     let client = Client::builder()
         .with_node("https://api.testnet.shimmer.network")?
@@ -32,7 +29,7 @@ async fn main() -> Result<()> {
         .finish()?;
 
     let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
-        &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
+        &std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
     )?);
 
     // Generate the first address

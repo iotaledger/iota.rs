@@ -3,9 +3,6 @@
 
 //! cargo run --example send_all --release
 
-use std::env;
-
-use dotenv::dotenv;
 use iota_client::{
     block::output::{
         unlock_condition::AddressUnlockCondition, BasicOutputBuilder, NativeTokensBuilder, Output, UnlockCondition,
@@ -23,9 +20,9 @@ async fn main() -> Result<()> {
     // This example uses dotenv, which is not safe for use in production
     // Configure your own mnemonic in ".env". Since the output amount cannot be zero, the mnemonic must contain non-zero
     // balance
-    dotenv().ok();
+    dotenv::dotenv().ok();
 
-    let node_url = env::var("NODE_URL").unwrap();
+    let node_url = std::env::var("NODE_URL").unwrap();
 
     // Create a client instance
     let client = Client::builder()
@@ -34,10 +31,10 @@ async fn main() -> Result<()> {
         .finish()?;
 
     let secret_manager_1 = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
-        &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
+        &std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
     )?);
     let secret_manager_2 = SecretManager::Mnemonic(MnemonicSecretManager::try_from_hex_seed(
-        &env::var("NON_SECURE_USE_OF_DEVELOPMENT_SEED_2").unwrap(),
+        &std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_SEED_2").unwrap(),
     )?);
 
     // Get output ids of outputs that can be controlled by this address without further unlock constraints
@@ -100,7 +97,8 @@ async fn main() -> Result<()> {
         .await?;
 
     println!(
-        "Transaction sent: https://explorer.iota.org/devnet/block/{}",
+        "Transaction sent: {}/block/{}",
+        std::env::var("EXPLORER_URL").unwrap(),
         block.id()
     );
 
