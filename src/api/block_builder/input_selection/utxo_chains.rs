@@ -156,17 +156,13 @@ pub(crate) async fn get_alias_and_nft_outputs_recursively(
                     if let OutputDto::Alias(alias_output_dto) = &output_response.output {
                         let alias_output = AliasOutput::try_from(alias_output_dto)?;
                         // State transition if we add them to inputs
-                        if let Some(state_controller_unlock_condition) =
-                            alias_output.unlock_conditions().state_controller_address()
-                        {
-                            let unlock_address = state_controller_unlock_condition.address();
-                            // Add address to unprocessed_alias_nft_addresses so we get the required output there
-                            // also
-                            if unlock_address.is_alias() || unlock_address.is_nft() {
-                                unprocessed_alias_nft_addresses.insert(*unlock_address);
-                            }
-                            utxo_chains.push((*unlock_address, output_response.clone()));
+                        let unlock_address = alias_output.state_controller_address();
+                        // Add address to unprocessed_alias_nft_addresses so we get the required output there
+                        // also
+                        if unlock_address.is_alias() || unlock_address.is_nft() {
+                            unprocessed_alias_nft_addresses.insert(*unlock_address);
                         }
+                        utxo_chains.push((*unlock_address, output_response.clone()));
                     }
                 }
                 Address::Nft(address) => {

@@ -138,44 +138,40 @@ impl<'a> ClientBlockBuilder<'a> {
                         if let OutputDto::Alias(alias_output_dto) = &output_response.output {
                             let alias_output = AliasOutput::try_from(alias_output_dto)?;
                             // State transition if we add them to inputs
-                            if let Some(state_controller_unlock_condition) =
-                                alias_output.unlock_conditions().state_controller_address()
-                            {
-                                let unlock_address = state_controller_unlock_condition.address();
-                                let (address_index, internal) = match self.secret_manager {
-                                    Some(secret_manager) => {
-                                        match unlock_address {
-                                            Address::Ed25519(_) => {
-                                                search_address(
-                                                    secret_manager,
-                                                    &bech32_hrp,
-                                                    self.coin_type,
-                                                    self.account_index,
-                                                    self.input_range.clone(),
-                                                    unlock_address,
-                                                )
-                                                .await?
-                                            }
-                                            // Alias and NFT addresses can't be generated from a private key
-                                            _ => (0, false),
+                            let unlock_address = alias_output.state_controller_address();
+                            let (address_index, internal) = match self.secret_manager {
+                                Some(secret_manager) => {
+                                    match unlock_address {
+                                        Address::Ed25519(_) => {
+                                            search_address(
+                                                secret_manager,
+                                                &bech32_hrp,
+                                                self.coin_type,
+                                                self.account_index,
+                                                self.input_range.clone(),
+                                                unlock_address,
+                                            )
+                                            .await?
                                         }
+                                        // Alias and NFT addresses can't be generated from a private key
+                                        _ => (0, false),
                                     }
-                                    None => (0, false),
-                                };
+                                }
+                                None => (0, false),
+                            };
 
-                                required_inputs.push(InputSigningData {
-                                    output: Output::try_from(&output_response.output)?,
-                                    output_metadata: OutputMetadata::try_from(&output_response.metadata)?,
-                                    chain: Some(Chain::from_u32_hardened(vec![
-                                        HD_WALLET_TYPE,
-                                        self.coin_type,
-                                        self.account_index,
-                                        internal as u32,
-                                        address_index,
-                                    ])),
-                                    bech32_address: unlock_address.to_bech32(&bech32_hrp),
-                                });
-                            }
+                            required_inputs.push(InputSigningData {
+                                output: Output::try_from(&output_response.output)?,
+                                output_metadata: OutputMetadata::try_from(&output_response.metadata)?,
+                                chain: Some(Chain::from_u32_hardened(vec![
+                                    HD_WALLET_TYPE,
+                                    self.coin_type,
+                                    self.account_index,
+                                    internal as u32,
+                                    address_index,
+                                ])),
+                                bech32_address: unlock_address.to_bech32(&bech32_hrp),
+                            });
                         }
                     }
                 }
