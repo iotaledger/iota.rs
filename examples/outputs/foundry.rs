@@ -3,11 +3,8 @@
 
 //! cargo run --example foundry --release
 
-use std::env;
-
-use dotenv::dotenv;
 use iota_client::{
-    bee_block::{
+    block::{
         address::AliasAddress,
         output::{
             feature::{IssuerFeature, MetadataFeature, SenderFeature},
@@ -34,20 +31,19 @@ async fn main() -> Result<()> {
     // This example uses dotenv, which is not safe for use in production!
     // Configure your own mnemonic in the ".env" file. Since the output amount cannot be zero, the seed must contain
     // non-zero balance.
-    dotenv().ok();
+    dotenv::dotenv().ok();
 
-    let node_url = env::var("NODE_URL").unwrap();
-    let faucet_url = env::var("FAUCET_URL").unwrap();
+    let node_url = std::env::var("NODE_URL").unwrap();
+    let faucet_url = std::env::var("FAUCET_URL").unwrap();
 
     // Create a client instance.
     let client = Client::builder()
         .with_node(&node_url)?
         .with_node_sync_disabled()
-        .finish()
-        .await?;
+        .finish()?;
 
     let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
-        &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
+        &std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
     )?);
 
     let address = client.get_addresses(&secret_manager).with_range(0..1).get_raw().await?[0];
@@ -90,7 +86,7 @@ async fn main() -> Result<()> {
     //////////////////////////////////////////////////
     // create foundry output and mint 70 native tokens
     //////////////////////////////////////////////////
-    let alias_output_id = get_alias_output_id(block.payload().unwrap());
+    let alias_output_id = get_alias_output_id(block.payload().unwrap())?;
     let alias_id = AliasId::from(alias_output_id);
     let token_scheme = TokenScheme::Simple(SimpleTokenScheme::new(
         U256::from(70u8),
@@ -149,8 +145,8 @@ async fn main() -> Result<()> {
         ImmutableAliasAddressUnlockCondition::new(AliasAddress::from(alias_id)),
     ));
 
-    let alias_output_id = get_alias_output_id(block.payload().unwrap());
-    let foundry_output_id = get_foundry_output_id(block.payload().unwrap());
+    let alias_output_id = get_alias_output_id(block.payload().unwrap())?;
+    let foundry_output_id = get_foundry_output_id(block.payload().unwrap())?;
     let outputs = vec![
         alias_output_builder
             .clone()
@@ -186,8 +182,8 @@ async fn main() -> Result<()> {
     let basic_output_builder = BasicOutputBuilder::new_with_amount(1_000_000)?
         .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)));
 
-    let alias_output_id = get_alias_output_id(block.payload().unwrap());
-    let foundry_output_id = get_foundry_output_id(block.payload().unwrap());
+    let alias_output_id = get_alias_output_id(block.payload().unwrap())?;
+    let foundry_output_id = get_foundry_output_id(block.payload().unwrap())?;
     let outputs = vec![
         alias_output_builder
             .clone()
@@ -228,7 +224,7 @@ async fn main() -> Result<()> {
     //////////////////////////////////
     // send native token without foundry
     //////////////////////////////////
-    let basic_output_id = get_basic_output_id_with_native_tokens(block.payload().unwrap());
+    let basic_output_id = get_basic_output_id_with_native_tokens(block.payload().unwrap())?;
     let outputs = vec![
         basic_output_builder
             .clone()
@@ -252,7 +248,7 @@ async fn main() -> Result<()> {
     //////////////////////////////////
     // burn native token without foundry
     //////////////////////////////////
-    let basic_output_id = get_basic_output_id_with_native_tokens(block.payload().unwrap());
+    let basic_output_id = get_basic_output_id_with_native_tokens(block.payload().unwrap())?;
     let outputs = vec![
         basic_output_builder
             .add_native_token(NativeToken::new(token_id, U256::from(30u8))?)
@@ -277,13 +273,13 @@ async fn main() -> Result<()> {
 }
 
 // helper function to get the output id for the first alias output
-fn get_alias_output_id(payload: &Payload) -> OutputId {
+fn get_alias_output_id(payload: &Payload) -> Result<OutputId> {
     match payload {
         Payload::Transaction(tx_payload) => {
             let TransactionEssence::Regular(regular) = tx_payload.essence();
             for (index, output) in regular.outputs().iter().enumerate() {
                 if let Output::Alias(_alias_output) = output {
-                    return OutputId::new(tx_payload.id(), index.try_into().unwrap()).unwrap();
+                    return Ok(OutputId::new(tx_payload.id(), index.try_into().unwrap())?);
                 }
             }
             panic!("No alias output in transaction essence")
@@ -293,13 +289,13 @@ fn get_alias_output_id(payload: &Payload) -> OutputId {
 }
 
 // helper function to get the output id for the first foundry output
-fn get_foundry_output_id(payload: &Payload) -> OutputId {
+fn get_foundry_output_id(payload: &Payload) -> Result<OutputId> {
     match payload {
         Payload::Transaction(tx_payload) => {
             let TransactionEssence::Regular(regular) = tx_payload.essence();
             for (index, output) in regular.outputs().iter().enumerate() {
                 if let Output::Foundry(_foundry_output) = output {
-                    return OutputId::new(tx_payload.id(), index.try_into().unwrap()).unwrap();
+                    return Ok(OutputId::new(tx_payload.id(), index.try_into().unwrap())?);
                 }
             }
             panic!("No foundry output in transaction essence")
@@ -309,14 +305,14 @@ fn get_foundry_output_id(payload: &Payload) -> OutputId {
 }
 
 // helper function to get the output id for the first basic output with native tokens
-fn get_basic_output_id_with_native_tokens(payload: &Payload) -> OutputId {
+fn get_basic_output_id_with_native_tokens(payload: &Payload) -> Result<OutputId> {
     match payload {
         Payload::Transaction(tx_payload) => {
             let TransactionEssence::Regular(regular) = tx_payload.essence();
             for (index, output) in regular.outputs().iter().enumerate() {
                 if let Output::Basic(basic_output) = output {
                     if !basic_output.native_tokens().is_empty() {
-                        return OutputId::new(tx_payload.id(), index.try_into().unwrap()).unwrap();
+                        return Ok(OutputId::new(tx_payload.id(), index.try_into().unwrap())?);
                     }
                 }
             }

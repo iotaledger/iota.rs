@@ -21,23 +21,22 @@ const DEFAULT_DEVNET_FAUCET_URL: &str = "http://localhost:14265";
 const DEFAULT_DEVELOPMENT_SEED: &str = "256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2";
 
 // Sets up a Client with node synchronization disabled.
-async fn setup_client_with_sync_disabled() -> Client {
+fn setup_client_with_sync_disabled() -> Client {
     Client::builder()
         .with_node(DEFAULT_DEVNET_NODE_URL)
         .unwrap()
         .with_node_sync_disabled()
         .finish()
-        .await
         .unwrap()
 }
 
 // Sends a tagged data block to the node to test against it.
 async fn setup_tagged_data_block() -> BlockId {
-    let client = setup_client_with_sync_disabled().await;
+    let client = setup_client_with_sync_disabled();
 
     client
         .block()
-        .with_tag("Hello")
+        .with_tag("Hello".as_bytes().to_vec())
         .with_data("Tangle".as_bytes().to_vec())
         .finish()
         .await
@@ -45,14 +44,14 @@ async fn setup_tagged_data_block() -> BlockId {
         .id()
 }
 
-async fn setup_secret_manager() -> SecretManager {
+fn setup_secret_manager() -> SecretManager {
     SecretManager::Mnemonic(MnemonicSecretManager::try_from_hex_seed(DEFAULT_DEVELOPMENT_SEED).unwrap())
 }
 
 // Sends a transaction block to the node to test against it.
 async fn setup_transaction_block() -> (BlockId, TransactionId) {
-    let client = setup_client_with_sync_disabled().await;
-    let secret_manager = setup_secret_manager().await;
+    let client = setup_client_with_sync_disabled();
+    let secret_manager = setup_secret_manager();
 
     let addresses = client
         .get_addresses(&secret_manager)
@@ -86,11 +85,7 @@ async fn setup_transaction_block() -> (BlockId, TransactionId) {
         .unwrap()
         .id();
 
-    let block = setup_client_with_sync_disabled()
-        .await
-        .get_block(&block_id)
-        .await
-        .unwrap();
+    let block = setup_client_with_sync_disabled().get_block(&block_id).await.unwrap();
 
     let transaction_id = match block.payload() {
         Some(Payload::Transaction(t)) => t.id(),
@@ -106,7 +101,6 @@ async fn setup_transaction_block() -> (BlockId, TransactionId) {
 #[tokio::test]
 async fn test_get_health() {
     let r = setup_client_with_sync_disabled()
-        .await
         .get_health(DEFAULT_DEVNET_NODE_URL)
         .await
         .unwrap();
@@ -123,7 +117,7 @@ async fn test_get_info() {
 #[ignore]
 #[tokio::test]
 async fn test_get_tips() {
-    let r = setup_client_with_sync_disabled().await.get_tips().await.unwrap();
+    let r = setup_client_with_sync_disabled().get_tips().await.unwrap();
     println!("{:#?}", r);
 }
 
@@ -144,7 +138,7 @@ async fn test_post_block_with_transaction() {
 #[ignore]
 #[tokio::test]
 async fn test_get_block_data() {
-    let client = setup_client_with_sync_disabled().await;
+    let client = setup_client_with_sync_disabled();
 
     let block_id = setup_tagged_data_block().await;
     let r = client.get_block(&block_id).await.unwrap();
@@ -158,7 +152,6 @@ async fn test_get_block_metadata() {
     let block_id = setup_tagged_data_block().await;
 
     let r = setup_client_with_sync_disabled()
-        .await
         .get_block_metadata(&block_id)
         .await
         .unwrap();
@@ -172,7 +165,6 @@ async fn test_get_block_raw() {
     let block_id = setup_tagged_data_block().await;
 
     let r = setup_client_with_sync_disabled()
-        .await
         .get_block_raw(&block_id)
         .await
         .unwrap();
@@ -183,8 +175,8 @@ async fn test_get_block_raw() {
 #[ignore]
 #[tokio::test]
 async fn test_get_address_balance() {
-    let client = setup_client_with_sync_disabled().await;
-    let secret_manager = setup_secret_manager().await;
+    let client = setup_client_with_sync_disabled();
+    let secret_manager = setup_secret_manager();
 
     let address = client
         .get_addresses(&secret_manager)
@@ -205,8 +197,8 @@ async fn test_get_address_balance() {
 #[ignore]
 #[tokio::test]
 async fn test_get_address_outputs() {
-    let client = setup_client_with_sync_disabled().await;
-    let secret_manager = setup_secret_manager().await;
+    let client = setup_client_with_sync_disabled();
+    let secret_manager = setup_secret_manager();
 
     let address = client
         .get_addresses(&secret_manager)
@@ -232,7 +224,6 @@ async fn test_get_output() {
     let (_block_id, transaction_id) = setup_transaction_block().await;
 
     let r = setup_client_with_sync_disabled()
-        .await
         .get_output(&OutputId::new(transaction_id, 0).unwrap())
         .await
         .unwrap();
@@ -243,7 +234,7 @@ async fn test_get_output() {
 #[ignore]
 #[tokio::test]
 async fn test_get_peers() {
-    let r = setup_client_with_sync_disabled().await.get_peers().await.unwrap();
+    let r = setup_client_with_sync_disabled().get_peers().await.unwrap();
 
     println!("{:#?}", r);
 }
@@ -251,7 +242,7 @@ async fn test_get_peers() {
 #[ignore]
 #[tokio::test]
 async fn test_get_milestone_by_id() {
-    let client = setup_client_with_sync_disabled().await;
+    let client = setup_client_with_sync_disabled();
 
     let node_info = client.get_info().await.unwrap();
 
@@ -274,7 +265,7 @@ async fn test_get_milestone_by_id() {
 #[ignore]
 #[tokio::test]
 async fn test_get_milestone_by_index() {
-    let client = setup_client_with_sync_disabled().await;
+    let client = setup_client_with_sync_disabled();
 
     let node_info = client.get_info().await.unwrap();
 
@@ -289,7 +280,7 @@ async fn test_get_milestone_by_index() {
 #[ignore]
 #[tokio::test]
 async fn test_get_utxo_changes_by_id() {
-    let client = setup_client_with_sync_disabled().await;
+    let client = setup_client_with_sync_disabled();
 
     let node_info = client.get_info().await.unwrap();
 
@@ -312,7 +303,7 @@ async fn test_get_utxo_changes_by_id() {
 #[ignore]
 #[tokio::test]
 async fn test_get_utxo_changes_by_index() {
-    let client = setup_client_with_sync_disabled().await;
+    let client = setup_client_with_sync_disabled();
 
     let node_info = client.get_info().await.unwrap();
 
@@ -327,7 +318,7 @@ async fn test_get_utxo_changes_by_index() {
 #[ignore]
 #[tokio::test]
 async fn test_get_receipts() {
-    let r = setup_client_with_sync_disabled().await.get_receipts().await.unwrap();
+    let r = setup_client_with_sync_disabled().get_receipts().await.unwrap();
 
     println!("{:#?}", r);
 }
@@ -336,7 +327,6 @@ async fn test_get_receipts() {
 #[tokio::test]
 async fn get_receipts_migrated_at() {
     let r = setup_client_with_sync_disabled()
-        .await
         .get_receipts_migrated_at(3)
         .await
         .unwrap();
@@ -347,7 +337,7 @@ async fn get_receipts_migrated_at() {
 #[ignore]
 #[tokio::test]
 async fn test_get_treasury() {
-    let r = setup_client_with_sync_disabled().await.get_treasury().await.unwrap();
+    let r = setup_client_with_sync_disabled().get_treasury().await.unwrap();
 
     println!("{:#?}", r);
 }
@@ -358,7 +348,6 @@ async fn test_get_included_block() {
     let (_block_id, transaction_id) = setup_transaction_block().await;
 
     let r = setup_client_with_sync_disabled()
-        .await
         .get_included_block(&transaction_id)
         .await
         .unwrap();

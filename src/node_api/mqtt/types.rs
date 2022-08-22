@@ -55,6 +55,7 @@ pub enum MqttEvent {
 /// The MQTT broker options.
 
 #[derive(Debug, Clone, serde::Deserialize, serde::Serialize, PartialEq, Eq)]
+#[must_use]
 pub struct BrokerOptions {
     #[serde(default = "default_broker_automatic_disconnect", rename = "automaticDisconnect")]
     pub(crate) automatic_disconnect: bool,

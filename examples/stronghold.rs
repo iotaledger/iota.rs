@@ -3,9 +3,8 @@
 
 //! cargo run --example stronghold --features=stronghold --release
 
-use std::{env, path::PathBuf};
+use std::path::PathBuf;
 
-use dotenv::dotenv;
 use iota_client::{
     api::GetAddressesBuilder,
     constants::{SHIMMER_COIN_TYPE, SHIMMER_TESTNET_BECH32_HRP},
@@ -18,14 +17,13 @@ use iota_client::{
 async fn main() -> Result<()> {
     let mut stronghold_secret_manager = StrongholdSecretManager::builder()
         .password("some_hopefully_secure_password")
-        .snapshot_path(PathBuf::from("test.stronghold"))
-        .try_build()?;
+        .try_build(PathBuf::from("test.stronghold"))?;
 
     // This example uses dotenv, which is not safe for use in production
-    dotenv().ok();
-    let mnemonic = env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap();
+    dotenv::dotenv().ok();
+    let mnemonic = std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap();
     // The mnemonic only needs to be stored the first time
-    stronghold_secret_manager.store_mnemonic(mnemonic).await.unwrap();
+    stronghold_secret_manager.store_mnemonic(mnemonic).await?;
 
     // Generate addresses with custom account index and range
     let addresses = GetAddressesBuilder::new(&SecretManager::Stronghold(stronghold_secret_manager))

@@ -1,10 +1,12 @@
 package node_api_core;
 
 import org.iota.Client;
+import org.iota.apis.NodeIndexerApi;
 import org.iota.types.Block;
 import org.iota.types.ClientException;
 import org.iota.types.ids.BlockId;
 import org.iota.types.ids.MilestoneId;
+import org.iota.types.ids.OutputId;
 
 public class ExampleUtils {
     public static BlockId setUpBlockId(Client client) throws ClientException {
@@ -25,5 +27,9 @@ public class ExampleUtils {
 
     public static int setUpMilestoneIndex(Client client) throws ClientException {
         return client.getNodeInfo().getNodeInfo().get("status").getAsJsonObject().get("confirmedMilestone").getAsJsonObject().get("index").getAsInt();
+    }
+
+    public static OutputId setUpOutputId(Client client) throws ClientException {
+        return client.getBasicOutputIds(new NodeIndexerApi.QueryParams())[0];
     }
 }

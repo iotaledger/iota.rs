@@ -1,15 +1,26 @@
 // Copyright 2021-2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
+
+/**
+ * Network types.
+ */
 export enum Network {
     Mainnet,
     Testnet,
 }
+
+/**
+ * Basic Auth or JWT.
+ */
 export interface IAuth {
     jwt?: string;
     username?: string;
     password?: string;
 }
 
+/**
+ * Options for the MQTT broker.
+ */
 export interface IMqttBrokerOptions {
     automaticDisconnect?: boolean;
     /** timeout in seconds */
@@ -19,6 +30,9 @@ export interface IMqttBrokerOptions {
     maxReconnectionAttempts?: number;
 }
 
+/**
+ * A node object for the client.
+ */
 export interface INode {
     url: string;
     auth?: IAuth;
@@ -31,12 +45,12 @@ export interface INode {
 export interface INetworkInfo {
     network?: Network;
     networkId?: number;
-    bech32HRP: string;
+    bech32Hrp: string;
     /** Mininum proof of work score*/
-    minPoWScore: number;
+    minPowScore: number;
     /** Local proof of work */
     localPow: boolean;
-    /** Fallback to local proof of work if the node doesn't support remote PoW */
+    /** Fallback to local proof of work if the node doesn't support remote Pow */
     fallbackToLocalPow: boolean;
     /** Tips request interval during PoW in seconds */
     tipsInterval: number;

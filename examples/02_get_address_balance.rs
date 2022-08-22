@@ -3,12 +3,8 @@
 
 //! cargo run --example 02_get_address_balance --release
 
-use std::env;
-
-use bee_block::output::NativeTokensBuilder;
-use dotenv::dotenv;
 use iota_client::{
-    bee_block::output::Output,
+    block::output::{NativeTokensBuilder, Output},
     node_api::indexer::query_parameters::QueryParameter,
     secret::{mnemonic::MnemonicSecretManager, SecretManager},
     Client, Result,
@@ -20,19 +16,18 @@ use iota_client::{
 #[tokio::main]
 async fn main() -> Result<()> {
     // This example uses dotenv, which is not safe for use in production
-    dotenv().ok();
+    dotenv::dotenv().ok();
 
-    let node_url = env::var("NODE_URL").unwrap();
+    let node_url = std::env::var("NODE_URL").unwrap();
 
     // Create a client instance
     let client = Client::builder()
         .with_node(&node_url)? // Insert your node URL here
         .with_node_sync_disabled()
-        .finish()
-        .await?;
+        .finish()?;
 
     let secret_manager =
-        MnemonicSecretManager::try_from_mnemonic(&env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap())?;
+        MnemonicSecretManager::try_from_mnemonic(&std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap())?;
 
     // Generate the first address
     let addresses = client
@@ -46,9 +41,9 @@ async fn main() -> Result<()> {
     let output_ids = client
         .basic_output_ids(vec![
             QueryParameter::Address(addresses[0].clone()),
-            QueryParameter::HasExpirationCondition(false),
-            QueryParameter::HasTimelockCondition(false),
-            QueryParameter::HasStorageReturnCondition(false),
+            QueryParameter::HasExpiration(false),
+            QueryParameter::HasTimelock(false),
+            QueryParameter::HasStorageDepositReturn(false),
         ])
         .await?;
 
@@ -58,7 +53,7 @@ async fn main() -> Result<()> {
     // Calculate the total amount and native tokens
     let mut total_amount = 0;
     let mut total_native_tokens = NativeTokensBuilder::new();
-    for output_response in outputs_responses.into_iter() {
+    for output_response in outputs_responses {
         let output = Output::try_from(&output_response.output)?;
 
         if let Some(native_tokens) = output.native_tokens() {
@@ -71,7 +66,7 @@ async fn main() -> Result<()> {
         "Outputs controlled by {} have: {:?}i and native tokens: {:?}",
         addresses[0],
         total_amount,
-        total_native_tokens.finish()?
+        total_native_tokens.finish_vec()?
     );
     Ok(())
 }

@@ -3,11 +3,8 @@
 
 //! cargo run --example alias --release
 
-use std::env;
-
-use dotenv::dotenv;
 use iota_client::{
-    bee_block::{
+    block::{
         output::{
             feature::{IssuerFeature, MetadataFeature, SenderFeature},
             unlock_condition::{
@@ -29,20 +26,19 @@ async fn main() -> Result<()> {
     // This example uses dotenv, which is not safe for use in production!
     // Configure your own mnemonic in the ".env" file. Since the output amount cannot be zero, the seed must contain
     // non-zero balance.
-    dotenv().ok();
+    dotenv::dotenv().ok();
 
-    let node_url = env::var("NODE_URL").unwrap();
-    let faucet_url = env::var("FAUCET_URL").unwrap();
+    let node_url = std::env::var("NODE_URL").unwrap();
+    let faucet_url = std::env::var("FAUCET_URL").unwrap();
 
     // Create a client instance.
     let client = Client::builder()
         .with_node(&node_url)?
         .with_node_sync_disabled()
-        .finish()
-        .await?;
+        .finish()?;
 
     let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
-        &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
+        &std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
     )?);
 
     let address = client.get_addresses(&secret_manager).with_range(0..1).get_raw().await?[0];
@@ -81,7 +77,7 @@ async fn main() -> Result<()> {
     //////////////////////////////////
     // create second transaction with the actual AliasId (BLAKE2b-160 hash of the Output ID that created the alias)
     //////////////////////////////////
-    let alias_output_id = get_alias_output_id(block.payload().unwrap());
+    let alias_output_id = get_alias_output_id(block.payload().unwrap())?;
     let alias_id = AliasId::from(alias_output_id);
     let outputs = vec![
         alias_output_builder
@@ -106,13 +102,13 @@ async fn main() -> Result<()> {
 }
 
 // helper function to get the output id for the first alias output
-fn get_alias_output_id(payload: &Payload) -> OutputId {
+fn get_alias_output_id(payload: &Payload) -> Result<OutputId> {
     match payload {
         Payload::Transaction(tx_payload) => {
             let TransactionEssence::Regular(regular) = tx_payload.essence();
             for (index, output) in regular.outputs().iter().enumerate() {
                 if let Output::Alias(_alias_output) = output {
-                    return OutputId::new(tx_payload.id(), index.try_into().unwrap()).unwrap();
+                    return Ok(OutputId::new(tx_payload.id(), index.try_into().unwrap())?);
                 }
             }
             panic!("No alias output in transaction essence")

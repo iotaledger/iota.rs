@@ -12,12 +12,10 @@ use iota_client::{Client, MqttEvent, MqttPayload, Result, Topic};
 async fn main() -> Result<()> {
     // Create a client instance
     let mut client = Client::builder()
-        // todo: replace url when we have a public testnet
-        .with_node("https://chrysalis-nodes.iota.cafe/")?
+        .with_node("https://api.testnet.shimmer.network")?
         .with_node_sync_disabled()
         // .with_mqtt_broker_options(BrokerOptions::new().use_ws(false))
-        .finish()
-        .await?;
+        .finish()?;
 
     let (tx, rx) = channel();
     let tx = Arc::new(Mutex::new(tx));
@@ -34,36 +32,33 @@ async fn main() -> Result<()> {
     });
 
     client
-        .subscriber()
-        .with_topics(vec![
-            Topic::try_from("milestone-info/latest".to_string())?,
-            Topic::try_from("blocks".to_string())?,
-            Topic::try_from(
-                "outputs/unlock/address/atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r".to_string(),
-            )?,
-        ])
-        .subscribe(move |event| {
-            println!("Topic: {}", event.topic);
-            match &event.payload {
-                MqttPayload::Json(val) => println!("{}", serde_json::to_string(&val).unwrap()),
-                MqttPayload::Block(block) => println!("{:?}", block),
-                MqttPayload::MilestonePayload(ms) => println!("{:?}", ms),
-                MqttPayload::Receipt(receipt) => println!("{:?}", receipt),
-            }
-            tx.lock().unwrap().send(()).unwrap();
-        })
-        .await
-        .unwrap();
+        .subscribe(
+            vec![
+                Topic::try_from("milestone-info/latest".to_string())?,
+                Topic::try_from("blocks".to_string())?,
+                Topic::try_from(
+                    "outputs/unlock/address/atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r"
+                        .to_string(),
+                )?,
+            ],
+            move |event| {
+                println!("Topic: {}", event.topic);
+                match &event.payload {
+                    MqttPayload::Json(val) => println!("{}", serde_json::to_string(&val).unwrap()),
+                    MqttPayload::Block(block) => println!("{:?}", block),
+                    MqttPayload::MilestonePayload(ms) => println!("{:?}", ms),
+                    MqttPayload::Receipt(receipt) => println!("{:?}", receipt),
+                }
+                tx.lock().unwrap().send(()).unwrap();
+            },
+        )
+        .await?;
 
     for i in 0..10 {
         rx.recv().unwrap();
         if i == 7 {
             // unsubscribe from topic "blocks", will continue to receive events for "milestones/latest"
-            client
-                .subscriber()
-                .with_topics(vec![Topic::try_from("blocks".to_string())?])
-                .unsubscribe()
-                .await?;
+            client.unsubscribe(vec![Topic::try_from("blocks".to_string())?]).await?;
         }
     }
 

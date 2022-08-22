@@ -13,29 +13,19 @@
       "getPublishedVersion": "npm view ${ pkgFile.pkg.name } version",
       "prepublish": [
         {
-          "command": "false || dasel put object -f native/Cargo.toml '.dependencies.iota-client' -t string -t string git='https://github.com/iotaledger/iota.rs' rev=$GITHUB_SHA"
+          "command": "false || dasel put object -f Cargo.toml '.dependencies.iota-client' -t string -t string git='https://github.com/iotaledger/iota.rs' rev=$GITHUB_SHA"
         },
         {
-          "command": "dasel put string -f native/Cargo.toml '.dependencies.iota-client.features.[]' mqtt"
+          "command": "dasel put string -f Cargo.toml '.dependencies.iota-client.features.[0]' message_interface"
         },
         {
-          "command": "cat native/Cargo.toml"
+          "command": "dasel put string -f Cargo.toml '.dependencies.iota-client.features.[1]' mqtt"
+        },
+        {
+          "command": "cat Cargo.toml"
         }
       ],
       "publish": [
-        {
-          "command": "yarn publish --access public --loglevel silly"
-        }
-      ]
-    },
-    "wasm-binding": {
-      "path": "./bindings/wasm/",
-      "manager": "javascript",
-      "getPublishedVersion": "npm view ${ pkgFile.pkg.name } version",
-      "publish": [
-        {
-          "command": "yarn install"
-        },
         {
           "command": "yarn publish --access public --loglevel silly"
         }

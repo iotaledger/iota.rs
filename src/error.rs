@@ -42,7 +42,6 @@ pub enum Error {
     /// The wallet account doesn't have enough native tokens
     #[error("The wallet account doesn't have enough native tokens, missing: {0:?}")]
     NotEnoughNativeTokens(NativeTokens),
-    // todo get missing amount (storage deposit for an output with this amount of native tokens)
     /// The wallet account doesn't have enough balance for an output with the remaining native tokens.
     #[error("The wallet account doesn't have enough balance for an output with the remaining native tokens.")]
     NoBalanceForNativeTokenRemainder,
@@ -51,6 +50,9 @@ pub enum Error {
         "The wallet account has enough funds, but splitted on too many outputs: {0}, max. is 128, consolidate them"
     )]
     ConsolidationRequired(usize),
+    /// Missing input for utxo chain
+    #[error("Missing input: {0}")]
+    MissingInput(String),
     /// Missing required parameters
     #[error("Must provide required parameter: {0}")]
     MissingParameter(&'static str),
@@ -82,14 +84,10 @@ pub enum Error {
     /// Error on API request
     #[error("Node error: {0}")]
     NodeError(String),
-    /// Hex string convert error
+    /// Prefix hex string convert error
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
-    FromHexError(#[from] hex::FromHexError),
-    /// Logger error
-    #[error("{0}")]
-    #[serde(serialize_with = "display_string")]
-    LoggerError(#[from] fern_logger::Error),
+    FromHexError(#[from] prefix_hex::Error),
     /// Block types error
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
@@ -105,7 +103,7 @@ pub enum Error {
     /// Bee rest api error
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
-    BeeRestApiError(#[from] bee_rest_api::types::error::Error),
+    BeeRestApiError(#[from] bee_api_types::error::Error),
     /// The block doensn't need to be promoted or reattached
     #[error("Block ID `{0}` doesn't need to be promoted or reattached")]
     NoNeedPromoteOrReattach(String),
@@ -182,7 +180,7 @@ pub enum Error {
     /// Invalid mnemonic error
     #[error("Invalid mnemonic {0}")]
     InvalidMnemonic(String),
-    /// PoW error
+    /// Pow error
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
     PowError(#[from] bee_pow::providers::miner::Error),
@@ -198,9 +196,9 @@ pub enum Error {
     /// Specifically used for `TryInfo` implementations for `SecretManager`.
     #[error("cannot unwrap a SecretManager: type mismatch!")]
     SecretManagerMismatch,
-    /// No input with matching ed25519 unlock condition provided
-    #[error("No input with matching ed25519 unlock condition provided")]
-    MissingInputWithEd25519UnlockCondition,
+    /// No input with matching ed25519 address provided
+    #[error("No input with matching ed25519 address provided")]
+    MissingInputWithEd25519Address,
     /// Ledger transport error
     #[cfg(feature = "ledger_nano")]
     #[error("ledger transport error")]
@@ -229,39 +227,43 @@ pub enum Error {
     #[cfg(feature = "ledger_nano")]
     #[error("ledger mnemonic is mismatched")]
     LedgerMnemonicMismatch,
-    /// Riker system error during Stronghold initialization
+    /// Stronghold client error
     #[cfg(feature = "stronghold")]
-    #[error("Stronghold reported a system error: {0}")]
+    #[error("stronghold client error: {0}")]
     #[serde(serialize_with = "display_string")]
-    StrongholdActorSystemError(#[from] riker::system::SystemError),
+    StrongholdClient(#[from] iota_stronghold::ClientError),
+    /// Stronghold memory error
+    #[cfg(feature = "stronghold")]
+    #[error("stronghold memory error: {0}")]
+    #[serde(serialize_with = "display_string")]
+    StrongholdMemory(#[from] iota_stronghold::MemoryError),
     /// Procedure execution error from Stronghold
     #[cfg(feature = "stronghold")]
     #[error("Stronghold reported a procedure error: {0}")]
-    StrongholdProcedureError(String),
+    #[serde(serialize_with = "display_string")]
+    StrongholdProcedureError(#[from] iota_stronghold::procedures::ProcedureError),
     /// A mnemonic has been already stored into a Stronghold vault
     #[cfg(feature = "stronghold")]
     #[error("a mnemonic has already been stored in the Stronghold vault")]
     StrongholdMnemonicAlreadyStored,
-    /// A password has already been set
-    #[cfg(feature = "stronghold")]
-    #[error("a password has already been set")]
-    StrongholdPasswordAlreadySet,
     /// No password has been supplied to a Stronghold vault, or it has been cleared
     #[cfg(feature = "stronghold")]
     #[error("no password has been supplied, or the key has been cleared from the memory")]
     StrongholdKeyCleared,
-    /// No snapshot path has been supplied
+    /// Invalid stronghold password.
     #[cfg(feature = "stronghold")]
-    #[error("no snapshot path has been supplied")]
-    StrongholdSnapshotPathMissing,
+    #[error("invalid stronghold password")]
+    StrongholdInvalidPassword,
     /// The semantic validation of a transaction failed.
     #[error("the semantic validation of a transaction failed with conflict reason: {} - {0:?}", *.0 as u8)]
     TransactionSemantic(ConflictReason),
     /// Local time doesn't match the time of the latest milestone timestamp
-    #[error("Local time {local_time} doesn't match the time of the latest milestone timestamp: {milestone_timestamp}")]
+    #[error(
+        "Local time {current_time} doesn't match the time of the latest milestone timestamp: {milestone_timestamp}"
+    )]
     TimeNotSynced {
         /// The local time.
-        local_time: u32,
+        current_time: u32,
         /// The timestamp of the latest milestone.
         milestone_timestamp: u32,
     },
@@ -284,14 +286,14 @@ pub enum Error {
 // LedgerMiscError: Everything else.
 // LedgerEssenceTooLarge: Essence with bip32 input indices need more space then the internal buffer is big
 #[cfg(feature = "ledger_nano")]
-impl From<iota_ledger::api::errors::APIError> for Error {
-    fn from(error: iota_ledger::api::errors::APIError) -> Self {
+impl From<iota_ledger_nano::api::errors::APIError> for Error {
+    fn from(error: iota_ledger_nano::api::errors::APIError) -> Self {
         log::info!("ledger error: {}", error);
         match error {
-            iota_ledger::api::errors::APIError::SecurityStatusNotSatisfied => Error::LedgerDongleLocked,
-            iota_ledger::api::errors::APIError::ConditionsOfUseNotSatisfied => Error::LedgerDeniedByUser,
-            iota_ledger::api::errors::APIError::TransportError => Error::LedgerDeviceNotFound,
-            iota_ledger::api::errors::APIError::EssenceTooLarge => Error::LedgerEssenceTooLarge,
+            iota_ledger_nano::api::errors::APIError::SecurityStatusNotSatisfied => Error::LedgerDongleLocked,
+            iota_ledger_nano::api::errors::APIError::ConditionsOfUseNotSatisfied => Error::LedgerDeniedByUser,
+            iota_ledger_nano::api::errors::APIError::TransportError => Error::LedgerDeviceNotFound,
+            iota_ledger_nano::api::errors::APIError::EssenceTooLarge => Error::LedgerEssenceTooLarge,
             _ => Error::LedgerMiscError,
         }
     }

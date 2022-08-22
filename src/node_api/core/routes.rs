@@ -5,6 +5,13 @@
 
 use std::str::FromStr;
 
+use bee_api_types::{
+    dtos::{PeerDto, ReceiptDto},
+    responses::{
+        BlockMetadataResponse, BlockResponse, MilestoneResponse, OutputMetadataResponse, OutputResponse, PeersResponse,
+        ReceiptsResponse, RoutesResponse, SubmitBlockResponse, TipsResponse, TreasuryResponse, UtxoChangesResponse,
+    },
+};
 use bee_block::{
     output::OutputId,
     payload::{
@@ -12,13 +19,6 @@ use bee_block::{
         transaction::TransactionId,
     },
     Block, BlockDto, BlockId,
-};
-use bee_rest_api::types::{
-    dtos::{PeerDto, ReceiptDto},
-    responses::{
-        BlockMetadataResponse, BlockResponse, MilestoneResponse, OutputMetadataResponse, OutputResponse, PeersResponse,
-        ReceiptsResponse, SubmitBlockResponse, TipsResponse, TreasuryResponse, UtxoChangesResponse,
-    },
 };
 use packable::PackableExt;
 use url::Url;
@@ -51,6 +51,16 @@ impl Client {
             200 => Ok(true),
             _ => Ok(false),
         }
+    }
+
+    /// Returns the available API route groups of the node.
+    /// GET /api/routes
+    pub async fn get_routes(&self) -> Result<RoutesResponse> {
+        let path = "api/routes";
+
+        self.node_manager
+            .get_request(path, None, self.get_timeout(), false, false)
+            .await
     }
 
     /// Returns general information about the node.
@@ -106,9 +116,9 @@ impl Client {
                 if let Error::NodeError(e) = e {
                     let fallback_to_local_pow = self.get_fallback_to_local_pow().await;
                     // hornet and bee return different error blocks
-                    if (e == *"No available nodes with remote PoW"
+                    if (e == *"No available nodes with remote Pow"
                         || e.contains("proof of work is not enabled")
-                        || e.contains("`PoW` not enabled"))
+                        || e.contains("`Pow` not enabled"))
                         && fallback_to_local_pow
                     {
                         // Without this we get:within `impl Future<Output = [async output]>`, the trait `Send` is not
@@ -120,20 +130,9 @@ impl Client {
                             client_network_info.local_pow = true;
                         }
                         #[cfg(not(target_family = "wasm"))]
-                        let block_res = crate::api::finish_pow(self, block.payload().cloned()).await;
+                        let block_res = crate::api::finish_multi_threaded_pow(self, block.payload().cloned()).await;
                         #[cfg(target_family = "wasm")]
-                        let block_res = {
-                            let min_pow_score = self.get_min_pow_score().await?;
-                            let network_id = self.get_network_id().await?;
-                            crate::api::finish_single_thread_pow(
-                                self,
-                                network_id,
-                                None,
-                                block.payload().cloned(),
-                                min_pow_score,
-                            )
-                            .await
-                        };
+                        let block_res = crate::api::finish_single_threaded_pow(self, block.payload().cloned()).await;
                         let block_with_local_pow = match block_res {
                             Ok(block) => {
                                 // reset local PoW state
@@ -178,7 +177,7 @@ impl Client {
             self.get_remote_pow_timeout()
         };
 
-        // fallback to local PoW if remote PoW fails
+        // fallback to local Pow if remote Pow fails
         let resp = match self
             .node_manager
             .post_request_bytes::<SubmitBlockResponse>(path, timeout, &block.pack_to_vec(), local_pow)
@@ -189,9 +188,9 @@ impl Client {
                 if let Error::NodeError(e) = e {
                     let fallback_to_local_pow = self.get_fallback_to_local_pow().await;
                     // hornet and bee return different error blocks
-                    if (e == *"No available nodes with remote PoW"
+                    if (e == *"No available nodes with remote Pow"
                         || e.contains("proof of work is not enabled")
-                        || e.contains("`PoW` not enabled"))
+                        || e.contains("`Pow` not enabled"))
                         && fallback_to_local_pow
                     {
                         // Without this we get:within `impl Future<Output = [async output]>`, the trait `Send` is not
@@ -203,20 +202,9 @@ impl Client {
                             client_network_info.local_pow = true;
                         }
                         #[cfg(not(target_family = "wasm"))]
-                        let block_res = crate::api::finish_pow(self, block.payload().cloned()).await;
+                        let block_res = crate::api::finish_multi_threaded_pow(self, block.payload().cloned()).await;
                         #[cfg(target_family = "wasm")]
-                        let block_res = {
-                            let min_pow_score = self.get_min_pow_score().await?;
-                            let network_id = self.get_network_id().await?;
-                            crate::api::finish_single_thread_pow(
-                                self,
-                                network_id,
-                                None,
-                                block.payload().cloned(),
-                                min_pow_score,
-                            )
-                            .await
-                        };
+                        let block_res = crate::api::finish_single_threaded_pow(self, block.payload().cloned()).await;
                         let block_with_local_pow = match block_res {
                             Ok(block) => {
                                 // reset local PoW state
@@ -286,13 +274,23 @@ impl Client {
 
     // UTXO routes.
 
-    /// Finds an output by its OutputId (TransactionId + output_index).
+    /// Finds an output, as JSON, by its OutputId (TransactionId + output_index).
     /// GET /api/core/v2/outputs/{outputId}
     pub async fn get_output(&self, output_id: &OutputId) -> Result<OutputResponse> {
         let path = &format!("api/core/v2/outputs/{}", output_id);
 
         self.node_manager
             .get_request(path, None, self.get_timeout(), false, true)
+            .await
+    }
+
+    /// Finds an output, as raw bytes, by its OutputId (TransactionId + output_index).
+    /// GET /api/core/v2/outputs/{outputId}
+    pub async fn get_output_raw(&self, output_id: &OutputId) -> Result<Vec<u8>> {
+        let path = &format!("api/core/v2/outputs/{}", output_id);
+
+        self.node_manager
+            .get_request_bytes(path, None, self.get_timeout())
             .await
     }
 
@@ -343,7 +341,7 @@ impl Client {
             .await
     }
 
-    /// Returns the block that was included in the ledger for a given TransactionId.
+    /// Returns the block, as object, that was included in the ledger for a given TransactionId.
     /// GET /api/core/v2/transactions/{transactionId}/included-block
     pub async fn get_included_block(&self, transaction_id: &TransactionId) -> Result<Block> {
         let path = &format!("api/core/v2/transactions/{}/included-block", transaction_id);
@@ -357,6 +355,16 @@ impl Client {
             BlockResponse::Json(dto) => Ok(Block::try_from(&dto)?),
             BlockResponse::Raw(_) => Err(crate::Error::UnexpectedApiResponse),
         }
+    }
+
+    /// Returns the block, as raw bytes, that was included in the ledger for a given TransactionId.
+    /// GET /api/core/v2/transactions/{transactionId}/included-block
+    pub async fn get_included_block_raw(&self, transaction_id: &TransactionId) -> Result<Vec<u8>> {
+        let path = &format!("api/core/v2/transactions/{}/included-block", transaction_id);
+
+        self.node_manager
+            .get_request_bytes(path, None, self.get_timeout())
+            .await
     }
 
     // Milestones routes.

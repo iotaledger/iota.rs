@@ -1,45 +1,48 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! `cargo run --example node_api_indexer_get_basic_outputs --release -- [NODE URL]`.
+//! Calls `GET api/indexer/v1/outputs/basic`.
+//! Run: `cargo run --example node_api_indexer_get_basic_outputs --release -- [NODE URL] [ADDRESS]`.
 
-use std::env;
-
-use dotenv::dotenv;
 use iota_client::{node_api::indexer::query_parameters::QueryParameter, Client, Result};
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    // Takes the node URL from command line argument or use localhost as default.
-    let node = std::env::args().nth(1).unwrap_or_else(|| {
-        dotenv().ok();
-        env::var("NODE_URL").unwrap()
+    // Take the node URL from command line argument or use one from env as default.
+    let node_url = std::env::args().nth(1).unwrap_or_else(|| {
+        // This example uses dotenv, which is not safe for use in production.
+        dotenv::dotenv().ok();
+        std::env::var("NODE_URL").unwrap()
     });
-    // Creates a client instance with that node.
+
+    // Create a client with that node.
     let client = Client::builder()
-        // The nodes needs to have the indexer plugin enabled.
-        .with_node(&node)?
+        // The node needs to have the indexer plugin enabled.
+        .with_node(&node_url)?
         .with_node_sync_disabled()
-        .finish()
-        .await?;
+        .finish()?;
 
-    let address = "rms1qpllaj0pyveqfkwxmnngz2c488hfdtmfrj3wfkgxtk4gtyrax0jaxzt70zy";
+    // Take the address from command line argument or use a default one.
+    let address = std::env::args()
+        .nth(2)
+        .unwrap_or_else(|| String::from("rms1qrrdjmdkadtcnuw0ue5n9g4fmkelrj3dl26eyeshkha3w3uu0wheu5z5qqz"));
 
-    // Get output ids of basic outputs that can be controlled by this address without further unlock constraints.
+    // Get output IDs of basic outputs that can be controlled by this address without further unlock constraints.
     let output_ids = client
         .basic_output_ids(vec![
-            QueryParameter::Address(address.to_string()),
-            QueryParameter::HasExpirationCondition(false),
-            QueryParameter::HasTimelockCondition(false),
-            QueryParameter::HasStorageReturnCondition(false),
+            QueryParameter::Address(address),
+            QueryParameter::HasExpiration(false),
+            QueryParameter::HasTimelock(false),
+            QueryParameter::HasStorageDepositReturn(false),
         ])
         .await?;
 
-    println!("Address output_ids {:?}", output_ids);
+    println!("Address output IDs {output_ids:#?}");
 
-    // Get the outputs by their id.
+    // Get the outputs by their IDs.
     let outputs_responses = client.get_outputs(output_ids).await?;
-    println!("Outputs: {outputs_responses:?}",);
+
+    println!("Basic outputs: {outputs_responses:#?}");
 
     Ok(())
 }

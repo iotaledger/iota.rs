@@ -1,20 +1,19 @@
 // Copyright 2021-2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+use std::sync::Arc;
+
 use iota_client::{
-    bee_block::{
+    block::{
         payload::milestone::{dto::MilestonePayloadDto, option::dto::ReceiptMilestoneOptionDto},
         BlockDto,
     },
     message_interface::{create_message_handler, ClientMessageHandler, Message, Response},
     MqttPayload, Topic, TopicEvent,
 };
-
 use neon::prelude::*;
 use serde::Serialize;
 use tokio::sync::mpsc::unbounded_channel;
-
-use std::sync::Arc;
 
 type JsCallback = Root<JsFunction<JsObject>>;
 
@@ -24,11 +23,10 @@ pub struct MessageHandler {
 }
 
 impl Finalize for MessageHandler {}
+
 impl MessageHandler {
     fn new(channel: Channel, options: String) -> Arc<Self> {
-        let client_message_handler = crate::RUNTIME
-            .block_on(async move { create_message_handler(Some(options)).await })
-            .expect("error initializing account manager");
+        let client_message_handler = create_message_handler(Some(options)).expect("error initializing account manager");
 
         Arc::new(Self {
             channel,
@@ -37,7 +35,6 @@ impl MessageHandler {
     }
 
     async fn send_message(&self, serialized_message: String) -> (String, bool) {
-        log::debug!("{}", serialized_message);
         match serde_json::from_str::<Message>(&serialized_message) {
             Ok(message) => {
                 let (response_tx, mut response_rx) = unbounded_channel();
@@ -67,6 +64,7 @@ impl MessageHandler {
             }
         }
     }
+
     fn call_event_callback(&self, event: TopicEvent, callback: Arc<JsCallback>) {
         self.channel.send(move |mut cx| {
             #[derive(Serialize)]
@@ -117,7 +115,6 @@ pub fn send_message(mut cx: FunctionContext) -> JsResult<JsUndefined> {
 
     crate::RUNTIME.spawn(async move {
         let (response, is_error) = message_handler.send_message(message).await;
-        log::debug!("{:?}", response);
         message_handler.channel.send(move |mut cx| {
             let cb = callback.into_inner(&mut cx);
             let this = cx.undefined();

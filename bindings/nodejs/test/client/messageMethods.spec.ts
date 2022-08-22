@@ -14,9 +14,9 @@ const client = new Client({
 // Skip for CI
 describe.skip('Block methods', () => {
     it('sends a block raw', async () => {
-        const block = await client.generateBlock();
+        const blockIdAndBlock = await client.buildAndPostBlock();
 
-        const blockId = await client.postBlockRaw(block);
+        const blockId = await client.postBlockRaw(blockIdAndBlock[1]);
 
         expect(blockId).toBeValidBlockId();
     });
@@ -29,49 +29,52 @@ describe.skip('Block methods', () => {
     });
 
     it('gets block as raw bytes', async () => {
-        const block = await client.generateBlock();
-        const blockId = await client.postBlock(block);
+        const blockIdAndBlock = await client.buildAndPostBlock();
 
-        const blockRaw = await client.getBlockRaw(blockId);
+        const blockRaw = await client.getBlockRaw(blockIdAndBlock[0]);
 
         expect(blockRaw).toBeDefined();
     });
 
     it('promotes a block', async () => {
-        const block = await client.generateBlock();
-        const blockId = await client.postBlock(block);
+        const blockIdAndBlock = await client.buildAndPostBlock();
 
         // Promote a block without checking if it should be promoted
-        const promoteUnchecked = await client.promoteUnchecked(blockId);
+        const promoteUnchecked = await client.promoteUnchecked(
+            blockIdAndBlock[0],
+        );
 
-        expect(promoteUnchecked[1].parents).toContain(blockId);
+        expect(promoteUnchecked[1].parents).toContain(blockIdAndBlock[0]);
 
         // Returns expected error: no need to promote or reattach.
-        await expect(client.promote(blockId)).rejects.toMatch(
+        await expect(client.promote(blockIdAndBlock[0])).rejects.toMatch(
             'NoNeedPromoteOrReattach',
         );
     });
 
     it('reattaches a block', async () => {
-        const block = await client.generateBlock();
-        const blockId = await client.postBlock(block);
+        const blockIdAndBlock = await client.buildAndPostBlock();
 
         // Reattach a block without checking if it should be reattached
-        const reattachUnchecked = await client.reattachUnchecked(blockId);
+        const reattachUnchecked = await client.reattachUnchecked(
+            blockIdAndBlock[0],
+        );
 
         expect(reattachUnchecked[0]).toBeValidBlockId();
         expect(reattachUnchecked[1]).toBeDefined();
 
         // Returns expected error: no need to promote or reattach.
-        await expect(client.reattach(blockId)).rejects.toMatch(
+        await expect(client.reattach(blockIdAndBlock[0])).rejects.toMatch(
             'NoNeedPromoteOrReattach',
         );
     });
 
     // Skip by default, retryUntilIncluded can be slow
     it.skip('retries a block', async () => {
-        const block = await client.generateBlock();
-        const blockId = await client.postBlock(block);
+        const blockIdAndBlock = await client.buildAndPostBlock();
+        const blockId = await client.postBlock(blockIdAndBlock[1]);
+
+        expect(blockIdAndBlock[0]).toBe(blockId);
 
         // Retries (promotes or reattaches) a block for provided block id until it's included
         // (referenced by a milestone). Default interval is 5 seconds and max attempts is 40.

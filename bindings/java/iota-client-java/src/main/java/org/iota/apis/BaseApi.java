@@ -32,7 +32,7 @@ public class BaseApi {
         else throw new RuntimeException("OS not supported");
 
         try {
-            NativeUtils.loadLibraryFromJar("/target/" + libraryName);
+            NativeUtils.loadLibraryFromJar("/" + libraryName);
         } catch (IOException e) {
             e.printStackTrace();
             throw new RuntimeException("cannot load native library");
@@ -43,7 +43,7 @@ public class BaseApi {
     private static native String callNativeLibrary(String clientConfig, String clientCommand);
 
     protected JsonElement callBaseApi(ClientCommand command) throws ClientException {
-        String jsonResponse = callNativeLibrary(clientConfig.toString(), command.toString());
+        String jsonResponse = callNativeLibrary(clientConfig.getJson().toString(), command.toString());
         ClientResponse response = new Gson().fromJson(jsonResponse, ClientResponse.class);
 
         switch (response.type) {
@@ -64,37 +64,25 @@ public class BaseApi {
 
     protected static class ClientCommand {
 
-        private CommandType commandType;
         private String methodName;
         private JsonElement methodParams;
 
-        public ClientCommand(CommandType commandType, String methodName) {
-            this.commandType = commandType;
+        public ClientCommand(String methodName) {
             this.methodName = methodName;
         }
 
-        public ClientCommand(CommandType commandType, String methodName, JsonElement methodParams) {
-            this.commandType = commandType;
+        public ClientCommand(String methodName, JsonElement methodParams) {
             this.methodName = methodName;
             this.methodParams = methodParams;
         }
 
         @Override
         public String toString() {
-            JsonObject payload = new JsonObject();
-            payload.addProperty("name", methodName);
-            if (methodParams != null)
-                payload.add("data", methodParams);
+            JsonObject message = new JsonObject();
+            message.addProperty("name", methodName);
+            message.add("data", methodParams);
 
-            JsonObject outer = new JsonObject();
-            outer.addProperty("cmd", commandType.toString());
-            outer.add("payload", payload);
-
-            return outer.toString();
-        }
-
-        protected enum CommandType {
-            CallClientMethod
+            return message.toString();
         }
     }
 }

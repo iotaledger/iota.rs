@@ -12,38 +12,28 @@ use bee_block::{
     input::{UtxoInput, INPUT_COUNT_MAX},
     output::{
         dto::OutputDto,
-        unlock_condition::{dto::UnlockConditionDto, AddressUnlockCondition, UnlockCondition},
-        AliasId, ByteCostConfig, Output, OUTPUT_COUNT_RANGE,
+        unlock_condition::{AddressUnlockCondition, UnlockCondition},
+        AliasId, Output, OUTPUT_COUNT_RANGE,
     },
     payload::{Payload, TaggedDataPayload},
     Block, BlockId,
 };
-#[cfg(target_family = "wasm")]
-use gloo_timers::future::TimeoutFuture;
-use packable::bounded::{TryIntoBoundedU16Error, TryIntoBoundedU8Error};
-#[cfg(not(target_family = "wasm"))]
-use {
-    crate::api::{do_pow, miner::ClientMinerBuilder, pow::finish_pow},
-    bee_pow::providers::NonceProviderBuilder,
-    packable::PackableExt,
-    std::time::Duration,
-    tokio::time::sleep,
+use packable::{
+    bounded::{TryIntoBoundedU16Error, TryIntoBoundedU8Error},
+    PackableExt,
 };
 
 pub use self::transaction::verify_semantic;
-use self::{
-    input_selection::{get_custom_inputs, get_inputs},
-    transaction::{prepare_transaction, sign_transaction},
-};
 use crate::{
-    api::{input_selection::types::SelectedTransactionData, types::PreparedTransactionData},
-    bee_block::{input::dto::UtxoInputDto, output::BasicOutputBuilder},
+    api::do_pow,
+    block::{input::dto::UtxoInputDto, output::BasicOutputBuilder},
     constants::SHIMMER_COIN_TYPE,
     secret::SecretManager,
     Client, Error, Result,
 };
 
 /// Builder of the block API
+#[must_use]
 pub struct ClientBlockBuilder<'a> {
     client: &'a Client,
     secret_manager: Option<&'a SecretManager>,
@@ -54,7 +44,7 @@ pub struct ClientBlockBuilder<'a> {
     input_range: Range<u32>,
     outputs: Vec<Output>,
     custom_remainder_address: Option<Address>,
-    tag: Option<Box<[u8]>>,
+    tag: Option<Vec<u8>>,
     data: Option<Vec<u8>>,
     parents: Option<Vec<BlockId>>,
     allow_burning: bool,
@@ -93,10 +83,10 @@ pub struct ClientBlockBuilderOptions {
     pub outputs: Option<Vec<OutputDto>>,
     /// Custom remainder address
     pub custom_remainder_address: Option<String>,
-    /// Tag
-    pub tag: Option<Box<[u8]>>,
-    /// Data
-    pub data: Option<Vec<u8>>,
+    /// Hex encoded tag
+    pub tag: Option<String>,
+    /// Hex encoded data
+    pub data: Option<String>,
     /// Parents
     pub parents: Option<Vec<BlockId>>,
     /// Allow burning of native tokens
@@ -226,8 +216,8 @@ impl<'a> ClientBlockBuilder<'a> {
     }
 
     /// Set tagged_data to the builder
-    pub fn with_tag<I: AsRef<[u8]>>(mut self, tag: I) -> Self {
-        self.tag.replace(tag.as_ref().into());
+    pub fn with_tag(mut self, tag: Vec<u8>) -> Self {
+        self.tag.replace(tag);
         self
     }
 
@@ -307,11 +297,11 @@ impl<'a> ClientBlockBuilder<'a> {
         }
 
         if let Some(tag) = options.tag {
-            self = self.with_tag(tag);
+            self = self.with_tag(prefix_hex::decode(&tag)?);
         }
 
         if let Some(data) = options.data {
-            self = self.with_data(data);
+            self = self.with_data(prefix_hex::decode(&data)?);
         }
 
         if let Some(parents) = options.parents {
@@ -353,122 +343,44 @@ impl<'a> ClientBlockBuilder<'a> {
     /// Get output amount and address from an OutputDto, governance_transition for Alias Outputs so we get the unlock
     /// condition we're interested in
     pub fn get_output_amount_and_address(
-        output: &OutputDto,
+        output: &Output,
         governance_transition: Option<HashSet<AliasId>>,
+        current_time: u32,
     ) -> Result<(u64, Address)> {
-        match output {
-            OutputDto::Treasury(_) => Err(Error::OutputError("Treasury output is no supported")),
-            OutputDto::Basic(ref r) => {
-                for block in &r.unlock_conditions {
-                    match block {
-                        UnlockConditionDto::Address(e) => {
-                            return Ok((
-                                r.amount
-                                    .parse::<u64>()
-                                    .map_err(|_| crate::Error::InvalidAmount(r.amount.clone()))?,
-                                Address::try_from(&e.address)?,
-                            ));
-                        }
-                        _ => todo!(),
-                    }
-                }
-                Err(Error::OutputError("Only Ed25519Address is implemented"))
-            }
-            OutputDto::Alias(ref r) => {
-                let alias_id = AliasId::try_from(&r.alias_id)?;
-                let mut is_governance_transition = false;
-                if let Some(governance_transition) = governance_transition {
-                    if governance_transition.contains(&alias_id) {
-                        is_governance_transition = true;
-                    }
-                }
-                for block in &r.unlock_conditions {
-                    match block {
-                        UnlockConditionDto::StateControllerAddress(e) => {
-                            if is_governance_transition {
-                                return Ok((
-                                    r.amount
-                                        .parse::<u64>()
-                                        .map_err(|_| crate::Error::InvalidAmount(r.amount.clone()))?,
-                                    Address::try_from(&e.address)?,
-                                ));
-                            }
-                        }
-                        UnlockConditionDto::GovernorAddress(e) => {
-                            if !is_governance_transition {
-                                return Ok((
-                                    r.amount
-                                        .parse::<u64>()
-                                        .map_err(|_| crate::Error::InvalidAmount(r.amount.clone()))?,
-                                    Address::try_from(&e.address)?,
-                                ));
-                            }
-                        }
-                        _ => todo!(),
-                    }
-                }
-                Err(Error::OutputError("Only Ed25519Address is implemented"))
-            }
-            OutputDto::Foundry(ref r) => {
-                for block in &r.unlock_conditions {
-                    match block {
-                        UnlockConditionDto::ImmutableAliasAddress(e) => {
-                            return Ok((
-                                r.amount
-                                    .parse::<u64>()
-                                    .map_err(|_| crate::Error::InvalidAmount(r.amount.clone()))?,
-                                Address::try_from(&e.address)?,
-                            ));
-                        }
-                        _ => todo!(),
-                    }
-                }
-                Err(Error::OutputError("Only Ed25519Address is implemented"))
-            }
-            OutputDto::Nft(ref r) => {
-                for block in &r.unlock_conditions {
-                    match block {
-                        UnlockConditionDto::Address(e) => {
-                            return Ok((
-                                r.amount
-                                    .parse::<u64>()
-                                    .map_err(|_| crate::Error::InvalidAmount(r.amount.clone()))?,
-                                Address::try_from(&e.address)?,
-                            ));
-                        }
-                        _ => todo!(),
-                    }
-                }
-                Err(Error::OutputError("Only Ed25519Address is implemented"))
-            }
-        }
-    }
+        let (amount, address, unlock_conditions) = match output {
+            Output::Treasury(_) => return Err(Error::OutputError("Treasury output is no supported")),
+            Output::Basic(ref output) => {
+                // PANIC: safe to unwrap as BasicOutput has to have an AddressUnlockCondition.
+                let address = output.unlock_conditions().address().unwrap();
 
-    // If custom inputs are provided we check if they are unspent, get the balance and search the address for it,
-    // governance_transition makes only a difference for alias outputs
-    // Careful with setting `allow_burning` to `true`, native tokens can get easily burned by accident.
-    async fn get_custom_inputs(
-        &self,
-        governance_transition: Option<HashSet<AliasId>>,
-        byte_cost_config: &ByteCostConfig,
-        allow_burning: bool,
-    ) -> Result<SelectedTransactionData> {
-        get_custom_inputs(self, governance_transition, byte_cost_config, allow_burning).await
-    }
+                (output.amount(), *address.address(), output.unlock_conditions())
+            }
+            Output::Alias(ref output) => {
+                let is_governance_transition = if let Some(governance_transition) = governance_transition {
+                    governance_transition.contains(output.alias_id())
+                } else {
+                    false
+                };
 
-    // Searches inputs for an amount which a user wants to spend, also checks that it doesn't create dust
-    async fn get_inputs(&self, byte_cost_config: &ByteCostConfig) -> Result<SelectedTransactionData> {
-        get_inputs(self, byte_cost_config).await
-    }
+                if is_governance_transition {
+                    (output.amount(), *output.governor_address(), output.unlock_conditions())
+                } else {
+                    (
+                        output.amount(),
+                        *output.state_controller_address(),
+                        output.unlock_conditions(),
+                    )
+                }
+            }
+            Output::Foundry(ref output) => (
+                output.amount(),
+                Address::Alias(*output.alias_address()),
+                output.unlock_conditions(),
+            ),
+            Output::Nft(ref output) => (output.amount(), *output.address(), output.unlock_conditions()),
+        };
 
-    /// Prepare a transaction
-    pub async fn prepare_transaction(&self) -> Result<PreparedTransactionData> {
-        prepare_transaction(self).await
-    }
-
-    /// Sign the transaction
-    pub async fn sign_transaction(&self, prepared_transaction_data: PreparedTransactionData) -> Result<Payload> {
-        sign_transaction(self, prepared_transaction_data).await
+        Ok((amount, *unlock_conditions.locked_address(&address, current_time)))
     }
 
     /// Consume the builder and get the API result
@@ -480,7 +392,7 @@ impl<'a> ClientBlockBuilder<'a> {
             let data = &self.data.as_ref().unwrap_or(empty_slice);
 
             // build tagged_data
-            let index = TaggedDataPayload::new(index.expect("No tagged_data tag").to_vec(), data.to_vec())
+            let index = TaggedDataPayload::new(index.expect("No tagged_data tag").to_vec(), (*data).clone())
                 .map_err(|e| Error::TaggedDataError(e.to_string()))?;
             payload = Payload::TaggedData(Box::new(index));
         }
@@ -491,62 +403,45 @@ impl<'a> ClientBlockBuilder<'a> {
 
     /// Builds the final block and posts it to the node
     pub async fn finish_block(self, payload: Option<Payload>) -> Result<Block> {
-        #[cfg(target_family = "wasm")]
-        let final_block = {
-            let parent_block_ids = match self.parents {
-                Some(parents) => parents,
-                _ => self.client.get_tips().await?,
-            };
-            let min_pow_score = self.client.get_min_pow_score().await?;
-            let network_id = self.client.get_network_id().await?;
-            crate::api::pow::finish_single_thread_pow(
-                self.client,
-                network_id,
-                Some(parent_block_ids),
-                payload,
-                min_pow_score,
-            )
-            .await?
-        };
-        #[cfg(not(target_family = "wasm"))]
+        // Do not replace parents with the latest tips if they are set explicitly,
+        // necessary for block promotion.
         let final_block = match self.parents {
             Some(mut parents) => {
-                // Sort parents
-                parents.sort_unstable_by_key(|a| a.pack_to_vec());
+                parents.sort_unstable_by_key(PackableExt::pack_to_vec);
                 parents.dedup();
 
                 let min_pow_score = self.client.get_min_pow_score().await?;
-                let mut client_miner = ClientMinerBuilder::new().with_local_pow(self.client.get_local_pow().await);
-                if let Some(worker_count) = self.client.pow_worker_count {
-                    client_miner = client_miner.with_worker_count(worker_count);
-                }
-                do_pow(client_miner.finish(), min_pow_score, payload, parents)?
-                    .1
-                    .ok_or_else(|| Error::Pow("final block pow failed.".to_string()))?
+                let miner = self.client.get_pow_provider().await;
+                do_pow(miner, min_pow_score, payload, parents)?
             }
-            None => finish_pow(self.client, payload).await?,
+            None => {
+                #[cfg(target_family = "wasm")]
+                let block = crate::api::pow::finish_single_threaded_pow(self.client, payload).await?;
+                #[cfg(not(target_family = "wasm"))]
+                let block = crate::api::pow::finish_multi_threaded_pow(self.client, payload).await?;
+                block
+            }
         };
 
         let block_id = self.client.post_block_raw(&final_block).await?;
         // Get block if we use remote PoW, because the node will change parents and nonce
-        match self.client.get_local_pow().await {
-            true => Ok(final_block),
-            false => {
-                // Request block multiple times because the node maybe didn't process it completely in this time
-                // or a node balancer could be used which forwards the request to different node than we published
-                for time in 1..3 {
-                    if let Ok(block) = self.client.get_block(&block_id).await {
-                        return Ok(block);
-                    }
-                    #[cfg(not(target_family = "wasm"))]
-                    sleep(Duration::from_millis(time * 50)).await;
-                    #[cfg(target_family = "wasm")]
-                    {
-                        TimeoutFuture::new((time * 50).try_into().unwrap()).await;
-                    }
+        if self.client.get_local_pow().await {
+            Ok(final_block)
+        } else {
+            // Request block multiple times because the node maybe didn't process it completely in this time
+            // or a node balancer could be used which forwards the request to different node than we published
+            for time in 1..3 {
+                if let Ok(block) = self.client.get_block(&block_id).await {
+                    return Ok(block);
                 }
-                self.client.get_block(&block_id).await
+                #[cfg(not(target_family = "wasm"))]
+                tokio::time::sleep(std::time::Duration::from_millis(time * 50)).await;
+                #[cfg(target_family = "wasm")]
+                {
+                    gloo_timers::future::TimeoutFuture::new((time * 50).try_into().unwrap()).await;
+                }
             }
+            self.client.get_block(&block_id).await
         }
     }
 }

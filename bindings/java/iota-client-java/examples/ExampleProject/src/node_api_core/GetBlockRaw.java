@@ -7,22 +7,17 @@ import org.iota.types.ClientException;
 import org.iota.types.ids.BlockId;
 
 public class GetBlockRaw {
-
-    private static final String DEFAULT_TESTNET_NODE_URL = "http://localhost:14265";
-    private static ClientConfig config = new ClientConfig("{ \"nodes\": [\"" + DEFAULT_TESTNET_NODE_URL + "\" ], \"nodeSyncEnabled\": false}");
-
     public static void main(String[] args) throws ClientException {
         // Build the client.
-        Client client = new Client(config);
+        Client client = new Client(new ClientConfig().withNodes(new String[]{"https://api.testnet.shimmer.network"}));
 
-        // Get a block id for which the block can be requested.
+        // Set up a block ID for this example.
         BlockId blockId = ExampleUtils.setUpBlockId(client);
 
-        // Get the block.
+        // Get the block bytes.
         byte[] blockBytes = client.getBlockRaw(blockId);
 
-        // Print the bytes
+        // Print the block bytes.
         System.out.println(Hex.encodeHex(blockBytes));
     }
-
 }

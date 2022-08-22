@@ -34,7 +34,7 @@ pub extern "system" fn Java_org_iota_apis_BaseApi_callNativeLibrary(
         .into();
 
     let message_handler = crate::block_on(async {
-        iota_client::message_interface::create_message_handler(Some(client_config.to_string())).await
+        iota_client::message_interface::create_message_handler(Some(client_config.to_string()))
     })
     .unwrap();
 

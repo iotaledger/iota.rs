@@ -3,11 +3,8 @@
 
 //! cargo run --example basic --release
 
-use std::env;
-
-use dotenv::dotenv;
 use iota_client::{
-    bee_block::output::{
+    block::output::{
         feature::MetadataFeature,
         unlock_condition::{
             AddressUnlockCondition, ExpirationUnlockCondition, StorageDepositReturnUnlockCondition,
@@ -27,20 +24,19 @@ async fn main() -> Result<()> {
     // This example uses dotenv, which is not safe for use in production!
     // Configure your own mnemonic in the ".env" file. Since the output amount cannot be zero, the seed must contain
     // non-zero balance.
-    dotenv().ok();
+    dotenv::dotenv().ok();
 
-    let node_url = env::var("NODE_URL").unwrap();
-    let faucet_url = env::var("FAUCET_URL").unwrap();
+    let node_url = std::env::var("NODE_URL").unwrap();
+    let faucet_url = std::env::var("FAUCET_URL").unwrap();
 
     // Create a client instance.
     let client = Client::builder()
         .with_node(&node_url)?
         .with_node_sync_disabled()
-        .finish()
-        .await?;
+        .finish()?;
 
     let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
-        &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
+        &std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
     )?);
 
     let address = client.get_addresses(&secret_manager).with_range(0..1).get_raw().await?[0];
@@ -63,9 +59,9 @@ async fn main() -> Result<()> {
         // with storage deposit return
         basic_output_builder
             .clone()
-            .with_amount(234100)?
+            .with_amount(234_100)?
             .add_unlock_condition(UnlockCondition::StorageDepositReturn(
-                StorageDepositReturnUnlockCondition::new(address, 234000)?,
+                StorageDepositReturnUnlockCondition::new(address, 234_000)?,
             ))
             .finish_output()?,
         // with expiration

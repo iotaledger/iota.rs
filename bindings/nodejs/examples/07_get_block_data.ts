@@ -1,6 +1,7 @@
 // Copyright 2021-2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 import { Client, initLogger } from '@iota/client';
+require('dotenv').config({ path: '../.env' });
 
 // Run with command:
 // node ./dist/07_get_block_data.js
@@ -8,31 +9,27 @@ import { Client, initLogger } from '@iota/client';
 // In this example we will send a block and get the data and metadata for it
 async function run() {
     initLogger();
+    if (!process.env.NODE_URL) {
+        throw new Error('.env NODE_URL is undefined, see .env.example');
+    }
 
-    // client will connect to testnet by default
     const client = new Client({
-        nodes: [
-            {
-                // Insert your node URL here.
-                url: 'http://localhost:14265',
-            },
-        ],
-        localPow: true,
+        // Insert your node URL in the .env.
+        nodes: [process.env.NODE_URL],
     });
 
     try {
-        // Create block with no payload
-        const block = await client.generateBlock();
-        console.log('Block:', block, '\n');
+        // Create block with no payload.
+        const blockIdAndBlock = await client.buildAndPostBlock();
+        console.log('Block:', blockIdAndBlock, '\n');
 
-        // Send block
-        const blockId = await client.postBlock(block);
-
-        const blockData = await client.getBlock(blockId);
-        const blockMetadata = await client.getBlockMetadata(blockId);
-
-        console.log('Block data: ', blockData, '\n');
+        // Get the metadata for the block.
+        const blockMetadata = await client.getBlockMetadata(blockIdAndBlock[0]);
         console.log('Block metadata: ', blockMetadata, '\n');
+
+        // Request the block by its id.
+        const blockData = await client.getBlock(blockIdAndBlock[0]);
+        console.log('Block data: ', blockData, '\n');
     } catch (error) {
         console.error('Error: ', error);
     }

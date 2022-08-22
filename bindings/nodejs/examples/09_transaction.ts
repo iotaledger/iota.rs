@@ -9,15 +9,13 @@ require('dotenv').config({ path: '../.env' });
 // In this example we will send a transaction
 async function run() {
     initLogger();
+    if (!process.env.NODE_URL) {
+        throw new Error('.env NODE_URL is undefined, see .env.example');
+    }
 
-    // client will connect to testnet by default
     const client = new Client({
-        nodes: [
-            {
-                // Insert your node URL here.
-                url: 'http://localhost:14265',
-            },
-        ],
+        // Insert your node URL in the .env.
+        nodes: [process.env.NODE_URL],
         localPow: true,
     });
 
@@ -42,19 +40,16 @@ async function run() {
 
         // We prepare the transaction
         // Insert the output address and amount to spend. The amount cannot be zero.
-        const block = await client.generateBlock(secretManager, {
+        const blockIdAndBlock = await client.buildAndPostBlock(secretManager, {
             output: {
                 address: addresses[0],
                 amount: '1000000',
             },
         });
-        console.log('Block: ', block, '\n');
-
-        // Send transaction
-        const blockId = await client.postBlock(block);
+        console.log('Block: ', blockIdAndBlock, '\n');
 
         console.log(
-            `Transaction sent: https://explorer.iota.org/devnet/block/${blockId}`,
+            `Transaction sent: ${process.env.EXPLORER_URL}/block/${blockIdAndBlock[0]}`,
         );
     } catch (error) {
         console.error('Error: ', error);

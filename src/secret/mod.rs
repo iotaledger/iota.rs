@@ -25,7 +25,7 @@ use bee_block::{
     output::Output,
     unlock::{AliasUnlock, NftUnlock, ReferenceUnlock, Unlock, Unlocks},
 };
-pub use types::{GenerateAddressMetadata, LedgerStatus};
+pub use types::{GenerateAddressMetadata, LedgerNanoStatus};
 use zeroize::ZeroizeOnDrop;
 
 #[cfg(feature = "ledger_nano")]
@@ -93,15 +93,10 @@ pub enum SecretManager {
     #[cfg_attr(docsrs, doc(cfg(feature = "stronghold")))]
     Stronghold(StrongholdSecretManager),
 
-    /// Secret manager that uses a Ledger hardware wallet.
+    /// Secret manager that uses a Ledger Nano hardware wallet or Speculos simulator.
     #[cfg(feature = "ledger_nano")]
     #[cfg_attr(docsrs, doc(cfg(feature = "ledger_nano")))]
     LedgerNano(LedgerSecretManager),
-
-    /// Secret manager that uses a Ledger Speculos simulator.
-    #[cfg(feature = "ledger_nano")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "ledger_nano")))]
-    LedgerNanoSimulator(LedgerSecretManager),
 
     /// Secret manager that uses only a mnemonic.
     Mnemonic(MnemonicSecretManager),
@@ -118,8 +113,6 @@ impl std::fmt::Debug for SecretManager {
             Self::Stronghold(_) => f.debug_tuple("Stronghold").field(&"...").finish(),
             #[cfg(feature = "ledger_nano")]
             Self::LedgerNano(_) => f.debug_tuple("LedgerNano").field(&"...").finish(),
-            #[cfg(feature = "ledger_nano")]
-            Self::LedgerNanoSimulator(_) => f.debug_tuple("LedgerNanoSimulator").field(&"...").finish(),
             Self::Mnemonic(_) => f.debug_tuple("Mnemonic").field(&"...").finish(),
             Self::Placeholder(_) => f.debug_struct("Placeholder").finish(),
         }
@@ -141,12 +134,9 @@ pub enum SecretManagerDto {
     #[cfg(feature = "stronghold")]
     #[cfg_attr(docsrs, doc(cfg(feature = "stronghold")))]
     Stronghold(StrongholdDto),
-    /// Ledger Device
+    /// Ledger Device, bool specifies if it's a simulator or not
     #[cfg(feature = "ledger_nano")]
-    LedgerNano,
-    /// Ledger Speculos Simulator
-    #[cfg(feature = "ledger_nano")]
-    LedgerNanoSimulator,
+    LedgerNano(bool),
     /// Mnemonic
     Mnemonic(String),
     /// Hex seed
@@ -171,18 +161,11 @@ impl TryFrom<&SecretManagerDto> for SecretManager {
                     builder = builder.timeout(Duration::from_secs(*timeout));
                 }
 
-                if let Some(snapshot_path) = &stronghold_dto.snapshot_path {
-                    builder = builder.snapshot_path(PathBuf::from(snapshot_path));
-                }
-
-                Self::Stronghold(builder.try_build()?)
+                Self::Stronghold(builder.try_build(PathBuf::from(&stronghold_dto.snapshot_path))?)
             }
 
             #[cfg(feature = "ledger_nano")]
-            SecretManagerDto::LedgerNano => Self::LedgerNano(LedgerSecretManager::new(false)),
-
-            #[cfg(feature = "ledger_nano")]
-            SecretManagerDto::LedgerNanoSimulator => Self::LedgerNanoSimulator(LedgerSecretManager::new(true)),
+            SecretManagerDto::LedgerNano(is_simulator) => Self::LedgerNano(LedgerSecretManager::new(*is_simulator)),
 
             SecretManagerDto::Mnemonic(mnemonic) => Self::Mnemonic(MnemonicSecretManager::try_from_mnemonic(mnemonic)?),
 
@@ -202,15 +185,14 @@ impl From<&SecretManager> for SecretManagerDto {
                 timeout: stronghold_adapter.get_timeout().map(|duration| duration.as_secs()),
                 snapshot_path: stronghold_adapter
                     .snapshot_path
-                    .as_ref()
-                    .map(|s| s.clone().into_os_string().to_string_lossy().into()),
+                    .clone()
+                    .into_os_string()
+                    .to_string_lossy()
+                    .into(),
             }),
 
             #[cfg(feature = "ledger_nano")]
-            SecretManager::LedgerNano(_) => Self::LedgerNano,
-
-            #[cfg(feature = "ledger_nano")]
-            SecretManager::LedgerNanoSimulator(_) => Self::LedgerNanoSimulator,
+            SecretManager::LedgerNano(ledger_nano) => Self::LedgerNano(ledger_nano.is_simulator),
 
             // `MnemonicSecretManager(Seed)` doesn't have Debug or Display implemented and in the current use cases of
             // the client/wallet we also don't need to convert it in this direction with the mnemonic/seed, we only need
@@ -239,7 +221,7 @@ impl SecretManage for SecretManager {
                     .await
             }
             #[cfg(feature = "ledger_nano")]
-            SecretManager::LedgerNano(secret_manager) | SecretManager::LedgerNanoSimulator(secret_manager) => {
+            SecretManager::LedgerNano(secret_manager) => {
                 secret_manager
                     .generate_addresses(coin_type, account_index, address_indexes, internal, metadata)
                     .await
@@ -269,7 +251,7 @@ impl SecretManage for SecretManager {
                 secret_manager.signature_unlock(input, essence_hash, metadata).await
             }
             #[cfg(feature = "ledger_nano")]
-            SecretManager::LedgerNano(secret_manager) | SecretManager::LedgerNanoSimulator(secret_manager) => {
+            SecretManager::LedgerNano(secret_manager) => {
                 secret_manager.signature_unlock(input, essence_hash, metadata).await
             }
             SecretManager::Mnemonic(secret_manager) => {
@@ -292,7 +274,7 @@ impl SecretManageExt for SecretManager {
             #[cfg(feature = "stronghold")]
             SecretManager::Stronghold(_) => self.default_sign_transaction_essence(prepared_transaction_data).await,
             #[cfg(feature = "ledger_nano")]
-            SecretManager::LedgerNano(secret_manager) | SecretManager::LedgerNanoSimulator(secret_manager) => {
+            SecretManager::LedgerNano(secret_manager) => {
                 secret_manager.sign_transaction_essence(prepared_transaction_data).await
             }
             SecretManager::Mnemonic(_) => self.default_sign_transaction_essence(prepared_transaction_data).await,
@@ -312,6 +294,7 @@ impl SecretManager {
         let mut blocks = Vec::new();
         let mut block_indexes = HashMap::<Address, usize>::new();
 
+        // Assuming inputs_data is ordered by address type
         for (current_block_index, input) in prepared_transaction_data.inputs_data.iter().enumerate() {
             // Get the address that is required to unlock the input
             let (_, input_address) = Address::try_from_bech32(&input.bech32_address)?;
@@ -322,7 +305,7 @@ impl SecretManager {
                 Some(block_index) => match input_address {
                     Address::Alias(_alias) => blocks.push(Unlock::Alias(AliasUnlock::new(*block_index as u16)?)),
                     Address::Ed25519(_ed25519) => {
-                        blocks.push(Unlock::Reference(ReferenceUnlock::new(*block_index as u16)?))
+                        blocks.push(Unlock::Reference(ReferenceUnlock::new(*block_index as u16)?));
                     }
                     Address::Nft(_nft) => blocks.push(Unlock::Nft(NftUnlock::new(*block_index as u16)?)),
                 },
@@ -331,7 +314,7 @@ impl SecretManager {
                     // address already at this point, because the reference index needs to be lower
                     // than the current block index
                     if !input_address.is_ed25519() {
-                        return Err(crate::Error::MissingInputWithEd25519UnlockCondition);
+                        return Err(crate::Error::MissingInputWithEd25519Address);
                     }
 
                     let block = self

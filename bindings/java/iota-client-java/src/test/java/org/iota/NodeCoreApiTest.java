@@ -10,6 +10,7 @@ import org.iota.types.ids.OutputId;
 import org.iota.types.responses.NodeInfoResponse;
 import org.iota.types.responses.TreasuryResponse;
 import org.iota.types.responses.UtxoChangesResponse;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -18,7 +19,7 @@ public class NodeCoreApiTest extends ApiTest {
 
     @Test
     public void testGetHealth() throws ClientException {
-        boolean health = client.getHealth(DEFAULT_DEVNET_NODE_URL);
+        boolean health = client.getHealth(DEFAULT_TESTNET_FAUCET_URL);
         System.out.println(health);
     }
 
@@ -138,6 +139,7 @@ public class NodeCoreApiTest extends ApiTest {
     }
 
     @Test
+    @Disabled
     public void testGetPeers() throws ClientException {
         for (Peer peer : client.getPeers())
             System.out.println(peer);

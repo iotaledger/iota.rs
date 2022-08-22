@@ -6,18 +6,21 @@
 //! High-level functions are accessible via the [`Client`][client::Client].
 //!
 //! ## Sending a block without a payload
-//!  ```compile_fail
+//!  ```no_run
+//! # use iota_client::{Client, Result};
+//! # #[tokio::main]
+//! # async fn main() -> Result<()> {
 //! let client = Client::builder()
 //!    .with_node("http://localhost:14265")?
-//!    .finish()
-//!    .await?;
+//!    .finish()?;
 //!
-//! let block = iota
+//! let block = client
 //!    .block()
 //!    .finish()
 //!    .await?;
 //!
 //! println!("Block sent {}", block.id());
+//! # Ok(())}
 //! ```
 
 #![deny(unused_extern_crates)]
@@ -52,11 +55,10 @@ pub mod secret;
 pub mod stronghold;
 pub mod utils;
 
-pub use bee_block;
+pub use bee_api_types as api_types;
+pub use bee_block as block;
 pub use bee_pow as pow;
-pub use bee_rest_api;
 pub use crypto::{self, keys::slip10::Seed};
-pub use fern_logger as logger;
 pub use packable;
 pub use url::Url;
 

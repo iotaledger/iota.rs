@@ -17,6 +17,7 @@ public class SeedSecretManager extends SecretManager {
     public JsonObject getJson() {
         JsonObject o = new JsonObject();
         o.addProperty("HexSeed", hexSeed);
+
         return o;
     }
 }

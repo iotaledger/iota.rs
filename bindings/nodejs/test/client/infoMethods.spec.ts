@@ -57,8 +57,8 @@ describe.skip('Client info methods', () => {
         const networkInfo = await client.getNetworkInfo();
 
         expect(networkInfo.localPow).toBeTruthy();
-        expect(networkInfo.minPoWScore).toBe(1000);
-        expect(networkInfo.bech32HRP).toBe('rms');
+        expect(networkInfo.minPowScore).toBe(1000);
+        expect(networkInfo.bech32Hrp).toBe('rms');
     });
 
     it('gets networkId', async () => {

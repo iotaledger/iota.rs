@@ -44,7 +44,7 @@ public class IndexerApiTest extends ApiTest {
     public void testGetAliasOutputIdByAliasId() throws ClientException {
         OutputId outputId = null;
         for (OutputId id : client.getAliasOutputIds(new NodeIndexerApi.QueryParams())) {
-            if (client.getOutput(id).getKey().getJson().get("aliasId").getAsString().equals("0x0000000000000000000000000000000000000000000000000000000000000000")) {
+            if (client.getOutput(id).getKey().toJson().get("aliasId").getAsString().equals("0x0000000000000000000000000000000000000000000000000000000000000000")) {
                 outputId = id;
                 break;
             }
@@ -57,9 +57,9 @@ public class IndexerApiTest extends ApiTest {
     public void testGetFoundryOutputIdByFoundryId() throws ClientException {
         OutputId foundryOutputId = client.getFoundryOutputIds(new NodeIndexerApi.QueryParams())[0];
         Output foundryOutput = client.getOutput(foundryOutputId).getKey();
-        String aliasId = foundryOutput.getJson().get("unlockConditions").getAsJsonArray().get(0).getAsJsonObject().get("address").getAsJsonObject().get("aliasId").getAsString();
-        int serialNumber = foundryOutput.getJson().get("serialNumber").getAsInt();
-        int tokenScheme = foundryOutput.getJson().get("tokenScheme").getAsJsonObject().get("type").getAsInt();
+        String aliasId = foundryOutput.toJson().get("unlockConditions").getAsJsonArray().get(0).getAsJsonObject().get("address").getAsJsonObject().get("aliasId").getAsString();
+        int serialNumber = foundryOutput.toJson().get("serialNumber").getAsInt();
+        int tokenScheme = foundryOutput.toJson().get("tokenScheme").getAsJsonObject().get("type").getAsInt();
         FoundryId foundryId = client.computeFoundryId(aliasId, serialNumber, tokenScheme);
         assertEquals(client.getFoundryOutputIdByFoundryId(foundryId), foundryOutputId);
     }
@@ -68,7 +68,7 @@ public class IndexerApiTest extends ApiTest {
     public void testGetNftOutputIdByNftId() throws ClientException {
         OutputId nftOutputId = null;
         for (OutputId id : client.getNftOutputIds(new NodeIndexerApi.QueryParams())) {
-            if (client.getOutput(id).getKey().getJson().get("nftId").getAsString().equals("0x0000000000000000000000000000000000000000000000000000000000000000")) {
+            if (client.getOutput(id).getKey().toJson().get("nftId").getAsString().equals("0x0000000000000000000000000000000000000000000000000000000000000000")) {
                 nftOutputId = id;
                 break;
             }

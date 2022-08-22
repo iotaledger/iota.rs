@@ -5,8 +5,8 @@
 
 pub mod routes;
 
+use bee_api_types::responses::OutputResponse;
 use bee_block::output::OutputId;
-use bee_rest_api::types::responses::OutputResponse;
 
 #[cfg(not(target_family = "wasm"))]
 use crate::constants::MAX_PARALLEL_API_REQUESTS;
@@ -21,10 +21,7 @@ impl Client {
             outputs.push(self.get_output(&output_id).await?);
         }
         #[cfg(not(target_family = "wasm"))]
-        for output_ids_chunk in output_ids
-            .chunks(MAX_PARALLEL_API_REQUESTS)
-            .map(|x: &[OutputId]| x.to_vec())
-        {
+        for output_ids_chunk in output_ids.chunks(MAX_PARALLEL_API_REQUESTS).map(<[OutputId]>::to_vec) {
             let mut tasks = Vec::new();
             for output_id in output_ids_chunk {
                 let client_ = self.clone();
@@ -56,10 +53,7 @@ impl Client {
             }
         }
         #[cfg(not(target_family = "wasm"))]
-        for output_ids_chunk in output_ids
-            .chunks(MAX_PARALLEL_API_REQUESTS)
-            .map(|x: &[OutputId]| x.to_vec())
-        {
+        for output_ids_chunk in output_ids.chunks(MAX_PARALLEL_API_REQUESTS).map(<[OutputId]>::to_vec) {
             let mut tasks = Vec::new();
             for output_id in output_ids_chunk {
                 let client_ = self.clone();

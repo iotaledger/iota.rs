@@ -13,8 +13,9 @@ pub struct QueryParameters(Vec<QueryParameter>);
 
 impl QueryParameters {
     /// Creates a hashset from a provided vec of query parameters.
+    #[must_use]
     pub fn new(mut query_parameters: Vec<QueryParameter>) -> Self {
-        query_parameters.sort_unstable_by_key(|qp| qp.kind());
+        query_parameters.sort_unstable_by_key(QueryParameter::kind);
         query_parameters.dedup_by_key(|qp| qp.kind());
 
         Self(query_parameters)
@@ -22,7 +23,10 @@ impl QueryParameters {
 
     /// Replaces or inserts an enum variant in the QueryParameters.
     pub fn replace(&mut self, query_parameter: QueryParameter) {
-        match self.0.binary_search_by_key(&query_parameter.kind(), |qp| qp.kind()) {
+        match self
+            .0
+            .binary_search_by_key(&query_parameter.kind(), QueryParameter::kind)
+        {
             Ok(pos) => self.0[pos] = query_parameter,
             Err(pos) => self.0.insert(pos, query_parameter),
         }
@@ -36,7 +40,7 @@ impl QueryParameters {
             Some(
                 self.0
                     .iter()
-                    .map(|q| q.to_query_string())
+                    .map(QueryParameter::to_query_string)
                     .collect::<Vec<String>>()
                     .join("&"),
             )
@@ -68,13 +72,13 @@ pub enum QueryParameter {
     /// Filters outputs based on bech32-encoded governor (governance controller) address.
     Governor(String),
     /// Filters outputs based on the presence of expiration unlock condition.
-    HasExpirationCondition(bool),
+    HasExpiration(bool),
     /// Filters outputs based on the presence of native tokens.
     HasNativeTokens(bool),
-    /// Filters outputs based on the presence of storage return unlock condition.
-    HasStorageReturnCondition(bool),
+    /// Filters outputs based on the presence of storage deposit return unlock condition.
+    HasStorageDepositReturn(bool),
     /// Filters outputs based on the presence of timelock unlock condition.
-    HasTimelockCondition(bool),
+    HasTimelock(bool),
     /// Filters outputs based on bech32-encoded issuer address.
     Issuer(String),
     /// Filters outputs that have at most a certain number of distinct native tokens.
@@ -88,8 +92,9 @@ pub enum QueryParameter {
     Sender(String),
     /// Filters outputs based on bech32-encoded state controller address.
     StateController(String),
-    /// Filters outputs based on the presence of a specific return address in the storage return unlock condition.
-    StorageReturnAddress(String),
+    /// Filters outputs based on the presence of a specific return address in the storage deposit return unlock
+    /// condition.
+    StorageDepositReturnAddress(String),
     /// Filters outputs based on matching Tag Block.
     Tag(String),
     /// Returns outputs that are timelocked after a certain Unix timestamp.
@@ -110,17 +115,17 @@ impl QueryParameter {
             QueryParameter::ExpiresAfter(v) => format!("expiresAfter={}", v),
             QueryParameter::ExpiresBefore(v) => format!("expiresBefore={}", v),
             QueryParameter::Governor(v) => format!("governor={}", v),
-            QueryParameter::HasExpirationCondition(v) => format!("hasExpirationCondition={}", v),
+            QueryParameter::HasExpiration(v) => format!("hasExpiration={}", v),
             QueryParameter::HasNativeTokens(v) => format!("hasNativeTokens={}", v),
-            QueryParameter::HasStorageReturnCondition(v) => format!("hasStorageReturnCondition={}", v),
-            QueryParameter::HasTimelockCondition(v) => format!("hasTimelockCondition={}", v),
+            QueryParameter::HasStorageDepositReturn(v) => format!("hasStorageDepositReturn={}", v),
+            QueryParameter::HasTimelock(v) => format!("hasTimelock={}", v),
             QueryParameter::Issuer(v) => format!("issuer={}", v),
             QueryParameter::MaxNativeTokenCount(v) => format!("maxNativeTokenCount={}", v),
             QueryParameter::MinNativeTokenCount(v) => format!("minNativeTokenCount={}", v),
             QueryParameter::PageSize(v) => format!("pageSize={}", v),
             QueryParameter::Sender(v) => format!("sender={}", v),
             QueryParameter::StateController(v) => format!("stateController={}", v),
-            QueryParameter::StorageReturnAddress(v) => format!("storageReturnAddress={}", v),
+            QueryParameter::StorageDepositReturnAddress(v) => format!("storageDepositReturnAddress={}", v),
             QueryParameter::Tag(v) => format!("tag={}", v),
             QueryParameter::TimelockedAfter(v) => format!("timelockedAfter={}", v),
             QueryParameter::TimelockedBefore(v) => format!("timelockedBefore={}", v),
@@ -138,17 +143,17 @@ impl QueryParameter {
             QueryParameter::ExpiresAfter(_) => 6,
             QueryParameter::ExpiresBefore(_) => 7,
             QueryParameter::Governor(_) => 8,
-            QueryParameter::HasExpirationCondition(_) => 9,
+            QueryParameter::HasExpiration(_) => 9,
             QueryParameter::HasNativeTokens(_) => 10,
-            QueryParameter::HasStorageReturnCondition(_) => 11,
-            QueryParameter::HasTimelockCondition(_) => 12,
+            QueryParameter::HasStorageDepositReturn(_) => 11,
+            QueryParameter::HasTimelock(_) => 12,
             QueryParameter::Issuer(_) => 13,
             QueryParameter::MaxNativeTokenCount(_) => 14,
             QueryParameter::MinNativeTokenCount(_) => 15,
             QueryParameter::PageSize(_) => 16,
             QueryParameter::Sender(_) => 17,
             QueryParameter::StateController(_) => 18,
-            QueryParameter::StorageReturnAddress(_) => 19,
+            QueryParameter::StorageDepositReturnAddress(_) => 19,
             QueryParameter::Tag(_) => 20,
             QueryParameter::TimelockedAfter(_) => 21,
             QueryParameter::TimelockedBefore(_) => 22,

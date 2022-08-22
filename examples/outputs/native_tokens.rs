@@ -3,14 +3,10 @@
 
 //! cargo run --example native_tokens --release
 
-use std::{
-    env,
-    time::{Duration, SystemTime, UNIX_EPOCH},
-};
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-use dotenv::dotenv;
 use iota_client::{
-    bee_block::output::{
+    block::output::{
         unlock_condition::{
             AddressUnlockCondition, ExpirationUnlockCondition, StorageDepositReturnUnlockCondition, UnlockCondition,
         },
@@ -31,26 +27,27 @@ async fn main() -> Result<()> {
     // This example uses dotenv, which is not safe for use in production!
     // Configure your own mnemonic in the ".env" file. Since the output amount cannot be zero, the seed must contain
     // non-zero balance.
-    dotenv().ok();
+    dotenv::dotenv().ok();
 
-    let node_url = env::var("NODE_URL").unwrap();
-    let faucet_url = env::var("FAUCET_URL").unwrap();
+    let node_url = std::env::var("NODE_URL").unwrap();
+    let faucet_url = std::env::var("FAUCET_URL").unwrap();
 
     // Create a client instance.
     let client = Client::builder()
         .with_node(&node_url)?
         .with_node_sync_disabled()
-        .finish()
-        .await?;
+        .finish()?;
 
     let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
-        &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
+        &std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
     )?);
 
     let addresses = client.get_addresses(&secret_manager).with_range(0..2).get_raw().await?;
     let sender_address = addresses[0];
     let receiver_address = addresses[1];
+
     request_funds_from_faucet(&faucet_url, &sender_address.to_bech32(client.get_bech32_hrp().await?)).await?;
+    tokio::time::sleep(std::time::Duration::from_secs(15)).await;
 
     let tomorrow = (SystemTime::now() + Duration::from_secs(24 * 3600))
         .duration_since(UNIX_EPOCH)
@@ -61,9 +58,7 @@ async fn main() -> Result<()> {
 
     // Replace with the token ID of native tokens you own.
     let token_id: [u8; 38] =
-        hex::decode("08e68f7616cd4948efebc6a77c4f935eaed770ac53869cba56d104f2b472a8836d0100000000")?
-            .try_into()
-            .unwrap();
+        prefix_hex::decode("0x08e68f7616cd4948efebc6a77c4f935eaed770ac53869cba56d104f2b472a8836d0100000000")?;
 
     let outputs = vec![
         // Without StorageDepositReturnUnlockCondition, the receiver will get the amount of the output and the native
@@ -83,9 +78,10 @@ async fn main() -> Result<()> {
             ))
             // If the receiver does not consume this output, we unlock after a day to avoid
             // locking our funds forever.
-            .add_unlock_condition(UnlockCondition::Expiration(
-                ExpirationUnlockCondition::new(sender_address, tomorrow).unwrap(),
-            ))
+            .add_unlock_condition(UnlockCondition::Expiration(ExpirationUnlockCondition::new(
+                sender_address,
+                tomorrow,
+            )?))
             .finish_output()?,
     ];
 

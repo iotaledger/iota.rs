@@ -7,11 +7,15 @@ import com.google.gson.JsonObject;
 import org.iota.apis.*;
 import org.iota.types.*;
 import org.iota.types.ids.*;
+import org.iota.types.output_builder.AliasOutputBuilderParams;
+import org.iota.types.output_builder.BasicOutputBuilderParams;
+import org.iota.types.output_builder.FoundryOutputBuilderParams;
+import org.iota.types.output_builder.NftOutputBuilderParams;
 import org.iota.types.responses.NodeInfoResponse;
 import org.iota.types.responses.TreasuryResponse;
 import org.iota.types.responses.UtxoChangesResponse;
 import org.iota.types.secret.GenerateAddressesOptions;
-import org.iota.types.secret.GenerateBlockOptions;
+import org.iota.types.secret.BuildBlockOptions;
 import org.iota.types.secret.Range;
 import org.iota.types.secret.SecretManager;
 
@@ -174,8 +178,8 @@ public class Client {
         return highLevelApi.retryUntilIncluded(blockId, interval, maxAttempts);
     }
 
-    public String consolidateFunds(SecretManager secretManager, int accountIndex, Range addressRange) throws ClientException {
-        return highLevelApi.consolidateFunds(secretManager, accountIndex, addressRange);
+    public String consolidateFunds(SecretManager secretManager, GenerateAddressesOptions generateAddressesOptions) throws ClientException {
+        return highLevelApi.consolidateFunds(secretManager, generateAddressesOptions);
     }
 
     public UtxoInput[] findInputs(String[] addresses, int amount) throws ClientException {
@@ -254,12 +258,36 @@ public class Client {
 
     // Miscellaneous APIs
 
+    public Output buildAliasOutput(
+            AliasOutputBuilderParams params
+    ) throws ClientException {
+        return miscellaneousApi.buildAliasOutput(params);
+    }
+
+    public Output buildBasicOutput(
+            BasicOutputBuilderParams params
+    ) throws ClientException {
+        return miscellaneousApi.buildBasicOutput(params);
+    }
+
+    public Output buildFoundryOutput(
+            FoundryOutputBuilderParams params
+    ) throws ClientException {
+        return miscellaneousApi.buildFoundryOutput(params);
+    }
+
+    public Output buildNftOutput(
+            NftOutputBuilderParams params
+    ) throws ClientException {
+        return miscellaneousApi.buildNftOutput(params);
+    }
+
     public String[] generateAddresses(SecretManager secretManager, GenerateAddressesOptions generateAddressesOptions) throws ClientException {
         return miscellaneousApi.generateAddresses(secretManager, generateAddressesOptions);
     }
 
-    public Block generateBlock(SecretManager secretManager, GenerateBlockOptions options) throws ClientException {
-        return miscellaneousApi.generateBlock(secretManager, options);
+    public Map.Entry<BlockId, Block> buildAndPostBlock(SecretManager secretManager, BuildBlockOptions options) throws ClientException {
+        return miscellaneousApi.buildAndPostBlock(secretManager, options);
     }
 
 
@@ -279,8 +307,8 @@ public class Client {
         return miscellaneousApi.getBech32Hrp();
     }
 
-    public float getMinPoWScore() throws ClientException {
-        return miscellaneousApi.getMinPoWScore();
+    public float getMinPowScore() throws ClientException {
+        return miscellaneousApi.getMinPowScore();
     }
 
     public int getTipsInterval() throws ClientException {
@@ -291,16 +319,20 @@ public class Client {
         return miscellaneousApi.getLocalPow();
     }
 
-    public boolean getFallbackToLocalPoW() throws ClientException {
-        return miscellaneousApi.isFallbackToLocalPoW();
+    public boolean getFallbackToLocalPow() throws ClientException {
+        return miscellaneousApi.isFallbackToLocalPow();
     }
 
     public Node[] getUnsyncedNodes() throws ClientException {
         return miscellaneousApi.getUnsyncedNodes();
     }
 
-    public PreparedTransactionData prepareTransaction(SecretManager secretManager, GenerateBlockOptions generateBlockOptions) throws ClientException {
-        return miscellaneousApi.prepareTransaction(secretManager, generateBlockOptions);
+    public LedgerNanoStatus getLedgerNanoStatus(boolean isSimulator) throws ClientException {
+        return miscellaneousApi.getLedgerNanoStatus(isSimulator);
+    }
+
+    public PreparedTransactionData prepareTransaction(SecretManager secretManager, BuildBlockOptions buildBlockOptions) throws ClientException {
+        return miscellaneousApi.prepareTransaction(secretManager, buildBlockOptions);
     }
 
     public TransactionPayload signTransaction(SecretManager secretManager, PreparedTransactionData preparedTransactionData) throws ClientException {

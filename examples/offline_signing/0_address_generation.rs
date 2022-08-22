@@ -6,13 +6,11 @@
 //! `cargo run --example 0_address_generation --release`.
 
 use std::{
-    env,
     fs::File,
     io::{BufWriter, Write},
     path::Path,
 };
 
-use dotenv::dotenv;
 use iota_client::{
     constants::SHIMMER_TESTNET_BECH32_HRP,
     secret::{mnemonic::MnemonicSecretManager, SecretManager},
@@ -23,12 +21,12 @@ const ADDRESS_FILE_NAME: &str = "examples/offline_signing/addresses.json";
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    dotenv().ok();
+    dotenv::dotenv().ok();
 
     // Creates a client instance.
-    let offline_client = Client::builder().with_offline_mode().finish().await?;
+    let offline_client = Client::builder().with_offline_mode().finish()?;
     let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
-        &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
+        &std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
     )?);
 
     // Generates addresses offline.
@@ -39,10 +37,10 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
 
-    write_addresses_to_file(ADDRESS_FILE_NAME, addresses)
+    write_addresses_to_file(ADDRESS_FILE_NAME, &addresses)
 }
 
-fn write_addresses_to_file<P: AsRef<Path>>(path: P, addresses: Vec<String>) -> Result<()> {
+fn write_addresses_to_file<P: AsRef<Path>>(path: P, addresses: &[String]) -> Result<()> {
     let json = serde_json::to_string_pretty(&addresses)?;
     let mut file = BufWriter::new(File::create(path)?);
 

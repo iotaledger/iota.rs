@@ -3,11 +3,8 @@
 
 //! cargo run --example send_all --release
 
-use std::env;
-
-use dotenv::dotenv;
 use iota_client::{
-    bee_block::output::{
+    block::output::{
         unlock_condition::AddressUnlockCondition, BasicOutputBuilder, NativeTokensBuilder, Output, UnlockCondition,
     },
     node_api::indexer::query_parameters::QueryParameter,
@@ -23,22 +20,21 @@ async fn main() -> Result<()> {
     // This example uses dotenv, which is not safe for use in production
     // Configure your own mnemonic in ".env". Since the output amount cannot be zero, the mnemonic must contain non-zero
     // balance
-    dotenv().ok();
+    dotenv::dotenv().ok();
 
-    let node_url = env::var("NODE_URL").unwrap();
+    let node_url = std::env::var("NODE_URL").unwrap();
 
     // Create a client instance
     let client = Client::builder()
         .with_node(&node_url)? // Insert your node URL here
         .with_node_sync_disabled()
-        .finish()
-        .await?;
+        .finish()?;
 
     let secret_manager_1 = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
-        &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
+        &std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
     )?);
     let secret_manager_2 = SecretManager::Mnemonic(MnemonicSecretManager::try_from_hex_seed(
-        &env::var("NON_SECURE_USE_OF_DEVELOPMENT_SEED_2").unwrap(),
+        &std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_SEED_2").unwrap(),
     )?);
 
     // Get output ids of outputs that can be controlled by this address without further unlock constraints
@@ -52,9 +48,9 @@ async fn main() -> Result<()> {
                     .await?[0]
                     .clone(),
             ),
-            QueryParameter::HasExpirationCondition(false),
-            QueryParameter::HasTimelockCondition(false),
-            QueryParameter::HasStorageReturnCondition(false),
+            QueryParameter::HasExpiration(false),
+            QueryParameter::HasTimelock(false),
+            QueryParameter::HasStorageDepositReturn(false),
         ])
         .await?;
 
@@ -65,7 +61,7 @@ async fn main() -> Result<()> {
     let mut total_amount = 0;
     let mut total_native_tokens = NativeTokensBuilder::new();
 
-    for output_response in outputs_responses.into_iter() {
+    for output_response in outputs_responses {
         let output = Output::try_from(&output_response.output)?;
 
         if let Some(native_tokens) = output.native_tokens() {
@@ -88,7 +84,7 @@ async fn main() -> Result<()> {
         )),
     );
 
-    for native_token in total_native_tokens.into_iter() {
+    for native_token in total_native_tokens {
         basic_output_builder = basic_output_builder.add_native_token(native_token);
     }
     let new_output = basic_output_builder.finish_output()?;
@@ -101,10 +97,12 @@ async fn main() -> Result<()> {
         .await?;
 
     println!(
-        "Transaction sent: https://explorer.iota.org/devnet/block/{}",
+        "Transaction sent: {}/block/{}",
+        std::env::var("EXPLORER_URL").unwrap(),
         block.id()
     );
 
-    let _ = client.retry_until_included(&block.id(), None, None).await.unwrap();
+    let _ = client.retry_until_included(&block.id(), None, None).await?;
+
     Ok(())
 }

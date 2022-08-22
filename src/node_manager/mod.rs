@@ -14,7 +14,7 @@ use std::{
     time::Duration,
 };
 
-use bee_rest_api::types::responses::InfoResponse;
+use bee_api_types::responses::InfoResponse;
 use log::warn;
 use serde_json::Value;
 
@@ -69,36 +69,34 @@ impl NodeManager {
         use_primary_pow_node: bool,
         prefer_permanode: bool,
     ) -> Result<Vec<Node>> {
-        let mut nodes_with_modified_url = Vec::new();
+        let mut nodes_with_modified_url: Vec<Node> = Vec::new();
 
         if prefer_permanode || (path == "api/core/v2/blocks" && query.is_some()) {
             if let Some(permanodes) = self.permanodes.clone() {
-                // remove api/core/v2/ since permanodes can have custom keyspaces
-                // https://editor.swagger.io/?url=https://raw.githubusercontent.com/iotaledger/chronicle.rs/main/docs/api.yaml
-                let path = &path["api/core/v2/".len()..];
-                for mut permanode in permanodes {
-                    permanode.url.set_path(&format!("{}{}", permanode.url.path(), path));
-                    permanode.url.set_query(query);
-                    nodes_with_modified_url.push(permanode);
+                for permanode in permanodes {
+                    if !nodes_with_modified_url.iter().any(|n| n.url == permanode.url) {
+                        nodes_with_modified_url.push(permanode);
+                    }
                 }
             }
         }
 
         if use_primary_pow_node {
-            if let Some(mut pow_node) = self.primary_pow_node.clone() {
-                pow_node.url.set_path(path);
-                pow_node.url.set_query(query);
-                nodes_with_modified_url.push(pow_node);
+            if let Some(pow_node) = self.primary_pow_node.clone() {
+                if !nodes_with_modified_url.iter().any(|n| n.url == pow_node.url) {
+                    nodes_with_modified_url.push(pow_node);
+                }
             }
         }
 
-        if let Some(mut primary_node) = self.primary_node.clone() {
-            primary_node.url.set_path(path);
-            primary_node.url.set_query(query);
-            nodes_with_modified_url.push(primary_node);
+        if let Some(primary_node) = self.primary_node.clone() {
+            if !nodes_with_modified_url.iter().any(|n| n.url == primary_node.url) {
+                nodes_with_modified_url.push(primary_node);
+            }
         }
 
-        let nodes = if self.node_sync_enabled {
+        // Add other nodes in random order, so they are not always used in the same order
+        let nodes_random_order = if self.node_sync_enabled {
             #[cfg(not(target_family = "wasm"))]
             {
                 self.synced_nodes.read().map_err(|_| crate::Error::PoisonError)?.clone()
@@ -111,17 +109,25 @@ impl NodeManager {
             self.nodes.clone()
         };
 
-        for mut node in nodes {
-            node.url.set_path(path);
-            node.url.set_query(query);
-            nodes_with_modified_url.push(node);
+        // Add remaining nodes in random order
+        for node in nodes_random_order {
+            if !nodes_with_modified_url.iter().any(|n| n.url == node.url) {
+                nodes_with_modified_url.push(node);
+            }
         }
 
         // remove disabled nodes
         nodes_with_modified_url.retain(|n| !n.disabled);
+
         if nodes_with_modified_url.is_empty() {
             return Err(crate::Error::SyncedNodePoolEmpty);
         }
+
+        // Set path and query parameters
+        nodes_with_modified_url.iter_mut().for_each(|node| {
+            node.url.set_path(path);
+            node.url.set_query(query);
+        });
 
         Ok(nodes_with_modified_url)
     }
@@ -188,54 +194,47 @@ impl NodeManager {
             for node in nodes {
                 match self.http_client.get(node.clone(), timeout).await {
                     Ok(res) => {
-                        let status = res.status();
-                        if let Ok(res_text) = res.into_text().await {
-                            match status {
-                                200 => {
-                                    // Handle node_info extra because we also want to return the url
-                                    if path == "api/core/v2/info" {
-                                        if let Ok(node_info) = serde_json::from_str::<InfoResponse>(&res_text) {
-                                            let wrapper = crate::client::NodeInfoWrapper {
-                                                node_info,
-                                                url: format!(
-                                                    "{}://{}",
-                                                    node.url.scheme(),
-                                                    node.url.host_str().unwrap_or("")
-                                                ),
-                                            };
-                                            let serde_res = serde_json::to_string(&wrapper)?;
-                                            return Ok(serde_json::from_str(&serde_res)?);
-                                        }
-                                    }
+                        match res.status() {
+                            200 => {
+                                // Handle node_info extra because we also want to return the url
+                                if path == "api/core/v2/info" {
+                                    let node_info: InfoResponse = res.into_json().await?;
+                                    let wrapper = crate::client::NodeInfoWrapper {
+                                        node_info,
+                                        url: format!("{}://{}", node.url.scheme(), node.url.host_str().unwrap_or("")),
+                                    };
+                                    let serde_res = serde_json::to_string(&wrapper)?;
+                                    return Ok(serde_json::from_str(&serde_res)?);
+                                }
 
-                                    match serde_json::from_str::<T>(&res_text) {
-                                        Ok(result_data) => {
-                                            let counters =
-                                                result.entry(serde_json::to_string(&result_data)?).or_insert(0);
-                                            *counters += 1;
-                                            result_counter += 1;
-                                            // Without quorum it's enough if we got one response
-                                            if !self.quorum
+                                match res.into_json::<T>().await {
+                                    Ok(result_data) => {
+                                        let counters = result.entry(serde_json::to_string(&result_data)?).or_insert(0);
+                                        *counters += 1;
+                                        result_counter += 1;
+                                        // Without quorum it's enough if we got one response
+                                        if !self.quorum
                                             || result_counter >= self.min_quorum_size
                                             || !need_quorum
                                             // with query we ignore quorum because the nodes can store a different amount of history
                                             || query.is_some()
-                                            {
-                                                break;
-                                            }
-                                        }
-                                        Err(e) => {
-                                            error.replace(e.into());
+                                        {
+                                            break;
                                         }
                                     }
-                                }
-
-                                _ => {
-                                    error.replace(crate::Error::NodeError(res_text));
+                                    Err(e) => {
+                                        error.replace(e);
+                                    }
                                 }
                             }
-                        } else {
-                            warn!("Couldn't convert noderesult to text");
+
+                            _ => {
+                                error.replace(crate::Error::NodeError(
+                                    res.into_text()
+                                        .await
+                                        .unwrap_or_else(|_| "Couldn't convert node response into text".to_string()),
+                                ));
+                            }
                         }
                     }
                     Err(Error::ResponseError { code: 404, .. }) => {
@@ -276,7 +275,7 @@ impl NodeManager {
         query: Option<&str>,
         timeout: Duration,
     ) -> Result<Vec<u8>> {
-        // primary_pow_node should only be used for post request with remote PoW
+        // primary_pow_node should only be used for post request with remote Pow
         // Get node urls and set path
         let nodes = self.get_nodes(path, query, false, false).await?;
         let mut error = None;
@@ -317,23 +316,24 @@ impl NodeManager {
         // primary_pow_node should only be used for post request with remote PoW
         let nodes = self.get_nodes(path, None, !local_pow, false).await?;
         if nodes.is_empty() {
-            return Err(Error::NodeError("No available nodes with remote PoW".into()));
+            return Err(Error::NodeError("No available nodes with remote Pow".into()));
         }
         let mut error = None;
         // Send requests
         for node in nodes {
             match self.http_client.post_bytes(node, timeout, body).await {
                 Ok(res) => {
-                    let status = res.status();
-                    if let Ok(res_text) = res.into_text().await {
-                        match status {
-                            200 | 201 => match serde_json::from_str(&res_text) {
-                                Ok(res) => return Ok(res),
-                                Err(e) => error.replace(e.into()),
-                            },
-                            _ => error.replace(crate::Error::NodeError(res_text)),
-                        };
-                    }
+                    match res.status() {
+                        200 | 201 => match res.into_json::<T>().await {
+                            Ok(res) => return Ok(res),
+                            Err(e) => error.replace(e),
+                        },
+                        _ => error.replace(crate::Error::NodeError(
+                            res.into_text()
+                                .await
+                                .unwrap_or_else(|_| "Couldn't convert node response into text".to_string()),
+                        )),
+                    };
                 }
                 Err(e) => {
                     error.replace(crate::Error::NodeError(e.to_string()));
@@ -353,23 +353,24 @@ impl NodeManager {
         // primary_pow_node should only be used for post request with remote PoW
         let nodes = self.get_nodes(path, None, !local_pow, false).await?;
         if nodes.is_empty() {
-            return Err(Error::NodeError("No available nodes with remote PoW".into()));
+            return Err(Error::NodeError("No available nodes with remote Pow".into()));
         }
         let mut error = None;
         // Send requests
         for node in nodes {
             match self.http_client.post_json(node, timeout, json.clone()).await {
                 Ok(res) => {
-                    let status = res.status();
-                    if let Ok(res_text) = res.into_text().await {
-                        match status {
-                            200 | 201 => match serde_json::from_str(&res_text) {
-                                Ok(res) => return Ok(res),
-                                Err(e) => error.replace(e.into()),
-                            },
-                            _ => error.replace(crate::Error::NodeError(res_text)),
-                        };
-                    }
+                    match res.status() {
+                        200 | 201 => match res.into_json::<T>().await {
+                            Ok(res) => return Ok(res),
+                            Err(e) => error.replace(e),
+                        },
+                        _ => error.replace(crate::Error::NodeError(
+                            res.into_text()
+                                .await
+                                .unwrap_or_else(|_| "Couldn't convert node response into text".to_string()),
+                        )),
+                    };
                 }
                 Err(e) => {
                     error.replace(crate::Error::NodeError(e.to_string()));

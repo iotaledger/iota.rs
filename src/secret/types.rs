@@ -5,13 +5,13 @@
 
 use std::str::FromStr;
 
+use bee_api_types::responses::OutputMetadataResponse;
 use bee_block::{
     address::Address,
     output::{dto::OutputDto, Output, OutputId},
     payload::transaction::TransactionId,
     BlockId,
 };
-use bee_rest_api::types::responses::OutputMetadataResponse;
 use crypto::keys::slip10::Chain;
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "stronghold")]
@@ -29,7 +29,7 @@ pub struct StrongholdDto {
     pub timeout: Option<u64>,
     /// The path for the Stronghold file
     #[serde(rename = "snapshotPath")]
-    pub snapshot_path: Option<String>,
+    pub snapshot_path: String,
 }
 /// An account address.
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
@@ -85,22 +85,24 @@ pub enum LedgerDeviceType {
 
 /// The Ledger device status.
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct LedgerStatus {
+pub struct LedgerNanoStatus {
     /// Ledger is available and ready to be used.
     pub(crate) connected: bool,
     /// Ledger is connected and locked.
     pub(crate) locked: bool,
     /// Ledger blind signing enabled
+    #[serde(rename = "blindSigningEnabled")]
     pub(crate) blind_signing_enabled: bool,
     /// Ledger opened app.
     pub(crate) app: Option<LedgerApp>,
     /// Ledger device
     pub(crate) device: Option<LedgerDeviceType>,
     /// Buffer size on device
+    #[serde(rename = "bufferSize")]
     pub(crate) buffer_size: Option<usize>,
 }
 
-impl LedgerStatus {
+impl LedgerNanoStatus {
     /// Ledger is available and ready to be used.
     pub fn connected(&self) -> bool {
         self.connected

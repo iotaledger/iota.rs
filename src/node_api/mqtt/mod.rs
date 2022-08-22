@@ -46,11 +46,11 @@ async fn get_mqtt_client(client: &mut Client) -> Result<&mut MqttClient> {
             } else {
                 client.node_manager.nodes.clone()
             };
-            for node in nodes.iter() {
+            for node in &nodes {
                 let host = node.url.host_str().expect("Can't get host from URL");
                 let mut entropy = [0u8; 8];
                 utils::rand::fill(&mut entropy)?;
-                let id = format!("iotars{}", hex::encode(entropy));
+                let id = format!("iotars{}", prefix_hex::encode(entropy));
                 let port = client.broker_options.port;
                 let mut uri = format!(
                     "{}://{}:{}/api/mqtt/v1",
@@ -179,7 +179,7 @@ fn poll_mqtt(
                                             }
                                         }
                                     } else {
-                                        match serde_json::from_slice(&*p.payload) {
+                                        match serde_json::from_slice(&p.payload) {
                                             Ok(value) => Ok(TopicEvent {
                                                 topic,
                                                 payload: MqttPayload::Json(value),
@@ -193,7 +193,7 @@ fn poll_mqtt(
                                 };
                                 if let Ok(event) = event {
                                     for handler in handlers {
-                                        handler(&event)
+                                        handler(&event);
                                     }
                                 };
                             }
@@ -254,7 +254,7 @@ impl<'a> MqttManager<'a> {
 
             let mqtt_topic_handlers = &self.client.mqtt_topic_handlers;
             let mut mqtt_topic_handlers = mqtt_topic_handlers.write().await;
-            mqtt_topic_handlers.clear()
+            mqtt_topic_handlers.clear();
         }
 
         Ok(())
@@ -331,7 +331,7 @@ impl<'a> MqttTopicManager<'a> {
         };
 
         if let Some(client) = &mut self.client.mqtt_client {
-            for topic in topics.iter() {
+            for topic in &topics {
                 client.unsubscribe(topic.topic()).await?;
             }
         }

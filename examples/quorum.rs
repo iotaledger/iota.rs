@@ -3,9 +3,6 @@
 
 //! cargo run --example quorum --release
 
-use std::env;
-
-use dotenv::dotenv;
 use iota_client::{
     node_api::indexer::query_parameters::QueryParameter,
     secret::{mnemonic::MnemonicSecretManager, SecretManager},
@@ -18,22 +15,21 @@ use iota_client::{
 #[tokio::main]
 async fn main() -> Result<()> {
     // This example uses dotenv, which is not safe for use in production
-    dotenv().ok();
+    dotenv::dotenv().ok();
 
-    let node_url = env::var("NODE_URL").unwrap();
+    let node_url = std::env::var("NODE_URL").unwrap();
 
     let client = Client::builder()
-        .with_node("https://api.lb-0.h.chrysalis-devnet.iota.cafe/")?
+        .with_node("https://api.testnet.shimmer.network")?
         .with_node(&node_url)?
-        .with_node("https://api.thin-hornet-1.h.chrysalis-devnet.iota.cafe/")?
+        .with_node("http://localhost:14265")?
         .with_quorum(true)
         .with_min_quorum_size(3)
         .with_quorum_threshold(66)
-        .finish()
-        .await?;
+        .finish()?;
 
     let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
-        &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
+        &std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
     )?);
 
     // Generate the first address
@@ -48,9 +44,9 @@ async fn main() -> Result<()> {
     let output_ids = client
         .basic_output_ids(vec![
             QueryParameter::Address(addresses[0].clone()),
-            QueryParameter::HasExpirationCondition(false),
-            QueryParameter::HasTimelockCondition(false),
-            QueryParameter::HasStorageReturnCondition(false),
+            QueryParameter::HasExpiration(false),
+            QueryParameter::HasTimelock(false),
+            QueryParameter::HasStorageDepositReturn(false),
         ])
         .await?;
     println!("Address outputs: {:?}", output_ids);

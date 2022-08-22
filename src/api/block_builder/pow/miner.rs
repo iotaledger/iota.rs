@@ -1,7 +1,7 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! PoW Miner
+//! Multi-threaded PoW miner
 
 use bee_pow::providers::{
     miner::{MinerBuilder, MinerCancel},
@@ -9,7 +9,7 @@ use bee_pow::providers::{
 };
 
 /// The miner builder.
-#[derive(Default)]
+#[must_use]
 pub struct ClientMinerBuilder {
     local_pow: bool,
     cancel: MinerCancel,
@@ -34,13 +34,20 @@ impl ClientMinerBuilder {
     }
 }
 
+impl Default for ClientMinerBuilder {
+    fn default() -> Self {
+        ClientMinerBuilder::new()
+    }
+}
+
 impl NonceProviderBuilder for ClientMinerBuilder {
     type Provider = ClientMiner;
 
     fn new() -> Self {
         Self {
             worker_count: num_cpus::get(),
-            ..Default::default()
+            local_pow: true,
+            cancel: MinerCancel::default(),
         }
     }
 

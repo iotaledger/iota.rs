@@ -9,7 +9,7 @@ export interface IClientOptions {
     /** Node which will be tried first for all requests */
     primaryNode?: string | INode;
     /** Node which will be tried first when using remote PoW, even before the primary_node */
-    primaryPoWNode?: string | INode;
+    primaryPowNode?: string | INode;
     nodes?: Array<string | INode>;
     permanodes?: Array<string | INode>;
     /** If node syncing is enabled */
@@ -38,6 +38,7 @@ export interface IClientOptions {
     localPow?: boolean;
 }
 
+/** Time duration */
 export interface IDuration {
     secs: number;
     nanos: number;

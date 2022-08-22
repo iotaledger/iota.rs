@@ -3,11 +3,8 @@
 
 //! cargo run --example all --release
 
-use std::env;
-
-use dotenv::dotenv;
 use iota_client::{
-    bee_block::{
+    block::{
         address::AliasAddress,
         output::{
             feature::{IssuerFeature, MetadataFeature, SenderFeature},
@@ -35,21 +32,19 @@ async fn main() -> Result<()> {
     // This example uses dotenv, which is not safe for use in production!
     // Configure your own mnemonic in the ".env" file. Since the output amount cannot be zero, the seed must contain
     // non-zero balance.
-    dotenv().ok();
+    dotenv::dotenv().ok();
 
-    let node_url = env::var("NODE_URL").unwrap();
-    let faucet_url = env::var("FAUCET_URL").unwrap();
+    let node_url = std::env::var("NODE_URL").unwrap();
+    let faucet_url = std::env::var("FAUCET_URL").unwrap();
 
     // Create a client instance.
     let client = Client::builder()
         .with_node(&node_url)?
         .with_node_sync_disabled()
-        .with_default_logger()?
-        .finish()
-        .await?;
+        .finish()?;
 
     let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
-        &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
+        &std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
     )?);
 
     let address = client.get_addresses(&secret_manager).with_range(0..1).get_raw().await?[0];
@@ -104,10 +99,10 @@ async fn main() -> Result<()> {
     ///////////////////////////////////////////////
     // create foundry, native tokens and nft output
     ///////////////////////////////////////////////
-    let alias_output_id = get_alias_output_id(block.payload().unwrap());
+    let alias_output_id = get_alias_output_id(block.payload().unwrap())?;
     let alias_id = AliasId::from(alias_output_id);
 
-    let nft_output_id = get_nft_output_id(block.payload().unwrap());
+    let nft_output_id = get_nft_output_id(block.payload().unwrap())?;
     let nft_id = NftId::from(nft_output_id);
 
     let token_scheme = TokenScheme::Simple(SimpleTokenScheme::new(U256::from(50), U256::from(0), U256::from(100))?);
@@ -156,9 +151,9 @@ async fn main() -> Result<()> {
     //////////////////////////////////
     // create all outputs
     //////////////////////////////////
-    let alias_output_id = get_alias_output_id(block.payload().unwrap());
-    let foundry_output_id = get_foundry_output_id(block.payload().unwrap());
-    let nft_output_id = get_nft_output_id(block.payload().unwrap());
+    let alias_output_id = get_alias_output_id(block.payload().unwrap())?;
+    let foundry_output_id = get_foundry_output_id(block.payload().unwrap())?;
+    let nft_output_id = get_nft_output_id(block.payload().unwrap())?;
 
     let basic_output_builder = BasicOutputBuilder::new_with_amount(1_000_000)?
         .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)));
@@ -187,9 +182,9 @@ async fn main() -> Result<()> {
         // with storage deposit return
         basic_output_builder
             .clone()
-            .with_amount(234100)?
+            .with_amount(234_100)?
             .add_unlock_condition(UnlockCondition::StorageDepositReturn(
-                StorageDepositReturnUnlockCondition::new(address, 234000)?,
+                StorageDepositReturnUnlockCondition::new(address, 234_000)?,
             ))
             .finish_output()?,
         // with expiration
@@ -204,11 +199,14 @@ async fn main() -> Result<()> {
             .finish_output()?,
     ];
 
-    // get additional input for the new basic output
+    // get additional input for the new basic output without extra unlock conditions
     let output_ids = client
-        .basic_output_ids(vec![QueryParameter::Address(
-            address.to_bech32(client.get_bech32_hrp().await?),
-        )])
+        .basic_output_ids(vec![
+            QueryParameter::Address(address.to_bech32(client.get_bech32_hrp().await?)),
+            QueryParameter::HasStorageDepositReturn(false),
+            QueryParameter::HasTimelock(false),
+            QueryParameter::HasExpiration(false),
+        ])
         .await?;
 
     let block = client
@@ -231,13 +229,13 @@ async fn main() -> Result<()> {
 }
 
 // helper function to get the output id for the first alias output
-fn get_alias_output_id(payload: &Payload) -> OutputId {
+fn get_alias_output_id(payload: &Payload) -> Result<OutputId> {
     match payload {
         Payload::Transaction(tx_payload) => {
             let TransactionEssence::Regular(regular) = tx_payload.essence();
             for (index, output) in regular.outputs().iter().enumerate() {
                 if let Output::Alias(_alias_output) = output {
-                    return OutputId::new(tx_payload.id(), index.try_into().unwrap()).unwrap();
+                    return Ok(OutputId::new(tx_payload.id(), index.try_into().unwrap())?);
                 }
             }
             panic!("No alias output in transaction essence")
@@ -247,13 +245,13 @@ fn get_alias_output_id(payload: &Payload) -> OutputId {
 }
 
 // helper function to get the output id for the first foundry output
-fn get_foundry_output_id(payload: &Payload) -> OutputId {
+fn get_foundry_output_id(payload: &Payload) -> Result<OutputId> {
     match payload {
         Payload::Transaction(tx_payload) => {
             let TransactionEssence::Regular(regular) = tx_payload.essence();
             for (index, output) in regular.outputs().iter().enumerate() {
                 if let Output::Foundry(_foundry_output) = output {
-                    return OutputId::new(tx_payload.id(), index.try_into().unwrap()).unwrap();
+                    return Ok(OutputId::new(tx_payload.id(), index.try_into().unwrap())?);
                 }
             }
             panic!("No foundry output in transaction essence")
@@ -263,13 +261,13 @@ fn get_foundry_output_id(payload: &Payload) -> OutputId {
 }
 
 // helper function to get the output id for the first NFT output
-fn get_nft_output_id(payload: &Payload) -> OutputId {
+fn get_nft_output_id(payload: &Payload) -> Result<OutputId> {
     match payload {
         Payload::Transaction(tx_payload) => {
             let TransactionEssence::Regular(regular) = tx_payload.essence();
             for (index, output) in regular.outputs().iter().enumerate() {
                 if let Output::Nft(_nft_output) = output {
-                    return OutputId::new(tx_payload.id(), index.try_into().unwrap()).unwrap();
+                    return Ok(OutputId::new(tx_payload.id(), index.try_into().unwrap())?);
                 }
             }
             panic!("No nft output in transaction essence")

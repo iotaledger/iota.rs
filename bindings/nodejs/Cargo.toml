@@ -15,20 +15,20 @@ categories = [ "cryptography::cryptocurrencies" ]
 exclude = [ "artifacts.json", "index.node" ]
 
 [lib]
-crate-type = ["cdylib"]
+crate-type = [ "cdylib" ]
 
 [dependencies]
-iota-client = { path = "../../", features = [ "message_interface", "mqtt" ] }
+iota-client = { path = "../../", default-features = false, features = [ "ledger_nano", "message_interface", "mqtt", "stronghold", "tls" ] }
 
-backtrace = { version = "0.3.65", default-features = false }
+backtrace = { version = "0.3.66", default-features = false }
 fern-logger = { version = "0.5.0", default-features = false }
 futures = { version = "0.3.21", default-features = false }
 hex = { version = "0.4.3", default-features = false }
 log = { version = "0.4.17", default-features = false }
 neon = { version =  "0.10.1", default-features = false, features = [ "napi-6", "event-queue-api" ] }
-once_cell = { version = "1.12.0", default-features = false, features = [ "std" ] }
+once_cell = { version = "1.13.0", default-features = false, features = [ "std" ] }
 rand = { version = "0.8.5", default-features = false }
-serde = { version = "1.0.137", default-features = false, features = [ "derive" ] }
-serde_json = { version = "1.0.81", default-features = false }
+serde = { version = "1.0.139", default-features = false, features = [ "derive" ] }
+serde_json = { version = "1.0.82", default-features = false }
 thiserror = { version = "1.0.31", default-features = false }
-tokio = { version = "1.19.2", default-features = false, features = [ "macros" ] }
+tokio = { version = "1.20.0", default-features = false, features = [ "macros" ] }

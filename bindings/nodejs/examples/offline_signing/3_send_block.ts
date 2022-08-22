@@ -12,15 +12,12 @@ const SIGNED_TRANSACTION_FILE_NAME =
 // In this example we will send the signed transaction in a block
 async function run() {
     initLogger();
-
-    // client will connect to testnet by default
+    if (!process.env.NODE_URL) {
+        throw new Error('.env NODE_URL is undefined, see .env.example');
+    }
     const onlineClient = new Client({
-        nodes: [
-            {
-                // Insert your node URL here.
-                url: 'http://localhost:14265/',
-            },
-        ],
+        // Insert your node URL in the .env.
+        nodes: [process.env.NODE_URL],
         localPow: true,
     });
 
@@ -36,8 +33,7 @@ async function run() {
         const blockId = await onlineClient.blockId(block);
 
         console.log(
-            'Transaction sent: https://explorer.iota.org/devnet/block/' +
-                blockId,
+            `Transaction sent: ${process.env.EXPLORER_URL}/block/` + blockId,
         );
     } catch (error) {
         console.error(error);

@@ -10,7 +10,7 @@ use iota_client::api::GetAddressesBuilderOptions;
 #[cfg(feature = "message_interface")]
 use iota_client::message_interface;
 #[cfg(feature = "message_interface")]
-use iota_client::message_interface::{ClientMethod, Message, Response};
+use iota_client::message_interface::{Message, Response};
 #[cfg(feature = "stronghold")]
 use iota_client::secret::stronghold::StrongholdSecretManager;
 #[cfg(all(feature = "message_interface", feature = "stronghold"))]
@@ -23,11 +23,12 @@ use iota_client::{
     secret::{mnemonic::MnemonicSecretManager, SecretManager},
     Client,
 };
+use serde::{Deserialize, Serialize};
 
 #[tokio::test]
 async fn addresses() {
     let secret_manager = SecretManager::Mnemonic(
-        MnemonicSecretManager::try_from_hex_seed("256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2")
+        MnemonicSecretManager::try_from_hex_seed("0x256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2")
             .unwrap(),
     );
 
@@ -52,8 +53,8 @@ async fn addresses() {
 
 #[tokio::test]
 async fn public_key_to_address() {
-    let client = Client::builder().with_offline_mode().finish().await.unwrap();
-    let hex_public_key = "2baaf3bca8ace9f862e60184bd3e79df25ff230f7eaaa4c7f03daa9833ba854a";
+    let client = Client::builder().with_offline_mode().finish().unwrap();
+    let hex_public_key = "0x2baaf3bca8ace9f862e60184bd3e79df25ff230f7eaaa4c7f03daa9833ba854a";
 
     let public_key_address = client
         .hex_public_key_to_bech32_address(hex_public_key, Some("atoi"))
@@ -146,7 +147,6 @@ async fn mnemonic_address_generation_shimmer() {
     );
 }
 
-use serde::{Deserialize, Serialize};
 #[tokio::test]
 async fn address_generation() {
     #[derive(Serialize, Deserialize)]
@@ -193,8 +193,7 @@ async fn address_generation() {
         let stronghold_filename = format!("{}.stronghold", address.bech32_address);
         let mut stronghold_secret_manager = StrongholdSecretManager::builder()
             .password("some_hopefully_secure_password")
-            .snapshot_path(PathBuf::from(stronghold_filename.to_string()))
-            .try_build()
+            .try_build(PathBuf::from(stronghold_filename.to_string()))
             .unwrap();
 
         stronghold_secret_manager
@@ -224,9 +223,7 @@ async fn address_generation() {
     #[cfg(feature = "message_interface")]
     {
         let client_config = r#"{"offline": true}"#.to_string();
-        let message_handler = message_interface::create_message_handler(Some(client_config))
-            .await
-            .unwrap();
+        let message_handler = message_interface::create_message_handler(Some(client_config)).unwrap();
         for address in &addresses_data {
             let options = GetAddressesBuilderOptions {
                 coin_type: Some(address.coin_type),
@@ -239,10 +236,10 @@ async fn address_generation() {
                 bech32_hrp: Some(address.bech32_hrp.to_string()),
                 metadata: None,
             };
-            let message = Message::CallClientMethod(ClientMethod::GenerateAddresses {
+            let message = Message::GenerateAddresses {
                 secret_manager: SecretManagerDto::Mnemonic(address.mnemonic.clone()),
                 options,
-            });
+            };
 
             let response = message_interface::send_message(&message_handler, message).await;
             match response {
@@ -264,20 +261,18 @@ async fn address_generation() {
     #[cfg(all(feature = "message_interface", feature = "stronghold"))]
     {
         let client_config = r#"{"offline": true}"#.to_string();
-        let message_handler = message_interface::create_message_handler(Some(client_config))
-            .await
-            .unwrap();
+        let message_handler = message_interface::create_message_handler(Some(client_config)).unwrap();
         for address in addresses_data {
             let stronghold_filename = format!("{}.stronghold", address.bech32_address);
             let secret_manager_dto = StrongholdDto {
                 password: Some("some_hopefully_secure_password".to_string()),
                 timeout: None,
-                snapshot_path: Some(stronghold_filename.clone()),
+                snapshot_path: stronghold_filename.clone(),
             };
-            let message = Message::CallClientMethod(ClientMethod::StoreMnemonic {
+            let message = Message::StoreMnemonic {
                 secret_manager: SecretManagerDto::Stronghold(secret_manager_dto.clone()),
                 mnemonic: address.mnemonic,
-            });
+            };
             let _response = message_interface::send_message(&message_handler, message).await;
 
             let options = GetAddressesBuilderOptions {
@@ -291,10 +286,10 @@ async fn address_generation() {
                 bech32_hrp: Some(address.bech32_hrp.to_string()),
                 metadata: None,
             };
-            let message = Message::CallClientMethod(ClientMethod::GenerateAddresses {
+            let message = Message::GenerateAddresses {
                 secret_manager: SecretManagerDto::Stronghold(secret_manager_dto),
                 options,
-            });
+            };
 
             let response = message_interface::send_message(&message_handler, message).await;
             match response {

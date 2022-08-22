@@ -5,13 +5,11 @@
 //! `cargo run --example 1_transaction_preparation --release`.
 
 use std::{
-    env,
     fs::File,
     io::{prelude::*, BufWriter},
     path::Path,
 };
 
-use dotenv::dotenv;
 use iota_client::{
     api::{PreparedTransactionData, PreparedTransactionDataDto},
     Client, Result,
@@ -22,9 +20,9 @@ const PREPARED_TRANSACTION_FILE_NAME: &str = "examples/offline_signing/prepared_
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    dotenv().ok();
+    dotenv::dotenv().ok();
 
-    let node_url = env::var("NODE_URL").unwrap();
+    let node_url = std::env::var("NODE_URL").unwrap();
 
     // Address to which we want to send the amount.
     let address = "rms1qruzprxum2934lr3p77t96pzlecxv8pjzvtjrzdcgh2f5exa22n6ga0vm69";
@@ -33,11 +31,10 @@ async fn main() -> Result<()> {
 
     // Create a client instance.
     let online_client = Client::builder()
-        // Insert your node URL here.
+        // Insert your node URL in the .env.
         .with_node(&node_url)?
         .with_node_sync_disabled()
-        .finish()
-        .await?;
+        .finish()?;
 
     // Recovers addresses from example `0_address_generation`.
     let addresses = read_addresses_from_file(ADDRESS_FILE_NAME)?;
@@ -56,7 +53,7 @@ async fn main() -> Result<()> {
 
     println!("Prepared transaction sending {} to {}.", amount, address);
 
-    write_prepared_transaction_to_file(PREPARED_TRANSACTION_FILE_NAME, prepared_transaction)
+    write_prepared_transaction_to_file(PREPARED_TRANSACTION_FILE_NAME, &prepared_transaction)
 }
 
 fn read_addresses_from_file<P: AsRef<Path>>(path: P) -> Result<Vec<String>> {
@@ -69,9 +66,9 @@ fn read_addresses_from_file<P: AsRef<Path>>(path: P) -> Result<Vec<String>> {
 
 fn write_prepared_transaction_to_file<P: AsRef<Path>>(
     path: P,
-    prepared_transaction: PreparedTransactionData,
+    prepared_transaction: &PreparedTransactionData,
 ) -> Result<()> {
-    let json = serde_json::to_string_pretty(&PreparedTransactionDataDto::from(&prepared_transaction))?;
+    let json = serde_json::to_string_pretty(&PreparedTransactionDataDto::from(prepared_transaction))?;
     let mut file = BufWriter::new(File::create(path)?);
 
     println!("{}", json);

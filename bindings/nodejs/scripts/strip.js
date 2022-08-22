@@ -8,6 +8,6 @@ if (process.platform === 'win32') {
     return;
 }
 
-const binaryPath = resolve(__dirname, '../build/Release/index.node');
+const binaryPath = resolve(__dirname, '../index.node');
 const stripArgs = process.platform === 'darwin' ? '-Sx' : '--strip-all';
 spawnSync('strip', [stripArgs, binaryPath], { stdio: 'inherit' });

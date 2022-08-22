@@ -7,8 +7,7 @@ use std::{
     time::Duration,
 };
 
-use bee_rest_api::types::responses::RentStructureResponse;
-use log::LevelFilter;
+use bee_api_types::responses::RentStructureResponse;
 #[cfg(not(target_family = "wasm"))]
 use {
     std::collections::HashSet,
@@ -18,12 +17,9 @@ use {
 #[cfg(feature = "mqtt")]
 use crate::node_api::mqtt::{BrokerOptions, MqttEvent};
 use crate::{
-    client::*,
-    constants::{
-        DEFAULT_API_TIMEOUT, DEFAULT_MIN_POW, DEFAULT_REMOTE_POW_API_TIMEOUT, DEFAULT_TIPS_INTERVAL,
-        SHIMMER_TESTNET_BECH32_HRP,
-    },
-    error::*,
+    client::Client,
+    constants::{DEFAULT_API_TIMEOUT, DEFAULT_REMOTE_POW_API_TIMEOUT, DEFAULT_TIPS_INTERVAL},
+    error::{Error, Result},
     node_manager::{
         builder::validate_url,
         node::{Node, NodeAuth},
@@ -39,11 +35,11 @@ pub struct NetworkInfo {
     #[serde(rename = "networkId")]
     pub network_id: Option<u64>,
     /// Bech32 HRP
-    #[serde(rename = "bech32HRP", default = "default_bech32_hrp")]
-    pub bech32_hrp: String,
+    #[serde(rename = "bech32Hrp", default)]
+    pub bech32_hrp: Option<String>,
     /// Mininum proof of work score
-    #[serde(rename = "minPoWScore", default = "default_min_pow_score")]
-    pub min_pow_score: f64,
+    #[serde(rename = "minPowScore", default)]
+    pub min_pow_score: Option<f64>,
     /// Local proof of work
     #[serde(rename = "localPow", default = "default_local_pow")]
     pub local_pow: bool,
@@ -54,22 +50,8 @@ pub struct NetworkInfo {
     #[serde(rename = "tipsInterval", default = "default_tips_interval")]
     pub tips_interval: u64,
     /// Rent structure of the protocol
-    #[serde(rename = "rentStructure", default = "default_rent_structure")]
-    pub rent_structure: RentStructureResponse,
-}
-
-fn default_bech32_hrp() -> String {
-    SHIMMER_TESTNET_BECH32_HRP.into()
-}
-fn default_min_pow_score() -> f64 {
-    DEFAULT_MIN_POW
-}
-fn default_rent_structure() -> RentStructureResponse {
-    RentStructureResponse {
-        v_byte_cost: 500,
-        v_byte_factor_data: 1,
-        v_byte_factor_key: 10,
-    }
+    #[serde(rename = "rentStructure", default)]
+    pub rent_structure: Option<RentStructureResponse>,
 }
 
 fn default_local_pow() -> bool {
@@ -94,6 +76,7 @@ fn default_tips_interval() -> u64 {
 /// Builder to construct client instance with sensible default values
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 #[serde(deny_unknown_fields)]
+#[must_use]
 pub struct ClientBuilder {
     /// Node manager builder
     #[serde(flatten, rename = "nodeManagerBuilder")]
@@ -132,12 +115,12 @@ impl Default for NetworkInfo {
         Self {
             network: None,
             network_id: None,
-            min_pow_score: DEFAULT_MIN_POW,
+            min_pow_score: None,
             local_pow: default_local_pow(),
             fallback_to_local_pow: true,
-            bech32_hrp: SHIMMER_TESTNET_BECH32_HRP.into(),
+            bech32_hrp: None,
             tips_interval: DEFAULT_TIPS_INTERVAL,
-            rent_structure: default_rent_structure(),
+            rent_structure: None,
         }
     }
 }
@@ -206,7 +189,7 @@ impl ClientBuilder {
         Ok(self)
     }
 
-    /// Adds an IOTA node by its URL to be used as primary PoW node (for remote PoW), with optional jwt and or basic
+    /// Adds an IOTA node by its URL to be used as primary PoW node (for remote Pow), with optional jwt and or basic
     /// authentication
     pub fn with_primary_pow_node(mut self, url: &str, auth: Option<NodeAuth>) -> Result<Self> {
         self.node_manager_builder = self.node_manager_builder.with_primary_pow_node(url, auth)?;
@@ -248,12 +231,6 @@ impl ClientBuilder {
     pub fn with_offline_mode(mut self) -> Self {
         self.offline = true;
         self
-    }
-
-    /// Get node list from the node_pool_urls
-    pub async fn with_node_pool_urls(mut self, node_pool_urls: &[String]) -> Result<Self> {
-        self.node_manager_builder = self.node_manager_builder.with_node_pool_urls(node_pool_urls).await?;
-        Ok(self)
     }
 
     /// Set if quroum should be used or not
@@ -327,23 +304,11 @@ impl ClientBuilder {
         self
     }
 
-    /// Enables the default logger which writes debug logs to "iota.rs.log"
-    pub fn with_default_logger(self) -> Result<Self> {
-        crate::init_logger("iota.rs.log", LevelFilter::Debug)?;
-        Ok(self)
-    }
-
-    /// Write logs to a file
-    pub fn with_logger(self, filename: &str, level: LevelFilter) -> Result<Self> {
-        crate::init_logger(filename, level)?;
-        Ok(self)
-    }
-
     /// Build the Client instance.
-    pub async fn finish(mut self) -> Result<Client> {
+    pub fn finish(mut self) -> Result<Client> {
         // Add default nodes
         if !self.offline {
-            self.node_manager_builder = self.node_manager_builder.add_default_nodes(&self.network_info).await?;
+            self.node_manager_builder = self.node_manager_builder.add_default_nodes(&self.network_info)?;
             // Return error if we don't have a node
             if self.node_manager_builder.nodes.is_empty() && self.node_manager_builder.primary_node.is_none() {
                 return Err(Error::MissingParameter("Node"));

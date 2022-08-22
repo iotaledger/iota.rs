@@ -1,5 +1,5 @@
 import type { IBlock, IOutputResponse, ITaggedDataPayload } from '@iota/types';
-import { Client, utf8ToBytes, utf8ToHex } from '../../lib';
+import { Client, utf8ToHex } from '../../lib';
 import '../customMatchers';
 import 'dotenv/config';
 import * as addressOutputs from '../fixtures/addressOutputs.json';
@@ -23,8 +23,8 @@ describe.skip('Main examples', () => {
     it('gets info about the node', async () => {
         const info = await client.getInfo();
 
-        expect(info.nodeInfo.protocol.bech32HRP).toBe('rms');
-        expect(info.nodeInfo.protocol.minPoWScore).toBe(1000);
+        expect(info.nodeInfo.protocol.bech32Hrp).toBe('rms');
+        expect(info.nodeInfo.protocol.minPowScore).toBe(1000);
     });
 
     it('generates a mnemonic', async () => {
@@ -56,9 +56,9 @@ describe.skip('Main examples', () => {
                 address:
                     'rms1qpllaj0pyveqfkwxmnngz2c488hfdtmfrj3wfkgxtk4gtyrax0jaxzt70zy',
             },
-            { hasExpirationCondition: false },
-            { hasTimelockCondition: false },
-            { hasStorageReturnCondition: false },
+            { hasExpiration: false },
+            { hasTimelock: false },
+            { hasStorageDepositReturn: false },
         ]);
 
         outputIds.forEach((id) => expect(id).toBeValidOutputId());
@@ -94,9 +94,9 @@ describe.skip('Main examples', () => {
         // Get output ids of outputs that can be controlled by this address without further unlock constraints
         const outputIds = await client.basicOutputIds([
             { address: addresses[0] },
-            { hasExpirationCondition: false },
-            { hasTimelockCondition: false },
-            { hasStorageReturnCondition: false },
+            { hasExpiration: false },
+            { hasTimelock: false },
+            { hasStorageDepositReturn: false },
         ]);
         outputIds.forEach((id) => expect(id).toBeValidOutputId());
 
@@ -136,36 +136,28 @@ describe.skip('Main examples', () => {
     });
 
     it('sends a block', async () => {
-        const block = await client.generateBlock();
+        const blockIdAndBlock = await client.buildAndPostBlock();
 
-        const blockId = await client.postBlock(block);
-
-        expect(blockId).toBeValidBlockId();
+        expect(blockIdAndBlock[0]).toBeValidBlockId();
     });
 
     it('gets block data', async () => {
-        const block = await client.generateBlock();
+        const blockIdAndBlock = await client.buildAndPostBlock();
 
-        // Send block
-        const blockId = await client.postBlock(block);
+        const blockData = await client.getBlock(blockIdAndBlock[0]);
+        const blockMetadata = await client.getBlockMetadata(blockIdAndBlock[0]);
 
-        const blockData = await client.getBlock(blockId);
-        const blockMetadata = await client.getBlockMetadata(blockId);
-
-        expect(blockData).toStrictEqual<IBlock>(block);
+        expect(blockData).toStrictEqual<IBlock>(blockIdAndBlock[1]);
         expect(blockMetadata.blockId).toBeValidBlockId();
     });
 
     it('sends a block with a tagged data payload', async () => {
-        const block = await client.generateBlock(secretManager, {
-            tag: utf8ToBytes('Hello'),
-            data: utf8ToBytes('Tangle'),
+        const blockIdAndBlock = await client.buildAndPostBlock(secretManager, {
+            tag: utf8ToHex('Hello'),
+            data: utf8ToHex('Tangle'),
         });
 
-        // Send block
-        const blockId = await client.postBlock(block);
-
-        const fetchedBlock = await client.getBlock(blockId);
+        const fetchedBlock = await client.getBlock(blockIdAndBlock[0]);
 
         expect(fetchedBlock.payload).toStrictEqual<ITaggedDataPayload>({
             type: 5,
@@ -182,16 +174,13 @@ describe.skip('Main examples', () => {
             },
         });
 
-        const block = await client.generateBlock(secretManager, {
+        const blockIdAndBlock = await client.buildAndPostBlock(secretManager, {
             output: {
                 address: addresses[0],
                 amount: '1000000',
             },
         });
 
-        // Send transaction
-        const blockId = await client.postBlock(block);
-
-        expect(blockId).toBeValidBlockId();
+        expect(blockIdAndBlock[0]).toBeValidBlockId();
     });
 });

@@ -11,11 +11,9 @@ use crypto::{
     keys::{bip39::wordlist, slip10::Seed},
     utils,
 };
-use fern_logger::{logger_init, LoggerConfig, LoggerOutputConfigBuilder};
-use log::LevelFilter;
 use zeroize::Zeroize;
 
-use crate::error::*;
+use crate::error::{Error, Result};
 
 /// Hash the network id str from the nodeinfo to an u64 (used in blocks)
 pub fn hash_network(network_id_string: &str) -> Result<u64> {
@@ -27,7 +25,7 @@ pub fn hash_network(network_id_string: &str) -> Result<u64> {
 }
 
 /// Transforms bech32 to hex
-pub fn bech32_to_hex(bech32: &str) -> crate::Result<String> {
+pub fn bech32_to_hex(bech32: &str) -> Result<String> {
     let (_bech32_hrp, address) = Address::try_from_bech32(bech32)?;
     let hex_string = match address {
         Address::Ed25519(ed) => ed.to_string(),
@@ -38,15 +36,14 @@ pub fn bech32_to_hex(bech32: &str) -> crate::Result<String> {
 }
 
 /// Transforms a hex encoded address to a bech32 encoded address
-pub fn hex_to_bech32(hex: &str, bech32_hrp: &str) -> crate::Result<String> {
+pub fn hex_to_bech32(hex: &str, bech32_hrp: &str) -> Result<String> {
     let address: Ed25519Address = hex.parse::<Ed25519Address>()?;
     Ok(Address::Ed25519(address).to_bech32(bech32_hrp))
 }
 
-/// Transforms a hex encoded public key to a bech32 encoded address
-pub fn hex_public_key_to_bech32_address(hex: &str, bech32_hrp: &str) -> crate::Result<String> {
-    let mut public_key = [0u8; Ed25519Address::LENGTH];
-    hex::decode_to_slice(&hex, &mut public_key)?;
+/// Transforms a prefix hex encoded public key to a bech32 encoded address
+pub fn hex_public_key_to_bech32_address(hex: &str, bech32_hrp: &str) -> Result<String> {
+    let public_key: [u8; Ed25519Address::LENGTH] = prefix_hex::decode(hex)?;
 
     let address = Blake2b256::digest(&public_key)
         .try_into()
@@ -56,7 +53,7 @@ pub fn hex_public_key_to_bech32_address(hex: &str, bech32_hrp: &str) -> crate::R
 }
 
 /// Returns a valid Address parsed from a String.
-pub fn parse_bech32_address(address: &str) -> crate::Result<Address> {
+pub fn parse_bech32_address(address: &str) -> Result<Address> {
     Ok(Address::try_from_bech32(address)?.1)
 }
 
@@ -84,7 +81,7 @@ pub fn mnemonic_to_hex_seed(mnemonic: &str) -> Result<String> {
         .map_err(|e| crate::Error::InvalidMnemonic(format!("{:?}", e)))?;
     let mut mnemonic_seed = [0u8; 64];
     crypto::keys::bip39::mnemonic_to_seed(mnemonic, "", &mut mnemonic_seed);
-    Ok(hex::encode(mnemonic_seed))
+    Ok(prefix_hex::encode(mnemonic_seed))
 }
 
 /// Returns a seed for a mnemonic.
@@ -107,14 +104,4 @@ pub async fn request_funds_from_faucet(url: &str, bech32_address: &str) -> Resul
     let client = reqwest::Client::new();
     let faucet_response = client.post(url).json(&map).send().await?.text().await?;
     Ok(faucet_response)
-}
-
-/// creates a file in which logs will be written in
-pub fn init_logger(filename: &str, levelfilter: LevelFilter) -> crate::Result<()> {
-    let output_config = LoggerOutputConfigBuilder::new()
-        .name(filename)
-        .level_filter(levelfilter);
-    let config = LoggerConfig::build().with_output(output_config).finish();
-    logger_init(config)?;
-    Ok(())
 }

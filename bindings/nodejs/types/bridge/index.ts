@@ -1,139 +1,136 @@
 import type {
-    __GetInfoPayloadMethod__,
-    __GetBasicOutputIdsPayloadMethod__,
-    __GetOutputPayloadMethod__,
-    __GetOutputsPayloadMethod__,
-    __GenerateMnemonicPayloadMethod__,
-    __MnemonicToHexSeedPayloadMethod__,
-    __GenerateAddressesPayloadMethod__,
-    __PostBlockPayloadMethod__,
-    __GenerateBlockPayloadMethod__,
-    __GetTipsPayloadMethod__,
-    __GetNetworkInfoPayloadMethod__,
-    __GetBlockPayloadMethod__,
-    __GetBlockMetadataPayloadMethod__,
-    __FindInputsPayloadMethod__,
-    __FindOutputsPayloadMethod__,
-    __PrepareTransactionPayloadMethod__,
-    __SignTransactionPayloadMethod__,
-    __SubmitPayloadPayloadMethod__,
-    __ParseBech32AddressPayloadMethod__,
-    __BlockIdPayloadMethod__,
-    __GetNodePayloadMethod__,
-    __GetNetworkIdPayloadMethod__,
-    __GetBech32HrpPayloadMethod__,
-    __GetMinPowScorePayloadMethod__,
-    __GetTipsIntervalPayloadMethod__,
-    __GetLocalPowPayloadMethod__,
-    __GetFallbackToLocalPowPayloadMethod__,
-    __GetHealthPayloadMethod__,
-    __GetNodeInfoPayloadMethod__,
-    __GetPeersPayloadMethod__,
-    __PostBlockRawPayloadMethod__,
-    __GetBlockRawPayloadMethod__,
-    __GetReceiptsPayloadMethod__,
-    __GetReceiptsMigratedAtPayloadMethod__,
-    __GetTreasuryPayloadMethod__,
-    __GetIncludedBlockPayloadMethod__,
-    __Bech32ToHexPayloadMethod__,
-    __HexToBech32PayloadMethod__,
-    __HexPublicKeyToBech32AddressPayloadMethod__,
-    __IsAddressValidPayloadMethod__,
-    __AliasOutputIdsPayloadMethod__,
-    __AliasOutputIdPayloadMethod__,
-    __NftOutputIdsPayloadMethod__,
-    __NftOutputIdPayloadMethod__,
-    __FoundryOutputIdsPayloadMethod__,
-    __FoundryOutputIdPayloadMethod__,
-    __TryGetOutputsPayloadMethod__,
-    __FindBlocksPayloadMethod__,
-    __RetryPayloadMethod__,
-    __RetryUntilIncludedPayloadMethod__,
-    __ConsolidateFundsPayloadMethod__,
-    __ReattachPayloadMethod__,
-    __ReattachUncheckedPayloadMethod__,
-    __PromotePayloadMethod__,
-    __PromoteUncheckedPayloadMethod__,
-    __UnsyncedNodesPayloadMethod__,
-    __GetMilestoneByIdPayloadMethod__,
-    __GetUtxoChangesByIdPayloadMethod__,
-    __GetMilestoneByIndexPayloadMethod__,
-    __GetUtxoChangesByIndexPayloadMethod__,
-    __StoreMnemonicPayloadMethod__,
-    __BuildBasicOutputPayloadMethod__,
-    __BuildAliasOutputPayloadMethod__,
-    __BuildFoundryOutputPayloadMethod__,
-    __BuildNftOutputPayloadMethod__,
+    __GetInfoMessage__,
+    __GetBasicOutputIdsMessage__,
+    __GetOutputMessage__,
+    __GetOutputsMessage__,
+    __GenerateMnemonicMessage__,
+    __MnemonicToHexSeedMessage__,
+    __GenerateAddressesMessage__,
+    __PostBlockMessage__,
+    __BuildAndPostBlockMessage__,
+    __GetTipsMessage__,
+    __GetNetworkInfoMessage__,
+    __GetBlockMessage__,
+    __GetBlockMetadataMessage__,
+    __FindInputsMessage__,
+    __FindOutputsMessage__,
+    __GetLedgerNanoStatusMessage__,
+    __PrepareTransactionMessage__,
+    __SignTransactionMessage__,
+    __SubmitPayloadMessage__,
+    __ParseBech32AddressMessage__,
+    __BlockIdMessage__,
+    __GetNodeMessage__,
+    __GetNetworkIdMessage__,
+    __GetBech32HrpMessage__,
+    __GetMinPowScoreMessage__,
+    __GetTipsIntervalMessage__,
+    __GetLocalPowMessage__,
+    __GetFallbackToLocalPowMessage__,
+    __GetHealthMessage__,
+    __GetNodeInfoMessage__,
+    __GetPeersMessage__,
+    __PostBlockRawMessage__,
+    __GetBlockRawMessage__,
+    __GetReceiptsMessage__,
+    __GetReceiptsMigratedAtMessage__,
+    __GetTreasuryMessage__,
+    __GetIncludedBlockMessage__,
+    __Bech32ToHexMessage__,
+    __HexToBech32Message__,
+    __HexPublicKeyToBech32AddressMessage__,
+    __IsAddressValidMessage__,
+    __AliasOutputIdsMessage__,
+    __AliasOutputIdMessage__,
+    __NftOutputIdsMessage__,
+    __NftOutputIdMessage__,
+    __FoundryOutputIdsMessage__,
+    __FoundryOutputIdMessage__,
+    __TryGetOutputsMessage__,
+    __FindBlocksMessage__,
+    __RetryMessage__,
+    __RetryUntilIncludedMessage__,
+    __ConsolidateFundsMessage__,
+    __ReattachMessage__,
+    __ReattachUncheckedMessage__,
+    __PromoteMessage__,
+    __PromoteUncheckedMessage__,
+    __UnsyncedNodesMessage__,
+    __GetMilestoneByIdMessage__,
+    __GetUtxoChangesByIdMessage__,
+    __GetMilestoneByIndexMessage__,
+    __GetUtxoChangesByIndexMessage__,
+    __StoreMnemonicMessage__,
+    __BuildBasicOutputMessage__,
+    __BuildAliasOutputMessage__,
+    __BuildFoundryOutputMessage__,
+    __BuildNftOutputMessage__,
 } from './client';
 
-export type __ClientPayloadMethods__ =
-    | __GetInfoPayloadMethod__
-    | __GetOutputPayloadMethod__
-    | __GetBasicOutputIdsPayloadMethod__
-    | __GetOutputsPayloadMethod__
-    | __GenerateMnemonicPayloadMethod__
-    | __MnemonicToHexSeedPayloadMethod__
-    | __GenerateAddressesPayloadMethod__
-    | __PostBlockPayloadMethod__
-    | __GenerateBlockPayloadMethod__
-    | __GetTipsPayloadMethod__
-    | __GetNetworkInfoPayloadMethod__
-    | __GetBlockPayloadMethod__
-    | __GetBlockMetadataPayloadMethod__
-    | __FindInputsPayloadMethod__
-    | __FindOutputsPayloadMethod__
-    | __PrepareTransactionPayloadMethod__
-    | __SignTransactionPayloadMethod__
-    | __StoreMnemonicPayloadMethod__
-    | __SubmitPayloadPayloadMethod__
-    | __ParseBech32AddressPayloadMethod__
-    | __BlockIdPayloadMethod__
-    | __GetNodePayloadMethod__
-    | __GetNetworkIdPayloadMethod__
-    | __GetBech32HrpPayloadMethod__
-    | __GetMinPowScorePayloadMethod__
-    | __GetTipsIntervalPayloadMethod__
-    | __GetLocalPowPayloadMethod__
-    | __GetFallbackToLocalPowPayloadMethod__
-    | __GetHealthPayloadMethod__
-    | __GetNodeInfoPayloadMethod__
-    | __GetPeersPayloadMethod__
-    | __PostBlockRawPayloadMethod__
-    | __GetBlockRawPayloadMethod__
-    | __GetMilestoneByIdPayloadMethod__
-    | __GetUtxoChangesByIdPayloadMethod__
-    | __GetMilestoneByIndexPayloadMethod__
-    | __GetUtxoChangesByIndexPayloadMethod__
-    | __GetReceiptsPayloadMethod__
-    | __GetReceiptsMigratedAtPayloadMethod__
-    | __GetTreasuryPayloadMethod__
-    | __GetIncludedBlockPayloadMethod__
-    | __Bech32ToHexPayloadMethod__
-    | __HexToBech32PayloadMethod__
-    | __HexPublicKeyToBech32AddressPayloadMethod__
-    | __IsAddressValidPayloadMethod__
-    | __AliasOutputIdsPayloadMethod__
-    | __AliasOutputIdPayloadMethod__
-    | __NftOutputIdsPayloadMethod__
-    | __NftOutputIdPayloadMethod__
-    | __FoundryOutputIdsPayloadMethod__
-    | __FoundryOutputIdPayloadMethod__
-    | __TryGetOutputsPayloadMethod__
-    | __FindBlocksPayloadMethod__
-    | __RetryPayloadMethod__
-    | __RetryUntilIncludedPayloadMethod__
-    | __ConsolidateFundsPayloadMethod__
-    | __ReattachPayloadMethod__
-    | __ReattachUncheckedPayloadMethod__
-    | __PromotePayloadMethod__
-    | __PromoteUncheckedPayloadMethod__
-    | __UnsyncedNodesPayloadMethod__
-    | __BuildBasicOutputPayloadMethod__
-    | __BuildAliasOutputPayloadMethod__
-    | __BuildFoundryOutputPayloadMethod__
-    | __BuildNftOutputPayloadMethod__;
-
-export interface __SendMessagePayload__ {
-    cmd: 'CallClientMethod';
-    payload: __ClientPayloadMethods__;
-}
+export type __ClientMessages__ =
+    | __GetInfoMessage__
+    | __GetOutputMessage__
+    | __GetBasicOutputIdsMessage__
+    | __GetOutputsMessage__
+    | __GenerateMnemonicMessage__
+    | __MnemonicToHexSeedMessage__
+    | __GenerateAddressesMessage__
+    | __PostBlockMessage__
+    | __BuildAndPostBlockMessage__
+    | __GetTipsMessage__
+    | __GetNetworkInfoMessage__
+    | __GetBlockMessage__
+    | __GetBlockMetadataMessage__
+    | __FindInputsMessage__
+    | __FindOutputsMessage__
+    | __GetLedgerNanoStatusMessage__
+    | __PrepareTransactionMessage__
+    | __SignTransactionMessage__
+    | __StoreMnemonicMessage__
+    | __SubmitPayloadMessage__
+    | __ParseBech32AddressMessage__
+    | __BlockIdMessage__
+    | __GetNodeMessage__
+    | __GetNetworkIdMessage__
+    | __GetBech32HrpMessage__
+    | __GetMinPowScoreMessage__
+    | __GetTipsIntervalMessage__
+    | __GetLocalPowMessage__
+    | __GetFallbackToLocalPowMessage__
+    | __GetHealthMessage__
+    | __GetNodeInfoMessage__
+    | __GetPeersMessage__
+    | __PostBlockRawMessage__
+    | __GetBlockRawMessage__
+    | __GetMilestoneByIdMessage__
+    | __GetUtxoChangesByIdMessage__
+    | __GetMilestoneByIndexMessage__
+    | __GetUtxoChangesByIndexMessage__
+    | __GetReceiptsMessage__
+    | __GetReceiptsMigratedAtMessage__
+    | __GetTreasuryMessage__
+    | __GetIncludedBlockMessage__
+    | __Bech32ToHexMessage__
+    | __HexToBech32Message__
+    | __HexPublicKeyToBech32AddressMessage__
+    | __IsAddressValidMessage__
+    | __AliasOutputIdsMessage__
+    | __AliasOutputIdMessage__
+    | __NftOutputIdsMessage__
+    | __NftOutputIdMessage__
+    | __FoundryOutputIdsMessage__
+    | __FoundryOutputIdMessage__
+    | __TryGetOutputsMessage__
+    | __FindBlocksMessage__
+    | __RetryMessage__
+    | __RetryUntilIncludedMessage__
+    | __ConsolidateFundsMessage__
+    | __ReattachMessage__
+    | __ReattachUncheckedMessage__
+    | __PromoteMessage__
+    | __PromoteUncheckedMessage__
+    | __UnsyncedNodesMessage__
+    | __BuildBasicOutputMessage__
+    | __BuildAliasOutputMessage__
+    | __BuildFoundryOutputMessage__
+    | __BuildNftOutputMessage__;

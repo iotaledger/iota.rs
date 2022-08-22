@@ -1,5 +1,62 @@
 # Changelog
 
+## \[3.0.0-alpha.7]
+
+- Accept `IGenerateAddressesOptions` in `consolidateFunds()` instead of `accountIndex` and `addressRange`.
+  - [218352d](https://github.com/iotaledger/iota.rs/commit/218352de2a58de56c67892a0bfe2aab104793334) Fix primary node ([#1205](https://github.com/iotaledger/iota.rs/pull/1205)) on 2022-08-22
+- Fix PoW feature name.
+  - [218352d](https://github.com/iotaledger/iota.rs/commit/218352de2a58de56c67892a0bfe2aab104793334) Fix primary node ([#1205](https://github.com/iotaledger/iota.rs/pull/1205)) on 2022-08-22
+
+## \[3.0.0-alpha.6]
+
+- Rename getLedgerStatus to getLedgerNanoStatus.
+  - [c744d77](https://github.com/iotaledger/iota.rs/commit/c744d777192e0d4dd67f374b0617ec8f6b35bac3) Rename get_ledger_status to get_ledger_nano_status ([#1185](https://github.com/iotaledger/iota.rs/pull/1185)) on 2022-08-09
+
+- Rename indexer query parameters:
+
+- "hasStorageReturnCondition" => "hasStorageDepositReturn"
+
+- "storageReturnAddress" => "storageDepositReturnAddress"
+
+- "hasExpirationCondition" => "hasExpiration"
+
+- "hasTimelockCondition" => "hasTimelock"
+
+- [c744d77](https://github.com/iotaledger/iota.rs/commit/c744d777192e0d4dd67f374b0617ec8f6b35bac3) Rename get_ledger_status to get_ledger_nano_status ([#1185](https://github.com/iotaledger/iota.rs/pull/1185)) on 2022-08-09
+
+## \[3.0.0-alpha.5]
+
+- Don't include tests in published package.
+  - [78a29ec](https://github.com/iotaledger/iota.rs/commit/78a29ec506516a8263920ee65f356e7992c898aa) Don't include tests in published package ([#1180](https://github.com/iotaledger/iota.rs/pull/1180)) on 2022-08-08
+
+## \[3.0.0-alpha.4]
+
+- Fix IBuildBlockOptions.
+  - [7a5c445](https://github.com/iotaledger/iota.rs/commit/7a5c4459650e8b9f0b551178474d885bc7aad57e) Add debug logs for message_interface ([#1177](https://github.com/iotaledger/iota.rs/pull/1177)) on 2022-08-05
+
+## \[3.0.0-alpha.3]
+
+- Update @iota/types to fix types.
+  - [e86dfa2](https://github.com/iotaledger/iota.rs/commit/e86dfa22fc36e8e09e458a9147bf5fc5a2222860) Update @iota/types ([#1175](https://github.com/iotaledger/iota.rs/pull/1175)) on 2022-08-05
+- Accept hex encoded strings for tag and data fields.
+  - [e86dfa2](https://github.com/iotaledger/iota.rs/commit/e86dfa22fc36e8e09e458a9147bf5fc5a2222860) Update @iota/types ([#1175](https://github.com/iotaledger/iota.rs/pull/1175)) on 2022-08-05
+
+## \[3.0.0-alpha.2]
+
+- Improve handling for utxo chains in input selection.
+
+## \[3.0.0-alpha.1]
+
+- Rename generateBlock to buildAndPostBlock.
+  - [4fcb685](https://github.com/iotaledger/iota.rs/commit/4fcb685082d6741a5e8c00ae44e1e70503b586d7) Pow hrp renaming ([#1163](https://github.com/iotaledger/iota.rs/pull/1163)) on 2022-07-27
+- Rename PoW to Pow and HRP to Hrp.
+  - [4fcb685](https://github.com/iotaledger/iota.rs/commit/4fcb685082d6741a5e8c00ae44e1e70503b586d7) Pow hrp renaming ([#1163](https://github.com/iotaledger/iota.rs/pull/1163)) on 2022-07-27
+
+## \[3.0.0-alpha.0]
+
+- Pre-release of the Stardust bindings of iota.rs for Node.JS
+  - [bdb75aa](https://github.com/iotaledger/iota.rs/commit/bdb75aab24ccbde20c439559427d4c14437a3c96) Nodejs docs and examples ([#1128](https://github.com/iotaledger/iota.rs/pull/1128)) on 2022-07-18
+
 ## \[2.2.3]
 
 - Fixes getIncludedMessage().

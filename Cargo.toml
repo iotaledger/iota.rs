@@ -1,6 +1,6 @@
 [package]
 name = "iota-client"
-version = "1.1.1"
+version = "2.0.0-beta.2"
 authors = [ "IOTA Stiftung" ]
 edition = "2021"
 description = "The official, general-purpose IOTA client library in Rust for interaction with the IOTA network (Tangle)"
@@ -12,61 +12,59 @@ keywords = [ "iota", "tangle", "client" ]
 categories = [ "cryptography::cryptocurrencies" ]
 
 [dependencies]
-async-trait = { version = "0.1.56", default-features = false }
-bee-block = { git = "https://github.com/iotaledger/bee", rev = "9dd0312130353f16a671171d7d00582bdac0a199", default-features = false, features = [ "serde", "dto", "std" ] }
-bee-rest-api = { git = "https://github.com/iotaledger/bee", rev = "9dd0312130353f16a671171d7d00582bdac0a199", default-features = false }
-bee-pow = { git = "https://github.com/iotaledger/bee", rev = "9dd0312130353f16a671171d7d00582bdac0a199", default-features = false }
+async-trait = { version = "0.1.57", default-features = false }
+bee-api-types = { version = "1.0.0-beta.5", default-features = false }
+bee-block = { version = "1.0.0-beta.6", default-features = false, features = [ "serde", "dto", "std" ] }
+bee-pow = { version = "1.0.0-alpha.1", default-features = false }
 derive_builder = { version = "0.11.2", default-features = false, features = [ "std" ]}
-fern-logger = { version = "0.5.0", default-features = false }
-futures = { version = "0.3.21", default-features = false, features = [ "thread-pool" ] }
-hex = { version = "0.4.3", default-features = false }
-iota-crypto = { version = "0.12.1", default-features = false, features = [ "std", "chacha", "blake2b", "ed25519", "random", "slip10", "bip39", "bip39-en" ] }
+futures = { version = "0.3.23", default-features = false, features = [ "thread-pool" ] }
+iota-crypto = { version = "0.14.0", default-features = false, features = [ "std", "chacha", "blake2b", "ed25519", "random", "slip10", "bip39", "bip39-en" ] }
 log = { version = "0.4.17", default-features = false }
 num_cpus = { version = "1.13.1", default-features = false }
-packable = { version = "0.4.0", default-features = false, features = [ "serde", "primitive-types", "std" ] }
+packable = { version = "0.5.0", default-features = false, features = [ "serde", "primitive-types", "std" ] }
+prefix-hex = { version = "0.4.0", default-features = false, features = [ "std" ] }
 primitive-types = { version = "0.11.1", default-features = false }
-regex = { version = "1.5.6", default-features = false, features = [ "std", "unicode-perl" ], optional = true }
+regex = { version = "1.6.0", default-features = false, features = [ "std", "unicode-perl" ], optional = true }
 reqwest = { version = "0.11.11", default-features = false, features = [ "json", "blocking" ] }
-serde = { version = "1.0.137", default-features = false, features = [ "derive" ] }
-serde_json = { version = "1.0.81", default-features = false }
-thiserror = { version = "1.0.31", default-features = false }
+serde = { version = "1.0.144", default-features = false, features = [ "derive" ] }
+serde_json = { version = "1.0.85", default-features = false }
+thiserror = { version = "1.0.32", default-features = false }
 url = { version = "2.2.2", default-features = false, features = [ "serde" ] }
-zeroize = { version = "1.5.5", default-features = false, features = [ "zeroize_derive" ] }
+zeroize = { version = "1.5.7", default-features = false, features = [ "zeroize_derive" ] }
 
 # MQTT
 rumqttc = { version = "0.12.0", default-features = false, features = [ "websocket" ], optional = true }
-once_cell = { version = "1.12.0", default-features = false, features = [ "std" ], optional = true }
+once_cell = { version = "1.13.1", default-features = false, features = [ "std" ], optional = true }
 
 # ledger hardware wallets
-iota-ledger = { git = "https://github.com/iotaledger/ledger.rs", rev = "414c4b98294afc8863bed1b58c811a77105f7eea", default-features = false, optional = true }
+iota-ledger-nano = { version = "1.0.0-alpha.1", default-features = false, optional = true }
 
 # stronghold secret manager integration
-iota_stronghold = { version = "0.4.1", default-features = false, optional = true }
-riker = { version = "0.4.2", default-features = false, optional = true }
-# for stronghold
-crypto05 = { package = "iota-crypto", version = "0.5.1", default-features = false, features = [ "slip10" ], optional = true }
+iota_stronghold = { version = "0.8.1", default-features = false, features = [ "std" ], optional = true }
 
 # message_interface
-backtrace = { version = "0.3.65", default-features = false, features = [ "std" ], optional = true }
+backtrace = { version = "0.3.66", default-features = false, features = [ "std" ], optional = true }
 
 [target.'cfg(not(target_family = "wasm"))'.dependencies]
-tokio = { version = "1.19.2", default-features = false, features = [ "macros", "rt-multi-thread", "time", "sync" ] }
+tokio = { version = "1.20.1", default-features = false, features = [ "macros", "rt-multi-thread", "time", "sync" ] }
 
 [target.'cfg(target_family = "wasm")'.dependencies]
 instant = { version = "0.1.12", default-features = false }
 gloo-timers = { version = "0.2.4", default-features = false, features = [ "futures" ] }
-# single thread pow for wasm
-bee-ternary = { version = "0.6.0", default-features = false }
+# Single-threaded PoW for Wasm.
+bee-ternary = { version = "1.0.0-alpha.1", default-features = false }
 
 [dev-dependencies]
+bee-block = { version = "1.0.0-beta.6", default-features = false, features = [ "rand" ] }
 dotenv = { version = "0.15.0", default-features = false }
+fern-logger = { version = "0.5.0", default-features = false }
 
 [features]
 default = [ "tls" ]
 mqtt = [ "rumqttc", "once_cell", "regex" ]
-ledger_nano = [ "iota-ledger" ]
+ledger_nano = [ "iota-ledger-nano" ]
 tls = [ "reqwest/rustls-tls" ]
-stronghold = [ "iota_stronghold", "riker", "crypto05" ]
+stronghold = [ "iota_stronghold" ]
 message_interface = [ "backtrace" ]
 
 [profile.release]
@@ -79,7 +77,7 @@ lto = true
 strip = "symbols"
 
 [package.metadata.cargo-udeps.ignore]
-normal = [ "async-trait", "derive_builder", "slog-stdlog" ]
+normal = [ "async-trait", "derive_builder" ]
 
 # Node API core examples
 
@@ -88,32 +86,48 @@ name = "node_api_core_get_health"
 path = "examples/node_api_core/00_get_health.rs"
 
 [[example]]
+name = "node_api_core_get_routes"
+path = "examples/node_api_core/01_get_routes.rs"
+
+[[example]]
 name = "node_api_core_get_info"
-path = "examples/node_api_core/01_get_info.rs"
+path = "examples/node_api_core/02_get_info.rs"
 
 [[example]]
 name = "node_api_core_get_tips"
-path = "examples/node_api_core/02_get_tips.rs"
+path = "examples/node_api_core/03_get_tips.rs"
 
 [[example]]
 name = "node_api_core_post_block"
-path = "examples/node_api_core/03_post_block.rs"
+path = "examples/node_api_core/04_post_block.rs"
 
 [[example]]
 name = "node_api_core_post_block_raw"
-path = "examples/node_api_core/04_post_block_raw.rs"
+path = "examples/node_api_core/05_post_block_raw.rs"
 
 [[example]]
 name = "node_api_core_get_block"
-path = "examples/node_api_core/05_get_block.rs"
+path = "examples/node_api_core/06_get_block.rs"
 
 [[example]]
 name = "node_api_core_get_block_raw"
-path = "examples/node_api_core/06_get_block_raw.rs"
+path = "examples/node_api_core/07_get_block_raw.rs"
 
 [[example]]
 name = "node_api_core_get_block_metadata"
-path = "examples/node_api_core/07_get_block_metadata.rs"
+path = "examples/node_api_core/08_get_block_metadata.rs"
+
+[[example]]
+name = "node_api_core_get_output"
+path = "examples/node_api_core/09_get_output.rs"
+
+[[example]]
+name = "node_api_core_get_output_raw"
+path = "examples/node_api_core/10_get_output_raw.rs"
+
+[[example]]
+name = "node_api_core_get_output_metadata"
+path = "examples/node_api_core/11_get_output_metadata.rs"
 
 [[example]]
 name = "node_api_core_get_receipts"
@@ -126,6 +140,14 @@ path = "examples/node_api_core/13_get_receipts_migrated_at.rs"
 [[example]]
 name = "node_api_core_get_treasury"
 path = "examples/node_api_core/14_get_treasury.rs"
+
+[[example]]
+name = "node_api_core_get_included_block"
+path = "examples/node_api_core/15_get_included_block.rs"
+
+[[example]]
+name = "node_api_core_get_included_block_raw"
+path = "examples/node_api_core/16_get_included_block_raw.rs"
 
 [[example]]
 name = "node_api_core_get_milestone_by_id"
@@ -158,19 +180,38 @@ name = "node_api_indexer_get_basic_outputs"
 path = "examples/node_api_indexer/00_get_basic_outputs.rs"
 
 [[example]]
-name = "node_api_indexer_get_nft_outputs"
-path = "examples/node_api_indexer/01_get_nft_outputs.rs"
+name = "node_api_indexer_get_alias_output"
+path = "examples/node_api_indexer/01_get_alias_output.rs"
 
 [[example]]
 name = "node_api_indexer_get_alias_outputs"
 path = "examples/node_api_indexer/02_get_alias_outputs.rs"
 
 [[example]]
-name = "node_api_indexer_get_foundry_outputs"
-path = "examples/node_api_indexer/03_get_foundry_outputs.rs"
+name = "node_api_indexer_get_foundry_output"
+path = "examples/node_api_indexer/03_get_foundry_output.rs"
 
+[[example]]
+name = "node_api_indexer_get_foundry_outputs"
+path = "examples/node_api_indexer/04_get_foundry_outputs.rs"
+
+[[example]]
+name = "node_api_indexer_get_nft_output"
+path = "examples/node_api_indexer/05_get_nft_output.rs"
+
+[[example]]
+name = "node_api_indexer_get_nft_outputs"
+path = "examples/node_api_indexer/06_get_nft_outputs.rs"
 
 #######
+
+[[example]]
+name = "generate_mnemonic"
+path = "examples/00_generate_mnemonic.rs"
+
+[[example]]
+name = "generate_addresses"
+path = "examples/01_generate_addresses.rs"
 
 [[example]]
 name = "07_mqtt"
@@ -187,6 +228,38 @@ required-features = [ "ledger_nano" ]
 [[example]]
 name = "stronghold"
 required-features = [ "stronghold" ]
+
+[[example]]
+name = "block_time"
+path = "examples/block/block_time.rs"
+
+[[example]]
+name = "custom_inputs"
+path = "examples/block/custom_inputs.rs"
+
+[[example]]
+name = "custom_parent"
+path = "examples/block/custom_parent.rs"
+
+[[example]]
+name = "custom_payload"
+path = "examples/block/custom_payload.rs"
+
+[[example]]
+name = "data_block"
+path = "examples/block/data_block.rs"
+
+[[example]]
+name = "output"
+path = "examples/block/output.rs"
+
+[[example]]
+name = "simple_block"
+path = "examples/block/simple_block.rs"
+
+[[example]]
+name = "transaction"
+path = "examples/block/transaction.rs"
 
 [[example]]
 name = "0_address_generation"
@@ -217,6 +290,10 @@ name = "alias"
 path = "examples/outputs/alias.rs"
 
 [[example]]
+name = "recursive_alias"
+path = "examples/outputs/recursive_alias.rs"
+
+[[example]]
 name = "basic"
 path = "examples/outputs/basic.rs"
 
@@ -229,8 +306,8 @@ name = "foundry"
 path = "examples/outputs/foundry.rs"
 
 [[example]]
-name = "microtransaction"
-path = "examples/outputs/microtransaction.rs"
+name = "micro_transaction"
+path = "examples/outputs/micro_transaction.rs"
 
 [[example]]
 name = "native_tokens"

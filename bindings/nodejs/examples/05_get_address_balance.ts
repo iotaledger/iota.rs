@@ -10,16 +10,13 @@ require('dotenv').config({ path: '../.env' });
 // conditions and sum the amounts and native tokens
 async function run() {
     initLogger();
+    if (!process.env.NODE_URL) {
+        throw new Error('.env NODE_URL is undefined, see .env.example');
+    }
 
-    // client will connect to testnet by default
     const client = new Client({
-        nodes: [
-            {
-                // Insert your node URL here.
-                url: 'http://localhost:14265',
-            },
-        ],
-        localPow: true,
+        // Insert your node URL in the .env.
+        nodes: [process.env.NODE_URL],
     });
 
     try {
@@ -39,12 +36,12 @@ async function run() {
             },
         });
 
-        // Get output ids of outputs that can be controlled by this address without further unlock constraints
+        // Get output ids of basic outputs that can be controlled by this address without further unlock constraints
         const outputIds = await client.basicOutputIds([
             { address: addresses[0] },
-            { hasExpirationCondition: false },
-            { hasTimelockCondition: false },
-            { hasStorageReturnCondition: false },
+            { hasExpiration: false },
+            { hasTimelock: false },
+            { hasStorageDepositReturn: false },
         ]);
 
         // Get outputs by their IDs
@@ -69,7 +66,7 @@ async function run() {
         }
 
         console.log(
-            `Outputs controlled by ${addresses[0]} have: ${totalAmount}i and native tokens: `,
+            `Outputs controlled by ${addresses[0]} have: ${totalAmount}glow and native tokens: `,
             totalNativeTokens,
         );
     } catch (error) {

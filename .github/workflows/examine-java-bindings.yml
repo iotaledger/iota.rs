@@ -28,6 +28,10 @@ on:
     - cron: "0 1 * * *"
   workflow_dispatch:
 
+concurrency: 
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   test:
     name: Test
@@ -37,13 +41,11 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows-latest, macos-latest, ubuntu-latest]
-        # java: ['8', '11', '17']
-        # FIXME: Make tests work on the newer Java LTS version 17. (#782)
-        java: ["8", "11"]
+        java: ["11", "17"]
 
     steps:
       - name: Checkout the Source Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set Up Nightly Rust
         uses: ./.github/actions/setup-rust
@@ -66,6 +68,12 @@ jobs:
         if: ${{ startsWith(matrix.os, 'windows') }}
         uses: ./.github/actions/setup-clang
 
+      - name: Install Required Dependencies (Ubuntu)
+        if: ${{ startsWith(matrix.os, 'ubuntu') }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install libudev-dev libusb-1.0-0-dev
+
       - name: Run Cargo Test
         uses: actions-rs/cargo@v1
         with:
@@ -73,8 +81,10 @@ jobs:
           args: --manifest-path bindings/java/iota-client-java/native/Cargo.toml --all-features --release
 
       - name: Run Gradle Test
-        working-directory: bindings/java/
-        run: ./gradlew test
+        working-directory: bindings/java/iota-client-java/
+        run: |
+          chmod +x gradlew
+          ./gradlew test
 
   lint:
     name: Lint
@@ -83,17 +93,22 @@ jobs:
 
     steps:
       - name: Checkout the Source Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
-      - name: Set Up Nightly Clippy
+      - name: Set Up Beta Clippy
         uses: ./.github/actions/setup-rust
         with:
-          toolchain: nightly
+          toolchain: beta
           components: clippy
           cache: true
           cache-root: bindings/java/iota-client-java/native/
           cache-job-id: ${{ github.workflow }}-${{ github.job }}
           cache-hash: ${{ hashFiles('.github/workflows/examine-java-bindings.yml') }}
+
+      - name: Install Required Dependencies (Ubuntu)
+        run: |
+          sudo apt-get update
+          sudo apt-get install libudev-dev libusb-1.0-0-dev
 
       - name: Run Clippy
         uses: actions-rs/clippy-check@v1
@@ -111,7 +126,7 @@ jobs:
 
     steps:
       - name: Checkout the Source Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Install Cargo-udeps with Nightly Rust
         uses: ./.github/actions/setup-rust
@@ -119,9 +134,14 @@ jobs:
           toolchain: nightly
           cache: true
           install: cargo-udeps
-          cache-root: bindings/java/iota-client-java/native/
+          cache-root: bindings/java/iota-client-java/iota-client-java/native/
           cache-job-id: ${{ github.workflow }}-${{ github.job }}
           cache-hash: ${{ hashFiles('.github/workflows/examine-java-bindings.yml') }}
+
+      - name: Install Required Dependencies (Ubuntu)
+        run: |
+          sudo apt-get update
+          sudo apt-get install libudev-dev libusb-1.0-0-dev
 
       - name: Run Cargo Udeps
         uses: actions-rs/cargo@v1
@@ -138,7 +158,7 @@ jobs:
 
     steps:
       - name: Checkout the Source Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set Up Nightly Rustfmt
         uses: ./.github/actions/setup-rust
@@ -173,7 +193,7 @@ jobs:
 
     steps:
       - name: Checkout the Source Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Install Cargo-audit with Nightly Rust
         uses: ./.github/actions/setup-rust
