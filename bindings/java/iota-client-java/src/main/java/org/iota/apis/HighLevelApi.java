@@ -9,6 +9,7 @@ import com.google.gson.JsonObject;
 import org.iota.types.*;
 import org.iota.types.ids.BlockId;
 import org.iota.types.ids.OutputId;
+import org.iota.types.secret.GenerateAddressesOptions;
 import org.iota.types.secret.Range;
 import org.iota.types.secret.SecretManager;
 
@@ -95,11 +96,10 @@ public class HighLevelApi extends BaseApi {
         return blocks;
     }
 
-    public String consolidateFunds(SecretManager secretManager, int accountIndex, Range addressRange) throws ClientException {
+    public String consolidateFunds(SecretManager secretManager, GenerateAddressesOptions generateAddressesOptions) throws ClientException {
         JsonObject o = new JsonObject();
         o.add("secretManager", secretManager.getJson());
-        o.addProperty("accountIndex", accountIndex);
-        o.add("addressRange", addressRange.getAsJson());
+        o.add("generateAddressesOptions", generateAddressesOptions.getJson());
 
         String responsePayload = callBaseApi(new ClientCommand("ConsolidateFunds", o)).getAsString();
 

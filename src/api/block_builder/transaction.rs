@@ -6,7 +6,6 @@
 use std::collections::HashSet;
 
 use bee_block::{
-    address::Address,
     input::{Input, UtxoInput},
     output::{dto::OutputDto, InputsCommitment, Output, OutputId},
     payload::{
@@ -94,23 +93,19 @@ impl<'a> ClientBlockBuilder<'a> {
 
     /// Sign the transaction
     pub async fn sign_transaction(&self, prepared_transaction_data: PreparedTransactionData) -> Result<Payload> {
-        log::debug!("[sign_transaction]");
-        let mut input_addresses = Vec::new();
-        for input_signing_data in &prepared_transaction_data.inputs_data {
-            let (_bech32_hrp, address) = Address::try_from_bech32(&input_signing_data.bech32_address)?;
-            input_addresses.push(address);
-        }
+        log::debug!("[sign_transaction] {:?}", prepared_transaction_data);
         let secret_manager = self.secret_manager.ok_or(Error::MissingParameter("secret manager"))?;
         let unlocks = secret_manager
             .sign_transaction_essence(&prepared_transaction_data)
             .await?;
         let tx_payload = TransactionPayload::new(prepared_transaction_data.essence.clone(), unlocks)?;
 
-        let local_time = self.client.get_time_checked().await?;
+        let current_time = self.client.get_time_checked().await?;
 
-        let conflict = verify_semantic(&prepared_transaction_data.inputs_data, &tx_payload, local_time)?;
+        let conflict = verify_semantic(&prepared_transaction_data.inputs_data, &tx_payload, current_time)?;
 
         if conflict != ConflictReason::None {
+            log::debug!("[sign_transaction] conflict: {conflict:?} for {:#?}", tx_payload);
             return Err(Error::TransactionSemantic(conflict));
         }
 
@@ -123,7 +118,7 @@ impl<'a> ClientBlockBuilder<'a> {
 pub fn verify_semantic(
     input_signing_data: &[InputSigningData],
     transaction: &TransactionPayload,
-    local_time: u32,
+    current_time: u32,
 ) -> crate::Result<ConflictReason> {
     let transaction_id = transaction.id();
     let TransactionEssence::Regular(essence) = transaction.essence();
@@ -145,7 +140,7 @@ pub fn verify_semantic(
         essence,
         inputs.iter().map(|(id, input)| (id, *input)),
         transaction.unlocks(),
-        local_time,
+        current_time,
     );
 
     semantic_validation(context, inputs.as_slice(), transaction.unlocks()).map_err(Error::BlockError)

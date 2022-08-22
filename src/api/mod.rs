@@ -11,7 +11,6 @@ mod types;
 pub use self::{
     address::*,
     block_builder::{pow::*, *},
-    consolidation::*,
     types::*,
 };
 

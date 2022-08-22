@@ -1,7 +1,6 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use bee_api_types::responses::OutputResponse;
 use bee_block::output::{NativeToken, NativeTokensBuilder, Output};
 
 use crate::{node_api::indexer::query_parameters::QueryParameter, Client, Result};
@@ -73,12 +72,5 @@ impl<'a> GetAddressBuilder<'a> {
             ledger_index,
             native_tokens: native_tokens_builder.finish_vec()?,
         })
-    }
-
-    /// Get outputs
-    pub async fn outputs(self, query_parameters: Vec<QueryParameter>) -> Result<Vec<OutputResponse>> {
-        let output_ids = self.client.basic_output_ids(query_parameters).await?;
-
-        self.client.get_outputs(output_ids).await
     }
 }

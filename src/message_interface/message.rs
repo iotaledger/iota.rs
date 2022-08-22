@@ -1,8 +1,6 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use std::ops::Range;
-
 use bee_block::{
     address::AliasAddress,
     output::{
@@ -383,12 +381,9 @@ pub enum Message {
         /// Secret manager
         #[serde(rename = "secretManager")]
         secret_manager: SecretManagerDto,
-        /// Account index
-        #[serde(rename = "accountIndex")]
-        account_index: u32,
-        /// Address_range
-        #[serde(rename = "addressRange")]
-        address_range: Range<u32>,
+        /// Addresses generation options
+        #[serde(rename = "generateAddressesOptions")]
+        generate_addresses_options: GenerateAddressesOptions,
     },
     /// Function to find inputs from addresses for a provided amount (useful for offline signing)
     FindInputs {

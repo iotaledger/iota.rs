@@ -11,7 +11,6 @@ import type {
     QueryParameter,
 } from '../queryParameters';
 import type { IAuth } from '../network';
-import type { IRange } from '../range';
 import type { IBasicOutputBuilderOptions } from '../outputBuilderOptions/basicOutputOptions';
 import type { IAliasOutputBuilderOptions } from '../outputBuilderOptions/aliasOutputOptions';
 import type { IFoundryOutputBuilderOptions } from '../outputBuilderOptions/foundryOutputOptions';
@@ -382,8 +381,7 @@ export interface __ConsolidateFundsMessage__ {
     name: 'ConsolidateFunds';
     data: {
         secretManager: SecretManager;
-        accountIndex: number;
-        addressRange?: IRange;
+        generateAddressesOptions: IGenerateAddressesOptions;
     };
 }
 

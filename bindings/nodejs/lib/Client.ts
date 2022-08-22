@@ -12,7 +12,6 @@ import type {
     SecretManager,
     INode,
     IAuth,
-    IRange,
     IBasicOutputBuilderOptions,
     IAliasOutputBuilderOptions,
     IFoundryOutputBuilderOptions,
@@ -846,15 +845,13 @@ export class Client {
      */
     async consolidateFunds(
         secretManager: SecretManager,
-        accountIndex: number,
-        addressRange?: IRange,
+        generateAddressesOptions: IGenerateAddressesOptions,
     ): Promise<string> {
         const response = await this.messageHandler.sendMessage({
             name: 'ConsolidateFunds',
             data: {
                 secretManager,
-                accountIndex,
-                addressRange,
+                generateAddressesOptions,
             },
         });
 

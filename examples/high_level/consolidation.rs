@@ -4,7 +4,7 @@
 //! cargo run --example consolidation --release
 
 use iota_client::{
-    api::consolidate_funds,
+    api::GetAddressesBuilderOptions,
     secret::{mnemonic::MnemonicSecretManager, SecretManager},
     Client, Result,
 };
@@ -20,7 +20,7 @@ async fn main() -> Result<()> {
 
     let node_url = std::env::var("NODE_URL").unwrap();
 
-    let address_range = 0..150;
+    let address_range = 0u32..150;
     // Create a client instance
     let client = Client::builder().with_node(&node_url)?.finish()?;
 
@@ -29,7 +29,15 @@ async fn main() -> Result<()> {
     )?);
 
     // Here all funds will be send to the address with the lowest index in the range
-    let address = consolidate_funds(&client, &secret_manager, 0, address_range).await?;
+    let address = client
+        .consolidate_funds(
+            &secret_manager,
+            GetAddressesBuilderOptions {
+                range: Some(address_range),
+                ..Default::default()
+            },
+        )
+        .await?;
 
     println!("Funds consolidated to {}", address);
     Ok(())
