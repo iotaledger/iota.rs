@@ -345,7 +345,7 @@ impl<'a> ClientBlockBuilder<'a> {
     pub fn get_output_amount_and_address(
         output: &Output,
         governance_transition: Option<HashSet<AliasId>>,
-        local_time: u32,
+        current_time: u32,
     ) -> Result<(u64, Address)> {
         let (amount, address, unlock_conditions) = match output {
             Output::Treasury(_) => return Err(Error::OutputError("Treasury output is no supported")),
@@ -353,7 +353,7 @@ impl<'a> ClientBlockBuilder<'a> {
                 // PANIC: safe to unwrap as BasicOutput has to have an AddressUnlockCondition.
                 let address = output.unlock_conditions().address().unwrap();
 
-                (output.amount(), address.address(), output.unlock_conditions())
+                (output.amount(), *address.address(), output.unlock_conditions())
             }
             Output::Alias(ref output) => {
                 let is_governance_transition = if let Some(governance_transition) = governance_transition {
@@ -363,32 +363,24 @@ impl<'a> ClientBlockBuilder<'a> {
                 };
 
                 if is_governance_transition {
-                    // PANIC: safe to unwrap as AliasOutput has to have a GovernorAddressUnlockCondition.
-                    let address = output.unlock_conditions().governor_address().unwrap();
-
-                    (output.amount(), address.address(), output.unlock_conditions())
+                    (output.amount(), *output.governor_address(), output.unlock_conditions())
                 } else {
-                    // PANIC: safe to unwrap as AliasOutput has to have a StateControllerAddressUnlockCondition.
-                    let address = output.unlock_conditions().state_controller_address().unwrap();
-
-                    (output.amount(), address.address(), output.unlock_conditions())
+                    (
+                        output.amount(),
+                        *output.state_controller_address(),
+                        output.unlock_conditions(),
+                    )
                 }
             }
-            Output::Foundry(ref output) => {
-                // PANIC: safe to unwrap as FoundryOutput has to have an ImmutableAliasAddressUnlockCondition.
-                let address = output.unlock_conditions().immutable_alias_address().unwrap();
-
-                (output.amount(), address.address(), output.unlock_conditions())
-            }
-            Output::Nft(ref output) => {
-                // PANIC: safe to unwrap as NftOutput has to have an AddressUnlockCondition.
-                let address = output.unlock_conditions().address().unwrap();
-
-                (output.amount(), address.address(), output.unlock_conditions())
-            }
+            Output::Foundry(ref output) => (
+                output.amount(),
+                Address::Alias(*output.alias_address()),
+                output.unlock_conditions(),
+            ),
+            Output::Nft(ref output) => (output.amount(), *output.address(), output.unlock_conditions()),
         };
 
-        Ok((amount, *unlock_conditions.locked_address(address, local_time)))
+        Ok((amount, *unlock_conditions.locked_address(&address, current_time)))
     }
 
     /// Consume the builder and get the API result

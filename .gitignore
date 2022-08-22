@@ -11,3 +11,4 @@ prepared_transaction.json
 signed_transaction.json
 iota.rs.log
 *.stronghold
+client.log

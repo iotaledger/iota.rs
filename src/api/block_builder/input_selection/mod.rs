@@ -4,40 +4,46 @@
 //! Input selection for transactions
 
 mod automatic;
+mod helpers;
 mod manual;
 mod native_token_helpers;
-mod output_data;
 mod remainder;
+mod sender_issuer;
 pub mod types;
+mod utxo_chains;
+use std::{collections::HashSet, ops::Deref};
 
 use bee_block::{
-    address::Address,
+    address::{Address, AliasAddress, NftAddress},
     input::INPUT_COUNT_MAX,
     output::{
-        unlock_condition::{AddressUnlockCondition, StorageDepositReturnUnlockCondition},
-        AliasOutputBuilder, BasicOutputBuilder, FoundryOutputBuilder, NativeTokens, NftOutputBuilder, Output,
-        OutputAmount, Rent, RentStructure, UnlockCondition, OUTPUT_COUNT_MAX,
+        AliasOutputBuilder, FoundryOutputBuilder, NftOutputBuilder, Output, Rent, RentStructure, OUTPUT_COUNT_MAX,
     },
 };
-use packable::{bounded::TryIntoBoundedU16Error, PackableExt};
+pub use helpers::minimum_storage_deposit_basic_output;
+use packable::bounded::TryIntoBoundedU16Error;
 
 use self::{
+    helpers::get_accumulated_output_amounts,
     native_token_helpers::{get_minted_and_melted_native_tokens, get_remainder_native_tokens, missing_native_tokens},
-    output_data::get_accumulated_output_amounts,
     remainder::{get_additional_required_remainder_amount, get_remainder_output},
     types::SelectedTransactionData,
 };
 use crate::{
-    api::input_selection::{remainder::get_storage_deposit_return_outputs, types::AccumulatedOutputAmounts},
+    api::input_selection::{
+        helpers::{output_contains_address, sdr_not_expired, sort_input_signing_data},
+        remainder::get_storage_deposit_return_outputs,
+        types::AccumulatedOutputAmounts,
+    },
     secret::types::InputSigningData,
     Error, Result,
 };
 
 /// Select inputs from provided inputs([InputSigningData]) for provided [Output]s, validate amounts and create remainder
 /// output if necessary. Also checks for alias, foundry and nft outputs that there previous output exist in the inputs,
-/// when required. Careful with setting `allow_burning` to `true`, native tokens can get easily burned by accident.
-/// Provided alias, foundry and nft outputs will be used first as inputs and therefore destroyed if not existent in the
-/// output
+/// when required. Careful with setting `allow_burning` to `true`, native tokens, nfts or alias outputs can get easily
+/// burned by accident. Without burning, alias, foundry and nft outputs will be created on the output side, if not
+/// already present.
 pub fn try_select_inputs(
     mut inputs: Vec<InputSigningData>,
     mut outputs: Vec<Output>,
@@ -47,6 +53,11 @@ pub fn try_select_inputs(
     allow_burning: bool,
     current_time: u32,
 ) -> Result<SelectedTransactionData> {
+    log::debug!("[try_select_inputs]");
+    if inputs.is_empty() {
+        return Err(crate::Error::NoInputs);
+    }
+
     inputs.sort_by_key(|a| (a.output_metadata.transaction_id, a.output_metadata.output_index));
     inputs.dedup_by_key(|a| (a.output_metadata.transaction_id, a.output_metadata.output_index));
 
@@ -109,107 +120,151 @@ pub fn try_select_inputs(
 
     // 1. get alias, foundry or nft inputs (because amount and native tokens of these outputs will also be available for
     // the outputs)
-    for input_signing_data in utxo_chain_outputs {
-        // Only add outputs if also exisiting on the output side or if burning is allowed
-        let minimum_required_storage_deposit = input_signing_data.output.rent_cost(rent_structure);
-        let output_id = input_signing_data.output_id()?;
+    // check the inputs in a loop, because if we add an an output which requires another alias or nft output to unlock
+    // it, then we might have to add this also
 
-        match &input_signing_data.output {
-            Output::Nft(nft_input) => {
-                // or if an output contains an nft output with the same nft id
-                let is_required = outputs.iter().any(|output| {
-                    if let Output::Nft(nft_output) = output {
-                        nft_input.nft_id().or_from_output_id(output_id) == *nft_output.nft_id()
-                    } else {
-                        false
-                    }
-                });
-                if !is_required && !allow_burning {
-                    // Don't add if it doesn't give us any amount or native tokens
-                    if input_signing_data.output.amount() == minimum_required_storage_deposit
-                        && nft_input.native_tokens().is_empty()
-                    {
-                        continue;
-                    }
-                    // else add output to outputs with minimum_required_storage_deposit
-                    let new_output = NftOutputBuilder::from(nft_input)
-                        .with_nft_id(nft_input.nft_id().or_from_output_id(output_id))
-                        .with_amount(minimum_required_storage_deposit)?
-                        .finish_output()?;
-                    outputs.push(new_output);
-                }
+    // Set to true so it runs at least once
+    let mut added_new_outputs = true;
+    let mut added_output_for_input_signing_data = HashSet::new();
+    let mut added_input_signing_data = HashSet::new();
+
+    while added_new_outputs {
+        let outputs_len_beginning = outputs.len();
+
+        for input_signing_data in &utxo_chain_outputs {
+            let output_id = input_signing_data.output_id()?;
+
+            // Skip inputs where we already added the required output
+            if added_output_for_input_signing_data.contains(&output_id) {
+                continue;
             }
-            Output::Alias(alias_input) => {
-                // Don't add if output has not the same AliasId, so we don't burn it
-                if !outputs.iter().any(|output| {
-                    if let Output::Alias(alias_output) = output {
-                        alias_input.alias_id().or_from_output_id(output_id) == *alias_output.alias_id()
-                    } else {
-                        false
+            let minimum_required_storage_deposit = input_signing_data.output.rent_cost(rent_structure);
+
+            match &input_signing_data.output {
+                Output::Nft(nft_input) => {
+                    let nft_id = nft_input.nft_id().or_from_output_id(output_id);
+                    // or if an output contains an nft output with the same nft id
+                    let is_required = outputs.iter().any(|output| {
+                        if let Output::Nft(nft_output) = output {
+                            nft_id == *nft_output.nft_id()
+                        } else {
+                            false
+                        }
+                    });
+                    if !is_required && !allow_burning {
+                        let nft_address = Address::Nft(NftAddress::new(nft_id));
+                        let nft_required_in_unlock_condition = outputs.iter().any(|output| {
+                            // check if alias address is in unlock condition
+                            output_contains_address(output, output_id, &nft_address, current_time)
+                        });
+
+                        // Don't add if it doesn't give us any amount or native tokens
+                        if !nft_required_in_unlock_condition
+                            && input_signing_data.output.amount() == minimum_required_storage_deposit
+                            && nft_input.native_tokens().is_empty()
+                        {
+                            continue;
+                        }
+                        // else add output to outputs with minimum_required_storage_deposit
+                        let new_output = NftOutputBuilder::from(nft_input)
+                            .with_nft_id(nft_input.nft_id().or_from_output_id(output_id))
+                            .with_amount(minimum_required_storage_deposit)?
+                            .finish_output()?;
+                        outputs.push(new_output);
+                        added_output_for_input_signing_data.insert(output_id);
                     }
-                }) && !allow_burning
-                {
-                    // Don't add if it doesn't give us any amount or native tokens
-                    if input_signing_data.output.amount() == minimum_required_storage_deposit
-                        && alias_input.native_tokens().is_empty()
-                    {
-                        continue;
-                    }
-                    // else add output to outputs with minimum_required_storage_deposit
-                    let new_output = AliasOutputBuilder::from(alias_input)
-                        .with_alias_id(alias_input.alias_id().or_from_output_id(output_id))
-                        .with_state_index(alias_input.state_index() + 1)
-                        .with_amount(minimum_required_storage_deposit)?
-                        .finish_output()?;
-                    outputs.push(new_output);
                 }
-            }
-            Output::Foundry(foundry_input) => {
-                // Don't add if output has not the same FoundryId, so we don't burn it
-                if !outputs.iter().any(|output| {
-                    if let Output::Foundry(foundry_output) = output {
-                        foundry_input.id() == foundry_output.id()
-                    } else {
-                        false
-                    }
-                }) && !allow_burning
-                {
-                    // Don't add if it doesn't give us any amount or native tokens
-                    if input_signing_data.output.amount() == minimum_required_storage_deposit
-                        && foundry_input.native_tokens().is_empty()
+                Output::Alias(alias_input) => {
+                    let alias_id = alias_input.alias_id().or_from_output_id(output_id);
+                    // Don't add if output has not the same AliasId, so we don't burn it
+                    if !outputs.iter().any(|output| {
+                        if let Output::Alias(alias_output) = output {
+                            alias_id == *alias_output.alias_id()
+                        } else {
+                            false
+                        }
+                    }) && !allow_burning
                     {
-                        continue;
+                        let alias_address = Address::Alias(AliasAddress::new(alias_id));
+                        let alias_required_in_unlock_condition = outputs.iter().any(|output| {
+                            // check if alias address is in unlock condition
+                            output_contains_address(output, output_id, &alias_address, current_time)
+                        });
+
+                        // Don't add if it doesn't give us any amount or native tokens
+                        if !alias_required_in_unlock_condition
+                            && input_signing_data.output.amount() == minimum_required_storage_deposit
+                            && alias_input.native_tokens().is_empty()
+                        {
+                            continue;
+                        }
+
+                        // else add output to outputs with minimum_required_storage_deposit
+                        let new_output = AliasOutputBuilder::from(alias_input)
+                            .with_alias_id(alias_input.alias_id().or_from_output_id(output_id))
+                            .with_state_index(alias_input.state_index() + 1)
+                            .with_amount(minimum_required_storage_deposit)?
+                            .finish_output()?;
+                        outputs.push(new_output);
+                        added_output_for_input_signing_data.insert(output_id);
                     }
-                    // else add output to outputs with minimum_required_storage_deposit
-                    let new_output = FoundryOutputBuilder::from(foundry_input)
-                        .with_amount(minimum_required_storage_deposit)?
-                        .finish_output()?;
-                    outputs.push(new_output);
                 }
+                Output::Foundry(foundry_input) => {
+                    // Don't add if output has not the same FoundryId, so we don't burn it
+                    if !outputs.iter().any(|output| {
+                        if let Output::Foundry(foundry_output) = output {
+                            foundry_input.id() == foundry_output.id()
+                        } else {
+                            false
+                        }
+                    }) && !allow_burning
+                    {
+                        // Don't add if it doesn't give us any amount or native tokens
+                        if input_signing_data.output.amount() == minimum_required_storage_deposit
+                            && foundry_input.native_tokens().is_empty()
+                        {
+                            continue;
+                        }
+                        // else add output to outputs with minimum_required_storage_deposit
+                        let new_output = FoundryOutputBuilder::from(foundry_input)
+                            .with_amount(minimum_required_storage_deposit)?
+                            .finish_output()?;
+                        outputs.push(new_output);
+                        added_output_for_input_signing_data.insert(output_id);
+                    }
+                }
+                _ => {}
             }
-            _ => {}
+
+            // Don't add inputs multiple times
+            if !added_input_signing_data.contains(&output_id) {
+                let output = &input_signing_data.output;
+                selected_input_amount += output.amount();
+
+                if let Some(output_native_tokens) = output.native_tokens() {
+                    selected_input_native_tokens.add_native_tokens(output_native_tokens.clone())?;
+                }
+
+                if let Some(sdr) = sdr_not_expired(output, current_time) {
+                    // add sdr to required amount, because we have to send it back
+                    required.amount += sdr.amount();
+                }
+
+                selected_inputs.push(input_signing_data.deref().clone());
+                added_input_signing_data.insert(output_id);
+
+                // Updated required value with possible new input
+                let input_outputs = inputs.iter().map(|i| &i.output);
+                required = get_accumulated_output_amounts(&input_outputs.clone(), outputs.iter())?;
+            }
         }
 
-        let output = &input_signing_data.output;
-        selected_input_amount += output.amount();
-
-        if let Some(output_native_tokens) = output.native_tokens() {
-            selected_input_native_tokens.add_native_tokens(output_native_tokens.clone())?;
-        }
-
-        if let Some(sdr) = sdr_not_expired(output, current_time) {
-            // add sdr to required amount, because we have to send it back
-            required.amount += sdr.amount();
-        }
-
-        selected_inputs.push(input_signing_data.clone());
-
-        // Updated required value with possible new input
-        let input_outputs = inputs.iter().map(|i| &i.output);
-        required = get_accumulated_output_amounts(&input_outputs.clone(), outputs.iter())?;
+        // If the output amount changed, we added at least one new one
+        added_new_outputs = outputs_len_beginning < outputs.len();
     }
 
     // Validate that we have the required inputs for alias and nft outputs
+    // todo: check if the outputs for alias/nft addresses are there and sender/issuer features
     for output in &outputs {
         match output {
             Output::Alias(alias_output) => {
@@ -438,50 +493,11 @@ pub fn try_select_inputs(
         }
     }
 
-    // sort inputs so ed25519 address unlocks will be first, safe to unwrap since we encoded it before
-    selected_inputs.sort_unstable_by_key(|a| Address::try_from_bech32(&a.bech32_address).unwrap().1.pack_to_vec());
+    let sorted_inputs = sort_input_signing_data(selected_inputs)?;
+
     Ok(SelectedTransactionData {
-        inputs: selected_inputs,
+        inputs: sorted_inputs,
         outputs,
         remainder: remainder_data,
     })
-}
-
-/// Computes the minimum storage deposit amount that a basic output needs to have with an [AddressUnlockCondition] and
-/// optional [NativeTokens].
-pub fn minimum_storage_deposit_basic_output(
-    config: &RentStructure,
-    address: &Address,
-    native_tokens: &Option<NativeTokens>,
-) -> Result<u64> {
-    let address_condition = UnlockCondition::Address(AddressUnlockCondition::new(*address));
-    let mut basic_output_builder = BasicOutputBuilder::new_with_amount(OutputAmount::MIN)?;
-    if let Some(native_tokens) = native_tokens {
-        basic_output_builder = basic_output_builder.with_native_tokens(native_tokens.clone());
-    }
-    let basic_output = basic_output_builder
-        .add_unlock_condition(address_condition)
-        .finish_output()?;
-
-    Ok(basic_output.rent_cost(config))
-}
-
-/// Get the `StorageDepositReturnUnlockCondition`, if not expired
-pub(crate) fn sdr_not_expired(output: &Output, current_time: u32) -> Option<&StorageDepositReturnUnlockCondition> {
-    if let Some(unlock_conditions) = output.unlock_conditions() {
-        if let Some(sdr) = unlock_conditions.storage_deposit_return() {
-            let expired = if let Some(expiration) = unlock_conditions.expiration() {
-                current_time >= expiration.timestamp()
-            } else {
-                false
-            };
-
-            // We only have to send the storage deposit return back if the output is not expired
-            if !expired { Some(sdr) } else { None }
-        } else {
-            None
-        }
-    } else {
-        None
-    }
 }

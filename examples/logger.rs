@@ -3,19 +3,19 @@
 
 //! cargo run --example logger --release
 
-use fern_logger::{logger_init, LoggerConfig, LoggerOutputConfigBuilder};
 use iota_client::{Client, Result};
-use log::LevelFilter;
 
 #[tokio::main]
 async fn main() -> Result<()> {
     // Generates a client.log file with logs for debugging
-    let logger_output_config = LoggerOutputConfigBuilder::new()
+    let logger_output_config = fern_logger::LoggerOutputConfigBuilder::new()
         .name("client.log")
         .target_exclusions(&["h2", "hyper", "rustls"])
-        .level_filter(LevelFilter::Debug);
-    let config = LoggerConfig::build().with_output(logger_output_config).finish();
-    logger_init(config).unwrap();
+        .level_filter(log::LevelFilter::Debug);
+    let config = fern_logger::LoggerConfig::build()
+        .with_output(logger_output_config)
+        .finish();
+    fern_logger::logger_init(config).unwrap();
 
     // Take the node URL from command line argument or use one from env as default.
     let node_url = std::env::args().nth(1).unwrap_or_else(|| {
