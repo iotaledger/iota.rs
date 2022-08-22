@@ -12,7 +12,6 @@ import type {
     SecretManager,
     INode,
     IAuth,
-    IRange,
     IBasicOutputBuilderOptions,
     IAliasOutputBuilderOptions,
     IFoundryOutputBuilderOptions,
