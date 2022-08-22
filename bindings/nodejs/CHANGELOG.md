@@ -1,5 +1,12 @@
 # Changelog
 
+## \[3.0.0-alpha.7]
+
+- Accept `IGenerateAddressesOptions` in `consolidateFunds()` instead of `accountIndex` and `addressRange`.
+  - [218352d](https://github.com/iotaledger/iota.rs/commit/218352de2a58de56c67892a0bfe2aab104793334) Fix primary node ([#1205](https://github.com/iotaledger/iota.rs/pull/1205)) on 2022-08-22
+- Fix PoW feature name.
+  - [218352d](https://github.com/iotaledger/iota.rs/commit/218352de2a58de56c67892a0bfe2aab104793334) Fix primary node ([#1205](https://github.com/iotaledger/iota.rs/pull/1205)) on 2022-08-22
+
 ## \[3.0.0-alpha.6]
 
 - Rename getLedgerStatus to getLedgerNanoStatus.
