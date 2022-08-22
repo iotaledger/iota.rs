@@ -15,7 +15,6 @@ use std::{
 };
 
 use bee_api_types::responses::InfoResponse;
-use log::warn;
 use serde_json::Value;
 
 use self::{http_client::HttpClient, node::Node};
@@ -177,7 +176,7 @@ impl NodeManager {
                                 *counters += 1;
                                 result_counter += 1;
                             } else {
-                                warn!("Couldn't convert noderesult to text");
+                                log::warn!("Couldn't convert noderesult to text");
                             }
                         }
                         Err(Error::ResponseError { code: 404, .. }) => {
