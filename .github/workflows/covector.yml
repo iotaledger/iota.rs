@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - develop
+      - production
     paths-ignore:
       - 'specs/**'
       - 'documentation/**'

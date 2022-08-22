@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - develop
-      - dev
+      - production
     paths:
       - ".github/workflows/examine-java-bindings.yml"
       - ".github/actions/**"
@@ -15,7 +15,7 @@ on:
   pull_request:
     branches:
       - develop
-      - dev
+      - production
     paths:
       - ".github/workflows/examine-java-bindings.yml"
       - ".github/actions/**"
@@ -134,7 +134,7 @@ jobs:
           toolchain: nightly
           cache: true
           install: cargo-udeps
-          cache-root: bindings/java/iota-client-java/native/
+          cache-root: bindings/java/iota-client-java/iota-client-java/native/
           cache-job-id: ${{ github.workflow }}-${{ github.job }}
           cache-hash: ${{ hashFiles('.github/workflows/examine-java-bindings.yml') }}
 
