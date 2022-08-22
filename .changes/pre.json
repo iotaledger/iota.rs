@@ -3,7 +3,9 @@
   "changes": [
     ".changes/buildAndPostBlock.md",
     ".changes/bump-iota-types.md",
+    ".changes/consolidation.md",
     ".changes/fix-blockbuildoptions.md",
+    ".changes/fix-pow-feature.md",
     ".changes/ignore-tests.md",
     ".changes/ledger-nano-status.md",
     ".changes/pow-hrp-renaming.md",
