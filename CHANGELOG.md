@@ -45,6 +45,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix `Client::get_time_checked()` panic on Wasm;
 - Fix `Client::get_pow_provider()` not using the `worker_count`;
 - Fix `PoW` feature name in node syncing;
+- Fix automatic input selection for recursively owned alias and nft outputs;
 
 ## 2.0.0-beta.1 - 2022-08-11
 

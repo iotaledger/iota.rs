@@ -199,11 +199,14 @@ async fn main() -> Result<()> {
             .finish_output()?,
     ];
 
-    // get additional input for the new basic output
+    // get additional input for the new basic output without extra unlock conditions
     let output_ids = client
-        .basic_output_ids(vec![QueryParameter::Address(
-            address.to_bech32(client.get_bech32_hrp().await?),
-        )])
+        .basic_output_ids(vec![
+            QueryParameter::Address(address.to_bech32(client.get_bech32_hrp().await?)),
+            QueryParameter::HasStorageDepositReturn(false),
+            QueryParameter::HasTimelock(false),
+            QueryParameter::HasExpiration(false),
+        ])
         .await?;
 
     let block = client
