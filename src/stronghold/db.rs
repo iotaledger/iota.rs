@@ -6,12 +6,9 @@
 use std::ops::Deref;
 
 use async_trait::async_trait;
+use crypto::ciphers::chacha;
 
-use super::{
-    common::PRIVATE_DATA_CLIENT_PATH,
-    encryption::{decrypt, encrypt},
-    StrongholdAdapter,
-};
+use super::{common::PRIVATE_DATA_CLIENT_PATH, StrongholdAdapter};
 use crate::{db::DatabaseProvider, Error, Result};
 
 #[async_trait]
@@ -38,7 +35,7 @@ impl DatabaseProvider for StrongholdAdapter {
         let buffer = key_provider.try_unlock()?;
         let buffer_ref = buffer.borrow();
 
-        decrypt(&data, buffer_ref.deref()).map(Some)
+        Ok(Some(chacha::aead_decrypt(buffer_ref.deref(), &data)?))
     }
 
     async fn insert(&mut self, k: &[u8], v: &[u8]) -> Result<Option<Vec<u8>>> {
@@ -52,7 +49,7 @@ impl DatabaseProvider for StrongholdAdapter {
             let buffer = key_provider.try_unlock()?;
             let buffer_ref = buffer.borrow();
 
-            encrypt(v, buffer_ref.deref())?
+            chacha::aead_encrypt(buffer_ref.deref(), v)?
         };
 
         Ok(self

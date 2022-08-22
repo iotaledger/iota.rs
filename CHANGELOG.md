@@ -35,10 +35,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Rename `finish_single_thread_pow` to `finish_single_threaded_pow`;
 - Rename `minimum_storage_deposit` to `minimum_storage_deposit_basic_output`;
 - Accept `GenerateAddressesOptions` in `consolidate_funds()` instead of `account_index` and `address_range`;
+- Use `chacha::{aead_encrypt, aead_decrypt}` from `crypto.rs` in stronghold's `db` module;
 
 ### Removed
+
 - Removed `snapshot_loaded` field from StrongholdAdapter;
 - Removed `outputs()` field from GetAddressBuilder;
+- Stronghold's `encryption` module;
 
 ### Fixed
 

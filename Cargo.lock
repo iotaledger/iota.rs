@@ -1145,7 +1145,7 @@ dependencies = [
  "futures",
  "gloo-timers",
  "instant",
- "iota-crypto 0.13.0",
+ "iota-crypto 0.14.0",
  "iota-ledger-nano",
  "iota_stronghold",
  "log",
@@ -1206,8 +1206,19 @@ version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "538b238fbd6fa732f526f6401656fa6a366598b9fe1ca35185e47f3978369707"
 dependencies = [
- "aead",
  "bee-ternary",
+ "blake2 0.10.4",
+ "digest 0.10.3",
+ "ed25519-zebra",
+]
+
+[[package]]
+name = "iota-crypto"
+version = "0.14.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "aee0fbdc68c475a78fd19a6509280b25166499f1bfe087a81237813e7b951667"
+dependencies = [
+ "aead",
  "blake2 0.10.4",
  "chacha20poly1305",
  "digest 0.10.3",
