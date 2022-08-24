@@ -158,7 +158,7 @@ impl StrongholdAdapterBuilder {
     ///
     /// [`password()`]: Self::password()
     /// [`timeout()`]: Self::timeout()
-    pub fn try_build(mut self, snapshot_path: PathBuf) -> Result<StrongholdAdapter> {
+    pub fn build(mut self, snapshot_path: PathBuf) -> Result<StrongholdAdapter> {
         // In any case, Stronghold - as a necessary component - needs to be present at this point.
         let stronghold = if let Some(stronghold) = self.stronghold {
             stronghold
@@ -550,7 +550,7 @@ mod tests {
         let mut adapter = StrongholdAdapter::builder()
             .password("drowssap")
             .timeout(timeout)
-            .try_build(stronghold_path)
+            .build(stronghold_path)
             .unwrap();
 
         // There is a small delay between `build()` and the key clearing task being actually spawned and kept.
@@ -593,7 +593,7 @@ mod tests {
         let stronghold_path = PathBuf::from(snapshot_path);
         let mut adapter = StrongholdAdapter::builder()
             .password("drowssap")
-            .try_build(stronghold_path)
+            .build(stronghold_path)
             .unwrap();
 
         adapter.clear_key().await;

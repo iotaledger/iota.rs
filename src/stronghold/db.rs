@@ -84,7 +84,7 @@ mod tests {
         let stronghold_path = PathBuf::from(snapshot_path);
         let mut stronghold = StrongholdAdapter::builder()
             .password("drowssap")
-            .try_build(stronghold_path)
+            .build(stronghold_path)
             .unwrap();
 
         assert!(matches!(stronghold.get(b"test-0").await, Ok(None)));
