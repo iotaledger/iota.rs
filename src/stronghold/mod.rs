@@ -158,7 +158,7 @@ impl StrongholdAdapterBuilder {
     ///
     /// [`password()`]: Self::password()
     /// [`timeout()`]: Self::timeout()
-    pub fn try_build(mut self, snapshot_path: PathBuf) -> Result<StrongholdAdapter> {
+    pub fn try_build<P: AsRef<Path>>(mut self, snapshot_path: P) -> Result<StrongholdAdapter> {
         // In any case, Stronghold - as a necessary component - needs to be present at this point.
         let stronghold = if let Some(stronghold) = self.stronghold {
             stronghold
@@ -206,7 +206,7 @@ impl StrongholdAdapterBuilder {
             key_provider,
             timeout: self.timeout.unwrap_or(None),
             timeout_task: self.timeout_task.unwrap_or_else(|| Arc::new(Mutex::new(None))),
-            snapshot_path,
+            snapshot_path: snapshot_path.as_ref().to_path_buf(),
         })
     }
 }
@@ -537,7 +537,7 @@ async fn task_key_clear(
 
 #[cfg(test)]
 mod tests {
-    use std::{fs, path::PathBuf};
+    use std::fs;
 
     use super::*;
 
@@ -545,8 +545,7 @@ mod tests {
     async fn test_clear_key() {
         let timeout = Duration::from_millis(100);
 
-        let snapshot_path = "test_clear_key.stronghold";
-        let stronghold_path = PathBuf::from(snapshot_path);
+        let stronghold_path = "test_clear_key.stronghold";
         let mut adapter = StrongholdAdapter::builder()
             .password("drowssap")
             .timeout(timeout)
@@ -584,13 +583,12 @@ mod tests {
         assert_eq!(adapter.get_timeout(), timeout);
         assert!(matches!(*adapter.timeout_task.lock().await, None));
 
-        fs::remove_file(snapshot_path).unwrap();
+        fs::remove_file(stronghold_path).unwrap();
     }
 
     #[tokio::test]
     async fn stronghold_password_already_set() {
-        let snapshot_path = "stronghold_password_already_set.stronghold";
-        let stronghold_path = PathBuf::from(snapshot_path);
+        let stronghold_path = "stronghold_password_already_set.stronghold";
         let mut adapter = StrongholdAdapter::builder()
             .password("drowssap")
             .try_build(stronghold_path)
@@ -604,6 +602,6 @@ mod tests {
         // When the password already exists, but a wrong one is provided, it should return an error
         assert!(adapter.set_password("other_password").await.is_err());
 
-        fs::remove_file(snapshot_path).unwrap();
+        fs::remove_file(stronghold_path).unwrap();
     }
 }

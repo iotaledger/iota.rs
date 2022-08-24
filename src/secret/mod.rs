@@ -15,9 +15,9 @@ pub mod stronghold;
 /// Signing related types
 pub mod types;
 
-use std::{collections::HashMap, ops::Range, str::FromStr};
 #[cfg(feature = "stronghold")]
-use std::{path::PathBuf, time::Duration};
+use std::time::Duration;
+use std::{collections::HashMap, ops::Range, str::FromStr};
 
 use async_trait::async_trait;
 use bee_block::{
@@ -161,7 +161,7 @@ impl TryFrom<&SecretManagerDto> for SecretManager {
                     builder = builder.timeout(Duration::from_secs(*timeout));
                 }
 
-                Self::Stronghold(builder.try_build(PathBuf::from(&stronghold_dto.snapshot_path))?)
+                Self::Stronghold(builder.try_build(&stronghold_dto.snapshot_path)?)
             }
 
             #[cfg(feature = "ledger_nano")]

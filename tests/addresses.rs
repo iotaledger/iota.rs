@@ -1,9 +1,6 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-#[cfg(feature = "stronghold")]
-use std::path::PathBuf;
-
 use bee_block::address::Address;
 #[cfg(feature = "message_interface")]
 use iota_client::api::GetAddressesBuilderOptions;
@@ -193,7 +190,7 @@ async fn address_generation() {
         let stronghold_filename = format!("{}.stronghold", address.bech32_address);
         let mut stronghold_secret_manager = StrongholdSecretManager::builder()
             .password("some_hopefully_secure_password")
-            .try_build(PathBuf::from(stronghold_filename.to_string()))
+            .try_build(&stronghold_filename)
             .unwrap();
 
         stronghold_secret_manager

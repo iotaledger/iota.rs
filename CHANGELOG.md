@@ -19,6 +19,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security -->
 
+## 2.0.0-beta.3 - 2022-XX-XX
+
+### Changed
+
+- `StrongholdAdapterBuilder::try_build` now takes a `snapshot_path: <P: AsRef<Path>>` instead of a `snapshot_path: PathBuf`;
+
+### Fixed
+
+- Fix Wasm compilation with iota-crypto curl-p feature;
+
 ## 2.0.0-beta.2 - 2022-08-22
 
 ### Added
