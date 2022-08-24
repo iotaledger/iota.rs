@@ -75,16 +75,15 @@ impl DatabaseProvider for StrongholdAdapter {
 mod tests {
     #[tokio::test]
     async fn test_stronghold_db() {
-        use std::{fs, path::PathBuf};
+        use std::fs;
 
         use super::StrongholdAdapter;
         use crate::db::DatabaseProvider;
 
         let snapshot_path = "test_stronghold_db.stronghold";
-        let stronghold_path = PathBuf::from(snapshot_path);
         let mut stronghold = StrongholdAdapter::builder()
             .password("drowssap")
-            .build(stronghold_path)
+            .build(snapshot_path)
             .unwrap();
 
         assert!(matches!(stronghold.get(b"test-0").await, Ok(None)));
