@@ -1,5 +1,7 @@
 import iota_client
 
-# client will connect to testnet by default
-client = iota_client.Client()
+# create a client with a node
+client = iota_client.Client(
+    nodes_name_password=[['https://api.lb-0.h.chrysalis-devnet.iota.cafe']])
+
 print(client.get_info())
