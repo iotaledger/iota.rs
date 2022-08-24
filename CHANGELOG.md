@@ -24,7 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - `StrongholdAdapterBuilder::try_build` now takes a `snapshot_path: <P: AsRef<Path>>` instead of a `snapshot_path: PathBuf`;
-- Rename `StrongholdAdapterBuilder::build` to `StrongholdAdapterBuilder::try_build`;
+- Rename `StrongholdAdapterBuilder::try_build` to `StrongholdAdapterBuilder::build`;
 
 ### Fixed
 
