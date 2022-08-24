@@ -239,7 +239,7 @@ mod tests {
         );
         let mut stronghold_adapter = StrongholdAdapter::builder()
             .password("drowssap")
-            .try_build(stronghold_path)
+            .build(stronghold_path)
             .unwrap();
 
         stronghold_adapter.store_mnemonic(mnemonic).await.unwrap();
@@ -275,7 +275,7 @@ mod tests {
         );
         let mut stronghold_adapter = StrongholdAdapter::builder()
             .password("drowssap")
-            .try_build(stronghold_path)
+            .build(stronghold_path)
             .unwrap();
 
         stronghold_adapter.store_mnemonic(mnemonic).await.unwrap();
