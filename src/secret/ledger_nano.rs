@@ -294,8 +294,14 @@ impl SecretManageExt for LedgerSecretManager {
         for _ in 0..input_len {
             let unlock = Unlock::unpack::<_, true>(&mut unpacker).map_err(|_| crate::Error::PackableError)?;
             // The ledger nano can return the same SignatureUnlocks multiple times, so only insert it once
-            if !unlocks.contains(&unlock) {
-                unlocks.push(unlock);
+            match unlock {
+                Unlock::Signature(_) => {
+                    if !unlocks.contains(&unlock) {
+                        unlocks.push(unlock);
+                    }
+                }
+                // Multiple reference unlocks with the same index are allowed
+                _ => unlocks.push(unlock),
             }
         }
 
