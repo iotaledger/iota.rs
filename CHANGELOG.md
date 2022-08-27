@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fix Wasm compilation with iota-crypto curl-p feature;
+- Fix missing reference unlocks with ledger nano secret manager;
 
 ## 2.0.0-beta.2 - 2022-08-22
 
