@@ -27,7 +27,7 @@ use crate::{
 };
 
 /// Struct containing network and PoW related information
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct NetworkInfo {
     /// Network
     pub network: Option<String>,
@@ -39,7 +39,7 @@ pub struct NetworkInfo {
     pub bech32_hrp: Option<String>,
     /// Mininum proof of work score
     #[serde(rename = "minPowScore", default)]
-    pub min_pow_score: Option<f64>,
+    pub min_pow_score: Option<u32>,
     /// Local proof of work
     #[serde(rename = "localPow", default = "default_local_pow")]
     pub local_pow: bool,
@@ -74,7 +74,7 @@ fn default_tips_interval() -> u64 {
 }
 
 /// Builder to construct client instance with sensible default values
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 #[must_use]
 pub struct ClientBuilder {

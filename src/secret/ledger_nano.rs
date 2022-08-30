@@ -292,7 +292,7 @@ impl SecretManageExt for LedgerSecretManager {
         // unpack signature to unlocks
         let mut unlocks = Vec::new();
         for _ in 0..input_len {
-            let unlock = Unlock::unpack::<_, true>(&mut unpacker).map_err(|_| crate::Error::PackableError)?;
+            let unlock = Unlock::unpack::<_, true>(&mut unpacker, &()).map_err(|_| crate::Error::PackableError)?;
             // The ledger nano can return the same SignatureUnlocks multiple times, so only insert it once
             match unlock {
                 Unlock::Signature(_) => {

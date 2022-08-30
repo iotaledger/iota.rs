@@ -380,7 +380,7 @@ impl ClientMessageHandler {
             Message::GetTips => Ok(Response::Tips(self.client.get_tips().await?)),
             Message::PostBlockRaw { block_bytes } => Ok(Response::BlockId(
                 self.client
-                    .post_block_raw(&BeeBlock::unpack_strict(&mut &block_bytes[..])?)
+                    .post_block_raw(&BeeBlock::unpack_strict(&mut &block_bytes[..], &())?)
                     .await?,
             )),
             Message::PostBlock { block } => Ok(Response::BlockId(

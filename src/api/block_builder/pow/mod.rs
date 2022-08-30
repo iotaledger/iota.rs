@@ -21,7 +21,7 @@ use crate::{Client, Error, Result};
 /// Performs proof-of-work to construct a [`Block`].
 pub fn do_pow<P: NonceProvider>(
     miner: P,
-    min_pow_score: f64,
+    min_pow_score: u32,
     payload: Option<Payload>,
     parent_blocks: Vec<BlockId>,
 ) -> Result<Block> {

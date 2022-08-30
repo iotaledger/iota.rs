@@ -54,7 +54,7 @@ pub enum Response {
     Bech32Hrp(String),
     /// Response for:
     /// - [`GetMinPowScore`](crate::message_interface::Message::GetMinPowScore)
-    MinPowScore(f64),
+    MinPowScore(u32),
     /// Response for:
     /// - [`GetTipsInterval`](crate::message_interface::Message::GetTipsInterval)
     TipsInterval(u64),

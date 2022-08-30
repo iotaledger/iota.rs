@@ -144,7 +144,7 @@ fn poll_mqtt(
                                 let event = {
                                     if topic.contains("blocks") || topic.contains("included-block") {
                                         let mut payload = &*p.payload;
-                                        match Block::unpack_verified(&mut payload) {
+                                        match Block::unpack_verified(&mut payload, &()) {
                                             Ok(block) => Ok(TopicEvent {
                                                 topic,
                                                 payload: MqttPayload::Block(block),
@@ -156,7 +156,7 @@ fn poll_mqtt(
                                         }
                                     } else if topic.contains("milestones") {
                                         let mut payload = &*p.payload;
-                                        match MilestonePayload::unpack_verified(&mut payload) {
+                                        match MilestonePayload::unpack_verified(&mut payload, &()) {
                                             Ok(milestone_payload) => Ok(TopicEvent {
                                                 topic,
                                                 payload: MqttPayload::MilestonePayload(milestone_payload),
@@ -168,7 +168,7 @@ fn poll_mqtt(
                                         }
                                     } else if topic.contains("receipts") {
                                         let mut payload = &*p.payload;
-                                        match ReceiptMilestoneOption::unpack_verified(&mut payload) {
+                                        match ReceiptMilestoneOption::unpack_verified(&mut payload, &()) {
                                             Ok(receipt) => Ok(TopicEvent {
                                                 topic,
                                                 payload: MqttPayload::Receipt(receipt),

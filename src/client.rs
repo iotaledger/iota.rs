@@ -313,7 +313,7 @@ impl Client {
     }
 
     /// returns the min pow score
-    pub async fn get_min_pow_score(&self) -> Result<f64> {
+    pub async fn get_min_pow_score(&self) -> Result<u32> {
         self.get_network_info()
             .await?
             .min_pow_score
