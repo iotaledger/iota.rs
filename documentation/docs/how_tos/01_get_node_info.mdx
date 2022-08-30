@@ -1,28 +1,76 @@
 ---
 title: Get Node Information
 ---
+
 import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
-import JavaCode from "../libraries/java/how_to/_get_node_info.mdx";
-import NodejsGetCode from "../libraries/nodejs/how_to/_get_node_info.mdx";
-import PythonGetCode from "../libraries/python/how_to/_get_node_info.mdx";
-import RustGetCode from "../libraries/rust/how_to/_get_node_info.mdx";
+import JavaCode from "../libraries/java/how_to/_01_get_node_info/_code_sample.mdx";
+import JavaOutput from "../libraries/java/how_to/_01_get_node_info/_expected_output.md";
+import JavaApiLinks from "../_admonitions/_api_ref_coming_soon.md"
+import NodejsCode from "../libraries/nodejs/how_to/_01_get_node_info/_code_sample.mdx";
+import NodejsOutput from "../libraries/nodejs/how_to/_01_get_node_info/_expected_output.md";
+import NodejsApiLinks from "../libraries/nodejs/how_to/_01_get_node_info/_key_api_ref_links.md"
+import PythonCode from "../libraries/python/how_to/_01_get_node_info/_code_sample.mdx";
+import PythonOutput from "../libraries/python/how_to/_01_get_node_info/_expected_output.md";
+import PythonApiLinks from  "../_admonitions/_api_ref_coming_soon.md"
+import RustCode from "../libraries/rust/how_to/_01_get_node_info/_code_sample.mdx";
+import RustOutput from "../libraries/rust/how_to/_01_get_node_info/_expected_output.md";
+import RustApiLinks from "../libraries/rust/how_to/_01_get_node_info/_key_api_ref_links.md"
 
+[Nodes](https://wiki.iota.org/nodes/about-nodes) are the cornerstone of the IOTA network. The following code example will:
 
-[Nodes](https://wiki.iota.org/nodes/about-nodes) are the cornerstone of the IOTA network.
+1. Create a `Client` which will connect to the [Shimmer Testnet](https://api.testnet.shimmer.network).
+2. Use the created client to get information about the node.
+3. Print the information to the console.
 
+## Code Examples
 
 <Tabs groupId="language">
     <TabItem value="java" label="Java">
-        <JavaCode />
+        <JavaCode/>
     </TabItem>
     <TabItem value="nodejs" label="Nodejs">
-        <NodejsGetCode />
+        <NodejsCode/>
     </TabItem>
     <TabItem value="python" label="Python">
-        <PythonGetCode />
+        <PythonCode/>
     </TabItem>
     <TabItem value="rust" label="Rust">
-        <RustGetCode />
+        <RustCode/>
     </TabItem>
 </Tabs>
+
+## Expected Output
+
+<Tabs groupId="language">
+    <TabItem value="java" label="Java">
+        <JavaOutput/>
+    </TabItem>
+    <TabItem value="nodejs" label="Nodejs">
+        <NodejsOutput/>
+    </TabItem>
+    <TabItem value="python" label="Python">
+        <PythonOutput/>
+    </TabItem>
+    <TabItem value="rust" label="Rust">
+        <RustOutput/>
+    </TabItem>
+</Tabs>
+
+## Key API References
+
+<Tabs groupId="language">
+    <TabItem value="java" label="Java">
+        <JavaApiLinks/>
+    </TabItem>
+    <TabItem value="nodejs" label="Nodejs">
+        <NodejsApiLinks/>
+    </TabItem>
+    <TabItem value="python" label="Python">
+        <PythonApiLinks/>
+    </TabItem>
+    <TabItem value="rust" label="Rust">
+        <RustApiLinks/>
+    </TabItem>
+</Tabs>
+

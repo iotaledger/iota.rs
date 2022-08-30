@@ -5,6 +5,16 @@ the library.
 
 ## Build the Examples
 
+### Set Up Your `.env` File
+
+The examples use variables from a `.env` file.  Though you can create your own, for the examples you can simply copy the
+existing [`.env.example`](https://github.com/iotaledger/iota.rs/blob/develop/bindings/nodejs/.env.example) file. You can
+do this running the following command from the `bindings/nodejs` directory:
+
+```bash
+cp .env.example .env
+```
+
 ### Build All the Examples
 
 Since the [examples](https://github.com/iotaledger/iota.rs/tree/develop/bindings/nodejs/examples) are written in
@@ -26,7 +36,7 @@ You can also use `tsc exampleName.js` from the `examples` folder to compile a sp
 
 To run any Node.js example, you need to select any of the
 [Node.js examples](https://github.com/iotaledger/iota.rs/tree/dev/bindings/nodejs/examples) and run it with your local
-Node.js interpreter. The following snippet runs `01_mnemonic.js` from the project root:
+Node.js interpreter. The following snippet runs `00_mnemonic.js` from the project root:
 
 ```bash
 node bindings/nodejs/examples/dist/01_mnemonic.js
