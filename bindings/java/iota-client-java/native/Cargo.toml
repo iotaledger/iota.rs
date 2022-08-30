@@ -17,8 +17,8 @@ crate-type = [ "cdylib" ]
 [dependencies]
 iota-client = { path = "../../../..", features = [ "ledger_nano", "message_interface" ] }
 
-futures = { version = "0.3.21", default-features = false }
+futures = { version = "0.3.24", default-features = false }
 jni = { version = "0.19.0", default-features = false }
-once_cell = { version = "1.13.0", default-features = false }
-serde_json = { version = "1.0.82", default-features = false }
-tokio = { version = "1.20.0", default-features = false, features = [ "macros" ] }
+once_cell = { version = "1.13.1", default-features = false }
+serde_json = { version = "1.0.85", default-features = false }
+tokio = { version = "1.20.1", default-features = false, features = [ "macros" ] }
