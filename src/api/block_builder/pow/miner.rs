@@ -71,7 +71,7 @@ impl NonceProvider for ClientMiner {
     type Builder = ClientMinerBuilder;
     type Error = crate::Error;
 
-    fn nonce(&self, bytes: &[u8], target_score: f64) -> std::result::Result<u64, Self::Error> {
+    fn nonce(&self, bytes: &[u8], target_score: u32) -> std::result::Result<u64, Self::Error> {
         if self.local_pow {
             MinerBuilder::new()
                 .with_num_workers(self.worker_count)

@@ -19,7 +19,7 @@ public class ClientConfig {
     private String network;
     private String networkId;
     private String bech32Hrp;
-    private Double minPowScore;
+    private Integer minPowScore;
     private Boolean localPow;
     private Boolean fallbackToLocalPow;
     private Integer tipsInterval;
@@ -137,11 +137,11 @@ public class ClientConfig {
         return this;
     }
 
-    public double getMinPowScore() {
+    public int getMinPowScore() {
         return minPowScore;
     }
 
-    public ClientConfig withMinPowScore(double minPowScore) {
+    public ClientConfig withMinPowScore(int minPowScore) {
         this.minPowScore = minPowScore;
         return this;
     }

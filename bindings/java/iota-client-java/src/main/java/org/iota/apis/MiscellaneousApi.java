@@ -104,8 +104,8 @@ public class MiscellaneousApi extends BaseApi {
         return responsePayload;
     }
 
-    public float getMinPowScore() throws ClientException {
-        Float responsePayload = callBaseApi(new ClientCommand("GetMinPowScore")).getAsFloat();
+    public int getMinPowScore() throws ClientException {
+        Integer responsePayload = callBaseApi(new ClientCommand("GetMinPowScore")).getAsInt();
         return responsePayload;
     }
 

@@ -23,8 +23,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Update dependencies;
 - `StrongholdAdapterBuilder::try_build` now takes a `snapshot_path: <P: AsRef<Path>>` instead of a `snapshot_path: PathBuf`;
 - Rename `StrongholdAdapterBuilder::try_build` to `StrongholdAdapterBuilder::build`;
+- `NetworkInfo::min_pow_score` from `Option<f64>` to `Option<u32>`;
+- `do_pow`'s `min_pow_score` parameters from `f64` to `u32`;
+- `ClientMiner::nonce`'s `target_score` parameters from `f64` to `u32`;
+- `Client::get_min_pow_score`'s return from `Result<f64>` to `Result<u32>`;
+- `Response::MinPowScore` from `f64` to `u32`;
+- Pass a visitor to all `Packable::unpack*` methods;
 
 ### Fixed
 
