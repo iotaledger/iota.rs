@@ -3,16 +3,14 @@ title: How To Generate Addresses
 ---
 
 import CodeBlock from '@theme/CodeBlock';
-import MoreExamples from "./_more_examples.md";
-import GenerateAddresses from '!!raw-loader!./../../../../../examples/01_generate_addresses.rs';
+import GenerateAddresses from '!!raw-loader!../../../../../../examples/01_generate_addresses.rs';
 
 <CodeBlock className="language-rust">
     {GenerateAddresses}
 </CodeBlock>
 
-Run it with
+Run the example by running the following command:
+
 <CodeBlock className="language-bash">
     cargo run --example generate_addresses --release -- [NODE URL]
 </CodeBlock>
-
-<MoreExamples/>

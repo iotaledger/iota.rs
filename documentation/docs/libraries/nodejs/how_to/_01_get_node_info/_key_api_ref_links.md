@@ -19,4 +19,4 @@ as `true`.
 
 Once you have built the `Client`, you can retrieve the node's information by
 running [`Client.getInfo()`](./../libraries/nodejs/references/classes/Client#getinfo). This function will target
-the `/api/v1/info` endpoint and return the node's information as well as its URL if successful.
+the `/api/v2/info` endpoint and return the node's information as well as its URL if successful.

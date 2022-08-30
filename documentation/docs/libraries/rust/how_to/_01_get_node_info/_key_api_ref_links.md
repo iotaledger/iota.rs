@@ -21,4 +21,4 @@ The code example chains the following calls to the `Client::builder`:
 
 After you have [built the client](#build-a-client), you can use it to get the node's information. The code example uses
 the [`Client.get_info(&self)`](https://docs.rs/iota-client/latest/iota_client/client/struct.Client.html#method.get_info)
-function which will target the `/api/v1/info` endpoint and return the node's information if successful.  
+function which will target the `/api/v2/info` endpoint and return the node's information if successful.  
