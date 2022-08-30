@@ -1,6 +1,6 @@
 [package]
 name = "iota-client"
-version = "2.0.0-beta.2"
+version = "2.0.0-beta.3"
 authors = [ "IOTA Stiftung" ]
 edition = "2021"
 description = "The official, general-purpose IOTA client library in Rust for interaction with the IOTA network (Tangle)"
