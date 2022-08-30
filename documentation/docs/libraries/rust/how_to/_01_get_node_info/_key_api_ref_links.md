@@ -1,4 +1,4 @@
-### Build a Client
+### Build a `Client`
 
 You can build a client using
 the [`Client::builder`](https://docs.rs/iota-client/latest/iota_client/builder/struct.ClientBuilder.html)
@@ -17,7 +17,7 @@ The code example chains the following calls to the `Client::builder`:
   This call will tell the `ClientBuilder` that you have already chained all the calls you need, and it should return
   the [Client](https://docs.rs/iota-client/latest/iota_client/client/index.html) instance.
 
-### Use the Client
+### Use the `Client`
 
 After you have [built the client](#build-a-client), you can use it to get the node's information. The code example uses
 the [`Client.get_info(&self)`](https://docs.rs/iota-client/latest/iota_client/client/struct.Client.html#method.get_info)
