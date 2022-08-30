@@ -1,0 +1,73 @@
+---
+description: Getting started with the official IOTA Client Library Node.js binding.
+image: /img/logo/iota_mark_light.png
+keywords:
+
+- Node.js
+- dotenv
+- install
+- npm
+- yarn
+- security
+
+---
+import WarningPasswordStorage from '../_admonitions/_password_storage.md';
+
+# Getting Started with Node.js
+
+
+## Security
+
+<WarningPasswordStorage />
+
+## Requirements
+
+* One of the following [Node.js](https://nodejs.org/en/) versions:
+    * '14.x'
+    * '16.x' (LTS) .
+    * '18.x' (Current).
+
+* [Rust and Cargo](https://doc.rust-lang.org/cargo/getting-started/installation.html) to compile the binding.
+
+## Install the Library
+
+You can install the library using [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/) with the following
+commands:
+
+### npm
+
+```bash
+npm i @iota/client
+```
+
+### Yarn
+
+```bash
+yarn add @iota/client
+```
+
+## Use the Library
+
+After you have linked the library, you can create a [`Client`](./../libraries/nodejs/references/classes/Client.md)
+instance and interface with it.
+
+```javascript
+const {ClientBuilder} = require('@iota/client')
+
+const client = new ClientBuilder()
+    .node('https://api.testnet.shimmer.network')
+    .build()
+
+client.getInfo().then(console.log).catch(console.error)
+```
+
+## Connecting to MQTT
+
+Connecting to a MQTT broker using a raw ip doesn't work with TCP. This is a limitation
+of [rustls](https://docs.rs/rustls/latest/rustls/).
+
+## What's Next?
+
+Now that you are up and running, you can get acquainted with the library using
+its [how-to guides](../how_tos/00_run_how_tos.mdx) and the
+repository's [code examples](https://github.com/iotaledger/iota.rs/tree/develop/bindings/nodejs/examples).

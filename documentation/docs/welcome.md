@@ -1,21 +1,27 @@
 ---
-description: Official IOTA Client Library which can be used to easily integrate an IOTA Client into your application 
-image: /img/logo/iota_mark_light.png
+description: Official IOTA Client Library which can be used to easily integrate an IOTA Client into your application
+image: /img/Banner/banner_client_lib.png
 keywords:
 - requirements
-- wallet
 - software
 - library
 - rust
 - python
 - nodejs
+- explanation
 ---
 # Welcome
 
-The iota.rs library is a library that handles communications between your software and the IOTA network. 
+![IOTA Client Library](/img/Banner/banner_client_lib.png)
 
-The iota.rs library is free and open-source, and it will always stay so. Both the IOTA Foundation and the community of IOTA enthusiasts maintain the wiki and this wiki section, meaning that you can rely on it as a source of knowledge on iota.rs. Start exploring it from the [Overview](overview.md) page.
+The iota.rs library handles communications between your software and the IOTA network.
 
-If you have questions, jump into a discussion or start a new one on our [Discord](https://discord.iota.org) server. Take a look at our [community](https://iota.stackexchange.com/) on Stack Exchange, too: this website is designed to ask questions and find answers. If you wish to contribute, we have a [guide](./contribute.md) for that, too.
+The iota.rs library is free and open-source, and it will be. Both the IOTA Foundation and the IOTA community maintain
+the library and this wiki, which means that you can rely on it as a source of knowledge on iota.rs. Start exploring it
+from the [Overview](overview.md) page.
+
+If you have questions, jump into a discussion or start a new one on our [Discord server](https://discord.iota.org) or
+ask questions and find answers at our [community on Stack Exchange](https://iota.stackexchange.com/). If you wish to
+contribute to the project, make sure that you read our [contribution guide](./contribute.md).
 
 We are glad that you are here!
