@@ -19,6 +19,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security -->
 
+## 2.0.0-beta.4 - 2022-XX-XX
+
+### Changed
+
+- PoW node feature from `PoW` to `pow` to match TIP25;
+
 ## 2.0.0-beta.3 - 2022-08-30
 
 ### Changed
