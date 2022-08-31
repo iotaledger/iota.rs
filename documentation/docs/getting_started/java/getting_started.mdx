@@ -24,6 +24,8 @@ Ensure you have first installed the required dependencies for the library [here]
 - [Gradle](https://gradle.org/install/) v4 or higher or [Maven](https://maven.apache.org/download.cgi) installe
 - Cargo ndk (`cargo install cargo-ndk`)
 - Cargo fmt (`rustup component add rustfmt`)
+- pkg-config is needed (for Linux `apt install pkg-config`)
+- libudev is needed (for Linux `apt install libudev-dev`)
 
 Download or clone the `iota.rs` repository
 
@@ -72,18 +74,18 @@ Generating the jar can be done with your tool of preference. We provide examples
 Make `gradlew` executable (`chmod +x gradlew`) if needed, then run
 
 ```bash
-cd iota.rs/bindings/java
+cd iota.rs/bindings/java/iota-client-java/
 ./gradlew jar
 ```
 
 ##### Maven
 
 ```bash
-cd iota.rs/bindings/java
+cd iota.rs/bindings/java/iota-client-java/
 mvn install
 ```
 
-After running one of these commands, the jar can then be found at `iota.rs/bindings/java/native/build/libs/native.jar`
+After running one of these commands, the jar can then be found at `iota.rs/bindings/java/native/build/libs/native.jar` or at `iota.rs/bindings/java/iota-client-java/build/libs/iota-client-java-1.0-SNAPSHOT.jar`.
 
 ## Usage
 
