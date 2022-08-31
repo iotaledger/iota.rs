@@ -181,6 +181,7 @@ impl Client {
         log::debug!("sync_nodes");
         let mut synced_nodes = HashSet::new();
         let mut network_nodes: HashMap<String, Vec<(NodeInfo, Node)>> = HashMap::new();
+
         for node in nodes {
             // Put the healthy node url into the network_nodes
             if let Ok(info) = Client::get_node_info(node.url.as_ref(), None).await {
@@ -211,6 +212,7 @@ impl Client {
                 log::error!("Couldn't get the node info from {}", node.url);
             }
         }
+
         // Get network_id with the most nodes
         let mut most_nodes = ("network_id", 0);
         for (network_id, node) in &network_nodes {
@@ -219,7 +221,10 @@ impl Client {
                 most_nodes.1 = node.len();
             }
         }
+
         if let Some(nodes) = network_nodes.get(most_nodes.0) {
+            let pow_feature = String::from("pow");
+
             for (info, node_url) in nodes.iter() {
                 if let Ok(mut client_network_info) = network_info.write() {
                     client_network_info.network_id = hash_network(&info.protocol.network_name).ok();
@@ -227,7 +232,7 @@ impl Client {
                     client_network_info.bech32_hrp = Some(info.protocol.bech32_hrp.clone());
                     client_network_info.rent_structure = Some(info.protocol.rent_structure.clone());
                     if !client_network_info.local_pow {
-                        if info.features.contains(&"PoW".to_string()) {
+                        if info.features.contains(&pow_feature) {
                             synced_nodes.insert(node_url.clone());
                         }
                     } else {
