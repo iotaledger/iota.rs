@@ -1,6 +1,6 @@
 # Interface: INodeInfoWrapper
 
-NodeInfo wrapper which contains the nodeinfo and the url from the node (useful when multiple nodes are used)
+NodeInfo wrapper which contains the node info and the url from the node (useful when multiple nodes are used)
 
 ## Table of contents
 

@@ -15,7 +15,7 @@ use zeroize::Zeroize;
 
 use crate::error::{Error, Result};
 
-/// Hash the network id str from the nodeinfo to an u64 (used in blocks)
+/// Hash the network id str from the node info to an u64 (used in blocks)
 pub fn hash_network(network_id_string: &str) -> Result<u64> {
     let bytes = Blake2b256::digest(network_id_string.as_bytes())[0..8]
         .try_into()

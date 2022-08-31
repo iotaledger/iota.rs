@@ -62,13 +62,13 @@ use crate::{
     },
 };
 
-/// NodeInfo wrapper which contains the nodeinfo and the url from the node (useful when multiple nodes are used)
+/// NodeInfo wrapper which contains the node info and the url from the node (useful when multiple nodes are used)
 #[derive(Debug, Serialize, Deserialize)]
 pub struct NodeInfoWrapper {
-    /// The returned nodeinfo
+    /// The returned node info
     #[serde(rename = "nodeInfo")]
     pub node_info: NodeInfo,
-    /// The url from the node which returned the nodeinfo
+    /// The url from the node which returned the node info
     pub url: String,
 }
 
@@ -208,7 +208,7 @@ impl Client {
                     log::debug!("{} is not healthy: {:?}", node.url, info);
                 }
             } else {
-                log::error!("Couldn't get the nodeinfo from {}", node.url);
+                log::error!("Couldn't get the node info from {}", node.url);
             }
         }
         // Get network_id with the most nodes
@@ -276,7 +276,7 @@ impl Client {
         let not_synced = self.network_info.read().map_or(true, |info| info.network_id.is_none());
 
         // For WASM we don't have the node syncing process, which updates the network_info every 60 seconds, but the Pow
-        // difficulty or the byte cost could change via a milestone, so we request the nodeinfo every time, so we don't
+        // difficulty or the byte cost could change via a milestone, so we request the node info every time, so we don't
         // create invalid transactions/blocks
         if not_synced || cfg!(target_family = "wasm") {
             let info = self.get_info().await?.node_info;

@@ -64,7 +64,7 @@ async function run() {
                 },
                 internal: false,
                 // Generating addresses with client.generateAddresses(secretManager, {}), will by default get the bech32_hrp (Bech32
-                // human readable part) from the nodeinfo, generating it "offline" requires setting it in the generateAddressesOptions
+                // human readable part) from the node info, generating it "offline" requires setting it in the generateAddressesOptions
                 bech32Hrp: SHIMMER_TESTNET_BECH32_HRP,
             },
         );
