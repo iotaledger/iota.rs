@@ -37,7 +37,7 @@ pub struct NetworkInfo {
     /// Bech32 HRP
     #[serde(rename = "bech32Hrp", default)]
     pub bech32_hrp: Option<String>,
-    /// Mininum proof of work score
+    /// Minimum proof of work score
     #[serde(rename = "minPowScore", default)]
     pub min_pow_score: Option<u32>,
     /// Local proof of work
@@ -233,7 +233,7 @@ impl ClientBuilder {
         self
     }
 
-    /// Set if quroum should be used or not
+    /// Set if quorum should be used or not
     pub fn with_quorum(mut self, quorum: bool) -> Self {
         self.node_manager_builder = self.node_manager_builder.with_quorum(quorum);
         self

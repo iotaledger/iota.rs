@@ -45,10 +45,8 @@ pub enum Error {
     /// The wallet account doesn't have enough balance for an output with the remaining native tokens.
     #[error("The wallet account doesn't have enough balance for an output with the remaining native tokens.")]
     NoBalanceForNativeTokenRemainder,
-    /// The wallet account has enough funds, but splitted on too many outputs
-    #[error(
-        "The wallet account has enough funds, but splitted on too many outputs: {0}, max. is 128, consolidate them"
-    )]
+    /// The wallet account has enough funds, but split on too many outputs
+    #[error("The wallet account has enough funds, but split on too many outputs: {0}, max. is 128, consolidate them")]
     ConsolidationRequired(usize),
     /// Missing input for utxo chain
     #[error("Missing input: {0}")]

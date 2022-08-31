@@ -18,7 +18,7 @@ Struct containing network and PoW related information
 
 • **minPowScore**: `number`
 
-Mininum proof of work score
+Minimum proof of work score
 
 ___
 
