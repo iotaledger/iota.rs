@@ -46,7 +46,7 @@ export interface INetworkInfo {
     network?: Network;
     networkId?: number;
     bech32Hrp: string;
-    /** Mininum proof of work score*/
+    /** Minimum proof of work score*/
     minPowScore: number;
     /** Local proof of work */
     localPow: boolean;
