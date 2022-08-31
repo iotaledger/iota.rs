@@ -191,4 +191,7 @@ jobs:
           # - RUSTSEC-2021-0119: Out-of-bounds write in nix::unistd::getgrouplist.
           #   - A dependency of iota-ledger; it should be updated.
           #   - We don't call this API, so we should be fine.
-          args: --file Cargo.lock --deny warnings --ignore RUSTSEC-2020-0026 --ignore RUSTSEC-2020-0159 --ignore RUSTSEC-2020-0071 --ignore RUSTSEC-2021-0119
+          # - RUSTSEC-2021-0141: `dotenv` is Unmaintained.
+          #   - `dotenv` is only used in examples.
+
+          args: --file Cargo.lock --deny warnings --ignore RUSTSEC-2020-0026 --ignore RUSTSEC-2020-0159 --ignore RUSTSEC-2020-0071 --ignore RUSTSEC-2021-0119 --ignore RUSTSEC-2021-0141
