@@ -1,24 +1,86 @@
 ---
-title: Build An Ouput
+title: Build a Basic Output
+description: Build a simple output using the Client.buildBasicOutput(options) function.
+image: /img/logo/iota_mark_light.png
+keywords:
+- how to
+- address
+- iota address
+- addressgetter
+- environment variable
+- java
+- nodejs
+- python
+- rust
 ---
+
 import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
-import JavaCode from "../libraries/java/how_to/_build_output.mdx";
-import NodejsGetCode from "../libraries/nodejs/how_to/_build_output.mdx";
-import PythonGetCode from "../libraries/python/how_to/_build_output.mdx";
-import RustGetCode from "../libraries/rust/how_to/_build_output.mdx";
+import JavaCode from "../libraries/java/how_to/_05_build_output/_code_sample.mdx";
+import JavaOutput from "../libraries/java/how_to/_05_build_output/_expected_output.md";
+import JavaApiLinks from "../_admonitions/_api_ref_coming_soon.md"
+import NodejsCode from "../libraries/nodejs/how_to/_05_build_output/_code_sample.mdx";
+import NodejsOutput from "../libraries/nodejs/how_to/_05_build_output/_expected_output.md";
+import NodejsApiLinks from "../libraries/nodejs/how_to/_05_build_output/_key_api_ref_links.md"
+import PythonCode from "../libraries/python/how_to/_05_build_output/_code_sample.mdx";
+import PythonApiLinks from "../libraries/python/how_to/_05_build_output/_key_api_ref_links.md"
+import PythonOutput from "../libraries/python/how_to/_05_build_output/_expected_output.md";
+import RustCode from "../libraries/rust/how_to/_05_build_output/_code_sample.mdx";
+import RustOutput from "../libraries/rust/how_to/_05_build_output/_expected_output.md";
+import RustApiLinks from "../libraries/rust/how_to/_05_build_output/_key_api_ref_links.md"
+
+
+## Introduction
+
+Build a simple output using the Client.buildBasicOutput(options) function.
+
+## Code Example
 
 <Tabs groupId="language">
-    <TabItem value="java" label="Java">
-        <JavaCode />
+    <TabItem value="rust" label="Rust">
+        <RustCode/>
     </TabItem>
     <TabItem value="nodejs" label="Nodejs">
-        <NodejsGetCode />
+        <NodejsCode/>
     </TabItem>
     <TabItem value="python" label="Python">
-        <PythonGetCode />
+        <PythonCode/>
     </TabItem>
+    <TabItem value="java" label="Java">
+        <JavaCode/>
+    </TabItem>
+</Tabs>
+
+## Expected Output
+
+<Tabs groupId="language">
     <TabItem value="rust" label="Rust">
-        <RustGetCode />
+        <RustOutput/>
+    </TabItem>
+    <TabItem value="nodejs" label="Nodejs">
+        <NodejsOutput/>
+    </TabItem>
+    <TabItem value="python" label="Python">
+        <PythonOutput/>
+    </TabItem>
+    <TabItem value="java" label="Java">
+        <JavaOutput/>
+    </TabItem>
+</Tabs>
+
+## API References
+
+<Tabs groupId="language">
+    <TabItem value="rust" label="Rust">
+        <RustApiLinks/>
+    </TabItem>
+    <TabItem value="nodejs" label="Nodejs">
+        <NodejsApiLinks/>
+    </TabItem>
+    <TabItem value="python" label="Python">
+        <PythonApiLinks/>
+    </TabItem>
+    <TabItem value="java" label="Java">
+        <JavaApiLinks/>
     </TabItem>
 </Tabs>

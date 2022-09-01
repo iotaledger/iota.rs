@@ -1,6 +1,6 @@
 ## Get an Output by ID
 
-You can retrieve any output using its `outputId`(TransactionId + output_index) by calling
+You can retrieve any output using its `outputId` (transaction id + output index) by calling
 the [`Client.getOutput(outputId)`](./../libraries/nodejs/references/classes/Client#getoutput) function and providing a
 valid output ID. 
 
