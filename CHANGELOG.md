@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Update dependencies;
 - PoW node feature from `PoW` to `pow` to match TIP25;
 
 ### Fixed
