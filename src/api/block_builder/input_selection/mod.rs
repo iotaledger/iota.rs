@@ -77,6 +77,7 @@ pub fn try_select_inputs(
             remainder_address,
             rent_structure,
             allow_burning,
+            current_time,
         )?;
 
         if let Some(remainder_data) = &remainder_data {
@@ -386,6 +387,7 @@ pub fn try_select_inputs(
             &selected_input_native_tokens,
             &required,
             rent_structure,
+            current_time,
         )?;
 
         if selected_input_amount < required.amount || additional_required_remainder_amount > 0 {
@@ -435,6 +437,7 @@ pub fn try_select_inputs(
             &selected_input_native_tokens,
             &required,
             rent_structure,
+            current_time,
         )?;
 
         if selected_input_amount < required.amount || additional_required_remainder_amount > 0 {
@@ -481,6 +484,7 @@ pub fn try_select_inputs(
         remainder_address,
         rent_structure,
         allow_burning,
+        current_time,
     )?;
     if let Some(remainder_data) = &remainder_data {
         outputs.push(remainder_data.output.clone());

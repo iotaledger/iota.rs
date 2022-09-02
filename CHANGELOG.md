@@ -25,6 +25,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - PoW node feature from `PoW` to `pow` to match TIP25;
 
+### Fixed
+
+- Check expiration for remainder address;
+
 ## 2.0.0-beta.3 - 2022-08-30
 
 ### Changed
