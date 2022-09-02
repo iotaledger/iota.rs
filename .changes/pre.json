@@ -8,6 +8,7 @@
     ".changes/fix-pow-feature.md",
     ".changes/ignore-tests.md",
     ".changes/ledger-nano-status.md",
+    ".changes/ledger-nano-unlocks.md",
     ".changes/pow-hrp-renaming.md",
     ".changes/pre-release.md",
     ".changes/query-parameters-renaming.md",
