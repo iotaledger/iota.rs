@@ -79,7 +79,7 @@ impl<'a> ClientBlockBuilder<'a> {
         // Add tagged data payload if tag set
         if let Some(index) = self.tag.clone() {
             let tagged_data_payload = TaggedDataPayload::new(index.to_vec(), self.data.clone().unwrap_or_default())?;
-            essence = essence.with_payload(Payload::TaggedData(Box::new(tagged_data_payload)));
+            essence = essence.with_payload(Payload::from(tagged_data_payload));
         }
         let regular_essence = essence.finish()?;
         let essence = TransactionEssence::Regular(regular_essence);
@@ -109,7 +109,7 @@ impl<'a> ClientBlockBuilder<'a> {
             return Err(Error::TransactionSemantic(conflict));
         }
 
-        Ok(Payload::Transaction(Box::new(tx_payload)))
+        Ok(Payload::from(tx_payload))
     }
 }
 
