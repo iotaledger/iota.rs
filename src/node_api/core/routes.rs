@@ -129,10 +129,7 @@ impl Client {
                             // switch to local PoW
                             client_network_info.local_pow = true;
                         }
-                        #[cfg(not(target_family = "wasm"))]
-                        let block_res = crate::api::finish_multi_threaded_pow(self, block.payload().cloned()).await;
-                        #[cfg(target_family = "wasm")]
-                        let block_res = crate::api::finish_single_threaded_pow(self, block.payload().cloned()).await;
+                        let block_res = crate::api::finish_pow(self, block.payload().cloned()).await;
                         let block_with_local_pow = match block_res {
                             Ok(block) => {
                                 // reset local PoW state
@@ -201,10 +198,7 @@ impl Client {
                             // switch to local PoW
                             client_network_info.local_pow = true;
                         }
-                        #[cfg(not(target_family = "wasm"))]
-                        let block_res = crate::api::finish_multi_threaded_pow(self, block.payload().cloned()).await;
-                        #[cfg(target_family = "wasm")]
-                        let block_res = crate::api::finish_single_threaded_pow(self, block.payload().cloned()).await;
+                        let block_res = crate::api::finish_pow(self, block.payload().cloned()).await;
                         let block_with_local_pow = match block_res {
                             Ok(block) => {
                                 // reset local PoW state

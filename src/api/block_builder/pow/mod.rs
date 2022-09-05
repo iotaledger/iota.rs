@@ -35,11 +35,21 @@ pub fn do_pow<P: NonceProvider>(
         .map_err(Error::BlockError)
 }
 
+/// Calls the appropriate PoW function depending whether the compilation is for wasm or not.
+pub async fn finish_pow(client: &Client, payload: Option<Payload>) -> Result<Block> {
+    #[cfg(not(target_family = "wasm"))]
+    let block = crate::api::pow::finish_multi_threaded_pow(client, payload).await?;
+    #[cfg(target_family = "wasm")]
+    let block = crate::api::pow::finish_single_threaded_pow(client, payload).await?;
+
+    Ok(block)
+}
+
 /// Performs multi-threaded proof-of-work.
 ///
 /// Always fetches new tips after each tips interval elapses.
 #[cfg(not(target_family = "wasm"))]
-pub async fn finish_multi_threaded_pow(client: &Client, payload: Option<Payload>) -> Result<Block> {
+async fn finish_multi_threaded_pow(client: &Client, payload: Option<Payload>) -> Result<Block> {
     let local_pow = client.get_local_pow().await;
     let pow_worker_count = client.pow_worker_count;
     let min_pow_score = client.get_min_pow_score().await?;
@@ -92,7 +102,7 @@ fn pow_timeout(after_seconds: u64, cancel: MinerCancel) -> (u64, Option<Block>) 
 ///
 /// Always fetches new tips after each tips interval elapses.
 #[cfg(target_family = "wasm")]
-pub async fn finish_single_threaded_pow(client: &Client, payload: Option<Payload>) -> Result<Block> {
+async fn finish_single_threaded_pow(client: &Client, payload: Option<Payload>) -> Result<Block> {
     let min_pow_score: f64 = client.get_min_pow_score().await?;
     let tips_interval: u64 = client.get_tips_interval().await;
     let local_pow: bool = client.get_local_pow().await;

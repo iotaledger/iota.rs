@@ -21,10 +21,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 2.0.0-beta.4 - 2022-XX-XX
 
+### Added
+
+- `finish_pow` function to avoid the caller having to check for wasm family;
+
 ### Changed
 
 - Update dependencies;
 - PoW node feature from `PoW` to `pow` to match TIP25;
+- Made `finish_multi_threaded_pow` and `finish_single_threaded_pow` private;
 
 ### Fixed
 

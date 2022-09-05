@@ -414,13 +414,7 @@ impl<'a> ClientBlockBuilder<'a> {
                 let miner = self.client.get_pow_provider().await;
                 do_pow(miner, min_pow_score, payload, parents)?
             }
-            None => {
-                #[cfg(target_family = "wasm")]
-                let block = crate::api::pow::finish_single_threaded_pow(self.client, payload).await?;
-                #[cfg(not(target_family = "wasm"))]
-                let block = crate::api::pow::finish_multi_threaded_pow(self.client, payload).await?;
-                block
-            }
+            None => crate::api::pow::finish_pow(self.client, payload).await?,
         };
 
         let block_id = self.client.post_block_raw(&final_block).await?;
