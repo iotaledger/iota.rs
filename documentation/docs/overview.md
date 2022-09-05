@@ -35,9 +35,9 @@ with the IOTA network and, unlike iota.rs, it has a state.
 
 ## Supported Languages
 
-We implemented the iota.rs library in [Rust](getting_started/rust) and prepared bindings
-for [JavaScript](getting_started/nodejs), [Python](getting_started/python),
-and [Java](getting_started/java/getting_started). Every binding is adjusted for the language's conventions and best
+We implemented the iota.rs library in [Rust](getting_started/rust.mdx) and prepared bindings
+for [JavaScript](getting_started/nodejs), [Python](getting_started/python.mdx),
+and [Java](getting_started/java.mdx). Every binding is adjusted for the language's conventions and best
 practices. For example, Python developers avoid the Builder programming pattern, so our
 Python binding uses named constructor arguments. However, we never change the meaning behind our API, which is equally
 powerful no matter which language you choose.
@@ -67,5 +67,4 @@ for a complete list of available endpoints.
 Operations from the first group tend to be too atomic and basic to use conveniently. The second group provides you with
 higher-level helper functions. These functions represent an actual task and combine multiple basic operations
 internally. For example, you can get your token balance by calling `getBalance`. It will first call `getAddresses`, then
-call `getAddressBalances` for each address, and add the results together to return the total balance. See
-the [full specification](./specs) for details.
+call `getAddressBalances` for each address, and add the results together to return the total balance.
