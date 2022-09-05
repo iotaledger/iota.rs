@@ -21,7 +21,7 @@ async fn main() -> Result<()> {
         .with_node_sync_disabled()
         .finish()?;
 
-    // Send the block.
+    // Create and send the block.
     let block = client.block().finish().await?;
 
     println!(

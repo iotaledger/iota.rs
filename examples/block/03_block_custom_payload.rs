@@ -1,10 +1,13 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! This example sends a block, with custom parents, which can be used for promoting.
-//! Run: `cargo run --example block_custom_parents --release -- [NODE URL]`.
+//! This example sends a block with a custom payload.
+//! Run: `cargo run --example block_custom_payload --release -- [NODE URL]`.
 
-use iota_client::{Client, Result};
+use iota_client::{
+    block::payload::{Payload, TaggedDataPayload},
+    Client, Result,
+};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -18,11 +21,14 @@ async fn main() -> Result<()> {
     // Create a client with that node.
     let client = Client::builder().with_node(&node_url)?.finish()?;
 
-    // Use tips as custom parents.
-    let parents = client.get_tips().await?;
+    // Create a custom payload.
+    let tagged_data_payload = TaggedDataPayload::new("Your tag".as_bytes().to_vec(), "Your data".as_bytes().to_vec())?;
 
-    // Create and send the block with custom parents.
-    let block = client.block().with_parents(parents)?.finish().await?;
+    // Create and send the block with the custom payload.
+    let block = client
+        .block()
+        .finish_block(Some(Payload::from(tagged_data_payload)))
+        .await?;
 
     println!(
         "Block sent: {}/block/{}",

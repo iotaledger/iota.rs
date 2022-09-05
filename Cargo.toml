@@ -95,12 +95,12 @@ name = "block_custom_parents"
 path = "examples/block/02_block_custom_parents.rs"
 
 [[example]]
-name = "custom_inputs"
-path = "examples/block/custom_inputs.rs"
+name = "block_custom_payload"
+path = "examples/block/03_block_custom_payload.rs"
 
 [[example]]
-name = "custom_payload"
-path = "examples/block/custom_payload.rs"
+name = "custom_inputs"
+path = "examples/block/custom_inputs.rs"
 
 [[example]]
 name = "data_block"

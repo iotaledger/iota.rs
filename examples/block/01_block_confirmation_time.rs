@@ -18,7 +18,7 @@ async fn main() -> Result<()> {
     // Create a client with that node.
     let client = Client::builder().with_node(&node_url)?.finish()?;
 
-    // Create a block with no payload.
+    // Create and send a block.
     let block = client.block().finish().await?;
     let block_id = block.id();
 
