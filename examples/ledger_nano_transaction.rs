@@ -2,13 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example ledger_nano_transaction --features=ledger_nano --release
+//! In this example we will create a transaction with a ledger nano hardware wallet.
 
 use iota_client::{
     secret::{ledger_nano::LedgerSecretManager, SecretManager},
     Client, Result,
 };
-
-/// In this example we will create a transaction with a ledger nano hardware wallet
 
 #[tokio::main]
 async fn main() -> Result<()> {

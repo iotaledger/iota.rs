@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example send_all --release
+//! In this example we will get the outputs of the first address of the seed and send everything.
+//! Run the consolidation example first if there are more than 128 outputs.
 
 use iota_client::{
     block::output::{
@@ -11,9 +13,6 @@ use iota_client::{
     secret::{mnemonic::MnemonicSecretManager, SecretManager},
     Client, Result,
 };
-
-/// In this example we will get the outputs of the first address of the seed and send everything
-/// Run the consolidation example first if there are more than 128 outputs
 
 #[tokio::main]
 async fn main() -> Result<()> {

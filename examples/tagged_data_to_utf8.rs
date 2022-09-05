@@ -2,10 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example tagged_data_to_utf8 --release
+//! In this example we will UTF-8 encode the tag and the data of an `TaggedDataPayload`.
 
 use iota_client::{block::payload::TaggedDataPayload, Client, Result};
-
-/// In this example we will UTF-8 encode the tag and the data of an `TaggedDataPayload`.
 
 #[tokio::main]
 async fn main() -> Result<()> {

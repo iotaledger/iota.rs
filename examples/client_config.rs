@@ -2,10 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example client_config --release
+//! In this example we will create a client from a JSON config.
 
 use iota_client::{Client, Result};
-
-/// In this example we will create a client from a JSON config
 
 #[tokio::main]
 async fn main() -> Result<()> {

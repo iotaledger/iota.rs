@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example stronghold --features=stronghold --release
+//! In this example we will create an address with a stronghold secret manager.
 
 use iota_client::{
     api::GetAddressesBuilder,
@@ -9,7 +10,6 @@ use iota_client::{
     secret::{stronghold::StrongholdSecretManager, SecretManager},
     Result,
 };
-/// In this example we will create an address with a stronghold secret manager
 
 #[tokio::main]
 async fn main() -> Result<()> {
