@@ -1,5 +1,10 @@
 # Changelog
 
+## \[3.0.0-alpha.8]
+
+- Fix missing reference unlocks with ledger nano secret manager.
+  - [f9bc46f](https://github.com/iotaledger/iota.rs/commit/f9bc46f9dbf55dad1a6df771e9921646772d88a3) Bump ledger nano version ([#1224](https://github.com/iotaledger/iota.rs/pull/1224)) on 2022-09-02
+
 ## \[3.0.0-alpha.7]
 
 - Accept `IGenerateAddressesOptions` in `consolidateFunds()` instead of `accountIndex` and `addressRange`.
