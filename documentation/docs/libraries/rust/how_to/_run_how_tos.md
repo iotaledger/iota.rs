@@ -1,11 +1,19 @@
 ## Prerequisites
 
-Before you can run the examples, please refer to the [Rust Getting Started guide](./../getting_started/rust.md) to install
+Before you can run the examples, please refer to the [Rust Getting Started guide](./../getting_started/rust) to install
 the library.
+
+### Clone the Repository
+
+To run the rust examples, you will first need to clone the repository.  You can do so by running the following command:
+
+```bash
+git clone git@github.com:iotaledger/iota.rs.git
+```
 
 ### Set Up Your .env file
 
-After you have [cloned the project](#clone-the-project), you should:
+After you have [cloned the project](#clone-the-repository), you should:
 
 1. Move into the project directory by running the following command:
 
