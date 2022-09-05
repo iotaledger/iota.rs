@@ -35,6 +35,16 @@ pub fn do_pow<P: NonceProvider>(
         .map_err(Error::BlockError)
 }
 
+/// Calls the appropriate PoW function depending wether the compilation is for wasm or not.
+pub async fn finish_pow(client: &Client, payload: Option<Payload>) -> Result<Block> {
+    #[cfg(not(target_family = "wasm"))]
+    let block = crate::api::pow::finish_multi_threaded_pow(client, payload).await?;
+    #[cfg(target_family = "wasm")]
+    let block = crate::api::pow::finish_single_threaded_pow(client, payload).await?;
+
+    Ok(block)
+}
+
 /// Performs multi-threaded proof-of-work.
 ///
 /// Always fetches new tips after each tips interval elapses.

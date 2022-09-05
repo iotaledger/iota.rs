@@ -714,16 +714,7 @@ impl Client {
     pub async fn reattach_unchecked(&self, block_id: &BlockId) -> Result<(BlockId, Block)> {
         // Get the Block object by the BlockID.
         let block = self.get_block(block_id).await?;
-        let reattach_block = {
-            #[cfg(target_family = "wasm")]
-            {
-                crate::api::finish_single_threaded_pow(self, block.payload().cloned()).await?
-            }
-            #[cfg(not(target_family = "wasm"))]
-            {
-                crate::api::finish_multi_threaded_pow(self, block.payload().cloned()).await?
-            }
-        };
+        let reattach_block = crate::api::finish_pow(self, block.payload().cloned()).await?;
 
         // Post the modified
         let block_id = self.post_block_raw(&reattach_block).await?;
