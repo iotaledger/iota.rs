@@ -50,7 +50,7 @@ impl<'a> ClientBlockBuilder<'a> {
             }
         }
 
-        // Inputselection
+        // Input selection
         let selected_transaction_data = if self.inputs.is_some() {
             self.get_custom_inputs(governance_transition, &rent_structure, self.allow_burning)
                 .await?
