@@ -1,32 +1,33 @@
 ---
 title: Listen to MQTT
-description: You can retrieve a block\'s data by calling the Client.get_block(&block_id) function.
+description: You can listen to MQTT topics by connecting to a node and using the `Client.subscribe()` function.
 keywords:
 - how to
-- block
-- get
-- block data
-- block metadata
-- get block by id
+- subscribe topic
+- unsubscribe topic
+- MQTT
+- listen MQTT
 - java
 - nodejs
 - python
 - rust
 ---
-
-
 import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
-import JavaCode from "../libraries/java/how_to/_12_mqtt.mdx"
-import JavaOutput from "../libraries/java/how_to/_12_mqtt.mdx"
+import JavaCode from "../_admonitions/_guide_coming_soon.md"
+import JavaOutput from "../_admonitions/_guide_coming_soon.md"
 import NodejsCode from "../libraries/nodejs/how_to/_12_mqtt/_code_sample.mdx";
 import NodejsOutput from "../libraries/nodejs/how_to/_12_mqtt/_expected_output.md";
-import PythonCode from "../libraries/python/how_to/_12_mqtt.mdx";
-import PythonOutput from "../libraries/python/how_to/_12_mqtt.mdx";
-import RustCode from "../libraries/rust/how_to/_12_mqtt/_code_sample.mdx";
-import RustOutput from "../libraries/rust/how_to/_12_mqtt/_expected_output.md";
+import PythonCode from "../_admonitions/_guide_coming_soon.md";
+import PythonOutput from "../_admonitions/_guide_coming_soon.md";
+import RustCode from "../libraries/rust/how_to/_14_mqtt/_code_sample.mdx";
+import RustOutput from "../libraries/rust/how_to/_14_mqtt/_expected_output.md";
 
-The following example will connect to a node defined in the `.env` file, and then listen and log MQTT topics.
+The following code example will:
+
+1. Create a `Client` which will connect to the [Shimmer Testnet](https://api.testnet.shimmer.network).
+2. Subscribe to a set of `topics`.
+3. Listen to the topic defined in step 2 and log the output.
 
 ## Code Example
 

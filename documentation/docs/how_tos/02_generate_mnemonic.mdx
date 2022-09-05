@@ -10,25 +10,25 @@ keywords:
 - python
 - rust
 ---
-
 import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
 import JavaCode from "../libraries/java/how_to/_02_generate_mnemonic/_code_sample.mdx";
 import JavaOutput from "../libraries/java/how_to/_02_generate_mnemonic/_expected_output.md";
-import JavaApiLinks from "../_admonitions/_api_ref_coming_soon.md"
 import NodejsCode from "../libraries/nodejs/how_to/_02_generate_mnemonic/_code_sample.mdx";
 import NodejsOutput from "../libraries/nodejs/how_to/_02_generate_mnemonic/_expected_output.md";
-import NodejsApiLinks from "../libraries/nodejs/how_to/_02_generate_mnemonic/_key_api_ref_links.md"
 import PythonCode from "../libraries/python/how_to/_02_generate_mnemonic/_code_sample.mdx";
-import PythonApiLinks from "../libraries/python/how_to/_02_generate_mnemonic/_key_api_ref_links.md"
 import PythonOutput from "../libraries/python/how_to/_02_generate_mnemonic/_expected_output.md";
 import RustCode from "../libraries/rust/how_to/_02_generate_mnemonic/_code_sample.mdx";
 import RustOutput from "../libraries/rust/how_to/_02_generate_mnemonic/_expected_output.md";
-import RustApiLinks from "../libraries/rust/how_to/_02_generate_mnemonic/_key_api_ref_links.md"
 
 
 The following example will generate a mnemonic using a `Client` instance.  Since this functionality doesn't need to
 communicate with any nodes, you can start your `Client` in offline mode.
+
+The following code example will:
+
+1. Create a `Client` in offline mode.
+2. Use the created client to generate a mnemonic.
 
 ## Code Examples
 

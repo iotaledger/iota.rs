@@ -13,23 +13,25 @@ keywords:
 - python
 - rust
 ---
-
 import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
 import JavaCode from "../libraries/java/how_to/_05_build_output/_code_sample.mdx";
 import JavaOutput from "../libraries/java/how_to/_05_build_output/_expected_output.md";
-import JavaApiLinks from "../_admonitions/_guide_coming_soon.md"
 import NodejsCode from "../libraries/nodejs/how_to/_05_build_output/_code_sample.mdx";
 import NodejsOutput from "../libraries/nodejs/how_to/_05_build_output/_expected_output.md";
-import NodejsApiLinks from "../libraries/nodejs/how_to/_05_build_output/_key_api_ref_links.md"
 import PythonCode from "../libraries/python/how_to/_05_build_output/_code_sample.mdx";
-import PythonApiLinks from "../libraries/python/how_to/_05_build_output/_key_api_ref_links.md"
 import PythonOutput from "../libraries/python/how_to/_05_build_output/_expected_output.md";
 import RustCode from "../libraries/rust/how_to/_05_build_output/_code_sample.mdx";
 import RustOutput from "../libraries/rust/how_to/_05_build_output/_expected_output.md";
-import RustApiLinks from "../_admonitions/_guide_coming_soon.md"
 
 You can build a simple output using the `Client.buildBasicOutput(options)` function.
+
+The following code example will:
+
+1. Create a `Client` which will connect to the [Shimmer Testnet](https://api.testnet.shimmer.network).
+2. Create a `SecretManager` from a [mnemonic](02_generate_mnemonic.mdx).
+3. [Generate a public address](03_generate_addresses.mdx).
+4. Build a simple output.
 
 ## Code Example
 
