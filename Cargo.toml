@@ -280,40 +280,40 @@ path = "examples/offline_signing/3_send_block.rs"
 
 [[example]]
 name = "all"
-path = "examples/outputs/all.rs"
+path = "examples/output/all.rs"
 
 [[example]]
 name = "all_automatic_input_selection"
-path = "examples/outputs/all_automatic_input_selection.rs"
+path = "examples/output/all_automatic_input_selection.rs"
 
 [[example]]
 name = "alias"
-path = "examples/outputs/alias.rs"
+path = "examples/output/alias.rs"
 
 [[example]]
 name = "recursive_alias"
-path = "examples/outputs/recursive_alias.rs"
+path = "examples/output/recursive_alias.rs"
 
 [[example]]
 name = "basic"
-path = "examples/outputs/basic.rs"
+path = "examples/output/basic.rs"
 
 [[example]]
 name = "expiration"
-path = "examples/outputs/expiration.rs"
+path = "examples/output/expiration.rs"
 
 [[example]]
 name = "foundry"
-path = "examples/outputs/foundry.rs"
+path = "examples/output/foundry.rs"
 
 [[example]]
 name = "micro_transaction"
-path = "examples/outputs/micro_transaction.rs"
+path = "examples/output/micro_transaction.rs"
 
 [[example]]
 name = "native_tokens"
-path = "examples/outputs/native_tokens.rs"
+path = "examples/output/native_tokens.rs"
 
 [[example]]
 name = "nft"
-path = "examples/outputs/nft.rs"
+path = "examples/output/nft.rs"
