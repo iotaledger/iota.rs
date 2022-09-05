@@ -1,7 +1,7 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! cargo run --example custom_payload --release
+//! Run: `cargo run --example custom_payload --release`.
 
 use iota_client::{
     block::payload::{Payload, TaggedDataPayload},
@@ -10,6 +10,7 @@ use iota_client::{
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    // This example uses dotenv, which is not safe for use in production.
     dotenv::dotenv().ok();
 
     let node_url = std::env::var("NODE_URL").unwrap();

@@ -1,14 +1,14 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! cargo run --example data_block --release
+//! In this example we will send a block with a tagged data payload.
+//! Run: `cargo run --example data_block --release`.
 
 use iota_client::{block::payload::Payload, Client, Result};
 
-/// In this example we will send a block with a tagged data payload
-
 #[tokio::main]
 async fn main() -> Result<()> {
+    // This example uses dotenv, which is not safe for use in production.
     dotenv::dotenv().ok();
 
     let node_url = std::env::var("NODE_URL").unwrap();
