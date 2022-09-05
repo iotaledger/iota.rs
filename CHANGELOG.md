@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Update dependencies;
 - PoW node feature from `PoW` to `pow` to match TIP25;
+- Made `finish_multi_threaded_pow` and `finish_single_threaded_pow` private;
 
 ### Fixed
 
