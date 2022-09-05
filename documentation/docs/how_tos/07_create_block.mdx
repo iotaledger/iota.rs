@@ -1,12 +1,13 @@
 ---
 title: Create a Block
-description: Create a block
+description: 'The simplest block you can create is an empty block. You will only need connect your client to a node and then call the
+`Client.block(&self)` function.'
 image: /img/logo/iota_mark_light.png
 keywords:
 - how to
-- outputs
-- get_output
-- get output by id
+- block
+- create
+- create empty block
 - java
 - nodejs
 - python
@@ -28,7 +29,8 @@ import RustCode from "../libraries/rust/how_to/_07_create_block/_code_sample.mdx
 import RustOutput from "../libraries/rust/how_to/_07_create_block/_expected_output.md";
 import RustApiLinks from "../libraries/rust/how_to/_07_create_block/_key_api_ref_links.md"
 
-
+The simplest block you can create is an empty block. You will only need connect your client to a node and then call the
+`Client.block(&self)` function.
 
 ## Code Example
 
@@ -64,19 +66,3 @@ import RustApiLinks from "../libraries/rust/how_to/_07_create_block/_key_api_ref
     </TabItem>
 </Tabs>
 
-## API References
-
-<Tabs groupId="language">
-    <TabItem value="rust" label="Rust">
-        <RustApiLinks/>
-    </TabItem>
-    <TabItem value="nodejs" label="Nodejs">
-        <NodejsApiLinks/>
-    </TabItem>
-    <TabItem value="python" label="Python">
-        <PythonApiLinks/>
-    </TabItem>
-    <TabItem value="java" label="Java">
-        <JavaApiLinks/>
-    </TabItem>
-</Tabs>

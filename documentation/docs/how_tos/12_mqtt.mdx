@@ -1,0 +1,63 @@
+---
+title: Listen to MQTT
+description: You can retrieve a block\'s data by calling the Client.get_block(&block_id) function.
+keywords:
+- how to
+- block
+- get
+- block data
+- block metadata
+- get block by id
+- java
+- nodejs
+- python
+- rust
+---
+
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+import JavaCode from "../libraries/java/how_to/_12_mqtt.mdx"
+import JavaOutput from "../libraries/java/how_to/_12_mqtt.mdx"
+import NodejsCode from "../libraries/nodejs/how_to/_12_mqtt/_code_sample.mdx";
+import NodejsOutput from "../libraries/nodejs/how_to/_12_mqtt/_expected_output.md";
+import PythonCode from "../libraries/python/how_to/_12_mqtt.mdx";
+import PythonOutput from "../libraries/python/how_to/_12_mqtt.mdx";
+import RustCode from "../libraries/rust/how_to/_12_mqtt/_code_sample.mdx";
+import RustOutput from "../libraries/rust/how_to/_12_mqtt/_expected_output.md";
+
+The following example will connect to a node defined in the `.env` file, and then listen and log MQTT topics.
+
+## Code Example
+
+<Tabs groupId="language">
+    <TabItem value="rust" label="Rust">
+        <RustCode/>
+    </TabItem>
+    <TabItem value="nodejs" label="Nodejs">
+        <NodejsCode/>
+    </TabItem>
+    <TabItem value="python" label="Python">
+        <PythonCode/>
+    </TabItem>
+    <TabItem value="java" label="Java">
+        <JavaCode/>
+    </TabItem>
+</Tabs>
+
+## Expected Output
+
+<Tabs groupId="language">
+    <TabItem value="rust" label="Rust">
+        <RustOutput/>
+    </TabItem>
+    <TabItem value="nodejs" label="Nodejs">
+        <NodejsOutput/>
+    </TabItem>
+    <TabItem value="python" label="Python">
+        <PythonOutput/>
+    </TabItem>
+    <TabItem value="java" label="Java">
+        <JavaOutput/>
+    </TabItem>
+</Tabs>
