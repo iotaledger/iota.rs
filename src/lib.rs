@@ -76,7 +76,7 @@ mod async_runtime {
     static RUNTIME: OnceCell<Mutex<Runtime>> = OnceCell::new();
 
     pub(crate) fn block_on<C: futures::Future>(cb: C) -> C::Output {
-        let runtime = RUNTIME.get_or_init(|| Mutex::new(Runtime::new().expect("Failed to create Tokio runtim")));
+        let runtime = RUNTIME.get_or_init(|| Mutex::new(Runtime::new().expect("Failed to create Tokio runtime")));
         runtime.lock().expect("Failed to lock the runtime.").block_on(cb)
     }
 
@@ -85,7 +85,7 @@ mod async_runtime {
         F: futures::Future + Send + 'static,
         F::Output: Send + 'static,
     {
-        let runtime = RUNTIME.get_or_init(|| Mutex::new(Runtime::new().expect("Failed to create Tokio runtim")));
+        let runtime = RUNTIME.get_or_init(|| Mutex::new(Runtime::new().expect("Failed to create Tokio runtime")));
         runtime.lock().expect("Failed to lock the runtime.").spawn(future);
     }
 }
