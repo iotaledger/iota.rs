@@ -98,7 +98,7 @@ async fn main() -> Result<()> {
     let alias_1_address = Address::Alias(AliasAddress::new(alias_id_1));
 
     let outputs = vec![
-        // make second alias output be contolled by the first one
+        // make second alias output be controlled by the first one
         alias_output_builder
             .clone()
             .with_alias_id(alias_id_1)
@@ -133,7 +133,7 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
     println!(
-        "Transaction with alias id set and ownserhip assigned to the first alias sent: {node_url}/api/core/v2/blocks/{}",
+        "Transaction with alias id set and ownership assigned to the first alias sent: {node_url}/api/core/v2/blocks/{}",
         block_2.id()
     );
     let _ = client.retry_until_included(&block_2.id(), None, None).await?;

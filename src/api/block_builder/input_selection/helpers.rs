@@ -168,7 +168,7 @@ pub(crate) fn sort_input_signing_data(inputs: Vec<InputSigningData>) -> crate::R
     Ok(sorted_inputs)
 }
 
-// Check if an address is required for unlockig an output in any unlock condition
+// Check if an address is required for unlocking an output in any unlock condition
 // Also returns true if the output is an alias or foundry address and the address to search for matches this one
 pub(crate) fn output_contains_address(
     output: &Output,

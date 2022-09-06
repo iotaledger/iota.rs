@@ -121,7 +121,7 @@ fn check_or_create_snapshot(
             stronghold.load_client_from_snapshot(PRIVATE_DATA_CLIENT_PATH, key_provider, snapshot_path)?;
         }
         Err(iota_stronghold::ClientError::Inner(ref err_msg)) => {
-            // Matching the error string is not ideal but stronhold doesn't wrap the error types at the moment.
+            // Matching the error string is not ideal but stronghold doesn't wrap the error types at the moment.
             if err_msg.to_string().contains("XCHACHA20-POLY1305") {
                 return Err(Error::StrongholdInvalidPassword);
             }
@@ -274,12 +274,12 @@ impl StrongholdAdapter {
     /// If a snapshot path has been set, then it'll be rewritten with the newly set password.
     ///
     /// The secrets (e.g. mnemonic) stored in the Stronghold vault will be preserved, but the data saved via the
-    /// [`DatabaseProvier`] interface won't - they'll stay encrypted with the old password. To re-encrypt these
+    /// [`DatabaseProvider`] interface won't - they'll stay encrypted with the old password. To re-encrypt these
     /// data, provide a list of keys in `keys_to_re_encrypt`, as we have no way to list and iterate over every
     /// key-value in the Stronghold store - we'll attempt on the ones provided instead. Set it to `None` to skip
     /// re-encryption.
     pub async fn change_password(&mut self, new_password: &str) -> Result<()> {
-        // Stop the key clearing task to prevent the key from being abrubtly cleared (largely).
+        // Stop the key clearing task to prevent the key from being abruptly cleared (largely).
         if let Some(timeout_task) = self.timeout_task.lock().await.take() {
             timeout_task.abort();
         }

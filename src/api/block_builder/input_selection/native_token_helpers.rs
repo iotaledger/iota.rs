@@ -14,14 +14,14 @@ pub(crate) fn missing_native_tokens(
 ) -> Result<Option<NativeTokens>> {
     let mut missing_native_tokens = NativeTokensBuilder::new();
 
-    for (tokend_id, required_native_token_amount) in required.iter() {
-        match inputs.get(tokend_id) {
+    for (token_id, required_native_token_amount) in required.iter() {
+        match inputs.get(token_id) {
             None => {
-                missing_native_tokens.insert(*tokend_id, *required_native_token_amount);
+                missing_native_tokens.insert(*token_id, *required_native_token_amount);
             }
             Some(amount) => {
                 if amount < required_native_token_amount {
-                    missing_native_tokens.insert(*tokend_id, required_native_token_amount - amount);
+                    missing_native_tokens.insert(*token_id, required_native_token_amount - amount);
                 }
             }
         }
@@ -109,7 +109,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn nativ_token() {
+    fn native_token() {
         let token_id_bytes: [u8; 38] =
             prefix_hex::decode("0x08e68f7616cd4948efebc6a77c4f935eaed770ac53869cba56d104f2b472a8836d0100000000")
                 .unwrap();
