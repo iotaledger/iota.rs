@@ -213,7 +213,7 @@ dependencies = [
  "derive_more",
  "hashbrown 0.12.3",
  "hex",
- "iota-crypto 0.14.1",
+ "iota-crypto 0.14.2",
  "iterator-sorted",
  "packable",
  "prefix-hex",
@@ -243,7 +243,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f97ca064b7895679b723b1e188bad6103adad5cd712168185fb73fbfe6c205f0"
 dependencies = [
  "bee-ternary",
- "iota-crypto 0.14.1",
+ "iota-crypto 0.14.2",
  "thiserror",
 ]
 
@@ -384,13 +384,38 @@ dependencies = [
 ]
 
 [[package]]
+name = "chacha20"
+version = "0.8.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5c80e5460aa66fe3b91d40bcbdab953a597b60053e34d684ac6903f863b680a6"
+dependencies = [
+ "cfg-if",
+ "cipher",
+ "cpufeatures 0.2.5",
+ "zeroize",
+]
+
+[[package]]
 name = "chacha20poly1305"
 version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1580317203210c517b6d44794abfbe600698276db18127e37ad3e69bf5e848e5"
 dependencies = [
  "aead",
- "chacha20",
+ "chacha20 0.7.1",
+ "cipher",
+ "poly1305",
+ "zeroize",
+]
+
+[[package]]
+name = "chacha20poly1305"
+version = "0.9.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a18446b09be63d457bbec447509e85f662f32952b035ce892290396bc0b0cff5"
+dependencies = [
+ "aead",
+ "chacha20 0.8.2",
  "cipher",
  "poly1305",
  "zeroize",
@@ -1151,7 +1176,7 @@ dependencies = [
  "futures",
  "gloo-timers",
  "instant",
- "iota-crypto 0.14.1",
+ "iota-crypto 0.14.2",
  "iota-ledger-nano",
  "iota_stronghold",
  "log",
@@ -1191,7 +1216,7 @@ dependencies = [
  "aes",
  "aes-gcm",
  "blake2 0.10.4",
- "chacha20poly1305",
+ "chacha20poly1305 0.8.0",
  "curve25519-dalek",
  "digest 0.10.3",
  "ed25519-zebra",
@@ -1208,15 +1233,14 @@ dependencies = [
 
 [[package]]
 name = "iota-crypto"
-version = "0.14.1"
+version = "0.14.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "579d369fafa892787f85260a731bc70852eacde25ecaee604813b003e2d2190b"
+checksum = "92d67b0725fbfe9e75950848bf0304df70ecb71a58526b1a36a087d0bc089499"
 dependencies = [
  "aead",
  "bee-ternary",
  "blake2 0.10.4",
- "chacha20poly1305",
- "cpufeatures 0.2.5",
+ "chacha20poly1305 0.9.1",
  "digest 0.10.3",
  "ed25519-zebra",
  "generic-array",
