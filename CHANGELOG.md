@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Check expiration for remainder address;
+- Input selection when only native tokens are remaining;
 
 ## 2.0.0-beta.3 - 2022-08-30
 

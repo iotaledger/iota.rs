@@ -211,7 +211,24 @@ pub(crate) fn get_additional_required_remainder_amount(
                 0
             }
         } else {
-            0
+            // Not more amount than required, but maybe still native tokens left
+            let native_token_remainder = get_remainder_native_tokens(
+                selected_input_native_tokens,
+                &required_accumulated_amounts.native_tokens,
+            )?;
+
+            if let Some(native_token_remainder) = native_token_remainder {
+                minimum_storage_deposit_basic_output(
+                    rent_structure,
+                    &match remainder_address {
+                        Some(a) => a,
+                        None => get_remainder_address(selected_inputs.iter(), current_time)?.0,
+                    },
+                    &Some(native_token_remainder),
+                )?
+            } else {
+                0
+            }
         }
     };
     Ok(additional_required_remainder_amount)
