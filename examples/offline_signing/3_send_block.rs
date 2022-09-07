@@ -59,9 +59,9 @@ async fn main() -> Result<()> {
 }
 
 fn read_signed_transaction_from_file<P: AsRef<Path>>(path: P) -> Result<SignedTransactionData> {
-    let mut file = File::open(&path)?;
+    let mut file = File::open(&path).unwrap();
     let mut json = String::new();
-    file.read_to_string(&mut json)?;
+    file.read_to_string(&mut json).unwrap();
 
     let dto = serde_json::from_str::<SignedTransactionDataDto>(&json)?;
 

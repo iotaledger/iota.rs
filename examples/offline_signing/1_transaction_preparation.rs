@@ -57,9 +57,9 @@ async fn main() -> Result<()> {
 }
 
 fn read_addresses_from_file<P: AsRef<Path>>(path: P) -> Result<Vec<String>> {
-    let mut file = File::open(&path)?;
+    let mut file = File::open(&path).unwrap();
     let mut json = String::new();
-    file.read_to_string(&mut json)?;
+    file.read_to_string(&mut json).unwrap();
 
     Ok(serde_json::from_str(&json)?)
 }
@@ -69,11 +69,11 @@ fn write_prepared_transaction_to_file<P: AsRef<Path>>(
     prepared_transaction: &PreparedTransactionData,
 ) -> Result<()> {
     let json = serde_json::to_string_pretty(&PreparedTransactionDataDto::from(prepared_transaction))?;
-    let mut file = BufWriter::new(File::create(path)?);
+    let mut file = BufWriter::new(File::create(path).unwrap());
 
     println!("{}", json);
 
-    file.write_all(json.as_bytes())?;
+    file.write_all(json.as_bytes()).unwrap();
 
     Ok(())
 }
