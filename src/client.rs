@@ -746,7 +746,7 @@ impl Client {
         tips.push(*block_id);
 
         let miner = self.get_pow_provider().await;
-        let promote_block = do_pow(miner, min_pow_score, None, tips).map_err(|_| Error::TransactionError)?;
+        let promote_block = do_pow(miner, min_pow_score, None, tips)?;
 
         let block_id = self.post_block_raw(&promote_block).await?;
         // Get block if we use remote Pow, because the node will change parents and nonce.

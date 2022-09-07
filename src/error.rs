@@ -41,10 +41,6 @@ pub enum Error {
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
     CryptoError(#[from] crypto::Error),
-    /// Prefix hex string convert error
-    #[error("{0}")]
-    #[serde(serialize_with = "display_string")]
-    FromHexError(#[from] prefix_hex::Error),
     /// Address not found
     #[error("address: {0} not found in range: {1}")]
     InputAddressNotFound(String, String),
@@ -57,13 +53,6 @@ pub enum Error {
     /// Invalid mnemonic error
     #[error("invalid mnemonic {0}")]
     InvalidMnemonic(String),
-    /// Invalid parameters
-    #[error("Parameter is invalid:{0}")]
-    InvalidParameter(&'static str),
-    /// IO error
-    #[error("{0}")]
-    #[serde(serialize_with = "display_string")]
-    IoError(#[from] std::io::Error),
     /// JSON error
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
@@ -106,9 +95,6 @@ pub enum Error {
     /// Output Error
     #[error("output error: {0}")]
     OutputError(&'static str),
-    /// Packable error
-    #[error("bee packable error")]
-    PackableError,
     /// PlaceholderSecretManager can't be used for address generation or signing
     #[error("placeholderSecretManager can't be used for address generation or signing")]
     PlaceholderSecretManager,
@@ -122,6 +108,10 @@ pub enum Error {
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
     PowError(#[from] bee_pow::providers::miner::Error),
+    /// Prefix hex string convert error
+    #[error("{0}")]
+    #[serde(serialize_with = "display_string")]
+    PrefixHexError(#[from] prefix_hex::Error),
     /// Error on quorum because not enough nodes are available
     #[error("not enough nodes for quorum: {available_nodes} < {minimum_threshold}")]
     QuorumPoolSizeError {
@@ -155,9 +145,6 @@ pub enum Error {
     /// Specifically used for `TryInfo` implementations for `SecretManager`.
     #[error("cannot unwrap a SecretManager: type mismatch!")]
     SecretManagerMismatch,
-    /// Not implemented, specially for the default impl of [crate::secret::SecretManage::signature_unlock()].
-    #[error("no mnemonic was stored! Please implement signature_unlock() :)")]
-    SignatureUnlockNotImplemented,
     /// No node available in the synced node pool
     #[error("no synced node available")]
     SyncedNodePoolEmpty,
@@ -172,9 +159,6 @@ pub enum Error {
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
     TaskJoinError(#[from] tokio::task::JoinError),
-    /// Error when building transaction blocks
-    #[error("error when building transaction block")]
-    TransactionError,
     /// Local time doesn't match the time of the latest milestone timestamp
     #[error(
         "local time {current_time} doesn't match the time of the latest milestone timestamp: {milestone_timestamp}"
