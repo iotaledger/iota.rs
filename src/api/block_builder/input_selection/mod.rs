@@ -70,14 +70,14 @@ pub fn try_select_inputs(
     // TODO: could be done more efficiently with itertools unique?
     additional_inputs.retain(|input| !mandatory_inputs.contains(input));
 
-    let inputs = additional_inputs;
-    let input_outputs = inputs.iter().map(|i| &i.output);
+    // Always have the mandatory inputs already selected.
+    let mut selected_inputs: Vec<InputSigningData> = mandatory_inputs.clone();
+    let all_inputs = mandatory_inputs.iter().chain(additional_inputs.iter());
+    let input_outputs = all_inputs.clone().map(|i| &i.output);
 
     let mut required = get_accumulated_output_amounts(&input_outputs, outputs.iter())?;
     let mut selected_input_native_tokens = required.minted_native_tokens.clone();
 
-    // Always have the mandatory inputs already selected.
-    let mut selected_inputs: Vec<InputSigningData> = mandatory_inputs;
     // Add the mandatory inputs amounts.
     let mut selected_input_amount = selected_inputs.iter().map(|i| i.output.amount()).sum();
 
@@ -93,7 +93,7 @@ pub fn try_select_inputs(
     // Alias, Foundry and NFT outputs.
     let mut utxo_chain_outputs = Vec::new();
 
-    for input_signing_data in inputs.clone() {
+    for input_signing_data in all_inputs.clone() {
         match input_signing_data.output {
             Output::Basic(_) => basic_outputs.push(input_signing_data),
             Output::Alias(_) | Output::Foundry(_) | Output::Nft(_) => utxo_chain_outputs.push(input_signing_data),
@@ -106,6 +106,7 @@ pub fn try_select_inputs(
     // Check the inputs in a loop, because if we add an an output which requires another Alias or NFT output to unlock
     // it, then we might have to add this also.
 
+    // No need to start with the mandatory inputs as duplicates have been removed already.
     let mut added_output_for_input_signing_data = HashSet::new();
     let mut added_input_signing_data = HashSet::new();
 
@@ -235,7 +236,7 @@ pub fn try_select_inputs(
                 added_input_signing_data.insert(output_id);
 
                 // Updated required value with possible new input
-                let input_outputs = inputs.iter().map(|i| &i.output);
+                let input_outputs = all_inputs.clone().map(|i| &i.output);
                 required = get_accumulated_output_amounts(&input_outputs.clone(), outputs.iter())?;
             }
         }
@@ -455,7 +456,7 @@ pub fn try_select_inputs(
 
     // Add possible required storage deposit return outputs
     let additional_storage_deposit_return_outputs =
-        get_storage_deposit_return_outputs(inputs.iter(), outputs.iter(), current_time)?;
+        get_storage_deposit_return_outputs(all_inputs, outputs.iter(), current_time)?;
     outputs.extend(additional_storage_deposit_return_outputs.into_iter());
 
     // create remainder output if necessary
