@@ -45,73 +45,87 @@ use crate::{
 /// burned by accident. Without burning, alias, foundry and nft outputs will be created on the output side, if not
 /// already present.
 pub fn try_select_inputs(
-    mut inputs: Vec<InputSigningData>,
+    mut mandatory_inputs: Vec<InputSigningData>,
+    mut additional_inputs: Vec<InputSigningData>,
     mut outputs: Vec<Output>,
-    force_use_all_inputs: bool,
     remainder_address: Option<Address>,
     rent_structure: &RentStructure,
     allow_burning: bool,
     current_time: u32,
 ) -> Result<SelectedTransactionData> {
     log::debug!("[try_select_inputs]");
-    if inputs.is_empty() {
+
+    // Can't select inputs if there are no inputs.
+    if mandatory_inputs.is_empty() && additional_inputs.is_empty() {
         return Err(crate::Error::NoInputs);
     }
 
-    inputs.sort_by_key(|a| (a.output_metadata.transaction_id, a.output_metadata.output_index));
-    inputs.dedup_by_key(|a| (a.output_metadata.transaction_id, a.output_metadata.output_index));
+    // Sorting inputs by OutputId so duplicates can be safely removed.
+    mandatory_inputs.sort_by_key(|input| (input.output_metadata.transaction_id, input.output_metadata.output_index));
+    mandatory_inputs.dedup_by_key(|input| (input.output_metadata.transaction_id, input.output_metadata.output_index));
+    additional_inputs.sort_by_key(|input| (input.output_metadata.transaction_id, input.output_metadata.output_index));
+    additional_inputs.dedup_by_key(|input| (input.output_metadata.transaction_id, input.output_metadata.output_index));
+
+    // Remove additional inputs that are already mandatory.
+    // TODO: could be done more efficiently with itertools unique?
+    additional_inputs.retain(|input| !mandatory_inputs.contains(input));
+
+    let mut selected_input_amount = 0;
+    // Always have the mandatory inputs already selected.
+    let mut selected_inputs: Vec<InputSigningData> = mandatory_inputs.clone();
+
+    // Create an iterator that goes through both mandatory and additional inputs.
+    let all_inputs = mandatory_inputs.iter().chain(additional_inputs.iter());
 
     // Validate and only create a remainder if necessary
-    if force_use_all_inputs {
-        if inputs.len() as u16 > INPUT_COUNT_MAX {
-            return Err(Error::ConsolidationRequired(inputs.len()));
-        }
+    // if force_use_all_inputs {
+    //     if inputs.len() as u16 > INPUT_COUNT_MAX {
+    //         return Err(Error::ConsolidationRequired(inputs.len()));
+    //     }
 
-        let additional_storage_deposit_return_outputs =
-            get_storage_deposit_return_outputs(inputs.iter(), outputs.iter(), current_time)?;
-        outputs.extend(additional_storage_deposit_return_outputs.into_iter());
+    //     let additional_storage_deposit_return_outputs =
+    //         get_storage_deposit_return_outputs(inputs.iter(), outputs.iter(), current_time)?;
+    //     outputs.extend(additional_storage_deposit_return_outputs.into_iter());
 
-        let remainder_data = get_remainder_output(
-            inputs.iter(),
-            outputs.iter(),
-            remainder_address,
-            rent_structure,
-            allow_burning,
-            current_time,
-        )?;
+    //     let remainder_data = get_remainder_output(
+    //         inputs.iter(),
+    //         outputs.iter(),
+    //         remainder_address,
+    //         rent_structure,
+    //         allow_burning,
+    //         current_time,
+    //     )?;
 
-        if let Some(remainder_data) = &remainder_data {
-            outputs.push(remainder_data.output.clone());
-        }
+    //     if let Some(remainder_data) = &remainder_data {
+    //         outputs.push(remainder_data.output.clone());
+    //     }
 
-        // check if we have too many outputs after adding possible remainder or storage deposit return outputs
-        if outputs.len() as u16 > OUTPUT_COUNT_MAX {
-            return Err(Error::BlockError(bee_block::Error::InvalidOutputCount(
-                TryIntoBoundedU16Error::Truncated(outputs.len()),
-            )));
-        }
+    //     // check if we have too many outputs after adding possible remainder or storage deposit return outputs
+    //     if outputs.len() as u16 > OUTPUT_COUNT_MAX {
+    //         return Err(Error::BlockError(bee_block::Error::InvalidOutputCount(
+    //             TryIntoBoundedU16Error::Truncated(outputs.len()),
+    //         )));
+    //     }
 
-        return Ok(SelectedTransactionData {
-            inputs,
-            outputs,
-            remainder: remainder_data,
-        });
-    }
+    //     return Ok(SelectedTransactionData {
+    //         inputs,
+    //         outputs,
+    //         remainder: remainder_data,
+    //     });
+    // }
     // else: only select inputs that are necessary for the provided outputs
 
-    let input_outputs = inputs.iter().map(|i| &i.output);
+    let input_outputs = all_inputs.clone().map(|i| &i.output);
 
     let mut required = get_accumulated_output_amounts(&input_outputs, outputs.iter())?;
     let mut selected_input_native_tokens = required.minted_native_tokens.clone();
 
-    let mut selected_input_amount = 0;
-    let mut selected_inputs: Vec<InputSigningData> = Vec::new();
-
-    // Split outputs by type
+    // Basic outputs.
     let mut basic_outputs = Vec::new();
-    // alias, foundry, nft outputs
+    // Alias, Foundry and NFT outputs.
     let mut utxo_chain_outputs = Vec::new();
-    for input_signing_data in &inputs {
+
+    for input_signing_data in all_inputs.clone() {
         match input_signing_data.output {
             Output::Basic(_) => basic_outputs.push(input_signing_data),
             Output::Alias(_) | Output::Foundry(_) | Output::Nft(_) => utxo_chain_outputs.push(input_signing_data),
@@ -119,12 +133,12 @@ pub fn try_select_inputs(
         }
     }
 
-    // 1. get alias, foundry or nft inputs (because amount and native tokens of these outputs will also be available for
-    // the outputs)
-    // check the inputs in a loop, because if we add an an output which requires another alias or nft output to unlock
-    // it, then we might have to add this also
+    // 1. Get Alias, Foundry or NFT inputs (because amount and native tokens of these outputs will also be available for
+    // the outputs).
+    // Check the inputs in a loop, because if we add an an output which requires another Alias or NFT output to unlock
+    // it, then we might have to add this also.
 
-    // Set to true so it runs at least once
+    // Set to true so it runs at least once.
     let mut added_new_outputs = true;
     let mut added_output_for_input_signing_data = HashSet::new();
     let mut added_input_signing_data = HashSet::new();
@@ -255,7 +269,7 @@ pub fn try_select_inputs(
                 added_input_signing_data.insert(output_id);
 
                 // Updated required value with possible new input
-                let input_outputs = inputs.iter().map(|i| &i.output);
+                let input_outputs = all_inputs.clone().map(|i| &i.output);
                 required = get_accumulated_output_amounts(&input_outputs.clone(), outputs.iter())?;
             }
         }
@@ -473,7 +487,7 @@ pub fn try_select_inputs(
 
     // Add possible required storage deposit return outputs
     let additional_storage_deposit_return_outputs =
-        get_storage_deposit_return_outputs(inputs.iter(), outputs.iter(), current_time)?;
+        get_storage_deposit_return_outputs(all_inputs, outputs.iter(), current_time)?;
     outputs.extend(additional_storage_deposit_return_outputs.into_iter());
 
     // create remainder output if necessary

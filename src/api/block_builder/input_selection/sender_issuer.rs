@@ -26,9 +26,9 @@ impl<'a> ClientBlockBuilder<'a> {
     pub(crate) async fn get_inputs_for_sender_and_issuer(
         &self,
         utxo_chain_inputs: &[InputSigningData],
-    ) -> Result<(bool, Vec<InputSigningData>)> {
+    ) -> Result<Vec<InputSigningData>> {
         log::debug!("[get_inputs_for_sender_and_issuer]");
-        let mut force_use_all_inputs = false;
+
         let mut required_inputs = Vec::new();
         let bech32_hrp = self.client.get_bech32_hrp().await?;
         let current_time = self.client.get_time_checked().await?;
@@ -36,7 +36,7 @@ impl<'a> ClientBlockBuilder<'a> {
         let mut all_required_addresses = HashSet::new();
         for output in &self.outputs {
             if let Some(sender_feature) = output.features().and_then(Features::sender) {
-                // Only add if not already present in the utxo chain inputs
+                // Only add if not already present in the utxo chain inputs.
                 if !utxo_chain_inputs.iter().any(|input_data| {
                     output_contains_address(
                         &input_data.output,
@@ -49,7 +49,7 @@ impl<'a> ClientBlockBuilder<'a> {
                 }
             }
 
-            // Issuer address only needs to be unlocked when the utxo chain is newly created
+            // Issuer address only needs to be unlocked when the utxo chain is newly created.
             let utxo_chain_creation = match &output {
                 Output::Alias(alias_output) => alias_output.alias_id().is_null(),
                 Output::Nft(nft_output) => nft_output.nft_id().is_null(),
@@ -57,7 +57,7 @@ impl<'a> ClientBlockBuilder<'a> {
             };
             if utxo_chain_creation {
                 if let Some(issuer_feature) = output.immutable_features().and_then(Features::issuer) {
-                    // Only add if not already present in the utxo chain inputs
+                    // Only add if not already present in the utxo chain inputs.
                     if !utxo_chain_inputs.iter().any(|input_data| {
                         output_contains_address(
                             &input_data.output,
@@ -84,7 +84,7 @@ impl<'a> ClientBlockBuilder<'a> {
                         &Address::Ed25519(*address),
                     )
                     .await?;
-                    // if we didn't return with an error, then the address was found
+                    // If it didn't return with an error, then the address was found.
 
                     let address = Address::Ed25519(*address);
                     let address_outputs = self.address_outputs(address.to_bech32(&bech32_hrp)).await?;
@@ -108,7 +108,6 @@ impl<'a> ClientBlockBuilder<'a> {
                             });
                             // we want to include all outputs, because another output might be better balance wise,
                             // but will not unlock the address we need
-                            force_use_all_inputs = true;
                             found_output = true;
                             break;
                         }
@@ -119,17 +118,10 @@ impl<'a> ClientBlockBuilder<'a> {
                     }
                 }
                 Address::Alias(alias_address) => {
-                    // check if already found or request new
-                    if !utxo_chain_inputs.iter().any(|input| {
-                        // check if output is alias address
-                        let alias_id = alias_address.alias_id();
-                        if let Output::Alias(alias_output) = &input.output {
-                            alias_id == alias_output.alias_id()
-                        } else {
-                            false
-                        }
-                    }) && !required_inputs.iter().any(|input| {
-                        // check if output is alias address
+                    // check if already found or request new.
+
+                    if !utxo_chain_inputs.iter().chain(required_inputs.iter()).any(|input| {
+                        // Check if output is alias address.
                         let alias_id = alias_address.alias_id();
                         if let Output::Alias(alias_output) = &input.output {
                             alias_id == alias_output.alias_id()
@@ -183,17 +175,9 @@ impl<'a> ClientBlockBuilder<'a> {
                     }
                 }
                 Address::Nft(nft_address) => {
-                    // check if already found or request new
-                    if !utxo_chain_inputs.iter().any(|input| {
-                        // check if output is nft address
-                        let nft_id = nft_address.nft_id();
-                        if let Output::Nft(nft_output) = &input.output {
-                            nft_id == nft_output.nft_id()
-                        } else {
-                            false
-                        }
-                    }) && !required_inputs.iter().any(|input| {
-                        // check if output is nft address
+                    // Check if already found or request new.
+                    if !utxo_chain_inputs.iter().chain(required_inputs.iter()).any(|input| {
+                        // Check if output is nft address.
                         let nft_id = nft_address.nft_id();
                         if let Output::Nft(nft_output) = &input.output {
                             nft_id == nft_output.nft_id()
@@ -224,11 +208,11 @@ impl<'a> ClientBlockBuilder<'a> {
                                             )
                                             .await?,
                                         ),
-                                        // Alias and NFT addresses can't be generated from a private key
+                                        // Alias and NFT addresses can't be generated from a private key.
                                         _ => None,
                                     }
                                 }
-                                // Assuming default for offline signing
+                                // Assuming default for offline signing.
                                 None => Some((0, false)),
                             };
 
@@ -252,14 +236,14 @@ impl<'a> ClientBlockBuilder<'a> {
             }
         }
 
-        // Check required alias and nft outputs with new added outputs
-        // no need to check for sender and issuer again, since these outputs already exist and we don't set new features
-        // for them
+        // Check required Alias and NFT outputs with new added outputs.
+        // No need to check for sender and issuer again, since these outputs already exist and we don't set new features
+        // for them.
         let utxo_chain_inputs = self
             .get_utxo_chains_inputs(required_inputs.iter().map(|i| &i.output))
             .await?;
         required_inputs.extend(utxo_chain_inputs.into_iter());
 
-        Ok((force_use_all_inputs, required_inputs))
+        Ok(required_inputs)
     }
 }
