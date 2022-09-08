@@ -179,8 +179,8 @@ impl NodeManager {
                                 log::warn!("Couldn't convert noderesult to text");
                             }
                         }
-                        Err(Error::ResponseError { code: 404, .. }) => {
-                            error.replace(crate::Error::NotFound);
+                        Err(Error::ResponseError { code: 404, url, .. }) => {
+                            error.replace(crate::Error::NotFound(url));
                         }
                         Err(err) => {
                             error.replace(err);
@@ -236,8 +236,8 @@ impl NodeManager {
                             }
                         }
                     }
-                    Err(Error::ResponseError { code: 404, .. }) => {
-                        error.replace(crate::Error::NotFound);
+                    Err(Error::ResponseError { code: 404, url, .. }) => {
+                        error.replace(crate::Error::NotFound(url));
                     }
                     Err(err) => {
                         error.replace(err);
@@ -294,8 +294,8 @@ impl NodeManager {
                         };
                     }
                 }
-                Err(Error::ResponseError { code: 404, .. }) => {
-                    error.replace(crate::Error::NotFound);
+                Err(Error::ResponseError { code: 404, url, .. }) => {
+                    error.replace(crate::Error::NotFound(url));
                 }
                 Err(err) => {
                     error.replace(err);

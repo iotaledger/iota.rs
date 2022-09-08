@@ -73,8 +73,8 @@ pub enum Error {
     #[error("block ID `{0}` doesn't need to be promoted or reattached")]
     NoNeedPromoteOrReattach(String),
     /// The requested data was not found.
-    #[error("the requested data was not found.")]
-    NotFound,
+    #[error("the requested data {0} was not found.")]
+    NotFound(String),
     /// The wallet account doesn't have enough balance
     #[error("the wallet account doesn't have enough balance. It only has {found}, required is {required}")]
     NotEnoughBalance {
