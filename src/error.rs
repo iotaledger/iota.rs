@@ -196,18 +196,14 @@ pub enum Error {
     //////////////////////////////////////////////////////////////////////
     // Ledger Nano
     //////////////////////////////////////////////////////////////////////
-    /// Ledger transport error
-    #[cfg(feature = "ledger_nano")]
-    #[error("ledger transport error")]
-    LedgerMiscError,
-    /// Dongle Locked
-    #[cfg(feature = "ledger_nano")]
-    #[error("ledger locked")]
-    LedgerDongleLocked,
     /// Denied by User
     #[cfg(feature = "ledger_nano")]
     #[error("denied by user")]
     LedgerDeniedByUser,
+    /// Dongle Locked
+    #[cfg(feature = "ledger_nano")]
+    #[error("ledger locked")]
+    LedgerDongleLocked,
     /// Ledger Device not found
     #[cfg(feature = "ledger_nano")]
     #[error("ledger device not found")]
@@ -218,16 +214,24 @@ pub enum Error {
     LedgerEssenceTooLarge,
     /// Ledger transport error
     #[cfg(feature = "ledger_nano")]
-    #[error("ledger app compiled for testnet but used with mainnet or vice versa")]
-    LedgerNetMismatch,
+    #[error("ledger transport error")]
+    LedgerMiscError,
     /// Wrong ledger seed error
     #[cfg(feature = "ledger_nano")]
     #[error("ledger mnemonic is mismatched")]
     LedgerMnemonicMismatch,
+    /// Ledger network mismatch error
+    #[cfg(feature = "ledger_nano")]
+    #[error("ledger app compiled for testnet but used with mainnet or vice versa")]
+    LedgerNetMismatch,
 
     //////////////////////////////////////////////////////////////////////
     // MQTT
     //////////////////////////////////////////////////////////////////////
+    /// Invalid MQTT topic.
+    #[cfg(feature = "mqtt")]
+    #[error("the MQTT topic {0} is invalid")]
+    InvalidMqttTopic(String),
     /// Mqtt client error
     #[cfg(feature = "mqtt")]
     #[error("{0}")]
@@ -237,10 +241,6 @@ pub enum Error {
     #[cfg(feature = "mqtt")]
     #[error("mQTT connection not found (all nodes have the MQTT plugin disabled)")]
     MqttConnectionNotFound,
-    /// Invalid MQTT topic.
-    #[cfg(feature = "mqtt")]
-    #[error("the MQTT topic {0} is invalid")]
-    InvalidMqttTopic(String),
 
     //////////////////////////////////////////////////////////////////////
     // Stronghold
@@ -250,28 +250,28 @@ pub enum Error {
     #[error("stronghold client error: {0}")]
     #[serde(serialize_with = "display_string")]
     StrongholdClient(#[from] iota_stronghold::ClientError),
+    /// Invalid stronghold password.
+    #[cfg(feature = "stronghold")]
+    #[error("invalid stronghold password")]
+    StrongholdInvalidPassword,
+    /// No password has been supplied to a Stronghold vault, or it has been cleared
+    #[cfg(feature = "stronghold")]
+    #[error("no password has been supplied, or the key has been cleared from the memory")]
+    StrongholdKeyCleared,
     /// Stronghold memory error
     #[cfg(feature = "stronghold")]
     #[error("stronghold memory error: {0}")]
     #[serde(serialize_with = "display_string")]
     StrongholdMemory(#[from] iota_stronghold::MemoryError),
+    /// A mnemonic has been already stored into a Stronghold vault
+    #[cfg(feature = "stronghold")]
+    #[error("a mnemonic has already been stored in the Stronghold vault")]
+    StrongholdMnemonicAlreadyStored,
     /// Procedure execution error from Stronghold
     #[cfg(feature = "stronghold")]
     #[error("Stronghold reported a procedure error: {0}")]
     #[serde(serialize_with = "display_string")]
     StrongholdProcedureError(#[from] iota_stronghold::procedures::ProcedureError),
-    /// A mnemonic has been already stored into a Stronghold vault
-    #[cfg(feature = "stronghold")]
-    #[error("a mnemonic has already been stored in the Stronghold vault")]
-    StrongholdMnemonicAlreadyStored,
-    /// No password has been supplied to a Stronghold vault, or it has been cleared
-    #[cfg(feature = "stronghold")]
-    #[error("no password has been supplied, or the key has been cleared from the memory")]
-    StrongholdKeyCleared,
-    /// Invalid stronghold password.
-    #[cfg(feature = "stronghold")]
-    #[error("invalid stronghold password")]
-    StrongholdInvalidPassword,
 }
 
 // map most errors to a single error but there are some errors that
