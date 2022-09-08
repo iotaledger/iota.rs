@@ -19,6 +19,7 @@ system.
 
 **To build your JAR, you must ensure that you have the latest stable version of Rust installed.
 Visit [Install Rust](https://www.rust-lang.org/tools/install) for installing Rust.
+Also for Linux `libudev` is needed and can be installed with `apt install libudev-dev`.
 In addition, make sure you have the latest Java Development Kit (JDK) installed.**
 
 1. Clone the repository: `git clone https://github.com/iotaledger/iota.rs`
