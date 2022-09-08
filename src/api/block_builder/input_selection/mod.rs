@@ -70,9 +70,9 @@ pub fn try_select_inputs(
     // TODO: could be done more efficiently with itertools unique?
     additional_inputs.retain(|input| !mandatory_inputs.contains(input));
 
-    let mut selected_input_amount = 0;
     // Always have the mandatory inputs already selected.
     let mut selected_inputs: Vec<InputSigningData> = mandatory_inputs.clone();
+    let mut selected_input_amount = selected_inputs.iter().map(|i| i.output.amount()).sum();
 
     // Create an iterator that goes through both mandatory and additional inputs.
     let all_inputs = mandatory_inputs.iter().chain(additional_inputs.iter());
@@ -108,7 +108,7 @@ pub fn try_select_inputs(
         for input_signing_data in &utxo_chain_outputs {
             let output_id = input_signing_data.output_id()?;
 
-            // Skip inputs where we already added the required output
+            // Skip inputs where we already added the required output.
             if added_output_for_input_signing_data.contains(&output_id) {
                 continue;
             }
@@ -233,7 +233,7 @@ pub fn try_select_inputs(
             }
         }
 
-        // If the output amount changed, we added at least one new one
+        // If the output amount changed, we added at least one new one.
         if outputs_len_beginning == outputs.len() {
             break;
         }
