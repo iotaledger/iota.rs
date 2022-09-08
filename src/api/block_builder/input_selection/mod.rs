@@ -39,11 +39,11 @@ use crate::{
     Error, Result,
 };
 
-/// Select inputs from provided inputs([InputSigningData]) for provided [Output]s, validate amounts and create remainder
-/// output if necessary. Also checks for alias, foundry and nft outputs that there previous output exist in the inputs,
-/// when required. Careful with setting `allow_burning` to `true`, native tokens, nfts or alias outputs can get easily
-/// burned by accident. Without burning, alias, foundry and nft outputs will be created on the output side, if not
-/// already present.
+/// Select inputs from provided mandatory_inputs([InputSigningData]) and additional_inputs([InputSigningData]) for
+/// provided [Output]s, validate amounts and create remainder output if necessary. Also checks for alias, foundry and
+/// nft outputs that there previous output exist in the inputs, when required. Careful with setting `allow_burning` to
+/// `true`, native tokens, nfts or alias outputs can get easily burned by accident. Without burning, alias, foundry and
+/// nft outputs will be created on the output side, if not already present.
 pub fn try_select_inputs(
     mut mandatory_inputs: Vec<InputSigningData>,
     mut additional_inputs: Vec<InputSigningData>,
@@ -76,45 +76,6 @@ pub fn try_select_inputs(
 
     // Create an iterator that goes through both mandatory and additional inputs.
     let all_inputs = mandatory_inputs.iter().chain(additional_inputs.iter());
-
-    // Validate and only create a remainder if necessary
-    // if force_use_all_inputs {
-    //     if inputs.len() as u16 > INPUT_COUNT_MAX {
-    //         return Err(Error::ConsolidationRequired(inputs.len()));
-    //     }
-
-    //     let additional_storage_deposit_return_outputs =
-    //         get_storage_deposit_return_outputs(inputs.iter(), outputs.iter(), current_time)?;
-    //     outputs.extend(additional_storage_deposit_return_outputs.into_iter());
-
-    //     let remainder_data = get_remainder_output(
-    //         inputs.iter(),
-    //         outputs.iter(),
-    //         remainder_address,
-    //         rent_structure,
-    //         allow_burning,
-    //         current_time,
-    //     )?;
-
-    //     if let Some(remainder_data) = &remainder_data {
-    //         outputs.push(remainder_data.output.clone());
-    //     }
-
-    //     // check if we have too many outputs after adding possible remainder or storage deposit return outputs
-    //     if outputs.len() as u16 > OUTPUT_COUNT_MAX {
-    //         return Err(Error::BlockError(bee_block::Error::InvalidOutputCount(
-    //             TryIntoBoundedU16Error::Truncated(outputs.len()),
-    //         )));
-    //     }
-
-    //     return Ok(SelectedTransactionData {
-    //         inputs,
-    //         outputs,
-    //         remainder: remainder_data,
-    //     });
-    // }
-    // else: only select inputs that are necessary for the provided outputs
-
     let input_outputs = all_inputs.clone().map(|i| &i.output);
 
     let mut required = get_accumulated_output_amounts(&input_outputs, outputs.iter())?;
