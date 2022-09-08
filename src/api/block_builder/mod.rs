@@ -392,7 +392,7 @@ impl<'a> ClientBlockBuilder<'a> {
             let data = &self.data.as_ref().unwrap_or(empty_slice);
 
             // build tagged_data
-            let index = TaggedDataPayload::new(index.expect("No tagged_data tag").to_vec(), (*data).clone())
+            let index = TaggedDataPayload::new(index.expect("no tagged_data tag").to_vec(), (*data).clone())
                 .map_err(|e| Error::TaggedDataError(e.to_string()))?;
             payload = Payload::TaggedData(Box::new(index));
         }

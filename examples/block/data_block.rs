@@ -37,11 +37,11 @@ async fn main() -> Result<()> {
     if let Some(Payload::TaggedData(payload)) = fetched_block.payload() {
         println!(
             "Tag: {}",
-            String::from_utf8(payload.tag().to_vec()).expect("Found invalid UTF-8")
+            String::from_utf8(payload.tag().to_vec()).expect("found invalid UTF-8")
         );
         println!(
             "Data: {}",
-            String::from_utf8(payload.data().to_vec()).expect("Found invalid UTF-8")
+            String::from_utf8(payload.data().to_vec()).expect("found invalid UTF-8")
         );
     }
     Ok(())

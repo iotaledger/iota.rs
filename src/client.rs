@@ -767,7 +767,7 @@ impl Client {
             #[cfg(not(all(target_arch = "wasm32", not(target_os = "wasi"))))]
             let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH);
 
-            now.expect("Time went backwards").as_secs() as u32
+            now.expect("time went backwards").as_secs() as u32
         };
 
         let status_response = self.get_info().await?.node_info.status;

@@ -49,7 +49,7 @@ impl MessageHandler {
                         Err(e) => {
                             is_err = true;
                             serde_json::to_string(&Response::Error(e.into()))
-                                .expect("The response is generated manually, so unwrap is safe.")
+                                .expect("the response is generated manually, so unwrap is safe.")
                         }
                     };
 
@@ -144,7 +144,7 @@ pub fn listen(mut cx: FunctionContext) -> JsResult<JsUndefined> {
     let mut topics = vec![];
     for topic_string in vec {
         let topic = topic_string.downcast::<JsString, FunctionContext>(&mut cx).unwrap();
-        topics.push(Topic::try_from(topic.value(&mut cx).as_str().to_string()).expect("Invalid MQTT topic"));
+        topics.push(Topic::try_from(topic.value(&mut cx).as_str().to_string()).expect("invalid MQTT topic"));
     }
 
     let callback = Arc::new(cx.argument::<JsFunction>(1)?.root(&mut cx));

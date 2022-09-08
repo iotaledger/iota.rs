@@ -40,7 +40,7 @@ impl<'a> ClientBlockBuilder<'a> {
                 if !utxo_chain_inputs.iter().any(|input_data| {
                     output_contains_address(
                         &input_data.output,
-                        input_data.output_id().expect("Invalid output id in input signing data"),
+                        input_data.output_id().expect("invalid output id in input signing data"),
                         sender_feature.address(),
                         current_time,
                     )
@@ -61,7 +61,7 @@ impl<'a> ClientBlockBuilder<'a> {
                     if !utxo_chain_inputs.iter().any(|input_data| {
                         output_contains_address(
                             &input_data.output,
-                            input_data.output_id().expect("Invalid output id in input signing data"),
+                            input_data.output_id().expect("invalid output id in input signing data"),
                             issuer_feature.address(),
                             current_time,
                         )

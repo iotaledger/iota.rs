@@ -330,7 +330,7 @@ impl ClientBuilder {
             let network_info_ = network_info.clone();
             let (sync_kill_sender, sync_kill_receiver) = channel(1);
             let runtime = std::thread::spawn(move || {
-                let runtime = Runtime::new().expect("Failed to create Tokio runtime");
+                let runtime = Runtime::new().expect("failed to create Tokio runtime");
                 runtime.block_on(Client::sync_nodes(&sync_, &nodes, &network_info_));
                 Client::start_sync_process(
                     &runtime,

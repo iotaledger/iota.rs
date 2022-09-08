@@ -315,7 +315,7 @@ impl NodeManager {
         // primary_pow_node should only be used for post request with remote PoW
         let nodes = self.get_nodes(path, None, !local_pow, false).await?;
         if nodes.is_empty() {
-            return Err(Error::NodeError("No available nodes with remote Pow".into()));
+            return Err(Error::NodeError("no available nodes with remote Pow".into()));
         }
         let mut error = None;
         // Send requests
