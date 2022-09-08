@@ -93,7 +93,7 @@ impl Client {
             .get_output_ids_with_pagination(&route, Vec::new(), true, false)
             .await?
             .first()
-            .ok_or_else(|| crate::Error::NodeError("No output id for alias".to_string()))?))
+            .ok_or_else(|| crate::Error::NodeError("no output id for alias".to_string()))?))
     }
 
     /// Get foundry outputs filtered by the given parameters.
@@ -129,7 +129,7 @@ impl Client {
             .get_output_ids_with_pagination(&route, Vec::new(), true, false)
             .await?
             .first()
-            .ok_or_else(|| crate::Error::NodeError("No output id for foundry".to_string()))?))
+            .ok_or_else(|| crate::Error::NodeError("no output id for foundry".to_string()))?))
     }
 
     /// Get NFT outputs filtered by the given parameters.
@@ -177,6 +177,6 @@ impl Client {
             .get_output_ids_with_pagination(&route, Vec::new(), true, false)
             .await?
             .first()
-            .ok_or_else(|| crate::Error::NodeError("No output id for nft".to_string()))?))
+            .ok_or_else(|| crate::Error::NodeError("no output id for nft".to_string()))?))
     }
 }

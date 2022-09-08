@@ -279,14 +279,14 @@ pub fn try_select_inputs(
                     if let Output::Alias(input_alias_output) = &data.output {
                         input_alias_output
                             .alias_id()
-                            .or_from_output_id(data.output_id().expect("Invalid output id"))
+                            .or_from_output_id(data.output_id().expect("invalid output id"))
                             == *alias_id
                     } else {
                         false
                     }
                 }) {
                     return Err(crate::Error::MissingInput(format!(
-                        "Missing alias input for {alias_id}"
+                        "missing alias input for {alias_id}"
                     )));
                 }
             }
@@ -296,14 +296,14 @@ pub fn try_select_inputs(
                     if let Output::Alias(input_alias_output) = &data.output {
                         input_alias_output
                             .alias_id()
-                            .or_from_output_id(data.output_id().expect("Invalid output id"))
+                            .or_from_output_id(data.output_id().expect("invalid output id"))
                             == *required_alias
                     } else {
                         false
                     }
                 }) {
                     return Err(crate::Error::MissingInput(format!(
-                        "Missing alias input {required_alias} for foundry {}",
+                        "missing alias input {required_alias} for foundry {}",
                         foundry_output.id()
                     )));
                 }
@@ -319,13 +319,13 @@ pub fn try_select_inputs(
                     if let Output::Nft(input_nft_output) = &data.output {
                         input_nft_output
                             .nft_id()
-                            .or_from_output_id(data.output_id().expect("Invalid output id"))
+                            .or_from_output_id(data.output_id().expect("invalid output id"))
                             == *nft_id
                     } else {
                         false
                     }
                 }) {
-                    return Err(crate::Error::MissingInput(format!("Missing nft input for {nft_id}")));
+                    return Err(crate::Error::MissingInput(format!("missing nft input for {nft_id}")));
                 }
             }
             _ => {}
