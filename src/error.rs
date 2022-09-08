@@ -19,10 +19,6 @@ pub type Result<T> = std::result::Result<T, Error>;
 #[allow(clippy::large_enum_variant)]
 #[serde(tag = "type", content = "error")]
 pub enum Error {
-    /// Bee rest api error
-    #[error("{0}")]
-    #[serde(serialize_with = "display_string")]
-    BeeRestApiError(#[from] bee_api_types::error::Error),
     /// Blake2b256 Error
     #[error("{0}")]
     Blake2b256Error(&'static str),
@@ -104,10 +100,6 @@ pub enum Error {
     /// PoW error
     #[error("{0}")]
     Pow(String),
-    /// Pow error
-    #[error("{0}")]
-    #[serde(serialize_with = "display_string")]
-    PowError(#[from] bee_pow::providers::miner::Error),
     /// Prefix hex string convert error
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
@@ -216,14 +208,6 @@ pub enum Error {
     #[cfg(feature = "ledger_nano")]
     #[error("ledger transport error")]
     LedgerMiscError,
-    /// Wrong ledger seed error
-    #[cfg(feature = "ledger_nano")]
-    #[error("ledger mnemonic is mismatched")]
-    LedgerMnemonicMismatch,
-    /// Ledger network mismatch error
-    #[cfg(feature = "ledger_nano")]
-    #[error("ledger app compiled for testnet but used with mainnet or vice versa")]
-    LedgerNetMismatch,
 
     //////////////////////////////////////////////////////////////////////
     // MQTT
