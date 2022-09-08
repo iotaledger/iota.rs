@@ -99,12 +99,10 @@ pub fn try_select_inputs(
     // Check the inputs in a loop, because if we add an an output which requires another Alias or NFT output to unlock
     // it, then we might have to add this also.
 
-    // Set to true so it runs at least once.
-    let mut added_new_outputs = true;
     let mut added_output_for_input_signing_data = HashSet::new();
     let mut added_input_signing_data = HashSet::new();
 
-    while added_new_outputs {
+    loop {
         let outputs_len_beginning = outputs.len();
 
         for input_signing_data in &utxo_chain_outputs {
@@ -236,7 +234,9 @@ pub fn try_select_inputs(
         }
 
         // If the output amount changed, we added at least one new one
-        added_new_outputs = outputs_len_beginning < outputs.len();
+        if outputs_len_beginning == outputs.len() {
+            break;
+        }
     }
 
     // Validate that we have the required inputs for alias and nft outputs
