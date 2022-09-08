@@ -24,6 +24,8 @@ rustup update stable
 
 The nightly Rust compiler should be fine but some changes might not be compatible.
 
+Also for Linux `libudev` is needed and can be installed with `apt install libudev-dev`.
+
 Add `iota-client` as a dependency in `Cargo.toml`:
 
 ```toml
@@ -47,7 +49,6 @@ use iota_client;
 
 ## Limitations
 
-- `no_std` is not currently supported, but we are working on it in [bee](https://github.com/iotaledger/bee), and will provide it as feature once the new implementation is ready.
 - When using the `mqtt` feature, connecting to a MQTT broker using raw IP doesn't work with TCP. This is a limitation of `rustls`.
 
 ## Examples

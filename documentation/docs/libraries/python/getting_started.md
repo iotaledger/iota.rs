@@ -20,6 +20,7 @@ In a production setup, do not store passwords in the host's environment variable
 [Python 3.x](https://www.python.org) & [pip](https://pypi.org/project/pip)
 
 `Rust` and `Cargo`, to compile the binding. Install them [here](https://doc.rust-lang.org/cargo/getting-started/installation.html).
+Also for Linux `libudev` is needed and can be installed with `apt install libudev-dev`.
 
 ## Installation
 
