@@ -30,11 +30,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update dependencies;
 - PoW node feature from `PoW` to `pow` to match TIP25;
 - Made `finish_multi_threaded_pow` and `finish_single_threaded_pow` private;
+- Cleaned up error enum;
 
 ### Fixed
 
 - Check expiration for remainder address;
 - Input selection when only native tokens are remaining;
+- Fix cpufeatures advisory;
 
 ## 2.0.0-beta.3 - 2022-08-30
 
