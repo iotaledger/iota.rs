@@ -18,7 +18,7 @@ bee-block = { version = "1.0.0-beta.7", default-features = false, features = [ "
 bee-pow = { version = "1.0.0-beta.1", default-features = false }
 derive_builder = { version = "0.11.2", default-features = false, features = [ "std" ]}
 futures = { version = "0.3.24", default-features = false, features = [ "thread-pool" ] }
-iota-crypto = { version = "0.14.0", default-features = false, features = [ "std", "chacha", "blake2b", "ed25519", "random", "slip10", "bip39", "bip39-en" ] }
+iota-crypto = { version = "0.14.2", default-features = false, features = [ "std", "chacha", "blake2b", "ed25519", "random", "slip10", "bip39", "bip39-en" ] }
 log = { version = "0.4.17", default-features = false }
 num_cpus = { version = "1.13.1", default-features = false }
 packable = { version = "0.6.1", default-features = false, features = [ "serde", "primitive-types", "std" ] }
@@ -53,7 +53,7 @@ instant = { version = "0.1.12", default-features = false }
 gloo-timers = { version = "0.2.4", default-features = false, features = [ "futures" ] }
 # Single-threaded PoW for Wasm.
 bee-ternary = { version = "1.0.0-alpha.1", default-features = false }
-iota-crypto = { version = "0.14.0", default-features = false, features = [ "curl-p" ] }
+iota-crypto = { version = "0.14.2", default-features = false, features = [ "curl-p" ] }
 
 [dev-dependencies]
 bee-block = { version = "1.0.0-beta.7", default-features = false, features = [ "rand" ] }
