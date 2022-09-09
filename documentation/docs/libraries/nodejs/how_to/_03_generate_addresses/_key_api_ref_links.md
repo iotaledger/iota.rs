@@ -32,4 +32,3 @@ This `generateAddressesOption` indicates if the address you are about to create 
 
 By default, the `Client.generateAddresses(secretManager, generateAddressesOptions)` will get the `bech32Hrp` from the
 node's information. If you want to generate an address `offline`, you will need to set this option manually. 
-node's information. If you want to generate an address `offline`, you will need to set this option manually. 
