@@ -19,17 +19,60 @@ pub type Result<T> = std::result::Result<T, Error>;
 #[allow(clippy::large_enum_variant)]
 #[serde(tag = "type", content = "error")]
 pub enum Error {
-    /// Error when building tagged_data blocks
-    #[error("Error when building tagged_data block: {0}")]
-    TaggedDataError(String),
+    /// Blake2b256 Error
+    #[error("{0}")]
+    Blake2b256Error(&'static str),
+    /// Block dtos error
+    #[error("{0}")]
+    #[serde(serialize_with = "display_string")]
+    BlockDtoError(#[from] bee_block::DtoError),
+    /// Block types error
+    #[error("{0}")]
+    #[serde(serialize_with = "display_string")]
+    BlockError(#[from] bee_block::Error),
+    /// The wallet account has enough funds, but split on too many outputs
+    #[error("the wallet account has enough funds, but split on too many outputs: {0}, max. is 128, consolidate them")]
+    ConsolidationRequired(usize),
+    /// Crypto.rs error
+    #[error("{0}")]
+    #[serde(serialize_with = "display_string")]
+    CryptoError(#[from] crypto::Error),
+    /// Address not found
+    #[error("address: {0} not found in range: {1}")]
+    InputAddressNotFound(String, String),
     /// Invalid amount in API response
-    #[error("Invalid amount in API response: {0}")]
+    #[error("invalid amount in API response: {0}")]
     InvalidAmount(String),
-    /// Error when building transaction blocks
-    #[error("Error when building transaction block")]
-    TransactionError,
+    /// Invalid BIP32 chain data
+    #[error("invalid BIP32 chain data")]
+    InvalidBIP32ChainData,
+    /// Invalid mnemonic error
+    #[error("invalid mnemonic {0}")]
+    InvalidMnemonic(String),
+    /// JSON error
+    #[error("{0}")]
+    #[serde(serialize_with = "display_string")]
+    Json(#[from] serde_json::Error),
+    /// Missing input for utxo chain
+    #[error("missing input: {0}")]
+    MissingInput(String),
+    /// Missing required parameters
+    #[error("must provide required parameter: {0}")]
+    MissingParameter(&'static str),
+    /// No input with matching ed25519 address provided
+    #[error("no input with matching ed25519 address provided")]
+    MissingInputWithEd25519Address,
+    /// Error on API request
+    #[error("node error: {0}")]
+    NodeError(String),
+    /// The block doesn't need to be promoted or reattached
+    #[error("block ID `{0}` doesn't need to be promoted or reattached")]
+    NoNeedPromoteOrReattach(String),
+    /// The requested data was not found.
+    #[error("the requested data {0} was not found.")]
+    NotFound(String),
     /// The wallet account doesn't have enough balance
-    #[error("The wallet account doesn't have enough balance. It only has {found}, required is {required}")]
+    #[error("the wallet account doesn't have enough balance. It only has {found}, required is {required}")]
     NotEnoughBalance {
         /// The amount found in the balance.
         found: u64,
@@ -37,108 +80,48 @@ pub enum Error {
         required: u64,
     },
     /// The wallet account doesn't have any inputs found
-    #[error("No inputs found")]
+    #[error("no inputs found")]
     NoInputs,
     /// The wallet account doesn't have enough native tokens
-    #[error("The wallet account doesn't have enough native tokens, missing: {0:?}")]
+    #[error("the wallet account doesn't have enough native tokens, missing: {0:?}")]
     NotEnoughNativeTokens(NativeTokens),
     /// The wallet account doesn't have enough balance for an output with the remaining native tokens.
-    #[error("The wallet account doesn't have enough balance for an output with the remaining native tokens.")]
+    #[error("the wallet account doesn't have enough balance for an output with the remaining native tokens.")]
     NoBalanceForNativeTokenRemainder,
-    /// The wallet account has enough funds, but split on too many outputs
-    #[error("The wallet account has enough funds, but split on too many outputs: {0}, max. is 128, consolidate them")]
-    ConsolidationRequired(usize),
-    /// Missing input for utxo chain
-    #[error("Missing input: {0}")]
-    MissingInput(String),
-    /// Missing required parameters
-    #[error("Must provide required parameter: {0}")]
-    MissingParameter(&'static str),
+    /// Output Error
+    #[error("output error: {0}")]
+    OutputError(&'static str),
     /// PlaceholderSecretManager can't be used for address generation or signing
-    #[error("PlaceholderSecretManager can't be used for address generation or signing")]
+    #[error("placeholderSecretManager can't be used for address generation or signing")]
     PlaceholderSecretManager,
-    /// Invalid parameters
-    #[error("Parameter is invalid:{0}")]
-    InvalidParameter(&'static str),
-    /// No node available in the synced node pool
-    #[error("No synced node available")]
-    SyncedNodePoolEmpty,
-    /// Error on reaching quorum
-    #[error("Failed to reach quorum: {quorum_size} < {minimum_threshold}")]
-    QuorumThresholdError {
-        /// The current quorum size.
-        quorum_size: usize,
-        /// The minimum quorum threshold.
-        minimum_threshold: usize,
-    },
+    /// Rw lock failed.
+    #[error("rw lock failed")]
+    PoisonError,
+    /// PoW error
+    #[error("{0}")]
+    Pow(String),
+    /// Prefix hex string convert error
+    #[error("{0}")]
+    #[serde(serialize_with = "display_string")]
+    PrefixHexError(#[from] prefix_hex::Error),
     /// Error on quorum because not enough nodes are available
-    #[error("Not enough nodes for quorum: {available_nodes} < {minimum_threshold}")]
+    #[error("not enough nodes for quorum: {available_nodes} < {minimum_threshold}")]
     QuorumPoolSizeError {
         /// The number of nodes available for quorum.
         available_nodes: usize,
         /// The minimum quorum threshold.
         minimum_threshold: usize,
     },
-    /// Error on API request
-    #[error("Node error: {0}")]
-    NodeError(String),
-    /// Prefix hex string convert error
-    #[error("{0}")]
-    #[serde(serialize_with = "display_string")]
-    FromHexError(#[from] prefix_hex::Error),
-    /// Block types error
-    #[error("{0}")]
-    #[serde(serialize_with = "display_string")]
-    BlockError(#[from] bee_block::Error),
-    /// Unpack error
-    #[error("{0}")]
-    #[serde(serialize_with = "display_string")]
-    UnpackError(#[from] packable::error::UnpackError<bee_block::Error, UnexpectedEOF>),
-    /// Block dtos error
-    #[error("{0}")]
-    #[serde(serialize_with = "display_string")]
-    BlockDtoError(#[from] bee_block::DtoError),
-    /// Bee rest api error
-    #[error("{0}")]
-    #[serde(serialize_with = "display_string")]
-    BeeRestApiError(#[from] bee_api_types::error::Error),
-    /// The block doensn't need to be promoted or reattached
-    #[error("Block ID `{0}` doesn't need to be promoted or reattached")]
-    NoNeedPromoteOrReattach(String),
-    /// The block cannot be included into the Tangle
-    #[error("Block ID `{0}` couldn't get included into the Tangle")]
-    TangleInclusionError(String),
-    /// Mqtt client error
-    #[cfg(feature = "mqtt")]
-    #[error("{0}")]
-    #[serde(serialize_with = "display_string")]
-    MqttClientError(#[from] rumqttc::ClientError),
-    /// Invalid MQTT topic.
-    #[error("The MQTT topic {0} is invalid")]
-    InvalidMqttTopic(String),
-    /// MQTT connection not found (all nodes MQTT's are disabled)
-    #[error("MQTT connection not found (all nodes have the MQTT plugin disabled)")]
-    MqttConnectionNotFound,
-    /// IO error
-    #[error("{0}")]
-    #[serde(serialize_with = "display_string")]
-    IoError(#[from] std::io::Error),
-    /// JSON error
-    #[error("{0}")]
-    #[serde(serialize_with = "display_string")]
-    Json(#[from] serde_json::Error),
-    /// PoW error
-    #[error("{0}")]
-    Pow(String),
-    /// Address not found
-    #[error("Address: {0} not found in range: {1}")]
-    InputAddressNotFound(String, String),
-    /// Crypto.rs error
-    #[error("{0}")]
-    #[serde(serialize_with = "display_string")]
-    CryptoError(#[from] crypto::Error),
+    /// Error on reaching quorum
+    #[error("failed to reach quorum: {quorum_size} < {minimum_threshold}")]
+    QuorumThresholdError {
+        /// The current quorum size.
+        quorum_size: usize,
+        /// The minimum quorum threshold.
+        minimum_threshold: usize,
+    },
     /// Error from RestAPI calls with unexpected status code response
-    #[error("Response error with status code {code}: {text}, URL: {url}")]
+    #[error("response error with status code {code}: {text}, URL: {url}")]
     ResponseError {
         /// The status code.
         code: u16,
@@ -151,6 +134,49 @@ pub enum Error {
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
     ReqwestError(#[from] reqwest::Error),
+    /// Specifically used for `TryInfo` implementations for `SecretManager`.
+    #[error("cannot unwrap a SecretManager: type mismatch!")]
+    SecretManagerMismatch,
+    /// No node available in the synced node pool
+    #[error("no synced node available")]
+    SyncedNodePoolEmpty,
+    /// Error when building tagged_data blocks
+    #[error("error when building tagged_data block: {0}")]
+    TaggedDataError(String),
+    /// The block cannot be included into the Tangle
+    #[error("block ID `{0}` couldn't get included into the Tangle")]
+    TangleInclusionError(String),
+    #[cfg(not(target_family = "wasm"))]
+    /// Tokio task join error
+    #[error("{0}")]
+    #[serde(serialize_with = "display_string")]
+    TaskJoinError(#[from] tokio::task::JoinError),
+    /// Local time doesn't match the time of the latest milestone timestamp
+    #[error(
+        "local time {current_time} doesn't match the time of the latest milestone timestamp: {milestone_timestamp}"
+    )]
+    TimeNotSynced {
+        /// The local time.
+        current_time: u32,
+        /// The timestamp of the latest milestone.
+        milestone_timestamp: u32,
+    },
+    /// The semantic validation of a transaction failed.
+    #[error("the semantic validation of a transaction failed with conflict reason: {} - {0:?}", *.0 as u8)]
+    TransactionSemantic(ConflictReason),
+    /// Unexpected API response error
+    #[error("unexpected API response")]
+    UnexpectedApiResponse,
+    /// An indexer API request contains a query parameter not supported by the endpoint.
+    #[error("an indexer API request contains a query parameter not supported by the endpoint: {0}.")]
+    UnsupportedQueryParameter(QueryParameter),
+    /// Unpack error
+    #[error("{0}")]
+    #[serde(serialize_with = "display_string")]
+    UnpackError(#[from] packable::error::UnpackError<bee_block::Error, UnexpectedEOF>),
+    /// URL auth error
+    #[error("can't set {0} to URL")]
+    UrlAuthError(String),
     /// URL error
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
@@ -158,57 +184,18 @@ pub enum Error {
     /// URL validation error
     #[error("{0}")]
     UrlValidationError(String),
-    /// URL auth error
-    #[error("Can't set {0} to URL")]
-    UrlAuthError(String),
-    /// Blake2b256 Error
-    #[error("{0}")]
-    Blake2b256Error(&'static str),
-    /// Output Error
-    #[error("Output error: {0}")]
-    OutputError(&'static str),
-    /// Not implemented, specially for the default impl of [crate::secret::SecretManage::signature_unlock()].
-    #[error("No mnemonic was stored! Please implement signature_unlock() :)")]
-    SignatureUnlockNotImplemented,
-    #[cfg(not(target_family = "wasm"))]
-    /// Tokio task join error
-    #[error("{0}")]
-    #[serde(serialize_with = "display_string")]
-    TaskJoinError(#[from] tokio::task::JoinError),
-    /// Invalid mnemonic error
-    #[error("Invalid mnemonic {0}")]
-    InvalidMnemonic(String),
-    /// Pow error
-    #[error("{0}")]
-    #[serde(serialize_with = "display_string")]
-    PowError(#[from] bee_pow::providers::miner::Error),
-    /// Packable error
-    #[error("Bee packable error")]
-    PackableError,
-    /// Unexpected API response error
-    #[error("Unexpected API response")]
-    UnexpectedApiResponse,
-    /// Rw lock failed.
-    #[error("Rw lock failed")]
-    PoisonError,
-    /// Specifically used for `TryInfo` implementations for `SecretManager`.
-    #[error("cannot unwrap a SecretManager: type mismatch!")]
-    SecretManagerMismatch,
-    /// No input with matching ed25519 address provided
-    #[error("No input with matching ed25519 address provided")]
-    MissingInputWithEd25519Address,
-    /// Ledger transport error
-    #[cfg(feature = "ledger_nano")]
-    #[error("ledger transport error")]
-    LedgerMiscError,
-    /// Dongle Locked
-    #[cfg(feature = "ledger_nano")]
-    #[error("ledger locked")]
-    LedgerDongleLocked,
+
+    //////////////////////////////////////////////////////////////////////
+    // Ledger Nano
+    //////////////////////////////////////////////////////////////////////
     /// Denied by User
     #[cfg(feature = "ledger_nano")]
     #[error("denied by user")]
     LedgerDeniedByUser,
+    /// Dongle Locked
+    #[cfg(feature = "ledger_nano")]
+    #[error("ledger locked")]
+    LedgerDongleLocked,
     /// Ledger Device not found
     #[cfg(feature = "ledger_nano")]
     #[error("ledger device not found")]
@@ -219,61 +206,56 @@ pub enum Error {
     LedgerEssenceTooLarge,
     /// Ledger transport error
     #[cfg(feature = "ledger_nano")]
-    #[error("ledger app compiled for testnet but used with mainnet or vice versa")]
-    LedgerNetMismatch,
-    /// Wrong ledger seed error
-    #[cfg(feature = "ledger_nano")]
-    #[error("ledger mnemonic is mismatched")]
-    LedgerMnemonicMismatch,
+    #[error("ledger transport error")]
+    LedgerMiscError,
+
+    //////////////////////////////////////////////////////////////////////
+    // MQTT
+    //////////////////////////////////////////////////////////////////////
+    /// Invalid MQTT topic.
+    #[cfg(feature = "mqtt")]
+    #[error("the MQTT topic {0} is invalid")]
+    InvalidMqttTopic(String),
+    /// Mqtt client error
+    #[cfg(feature = "mqtt")]
+    #[error("{0}")]
+    #[serde(serialize_with = "display_string")]
+    MqttClientError(#[from] rumqttc::ClientError),
+    /// MQTT connection not found (all nodes MQTT's are disabled)
+    #[cfg(feature = "mqtt")]
+    #[error("mQTT connection not found (all nodes have the MQTT plugin disabled)")]
+    MqttConnectionNotFound,
+
+    //////////////////////////////////////////////////////////////////////
+    // Stronghold
+    //////////////////////////////////////////////////////////////////////
     /// Stronghold client error
     #[cfg(feature = "stronghold")]
     #[error("stronghold client error: {0}")]
     #[serde(serialize_with = "display_string")]
     StrongholdClient(#[from] iota_stronghold::ClientError),
+    /// Invalid stronghold password.
+    #[cfg(feature = "stronghold")]
+    #[error("invalid stronghold password")]
+    StrongholdInvalidPassword,
+    /// No password has been supplied to a Stronghold vault, or it has been cleared
+    #[cfg(feature = "stronghold")]
+    #[error("no password has been supplied, or the key has been cleared from the memory")]
+    StrongholdKeyCleared,
     /// Stronghold memory error
     #[cfg(feature = "stronghold")]
     #[error("stronghold memory error: {0}")]
     #[serde(serialize_with = "display_string")]
     StrongholdMemory(#[from] iota_stronghold::MemoryError),
+    /// A mnemonic has been already stored into a Stronghold vault
+    #[cfg(feature = "stronghold")]
+    #[error("a mnemonic has already been stored in the Stronghold vault")]
+    StrongholdMnemonicAlreadyStored,
     /// Procedure execution error from Stronghold
     #[cfg(feature = "stronghold")]
     #[error("Stronghold reported a procedure error: {0}")]
     #[serde(serialize_with = "display_string")]
     StrongholdProcedureError(#[from] iota_stronghold::procedures::ProcedureError),
-    /// A mnemonic has been already stored into a Stronghold vault
-    #[cfg(feature = "stronghold")]
-    #[error("a mnemonic has already been stored in the Stronghold vault")]
-    StrongholdMnemonicAlreadyStored,
-    /// No password has been supplied to a Stronghold vault, or it has been cleared
-    #[cfg(feature = "stronghold")]
-    #[error("no password has been supplied, or the key has been cleared from the memory")]
-    StrongholdKeyCleared,
-    /// Invalid stronghold password.
-    #[cfg(feature = "stronghold")]
-    #[error("invalid stronghold password")]
-    StrongholdInvalidPassword,
-    /// The semantic validation of a transaction failed.
-    #[error("the semantic validation of a transaction failed with conflict reason: {} - {0:?}", *.0 as u8)]
-    TransactionSemantic(ConflictReason),
-    /// Local time doesn't match the time of the latest milestone timestamp
-    #[error(
-        "Local time {current_time} doesn't match the time of the latest milestone timestamp: {milestone_timestamp}"
-    )]
-    TimeNotSynced {
-        /// The local time.
-        current_time: u32,
-        /// The timestamp of the latest milestone.
-        milestone_timestamp: u32,
-    },
-    /// An indexer API request contains a query parameter not supported by the endpoint.
-    #[error("An indexer API request contains a query parameter not supported by the endpoint: {0}.")]
-    UnsupportedQueryParameter(QueryParameter),
-    /// Invalid BIP32 chain data
-    #[error("Invalid BIP32 chain data")]
-    InvalidBIP32ChainData,
-    /// The requested data was not found.
-    #[error("The requested data was not found.")]
-    NotFound,
 }
 
 // map most errors to a single error but there are some errors that
@@ -288,10 +270,10 @@ impl From<iota_ledger_nano::api::errors::APIError> for Error {
     fn from(error: iota_ledger_nano::api::errors::APIError) -> Self {
         log::info!("ledger error: {}", error);
         match error {
-            iota_ledger_nano::api::errors::APIError::SecurityStatusNotSatisfied => Error::LedgerDongleLocked,
             iota_ledger_nano::api::errors::APIError::ConditionsOfUseNotSatisfied => Error::LedgerDeniedByUser,
-            iota_ledger_nano::api::errors::APIError::TransportError => Error::LedgerDeviceNotFound,
             iota_ledger_nano::api::errors::APIError::EssenceTooLarge => Error::LedgerEssenceTooLarge,
+            iota_ledger_nano::api::errors::APIError::SecurityStatusNotSatisfied => Error::LedgerDongleLocked,
+            iota_ledger_nano::api::errors::APIError::TransportError => Error::LedgerDeviceNotFound,
             _ => Error::LedgerMiscError,
         }
     }

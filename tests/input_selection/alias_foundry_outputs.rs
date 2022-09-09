@@ -95,7 +95,7 @@ fn input_selection_alias() -> Result<()> {
         Err(Error::MissingInput(err_msg)) => {
             assert_eq!(
                 &err_msg,
-                "Missing alias input for 0x1111111111111111111111111111111111111111111111111111111111111111"
+                "missing alias input for 0x1111111111111111111111111111111111111111111111111111111111111111"
             );
         }
         _ => panic!("Should return missing alias input"),
@@ -117,7 +117,7 @@ fn input_selection_alias() -> Result<()> {
         Err(Error::MissingInput(err_msg)) => {
             assert_eq!(
                 &err_msg,
-                "Missing alias input 0x1111111111111111111111111111111111111111111111111111111111111111 for foundry 0x0811111111111111111111111111111111111111111111111111111111111111110000000000"
+                "missing alias input 0x1111111111111111111111111111111111111111111111111111111111111111 for foundry 0x0811111111111111111111111111111111111111111111111111111111111111110000000000"
             );
         }
         _ => panic!("Should return missing alias input"),

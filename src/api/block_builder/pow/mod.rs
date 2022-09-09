@@ -73,7 +73,7 @@ async fn finish_multi_threaded_pow(client: &Client, payload: Option<Payload>) ->
 
         let threads = vec![pow_thread, time_thread];
         for t in threads {
-            match t.join().expect("Failed to join threads.") {
+            match t.join().expect("failed to join threads.") {
                 Ok(res) => {
                     if res.0 != 0 || !local_pow {
                         if let Some(block) = res.1 {

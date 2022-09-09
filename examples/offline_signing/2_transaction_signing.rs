@@ -50,9 +50,9 @@ async fn main() -> Result<()> {
 }
 
 fn read_prepared_transaction_from_file<P: AsRef<Path>>(path: P) -> Result<PreparedTransactionData> {
-    let mut file = File::open(&path)?;
+    let mut file = File::open(&path).unwrap();
     let mut json = String::new();
-    file.read_to_string(&mut json)?;
+    file.read_to_string(&mut json).unwrap();
 
     Ok(PreparedTransactionData::try_from(&serde_json::from_str::<
         PreparedTransactionDataDto,
@@ -65,11 +65,11 @@ fn write_signed_transaction_to_file<P: AsRef<Path>>(
 ) -> Result<()> {
     let dto = SignedTransactionDataDto::from(signed_transaction_data);
     let json = serde_json::to_string_pretty(&dto)?;
-    let mut file = BufWriter::new(File::create(path)?);
+    let mut file = BufWriter::new(File::create(path).unwrap());
 
     println!("{}", json);
 
-    file.write_all(json.as_bytes())?;
+    file.write_all(json.as_bytes()).unwrap();
 
     Ok(())
 }

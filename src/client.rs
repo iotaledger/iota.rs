@@ -746,7 +746,7 @@ impl Client {
         tips.push(*block_id);
 
         let miner = self.get_pow_provider().await;
-        let promote_block = do_pow(miner, min_pow_score, None, tips).map_err(|_| Error::TransactionError)?;
+        let promote_block = do_pow(miner, min_pow_score, None, tips)?;
 
         let block_id = self.post_block_raw(&promote_block).await?;
         // Get block if we use remote Pow, because the node will change parents and nonce.
@@ -767,7 +767,7 @@ impl Client {
             #[cfg(not(all(target_arch = "wasm32", not(target_os = "wasi"))))]
             let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH);
 
-            now.expect("Time went backwards").as_secs() as u32
+            now.expect("time went backwards").as_secs() as u32
         };
 
         let status_response = self.get_info().await?.node_info.status;

@@ -93,7 +93,7 @@ fn input_selection_nfts() -> Result<()> {
         Err(Error::MissingInput(err_msg)) => {
             assert_eq!(
                 &err_msg,
-                "Missing nft input for 0x1111111111111111111111111111111111111111111111111111111111111111"
+                "missing nft input for 0x1111111111111111111111111111111111111111111111111111111111111111"
             );
         }
         _ => panic!("Should return missing nft input"),

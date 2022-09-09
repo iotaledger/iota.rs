@@ -47,7 +47,7 @@ async fn get_mqtt_client(client: &mut Client) -> Result<&mut MqttClient> {
                 client.node_manager.nodes.clone()
             };
             for node in &nodes {
-                let host = node.url.host_str().expect("Can't get host from URL");
+                let host = node.url.host_str().expect("can't get host from URL");
                 let mut entropy = [0u8; 8];
                 utils::rand::fill(&mut entropy)?;
                 let id = format!("iotars{}", prefix_hex::encode(entropy));
@@ -106,12 +106,12 @@ fn poll_mqtt(
         let runtime = tokio::runtime::Builder::new_current_thread()
             .enable_all()
             .build()
-            .expect("Failed to create Tokio runtime");
+            .expect("failed to create Tokio runtime");
         runtime.block_on(async move {
             // rumqttc performs automatic reconnection since we keep running the event loop
             // but the subscriptions are lost on reconnection, so we need to resubscribe
             // the `is_subscribed` flag is set to false on event error, so the ConnAck event
-            // can perform the resubscriptions and reset `is_subscribed` to true.
+            // can perform the re-subscriptions and reset `is_subscribed` to true.
             // we need the flag since the first ConnAck must be ignored.
             let mut is_subscribed = true;
             let mut error_instant = Instant::now();

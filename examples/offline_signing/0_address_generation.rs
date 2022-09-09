@@ -42,11 +42,11 @@ async fn main() -> Result<()> {
 
 fn write_addresses_to_file<P: AsRef<Path>>(path: P, addresses: &[String]) -> Result<()> {
     let json = serde_json::to_string_pretty(&addresses)?;
-    let mut file = BufWriter::new(File::create(path)?);
+    let mut file = BufWriter::new(File::create(path).unwrap());
 
     println!("{}", json);
 
-    file.write_all(json.as_bytes())?;
+    file.write_all(json.as_bytes()).unwrap();
 
     Ok(())
 }

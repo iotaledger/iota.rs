@@ -103,7 +103,7 @@ pub(crate) fn sort_input_signing_data(inputs: Vec<InputSigningData>) -> crate::R
                         *unlock_address.alias_id()
                             == alias_output
                                 .alias_id()
-                                .or_from_output_id(input_signing_data.output_id().expect("Invalid output id"))
+                                .or_from_output_id(input_signing_data.output_id().expect("invalid output id"))
                     } else {
                         false
                     }
@@ -113,7 +113,7 @@ pub(crate) fn sort_input_signing_data(inputs: Vec<InputSigningData>) -> crate::R
                         *unlock_address.nft_id()
                             == nft_output
                                 .nft_id()
-                                .or_from_output_id(input_signing_data.output_id().expect("Invalid output id"))
+                                .or_from_output_id(input_signing_data.output_id().expect("invalid output id"))
                     } else {
                         false
                     }
@@ -132,12 +132,12 @@ pub(crate) fn sort_input_signing_data(inputs: Vec<InputSigningData>) -> crate::R
                     Output::Alias(alias_output) => Some(Address::Alias(AliasAddress::new(
                         alias_output
                             .alias_id()
-                            .or_from_output_id(input.output_id().expect("Invalid output id")),
+                            .or_from_output_id(input.output_id().expect("invalid output id")),
                     ))),
                     Output::Nft(nft_output) => Some(Address::Nft(NftAddress::new(
                         nft_output
                             .nft_id()
-                            .or_from_output_id(input.output_id().expect("Invalid output id")),
+                            .or_from_output_id(input.output_id().expect("invalid output id")),
                     ))),
                     _ => None,
                 };
@@ -146,7 +146,7 @@ pub(crate) fn sort_input_signing_data(inputs: Vec<InputSigningData>) -> crate::R
                     // Check for existing outputs for this address, and insert before
                     match sorted_inputs.iter().position(|input_signing_data| {
                         Address::try_from_bech32(&input_signing_data.bech32_address)
-                            .expect("Safe to unwrap, we encoded it before")
+                            .expect("safe to unwrap, we encoded it before")
                             .1
                             == alias_or_nft_address
                     }) {
