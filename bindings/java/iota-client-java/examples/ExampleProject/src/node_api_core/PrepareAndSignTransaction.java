@@ -15,6 +15,7 @@ public class PrepareAndSignTransaction {
         Client client = new Client(new ClientConfig().withNodes(new String[]{"https://api.testnet.shimmer.network"}));
 
         // Build the secret manager.
+        // NOTE: `YOUR_SECRET_MNEMONIC` serves  as a placeholder. Replace it with the mnemonic you want to use to sign the transaction.
         SecretManager secretManager = new MnemonicSecretManager("YOUR_SECRET_MNEMONIC");
 
         // Build the output for the transaction.
