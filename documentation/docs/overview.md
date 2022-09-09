@@ -1,6 +1,6 @@
 ---
-description: 'The wallet library is a stateful package with a standardized interface for developers to build applications
-involving IOTA value transactions.'
+description: 'The iota.rs library is designed to simplify how you connect and interact
+with [nodes](https://wiki.iota.org/chrysalis-docs/node_software) in the IOTA network. '
 image: /img/overview/layered_overview.svg
 keywords:
 
@@ -18,7 +18,7 @@ keywords:
 ![IOTA Client Library Overview](/img/Banner/banner_client_lib_overview.png)
 
 The iota.rs library is designed to simplify how you connect and interact
-with [nodes](https://wiki.iota.org/chrysalis-docs/node_software) in the IOTA network. You can use it to generate
+with [nodes](https://wiki.iota.org/introduction/develop/explanations/node_software) in the IOTA network. You can use it to generate
 addresses, send messages, sign and send transactions, and more.
 
 Beyond establishing the initial connection to a node, iota.rs has no state. Operations use only the data you pass during
@@ -36,7 +36,7 @@ with the IOTA network and, unlike iota.rs, it has a state.
 ## Supported Languages
 
 We implemented the iota.rs library in [Rust](getting_started/rust.mdx) and prepared bindings
-for [JavaScript](getting_started/nodejs), [Python](getting_started/python.mdx),
+for [JavaScript](getting_started/nodejs.mdx), [Python](getting_started/python.mdx),
 and [Java](getting_started/java.mdx). Every binding is adjusted for the language's conventions and best
 practices. For example, Python developers avoid the Builder programming pattern, so our
 Python binding uses named constructor arguments. However, we never change the meaning behind our API, which is equally
