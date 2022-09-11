@@ -30,7 +30,7 @@ async fn main() -> Result<()> {
         .finish_block(Some(Payload::from(tagged_data_payload)))
         .await?;
 
-    println!("{:#?}", block);
+    println!("{block:#?}");
 
     println!(
         "Block with custom payload sent: {}/block/{}",

@@ -29,7 +29,7 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
 
-    println!("{:#?}\n", block);
+    println!("{block:#?}\n");
 
     if let Some(Payload::TaggedData(payload)) = block.payload() {
         println!(

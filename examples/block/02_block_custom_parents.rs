@@ -24,7 +24,7 @@ async fn main() -> Result<()> {
     // Create and send the block with custom parents.
     let block = client.block().with_parents(parents)?.finish().await?;
 
-    println!("{:#?}", block);
+    println!("{block:#?}");
 
     println!(
         "Block with custom parents sent: {}/block/{}",

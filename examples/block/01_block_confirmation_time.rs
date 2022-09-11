@@ -22,7 +22,7 @@ async fn main() -> Result<()> {
     let block = client.block().finish().await?;
     let block_id = block.id();
 
-    println!("{:#?}", block);
+    println!("{block:#?}");
 
     // Try to check if the block has been confirmed.
     let _ = client.retry_until_included(&block_id, None, None).await?;

@@ -24,7 +24,7 @@ async fn main() -> Result<()> {
     // Create and send the block.
     let block = client.block().finish().await?;
 
-    println!("{:#?}", block);
+    println!("{block:#?}");
 
     println!(
         "Block with no payload sent: {}/block/{}",
