@@ -22,23 +22,24 @@ async fn main() -> Result<()> {
     let block = client.block().finish().await?;
     let block_id = block.id();
 
+    println!("{:#?}", block);
+
     // Try to check if the block has been confirmed.
     let _ = client.retry_until_included(&block_id, None, None).await?;
 
     // Get the block metadata.
     let metadata = client.get_block_metadata(&block_id).await?;
 
-    match metadata.referenced_by_milestone_index {
-        Some(ms_index) => {
-            let ms = client.get_milestone_by_index(ms_index).await?;
-            println!(
-                "Block {} got confirmed by milestone {} at timestamp {}.",
-                block_id,
-                ms_index,
-                ms.essence().timestamp()
-            );
-        }
-        _ => println!("Block {} is not confirmed.", block_id),
+    if let Some(ms_index) = metadata.referenced_by_milestone_index {
+        let ms = client.get_milestone_by_index(ms_index).await?;
+        println!(
+            "Block {} got confirmed by milestone {} at timestamp {}.",
+            block_id,
+            ms_index,
+            ms.essence().timestamp()
+        );
+    } else {
+        println!("Block {} is not confirmed.", block_id)
     }
 
     Ok(())

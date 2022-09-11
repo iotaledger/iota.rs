@@ -24,8 +24,10 @@ async fn main() -> Result<()> {
     // Create and send the block with custom parents.
     let block = client.block().with_parents(parents)?.finish().await?;
 
+    println!("{:#?}", block);
+
     println!(
-        "Block sent: {}/block/{}",
+        "Block with custom parents sent: {}/block/{}",
         std::env::var("EXPLORER_URL").unwrap(),
         block.id()
     );

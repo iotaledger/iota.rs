@@ -99,12 +99,12 @@ name = "block_custom_payload"
 path = "examples/block/03_block_custom_payload.rs"
 
 [[example]]
-name = "custom_inputs"
-path = "examples/block/custom_inputs.rs"
+name = "block_tagged_data"
+path = "examples/block/04_block_tagged_data.rs"
 
 [[example]]
-name = "data_block"
-path = "examples/block/data_block.rs"
+name = "custom_inputs"
+path = "examples/block/custom_inputs.rs"
 
 [[example]]
 name = "output"

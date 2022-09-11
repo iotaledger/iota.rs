@@ -30,8 +30,10 @@ async fn main() -> Result<()> {
         .finish_block(Some(Payload::from(tagged_data_payload)))
         .await?;
 
+    println!("{:#?}", block);
+
     println!(
-        "Block sent: {}/block/{}",
+        "Block with custom payload sent: {}/block/{}",
         std::env::var("EXPLORER_URL").unwrap(),
         block.id()
     );

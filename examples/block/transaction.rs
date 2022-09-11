@@ -39,6 +39,8 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
 
+    println!("{:#?}", block);
+
     println!(
         "Transaction sent: {}/block/{}",
         std::env::var("EXPLORER_URL").unwrap(),
