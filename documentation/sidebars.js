@@ -241,18 +241,18 @@ module.exports = {
               id: 'libraries/java/how_to/build_output',
               label: 'Build An Output',
             },
-            // {
-            //   type: 'doc',
-            //   id: 'libraries/java/how_to/prepare_sign_transaction',
-            //   label: 'Prepare And Sign A Transaction',
-            // },
+            {
+              type: 'doc',
+              id: 'libraries/java/how_to/prepare_sign_transaction',
+              label: 'Prepare And Sign A Transaction',
+            },
           ]
         },
-        // {
-        //   type: 'doc',
-        //   id: 'libraries/java/api_reference',
-        //   label: 'API Reference'
-        // },
+        {
+          type: 'doc',
+          id: 'libraries/java/api_reference',
+          label: 'API Reference'
+        },
       ]
     }
     ]
