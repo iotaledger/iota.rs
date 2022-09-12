@@ -26,12 +26,7 @@ a call and have no effect on your software beyond returning a value. You are in 
 your application.
 
 This stateless approach makes iota.rs easy to use and understand. But since you are in full control of data management,
-you are also fully responsible for it, which could feel overwhelming if you handle complex or sensitive data. If you
-plan on managing funds in your application, take a look at
-our [wallet.rs library](https://wiki.iota.org/wallet.rs/welcome) instead. It allows you to manage your user's funds
-safely, and it already includes our best security practices. It
-uses [stronghold.rs](https://wiki.iota.org/stronghold.rs/welcome) to store sensitive data and iota.rs to communicate
-with the IOTA network and, unlike iota.rs, it has a state.
+you are also fully responsible for it, which could feel overwhelming if you handle complex or sensitive data.
 
 ## Supported Languages
 
