@@ -213,7 +213,7 @@ dependencies = [
  "derive_more",
  "hashbrown",
  "hex",
- "iota-crypto 0.14.0",
+ "iota-crypto 0.14.2",
  "iterator-sorted",
  "packable",
  "prefix-hex",
@@ -242,7 +242,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f97ca064b7895679b723b1e188bad6103adad5cd712168185fb73fbfe6c205f0"
 dependencies = [
  "bee-ternary",
- "iota-crypto 0.14.0",
+ "iota-crypto 0.14.2",
  "thiserror",
 ]
 
@@ -383,13 +383,38 @@ dependencies = [
 ]
 
 [[package]]
+name = "chacha20"
+version = "0.8.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5c80e5460aa66fe3b91d40bcbdab953a597b60053e34d684ac6903f863b680a6"
+dependencies = [
+ "cfg-if",
+ "cipher",
+ "cpufeatures 0.2.2",
+ "zeroize",
+]
+
+[[package]]
 name = "chacha20poly1305"
 version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1580317203210c517b6d44794abfbe600698276db18127e37ad3e69bf5e848e5"
 dependencies = [
  "aead",
- "chacha20",
+ "chacha20 0.7.1",
+ "cipher",
+ "poly1305",
+ "zeroize",
+]
+
+[[package]]
+name = "chacha20poly1305"
+version = "0.9.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a18446b09be63d457bbec447509e85f662f32952b035ce892290396bc0b0cff5"
+dependencies = [
+ "aead",
+ "chacha20 0.8.2",
  "cipher",
  "poly1305",
  "zeroize",
@@ -1143,7 +1168,7 @@ dependencies = [
 
 [[package]]
 name = "iota-client"
-version = "2.0.0-beta.2"
+version = "2.0.0-beta.3"
 dependencies = [
  "async-trait",
  "backtrace",
@@ -1155,7 +1180,7 @@ dependencies = [
  "futures",
  "gloo-timers",
  "instant",
- "iota-crypto 0.14.0",
+ "iota-crypto 0.14.2",
  "iota-ledger-nano",
  "iota_stronghold",
  "log",
@@ -1195,7 +1220,7 @@ dependencies = [
  "aes",
  "aes-gcm",
  "blake2 0.10.4",
- "chacha20poly1305",
+ "chacha20poly1305 0.8.0",
  "curve25519-dalek",
  "digest 0.10.3",
  "ed25519-zebra",
@@ -1212,14 +1237,14 @@ dependencies = [
 
 [[package]]
 name = "iota-crypto"
-version = "0.14.0"
+version = "0.14.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "aee0fbdc68c475a78fd19a6509280b25166499f1bfe087a81237813e7b951667"
+checksum = "92d67b0725fbfe9e75950848bf0304df70ecb71a58526b1a36a087d0bc089499"
 dependencies = [
  "aead",
  "bee-ternary",
  "blake2 0.10.4",
- "chacha20poly1305",
+ "chacha20poly1305 0.9.1",
  "digest 0.10.3",
  "ed25519-zebra",
  "generic-array",
@@ -1234,9 +1259,9 @@ dependencies = [
 
 [[package]]
 name = "iota-ledger-nano"
-version = "1.0.0-alpha.1"
+version = "1.0.0-alpha.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "91ad1e0dac851bc0fb0ef980cdb05c82a4dfe2468f71cb580d3a7b62c32eab7b"
+checksum = "ef28b65fb2c58b5aa01793c36a33ef3d63333f6760abcba95659c4cb5b4e8fe5"
 dependencies = [
  "bech32 0.7.3",
  "enum-iterator",
