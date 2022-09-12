@@ -25,9 +25,6 @@ Beyond establishing the initial connection to a node, iota.rs has no state. Oper
 a call and have no effect on your software beyond returning a value. You are in complete control of the data flow in
 your application.
 
-This stateless approach makes iota.rs easy to use and understand. But since you are in full control of data management,
-you are also fully responsible for it, which could feel overwhelming if you handle complex or sensitive data.
-
 ## Supported Languages
 
 We implemented the iota.rs library in [Rust](getting_started/rust.mdx) and prepared bindings
