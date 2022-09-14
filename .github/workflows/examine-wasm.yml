@@ -1,0 +1,46 @@
+name: Examine Wasm compatibility
+
+on:
+  push:
+    branches:
+      - develop
+      - production
+    paths:
+      - ".github/workflows/examine-core.yml"
+      - ".github/actions/**"
+      - "src/**"
+      - "tests/**"
+      - "examples/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+  pull_request:
+    branches:
+      - develop
+      - production
+    paths:
+      - ".github/workflows/examine-core.yml"
+      - ".github/actions/**"
+      - "src/**"
+      - "tests/**"
+      - "examples/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+
+jobs:
+  wasm:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install stable
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        target: wasm32-unknown-unknown
+        override: true
+
+    - name: Check Wasm
+      uses: actions-rs/cargo@v1
+      with:
+        command: check
+        args: --release --target=wasm32-unknown-unknown --manifest-path Cargo.toml --no-default-features --features tls,message_interface
