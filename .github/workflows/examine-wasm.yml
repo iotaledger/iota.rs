@@ -6,11 +6,10 @@ on:
       - develop
       - production
     paths:
-      - ".github/workflows/examine-core.yml"
+      - ".github/workflows/examine-wasm.yml"
       - ".github/actions/**"
+      # Watch the Rust core too
       - "src/**"
-      - "tests/**"
-      - "examples/**"
       - "Cargo.toml"
       - "Cargo.lock"
   pull_request:
@@ -18,11 +17,10 @@ on:
       - develop
       - production
     paths:
-      - ".github/workflows/examine-core.yml"
+      - ".github/workflows/examine-wasm.yml"
       - ".github/actions/**"
+      # Watch the Rust core too
       - "src/**"
-      - "tests/**"
-      - "examples/**"
       - "Cargo.toml"
       - "Cargo.lock"
 
