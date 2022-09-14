@@ -66,7 +66,7 @@ impl NonceProvider for SingleThreadedMiner {
     type Builder = SingleThreadedMinerBuilder;
     type Error = crate::Error;
 
-    fn nonce(&self, bytes: &[u8], target_score: f64) -> Result<u64, Self::Error> {
+    fn nonce(&self, bytes: &[u8], target_score: u32) -> Result<u64, Self::Error> {
         // Remote proof-of-work will compute the block nonce.
         if !self.local_pow {
             return Ok(0);
@@ -74,9 +74,11 @@ impl NonceProvider for SingleThreadedMiner {
 
         let mut pow_digest = TritBuf::<T1B1Buf>::new();
         let target_zeros =
-            (((bytes.len() + std::mem::size_of::<u64>()) as f64 * target_score).ln() / LN_3).ceil() as usize;
+            (((bytes.len() + std::mem::size_of::<u64>()) as f64 * target_score as f64).ln() / LN_3).ceil() as usize;
         if target_zeros > HASH_LENGTH {
-            return Err(bee_pow::providers::miner::Error::InvalidPowScore(target_score, target_zeros).into());
+            return Err(crate::Error::Pow(
+                bee_pow::providers::miner::Error::InvalidPowScore(target_score, target_zeros).to_string(),
+            ));
         }
 
         let hash = Blake2b256::digest(bytes);
@@ -119,6 +121,6 @@ impl NonceProvider for SingleThreadedMiner {
             counter += 1;
         }
 
-        Err(bee_pow::providers::miner::Error::Cancelled.into())
+        return Err(crate::Error::Pow(bee_pow::providers::miner::Error::Cancelled.to_string()));
     }
 }
