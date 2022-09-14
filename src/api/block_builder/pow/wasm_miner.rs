@@ -121,6 +121,8 @@ impl NonceProvider for SingleThreadedMiner {
             counter += 1;
         }
 
-        return Err(crate::Error::Pow(bee_pow::providers::miner::Error::Cancelled.to_string()));
+        return Err(crate::Error::Pow(
+            bee_pow::providers::miner::Error::Cancelled.to_string(),
+        ));
     }
 }
