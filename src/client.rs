@@ -22,6 +22,7 @@ use bee_block::{
         transaction::{TransactionEssence, TransactionId},
         Payload, TaggedDataPayload,
     },
+    protocol::ProtocolParameters,
     Block, BlockId,
 };
 use bee_pow::providers::{NonceProvider, NonceProviderBuilder};
@@ -301,28 +302,54 @@ impl Client {
         Ok(res)
     }
 
+    /// Gets the protocol version of the node we're connecting to.
+    pub async fn get_protocol_parameters(&self) -> Result<ProtocolParameters> {
+        Ok(self.get_network_info().await?.protocol_parameters)
+    }
+
+    /// Gets the protocol version of the node we're connecting to.
+    pub async fn get_protocol_version(&self) -> Result<u8> {
+        Ok(self.get_network_info().await?.protocol_parameters.protocol_version())
+    }
+
+    /// Gets the network name of the node we're connecting to.
+    pub async fn get_network_name(&self) -> Result<String> {
+        Ok(self.get_network_info().await?.protocol_parameters.network_name().into())
+    }
+
     /// Gets the network id of the node we're connecting to.
     pub async fn get_network_id(&self) -> Result<u64> {
-        let network_info = self.get_network_info().await?;
-        network_info
-            .network_id
-            .ok_or(Error::MissingParameter("Missing network id."))
+        Ok(self.get_network_info().await?.protocol_parameters.network_id())
     }
 
-    /// returns the bech32_hrp
+    /// Gets the bech32 HRP of the node we're connecting to.
     pub async fn get_bech32_hrp(&self) -> Result<String> {
-        self.get_network_info()
-            .await?
-            .bech32_hrp
-            .ok_or(Error::MissingParameter("Missing bech32_hrp."))
+        Ok(self.get_network_info().await?.protocol_parameters.bech32_hrp().into())
     }
 
-    /// returns the min pow score
+    /// Gets the minimum pow score of the node we're connecting to.
     pub async fn get_min_pow_score(&self) -> Result<u32> {
-        self.get_network_info()
+        Ok(self.get_network_info().await?.protocol_parameters.min_pow_score())
+    }
+
+    /// Gets the minimum pow score of the node we're connecting to.
+    pub async fn get_below_max_depth(&self) -> Result<u8> {
+        Ok(self.get_network_info().await?.protocol_parameters.below_max_depth())
+    }
+
+    /// Gets the rent structure of the node we're connecting to.
+    pub async fn get_rent_structure(&self) -> Result<RentStructure> {
+        Ok(self
+            .get_network_info()
             .await?
-            .min_pow_score
-            .ok_or(Error::MissingParameter("Missing min_pow_score."))
+            .protocol_parameters
+            .rent_structure()
+            .clone())
+    }
+
+    /// Gets the token supply of the node we're connecting to.
+    pub async fn get_token_supply(&self) -> Result<u64> {
+        Ok(self.get_network_info().await?.protocol_parameters.token_supply())
     }
 
     /// returns the tips interval
@@ -337,22 +364,6 @@ impl Client {
         self.network_info
             .read()
             .map_or(NetworkInfo::default().local_pow, |info| info.local_pow)
-    }
-
-    /// returns the rent structure
-    pub async fn get_rent_structure(&self) -> Result<RentStructure> {
-        let rent_structure = self
-            .get_network_info()
-            .await?
-            .rent_structure
-            .ok_or(Error::MissingParameter("Missing rent_structure."))?;
-
-        let rent_structure = RentStructureBuilder::new()
-            .byte_cost(rent_structure.v_byte_cost)
-            .key_factor(rent_structure.v_byte_factor_key)
-            .data_factor(rent_structure.v_byte_factor_data)
-            .finish();
-        Ok(rent_structure)
     }
 
     pub(crate) fn get_timeout(&self) -> Duration {
@@ -635,7 +646,7 @@ impl Client {
 
         for output_resp in available_outputs {
             let (amount, _) = ClientBlockBuilder::get_output_amount_and_address(
-                &Output::try_from_dto(&output_resp.output)?,
+                &Output::try_from_dto(&output_resp.output, self.get_token_supply().await?)?,
                 None,
                 current_time,
             )?;

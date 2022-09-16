@@ -7,7 +7,7 @@ use std::{
     time::Duration,
 };
 
-use bee_api_types::responses::RentStructureResponse;
+use bee_block::protocol::ProtocolParameters;
 #[cfg(not(target_family = "wasm"))]
 use {
     std::collections::HashSet,
@@ -29,29 +29,19 @@ use crate::{
 /// Struct containing network and PoW related information
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct NetworkInfo {
-    /// Network
-    pub network: Option<String>,
-    /// Network ID
-    #[serde(rename = "networkId")]
-    pub network_id: Option<u64>,
-    /// Bech32 HRP
-    #[serde(rename = "bech32Hrp", default)]
-    pub bech32_hrp: Option<String>,
-    /// Minimum proof of work score
-    #[serde(rename = "minPowScore", default)]
-    pub min_pow_score: Option<u32>,
-    /// Local proof of work
+    // TODO do we really want a default?
+    /// Protocol parameters.
+    #[serde(rename = "protocolParameters", default = "ProtocolParameters::default")]
+    pub protocol_parameters: ProtocolParameters,
+    /// Local proof of work.
     #[serde(rename = "localPow", default = "default_local_pow")]
     pub local_pow: bool,
-    /// Fallback to local proof of work if the node doesn't support remote PoW
+    /// Fallback to local proof of work if the node doesn't support remote PoW.
     #[serde(rename = "fallbackToLocalPow", default = "default_fallback_to_local_pow")]
     pub fallback_to_local_pow: bool,
-    /// Tips request interval during PoW in seconds
+    /// Tips request interval during PoW in seconds.
     #[serde(rename = "tipsInterval", default = "default_tips_interval")]
     pub tips_interval: u64,
-    /// Rent structure of the protocol
-    #[serde(rename = "rentStructure", default)]
-    pub rent_structure: Option<RentStructureResponse>,
 }
 
 fn default_local_pow() -> bool {
@@ -113,14 +103,11 @@ fn default_remote_pow_timeout() -> Duration {
 impl Default for NetworkInfo {
     fn default() -> Self {
         Self {
-            network: None,
-            network_id: None,
-            min_pow_score: None,
+            // TODO do we really want a default?
+            protocol_parameters: ProtocolParameters::default(),
             local_pow: default_local_pow(),
             fallback_to_local_pow: true,
-            bech32_hrp: None,
             tips_interval: DEFAULT_TIPS_INTERVAL,
-            rent_structure: None,
         }
     }
 }
@@ -252,14 +239,14 @@ impl ClientBuilder {
         self
     }
 
-    /// Selects the type of network to get default nodes for it, only "testnet" is supported at the moment.
-    /// Nodes that don't belong to this network are ignored. The &str must match a part or all of the networkId returned
-    /// in the node info from a node. For example, if the networkId is `"private-tangle"`, `"tangle"` can be used.
-    /// Default nodes are only used when no other nodes are provided.
-    pub fn with_network(mut self, network: &str) -> Self {
-        self.network_info.network.replace(network.into());
-        self
-    }
+    // /// Selects the type of network to get default nodes for it, only "testnet" is supported at the moment.
+    // /// Nodes that don't belong to this network are ignored. The &str must match a part or all of the networkId returned
+    // /// in the node info from a node. For example, if the networkId is `"private-tangle"`, `"tangle"` can be used.
+    // /// Default nodes are only used when no other nodes are provided.
+    // pub fn with_network(mut self, network: &str) -> Self {
+    //     self.network_info.network.replace(network.into());
+    //     self
+    // }
 
     /// Sets the MQTT broker options.
     #[cfg(feature = "mqtt")]

@@ -52,6 +52,7 @@ pub fn minimum_storage_deposit_basic_output(
     config: &RentStructure,
     address: &Address,
     native_tokens: &Option<NativeTokens>,
+    token_supply: u64,
 ) -> Result<u64> {
     let address_condition = UnlockCondition::Address(AddressUnlockCondition::new(*address));
     let mut basic_output_builder = BasicOutputBuilder::new_with_amount(Output::AMOUNT_MIN)?;
@@ -60,7 +61,7 @@ pub fn minimum_storage_deposit_basic_output(
     }
     let basic_output = basic_output_builder
         .add_unlock_condition(address_condition)
-        .finish_output()?;
+        .finish_output(token_supply)?;
 
     Ok(basic_output.rent_cost(config))
 }
