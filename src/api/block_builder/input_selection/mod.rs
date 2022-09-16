@@ -459,10 +459,18 @@ fn select_utxo_chain_inputs(
                         {
                             continue;
                         }
+                        // Remove potential SenderFeature because we don't need it and don't want to check it again
+                        let filtered_features = nft_input
+                            .features()
+                            .iter()
+                            .cloned()
+                            .filter(|feature| feature.kind() != SenderFeature::KIND);
                         // else add output to outputs with minimum_required_storage_deposit
                         let new_output = NftOutputBuilder::from(nft_input)
                             .with_nft_id(nft_input.nft_id().or_from_output_id(output_id))
                             .with_amount(minimum_required_storage_deposit)?
+                            // replace with filtered features
+                            .with_features(filtered_features)
                             .finish_output()?;
                         outputs.push(new_output);
                         added_output_for_input_signing_data.insert(output_id);
@@ -493,11 +501,19 @@ fn select_utxo_chain_inputs(
                             continue;
                         }
 
+                        // Remove potential SenderFeature because we don't need it and don't want to check it again
+                        let filtered_features = alias_input
+                            .features()
+                            .iter()
+                            .cloned()
+                            .filter(|feature| feature.kind() != SenderFeature::KIND);
                         // else add output to outputs with minimum_required_storage_deposit
                         let new_output = AliasOutputBuilder::from(alias_input)
                             .with_alias_id(alias_input.alias_id().or_from_output_id(output_id))
                             .with_state_index(alias_input.state_index() + 1)
                             .with_amount(minimum_required_storage_deposit)?
+                            // replace with filtered features
+                            .with_features(filtered_features)
                             .finish_output()?;
                         outputs.push(new_output);
                         added_output_for_input_signing_data.insert(output_id);
