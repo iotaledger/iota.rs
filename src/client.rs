@@ -161,14 +161,16 @@ impl Client {
         runtime.spawn(async move {
             loop {
                 tokio::select! {
-                    _ = async {
-                            // delay first since the first `sync_nodes` call is made by the builder
-                            // to ensure the node list is filled before the client is used
-                            sleep(node_sync_interval).await;
-                            Client::sync_nodes(&sync, &nodes, &network_info).await;
-                    } => {}
-                    _ = kill.recv() => {}
+                                    _ = async {
+                                            // delay first since the first `sync_nodes` call is made by the builder
+                                            // to ensure the node list is filled before the client is used
+                                            sleep(node_sync_interval).await;
+                if let Err(e)=                            Client::sync_nodes(&sync, &nodes, &network_info).await {
+log::warn!("Syncing nodes failed: {e}");
                 }
+                                    } => {}
+                                    _ = kill.recv() => {}
+                                }
             }
         });
     }
@@ -178,7 +180,7 @@ impl Client {
         sync: &Arc<RwLock<HashSet<Node>>>,
         nodes: &HashSet<Node>,
         network_info: &Arc<RwLock<NetworkInfo>>,
-    ) {
+    ) -> Result<()> {
         log::debug!("sync_nodes");
         let mut synced_nodes = HashSet::new();
         let mut network_nodes: HashMap<String, Vec<(NodeInfo, Node)>> = HashMap::new();
@@ -193,8 +195,9 @@ impl Client {
                         }
                         None => match &network_info
                             .read()
-                            .map_or(NetworkInfo::default().network, |info| info.network.clone())
-                        {
+                            .map_or(NetworkInfo::default().protocol_parameters.network_name(), |info| {
+                                info.protocol_parameters.network_name().clone()
+                            }) {
                             Some(id) => {
                                 if info.protocol.network_name.contains(id) {
                                     network_nodes
@@ -228,10 +231,8 @@ impl Client {
 
             for (info, node_url) in nodes.iter() {
                 if let Ok(mut client_network_info) = network_info.write() {
-                    client_network_info.network_id = hash_network(&info.protocol.network_name).ok();
-                    client_network_info.min_pow_score = Some(info.protocol.min_pow_score);
-                    client_network_info.bech32_hrp = Some(info.protocol.bech32_hrp.clone());
-                    client_network_info.rent_structure = Some(info.protocol.rent_structure.clone());
+                    client_network_info.protocol_parameters = info.protocol.try_into()?;
+
                     if !client_network_info.local_pow {
                         if info.features.contains(&pow_feature) {
                             synced_nodes.insert(node_url.clone());
@@ -247,6 +248,8 @@ impl Client {
         if let Ok(mut sync) = sync.write() {
             *sync = synced_nodes;
         }
+
+        Ok(())
     }
 
     /// Get a node candidate from the synced node pool.
@@ -289,10 +292,7 @@ impl Client {
             let network_id = hash_network(&info.protocol.network_name).ok();
             {
                 let mut client_network_info = self.network_info.write().map_err(|_| crate::Error::PoisonError)?;
-                client_network_info.bech32_hrp = Some(info.protocol.bech32_hrp);
-                client_network_info.min_pow_score = Some(info.protocol.min_pow_score);
-                client_network_info.network_id = network_id;
-                client_network_info.rent_structure = Some(info.protocol.rent_structure);
+                client_network_info.protocol_parameters = info.protocol.try_into()?;
             }
         }
         let res = self

@@ -240,9 +240,9 @@ impl ClientBuilder {
     }
 
     // /// Selects the type of network to get default nodes for it, only "testnet" is supported at the moment.
-    // /// Nodes that don't belong to this network are ignored. The &str must match a part or all of the networkId returned
-    // /// in the node info from a node. For example, if the networkId is `"private-tangle"`, `"tangle"` can be used.
-    // /// Default nodes are only used when no other nodes are provided.
+    // /// Nodes that don't belong to this network are ignored. The &str must match a part or all of the networkId
+    // returned /// in the node info from a node. For example, if the networkId is `"private-tangle"`, `"tangle"`
+    // can be used. /// Default nodes are only used when no other nodes are provided.
     // pub fn with_network(mut self, network: &str) -> Self {
     //     self.network_info.network.replace(network.into());
     //     self

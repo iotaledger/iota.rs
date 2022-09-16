@@ -535,7 +535,7 @@ impl ClientMessageHandler {
                 Ok(Response::BlockId(block.id()))
             }
             Message::TransactionId { payload } => {
-                let payload = TransactionPayload::try_from_dto(&payload)?;
+                let payload = TransactionPayload::try_from_dto(&payload, self.client.get_protocol_parameters().await?)?;
                 Ok(Response::TransactionId(payload.id()))
             }
             Message::ComputeAliasId { output_id } => Ok(Response::AliasId(AliasId::from(output_id))),
