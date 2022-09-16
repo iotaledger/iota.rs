@@ -52,6 +52,7 @@ pub fn try_select_inputs(
     rent_structure: &RentStructure,
     allow_burning: bool,
     current_time: u32,
+    token_supply: u64,
 ) -> Result<SelectedTransactionData> {
     log::debug!("[try_select_inputs]");
     if inputs.is_empty() {
@@ -68,7 +69,7 @@ pub fn try_select_inputs(
         }
 
         let additional_storage_deposit_return_outputs =
-            get_storage_deposit_return_outputs(inputs.iter(), outputs.iter(), current_time)?;
+            get_storage_deposit_return_outputs(inputs.iter(), outputs.iter(), current_time, token_supply)?;
         outputs.extend(additional_storage_deposit_return_outputs.into_iter());
 
         let remainder_data = get_remainder_output(
@@ -78,6 +79,7 @@ pub fn try_select_inputs(
             rent_structure,
             allow_burning,
             current_time,
+            token_supply,
         )?;
 
         if let Some(remainder_data) = &remainder_data {
@@ -170,7 +172,7 @@ pub fn try_select_inputs(
                         let new_output = NftOutputBuilder::from(nft_input)
                             .with_nft_id(nft_input.nft_id().or_from_output_id(output_id))
                             .with_amount(minimum_required_storage_deposit)?
-                            .finish_output()?;
+                            .finish_output(token_supply)?;
                         outputs.push(new_output);
                         added_output_for_input_signing_data.insert(output_id);
                     }
@@ -205,7 +207,7 @@ pub fn try_select_inputs(
                             .with_alias_id(alias_input.alias_id().or_from_output_id(output_id))
                             .with_state_index(alias_input.state_index() + 1)
                             .with_amount(minimum_required_storage_deposit)?
-                            .finish_output()?;
+                            .finish_output(token_supply)?;
                         outputs.push(new_output);
                         added_output_for_input_signing_data.insert(output_id);
                     }
@@ -229,7 +231,7 @@ pub fn try_select_inputs(
                         // else add output to outputs with minimum_required_storage_deposit
                         let new_output = FoundryOutputBuilder::from(foundry_input)
                             .with_amount(minimum_required_storage_deposit)?
-                            .finish_output()?;
+                            .finish_output(token_supply)?;
                         outputs.push(new_output);
                         added_output_for_input_signing_data.insert(output_id);
                     }
@@ -388,6 +390,7 @@ pub fn try_select_inputs(
             &required,
             rent_structure,
             current_time,
+            token_supply,
         )?;
 
         if selected_input_amount < required.amount || additional_required_remainder_amount > 0 {
@@ -438,6 +441,7 @@ pub fn try_select_inputs(
             &required,
             rent_structure,
             current_time,
+            token_supply,
         )?;
 
         if selected_input_amount < required.amount || additional_required_remainder_amount > 0 {
@@ -473,7 +477,7 @@ pub fn try_select_inputs(
 
     // Add possible required storage deposit return outputs
     let additional_storage_deposit_return_outputs =
-        get_storage_deposit_return_outputs(inputs.iter(), outputs.iter(), current_time)?;
+        get_storage_deposit_return_outputs(inputs.iter(), outputs.iter(), current_time, token_supply)?;
     outputs.extend(additional_storage_deposit_return_outputs.into_iter());
 
     // create remainder output if necessary
@@ -485,6 +489,7 @@ pub fn try_select_inputs(
         rent_structure,
         allow_burning,
         current_time,
+        token_supply,
     )?;
     if let Some(remainder_data) = &remainder_data {
         outputs.push(remainder_data.output.clone());

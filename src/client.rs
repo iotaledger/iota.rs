@@ -17,7 +17,7 @@ use bee_api_types::{
 use bee_block::{
     address::Address,
     input::{Input, UtxoInput, INPUT_COUNT_MAX},
-    output::{Output, OutputId, RentStructure, RentStructureBuilder},
+    output::{Output, OutputId, RentStructure},
     payload::{
         transaction::{TransactionEssence, TransactionId},
         Payload, TaggedDataPayload,

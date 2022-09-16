@@ -79,6 +79,7 @@ impl<'a> ClientBlockBuilder<'a> {
             // could lead to burned native tokens by accident
             false,
             current_time,
+            self.client.get_token_supply().await?,
         ) {
             return Ok(selected_transaction_data);
         };
@@ -152,6 +153,7 @@ impl<'a> ClientBlockBuilder<'a> {
                         // could lead to burned native tokens by accident
                         false,
                         current_time,
+                        self.client.get_token_supply().await?,
                     ) {
                         Ok(r) => r,
                         // for these errors, just try again in the next round with more addresses which might have more

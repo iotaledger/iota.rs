@@ -98,6 +98,7 @@ impl<'a> ClientBlockBuilder<'a> {
             rent_structure,
             allow_burning,
             current_time,
+            self.client.get_token_supply().await?,
         )?;
         Ok(selected_transaction_data)
     }
