@@ -374,7 +374,7 @@ impl Client {
             .await?;
 
         match resp {
-            MilestoneResponse::Json(dto) => Ok(MilestonePayload::try_from(&dto)?),
+            MilestoneResponse::Json(dto) => Ok(MilestonePayload::try_from_dto(&dto)?),
             MilestoneResponse::Raw(_) => Err(crate::Error::UnexpectedApiResponse),
         }
     }
@@ -410,7 +410,7 @@ impl Client {
             .await?;
 
         match resp {
-            MilestoneResponse::Json(dto) => Ok(MilestonePayload::try_from(&dto)?),
+            MilestoneResponse::Json(dto) => Ok(MilestonePayload::try_from_dto(&dto)?),
             MilestoneResponse::Raw(_) => Err(crate::Error::UnexpectedApiResponse),
         }
     }

@@ -109,7 +109,7 @@ impl TryFrom<&SignedTransactionDataDto> for SignedTransactionData {
     type Error = DtoError;
     fn try_from(value: &SignedTransactionDataDto) -> Result<Self, Self::Error> {
         Ok(SignedTransactionData {
-            transaction_payload: TransactionPayload::try_from(&value.transaction_payload)
+            transaction_payload: TransactionPayload::try_from_dto(&value.transaction_payload)
                 .map_err(|_| DtoError::InvalidField("transaction_payload"))?,
             inputs_data: value
                 .inputs_data

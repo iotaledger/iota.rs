@@ -362,7 +362,7 @@ impl ClientMessageHandler {
                 let block_builder = self.client.block();
 
                 let block = block_builder
-                    .finish_block(Some(Payload::try_from(&payload_dto)?))
+                    .finish_block(Some(Payload::try_from_dto(&payload_dto)?))
                     .await?;
 
                 let block_id = block.id();
@@ -535,7 +535,7 @@ impl ClientMessageHandler {
                 Ok(Response::BlockId(block.id()))
             }
             Message::TransactionId { payload } => {
-                let payload = TransactionPayload::try_from(&payload)?;
+                let payload = TransactionPayload::try_from_dto(&payload)?;
                 Ok(Response::TransactionId(payload.id()))
             }
             Message::ComputeAliasId { output_id } => Ok(Response::AliasId(AliasId::from(output_id))),
