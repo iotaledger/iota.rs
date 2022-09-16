@@ -319,7 +319,6 @@ fn dedup_inputs(mandatory_inputs: &mut Vec<InputSigningData>, additional_inputs:
 // storage deposit and burning is not allowed, they will be added in the input and also to the outputs, but there just
 // with the minimum required storage deposit as amount, so the difference gets available. Sender features will be
 // removed.
-// TODO: remove potential sender features when adding inputs to outputs
 #[allow(clippy::too_many_arguments)]
 fn select_utxo_chain_inputs(
     selected_inputs: &mut Vec<InputSigningData>,
