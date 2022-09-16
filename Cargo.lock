@@ -190,8 +190,7 @@ checksum = "d86b93f97252c47b41663388e6d155714a9d0c398b99f1005cbc5f978b29f445"
 [[package]]
 name = "bee-api-types"
 version = "1.0.0-beta.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7ee8f42eece01082cb68ac6b56395799a4d1cf59efe223000fabd0aa2da3e612"
+source = "git+https://github.com/iotaledger/bee?rev=aaa6826734bba244fcd9f205e71057193dee8b0e#aaa6826734bba244fcd9f205e71057193dee8b0e"
 dependencies = [
  "bee-block",
  "bee-ledger-types",
@@ -202,11 +201,10 @@ dependencies = [
 [[package]]
 name = "bee-block"
 version = "1.0.0-beta.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "71668eae085ca48a59582e1c63a0d245b70c9fdbddd8fb31b37f1eb15a42bff5"
+source = "git+https://github.com/iotaledger/bee?rev=aaa6826734bba244fcd9f205e71057193dee8b0e#aaa6826734bba244fcd9f205e71057193dee8b0e"
 dependencies = [
  "bech32 0.9.1",
- "bee-pow",
+ "bee-pow 1.0.0-beta.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "bee-ternary",
  "bitflags",
  "bytemuck",
@@ -228,8 +226,7 @@ dependencies = [
 [[package]]
 name = "bee-ledger-types"
 version = "1.0.0-beta.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0fda485ea7a4c023f99b485288bb2c7f79bbbf24de4940ff80be2ab6504a9462"
+source = "git+https://github.com/iotaledger/bee?rev=aaa6826734bba244fcd9f205e71057193dee8b0e#aaa6826734bba244fcd9f205e71057193dee8b0e"
 dependencies = [
  "bee-block",
  "packable",
@@ -241,6 +238,16 @@ name = "bee-pow"
 version = "1.0.0-beta.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f97ca064b7895679b723b1e188bad6103adad5cd712168185fb73fbfe6c205f0"
+dependencies = [
+ "bee-ternary",
+ "iota-crypto 0.14.2",
+ "thiserror",
+]
+
+[[package]]
+name = "bee-pow"
+version = "1.0.0-beta.1"
+source = "git+https://github.com/iotaledger/bee?rev=aaa6826734bba244fcd9f205e71057193dee8b0e#aaa6826734bba244fcd9f205e71057193dee8b0e"
 dependencies = [
  "bee-ternary",
  "iota-crypto 0.14.2",
@@ -1168,7 +1175,7 @@ dependencies = [
  "backtrace",
  "bee-api-types",
  "bee-block",
- "bee-pow",
+ "bee-pow 1.0.0-beta.1 (git+https://github.com/iotaledger/bee?rev=aaa6826734bba244fcd9f205e71057193dee8b0e)",
  "bee-ternary",
  "derive_builder",
  "dotenv",
