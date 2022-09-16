@@ -7,8 +7,7 @@ use bee_block::{
     address::{Address, AliasAddress, Ed25519Address, NftAddress},
     output::{
         unlock_condition::{AddressUnlockCondition, StorageDepositReturnUnlockCondition},
-        BasicOutputBuilder, NativeTokens, NativeTokensBuilder, Output, OutputAmount, OutputId, Rent, RentStructure,
-        UnlockCondition,
+        BasicOutputBuilder, NativeTokens, NativeTokensBuilder, Output, OutputId, Rent, RentStructure, UnlockCondition,
     },
 };
 
@@ -55,7 +54,7 @@ pub fn minimum_storage_deposit_basic_output(
     native_tokens: &Option<NativeTokens>,
 ) -> Result<u64> {
     let address_condition = UnlockCondition::Address(AddressUnlockCondition::new(*address));
-    let mut basic_output_builder = BasicOutputBuilder::new_with_amount(OutputAmount::MIN)?;
+    let mut basic_output_builder = BasicOutputBuilder::new_with_amount(Output::AMOUNT_MIN)?;
     if let Some(native_tokens) = native_tokens {
         basic_output_builder = basic_output_builder.with_native_tokens(native_tokens.clone());
     }
@@ -77,7 +76,11 @@ pub(crate) fn sdr_not_expired(output: &Output, current_time: u32) -> Option<&Sto
             };
 
             // We only have to send the storage deposit return back if the output is not expired
-            if !expired { Some(sdr) } else { None }
+            if !expired {
+                Some(sdr)
+            } else {
+                None
+            }
         } else {
             None
         }

@@ -241,7 +241,7 @@ impl Client {
             .await?;
 
         match resp {
-            BlockResponse::Json(dto) => Ok(Block::try_from(&dto)?),
+            BlockResponse::Json(dto) => Ok(Block::try_from_dto(&dto)?),
             BlockResponse::Raw(_) => Err(crate::Error::UnexpectedApiResponse),
         }
     }
@@ -346,7 +346,7 @@ impl Client {
             .await?;
 
         match resp {
-            BlockResponse::Json(dto) => Ok(Block::try_from(&dto)?),
+            BlockResponse::Json(dto) => Ok(Block::try_from_dto(&dto)?),
             BlockResponse::Raw(_) => Err(crate::Error::UnexpectedApiResponse),
         }
     }

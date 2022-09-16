@@ -50,7 +50,7 @@ impl<'a> GetAddressBuilder<'a> {
         let mut native_tokens_builder = NativeTokensBuilder::new();
 
         for output_response in &outputs_responses {
-            let output = Output::try_from(&output_response.output)?;
+            let output = Output::try_from_dto(&output_response.output)?;
 
             if let Some(native_tokens) = output.native_tokens() {
                 native_tokens_builder.add_native_tokens(native_tokens.clone())?;

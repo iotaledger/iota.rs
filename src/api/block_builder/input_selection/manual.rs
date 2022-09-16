@@ -41,7 +41,7 @@ impl<'a> ClientBlockBuilder<'a> {
         if let Some(inputs) = &self.inputs {
             for input in inputs {
                 let output_response = self.client.get_output(input.output_id()).await?;
-                let output = Output::try_from(&output_response.output)?;
+                let output = Output::try_from_dto(&output_response.output)?;
 
                 if !output_response.metadata.is_spent {
                     let (_output_amount, output_address) = ClientBlockBuilder::get_output_amount_and_address(

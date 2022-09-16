@@ -166,7 +166,7 @@ impl ClientMessageHandler {
                 features,
                 immutable_features,
             } => {
-                let output = Output::from(AliasOutput::from_dtos(
+                let output = Output::from(AliasOutput::try_from_dtos(
                     if let Some(amount) = amount {
                         OutputBuilderAmountDto::Amount(amount)
                     } else {
@@ -190,7 +190,7 @@ impl ClientMessageHandler {
                 unlock_conditions,
                 features,
             } => {
-                let output = Output::from(BasicOutput::from_dtos(
+                let output = Output::from(BasicOutput::try_from_dtos(
                     if let Some(amount) = amount {
                         OutputBuilderAmountDto::Amount(amount)
                     } else {
@@ -212,7 +212,7 @@ impl ClientMessageHandler {
                 features,
                 immutable_features,
             } => {
-                let output = Output::from(FoundryOutput::from_dtos(
+                let output = Output::from(FoundryOutput::try_from_dtos(
                     if let Some(amount) = amount {
                         OutputBuilderAmountDto::Amount(amount)
                     } else {
@@ -236,7 +236,7 @@ impl ClientMessageHandler {
                 features,
                 immutable_features,
             } => {
-                let output = Output::from(NftOutput::from_dtos(
+                let output = Output::from(NftOutput::try_from_dtos(
                     if let Some(amount) = amount {
                         OutputBuilderAmountDto::Amount(amount)
                     } else {
@@ -384,7 +384,7 @@ impl ClientMessageHandler {
                     .await?,
             )),
             Message::PostBlock { block } => Ok(Response::BlockId(
-                self.client.post_block(&BeeBlock::try_from(&block)?).await?,
+                self.client.post_block(&BeeBlock::try_from_dto(&block)?).await?,
             )),
             Message::GetBlock { block_id } => Ok(Response::Block(BlockDto::from(
                 &self.client.get_block(&block_id).await?,
@@ -531,7 +531,7 @@ impl ClientMessageHandler {
                 Ok(response)
             }
             Message::BlockId { block } => {
-                let block = BeeBlock::try_from(&block)?;
+                let block = BeeBlock::try_from_dto(&block)?;
                 Ok(Response::BlockId(block.id()))
             }
             Message::TransactionId { payload } => {

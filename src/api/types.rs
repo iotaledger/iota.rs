@@ -148,7 +148,7 @@ impl TryFrom<&RemainderDataDto> for RemainderData {
 
     fn try_from(remainder: &RemainderDataDto) -> crate::Result<Self> {
         Ok(Self {
-            output: Output::try_from(&remainder.output)?,
+            output: Output::try_from_dto(&remainder.output)?,
             chain: remainder.chain.clone(),
             address: Address::try_from(&remainder.address)?,
         })

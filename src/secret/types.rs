@@ -234,7 +234,7 @@ impl TryFrom<&InputSigningDataDto> for InputSigningData {
 
     fn try_from(input: &InputSigningDataDto) -> Result<Self> {
         Ok(Self {
-            output: Output::try_from(&input.output)?,
+            output: Output::try_from_dto(&input.output)?,
             output_metadata: input.output_metadata.clone(),
             chain: input.chain.clone(),
             bech32_address: input.bech32_address.clone(),

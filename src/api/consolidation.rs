@@ -82,7 +82,7 @@ impl Client {
                             output_response.metadata.output_index,
                         )?))?;
 
-                        let output = Output::try_from(&output_response.output)?;
+                        let output = Output::try_from_dto(&output_response.output)?;
 
                         if let Some(native_tokens) = output.native_tokens() {
                             total_native_tokens.add_native_tokens(native_tokens.clone())?;

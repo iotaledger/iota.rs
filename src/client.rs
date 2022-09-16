@@ -635,7 +635,7 @@ impl Client {
 
         for output_resp in available_outputs {
             let (amount, _) = ClientBlockBuilder::get_output_amount_and_address(
-                &Output::try_from(&output_resp.output)?,
+                &Output::try_from_dto(&output_resp.output)?,
                 None,
                 current_time,
             )?;
