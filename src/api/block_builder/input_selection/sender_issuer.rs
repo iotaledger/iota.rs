@@ -33,44 +33,7 @@ impl<'a> ClientBlockBuilder<'a> {
         let bech32_hrp = self.client.get_bech32_hrp().await?;
         let current_time = self.client.get_time_checked().await?;
 
-        let mut all_required_addresses = HashSet::new();
-        for output in &self.outputs {
-            if let Some(sender_feature) = output.features().and_then(Features::sender) {
-                // Only add if not already present in the utxo chain inputs.
-                if !utxo_chain_inputs.iter().any(|input_data| {
-                    output_contains_address(
-                        &input_data.output,
-                        input_data.output_id().expect("invalid output id in input signing data"),
-                        sender_feature.address(),
-                        current_time,
-                    )
-                }) {
-                    all_required_addresses.insert(sender_feature.address());
-                }
-            }
-
-            // Issuer address only needs to be unlocked when the utxo chain is newly created.
-            let utxo_chain_creation = match &output {
-                Output::Alias(alias_output) => alias_output.alias_id().is_null(),
-                Output::Nft(nft_output) => nft_output.nft_id().is_null(),
-                _ => false,
-            };
-            if utxo_chain_creation {
-                if let Some(issuer_feature) = output.immutable_features().and_then(Features::issuer) {
-                    // Only add if not already present in the utxo chain inputs.
-                    if !utxo_chain_inputs.iter().any(|input_data| {
-                        output_contains_address(
-                            &input_data.output,
-                            input_data.output_id().expect("invalid output id in input signing data"),
-                            issuer_feature.address(),
-                            current_time,
-                        )
-                    }) {
-                        all_required_addresses.insert(issuer_feature.address());
-                    }
-                }
-            }
-        }
+        let all_required_addresses = get_required_addresses_for_sender_and_issuer(&[], &self.outputs, current_time)?;
 
         for address in all_required_addresses {
             match address {
@@ -81,12 +44,12 @@ impl<'a> ClientBlockBuilder<'a> {
                         self.coin_type,
                         self.account_index,
                         self.input_range.clone(),
-                        &Address::Ed25519(*address),
+                        &Address::Ed25519(address),
                     )
                     .await?;
                     // If it didn't return with an error, then the address was found.
 
-                    let address = Address::Ed25519(*address);
+                    let address = Address::Ed25519(address);
                     let address_outputs = self.address_outputs(address.to_bech32(&bech32_hrp)).await?;
 
                     let mut found_output = false;
@@ -246,4 +209,160 @@ impl<'a> ClientBlockBuilder<'a> {
 
         Ok(required_inputs)
     }
+}
+
+// Select inputs for sender and issuer features
+// TODO: add selected alias and nfts outputs to the output side with sender feature removed
+pub(crate) fn select_inputs_for_sender_and_issuer<'a>(
+    inputs: impl Iterator<Item = &'a InputSigningData> + Clone,
+    selected_inputs: &mut Vec<InputSigningData>,
+    outputs: &mut Vec<Output>,
+    current_time: u32,
+) -> Result<()> {
+    log::debug!("[select_inputs_for_sender_and_issuer]");
+
+    let all_required_addresses = get_required_addresses_for_sender_and_issuer(selected_inputs, outputs, current_time)?;
+    'addresses_loop: for address in all_required_addresses {
+        match address {
+            Address::Ed25519(address) => {
+                let address = Address::Ed25519(address);
+                // first check already selected outputs
+                for input_signing_data in selected_inputs.iter() {
+                    if output_contains_address(
+                        &input_signing_data.output,
+                        input_signing_data.output_id()?,
+                        &address,
+                        current_time,
+                    ) {
+                        continue 'addresses_loop;
+                    }
+                }
+
+                // if not found, check currently not selected outputs
+                for input_signing_data in inputs.clone() {
+                    if output_contains_address(
+                        &input_signing_data.output,
+                        input_signing_data.output_id()?,
+                        &address,
+                        current_time,
+                    ) {
+                        selected_inputs.push(input_signing_data.clone());
+                        // break when we added the required output to the selected_inputs
+                        continue 'addresses_loop;
+                    }
+                }
+
+                return Err(Error::MissingInput(format!(
+                    "missing input with {address:?} for sender or issuer feature"
+                )));
+            }
+            Address::Alias(alias_address) => {
+                // Check if output is alias address.
+                let alias_id = alias_address.alias_id();
+
+                // check if already selected.
+                for selected_input in selected_inputs.iter() {
+                    if let Output::Alias(alias_output) = &selected_input.output {
+                        if alias_id == alias_output.alias_id() {
+                            continue 'addresses_loop;
+                        }
+                    }
+                }
+
+                // if not found, check currently not selected outputs
+                for input_signing_data in inputs.clone() {
+                    if let Output::Alias(alias_output) = &input_signing_data.output {
+                        if alias_id == alias_output.alias_id() {
+                            selected_inputs.push(input_signing_data.clone());
+                            // break when we added the required output to the selected_inputs
+                            continue 'addresses_loop;
+                        }
+                    }
+                }
+                return Err(Error::MissingInput(format!(
+                    "missing alias {alias_id} for sender or issuer feature"
+                )));
+            }
+            Address::Nft(nft_address) => {
+                // Check if output is nft address.
+                let nft_id = nft_address.nft_id();
+
+                // check if already selected.
+                for selected_input in selected_inputs.iter() {
+                    if let Output::Nft(nft_output) = &selected_input.output {
+                        if nft_id == nft_output.nft_id() {
+                            continue 'addresses_loop;
+                        }
+                    }
+                }
+
+                // if not found, check currently not selected outputs
+                for input_signing_data in inputs.clone() {
+                    if let Output::Nft(nft_output) = &input_signing_data.output {
+                        if nft_id == nft_output.nft_id() {
+                            selected_inputs.push(input_signing_data.clone());
+                            // break when we added the required output to the selected_inputs
+                            continue 'addresses_loop;
+                        }
+                    }
+                }
+                return Err(Error::MissingInput(format!(
+                    "missing nft {nft_id} for sender or issuer feature"
+                )));
+            }
+        }
+    }
+
+    Ok(())
+}
+
+// Returns required addresses for sender and issuer features that aren't already unlocked with the selected_inputs
+fn get_required_addresses_for_sender_and_issuer(
+    selected_inputs: &[InputSigningData],
+    outputs: &Vec<Output>,
+    current_time: u32,
+) -> crate::Result<HashSet<Address>> {
+    log::debug!("[get_required_addresses_for_sender_and_issuer]");
+
+    let mut all_required_addresses = HashSet::new();
+
+    for output in outputs {
+        if let Some(sender_feature) = output.features().and_then(Features::sender) {
+            // Only add if not already present in the selected inputs.
+            if !selected_inputs.iter().any(|input_data| {
+                output_contains_address(
+                    &input_data.output,
+                    input_data.output_id().expect("invalid output id in input signing data"),
+                    sender_feature.address(),
+                    current_time,
+                )
+            }) {
+                all_required_addresses.insert(*sender_feature.address());
+            }
+        }
+
+        // Issuer address only needs to be unlocked when the utxo chain is newly created.
+        let utxo_chain_creation = match &output {
+            Output::Alias(alias_output) => alias_output.alias_id().is_null(),
+            Output::Nft(nft_output) => nft_output.nft_id().is_null(),
+            _ => false,
+        };
+        if utxo_chain_creation {
+            if let Some(issuer_feature) = output.immutable_features().and_then(Features::issuer) {
+                // Only add if not already present in the selected inputs.
+                if !selected_inputs.iter().any(|input_data| {
+                    output_contains_address(
+                        &input_data.output,
+                        input_data.output_id().expect("invalid output id in input signing data"),
+                        issuer_feature.address(),
+                        current_time,
+                    )
+                }) {
+                    all_required_addresses.insert(*issuer_feature.address());
+                }
+            }
+        }
+    }
+
+    Ok(all_required_addresses)
 }
