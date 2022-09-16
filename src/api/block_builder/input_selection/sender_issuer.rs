@@ -212,7 +212,6 @@ impl<'a> ClientBlockBuilder<'a> {
 }
 
 // Select inputs for sender and issuer features
-// TODO: add selected alias and nfts outputs to the output side with sender feature removed
 pub(crate) fn select_inputs_for_sender_and_issuer<'a>(
     inputs: impl Iterator<Item = &'a InputSigningData> + Clone,
     selected_inputs: &mut Vec<InputSigningData>,
