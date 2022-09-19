@@ -52,31 +52,32 @@ impl<'a> ClientBlockBuilder<'a> {
     }
 
     /// Searches inputs for provided outputs, by requesting the outputs from the account addresses or for
-    /// alias/foundry/nft outputs get the latest state with their alias/nft id. Forwards to [try_select_inputs()]
+    /// alias/foundry/nft outputs get the latest state with their alias/nft id. Forwards to [try_select_inputs()].
     pub(crate) async fn get_inputs(&self, rent_structure: &RentStructure) -> Result<SelectedTransactionData> {
         log::debug!("[get_inputs]");
+
         let account_index = self.account_index;
         let mut gap_index = self.initial_address_index;
         let mut empty_address_count: u64 = 0;
         let mut cached_error = None;
 
-        // First get inputs for utxo chains (alias, foundry, nft outputs)
+        log::debug!("[get_inputs from utxo chains]");
+
+        // First get inputs for utxo chains (Alias, Foundry, NFT outputs).
         let mut available_inputs = self.get_utxo_chains_inputs(self.outputs.iter()).await?;
-        let (force_use_all_inputs, required_inputs_for_sender_or_issuer) =
-            self.get_inputs_for_sender_and_issuer(&available_inputs).await?;
-        available_inputs.extend(required_inputs_for_sender_or_issuer.into_iter());
+        let required_inputs_for_sender_or_issuer = self.get_inputs_for_sender_and_issuer(&available_inputs).await?;
 
         let current_time = self.client.get_time_checked().await?;
 
-        // Try to select inputs with required inputs for utxo chains alone before requesting more inputs from addresses
+        // Try to select inputs with required inputs for utxo chains alone before requesting more inputs from addresses.
         if let Ok(selected_transaction_data) = try_select_inputs(
+            required_inputs_for_sender_or_issuer.clone(),
             available_inputs.clone(),
             self.outputs.clone(),
-            force_use_all_inputs,
             self.custom_remainder_address,
             rent_structure,
             // Don't allow burning of native tokens during automatic input selection, because otherwise it
-            // could lead to burned native tokens by accident
+            // could lead to burned native tokens by accident.
             false,
             current_time,
             self.client.get_token_supply().await?,
@@ -85,9 +86,10 @@ impl<'a> ClientBlockBuilder<'a> {
         };
 
         log::debug!("[get_inputs from addresses]");
-        // then select inputs with outputs from addresses
+
+        // Then select inputs with outputs from addresses.
         let selected_transaction_data = 'input_selection: loop {
-            // Get the addresses in the BIP path/index ~ path/index+20
+            // Get the addresses in the BIP path/index ~ path/index+20.
             let addresses = self
                 .client
                 .get_addresses(
@@ -98,15 +100,17 @@ impl<'a> ClientBlockBuilder<'a> {
                 .with_range(gap_index..gap_index + ADDRESS_GAP_RANGE)
                 .get_all()
                 .await?;
-            // Have public and internal addresses with the index ascending ordered
+            // Have public and internal addresses with the index ascending ordered.
             let mut public_and_internal_addresses = Vec::new();
+
             for index in 0..addresses.public.len() {
                 public_and_internal_addresses.push((addresses.public[index].clone(), false));
                 public_and_internal_addresses.push((addresses.internal[index].clone(), true));
             }
 
-            // For each address, get the address outputs
+            // For each address, get the address outputs.
             let mut address_index = gap_index;
+
             for (index, (str_address, internal)) in public_and_internal_addresses.iter().enumerate() {
                 let address_outputs = self.address_outputs(str_address.to_string()).await?;
 
@@ -144,20 +148,20 @@ impl<'a> ClientBlockBuilder<'a> {
                         }
                     }
                     let selected_transaction_data = match try_select_inputs(
+                        required_inputs_for_sender_or_issuer.clone(),
                         available_inputs.clone(),
                         self.outputs.clone(),
-                        force_use_all_inputs,
                         self.custom_remainder_address,
                         rent_structure,
                         // Don't allow burning of native tokens during automatic input selection, because otherwise it
-                        // could lead to burned native tokens by accident
+                        // could lead to burned native tokens by accident.
                         false,
                         current_time,
                         self.client.get_token_supply().await?,
                     ) {
                         Ok(r) => r,
                         // for these errors, just try again in the next round with more addresses which might have more
-                        // outputs
+                        // outputs.
                         Err(err @ crate::Error::NotEnoughBalance { .. }) => {
                             cached_error.replace(err);
                             continue;
@@ -166,17 +170,17 @@ impl<'a> ClientBlockBuilder<'a> {
                             cached_error.replace(err);
                             continue;
                         }
-                        // Native tokens left, but no balance for the storage deposit for a remainder
+                        // Native tokens left, but no balance for the storage deposit for a remainder.
                         Err(err @ crate::Error::NoBalanceForNativeTokenRemainder) => {
                             cached_error.replace(err);
                             continue;
                         }
-                        // Currently too many inputs, by scanning for more inputs, we might find some with more amount
+                        // Currently too many inputs, by scanning for more inputs, we might find some with more amount.
                         Err(err @ crate::Error::ConsolidationRequired { .. }) => {
                             cached_error.replace(err);
                             continue;
                         }
-                        // Not enough balance for a remainder
+                        // Not enough balance for a remainder.
                         Err(crate::Error::BlockError(block_error)) => match block_error {
                             bee_block::Error::InvalidStorageDepositAmount { .. } => {
                                 cached_error.replace(crate::Error::BlockError(block_error));
@@ -196,7 +200,9 @@ impl<'a> ClientBlockBuilder<'a> {
                     address_index += 1;
                 }
             }
+
             gap_index += ADDRESS_GAP_RANGE;
+
             // The gap limit is 20 and use reference 40 here because there's public and internal addresses
             if empty_address_count >= (ADDRESS_GAP_RANGE * 2) as u64 {
                 // returned last cached error
