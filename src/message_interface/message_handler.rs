@@ -250,6 +250,7 @@ impl ClientMessageHandler {
                     unlock_conditions,
                     features,
                     immutable_features,
+                    self.client.get_token_supply()?,
                 )?);
 
                 Ok(Response::BuiltOutput(OutputDto::from(&output)))
