@@ -287,7 +287,7 @@ impl<'a> ClientBlockBuilder<'a> {
             self = self.with_outputs(
                 outputs
                     .iter()
-                    .map(|o| Ok(Output::try_from_dto(o)?))
+                    .map(|o| Ok(Output::try_from(o)?))
                     .collect::<Result<Vec<Output>>>()?,
             )?;
         }

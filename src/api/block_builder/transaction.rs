@@ -31,7 +31,7 @@ impl<'a> ClientBlockBuilder<'a> {
         let mut governance_transition: Option<HashSet<AliasId>> = None;
         for output in &self.outputs {
             // Check if the outputs have enough amount to cover the storage deposit
-            output.verify_storage_deposit(&rent_structure)?;
+            output.verify_storage_deposit(rent_structure.clone(), self.client.get_token_supply().await?)?;
             if let Output::Alias(x) = output {
                 if x.state_index() > 0 {
                     // Check if the transaction is a governance_transition, by checking if the new index is the same as
@@ -50,7 +50,7 @@ impl<'a> ClientBlockBuilder<'a> {
             }
         }
 
-        // Inputselection
+        // Input selection
         let selected_transaction_data = if self.inputs.is_some() {
             self.get_custom_inputs(governance_transition, &rent_structure, self.allow_burning)
                 .await?
@@ -81,7 +81,7 @@ impl<'a> ClientBlockBuilder<'a> {
             let tagged_data_payload = TaggedDataPayload::new(index.to_vec(), self.data.clone().unwrap_or_default())?;
             essence = essence.with_payload(Payload::TaggedData(Box::new(tagged_data_payload)));
         }
-        let regular_essence = essence.finish()?;
+        let regular_essence = essence.finish(&self.client.get_protocol_parameters().await?)?;
         let essence = TransactionEssence::Regular(regular_essence);
 
         Ok(PreparedTransactionData {
