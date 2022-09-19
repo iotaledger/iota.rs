@@ -19,6 +19,10 @@ pub type Result<T> = std::result::Result<T, Error>;
 #[allow(clippy::large_enum_variant)]
 #[serde(tag = "type", content = "error")]
 pub enum Error {
+    /// Block dtos error
+    #[error("{0}")]
+    #[serde(serialize_with = "display_string")]
+    ApiTypes(#[from] bee_api_types::error::Error),
     /// Blake2b256 Error
     #[error("{0}")]
     Blake2b256Error(&'static str),

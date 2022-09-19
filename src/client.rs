@@ -12,7 +12,7 @@ use std::{
 
 use bee_api_types::{
     dtos::LedgerInclusionStateDto,
-    responses::{InfoResponse as NodeInfo, OutputResponse},
+    responses::{InfoResponse as NodeInfo, OutputResponse, ProtocolResponse},
 };
 use bee_block::{
     address::Address,
@@ -192,24 +192,17 @@ log::warn!("Syncing nodes failed: {e}");
             if let Ok(info) = Client::get_node_info(node.url.as_ref(), None).await {
                 if info.status.is_healthy {
                     match network_nodes.get_mut(&info.protocol.network_name) {
-                        Some(network_id_entry) => {
-                            network_id_entry.push((info, node.clone()));
+                        Some(network_node_entry) => {
+                            network_node_entry.push((info, node.clone()));
                         }
-                        None => match &network_info
-                            .read()
-                            .map_or(NetworkInfo::default().protocol_parameters.network_name(), |info| {
-                                info.protocol_parameters.network_name().clone()
-                            }) {
-                            Some(id) => {
-                                if info.protocol.network_name.contains(id) {
-                                    network_nodes
-                                        .insert(info.protocol.network_name.clone(), vec![(info, node.clone())]);
-                                }
-                            }
-                            None => {
+                        None => {
+                            let guard = network_info.read().map_err(|_| crate::Error::PoisonError)?;
+                            let id = guard.protocol_parameters.network_name().clone();
+                            // TODO there used to be a some/none match, is this correct?
+                            if info.protocol.network_name.contains(id.clone()) {
                                 network_nodes.insert(info.protocol.network_name.clone(), vec![(info, node.clone())]);
                             }
-                        },
+                        }
                     }
                 } else {
                     log::debug!("{} is not healthy: {:?}", node.url, info);
@@ -231,9 +224,10 @@ log::warn!("Syncing nodes failed: {e}");
         if let Some(nodes) = network_nodes.get(most_nodes.0) {
             let pow_feature = String::from("pow");
 
+            // TODO why do we set this in a loop?
             for (info, node_url) in nodes.iter() {
                 if let Ok(mut client_network_info) = network_info.write() {
-                    client_network_info.protocol_parameters = info.protocol.try_into()?;
+                    client_network_info.protocol_parameters = ProtocolParameters::try_from(info.protocol.clone())?;
 
                     if !client_network_info.local_pow {
                         if info.features.contains(&pow_feature) {
