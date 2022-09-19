@@ -57,7 +57,7 @@ impl<'a> ClientBlockBuilder<'a> {
 
                         if is_basic_output_address_unlockable(&output, &address, current_time) {
                             required_inputs.push(InputSigningData {
-                                output: Output::try_from(&output_response.output)?,
+                                output,
                                 output_metadata: OutputMetadata::try_from(&output_response.metadata)?,
                                 chain: Some(Chain::from_u32_hardened(vec![
                                     HD_WALLET_TYPE,
@@ -80,18 +80,18 @@ impl<'a> ClientBlockBuilder<'a> {
                     }
                 }
                 Address::Alias(alias_address) => {
-                    // check if already found or request new.
+                    // Check if output is alias address.
+                    let alias_id = alias_address.alias_id();
 
+                    // check if already found or request new.
                     if !utxo_chain_inputs.iter().chain(required_inputs.iter()).any(|input| {
-                        // Check if output is alias address.
-                        let alias_id = alias_address.alias_id();
                         if let Output::Alias(alias_output) = &input.output {
                             alias_id == alias_output.alias_id()
                         } else {
                             false
                         }
                     }) {
-                        let output_id = self.client.alias_output_id(*alias_address.alias_id()).await?;
+                        let output_id = self.client.alias_output_id(*alias_id).await?;
                         let output_response = self.client.get_output(&output_id).await?;
                         if let OutputDto::Alias(alias_output_dto) = &output_response.output {
                             let alias_output = AliasOutput::try_from(alias_output_dto)?;
@@ -137,17 +137,18 @@ impl<'a> ClientBlockBuilder<'a> {
                     }
                 }
                 Address::Nft(nft_address) => {
+                    // Check if output is nft address.
+                    let nft_id = nft_address.nft_id();
+
                     // Check if already found or request new.
                     if !utxo_chain_inputs.iter().chain(required_inputs.iter()).any(|input| {
-                        // Check if output is nft address.
-                        let nft_id = nft_address.nft_id();
                         if let Output::Nft(nft_output) = &input.output {
                             nft_id == nft_output.nft_id()
                         } else {
                             false
                         }
                     }) {
-                        let output_id = self.client.nft_output_id(*nft_address.nft_id()).await?;
+                        let output_id = self.client.nft_output_id(*nft_id).await?;
                         let output_response = self.client.get_output(&output_id).await?;
                         if let OutputDto::Nft(nft_output) = &output_response.output {
                             let nft_output = NftOutput::try_from(nft_output)?;
@@ -223,8 +224,7 @@ pub(crate) fn select_inputs_for_sender_and_issuer<'a>(
     let all_required_addresses = get_required_addresses_for_sender_and_issuer(selected_inputs, outputs, current_time)?;
     'addresses_loop: for address in all_required_addresses {
         match address {
-            Address::Ed25519(address) => {
-                let address = Address::Ed25519(address);
+            Address::Ed25519(_) => {
                 // first check already selected outputs
                 for input_signing_data in selected_inputs.iter() {
                     if output_contains_address(
@@ -263,7 +263,7 @@ pub(crate) fn select_inputs_for_sender_and_issuer<'a>(
                 // check if already selected.
                 for selected_input in selected_inputs.iter() {
                     if let Output::Alias(alias_output) = &selected_input.output {
-                        if alias_id == alias_output.alias_id() {
+                        if alias_id == &alias_output.alias_id().or_from_output_id(selected_input.output_id()?) {
                             continue 'addresses_loop;
                         }
                     }
@@ -277,7 +277,11 @@ pub(crate) fn select_inputs_for_sender_and_issuer<'a>(
                         continue;
                     }
                     if let Output::Alias(alias_output) = &input_signing_data.output {
-                        if alias_id == alias_output.alias_id() {
+                        if alias_id
+                            == &alias_output
+                                .alias_id()
+                                .or_from_output_id(input_signing_data.output_id()?)
+                        {
                             selected_inputs.push(input_signing_data.clone());
                             selected_inputs_output_ids.insert(output_id);
                             // break when we added the required output to the selected_inputs
@@ -296,7 +300,7 @@ pub(crate) fn select_inputs_for_sender_and_issuer<'a>(
                 // check if already selected.
                 for selected_input in selected_inputs.iter() {
                     if let Output::Nft(nft_output) = &selected_input.output {
-                        if nft_id == nft_output.nft_id() {
+                        if nft_id == &nft_output.nft_id().or_from_output_id(selected_input.output_id()?) {
                             continue 'addresses_loop;
                         }
                     }
@@ -310,7 +314,7 @@ pub(crate) fn select_inputs_for_sender_and_issuer<'a>(
                         continue;
                     }
                     if let Output::Nft(nft_output) = &input_signing_data.output {
-                        if nft_id == nft_output.nft_id() {
+                        if nft_id == &nft_output.nft_id().or_from_output_id(input_signing_data.output_id()?) {
                             selected_inputs.push(input_signing_data.clone());
                             selected_inputs_output_ids.insert(output_id);
                             // break when we added the required output to the selected_inputs
