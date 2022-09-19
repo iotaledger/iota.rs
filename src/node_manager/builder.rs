@@ -210,19 +210,21 @@ impl NodeManagerBuilder {
 
     pub(crate) fn add_default_nodes(mut self, network_info: &NetworkInfo) -> Result<Self> {
         let default_testnet_nodes = vec![];
+
         if self.nodes.is_empty() && self.primary_node.is_none() {
-            match network_info.network {
-                Some(ref network) => match network.to_lowercase().as_str() {
-                    "testnet" | "devnet" | "test" | "dev" => {
-                        self = self.with_nodes(&default_testnet_nodes[..])?;
-                    }
-                    _ => return Err(Error::SyncedNodePoolEmpty),
-                },
-                _ => {
+            match network_info.protocol_parameters.network_name().to_lowercase().as_ref() {
+                "testnet" | "devnet" | "test" | "dev" => {
                     self = self.with_nodes(&default_testnet_nodes[..])?;
                 }
+                _ => return Err(Error::SyncedNodePoolEmpty),
             }
+
+            // TODO used to be a match _ case, what should we do?
+            // _ => {
+            //     self = self.with_nodes(&default_testnet_nodes[..])?;
+            // }
         }
+
         Ok(self)
     }
 

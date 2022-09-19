@@ -12,7 +12,7 @@ use std::{
 
 use bee_api_types::{
     dtos::LedgerInclusionStateDto,
-    responses::{InfoResponse as NodeInfo, OutputResponse, ProtocolResponse},
+    responses::{InfoResponse as NodeInfo, OutputResponse},
 };
 use bee_block::{
     address::Address,
