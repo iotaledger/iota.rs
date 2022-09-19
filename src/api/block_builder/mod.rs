@@ -171,7 +171,7 @@ impl<'a> ClientBlockBuilder<'a> {
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(
                 Address::try_from_bech32(address)?.1,
             )))
-            .finish_output()?;
+            .finish_output(self.client.get_token_supply()?)?;
         self.outputs.push(output);
         if !OUTPUT_COUNT_RANGE.contains(&(self.outputs.len() as u16)) {
             return Err(crate::Error::BlockError(bee_block::Error::InvalidOutputCount(
@@ -198,7 +198,7 @@ impl<'a> ClientBlockBuilder<'a> {
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(
                 address.parse::<Ed25519Address>()?.into(),
             )))
-            .finish_output()?;
+            .finish_output(self.client.get_token_supply()?)?;
         self.outputs.push(output);
         if !OUTPUT_COUNT_RANGE.contains(&(self.outputs.len() as u16)) {
             return Err(crate::Error::BlockError(bee_block::Error::InvalidOutputCount(
@@ -287,7 +287,7 @@ impl<'a> ClientBlockBuilder<'a> {
             self = self.with_outputs(
                 outputs
                     .iter()
-                    .map(|o| Ok(Output::try_from(o)?))
+                    .map(|o| Ok(Output::try_from_dto(o, self.client.get_token_supply()?)?))
                     .collect::<Result<Vec<Output>>>()?,
             )?;
         }
