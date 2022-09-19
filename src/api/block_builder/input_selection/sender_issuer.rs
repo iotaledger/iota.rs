@@ -37,19 +37,18 @@ impl<'a> ClientBlockBuilder<'a> {
 
         for address in all_required_addresses {
             match address {
-                Address::Ed25519(address) => {
+                Address::Ed25519(_) => {
                     let (address_index, internal) = search_address(
                         self.secret_manager.ok_or(Error::MissingParameter("secret manager"))?,
                         &bech32_hrp,
                         self.coin_type,
                         self.account_index,
                         self.input_range.clone(),
-                        &Address::Ed25519(address),
+                        &address,
                     )
                     .await?;
                     // If it didn't return with an error, then the address was found.
 
-                    let address = Address::Ed25519(address);
                     let address_outputs = self.address_outputs(address.to_bech32(&bech32_hrp)).await?;
 
                     let mut found_output = false;
