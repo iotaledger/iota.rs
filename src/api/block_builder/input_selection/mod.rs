@@ -18,7 +18,7 @@ use bee_block::{
     input::INPUT_COUNT_MAX,
     output::{
         feature::SenderFeature, AliasOutputBuilder, FoundryOutputBuilder, NativeTokensBuilder, NftOutputBuilder,
-        Output, Rent, RentStructure, OUTPUT_COUNT_MAX,
+        Output, OutputId, Rent, RentStructure, OUTPUT_COUNT_MAX,
     },
 };
 pub use helpers::minimum_storage_deposit_basic_output;
@@ -62,16 +62,33 @@ pub fn try_select_inputs(
         return Err(crate::Error::NoInputs);
     }
 
+    // Check that the data contains valid values to create output ids, because we can't properly return the error in all
+    // used places.
+    // TODO: validate data earlier, maybe on `InputSigningData` creation?
+    validate_input_output_ids(&mandatory_inputs, &additional_inputs)?;
+
     dedup_inputs(&mut mandatory_inputs, &mut additional_inputs);
 
     // Always have the mandatory inputs already selected.
     let mut selected_inputs: Vec<InputSigningData> = mandatory_inputs.clone();
+    // Keep track of which inputs we selected in a HashSet, so we don't need to iterate over the inputs every time.
+    let mut selected_inputs_output_ids: HashSet<OutputId> = selected_inputs
+        .iter()
+        // PANIC: unwrapping is fine, since we validated that the data is valid before.
+        .map(|input| input.output_id().unwrap())
+        .collect();
     let all_inputs = mandatory_inputs.iter().chain(additional_inputs.iter());
     let input_outputs = all_inputs.clone().map(|i| &i.output);
 
     // select outputs for sender/issuer features. Alias and nft outputs added to the inputs will be added to the outputs
     // in select_utxo_chain_inputs().
-    select_inputs_for_sender_and_issuer(all_inputs.clone(), &mut selected_inputs, &mut outputs, current_time)?;
+    select_inputs_for_sender_and_issuer(
+        all_inputs.clone(),
+        &mut selected_inputs,
+        &mut selected_inputs_output_ids,
+        &mut outputs,
+        current_time,
+    )?;
 
     let mut required = get_accumulated_output_amounts(&input_outputs, outputs.iter())?;
     // Add the minted tokens to the inputs, because we don't need to provide other inputs for them
@@ -90,12 +107,12 @@ pub fn try_select_inputs(
     // Basic outputs.
     let mut basic_outputs = Vec::new();
     // Alias, Foundry and NFT outputs.
-    let mut utxo_chain_outputs = Vec::new();
+    let mut utxo_chain_inputs = Vec::new();
 
     for input_signing_data in all_inputs.clone() {
         match input_signing_data.output {
             Output::Basic(_) => basic_outputs.push(input_signing_data),
-            Output::Alias(_) | Output::Foundry(_) | Output::Nft(_) => utxo_chain_outputs.push(input_signing_data),
+            Output::Alias(_) | Output::Foundry(_) | Output::Nft(_) => utxo_chain_inputs.push(input_signing_data),
             Output::Treasury(_) => {}
         }
     }
@@ -107,11 +124,12 @@ pub fn try_select_inputs(
     // Inputs for which no outputs exists already, will be added automatically to the outputs, if burning isn't allowed.
     select_utxo_chain_inputs(
         &mut selected_inputs,
+        &mut selected_inputs_output_ids,
         &mut selected_input_amount,
         &mut selected_input_native_tokens,
         &mut outputs,
         &mut required,
-        &utxo_chain_outputs,
+        &utxo_chain_inputs,
         allow_burning,
         current_time,
         rent_structure,
@@ -122,6 +140,19 @@ pub fn try_select_inputs(
 
     // Validate that we have selected the required inputs for alias, nft and foundry outputs.
     check_utxo_chain_inputs(&selected_inputs, &outputs)?;
+
+    // Remove inputs we added in `select_inputs_for_sender_and_issuer()`
+    let mut index = 0;
+    while index < basic_outputs.len() {
+        // Remove already added inputs
+        if selected_inputs_output_ids.contains(&basic_outputs[index].output_id()?) {
+            basic_outputs.remove(index);
+            // Continue without increasing the index because we removed one element
+            continue;
+        }
+        // Increase index so we check the next index
+        index += 1;
+    }
 
     // 2. get basic inputs for the required native tokens (because the amount of these outputs will also be available in
     // the outputs)
@@ -322,109 +353,33 @@ fn dedup_inputs(mandatory_inputs: &mut Vec<InputSigningData>, additional_inputs:
 #[allow(clippy::too_many_arguments)]
 fn select_utxo_chain_inputs(
     selected_inputs: &mut Vec<InputSigningData>,
+    selected_inputs_output_ids: &mut HashSet<OutputId>,
     selected_input_amount: &mut u64,
     selected_input_native_tokens: &mut NativeTokensBuilder,
     outputs: &mut Vec<Output>,
     required: &mut AccumulatedOutputAmounts,
-    utxo_chain_outputs: &Vec<&InputSigningData>,
+    utxo_chain_inputs: &Vec<&InputSigningData>,
     allow_burning: bool,
     current_time: u32,
     rent_structure: &RentStructure,
 ) -> crate::Result<()> {
-    loop {
-        // if an output is required as input, but we don't want to burn/destroy it, we have to add it as output again.
-        // We track here for which outputs we did that, to prevent doing it multiple times.
-        let mut added_output_for_input_signing_data = HashSet::new();
-        let mut added_input_signing_data = HashSet::new();
+    // if an output is required as input, but we don't want to burn/destroy it, we have to add it as output again.
+    // We track here for which outputs we did that, to prevent doing it multiple times.
+    let mut added_output_for_input_signing_data = HashSet::new();
 
-        // Add existing selected inputs we added for sender and issuer features before
-        for input_signing_data in selected_inputs.iter() {
-            added_output_for_input_signing_data.insert(input_signing_data.output_id()?);
-            added_input_signing_data.insert(input_signing_data.output_id()?);
-
-            // Add inputs to outputs if not already there, so they don't get burned
-            if !allow_burning {
-                let output_id = input_signing_data.output_id()?;
-                let minimum_required_storage_deposit = input_signing_data.output.rent_cost(rent_structure);
-
-                match &input_signing_data.output {
-                    Output::Nft(nft_input) => {
-                        let nft_id = nft_input.nft_id().or_from_output_id(output_id);
-                        // Don't add if nft output is already present in the outputs.
-                        if !outputs.iter().any(|output| {
-                            if let Output::Nft(nft_output) = output {
-                                nft_id == *nft_output.nft_id()
-                            } else {
-                                false
-                            }
-                        }) {
-                            // Remove potential SenderFeature because we don't need it and don't want to check it again
-                            let filtered_features = nft_input
-                                .features()
-                                .iter()
-                                .cloned()
-                                .filter(|feature| feature.kind() != SenderFeature::KIND);
-                            // add output to outputs with minimum_required_storage_deposit
-                            let new_output = NftOutputBuilder::from(nft_input)
-                                .with_nft_id(nft_input.nft_id().or_from_output_id(output_id))
-                                .with_amount(minimum_required_storage_deposit)?
-                                // replace with filtered features
-                                .with_features(filtered_features)
-                                .finish_output()?;
-                            outputs.push(new_output);
-                        }
-                    }
-                    Output::Alias(alias_input) => {
-                        let alias_id = alias_input.alias_id().or_from_output_id(output_id);
-                        // Don't add if alias output is already present in the outputs.
-                        if !outputs.iter().any(|output| {
-                            if let Output::Alias(alias_output) = output {
-                                alias_id == *alias_output.alias_id()
-                            } else {
-                                false
-                            }
-                        }) {
-                            // Remove potential SenderFeature because we don't need it and don't want to check it again
-                            let filtered_features = alias_input
-                                .features()
-                                .iter()
-                                .cloned()
-                                .filter(|feature| feature.kind() != SenderFeature::KIND);
-                            // else add output to outputs with minimum_required_storage_deposit
-                            let new_output = AliasOutputBuilder::from(alias_input)
-                                .with_alias_id(alias_input.alias_id().or_from_output_id(output_id))
-                                .with_state_index(alias_input.state_index() + 1)
-                                .with_amount(minimum_required_storage_deposit)?
-                                // replace with filtered features
-                                .with_features(filtered_features)
-                                .finish_output()?;
-                            outputs.push(new_output);
-                        }
-                    }
-                    Output::Foundry(foundry_input) => {
-                        // Don't add if foundry output is already present in the outputs.
-                        if !outputs.iter().any(|output| {
-                            if let Output::Foundry(foundry_output) = output {
-                                foundry_input.id() == foundry_output.id()
-                            } else {
-                                false
-                            }
-                        }) {
-                            // else add output to outputs with minimum_required_storage_deposit
-                            let new_output = FoundryOutputBuilder::from(foundry_input)
-                                .with_amount(minimum_required_storage_deposit)?
-                                .finish_output()?;
-                            outputs.push(new_output);
-                        }
-                    }
-                    _ => {}
-                }
-            }
+    // Add existing selected inputs we added for sender and issuer features before
+    for input_signing_data in selected_inputs.iter() {
+        // Add inputs to outputs if not already there, so they don't get burned
+        if !allow_burning {
+            add_output_for_input(input_signing_data, rent_structure, outputs)?;
         }
+        added_output_for_input_signing_data.insert(input_signing_data.output_id()?);
+    }
 
+    loop {
         let outputs_len_beginning = outputs.len();
 
-        for input_signing_data in utxo_chain_outputs {
+        for input_signing_data in utxo_chain_inputs {
             let output_id = input_signing_data.output_id()?;
 
             // Skip inputs where we already added the required output.
@@ -547,7 +502,7 @@ fn select_utxo_chain_inputs(
             }
 
             // Don't add inputs multiple times
-            if !added_input_signing_data.contains(&output_id) {
+            if !selected_inputs_output_ids.contains(&output_id) {
                 let output = &input_signing_data.output;
                 *selected_input_amount += output.amount();
 
@@ -561,7 +516,7 @@ fn select_utxo_chain_inputs(
                 }
 
                 selected_inputs.push(input_signing_data.deref().clone());
-                added_input_signing_data.insert(output_id);
+                selected_inputs_output_ids.insert(output_id);
 
                 // Updated required value with possible new input
                 let input_outputs = selected_inputs.iter().map(|i| &i.output);
@@ -644,6 +599,105 @@ fn check_utxo_chain_inputs(selected_inputs: &[InputSigningData], outputs: &Vec<O
             }
             _ => {}
         }
+    }
+    Ok(())
+}
+
+// If we have an input that is an alias, nft or foundry output and we don't want to burn it, then we need to add it to
+// the output side. This function will do that with the minimum required storage deposit and potential sender feature
+// removed.
+fn add_output_for_input(
+    input_signing_data: &InputSigningData,
+    rent_structure: &RentStructure,
+    outputs: &mut Vec<Output>,
+) -> crate::Result<()> {
+    let output_id = input_signing_data.output_id()?;
+    let minimum_required_storage_deposit = input_signing_data.output.rent_cost(rent_structure);
+
+    match &input_signing_data.output {
+        Output::Nft(nft_input) => {
+            let nft_id = nft_input.nft_id().or_from_output_id(output_id);
+            // Don't add if nft output is already present in the outputs.
+            if !outputs.iter().any(|output| {
+                if let Output::Nft(nft_output) = output {
+                    nft_id == *nft_output.nft_id()
+                } else {
+                    false
+                }
+            }) {
+                // Remove potential SenderFeature because we don't need it and don't want to check it again
+                let filtered_features = nft_input
+                    .features()
+                    .iter()
+                    .cloned()
+                    .filter(|feature| feature.kind() != SenderFeature::KIND);
+                // add output to outputs with minimum_required_storage_deposit
+                let new_output = NftOutputBuilder::from(nft_input)
+                    .with_nft_id(nft_input.nft_id().or_from_output_id(output_id))
+                    .with_amount(minimum_required_storage_deposit)?
+                    // replace with filtered features
+                    .with_features(filtered_features)
+                    .finish_output()?;
+                outputs.push(new_output);
+            }
+        }
+        Output::Alias(alias_input) => {
+            let alias_id = alias_input.alias_id().or_from_output_id(output_id);
+            // Don't add if alias output is already present in the outputs.
+            if !outputs.iter().any(|output| {
+                if let Output::Alias(alias_output) = output {
+                    alias_id == *alias_output.alias_id()
+                } else {
+                    false
+                }
+            }) {
+                // Remove potential SenderFeature because we don't need it and don't want to check it again
+                let filtered_features = alias_input
+                    .features()
+                    .iter()
+                    .cloned()
+                    .filter(|feature| feature.kind() != SenderFeature::KIND);
+                // else add output to outputs with minimum_required_storage_deposit
+                let new_output = AliasOutputBuilder::from(alias_input)
+                    .with_alias_id(alias_input.alias_id().or_from_output_id(output_id))
+                    .with_state_index(alias_input.state_index() + 1)
+                    .with_amount(minimum_required_storage_deposit)?
+                    // replace with filtered features
+                    .with_features(filtered_features)
+                    .finish_output()?;
+                outputs.push(new_output);
+            }
+        }
+        Output::Foundry(foundry_input) => {
+            // Don't add if foundry output is already present in the outputs.
+            if !outputs.iter().any(|output| {
+                if let Output::Foundry(foundry_output) = output {
+                    foundry_input.id() == foundry_output.id()
+                } else {
+                    false
+                }
+            }) {
+                // else add output to outputs with minimum_required_storage_deposit
+                let new_output = FoundryOutputBuilder::from(foundry_input)
+                    .with_amount(minimum_required_storage_deposit)?
+                    .finish_output()?;
+                outputs.push(new_output);
+            }
+        }
+        _ => {}
+    }
+    Ok(())
+}
+
+fn validate_input_output_ids(
+    mandatory_inputs: &[InputSigningData],
+    additional_inputs: &[InputSigningData],
+) -> crate::Result<()> {
+    for input in mandatory_inputs {
+        let _ = input.output_id()?;
+    }
+    for input in additional_inputs {
+        let _ = input.output_id()?;
     }
     Ok(())
 }

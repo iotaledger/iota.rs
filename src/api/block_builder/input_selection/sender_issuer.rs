@@ -7,7 +7,7 @@ use std::collections::HashSet;
 
 use bee_block::{
     address::Address,
-    output::{dto::OutputDto, feature::Features, AliasOutput, NftOutput, Output},
+    output::{dto::OutputDto, feature::Features, AliasOutput, NftOutput, Output, OutputId},
 };
 use crypto::keys::slip10::Chain;
 
@@ -215,6 +215,7 @@ impl<'a> ClientBlockBuilder<'a> {
 pub(crate) fn select_inputs_for_sender_and_issuer<'a>(
     inputs: impl Iterator<Item = &'a InputSigningData> + Clone,
     selected_inputs: &mut Vec<InputSigningData>,
+    selected_inputs_output_ids: &mut HashSet<OutputId>,
     outputs: &mut Vec<Output>,
     current_time: u32,
 ) -> Result<()> {
@@ -239,13 +240,14 @@ pub(crate) fn select_inputs_for_sender_and_issuer<'a>(
 
                 // if not found, check currently not selected outputs
                 for input_signing_data in inputs.clone() {
-                    if output_contains_address(
-                        &input_signing_data.output,
-                        input_signing_data.output_id()?,
-                        &address,
-                        current_time,
-                    ) {
+                    // Skip already added inputs
+                    let output_id = input_signing_data.output_id()?;
+                    if selected_inputs_output_ids.contains(&output_id) {
+                        continue;
+                    }
+                    if output_contains_address(&input_signing_data.output, output_id, &address, current_time) {
                         selected_inputs.push(input_signing_data.clone());
+                        selected_inputs_output_ids.insert(output_id);
                         // break when we added the required output to the selected_inputs
                         continue 'addresses_loop;
                     }
@@ -270,9 +272,15 @@ pub(crate) fn select_inputs_for_sender_and_issuer<'a>(
 
                 // if not found, check currently not selected outputs
                 for input_signing_data in inputs.clone() {
+                    // Skip already added inputs
+                    let output_id = input_signing_data.output_id()?;
+                    if selected_inputs_output_ids.contains(&output_id) {
+                        continue;
+                    }
                     if let Output::Alias(alias_output) = &input_signing_data.output {
                         if alias_id == alias_output.alias_id() {
                             selected_inputs.push(input_signing_data.clone());
+                            selected_inputs_output_ids.insert(output_id);
                             // break when we added the required output to the selected_inputs
                             continue 'addresses_loop;
                         }
@@ -297,9 +305,15 @@ pub(crate) fn select_inputs_for_sender_and_issuer<'a>(
 
                 // if not found, check currently not selected outputs
                 for input_signing_data in inputs.clone() {
+                    // Skip already added inputs
+                    let output_id = input_signing_data.output_id()?;
+                    if selected_inputs_output_ids.contains(&output_id) {
+                        continue;
+                    }
                     if let Output::Nft(nft_output) = &input_signing_data.output {
                         if nft_id == nft_output.nft_id() {
                             selected_inputs.push(input_signing_data.clone());
+                            selected_inputs_output_ids.insert(output_id);
                             // break when we added the required output to the selected_inputs
                             continue 'addresses_loop;
                         }
