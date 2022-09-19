@@ -341,16 +341,18 @@ fn get_required_addresses_for_sender_and_issuer(
 
     for output in outputs {
         if let Some(sender_feature) = output.features().and_then(Features::sender) {
-            // Only add if not already present in the selected inputs.
-            if !selected_inputs.iter().any(|input_data| {
-                output_contains_address(
-                    &input_data.output,
-                    input_data.output_id().expect("invalid output id in input signing data"),
-                    sender_feature.address(),
-                    current_time,
-                )
-            }) {
-                all_required_addresses.insert(*sender_feature.address());
+            if !all_required_addresses.contains(sender_feature.address()) {
+                // Only add if not already present in the selected inputs.
+                if !selected_inputs.iter().any(|input_data| {
+                    output_contains_address(
+                        &input_data.output,
+                        input_data.output_id().expect("invalid output id in input signing data"),
+                        sender_feature.address(),
+                        current_time,
+                    )
+                }) {
+                    all_required_addresses.insert(*sender_feature.address());
+                }
             }
         }
 
@@ -362,16 +364,18 @@ fn get_required_addresses_for_sender_and_issuer(
         };
         if utxo_chain_creation {
             if let Some(issuer_feature) = output.immutable_features().and_then(Features::issuer) {
-                // Only add if not already present in the selected inputs.
-                if !selected_inputs.iter().any(|input_data| {
-                    output_contains_address(
-                        &input_data.output,
-                        input_data.output_id().expect("invalid output id in input signing data"),
-                        issuer_feature.address(),
-                        current_time,
-                    )
-                }) {
-                    all_required_addresses.insert(*issuer_feature.address());
+                if !all_required_addresses.contains(issuer_feature.address()) {
+                    // Only add if not already present in the selected inputs.
+                    if !selected_inputs.iter().any(|input_data| {
+                        output_contains_address(
+                            &input_data.output,
+                            input_data.output_id().expect("invalid output id in input signing data"),
+                            issuer_feature.address(),
+                            current_time,
+                        )
+                    }) {
+                        all_required_addresses.insert(*issuer_feature.address());
+                    }
                 }
             }
         }
