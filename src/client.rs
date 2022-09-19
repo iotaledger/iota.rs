@@ -650,7 +650,7 @@ log::warn!("Syncing nodes failed: {e}");
 
         for output_resp in available_outputs {
             let (amount, _) = ClientBlockBuilder::get_output_amount_and_address(
-                &Output::try_from_dto(&output_resp.output, self.get_token_supply().await?)?,
+                &Output::try_from_dto(&output_resp.output, self.get_token_supply()?)?,
                 None,
                 current_time,
             )?;
@@ -757,7 +757,7 @@ log::warn!("Syncing nodes failed: {e}");
     pub async fn promote_unchecked(&self, block_id: &BlockId) -> Result<(BlockId, Block)> {
         // Create a new block (zero value block) for which one tip would be the actual block.
         let mut tips = self.get_tips().await?;
-        let min_pow_score = self.get_min_pow_score().await?;
+        let min_pow_score = self.get_min_pow_score()?;
         tips.push(*block_id);
 
         let miner = self.get_pow_provider().await;
@@ -812,7 +812,7 @@ log::warn!("Syncing nodes failed: {e}");
     pub async fn hex_to_bech32(&self, hex: &str, bech32_hrp: Option<&str>) -> crate::Result<String> {
         let bech32_hrp = match bech32_hrp {
             Some(hrp) => hrp.into(),
-            None => self.get_bech32_hrp().await?,
+            None => self.get_bech32_hrp()?,
         };
         hex_to_bech32(hex, &bech32_hrp)
     }
@@ -821,7 +821,7 @@ log::warn!("Syncing nodes failed: {e}");
     pub async fn hex_public_key_to_bech32_address(&self, hex: &str, bech32_hrp: Option<&str>) -> crate::Result<String> {
         let bech32_hrp = match bech32_hrp {
             Some(hrp) => hrp.into(),
-            None => self.get_bech32_hrp().await?,
+            None => self.get_bech32_hrp()?,
         };
         hex_public_key_to_bech32_address(hex, &bech32_hrp)
     }

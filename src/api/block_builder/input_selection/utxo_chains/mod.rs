@@ -30,7 +30,7 @@ pub(crate) use validation::check_utxo_chain_inputs;
 // with the minimum required storage deposit as amount, so the difference gets available. Sender features will be
 // removed.
 #[allow(clippy::too_many_arguments)]
-pub(crate) async fn select_utxo_chain_inputs(
+pub(crate) fn select_utxo_chain_inputs(
     selected_inputs: &mut Vec<InputSigningData>,
     selected_inputs_output_ids: &mut HashSet<OutputId>,
     selected_input_amount: &mut u64,
@@ -41,7 +41,7 @@ pub(crate) async fn select_utxo_chain_inputs(
     allow_burning: bool,
     current_time: u32,
     rent_structure: &RentStructure,
-    client: &Client,
+    token_supply: u64,
 ) -> crate::Result<()> {
     // if an output is required as input, but we don't want to burn/destroy it, we have to add it as output again.
     // We track here for which outputs we did that, to prevent doing it multiple times.
@@ -51,7 +51,7 @@ pub(crate) async fn select_utxo_chain_inputs(
     for input_signing_data in selected_inputs.iter() {
         // Add inputs to outputs if not already there, so they don't get burned
         if !allow_burning {
-            add_output_for_input(client, input_signing_data, rent_structure, outputs).await?;
+            add_output_for_input(input_signing_data, rent_structure, outputs, token_supply)?;
         }
         added_output_for_input_signing_data.insert(input_signing_data.output_id()?);
     }
@@ -106,7 +106,7 @@ pub(crate) async fn select_utxo_chain_inputs(
                             .with_amount(minimum_required_storage_deposit)?
                             // replace with filtered features
                             .with_features(filtered_features)
-                            .finish_output(client.get_token_supply()?)?;
+                            .finish_output(token_supply)?;
                         outputs.push(new_output);
                         added_output_for_input_signing_data.insert(output_id);
                     }
@@ -149,7 +149,7 @@ pub(crate) async fn select_utxo_chain_inputs(
                             .with_amount(minimum_required_storage_deposit)?
                             // replace with filtered features
                             .with_features(filtered_features)
-                            .finish_output(client.get_token_supply()?)?;
+                            .finish_output(token_supply)?;
                         outputs.push(new_output);
                         added_output_for_input_signing_data.insert(output_id);
                     }
@@ -173,7 +173,7 @@ pub(crate) async fn select_utxo_chain_inputs(
                         // else add output to outputs with minimum_required_storage_deposit
                         let new_output = FoundryOutputBuilder::from(foundry_input)
                             .with_amount(minimum_required_storage_deposit)?
-                            .finish_output(client.get_token_supply()?)?;
+                            .finish_output(token_supply)?;
                         outputs.push(new_output);
                         added_output_for_input_signing_data.insert(output_id);
                     }
@@ -304,11 +304,11 @@ pub(crate) async fn get_alias_and_nft_outputs_recursively(
 // If we have an input that is an alias, nft or foundry output and we don't want to burn it, then we need to add it to
 // the output side. This function will do that with the minimum required storage deposit and potential sender feature
 // removed.
-async fn add_output_for_input(
-    client: &Client,
+fn add_output_for_input(
     input_signing_data: &InputSigningData,
     rent_structure: &RentStructure,
     outputs: &mut Vec<Output>,
+    token_supply: u64,
 ) -> crate::Result<()> {
     let output_id = input_signing_data.output_id()?;
     let minimum_required_storage_deposit = input_signing_data.output.rent_cost(rent_structure);
@@ -336,7 +336,7 @@ async fn add_output_for_input(
                     .with_amount(minimum_required_storage_deposit)?
                     // replace with filtered features
                     .with_features(filtered_features)
-                    .finish_output(client.get_token_supply()?)?;
+                    .finish_output(token_supply)?;
                 outputs.push(new_output);
             }
         }
@@ -363,7 +363,7 @@ async fn add_output_for_input(
                     .with_amount(minimum_required_storage_deposit)?
                     // replace with filtered features
                     .with_features(filtered_features)
-                    .finish_output(client.get_token_supply()?)?;
+                    .finish_output(token_supply)?;
                 outputs.push(new_output);
             }
         }
@@ -379,7 +379,7 @@ async fn add_output_for_input(
                 // else add output to outputs with minimum_required_storage_deposit
                 let new_output = FoundryOutputBuilder::from(foundry_input)
                     .with_amount(minimum_required_storage_deposit)?
-                    .finish_output(client.get_token_supply()?)?;
+                    .finish_output(token_supply)?;
                 outputs.push(new_output);
             }
         }

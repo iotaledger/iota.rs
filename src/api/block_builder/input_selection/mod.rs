@@ -132,6 +132,7 @@ pub fn try_select_inputs(
         allow_burning,
         current_time,
         rent_structure,
+        token_supply,
     )?;
 
     // No need to check for sender and issuer again, since these outputs already exist and we don't set new features
@@ -296,7 +297,7 @@ pub fn try_select_inputs(
 
     // Add possible required storage deposit return outputs
     let additional_storage_deposit_return_outputs =
-        get_storage_deposit_return_outputs(all_inputs, outputs.iter(), current_time)?;
+        get_storage_deposit_return_outputs(all_inputs, outputs.iter(), current_time, token_supply)?;
     outputs.extend(additional_storage_deposit_return_outputs.into_iter());
 
     // create remainder output if necessary
