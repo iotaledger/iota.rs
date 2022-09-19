@@ -41,7 +41,7 @@ impl<'a> ClientBlockBuilder<'a> {
         if let Some(inputs) = &self.inputs {
             for input in inputs {
                 let output_response = self.client.get_output(input.output_id()).await?;
-                let output = Output::try_from_dto(&output_response.output, self.client.get_token_supply().await?)?;
+                let output = Output::try_from_dto(&output_response.output, self.client.get_token_supply()?)?;
 
                 if !output_response.metadata.is_spent {
                     let (_output_amount, output_address) = ClientBlockBuilder::get_output_amount_and_address(
@@ -50,7 +50,7 @@ impl<'a> ClientBlockBuilder<'a> {
                         current_time,
                     )?;
 
-                    let bech32_hrp = self.client.get_bech32_hrp().await?;
+                    let bech32_hrp = self.client.get_bech32_hrp()?;
                     let address_index_internal = match self.secret_manager {
                         Some(secret_manager) => {
                             match output_address {
@@ -99,7 +99,7 @@ impl<'a> ClientBlockBuilder<'a> {
             rent_structure,
             allow_burning,
             current_time,
-            self.client.get_token_supply().await?,
+            self.client.get_token_supply()?,
         )?;
 
         Ok(selected_transaction_data)

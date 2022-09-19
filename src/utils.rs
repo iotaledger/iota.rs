@@ -15,15 +15,6 @@ use zeroize::Zeroize;
 
 use crate::error::{Error, Result};
 
-/// Hash the network id str from the node info to an u64 (used in blocks)
-pub fn hash_network(network_id_string: &str) -> Result<u64> {
-    let bytes = Blake2b256::digest(network_id_string.as_bytes())[0..8]
-        .try_into()
-        .map_err(|_e| Error::Blake2b256Error("Hashing the network id failed."))?;
-
-    Ok(u64::from_le_bytes(bytes))
-}
-
 /// Transforms bech32 to hex
 pub fn bech32_to_hex(bech32: &str) -> Result<String> {
     let (_bech32_hrp, address) = Address::try_from_bech32(bech32)?;

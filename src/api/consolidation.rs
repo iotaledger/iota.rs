@@ -82,7 +82,7 @@ impl Client {
                             output_response.metadata.output_index,
                         )?))?;
 
-                        let output = Output::try_from_dto(&output_response.output, self.get_token_supply().await?)?;
+                        let output = Output::try_from_dto(&output_response.output, self.get_token_supply()?)?;
 
                         if let Some(native_tokens) = output.native_tokens() {
                             total_native_tokens.add_native_tokens(native_tokens.clone())?;
@@ -95,7 +95,7 @@ impl Client {
                             Address::try_from_bech32(&consolidation_address)?.1,
                         )))
                         .with_native_tokens(total_native_tokens.finish()?)
-                        .finish_output(self.get_token_supply().await?)?;
+                        .finish_output(self.get_token_supply()?)?;
 
                     let block = block_builder
                         .with_input_range(index..index + 1)

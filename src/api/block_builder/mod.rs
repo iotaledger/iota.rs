@@ -410,7 +410,7 @@ impl<'a> ClientBlockBuilder<'a> {
                 parents.sort_unstable_by_key(PackableExt::pack_to_vec);
                 parents.dedup();
 
-                let min_pow_score = self.client.get_min_pow_score().await?;
+                let min_pow_score = self.client.get_min_pow_score()?;
                 let miner = self.client.get_pow_provider().await;
                 do_pow(miner, min_pow_score, payload, parents)?
             }

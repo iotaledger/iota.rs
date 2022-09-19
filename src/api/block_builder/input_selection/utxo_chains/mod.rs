@@ -30,7 +30,7 @@ pub(crate) use validation::check_utxo_chain_inputs;
 // with the minimum required storage deposit as amount, so the difference gets available. Sender features will be
 // removed.
 #[allow(clippy::too_many_arguments)]
-pub(crate) fn select_utxo_chain_inputs(
+pub(crate) async fn select_utxo_chain_inputs(
     selected_inputs: &mut Vec<InputSigningData>,
     selected_inputs_output_ids: &mut HashSet<OutputId>,
     selected_input_amount: &mut u64,
@@ -41,6 +41,7 @@ pub(crate) fn select_utxo_chain_inputs(
     allow_burning: bool,
     current_time: u32,
     rent_structure: &RentStructure,
+    client: &Client,
 ) -> crate::Result<()> {
     // if an output is required as input, but we don't want to burn/destroy it, we have to add it as output again.
     // We track here for which outputs we did that, to prevent doing it multiple times.
@@ -50,7 +51,7 @@ pub(crate) fn select_utxo_chain_inputs(
     for input_signing_data in selected_inputs.iter() {
         // Add inputs to outputs if not already there, so they don't get burned
         if !allow_burning {
-            add_output_for_input(input_signing_data, rent_structure, outputs)?;
+            add_output_for_input(client, input_signing_data, rent_structure, outputs).await?;
         }
         added_output_for_input_signing_data.insert(input_signing_data.output_id()?);
     }
@@ -105,7 +106,7 @@ pub(crate) fn select_utxo_chain_inputs(
                             .with_amount(minimum_required_storage_deposit)?
                             // replace with filtered features
                             .with_features(filtered_features)
-                            .finish_output()?;
+                            .finish_output(client.get_token_supply()?)?;
                         outputs.push(new_output);
                         added_output_for_input_signing_data.insert(output_id);
                     }
@@ -148,7 +149,7 @@ pub(crate) fn select_utxo_chain_inputs(
                             .with_amount(minimum_required_storage_deposit)?
                             // replace with filtered features
                             .with_features(filtered_features)
-                            .finish_output()?;
+                            .finish_output(client.get_token_supply()?)?;
                         outputs.push(new_output);
                         added_output_for_input_signing_data.insert(output_id);
                     }
@@ -172,7 +173,7 @@ pub(crate) fn select_utxo_chain_inputs(
                         // else add output to outputs with minimum_required_storage_deposit
                         let new_output = FoundryOutputBuilder::from(foundry_input)
                             .with_amount(minimum_required_storage_deposit)?
-                            .finish_output()?;
+                            .finish_output(client.get_token_supply()?)?;
                         outputs.push(new_output);
                         added_output_for_input_signing_data.insert(output_id);
                     }
@@ -229,7 +230,7 @@ pub(crate) async fn get_alias_and_nft_outputs_recursively(
             output_response.metadata.output_index,
         )?;
 
-        match Output::try_from(&output_response.output)? {
+        match Output::try_from_dto(&output_response.output, client.get_token_supply()?)? {
             Output::Alias(alias_output) => {
                 processed_alias_nft_addresses.insert(Address::Alias(AliasAddress::new(
                     alias_output.alias_id().or_from_output_id(output_id),
@@ -259,7 +260,7 @@ pub(crate) async fn get_alias_and_nft_outputs_recursively(
                     let output_id = client.alias_output_id(*address.alias_id()).await?;
                     let output_response = client.get_output(&output_id).await?;
                     if let OutputDto::Alias(alias_output_dto) = &output_response.output {
-                        let alias_output = AliasOutput::try_from(alias_output_dto)?;
+                        let alias_output = AliasOutput::try_from_dto(alias_output_dto, client.get_token_supply()?)?;
                         // State transition if we add them to inputs
                         let alias_unlock_address = alias_output.state_controller_address();
                         // Add address to unprocessed_alias_nft_addresses so we get the required output there
@@ -274,7 +275,7 @@ pub(crate) async fn get_alias_and_nft_outputs_recursively(
                     let output_id = client.nft_output_id(*address.nft_id()).await?;
                     let output_response = client.get_output(&output_id).await?;
                     if let OutputDto::Nft(nft_output) = &output_response.output {
-                        let nft_output = NftOutput::try_from(nft_output)?;
+                        let nft_output = NftOutput::try_from_dto(nft_output, client.get_token_supply()?)?;
                         let unlock_address = nft_output
                             .unlock_conditions()
                             .locked_address(nft_output.address(), current_time);
@@ -303,7 +304,8 @@ pub(crate) async fn get_alias_and_nft_outputs_recursively(
 // If we have an input that is an alias, nft or foundry output and we don't want to burn it, then we need to add it to
 // the output side. This function will do that with the minimum required storage deposit and potential sender feature
 // removed.
-fn add_output_for_input(
+async fn add_output_for_input(
+    client: &Client,
     input_signing_data: &InputSigningData,
     rent_structure: &RentStructure,
     outputs: &mut Vec<Output>,
@@ -334,7 +336,7 @@ fn add_output_for_input(
                     .with_amount(minimum_required_storage_deposit)?
                     // replace with filtered features
                     .with_features(filtered_features)
-                    .finish_output()?;
+                    .finish_output(client.get_token_supply()?)?;
                 outputs.push(new_output);
             }
         }
@@ -361,7 +363,7 @@ fn add_output_for_input(
                     .with_amount(minimum_required_storage_deposit)?
                     // replace with filtered features
                     .with_features(filtered_features)
-                    .finish_output()?;
+                    .finish_output(client.get_token_supply()?)?;
                 outputs.push(new_output);
             }
         }
@@ -377,7 +379,7 @@ fn add_output_for_input(
                 // else add output to outputs with minimum_required_storage_deposit
                 let new_output = FoundryOutputBuilder::from(foundry_input)
                     .with_amount(minimum_required_storage_deposit)?
-                    .finish_output()?;
+                    .finish_output(client.get_token_supply()?)?;
                 outputs.push(new_output);
             }
         }

@@ -80,7 +80,7 @@ impl<'a> ClientBlockBuilder<'a> {
             // could lead to burned native tokens by accident.
             false,
             current_time,
-            self.client.get_token_supply().await?,
+            self.client.get_token_supply()?,
         ) {
             return Ok(selected_transaction_data);
         };
@@ -128,8 +128,7 @@ impl<'a> ClientBlockBuilder<'a> {
                     empty_address_count = 0;
 
                     for output_response in address_outputs {
-                        let output =
-                            Output::try_from_dto(&output_response.output, self.client.get_token_supply().await?)?;
+                        let output = Output::try_from_dto(&output_response.output, self.client.get_token_supply()?)?;
                         let address = Address::try_from_bech32(str_address)?.1;
 
                         if is_basic_output_address_unlockable(&output, &address, current_time) {
@@ -157,7 +156,7 @@ impl<'a> ClientBlockBuilder<'a> {
                         // could lead to burned native tokens by accident.
                         false,
                         current_time,
-                        self.client.get_token_supply().await?,
+                        self.client.get_token_supply()?,
                     ) {
                         Ok(r) => r,
                         // for these errors, just try again in the next round with more addresses which might have more

@@ -52,7 +52,7 @@ pub async fn finish_pow(client: &Client, payload: Option<Payload>) -> Result<Blo
 async fn finish_multi_threaded_pow(client: &Client, payload: Option<Payload>) -> Result<Block> {
     let local_pow = client.get_local_pow().await;
     let pow_worker_count = client.pow_worker_count;
-    let min_pow_score = client.get_min_pow_score().await?;
+    let min_pow_score = client.get_min_pow_score()?;
     let tips_interval = client.get_tips_interval().await;
     loop {
         let cancel = MinerCancel::new();

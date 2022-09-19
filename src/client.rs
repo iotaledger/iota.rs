@@ -16,6 +16,7 @@ use bee_api_types::{
 };
 use bee_block::{
     address::Address,
+    helper::network_name_to_id,
     input::{Input, UtxoInput, INPUT_COUNT_MAX},
     output::{Output, OutputId, RentStructure},
     payload::{
@@ -40,8 +41,9 @@ use {
 use {
     std::collections::HashMap,
     tokio::{
-        runtime::Runtime,
+        runtime::{Handle, Runtime},
         sync::broadcast::{Receiver, Sender},
+        task,
         time::sleep,
     },
 };
@@ -58,8 +60,8 @@ use crate::{
     node_manager::node::{Node, NodeAuth},
     secret::SecretManager,
     utils::{
-        bech32_to_hex, generate_mnemonic, hash_network, hex_public_key_to_bech32_address, hex_to_bech32,
-        is_address_valid, mnemonic_to_hex_seed, mnemonic_to_seed, parse_bech32_address,
+        bech32_to_hex, generate_mnemonic, hex_public_key_to_bech32_address, hex_to_bech32, is_address_valid,
+        mnemonic_to_hex_seed, mnemonic_to_seed, parse_bech32_address,
     },
 };
 
@@ -257,7 +259,9 @@ log::warn!("Syncing nodes failed: {e}");
         if let Some(primary_node) = &self.node_manager.primary_node {
             return Ok(primary_node.clone());
         }
+
         let pool = self.node_manager.nodes.clone();
+
         pool.into_iter().next().ok_or(Error::SyncedNodePoolEmpty)
     }
 
@@ -276,80 +280,80 @@ log::warn!("Syncing nodes failed: {e}");
             }
             miner.finish()
         };
+
         miner
     }
 
     /// Gets the network related information such as network_id and min_pow_score
     /// and if it's the default one, sync it first and set the NetworkInfo.
-    pub async fn get_network_info(&self) -> Result<NetworkInfo> {
+    pub fn get_network_info(&self) -> Result<NetworkInfo> {
         let not_synced = self.network_info.read().map_or(true, |info| info.network_id.is_none());
 
         // For WASM we don't have the node syncing process, which updates the network_info every 60 seconds, but the Pow
         // difficulty or the byte cost could change via a milestone, so we request the node info every time, so we don't
         // create invalid transactions/blocks
         if not_synced || cfg!(target_family = "wasm") {
-            let info = self.get_info().await?.node_info;
-            let network_id = hash_network(&info.protocol.network_name).ok();
+            // TODO runtime blocker /  remove Handle?
+            task::block_in_place(move || {
+                Handle::current().block_on(async move { self.get_info().await });
+            })
+            .node_info;
+            // let network_id = network_name_to_id(&info.protocol.network_name);
             {
                 let mut client_network_info = self.network_info.write().map_err(|_| crate::Error::PoisonError)?;
                 client_network_info.protocol_parameters = info.protocol.try_into()?;
             }
         }
-        let res = self
-            .network_info
-            .read()
-            .map_or(NetworkInfo::default(), |info| info.clone());
+
+        let res = self.network_info.read().expect("TODO");
+        // .map_or(NetworkInfo::default(), |info| info.clone());
+
         Ok(res)
     }
 
     /// Gets the protocol version of the node we're connecting to.
-    pub async fn get_protocol_parameters(&self) -> Result<ProtocolParameters> {
-        Ok(self.get_network_info().await?.protocol_parameters)
+    pub fn get_protocol_parameters(&self) -> Result<ProtocolParameters> {
+        Ok(self.get_network_info()?.protocol_parameters)
     }
 
     /// Gets the protocol version of the node we're connecting to.
-    pub async fn get_protocol_version(&self) -> Result<u8> {
-        Ok(self.get_network_info().await?.protocol_parameters.protocol_version())
+    pub fn get_protocol_version(&self) -> Result<u8> {
+        Ok(self.get_network_info()?.protocol_parameters.protocol_version())
     }
 
     /// Gets the network name of the node we're connecting to.
-    pub async fn get_network_name(&self) -> Result<String> {
-        Ok(self.get_network_info().await?.protocol_parameters.network_name().into())
+    pub fn get_network_name(&self) -> Result<String> {
+        Ok(self.get_network_info()?.protocol_parameters.network_name().into())
     }
 
     /// Gets the network id of the node we're connecting to.
-    pub async fn get_network_id(&self) -> Result<u64> {
-        Ok(self.get_network_info().await?.protocol_parameters.network_id())
+    pub fn get_network_id(&self) -> Result<u64> {
+        Ok(self.get_network_info()?.protocol_parameters.network_id())
     }
 
     /// Gets the bech32 HRP of the node we're connecting to.
-    pub async fn get_bech32_hrp(&self) -> Result<String> {
-        Ok(self.get_network_info().await?.protocol_parameters.bech32_hrp().into())
+    pub fn get_bech32_hrp(&self) -> Result<String> {
+        Ok(self.get_network_info()?.protocol_parameters.bech32_hrp().into())
     }
 
     /// Gets the minimum pow score of the node we're connecting to.
-    pub async fn get_min_pow_score(&self) -> Result<u32> {
-        Ok(self.get_network_info().await?.protocol_parameters.min_pow_score())
+    pub fn get_min_pow_score(&self) -> Result<u32> {
+        Ok(self.get_network_info()?.protocol_parameters.min_pow_score())
     }
 
     /// Gets the minimum pow score of the node we're connecting to.
-    pub async fn get_below_max_depth(&self) -> Result<u8> {
-        Ok(self.get_network_info().await?.protocol_parameters.below_max_depth())
+    pub fn get_below_max_depth(&self) -> Result<u8> {
+        Ok(self.get_network_info()?.protocol_parameters.below_max_depth())
     }
 
     /// Gets the rent structure of the node we're connecting to.
-    pub async fn get_rent_structure(&self) -> Result<RentStructure> {
-        Ok(self
-            .get_network_info()
-            .await?
-            .protocol_parameters
-            .rent_structure()
-            .clone())
+    pub fn get_rent_structure(&self) -> Result<RentStructure> {
+        Ok(self.get_network_info()?.protocol_parameters.rent_structure().clone())
     }
 
     /// Gets the token supply of the node we're connecting to.
-    pub async fn get_token_supply(&self) -> Result<u64> {
-        Ok(self.get_network_info().await?.protocol_parameters.token_supply())
+    pub fn get_token_supply(&self) -> Result<u64> {
+        Ok(self.get_network_info()?.protocol_parameters.token_supply())
     }
 
     /// returns the tips interval

@@ -29,6 +29,7 @@ use crate::{
 /// Struct containing network and PoW related information
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct NetworkInfo {
+    // TODO boolean synced?
     // TODO do we really want a default?
     /// Protocol parameters.
     #[serde(rename = "protocolParameters", default = "ProtocolParameters::default")]

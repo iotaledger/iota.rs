@@ -26,12 +26,12 @@ impl<'a> ClientBlockBuilder<'a> {
     /// Prepare a transaction
     pub async fn prepare_transaction(&self) -> Result<PreparedTransactionData> {
         log::debug!("[prepare_transaction]");
-        let rent_structure = self.client.get_rent_structure().await?;
+        let rent_structure = self.client.get_rent_structure()?;
 
         let mut governance_transition: Option<HashSet<AliasId>> = None;
         for output in &self.outputs {
             // Check if the outputs have enough amount to cover the storage deposit
-            output.verify_storage_deposit(rent_structure.clone(), self.client.get_token_supply().await?)?;
+            output.verify_storage_deposit(rent_structure.clone(), self.client.get_token_supply()?)?;
             if let Output::Alias(x) = output {
                 if x.state_index() > 0 {
                     // Check if the transaction is a governance_transition, by checking if the new index is the same as
@@ -81,7 +81,7 @@ impl<'a> ClientBlockBuilder<'a> {
             let tagged_data_payload = TaggedDataPayload::new(index.to_vec(), self.data.clone().unwrap_or_default())?;
             essence = essence.with_payload(Payload::TaggedData(Box::new(tagged_data_payload)));
         }
-        let regular_essence = essence.finish(&self.client.get_protocol_parameters().await?)?;
+        let regular_essence = essence.finish(&self.client.get_protocol_parameters()?)?;
         let essence = TransactionEssence::Regular(regular_essence);
 
         Ok(PreparedTransactionData {

@@ -26,7 +26,7 @@ impl<'a> ClientBlockBuilder<'a> {
     ) -> Result<Vec<InputSigningData>> {
         log::debug!("[get_utxo_chains_inputs]");
         let client = self.client;
-        let bech32_hrp = client.get_bech32_hrp().await?;
+        let bech32_hrp = client.get_bech32_hrp()?;
         let current_time = self.client.get_time_checked().await?;
 
         let mut utxo_chains: Vec<(Address, OutputResponse)> = Vec::new();
@@ -41,8 +41,7 @@ impl<'a> ClientBlockBuilder<'a> {
                         let output_id = client.alias_output_id(*alias_output.alias_id()).await?;
                         let output_response = client.get_output(&output_id).await?;
                         if let OutputDto::Alias(alias_output_dto) = &output_response.output {
-                            let alias_output =
-                                AliasOutput::try_from_dto(alias_output_dto, client.get_token_supply().await?)?;
+                            let alias_output = AliasOutput::try_from_dto(alias_output_dto, client.get_token_supply()?)?;
 
                             // A governance transition is identified by an unchanged State Index in next
                             // state.
@@ -60,7 +59,7 @@ impl<'a> ClientBlockBuilder<'a> {
                         let output_id = client.nft_output_id(*nft_output.nft_id()).await?;
                         let output_response = client.get_output(&output_id).await?;
                         if let OutputDto::Nft(nft_output) = &output_response.output {
-                            let nft_output = NftOutput::try_from_dto(nft_output, client.get_token_supply().await?)?;
+                            let nft_output = NftOutput::try_from_dto(nft_output, client.get_token_supply()?)?;
 
                             let unlock_address = nft_output
                                 .unlock_conditions()
@@ -76,7 +75,7 @@ impl<'a> ClientBlockBuilder<'a> {
                         let output_response = client.get_output(&output_id).await?;
                         if let OutputDto::Foundry(foundry_output_dto) = &output_response.output {
                             let foundry_output =
-                                FoundryOutput::try_from_dto(foundry_output_dto, client.get_token_supply().await?)?;
+                                FoundryOutput::try_from_dto(foundry_output_dto, client.get_token_supply()?)?;
                             utxo_chains.push((Address::Alias(*foundry_output.alias_address()), output_response));
                         }
                     }
@@ -113,7 +112,7 @@ impl<'a> ClientBlockBuilder<'a> {
             };
 
             utxo_chain_inputs.push(InputSigningData {
-                output: Output::try_from_dto(&output_response.output, client.get_token_supply().await?)?,
+                output: Output::try_from_dto(&output_response.output, client.get_token_supply()?)?,
                 output_metadata: OutputMetadata::try_from(&output_response.metadata)?,
                 chain: address_index_internal.map(|(address_index, internal)| {
                     Chain::from_u32_hardened(vec![

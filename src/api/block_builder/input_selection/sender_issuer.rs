@@ -30,7 +30,7 @@ impl<'a> ClientBlockBuilder<'a> {
         log::debug!("[get_inputs_for_sender_and_issuer]");
 
         let mut required_inputs = Vec::new();
-        let bech32_hrp = self.client.get_bech32_hrp().await?;
+        let bech32_hrp = self.client.get_bech32_hrp()?;
         let current_time = self.client.get_time_checked().await?;
 
         let all_required_addresses = get_required_addresses_for_sender_and_issuer(&[], &self.outputs, current_time)?;
@@ -53,8 +53,7 @@ impl<'a> ClientBlockBuilder<'a> {
 
                     let mut found_output = false;
                     for output_response in address_outputs {
-                        let output =
-                            Output::try_from_dto(&output_response.output, self.client.get_token_supply().await?)?;
+                        let output = Output::try_from_dto(&output_response.output, self.client.get_token_supply()?)?;
 
                         if is_basic_output_address_unlockable(&output, &address, current_time) {
                             required_inputs.push(InputSigningData {
@@ -96,7 +95,7 @@ impl<'a> ClientBlockBuilder<'a> {
                         let output_response = self.client.get_output(&output_id).await?;
                         if let OutputDto::Alias(alias_output_dto) = &output_response.output {
                             let alias_output =
-                                AliasOutput::try_from_dto(alias_output_dto, self.client.get_token_supply().await?)?;
+                                AliasOutput::try_from_dto(alias_output_dto, self.client.get_token_supply()?)?;
                             // State transition if we add them to inputs
                             let unlock_address = alias_output.state_controller_address();
                             let address_index_internal = match self.secret_manager {
@@ -122,10 +121,7 @@ impl<'a> ClientBlockBuilder<'a> {
                             };
 
                             required_inputs.push(InputSigningData {
-                                output: Output::try_from_dto(
-                                    &output_response.output,
-                                    self.client.get_token_supply().await?,
-                                )?,
+                                output: Output::try_from_dto(&output_response.output, self.client.get_token_supply()?)?,
                                 output_metadata: OutputMetadata::try_from(&output_response.metadata)?,
                                 chain: address_index_internal.map(|(address_index, internal)| {
                                     Chain::from_u32_hardened(vec![
@@ -156,8 +152,7 @@ impl<'a> ClientBlockBuilder<'a> {
                         let output_id = self.client.nft_output_id(*nft_id).await?;
                         let output_response = self.client.get_output(&output_id).await?;
                         if let OutputDto::Nft(nft_output) = &output_response.output {
-                            let nft_output =
-                                NftOutput::try_from_dto(nft_output, self.client.get_token_supply().await?)?;
+                            let nft_output = NftOutput::try_from_dto(nft_output, self.client.get_token_supply()?)?;
 
                             let unlock_address = nft_output
                                 .unlock_conditions()
@@ -186,10 +181,7 @@ impl<'a> ClientBlockBuilder<'a> {
                             };
 
                             required_inputs.push(InputSigningData {
-                                output: Output::try_from_dto(
-                                    &output_response.output,
-                                    self.client.get_token_supply().await?,
-                                )?,
+                                output: Output::try_from_dto(&output_response.output, self.client.get_token_supply()?)?,
                                 output_metadata: OutputMetadata::try_from(&output_response.metadata)?,
                                 chain: address_index_internal.map(|(address_index, internal)| {
                                     Chain::from_u32_hardened(vec![
