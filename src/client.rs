@@ -16,7 +16,6 @@ use bee_api_types::{
 };
 use bee_block::{
     address::Address,
-    helper::network_name_to_id,
     input::{Input, UtxoInput, INPUT_COUNT_MAX},
     output::{Output, OutputId, RentStructure},
     payload::{
@@ -281,25 +280,26 @@ log::warn!("Syncing nodes failed: {e}");
     /// Gets the network related information such as network_id and min_pow_score
     /// and if it's the default one, sync it first and set the NetworkInfo.
     pub fn get_network_info(&self) -> Result<NetworkInfo> {
-        let not_synced = self.network_info.read().map_or(true, |info| info.network_id.is_none());
+        let synced = self.network_info.read().map_or(true, |info| info.synced);
 
         // For WASM we don't have the node syncing process, which updates the network_info every 60 seconds, but the Pow
         // difficulty or the byte cost could change via a milestone, so we request the node info every time, so we don't
         // create invalid transactions/blocks
-        if not_synced || cfg!(target_family = "wasm") {
-            // TODO runtime blocker /  remove Handle?
-            task::block_in_place(move || {
-                Handle::current().block_on(async move { self.get_info().await });
-            })
-            .node_info;
+        if !synced || cfg!(target_family = "wasm") {
+            // TODO runtime blocker / remove Handle?
+            let info = task::block_in_place(move || Handle::current().block_on(async move { self.get_info().await }))?
+                .node_info;
+
+            // TODO keep?
             // let network_id = network_name_to_id(&info.protocol.network_name);
-            {
-                let mut client_network_info = self.network_info.write().map_err(|_| crate::Error::PoisonError)?;
-                client_network_info.protocol_parameters = info.protocol.try_into()?;
-            }
+
+            let mut client_network_info = self.network_info.write().map_err(|_| crate::Error::PoisonError)?;
+            client_network_info.protocol_parameters = info.protocol.try_into()?;
         }
 
-        let res = self.network_info.read().expect("TODO");
+        let res = self.network_info.read().expect("TODO").clone();
+
+        // TODO ???
         // .map_or(NetworkInfo::default(), |info| info.clone());
 
         Ok(res)
