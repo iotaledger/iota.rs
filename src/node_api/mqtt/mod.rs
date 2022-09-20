@@ -4,7 +4,10 @@
 //! IOTA node MQTT API
 pub mod types;
 
-use std::{sync::Arc, time::Instant};
+use std::{
+    sync::{Arc, RwLock as StdRwLock},
+    time::Instant,
+};
 
 use bee_block::{
     payload::{milestone::ReceiptMilestoneOption, MilestonePayload},
@@ -20,7 +23,7 @@ use rumqttc::{
 use tokio::sync::{watch::Sender, RwLock};
 
 pub use self::types::*;
-use crate::{Client, Result};
+use crate::{builder::NetworkInfo, Client, Result};
 
 async fn get_mqtt_client(client: &mut Client) -> Result<&mut MqttClient> {
     // if the client was disconnected, we clear it so we can start over
@@ -88,6 +91,7 @@ async fn get_mqtt_client(client: &mut Client) -> Result<&mut MqttClient> {
                         client.broker_options.clone(),
                         client.mqtt_event_channel.0.clone(),
                         connection,
+                        client.network_info.clone(),
                     );
                 }
             }
@@ -101,6 +105,7 @@ fn poll_mqtt(
     options: BrokerOptions,
     event_sender: Arc<Sender<MqttEvent>>,
     mut event_loop: EventLoop,
+    network_info: Arc<StdRwLock<NetworkInfo>>,
 ) {
     std::thread::spawn(move || {
         let runtime = tokio::runtime::Builder::new_current_thread()
@@ -144,7 +149,10 @@ fn poll_mqtt(
                                 let event = {
                                     if topic.contains("blocks") || topic.contains("included-block") {
                                         let mut payload = &*p.payload;
-                                        match Block::unpack_verified(&mut payload, &()) {
+                                        // TODO: how to properly handle this?
+                                        let protocol_parameters =
+                                            network_info.read().expect("TODO").protocol_parameters;
+                                        match Block::unpack_verified(&mut payload, &protocol_parameters) {
                                             Ok(block) => Ok(TopicEvent {
                                                 topic,
                                                 payload: MqttPayload::Block(block),
@@ -156,7 +164,10 @@ fn poll_mqtt(
                                         }
                                     } else if topic.contains("milestones") {
                                         let mut payload = &*p.payload;
-                                        match MilestonePayload::unpack_verified(&mut payload, &()) {
+                                        // TODO: how to properly handle this?
+                                        let protocol_parameters =
+                                            network_info.read().expect("TODO").protocol_parameters;
+                                        match MilestonePayload::unpack_verified(&mut payload, &protocol_parameters) {
                                             Ok(milestone_payload) => Ok(TopicEvent {
                                                 topic,
                                                 payload: MqttPayload::MilestonePayload(milestone_payload),
@@ -168,7 +179,13 @@ fn poll_mqtt(
                                         }
                                     } else if topic.contains("receipts") {
                                         let mut payload = &*p.payload;
-                                        match ReceiptMilestoneOption::unpack_verified(&mut payload, &()) {
+                                        // TODO: how to properly handle this?
+                                        let protocol_parameters =
+                                            network_info.read().expect("TODO").protocol_parameters;
+                                        match ReceiptMilestoneOption::unpack_verified(
+                                            &mut payload,
+                                            &protocol_parameters,
+                                        ) {
                                             Ok(receipt) => Ok(TopicEvent {
                                                 topic,
                                                 payload: MqttPayload::Receipt(receipt),
