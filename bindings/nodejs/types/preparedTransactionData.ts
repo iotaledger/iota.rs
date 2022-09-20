@@ -65,5 +65,5 @@ export interface IRemainder {
 }
 export interface ISegment {
     hardened: boolean;
-    bs: number[];
+    bs: Uint8Array;
 }

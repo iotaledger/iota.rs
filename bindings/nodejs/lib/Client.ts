@@ -500,7 +500,7 @@ export class Client {
     /**
      * Get block as raw bytes.
      */
-    async getBlockRaw(blockId: BlockId): Promise<number[]> {
+    async getBlockRaw(blockId: BlockId): Promise<Uint8Array> {
         const response = await this.messageHandler.sendMessage({
             name: 'GetBlockRaw',
             data: {
