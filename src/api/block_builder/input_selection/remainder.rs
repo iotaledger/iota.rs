@@ -182,6 +182,7 @@ pub(crate) fn get_remainder_address<'a>(
 }
 
 // Get additional required storage deposit amount for the remainder output
+#[allow(clippy::too_many_arguments)]
 pub(crate) fn get_additional_required_remainder_amount(
     remainder_address: Option<Address>,
     selected_inputs: &[InputSigningData],

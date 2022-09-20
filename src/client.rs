@@ -196,9 +196,9 @@ log::warn!("Syncing nodes failed: {e}");
                         }
                         None => {
                             let guard = network_info.read().map_err(|_| crate::Error::PoisonError)?;
-                            let id = guard.protocol_parameters.network_name().clone();
+                            let id = guard.protocol_parameters.network_name();
                             // TODO there used to be a some/none match, is this correct?
-                            if info.protocol.network_name.contains(id.clone()) {
+                            if info.protocol.network_name.contains(id) {
                                 network_nodes.insert(info.protocol.network_name.clone(), vec![(info, node.clone())]);
                             }
                         }

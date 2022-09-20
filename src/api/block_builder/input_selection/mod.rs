@@ -44,6 +44,7 @@ use crate::{
 /// nft outputs that there previous output exist in the inputs, when required. Careful with setting `allow_burning` to
 /// `true`, native tokens, nfts or alias outputs can get easily burned by accident. Without burning, alias, foundry and
 /// nft outputs will be created on the output side, if not already present.
+#[allow(clippy::too_many_arguments)]
 pub fn try_select_inputs(
     mut mandatory_inputs: Vec<InputSigningData>,
     mut additional_inputs: Vec<InputSigningData>,
