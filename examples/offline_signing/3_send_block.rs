@@ -8,7 +8,7 @@ use std::{fs::File, io::prelude::*, path::Path};
 
 use iota_client::{
     api::{verify_semantic, SignedTransactionData, SignedTransactionDataDto},
-    block::{payload::Payload, semantic::ConflictReason},
+    block::{output::RentStructureBuilder, payload::Payload, protocol::ProtocolParameters, semantic::ConflictReason},
     Client, Error, Result,
 };
 
@@ -65,5 +65,29 @@ fn read_signed_transaction_from_file<P: AsRef<Path>>(path: P) -> Result<SignedTr
 
     let dto = serde_json::from_str::<SignedTransactionDataDto>(&json)?;
 
-    Ok(SignedTransactionData::try_from(&dto)?)
+    // {
+    //     "rentStructure": {
+    //       "vByteCost": 100,
+    //       "vByteFactorData": 1,
+    //       "vByteFactorKey": 10
+    //     },
+
+    // TODO is this alright?
+    Ok(SignedTransactionData::try_from_dto(
+        &dto,
+        &ProtocolParameters::new(
+            2,
+            String::from("shimmer"),
+            String::from("smr"),
+            1500,
+            15,
+            RentStructureBuilder::new()
+                .byte_cost(100)
+                .key_factor(1)
+                .data_factor(10)
+                .finish(),
+            1813620509061365,
+        )
+        .unwrap(),
+    )?)
 }

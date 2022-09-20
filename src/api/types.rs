@@ -55,7 +55,8 @@ impl From<&PreparedTransactionData> for PreparedTransactionDataDto {
 }
 
 impl PreparedTransactionData {
-    pub(crate) fn try_from_dto(
+    /// Conversion from [`PreparedTransactionDataDto`] to [`PreparedTransactionData`].
+    pub fn try_from_dto(
         value: &PreparedTransactionDataDto,
         protocol_parameters: &ProtocolParameters,
     ) -> Result<Self, DtoError> {
@@ -111,7 +112,11 @@ impl From<&SignedTransactionData> for SignedTransactionDataDto {
 }
 
 impl SignedTransactionData {
-    fn try_from(value: &SignedTransactionDataDto, protocol_parameters: &ProtocolParameters) -> Result<Self, DtoError> {
+    /// Conversion from [`SignedTransactionDataDto`] to [`SignedTransactionData`].
+    pub fn try_from_dto(
+        value: &SignedTransactionDataDto,
+        protocol_parameters: &ProtocolParameters,
+    ) -> Result<Self, DtoError> {
         Ok(SignedTransactionData {
             transaction_payload: TransactionPayload::try_from_dto(&value.transaction_payload, protocol_parameters)
                 .map_err(|_| DtoError::InvalidField("transaction_payload"))?,

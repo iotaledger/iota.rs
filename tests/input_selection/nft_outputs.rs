@@ -21,6 +21,7 @@ fn input_selection_nfts() -> Result<()> {
         .key_factor(10)
         .data_factor(1)
         .finish();
+    let token_supply = 1_813_620_509_061_365;
 
     let nft_id_0 = NftId::from_str("0x0000000000000000000000000000000000000000000000000000000000000000").unwrap();
     let nft_id_1 = NftId::from_str("0x1111111111111111111111111111111111111111111111111111111111111111").unwrap();
@@ -29,14 +30,31 @@ fn input_selection_nfts() -> Result<()> {
     // input nft == output nft
     let inputs = build_input_signing_data_nft_outputs(vec![(nft_id_1, bech32_address, 1_000_000)]);
     let outputs = vec![build_nft_output(nft_id_1, bech32_address, 1_000_000)];
-    let selected_transaction_data =
-        try_select_inputs(Vec::new(), inputs.clone(), outputs, None, &rent_structure, false, 0)?;
+    let selected_transaction_data = try_select_inputs(
+        Vec::new(),
+        inputs.clone(),
+        outputs,
+        None,
+        &rent_structure,
+        false,
+        0,
+        token_supply,
+    )?;
     assert_eq!(selected_transaction_data.inputs, inputs);
 
     // output amount > input amount
     let inputs = build_input_signing_data_nft_outputs(vec![(nft_id_1, bech32_address, 1_000_000)]);
     let outputs = vec![build_most_basic_output(bech32_address, 2_000_000)];
-    match try_select_inputs(Vec::new(), inputs, outputs, None, &rent_structure, false, 0) {
+    match try_select_inputs(
+        Vec::new(),
+        inputs,
+        outputs,
+        None,
+        &rent_structure,
+        false,
+        0,
+        token_supply,
+    ) {
         Err(Error::NotEnoughBalance {
             found: 1_000_000,
             // Amount we want to send + storage deposit for nft remainder
@@ -48,14 +66,32 @@ fn input_selection_nfts() -> Result<()> {
     // basic output with nft as input
     let inputs = build_input_signing_data_nft_outputs(vec![(nft_id_1, bech32_address, 2_229_500)]);
     let outputs = vec![build_most_basic_output(bech32_address, 2_000_000)];
-    let selected_transaction_data = try_select_inputs(Vec::new(), inputs, outputs, None, &rent_structure, false, 0)?;
+    let selected_transaction_data = try_select_inputs(
+        Vec::new(),
+        inputs,
+        outputs,
+        None,
+        &rent_structure,
+        false,
+        0,
+        token_supply,
+    )?;
     // basic output + nft remainder
     assert_eq!(selected_transaction_data.outputs.len(), 2);
 
     // mint nft
     let inputs = build_input_signing_data_most_basic_outputs(vec![(bech32_address, 2_000_000)]);
     let outputs = vec![build_nft_output(nft_id_0, bech32_address, 1_000_000)];
-    let selected_transaction_data = try_select_inputs(Vec::new(), inputs, outputs, None, &rent_structure, false, 0)?;
+    let selected_transaction_data = try_select_inputs(
+        Vec::new(),
+        inputs,
+        outputs,
+        None,
+        &rent_structure,
+        false,
+        0,
+        token_supply,
+    )?;
     // One output should be added for the remainder
     assert_eq!(selected_transaction_data.outputs.len(), 2);
     // Output contains the new minted nft id
@@ -70,7 +106,16 @@ fn input_selection_nfts() -> Result<()> {
     // burn nft
     let inputs = build_input_signing_data_nft_outputs(vec![(nft_id_1, bech32_address, 2_000_000)]);
     let outputs = vec![build_most_basic_output(bech32_address, 2_000_000)];
-    let selected_transaction_data = try_select_inputs(Vec::new(), inputs, outputs, None, &rent_structure, true, 0)?;
+    let selected_transaction_data = try_select_inputs(
+        Vec::new(),
+        inputs,
+        outputs,
+        None,
+        &rent_structure,
+        true,
+        0,
+        token_supply,
+    )?;
     // No remainder
     assert_eq!(selected_transaction_data.outputs.len(), 1);
     // Output is a basic output
@@ -79,7 +124,16 @@ fn input_selection_nfts() -> Result<()> {
     // not enough storage deposit for remainder
     let inputs = build_input_signing_data_nft_outputs(vec![(nft_id_1, bech32_address, 1_000_001)]);
     let outputs = vec![build_nft_output(nft_id_1, bech32_address, 1_000_000)];
-    match try_select_inputs(Vec::new(), inputs, outputs, None, &rent_structure, false, 0) {
+    match try_select_inputs(
+        Vec::new(),
+        inputs,
+        outputs,
+        None,
+        &rent_structure,
+        false,
+        0,
+        token_supply,
+    ) {
         Err(Error::BlockError(bee_block::Error::InsufficientStorageDepositAmount {
             amount: 1,
             required: 213000,
@@ -90,7 +144,16 @@ fn input_selection_nfts() -> Result<()> {
     // missing input for output nft
     let inputs = build_input_signing_data_most_basic_outputs(vec![(bech32_address, 1_000_000)]);
     let outputs = vec![build_nft_output(nft_id_1, bech32_address, 1_000_000)];
-    match try_select_inputs(Vec::new(), inputs, outputs, None, &rent_structure, false, 0) {
+    match try_select_inputs(
+        Vec::new(),
+        inputs,
+        outputs,
+        None,
+        &rent_structure,
+        false,
+        0,
+        token_supply,
+    ) {
         Err(Error::MissingInput(err_msg)) => {
             assert_eq!(
                 &err_msg,

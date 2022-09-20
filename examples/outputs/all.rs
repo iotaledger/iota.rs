@@ -47,10 +47,12 @@ async fn main() -> Result<()> {
         &std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
     )?);
 
+    let token_supply = client.get_token_supply()?;
+
     let address = client.get_addresses(&secret_manager).with_range(0..1).get_raw().await?[0];
     println!(
         "{}",
-        request_funds_from_faucet(&faucet_url, &address.to_bech32(client.get_bech32_hrp().await?),).await?
+        request_funds_from_faucet(&faucet_url, &address.to_bech32(client.get_bech32_hrp()?),).await?
     );
     tokio::time::sleep(std::time::Duration::from_secs(15)).await;
 
@@ -75,12 +77,12 @@ async fn main() -> Result<()> {
             .clone()
             .with_state_index(0)
             .with_foundry_counter(0)
-            .finish_output()?,
+            .finish_output(token_supply)?,
         nft_output_builder
             .clone()
             // address of the minter of the NFT
             // .add_feature(Feature::Issuer(IssuerFeature::new(address)))
-            .finish_output()?,
+            .finish_output(token_supply)?,
     ];
 
     let block = client
@@ -125,13 +127,16 @@ async fn main() -> Result<()> {
             .with_alias_id(alias_id)
             .with_state_index(1)
             .with_foundry_counter(1)
-            .finish_output()?,
+            .finish_output(token_supply)?,
         foundry_output_builder
             .clone()
             // Mint native tokens
             .add_native_token(NativeToken::new(token_id, U256::from(50))?)
-            .finish_output()?,
-        nft_output_builder.clone().with_nft_id(nft_id).finish_output()?,
+            .finish_output(token_supply)?,
+        nft_output_builder
+            .clone()
+            .with_nft_id(nft_id)
+            .finish_output(token_supply)?,
     ];
 
     let block = client
@@ -164,45 +169,45 @@ async fn main() -> Result<()> {
             .with_alias_id(alias_id)
             .with_state_index(2)
             .with_foundry_counter(1)
-            .finish_output()?,
-        foundry_output_builder.finish_output()?,
-        nft_output_builder.with_nft_id(nft_id).finish_output()?,
+            .finish_output(token_supply)?,
+        foundry_output_builder.finish_output(token_supply)?,
+        nft_output_builder.with_nft_id(nft_id).finish_output(token_supply)?,
         // with native token
         basic_output_builder
             .clone()
             .add_native_token(NativeToken::new(token_id, U256::from(50))?)
-            .finish_output()?,
+            .finish_output(token_supply)?,
         // with most simple output
-        basic_output_builder.clone().finish_output()?,
+        basic_output_builder.clone().finish_output(token_supply)?,
         // with metadata feature block
         basic_output_builder
             .clone()
             .add_feature(Feature::Metadata(MetadataFeature::new(vec![13, 37])?))
-            .finish_output()?,
+            .finish_output(token_supply)?,
         // with storage deposit return
         basic_output_builder
             .clone()
             .with_amount(234_100)?
             .add_unlock_condition(UnlockCondition::StorageDepositReturn(
-                StorageDepositReturnUnlockCondition::new(address, 234_000)?,
+                StorageDepositReturnUnlockCondition::new(address, 234_000, token_supply)?,
             ))
-            .finish_output()?,
+            .finish_output(token_supply)?,
         // with expiration
         basic_output_builder
             .clone()
             .add_unlock_condition(UnlockCondition::Expiration(ExpirationUnlockCondition::new(address, 1)?))
-            .finish_output()?,
+            .finish_output(token_supply)?,
         // with timelock
         basic_output_builder
             .clone()
             .add_unlock_condition(UnlockCondition::Timelock(TimelockUnlockCondition::new(1)?))
-            .finish_output()?,
+            .finish_output(token_supply)?,
     ];
 
     // get additional input for the new basic output without extra unlock conditions
     let output_ids = client
         .basic_output_ids(vec![
-            QueryParameter::Address(address.to_bech32(client.get_bech32_hrp().await?)),
+            QueryParameter::Address(address.to_bech32(client.get_bech32_hrp()?)),
             QueryParameter::HasStorageDepositReturn(false),
             QueryParameter::HasTimelock(false),
             QueryParameter::HasExpiration(false),

@@ -29,7 +29,7 @@ fn build_most_basic_output(bech32_address: &str, amount: u64) -> Output {
         .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(
             Address::try_from_bech32(bech32_address).unwrap().1,
         )))
-        .finish_output()
+        .finish_output(1_813_620_509_061_365)
         .unwrap()
 }
 
@@ -39,7 +39,7 @@ fn build_nft_output(nft_id: NftId, bech32_address: &str, amount: u64) -> Output 
         .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(
             Address::try_from_bech32(bech32_address).unwrap().1,
         )))
-        .finish_output()
+        .finish_output(1_813_620_509_061_365)
         .unwrap()
 }
 
@@ -53,7 +53,7 @@ fn build_alias_output(alias_id: AliasId, bech32_address: &str, amount: u64) -> O
         .add_unlock_condition(UnlockCondition::GovernorAddress(GovernorAddressUnlockCondition::new(
             address,
         )))
-        .finish_output()
+        .finish_output(1_813_620_509_061_365)
         .unwrap()
 }
 
@@ -72,7 +72,7 @@ fn build_foundry_output(
     if let Some(native_token) = native_token {
         foundry_output_builder = foundry_output_builder.add_native_token(native_token);
     }
-    foundry_output_builder.finish_output().unwrap()
+    foundry_output_builder.finish_output(1_813_620_509_061_365).unwrap()
 }
 
 fn build_input_signing_data_most_basic_outputs(outputs: Vec<(&str, u64)>) -> Vec<InputSigningData> {

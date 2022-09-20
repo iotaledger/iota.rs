@@ -29,6 +29,7 @@ use crate::{
 /// Struct containing network and PoW related information
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct NetworkInfo {
+    /// Whether the node is synced or not.
     #[serde(default = "default_synced")]
     pub synced: bool,
     // TODO do we really want a default?
@@ -325,7 +326,9 @@ impl ClientBuilder {
             let (sync_kill_sender, sync_kill_receiver) = channel(1);
             let runtime = std::thread::spawn(move || {
                 let runtime = Runtime::new().expect("failed to create Tokio runtime");
-                runtime.block_on(Client::sync_nodes(&sync_, &nodes, &network_info_));
+                runtime
+                    .block_on(Client::sync_nodes(&sync_, &nodes, &network_info_))
+                    .expect("TODO");
                 Client::start_sync_process(
                     &runtime,
                     sync_,
