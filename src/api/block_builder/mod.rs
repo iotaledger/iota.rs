@@ -284,10 +284,12 @@ impl<'a> ClientBlockBuilder<'a> {
         }
 
         if let Some(outputs) = options.outputs {
+            let token_supply = self.client.get_token_supply()?;
+
             self = self.with_outputs(
                 outputs
                     .iter()
-                    .map(|o| Ok(Output::try_from_dto(o, self.client.get_token_supply()?)?))
+                    .map(|o| Ok(Output::try_from_dto(o, token_supply)?))
                     .collect::<Result<Vec<Output>>>()?,
             )?;
         }

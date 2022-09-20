@@ -143,6 +143,7 @@ fn poll_mqtt(
                     }
                     Ok(Event::Incoming(Incoming::Publish(p))) => {
                         let topic = p.topic.clone();
+                        let network_info = network_info.clone();
                         crate::async_runtime::spawn(async move {
                             let mqtt_topic_handlers = mqtt_topic_handlers_guard.read().await;
                             if let Some(handlers) = mqtt_topic_handlers.get(&Topic::new_unchecked(topic.clone())) {
@@ -151,8 +152,8 @@ fn poll_mqtt(
                                         let mut payload = &*p.payload;
                                         // TODO: how to properly handle this?
                                         let protocol_parameters =
-                                            network_info.read().expect("TODO").protocol_parameters;
-                                        match Block::unpack_verified(&mut payload, &protocol_parameters) {
+                                            &network_info.read().expect("TODO").protocol_parameters;
+                                        match Block::unpack_verified(&mut payload, protocol_parameters) {
                                             Ok(block) => Ok(TopicEvent {
                                                 topic,
                                                 payload: MqttPayload::Block(block),
@@ -166,8 +167,8 @@ fn poll_mqtt(
                                         let mut payload = &*p.payload;
                                         // TODO: how to properly handle this?
                                         let protocol_parameters =
-                                            network_info.read().expect("TODO").protocol_parameters;
-                                        match MilestonePayload::unpack_verified(&mut payload, &protocol_parameters) {
+                                            &network_info.read().expect("TODO").protocol_parameters;
+                                        match MilestonePayload::unpack_verified(&mut payload, protocol_parameters) {
                                             Ok(milestone_payload) => Ok(TopicEvent {
                                                 topic,
                                                 payload: MqttPayload::MilestonePayload(milestone_payload),
@@ -181,11 +182,9 @@ fn poll_mqtt(
                                         let mut payload = &*p.payload;
                                         // TODO: how to properly handle this?
                                         let protocol_parameters =
-                                            network_info.read().expect("TODO").protocol_parameters;
-                                        match ReceiptMilestoneOption::unpack_verified(
-                                            &mut payload,
-                                            &protocol_parameters,
-                                        ) {
+                                            &network_info.read().expect("TODO").protocol_parameters;
+                                        match ReceiptMilestoneOption::unpack_verified(&mut payload, protocol_parameters)
+                                        {
                                             Ok(receipt) => Ok(TopicEvent {
                                                 topic,
                                                 payload: MqttPayload::Receipt(receipt),

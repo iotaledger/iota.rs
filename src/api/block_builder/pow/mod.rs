@@ -30,8 +30,8 @@ pub fn do_pow<P: NonceProvider>(
         block = block.with_payload(p);
     }
     block
-        .with_nonce_provider(miner, min_pow_score)
-        .finish()
+        .with_nonce_provider(miner)
+        .finish(min_pow_score)
         .map_err(Error::BlockError)
 }
 
