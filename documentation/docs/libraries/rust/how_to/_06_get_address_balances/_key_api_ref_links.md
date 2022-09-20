@@ -31,4 +31,3 @@ Indicates if the outputs should have storage deposit return unlock condition or 
 
 The [`Client.get_outputs(output_ids)`](iota_client/client/struct.Client.html#method.get_outputs) will query the node for a list
 of `output_ids` in parallel. 
-
