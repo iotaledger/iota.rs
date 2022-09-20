@@ -227,10 +227,12 @@ async fn main() -> Result<()> {
     // send native token without foundry
     //////////////////////////////////
     let basic_output_id = get_basic_output_id_with_native_tokens(block.payload().unwrap())?;
-    let outputs = vec![basic_output_builder
-        .clone()
-        .add_native_token(NativeToken::new(token_id, U256::from(50u8))?)
-        .finish_output(token_supply)?];
+    let outputs = vec![
+        basic_output_builder
+            .clone()
+            .add_native_token(NativeToken::new(token_id, U256::from(50u8))?)
+            .finish_output(token_supply)?,
+    ];
 
     let block = client
         .block()
@@ -249,9 +251,11 @@ async fn main() -> Result<()> {
     // burn native token without foundry
     //////////////////////////////////
     let basic_output_id = get_basic_output_id_with_native_tokens(block.payload().unwrap())?;
-    let outputs = vec![basic_output_builder
-        .add_native_token(NativeToken::new(token_id, U256::from(30u8))?)
-        .finish_output(token_supply)?];
+    let outputs = vec![
+        basic_output_builder
+            .add_native_token(NativeToken::new(token_id, U256::from(30u8))?)
+            .finish_output(token_supply)?,
+    ];
 
     let block = client
         .block()

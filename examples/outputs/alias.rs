@@ -81,10 +81,12 @@ async fn main() -> Result<()> {
     //////////////////////////////////
     let alias_output_id = get_alias_output_id(block.payload().unwrap())?;
     let alias_id = AliasId::from(alias_output_id);
-    let outputs = vec![alias_output_builder
-        .with_alias_id(alias_id)
-        .with_state_index(1)
-        .finish_output(token_supply)?];
+    let outputs = vec![
+        alias_output_builder
+            .with_alias_id(alias_id)
+            .with_state_index(1)
+            .finish_output(token_supply)?,
+    ];
 
     let block = client
         .block()
