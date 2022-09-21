@@ -1,7 +1,7 @@
 ### `Client.get_block(blockId)`
 
 You can retrieve a block's data using its block ID using
-the [`Client. get_block_metadata(blockId)`](./../libraries/nodejs/references/classes/Client#getblock)
+the [`Client.get_block(&self, block_id: &BlockId)`](./../libraries/nodejs/references/classes/Client#getblock)
 function.
 
 If successful, the function will return the block as JSON.
