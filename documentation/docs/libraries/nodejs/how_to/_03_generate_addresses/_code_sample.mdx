@@ -1,0 +1,16 @@
+import CodeBlock from '@theme/CodeBlock';
+import GenerateAddresses from '!!raw-loader!../../../../../../bindings/nodejs/examples/02_generate_addresses.ts';
+
+import DotEnvWarning from "../../../../_admonitions/_dot_env_warning.md"
+
+<DotEnvWarning />
+
+<CodeBlock className="language-typescript">
+  {GenerateAddresses}
+</CodeBlock>
+
+You can run the example by running the following command from the `bindings/node/examples/` folder:
+
+<CodeBlock className="language-bash">
+    node dist/02_generate_addresses.js
+</CodeBlock>

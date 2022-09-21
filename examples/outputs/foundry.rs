@@ -179,7 +179,7 @@ async fn main() -> Result<()> {
     // send native token
     //////////////////////////////////
 
-    let basic_output_builder = BasicOutputBuilder::new_with_amount(1_000_000)?
+    let basic_output_builder = BasicOutputBuilder::new_with_amount(57_700)?
         .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)));
 
     let alias_output_id = get_alias_output_id(block.payload().unwrap())?;
@@ -187,7 +187,7 @@ async fn main() -> Result<()> {
     let outputs = vec![
         alias_output_builder
             .clone()
-            .with_amount(1_000_000)?
+            .with_amount(57_700)?
             .with_alias_id(alias_id)
             .with_state_index(3)
             .with_foundry_counter(1)
