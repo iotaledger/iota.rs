@@ -7,7 +7,6 @@ environment.
 
 ### Generate the Address
 
-
 You can generate an address from a [mnemonic](../../../../how_tos/02_generate_mnemonic.mdx) by calling
 the [`Client.generateAddresses(secretManager, generateAddressesOptions)`](./../libraries/nodejs/references/classes/Client#generateAddresses)
 function. If successful, the function will return a string representing the generated address.
