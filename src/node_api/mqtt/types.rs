@@ -154,7 +154,7 @@ impl Topic {
     /// Creates a new topic and checks if it's valid.
     pub fn try_new(topic: String) -> Result<Self> {
         let valid_topics = lazy_static!(
-        RegexSet::new(&[
+        RegexSet::new([
             // Milestone topics
             r"^milestone-info/latest$",
             r"^milestone-info/confirmed$",

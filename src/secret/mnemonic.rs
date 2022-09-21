@@ -53,7 +53,7 @@ impl SecretManage for MnemonicSecretManager {
                 .to_bytes();
 
             // Hash the public key to get the address
-            let result = Blake2b256::digest(&public_key).try_into().map_err(|_e| {
+            let result = Blake2b256::digest(public_key).try_into().map_err(|_e| {
                 crate::Error::Blake2b256Error("hashing the public key while generating the address failed.")
             });
 

@@ -65,7 +65,7 @@ impl SecretManage for StrongholdAdapter {
             let public_key = self.ed25519_public_key(derive_location.clone()).await?;
 
             // Hash the public key to get the address.
-            let hash = Blake2b256::digest(&public_key);
+            let hash = Blake2b256::digest(public_key);
 
             // Convert the hash into [Address].
             let address = Address::Ed25519(Ed25519Address::new(hash.into()));

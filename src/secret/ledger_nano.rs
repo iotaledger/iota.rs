@@ -77,7 +77,7 @@ impl SecretManage for LedgerSecretManager {
 
         let bip32 = LedgerBIP32Index {
             bip32_index: address_indexes.start | HARDENED,
-            bip32_change: if internal { 1 } else { 0 } | HARDENED,
+            bip32_change: u32::from(internal) | HARDENED,
         };
         // get ledger
         let ledger = get_ledger(coin_type, bip32_account, self.is_simulator)?;
