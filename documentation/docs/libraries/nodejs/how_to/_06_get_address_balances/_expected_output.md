@@ -1,5 +1,5 @@
 ```json
-Outputs controlled by rms1qpllaj0pyveqfkwxmnngz2c488hfdtmfrj3wfkgxtk4gtyrax0jaxzt70zy have: 2609275800glow and native tokens:  {
+Outputs controlled by rms1qpllaj0pyveqfkwxmnngz2c488hfdtmfrj3wfkgxtk4gtyrax0jaxzt70zy have: 2609275800 glow and native tokens:  {
   '0x0808fb702d67fdb320b5959f152c0f962630515d904c71ed09447c341a6cc171de0100000000': 100,
   '0x0822ceb3166ad125d310e6660f5fc292356f87f2f9566e982ea22154cec3847b3f0100000000': 100,
   '0x085c6b799750bdf7e5a5c81144465a0676bc11dab74b997444ca369949341720e80100000000': 100,
