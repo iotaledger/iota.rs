@@ -1,19 +1,10 @@
 ### `Client.getBlock(blockId)`
 
-You can retrieve a block's metadata using its block ID using
-the [`Client.getBlock(blockId)`](./../libraries/nodejs/references/classes/Client#getblock)
+You can post a block in JSON format using 
+the [`Client.postBlock(block)`](./../libraries/nodejs/references/classes/Client#postblock)
 function.
 
-If successful, the function will return the block's as JSON.
+If successful, the function will return the block ID as a result.
 
-This function queries the `GET /api/core/v2/blocks/{BlockId}` endpoint.
+This function queries the  `POST JSON to /api/core/v2/blocks` endpoint.
 
-### `Client.getBlockMetadata(blockId)`
-
-You can retrieve a block's metadata using its block ID using 
-the [`Client.getBlockMetadata(blockId)`](./../libraries/nodejs/references/classes/Client#getblockmetadata)
-function.
-
-If successful, the function will return the block's metadata as JSON.
-
-This function queries the `GET /api/core/v2/blocks/{BlockId}/metadata` endpoint.
