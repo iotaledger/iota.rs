@@ -27,4 +27,4 @@ for output_response in outputs:
         native_tokens.append(output['nativeTokens'])
 
 print(
-    f'Outputs controlled by {address} have {total_amount}glow and native tokens: {native_tokens}')
+    f'Outputs controlled by {address} have {total_amount} glow and native tokens: {native_tokens}')
