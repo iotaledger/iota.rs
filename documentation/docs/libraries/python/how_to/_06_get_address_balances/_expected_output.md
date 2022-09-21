@@ -1,6 +1,6 @@
 ```json
 Outputs controlled by rms1qpllaj0pyveqfkwxmnngz2c488hfdtmfrj3wfkgxtk4gtyrax0jaxzt70zy have
-2609275800glow and nativetokens: [
+2609275800 glow and nativetokens: [
   [
     {
       'id': '0x0808fb702d67fdb320b5959f152c0f962630515d904c71ed09447c341a6cc171de0100000000',
