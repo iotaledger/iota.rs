@@ -286,9 +286,13 @@ log::warn!("Syncing nodes failed: {e}");
         // difficulty or the byte cost could change via a milestone, so we request the node info every time, so we don't
         // create invalid transactions/blocks
         if !synced || cfg!(target_family = "wasm") {
-            // TODO runtime blocker / remove Handle?
-            let info = task::block_in_place(move || Handle::current().block_on(async move { self.get_info().await }))?
-                .node_info;
+            // TODO ???
+            // let runtime = self.runtime.as_ref().unwrap();
+            // let info = runtime.block_on(async move { self.get_info().await })?.node_info;
+            let handle = Handle::current();
+            let e = handle.enter();
+            let info = futures::executor::block_on(async move { self.get_info().await })?.node_info;
+            drop(e);
 
             // TODO keep?
             // let network_id = network_name_to_id(&info.protocol.network_name);
