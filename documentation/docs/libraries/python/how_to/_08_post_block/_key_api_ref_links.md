@@ -16,5 +16,4 @@ function.
 
 If successful, the function will return the block's metadata as JSON.
 
-
 This function queries the `GET /api/core/v2/blocks/{BlockId}/metadata` endpoint.
