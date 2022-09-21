@@ -8,7 +8,7 @@ structure.
 
 The code example chains the following calls to the `Client::builder`:
 
-* [`ClientBuilder.with_node(self, url: &str)`](https://docs.rs/iota-client/latest/iota_client/builder/struct.ClientBuilder.html#method.with_node):
+* [`ClientBuilder.with_node(self, url)`](https://docs.rs/iota-client/latest/iota_client/builder/struct.ClientBuilder.html#method.with_node):
   This call will add an IOTA node by URL.
 * [`ClientBuilder.with_node_sync_disabled(self)`](https://docs.rs/iota-client/latest/iota_client/builder/struct.ClientBuilder.html#method.with_node_sync_disabled):
   This call will disable the node sync process. As every node will be considered healthy, you should not use this call

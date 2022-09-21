@@ -1,19 +1,9 @@
-### `Client.get_block_data(block_id)`
+### `Client.post_block(block)`
 
-You can retrieve a block's metadata using its block ID using
-the [`Client.get_block_data(block_id)`](./../libraries/python/api_reference#get_block_data)
+You can post a block in JSON format using
+the [`Client.post_block(block)`](./../libraries/python/api_reference#get_block_data)
 function.
 
-If successful, the function will return the block's as JSON.
+If successful, the function will return the ID of the submitted block.
 
-This function queries the `GET /api/core/v2/blocks/{BlockId}` endpoint.
-
-### `Client.get_block_metadata(block_id)`
-
-You can retrieve a block's metadata using its block ID using
-the [`Client.get_block_metadata(block_id)`](./../libraries/python/api_reference#get_block_metadata)
-function.
-
-If successful, the function will return the block's metadata as JSON.
-
-This function queries the `GET /api/core/v2/blocks/{BlockId}/metadata` endpoint.
+This function queries the  `POST JSON to /api/core/v2/blocks` endpoint.

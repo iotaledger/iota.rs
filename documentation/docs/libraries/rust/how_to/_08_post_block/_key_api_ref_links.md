@@ -1,19 +1,9 @@
-### `Client.get_block(blockId)`
+### `Client.post_block(block)`
 
-You can retrieve a block's data using its block ID using
-the [`Client. get_block_metadata(blockId)`](./../libraries/nodejs/references/classes/Client#getblock)
+You can post a block in JSON format using
+the [`Client.post_block(block)`](./../libraries/nodejs/references/classes/Client#getblock)
 function.
 
-If successful, the function will return the block as JSON.
+If successful, the function will return the ID of the submitted block.
 
-This function queries the `GET /api/core/v2/blocks/{BlockId}` endpoint.
-
-### `Client.get_block(&self, block_id: &BlockId)`
-
-You can retrieve a block's metadata using its block ID using
-the [``Client. get_block_metadata(&self, block_id: &BlockId)`](iota_client/client/struct.Client.html#method.get_block_metadata)
-function.
-
-If successful, the function will return the block's metadata as JSON.
-
-This function queries the `GET /api/core/v2/blocks/{BlockId}/metadata` endpoint.
+This function queries the  `POST JSON to /api/core/v2/blocks` endpoint.
