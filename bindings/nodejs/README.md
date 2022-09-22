@@ -34,7 +34,7 @@ async function run() {
     initLogger();
 
     const client = new Client({
-        nodes: ["https://api.testnet.shimmer.network"],
+        nodes: ['https://api.testnet.shimmer.network'],
         localPow: true,
     });
 
