@@ -28,13 +28,23 @@ Also for Linux `libudev` is needed and can be installed with `apt install libude
 After you linked the library, you can create a `Client` instance and interface with it.
 
 ```javascript
-const { ClientBuilder } = require('@iota/client')
+const { Client, initLogger } = require('@iota/client');
 
-const client = new ClientBuilder()
-    .node('https://api.testnet.shimmer.network')
-    .build()
+async function run() {
+    initLogger();
 
-client.getInfo().then(console.log).catch(console.error)
+    const client = new Client({
+        nodes: ['https://api.testnet.shimmer.network'],
+        localPow: true,
+    });
+
+    try {
+        const nodeInfo = await client.getInfo();
+        console.log('Node info: ', nodeInfo);
+    } catch (error) {
+        console.error('Error: ', error);
+    }
+}
+
+run().then(() => process.exit());
 ```
-
-Connecting to a MQTT broker using raw ip doesn't work with TCP. This is a limitation of rustls.

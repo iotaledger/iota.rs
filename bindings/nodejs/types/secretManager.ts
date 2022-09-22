@@ -7,7 +7,7 @@ export interface LedgerNanoSecretManager {
     LedgerNano: boolean;
 }
 
-/** Secret manager that uses only a mnemonic. */
+/** Secret manager that uses a mnemonic in plain memory. It's not recommended for production use. Use LedgerNano or Stronghold instead.. */
 export interface MnemonicSecretManager {
     Mnemonic: string;
 }

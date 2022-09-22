@@ -106,6 +106,8 @@ Returns a block ID (Blake2b256 hash of block bytes) from a block.
 class LedgerNanoSecretManager(dict)
 ```
 
+Secret manager that uses a Ledger Nano hardware wallet or Speculos simulator.
+
 <a id="iota_client.secret_manager.LedgerNanoSecretManager.__init__"></a>
 
 #### \_\_init\_\_
@@ -124,6 +126,8 @@ Initialize a ledger nano secret manager.
 class MnemonicSecretManager(dict)
 ```
 
+Secret manager that uses a mnemonic in plain memory. It's not recommended for production use. Use LedgerNano or Stronghold instead.
+
 <a id="iota_client.secret_manager.MnemonicSecretManager.__init__"></a>
 
 #### \_\_init\_\_
@@ -141,6 +145,8 @@ Initialize a mnemonic secret manager.
 ```python
 class StrongholdSecretManager(dict)
 ```
+
+Secret manager that uses Stronghold.
 
 <a id="iota_client.secret_manager.StrongholdSecretManager.__init__"></a>
 
