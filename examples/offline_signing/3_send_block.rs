@@ -67,6 +67,6 @@ fn read_signed_transaction_from_file<P: AsRef<Path>>(client: &Client, path: P) -
 
     Ok(SignedTransactionData::try_from_dto(
         &dto,
-        &client.get_protocol_parameters().unwrap(),
+        &client.get_protocol_parameters()?,
     )?)
 }

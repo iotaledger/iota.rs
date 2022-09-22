@@ -308,7 +308,7 @@ log::warn!("Syncing nodes failed: {e}");
         Ok(res)
     }
 
-    /// Gets the protocol version of the node we're connecting to.
+    /// Gets the protocol parameters of the node we're connecting to.
     pub fn get_protocol_parameters(&self) -> Result<ProtocolParameters> {
         Ok(self.get_network_info()?.protocol_parameters)
     }
@@ -338,7 +338,7 @@ log::warn!("Syncing nodes failed: {e}");
         Ok(self.get_network_info()?.protocol_parameters.min_pow_score())
     }
 
-    /// Gets the minimum pow score of the node we're connecting to.
+    /// Gets the below maximum depth of the node we're connecting to.
     pub fn get_below_max_depth(&self) -> Result<u8> {
         Ok(self.get_network_info()?.protocol_parameters.below_max_depth())
     }
