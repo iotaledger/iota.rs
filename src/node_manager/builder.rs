@@ -13,7 +13,6 @@ use serde::{Deserialize, Serialize};
 use url::Url;
 
 use crate::{
-    builder::NetworkInfo,
     constants::{DEFAULT_MIN_QUORUM_SIZE, DEFAULT_QUORUM_THRESHOLD, NODE_SYNC_INTERVAL},
     error::{Error, Result},
     node_manager::{
@@ -206,26 +205,6 @@ impl NodeManagerBuilder {
     pub(crate) fn with_quorum_threshold(mut self, threshold: usize) -> Self {
         self.quorum_threshold = threshold;
         self
-    }
-
-    pub(crate) fn add_default_nodes(mut self, network_info: &NetworkInfo) -> Result<Self> {
-        let default_testnet_nodes = vec![];
-
-        if self.nodes.is_empty() && self.primary_node.is_none() {
-            match network_info.protocol_parameters.network_name().to_lowercase().as_ref() {
-                "testnet" | "devnet" | "test" | "dev" => {
-                    self = self.with_nodes(&default_testnet_nodes[..])?;
-                }
-                _ => return Err(Error::SyncedNodePoolEmpty),
-            }
-
-            // TODO used to be a match _ case, what should we do?
-            // _ => {
-            //     self = self.with_nodes(&default_testnet_nodes[..])?;
-            // }
-        }
-
-        Ok(self)
     }
 
     pub(crate) fn build(self, synced_nodes: Arc<RwLock<HashSet<Node>>>) -> NodeManager {
