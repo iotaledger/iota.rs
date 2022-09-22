@@ -104,8 +104,8 @@ fn pow_timeout(after_seconds: u64, cancel: MinerCancel) -> (u64, Option<Block>) 
 #[cfg(target_family = "wasm")]
 async fn finish_single_threaded_pow(client: &Client, payload: Option<Payload>) -> Result<Block> {
     let min_pow_score: u32 = client.get_min_pow_score()?;
-    let tips_interval: u64 = client.get_tips_interval().await;
-    let local_pow: bool = client.get_local_pow().await;
+    let tips_interval: u64 = client.get_tips_interval();
+    let local_pow: bool = client.get_local_pow();
     let mut parent_blocks = client.get_tips().await?;
     loop {
         parent_blocks.sort_unstable_by_key(PackableExt::pack_to_vec);

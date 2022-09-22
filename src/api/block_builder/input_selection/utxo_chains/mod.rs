@@ -220,6 +220,7 @@ pub(crate) async fn get_alias_and_nft_outputs_recursively(
 ) -> Result<()> {
     log::debug!("[get_alias_and_nft_outputs_recursively]");
     let current_time = client.get_time_checked().await?;
+    let token_supply = client.get_token_supply()?;
 
     let mut processed_alias_nft_addresses = std::collections::HashSet::new();
 
@@ -230,7 +231,7 @@ pub(crate) async fn get_alias_and_nft_outputs_recursively(
             output_response.metadata.output_index,
         )?;
 
-        match Output::try_from_dto(&output_response.output, client.get_token_supply()?)? {
+        match Output::try_from_dto(&output_response.output, token_supply)? {
             Output::Alias(alias_output) => {
                 processed_alias_nft_addresses.insert(Address::Alias(AliasAddress::new(
                     alias_output.alias_id().or_from_output_id(output_id),
@@ -260,7 +261,7 @@ pub(crate) async fn get_alias_and_nft_outputs_recursively(
                     let output_id = client.alias_output_id(*address.alias_id()).await?;
                     let output_response = client.get_output(&output_id).await?;
                     if let OutputDto::Alias(alias_output_dto) = &output_response.output {
-                        let alias_output = AliasOutput::try_from_dto(alias_output_dto, client.get_token_supply()?)?;
+                        let alias_output = AliasOutput::try_from_dto(alias_output_dto, token_supply)?;
                         // State transition if we add them to inputs
                         let alias_unlock_address = alias_output.state_controller_address();
                         // Add address to unprocessed_alias_nft_addresses so we get the required output there
@@ -275,7 +276,7 @@ pub(crate) async fn get_alias_and_nft_outputs_recursively(
                     let output_id = client.nft_output_id(*address.nft_id()).await?;
                     let output_response = client.get_output(&output_id).await?;
                     if let OutputDto::Nft(nft_output) = &output_response.output {
-                        let nft_output = NftOutput::try_from_dto(nft_output, client.get_token_supply()?)?;
+                        let nft_output = NftOutput::try_from_dto(nft_output, token_supply)?;
                         let unlock_address = nft_output
                             .unlock_conditions()
                             .locked_address(nft_output.address(), current_time);
