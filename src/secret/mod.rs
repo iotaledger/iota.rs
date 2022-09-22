@@ -98,7 +98,8 @@ pub enum SecretManager {
     #[cfg_attr(docsrs, doc(cfg(feature = "ledger_nano")))]
     LedgerNano(LedgerSecretManager),
 
-    /// Secret manager that uses only a mnemonic.
+    /// Secret manager that uses a mnemonic in plain memory. It's not recommended for production use. Use
+    /// LedgerNano or Stronghold instead.
     Mnemonic(MnemonicSecretManager),
 
     /// Secret manager that's just a placeholder, so it can be provided to an online wallet, but can't be used for

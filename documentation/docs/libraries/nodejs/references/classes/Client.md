@@ -611,7 +611,7 @@ ___
 
 ### getBlockRaw
 
-▸ **getBlockRaw**(`blockId`): `Promise`<`number`[]\>
+▸ **getBlockRaw**(`blockId`): `Promise`<`Uint8Array`\>
 
 Get block as raw bytes.
 
@@ -623,7 +623,7 @@ Get block as raw bytes.
 
 #### Returns
 
-`Promise`<`number`[]\>
+`Promise`<`Uint8Array`\>
 
 ___
 
