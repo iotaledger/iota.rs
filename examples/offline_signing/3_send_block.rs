@@ -8,7 +8,7 @@ use std::{fs::File, io::prelude::*, path::Path};
 
 use iota_client::{
     api::{verify_semantic, SignedTransactionData, SignedTransactionDataDto},
-    block::{output::RentStructureBuilder, payload::Payload, protocol::ProtocolParameters, semantic::ConflictReason},
+    block::{payload::Payload, semantic::ConflictReason},
     Client, Error, Result,
 };
 
@@ -27,7 +27,7 @@ async fn main() -> Result<()> {
         .with_node_sync_disabled()
         .finish()?;
 
-    let signed_transaction_payload = read_signed_transaction_from_file(SIGNED_TRANSACTION_FILE_NAME)?;
+    let signed_transaction_payload = read_signed_transaction_from_file(&online_client, SIGNED_TRANSACTION_FILE_NAME)?;
 
     let current_time = online_client.get_time_checked().await?;
 
@@ -58,36 +58,15 @@ async fn main() -> Result<()> {
     Ok(())
 }
 
-fn read_signed_transaction_from_file<P: AsRef<Path>>(path: P) -> Result<SignedTransactionData> {
+fn read_signed_transaction_from_file<P: AsRef<Path>>(client: &Client, path: P) -> Result<SignedTransactionData> {
     let mut file = File::open(&path).unwrap();
     let mut json = String::new();
     file.read_to_string(&mut json).unwrap();
 
     let dto = serde_json::from_str::<SignedTransactionDataDto>(&json)?;
 
-    // {
-    //     "rentStructure": {
-    //       "vByteCost": 100,
-    //       "vByteFactorData": 1,
-    //       "vByteFactorKey": 10
-    //     },
-
-    // TODO is this alright?
     Ok(SignedTransactionData::try_from_dto(
         &dto,
-        &ProtocolParameters::new(
-            2,
-            String::from("shimmer"),
-            String::from("smr"),
-            1500,
-            15,
-            RentStructureBuilder::new()
-                .byte_cost(100)
-                .key_factor(1)
-                .data_factor(10)
-                .finish(),
-            1813620509061365,
-        )
-        .unwrap(),
+        &client.get_protocol_parameters().unwrap(),
     )?)
 }

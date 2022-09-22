@@ -29,7 +29,7 @@ use crate::{
 /// Struct containing network and PoW related information
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct NetworkInfo {
-    /// Whether the node is synced or not.
+    /// Whether any node is synced or not.
     #[serde(default = "default_synced")]
     pub synced: bool,
     // TODO do we really want a default?
@@ -246,15 +246,6 @@ impl ClientBuilder {
         self.node_manager_builder = self.node_manager_builder.with_quorum_threshold(threshold);
         self
     }
-
-    // /// Selects the type of network to get default nodes for it, only "testnet" is supported at the moment.
-    // /// Nodes that don't belong to this network are ignored. The &str must match a part or all of the networkId
-    // returned /// in the node info from a node. For example, if the networkId is `"private-tangle"`, `"tangle"`
-    // can be used. /// Default nodes are only used when no other nodes are provided.
-    // pub fn with_network(mut self, network: &str) -> Self {
-    //     self.network_info.network.replace(network.into());
-    //     self
-    // }
 
     /// Sets the MQTT broker options.
     #[cfg(feature = "mqtt")]
