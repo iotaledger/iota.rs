@@ -55,7 +55,6 @@ async fn public_key_to_address() {
 
     let public_key_address = client
         .hex_public_key_to_bech32_address(hex_public_key, Some("atoi"))
-        .await
         .unwrap();
 
     assert_eq!(

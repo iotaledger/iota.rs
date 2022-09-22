@@ -413,7 +413,7 @@ impl<'a> ClientBlockBuilder<'a> {
                 parents.dedup();
 
                 let min_pow_score = self.client.get_min_pow_score()?;
-                let miner = self.client.get_pow_provider().await;
+                let miner = self.client.get_pow_provider();
                 do_pow(miner, min_pow_score, payload, parents)?
             }
             None => crate::api::pow::finish_pow(self.client, payload).await?,
@@ -421,7 +421,7 @@ impl<'a> ClientBlockBuilder<'a> {
 
         let block_id = self.client.post_block_raw(&final_block).await?;
         // Get block if we use remote PoW, because the node will change parents and nonce
-        if self.client.get_local_pow().await {
+        if self.client.get_local_pow() {
             Ok(final_block)
         } else {
             // Request block multiple times because the node maybe didn't process it completely in this time

@@ -97,7 +97,7 @@ impl Client {
     /// POST JSON to /api/core/v2/blocks
     pub async fn post_block(&self, block: &Block) -> Result<BlockId> {
         let path = "api/core/v2/blocks";
-        let local_pow = self.get_local_pow().await;
+        let local_pow = self.get_local_pow();
         let timeout = if local_pow {
             self.get_timeout()
         } else {
@@ -114,7 +114,7 @@ impl Client {
             Ok(res) => res,
             Err(e) => {
                 if let Error::NodeError(e) = e {
-                    let fallback_to_local_pow = self.get_fallback_to_local_pow().await;
+                    let fallback_to_local_pow = self.get_fallback_to_local_pow();
                     // hornet and bee return different error blocks
                     if (e == *"No available nodes with remote Pow"
                         || e.contains("proof of work is not enabled")
@@ -167,7 +167,7 @@ impl Client {
     /// POST /api/core/v2/blocks
     pub async fn post_block_raw(&self, block: &Block) -> Result<BlockId> {
         let path = "api/core/v2/blocks";
-        let local_pow = self.get_local_pow().await;
+        let local_pow = self.get_local_pow();
         let timeout = if local_pow {
             self.get_timeout()
         } else {
@@ -183,7 +183,7 @@ impl Client {
             Ok(res) => res,
             Err(e) => {
                 if let Error::NodeError(e) = e {
-                    let fallback_to_local_pow = self.get_fallback_to_local_pow().await;
+                    let fallback_to_local_pow = self.get_fallback_to_local_pow();
                     // hornet and bee return different error blocks
                     if (e == *"No available nodes with remote Pow"
                         || e.contains("proof of work is not enabled")

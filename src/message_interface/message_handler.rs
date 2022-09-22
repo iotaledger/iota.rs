@@ -64,7 +64,7 @@ pub struct ClientMessageHandler {
 
 impl ClientMessageHandler {
     /// Creates a new instance of the message handler with the default client manager.
-    pub async fn new() -> Result<Self> {
+    pub fn new() -> Result<Self> {
         let instance = Self {
             client: Client::builder().finish()?,
         };
@@ -293,16 +293,14 @@ impl ClientMessageHandler {
 
                 Ok(Response::BlockIdWithBlock(block_id, BlockDto::from(&block)))
             }
-            Message::GetNode => Ok(Response::Node(self.client.get_node().await?)),
+            Message::GetNode => Ok(Response::Node(self.client.get_node()?)),
             Message::GetNetworkInfo => Ok(Response::NetworkInfo(self.client.get_network_info()?)),
             Message::GetNetworkId => Ok(Response::NetworkId(self.client.get_network_id()?)),
             Message::GetBech32Hrp => Ok(Response::Bech32Hrp(self.client.get_bech32_hrp()?)),
             Message::GetMinPowScore => Ok(Response::MinPowScore(self.client.get_min_pow_score()?)),
-            Message::GetTipsInterval => Ok(Response::TipsInterval(self.client.get_tips_interval().await)),
-            Message::GetLocalPow => Ok(Response::LocalPow(self.client.get_local_pow().await)),
-            Message::GetFallbackToLocalPow => Ok(Response::FallbackToLocalPow(
-                self.client.get_fallback_to_local_pow().await,
-            )),
+            Message::GetTipsInterval => Ok(Response::TipsInterval(self.client.get_tips_interval())),
+            Message::GetLocalPow => Ok(Response::LocalPow(self.client.get_local_pow())),
+            Message::GetFallbackToLocalPow => Ok(Response::FallbackToLocalPow(self.client.get_fallback_to_local_pow())),
             #[cfg(feature = "ledger_nano")]
             Message::GetLedgerNanoStatus { is_simulator } => {
                 let ledger_nano = LedgerSecretManager::new(is_simulator);
@@ -381,7 +379,7 @@ impl ClientMessageHandler {
             }
             #[cfg(not(target_family = "wasm"))]
             Message::UnsyncedNodes => Ok(Response::UnsyncedNodes(
-                self.client.unsynced_nodes().await.into_iter().cloned().collect(),
+                self.client.unsynced_nodes().into_iter().cloned().collect(),
             )),
             Message::GetHealth { url } => Ok(Response::Health(self.client.get_health(&url).await?)),
             Message::GetNodeInfo { url, auth } => Ok(Response::NodeInfo(Client::get_node_info(&url, auth).await?)),
@@ -529,12 +527,11 @@ impl ClientMessageHandler {
             }
             Message::Bech32ToHex { bech32 } => Ok(Response::Bech32ToHex(Client::bech32_to_hex(&bech32)?)),
             Message::HexToBech32 { hex, bech32_hrp } => Ok(Response::HexToBech32(
-                self.client.hex_to_bech32(&hex, bech32_hrp.as_deref()).await?,
+                self.client.hex_to_bech32(&hex, bech32_hrp.as_deref())?,
             )),
             Message::HexPublicKeyToBech32Address { hex, bech32_hrp } => Ok(Response::HexToBech32(
                 self.client
-                    .hex_public_key_to_bech32_address(&hex, bech32_hrp.as_deref())
-                    .await?,
+                    .hex_public_key_to_bech32_address(&hex, bech32_hrp.as_deref())?,
             )),
             Message::ParseBech32Address { address } => Ok(Response::ParsedBech32Address(AddressDto::from(
                 &Client::parse_bech32_address(&address)?,

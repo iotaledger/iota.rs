@@ -247,7 +247,7 @@ log::warn!("Syncing nodes failed: {e}");
     }
 
     /// Get a node candidate from the synced node pool.
-    pub async fn get_node(&self) -> Result<Node> {
+    pub fn get_node(&self) -> Result<Node> {
         if let Some(primary_node) = &self.node_manager.primary_node {
             return Ok(primary_node.clone());
         }
@@ -258,8 +258,8 @@ log::warn!("Syncing nodes failed: {e}");
     }
 
     /// Gets the miner to use based on the Pow setting
-    pub async fn get_pow_provider(&self) -> impl NonceProvider {
-        let local_pow: bool = self.get_local_pow().await;
+    pub fn get_pow_provider(&self) -> impl NonceProvider {
+        let local_pow: bool = self.get_local_pow();
         #[cfg(target_family = "wasm")]
         let miner = crate::api::wasm_miner::SingleThreadedMiner::builder()
             .local_pow(local_pow)
@@ -354,14 +354,14 @@ log::warn!("Syncing nodes failed: {e}");
     }
 
     /// returns the tips interval
-    pub async fn get_tips_interval(&self) -> u64 {
+    pub fn get_tips_interval(&self) -> u64 {
         self.network_info
             .read()
             .map_or(DEFAULT_TIPS_INTERVAL, |info| info.tips_interval)
     }
 
     /// returns if local pow should be used or not
-    pub async fn get_local_pow(&self) -> bool {
+    pub fn get_local_pow(&self) -> bool {
         self.network_info
             .read()
             .map_or(NetworkInfo::default().local_pow, |info| info.local_pow)
@@ -376,7 +376,7 @@ log::warn!("Syncing nodes failed: {e}");
     }
 
     /// returns the fallback_to_local_pow
-    pub async fn get_fallback_to_local_pow(&self) -> bool {
+    pub fn get_fallback_to_local_pow(&self) -> bool {
         self.network_info
             .read()
             .map_or(NetworkInfo::default().fallback_to_local_pow, |info| {
@@ -386,7 +386,7 @@ log::warn!("Syncing nodes failed: {e}");
 
     /// returns the unsynced nodes.
     #[cfg(not(target_family = "wasm"))]
-    pub async fn unsynced_nodes(&self) -> HashSet<&Node> {
+    pub fn unsynced_nodes(&self) -> HashSet<&Node> {
         self.node_manager.synced_nodes.read().map_or(HashSet::new(), |synced| {
             self.node_manager
                 .nodes
@@ -731,7 +731,7 @@ log::warn!("Syncing nodes failed: {e}");
         // Post the modified
         let block_id = self.post_block_raw(&reattach_block).await?;
         // Get block if we use remote Pow, because the node will change parents and nonce
-        let block = if self.get_local_pow().await {
+        let block = if self.get_local_pow() {
             reattach_block
         } else {
             self.get_block(&block_id).await?
@@ -757,12 +757,12 @@ log::warn!("Syncing nodes failed: {e}");
         let min_pow_score = self.get_min_pow_score()?;
         tips.push(*block_id);
 
-        let miner = self.get_pow_provider().await;
+        let miner = self.get_pow_provider();
         let promote_block = do_pow(miner, min_pow_score, None, tips)?;
 
         let block_id = self.post_block_raw(&promote_block).await?;
         // Get block if we use remote Pow, because the node will change parents and nonce.
-        let block = if self.get_local_pow().await {
+        let block = if self.get_local_pow() {
             promote_block
         } else {
             self.get_block(&block_id).await?
@@ -806,7 +806,7 @@ log::warn!("Syncing nodes failed: {e}");
     }
 
     /// Transforms a hex encoded address to a bech32 encoded address
-    pub async fn hex_to_bech32(&self, hex: &str, bech32_hrp: Option<&str>) -> crate::Result<String> {
+    pub fn hex_to_bech32(&self, hex: &str, bech32_hrp: Option<&str>) -> crate::Result<String> {
         let bech32_hrp = match bech32_hrp {
             Some(hrp) => hrp.into(),
             None => self.get_bech32_hrp()?,
@@ -815,7 +815,7 @@ log::warn!("Syncing nodes failed: {e}");
     }
 
     /// Transforms a hex encoded public key to a bech32 encoded address
-    pub async fn hex_public_key_to_bech32_address(&self, hex: &str, bech32_hrp: Option<&str>) -> crate::Result<String> {
+    pub fn hex_public_key_to_bech32_address(&self, hex: &str, bech32_hrp: Option<&str>) -> crate::Result<String> {
         let bech32_hrp = match bech32_hrp {
             Some(hrp) => hrp.into(),
             None => self.get_bech32_hrp()?,

@@ -61,7 +61,7 @@ impl NodeManager {
         NodeManagerBuilder::new()
     }
 
-    async fn get_nodes(
+    fn get_nodes(
         &self,
         path: &str,
         query: Option<&str>,
@@ -142,7 +142,7 @@ impl NodeManager {
         let mut result: HashMap<String, usize> = HashMap::new();
         // primary_pow_node should only be used for post request with remote PoW
         // Get node urls and set path
-        let nodes = self.get_nodes(path, query, false, prefer_permanode).await?;
+        let nodes = self.get_nodes(path, query, false, prefer_permanode)?;
         if self.quorum && need_quorum && nodes.len() < self.min_quorum_size {
             return Err(Error::QuorumPoolSizeError {
                 available_nodes: nodes.len(),
@@ -276,7 +276,7 @@ impl NodeManager {
     ) -> Result<Vec<u8>> {
         // primary_pow_node should only be used for post request with remote Pow
         // Get node urls and set path
-        let nodes = self.get_nodes(path, query, false, false).await?;
+        let nodes = self.get_nodes(path, query, false, false)?;
         let mut error = None;
         // Send requests
         for node in nodes {
@@ -313,7 +313,7 @@ impl NodeManager {
         local_pow: bool,
     ) -> Result<T> {
         // primary_pow_node should only be used for post request with remote PoW
-        let nodes = self.get_nodes(path, None, !local_pow, false).await?;
+        let nodes = self.get_nodes(path, None, !local_pow, false)?;
         if nodes.is_empty() {
             return Err(Error::NodeError("no available nodes with remote Pow".into()));
         }
@@ -350,7 +350,7 @@ impl NodeManager {
         local_pow: bool,
     ) -> Result<T> {
         // primary_pow_node should only be used for post request with remote PoW
-        let nodes = self.get_nodes(path, None, !local_pow, false).await?;
+        let nodes = self.get_nodes(path, None, !local_pow, false)?;
         if nodes.is_empty() {
             return Err(Error::NodeError("no available nodes with remote Pow".into()));
         }
