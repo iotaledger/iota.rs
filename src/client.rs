@@ -161,16 +161,16 @@ impl Client {
         runtime.spawn(async move {
             loop {
                 tokio::select! {
-                                    _ = async {
-                                            // delay first since the first `sync_nodes` call is made by the builder
-                                            // to ensure the node list is filled before the client is used
-                                            sleep(node_sync_interval).await;
-                if let Err(e)=                            Client::sync_nodes(&sync, &nodes, &network_info).await {
-log::warn!("Syncing nodes failed: {e}");
+                    _ = async {
+                        // delay first since the first `sync_nodes` call is made by the builder
+                        // to ensure the node list is filled before the client is used
+                        sleep(node_sync_interval).await;
+                        if let Err(e) = Client::sync_nodes(&sync, &nodes, &network_info).await {
+                            log::warn!("Syncing nodes failed: {e}");
+                        }
+                    } => {}
+                    _ = kill.recv() => {}
                 }
-                                    } => {}
-                                    _ = kill.recv() => {}
-                                }
             }
         });
     }
@@ -242,6 +242,8 @@ log::warn!("Syncing nodes failed: {e}");
         if let Ok(mut sync) = sync.write() {
             *sync = synced_nodes;
         }
+
+        (*network_info.write().map_err(|_| crate::Error::PoisonError)?).synced = true;
 
         Ok(())
     }
