@@ -149,11 +149,11 @@ fn poll_mqtt(
                             if let Some(handlers) = mqtt_topic_handlers.get(&Topic::new_unchecked(topic.clone())) {
                                 let event = {
                                     if topic.contains("blocks") || topic.contains("included-block") {
-                                        let mut payload = &*p.payload;
+                                        let payload = &*p.payload;
                                         // TODO: how to properly handle this?
                                         let protocol_parameters =
                                             &network_info.read().expect("TODO").protocol_parameters;
-                                        match Block::unpack_verified(&mut payload, protocol_parameters) {
+                                        match Block::unpack_verified(payload, protocol_parameters) {
                                             Ok(block) => Ok(TopicEvent {
                                                 topic,
                                                 payload: MqttPayload::Block(block),
@@ -164,11 +164,11 @@ fn poll_mqtt(
                                             }
                                         }
                                     } else if topic.contains("milestones") {
-                                        let mut payload = &*p.payload;
+                                        let payload = &*p.payload;
                                         // TODO: how to properly handle this?
                                         let protocol_parameters =
                                             &network_info.read().expect("TODO").protocol_parameters;
-                                        match MilestonePayload::unpack_verified(&mut payload, protocol_parameters) {
+                                        match MilestonePayload::unpack_verified(payload, protocol_parameters) {
                                             Ok(milestone_payload) => Ok(TopicEvent {
                                                 topic,
                                                 payload: MqttPayload::MilestonePayload(milestone_payload),
@@ -179,12 +179,11 @@ fn poll_mqtt(
                                             }
                                         }
                                     } else if topic.contains("receipts") {
-                                        let mut payload = &*p.payload;
+                                        let payload = &*p.payload;
                                         // TODO: how to properly handle this?
                                         let protocol_parameters =
                                             &network_info.read().expect("TODO").protocol_parameters;
-                                        match ReceiptMilestoneOption::unpack_verified(&mut payload, protocol_parameters)
-                                        {
+                                        match ReceiptMilestoneOption::unpack_verified(payload, protocol_parameters) {
                                             Ok(receipt) => Ok(TopicEvent {
                                                 topic,
                                                 payload: MqttPayload::Receipt(receipt),

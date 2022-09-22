@@ -391,7 +391,7 @@ impl ClientMessageHandler {
             Message::PostBlockRaw { block_bytes } => Ok(Response::BlockId(
                 self.client
                     .post_block_raw(&BeeBlock::unpack_strict(
-                        &mut &block_bytes[..],
+                        &block_bytes[..],
                         &self.client.get_protocol_parameters()?,
                     )?)
                     .await?,
