@@ -122,9 +122,11 @@ fn poll_mqtt(
             let mut error_instant = Instant::now();
             let mut connection_failure_count = 0;
             let handle = event_loop.handle();
+
             loop {
                 let event = event_loop.poll().await;
                 let mqtt_topic_handlers_guard = mqtt_topic_handlers_guard.clone();
+
                 match event {
                     Ok(Event::Incoming(Incoming::ConnAck(_))) => {
                         let _ = event_sender.send(MqttEvent::Connected);
@@ -144,15 +146,16 @@ fn poll_mqtt(
                     Ok(Event::Incoming(Incoming::Publish(p))) => {
                         let topic = p.topic.clone();
                         let network_info = network_info.clone();
+
                         crate::async_runtime::spawn(async move {
                             let mqtt_topic_handlers = mqtt_topic_handlers_guard.read().await;
+
                             if let Some(handlers) = mqtt_topic_handlers.get(&Topic::new_unchecked(topic.clone())) {
                                 let event = {
                                     if topic.contains("blocks") || topic.contains("included-block") {
                                         let payload = &*p.payload;
-                                        // TODO: how to properly handle this?
-                                        let protocol_parameters =
-                                            &network_info.read().expect("TODO").protocol_parameters;
+                                        let protocol_parameters = &network_info.read().unwrap().protocol_parameters;
+
                                         match Block::unpack_verified(payload, protocol_parameters) {
                                             Ok(block) => Ok(TopicEvent {
                                                 topic,
@@ -165,9 +168,8 @@ fn poll_mqtt(
                                         }
                                     } else if topic.contains("milestones") {
                                         let payload = &*p.payload;
-                                        // TODO: how to properly handle this?
-                                        let protocol_parameters =
-                                            &network_info.read().expect("TODO").protocol_parameters;
+                                        let protocol_parameters = &network_info.read().unwrap().protocol_parameters;
+
                                         match MilestonePayload::unpack_verified(payload, protocol_parameters) {
                                             Ok(milestone_payload) => Ok(TopicEvent {
                                                 topic,
@@ -180,9 +182,8 @@ fn poll_mqtt(
                                         }
                                     } else if topic.contains("receipts") {
                                         let payload = &*p.payload;
-                                        // TODO: how to properly handle this?
-                                        let protocol_parameters =
-                                            &network_info.read().expect("TODO").protocol_parameters;
+                                        let protocol_parameters = &network_info.read().unwrap().protocol_parameters;
+
                                         match ReceiptMilestoneOption::unpack_verified(payload, protocol_parameters) {
                                             Ok(receipt) => Ok(TopicEvent {
                                                 topic,
