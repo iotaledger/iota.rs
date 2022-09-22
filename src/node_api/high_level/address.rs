@@ -34,6 +34,7 @@ impl<'a> GetAddressBuilder<'a> {
     /// Consume the builder and get the IOTA and native tokens balance of a given Bech32 encoded address, ignoring
     /// outputs with additional unlock conditions.
     pub async fn balance(self, address: &str) -> Result<AddressBalance> {
+        let token_supply = self.client.get_token_supply()?;
         let output_ids = self
             .client
             .basic_output_ids(vec![
@@ -50,7 +51,7 @@ impl<'a> GetAddressBuilder<'a> {
         let mut native_tokens_builder = NativeTokensBuilder::new();
 
         for output_response in &outputs_responses {
-            let output = Output::try_from_dto(&output_response.output, self.client.get_token_supply()?)?;
+            let output = Output::try_from_dto(&output_response.output, token_supply)?;
 
             if let Some(native_tokens) = output.native_tokens() {
                 native_tokens_builder.add_native_tokens(native_tokens.clone())?;
