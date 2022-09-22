@@ -5,6 +5,8 @@ use iota_client::{api::input_selection::try_select_inputs, block::output::RentSt
 
 use crate::input_selection::{build_input_signing_data_most_basic_outputs, build_most_basic_output};
 
+const TOKEN_SUPPLY: u64 = 1_813_620_509_061_365;
+
 #[test]
 fn input_selection_basic_outputs() -> Result<()> {
     let rent_structure = RentStructure::build()
@@ -12,7 +14,6 @@ fn input_selection_basic_outputs() -> Result<()> {
         .key_factor(10)
         .data_factor(1)
         .finish();
-    let token_supply = 1_813_620_509_061_365;
     let bech32_address = "rms1qr2xsmt3v3eyp2ja80wd2sq8xx0fslefmxguf7tshzezzr5qsctzc2f5dg6";
 
     // input amount == output amount
@@ -26,7 +27,7 @@ fn input_selection_basic_outputs() -> Result<()> {
         &rent_structure,
         false,
         0,
-        token_supply,
+        TOKEN_SUPPLY,
     )?;
     assert_eq!(selected_transaction_data.inputs, inputs);
 
@@ -41,7 +42,7 @@ fn input_selection_basic_outputs() -> Result<()> {
         &rent_structure,
         false,
         0,
-        token_supply,
+        TOKEN_SUPPLY,
     ) {
         Err(Error::NotEnoughBalance {
             found: 1_000_000,
@@ -61,7 +62,7 @@ fn input_selection_basic_outputs() -> Result<()> {
         &rent_structure,
         false,
         0,
-        token_supply,
+        TOKEN_SUPPLY,
     )?;
     assert_eq!(selected_transaction_data.inputs, inputs);
     // One output should be added for the remainder
@@ -79,7 +80,7 @@ fn input_selection_basic_outputs() -> Result<()> {
         &rent_structure,
         false,
         0,
-        token_supply,
+        TOKEN_SUPPLY,
     )?;
     // One input has enough amount
     assert_eq!(selected_transaction_data.inputs.len(), 1);
@@ -97,7 +98,7 @@ fn input_selection_basic_outputs() -> Result<()> {
         &rent_structure,
         false,
         0,
-        token_supply,
+        TOKEN_SUPPLY,
     ) {
         Err(Error::BlockError(bee_block::Error::InsufficientStorageDepositAmount {
             amount: 1,

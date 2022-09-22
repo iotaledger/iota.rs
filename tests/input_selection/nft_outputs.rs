@@ -14,6 +14,8 @@ use crate::input_selection::{
     build_nft_output,
 };
 
+const TOKEN_SUPPLY: u64 = 1_813_620_509_061_365;
+
 #[test]
 fn input_selection_nfts() -> Result<()> {
     let rent_structure = RentStructure::build()
@@ -21,7 +23,6 @@ fn input_selection_nfts() -> Result<()> {
         .key_factor(10)
         .data_factor(1)
         .finish();
-    let token_supply = 1_813_620_509_061_365;
 
     let nft_id_0 = NftId::from_str("0x0000000000000000000000000000000000000000000000000000000000000000").unwrap();
     let nft_id_1 = NftId::from_str("0x1111111111111111111111111111111111111111111111111111111111111111").unwrap();
@@ -38,7 +39,7 @@ fn input_selection_nfts() -> Result<()> {
         &rent_structure,
         false,
         0,
-        token_supply,
+        TOKEN_SUPPLY,
     )?;
     assert_eq!(selected_transaction_data.inputs, inputs);
 
@@ -53,7 +54,7 @@ fn input_selection_nfts() -> Result<()> {
         &rent_structure,
         false,
         0,
-        token_supply,
+        TOKEN_SUPPLY,
     ) {
         Err(Error::NotEnoughBalance {
             found: 1_000_000,
@@ -74,7 +75,7 @@ fn input_selection_nfts() -> Result<()> {
         &rent_structure,
         false,
         0,
-        token_supply,
+        TOKEN_SUPPLY,
     )?;
     // basic output + nft remainder
     assert_eq!(selected_transaction_data.outputs.len(), 2);
@@ -90,7 +91,7 @@ fn input_selection_nfts() -> Result<()> {
         &rent_structure,
         false,
         0,
-        token_supply,
+        TOKEN_SUPPLY,
     )?;
     // One output should be added for the remainder
     assert_eq!(selected_transaction_data.outputs.len(), 2);
@@ -114,7 +115,7 @@ fn input_selection_nfts() -> Result<()> {
         &rent_structure,
         true,
         0,
-        token_supply,
+        TOKEN_SUPPLY,
     )?;
     // No remainder
     assert_eq!(selected_transaction_data.outputs.len(), 1);
@@ -132,7 +133,7 @@ fn input_selection_nfts() -> Result<()> {
         &rent_structure,
         false,
         0,
-        token_supply,
+        TOKEN_SUPPLY,
     ) {
         Err(Error::BlockError(bee_block::Error::InsufficientStorageDepositAmount {
             amount: 1,
@@ -152,7 +153,7 @@ fn input_selection_nfts() -> Result<()> {
         &rent_structure,
         false,
         0,
-        token_supply,
+        TOKEN_SUPPLY,
     ) {
         Err(Error::MissingInput(err_msg)) => {
             assert_eq!(
