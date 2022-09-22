@@ -54,22 +54,24 @@ fn read_prepared_transaction_from_file<P: AsRef<Path>>(path: P) -> Result<Prepar
     let mut json = String::new();
     file.read_to_string(&mut json).unwrap();
 
+    let protocol_parameters = ProtocolParameters::new(
+        2,
+        String::from("shimmer"),
+        String::from("smr"),
+        1500,
+        15,
+        RentStructureBuilder::new()
+            .byte_cost(100)
+            .key_factor(1)
+            .data_factor(10)
+            .finish(),
+        1813620509061365,
+    )
+    .unwrap();
+
     Ok(PreparedTransactionData::try_from_dto(
         &serde_json::from_str::<PreparedTransactionDataDto>(&json)?,
-        &ProtocolParameters::new(
-            2,
-            String::from("shimmer"),
-            String::from("smr"),
-            1500,
-            15,
-            RentStructureBuilder::new()
-                .byte_cost(100)
-                .key_factor(1)
-                .data_factor(10)
-                .finish(),
-            1813620509061365,
-        )
-        .unwrap(),
+        &protocol_parameters,
     )?)
 }
 
