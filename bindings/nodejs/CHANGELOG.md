@@ -1,5 +1,14 @@
 # Changelog
 
+## \[3.0.0-alpha.9]
+
+- Fix input selection when only native tokens are remaining.
+  - [4c3b71b](https://github.com/iotaledger/iota.rs/commit/4c3b71b13d16ea543434ef2e652734f9d79c30b0) Docs - Develop - Organize examples ([#1228](https://github.com/iotaledger/iota.rs/pull/1228)) on 2022-09-21
+- Add typescript to dependencies.
+  - [4c3b71b](https://github.com/iotaledger/iota.rs/commit/4c3b71b13d16ea543434ef2e652734f9d79c30b0) Docs - Develop - Organize examples ([#1228](https://github.com/iotaledger/iota.rs/pull/1228)) on 2022-09-21
+- Use `Uint8Array` over `number[]` in `IAliasOutputBuilderOptions` and other places to better reflect the type requirements.
+  - [4c3b71b](https://github.com/iotaledger/iota.rs/commit/4c3b71b13d16ea543434ef2e652734f9d79c30b0) Docs - Develop - Organize examples ([#1228](https://github.com/iotaledger/iota.rs/pull/1228)) on 2022-09-21
+
 ## \[3.0.0-alpha.8]
 
 - Fix missing reference unlocks with ledger nano secret manager.

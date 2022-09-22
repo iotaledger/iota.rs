@@ -66,7 +66,7 @@ async function run() {
         }
 
         console.log(
-            `Outputs controlled by ${addresses[0]} have: ${totalAmount}glow and native tokens: `,
+            `Outputs controlled by ${addresses[0]} have: ${totalAmount} glow and native tokens: `,
             totalNativeTokens,
         );
     } catch (error) {

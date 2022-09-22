@@ -7,7 +7,7 @@ import type { IBasicOutputBuilderOptions } from './basicOutputOptions';
 export interface IAliasOutputBuilderOptions extends IBasicOutputBuilderOptions {
     aliasId: string;
     stateIndex?: number;
-    stateMetadata?: number[];
+    stateMetadata?: Uint8Array;
     foundryCounter?: number;
     immutableFeatures?: FeatureTypes[];
 }

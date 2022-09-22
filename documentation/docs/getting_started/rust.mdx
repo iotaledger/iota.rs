@@ -1,0 +1,63 @@
+---
+title: Getting Started With Rust
+description: Getting started with the official IOTA Client Rust library.
+image: /img/logo/iota_mark_light.png
+keywords:
+- Rust
+- install
+- cargo
+- system environment variables
+---
+
+
+import WarningPasswordStorage from '../_admonitions/_password_storage.md';
+
+## Security
+
+<WarningPasswordStorage/>
+
+## Requirements
+
+* [Rust and Cargo](https://doc.rust-lang.org/cargo/getting-started/installation.html).
+* (for Linux only) `libudev`. You can install it with `apt install libudev-dev`.
+
+## Include the Library in Your `Cargo.toml`
+
+The only thing you need to do to start using the library is to add it as dependency in your `Cargo.toml` file:
+
+```bash
+[dependencies]
+iota-client = { git = "https://github.com/iotaledger/iota.rs", branch = "develop" }
+tokio = { version = "1.20.0", features = [ "full" ] }
+```
+
+## Use the Library
+
+This example fetches node information.
+
+```rust
+use iota_client::{Client, Result};
+
+#[tokio::main]
+async fn main() -> Result<()> {
+    // Create a client with that node.
+    let client = Client::builder()
+        .with_node("https://api.testnet.shimmer.network")?
+        .with_node_sync_disabled()
+        .finish()?;
+
+    // Get node info.
+    let info = client.get_info().await?;
+
+    // Print node info.
+    println!("{info:#?}");
+
+    Ok(())
+}
+```
+
+## What's Next?
+
+Now that you are up and running, you can get acquainted with the library using
+its [how-to guides](../how_tos/00_run_how_tos.mdx) and the
+repository's [code examples](https://github.com/iotaledger/iota.rs/tree/develop/examples).

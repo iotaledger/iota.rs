@@ -1,0 +1,29 @@
+```json
+Outputs controlled by rms1qpllaj0pyveqfkwxmnngz2c488hfdtmfrj3wfkgxtk4gtyrax0jaxzt70zy have
+2609275800 glow and nativetokens: [
+  [
+    {
+      'id': '0x0808fb702d67fdb320b5959f152c0f962630515d904c71ed09447c341a6cc171de0100000000',
+      'amount': '0x64'
+    },
+    {
+      'id': '0x0822ceb3166ad125d310e6660f5fc292356f87f2f9566e982ea22154cec3847b3f0100000000',
+      'amount': '0x64'
+    },
+    {
+      'id': '0x085c6b799750bdf7e5a5c81144465a0676bc11dab74b997444ca369949341720e80100000000',
+      'amount': '0x64'
+    },
+    {
+      'id': '0x08f708a29e9619e847916de76c2e167e87a704c235dcbd7cda018865be7f561b5a0100000000',
+      'amount': '0x32'
+    }
+  ],
+  [
+    {
+      'id': '0x08f1802858831220b282ccc4c557676d61f79833869de378ce9a81f736976ce39f0100000000',
+      'amount': '0x32'
+    }
+  ]
+]
+```

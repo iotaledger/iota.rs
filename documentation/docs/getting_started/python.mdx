@@ -1,0 +1,105 @@
+---
+description: Getting started with the official IOTA Client Library Python binding.
+image: /img/logo/iota_mark_light.png
+keywords:
+
+- Python
+- install
+- pip
+- unpack
+
+---
+
+import WarningPasswordStorage from '../_admonitions/_password_storage.md';
+
+# Getting Started with Python
+
+## Security
+
+<WarningPasswordStorage/>
+
+## Requirements
+
+* [Python 3.x](https://www.python.org).
+* [pip](https://pypi.org/project/pip).
+* [Rust and Cargo](https://doc.rust-lang.org/cargo/getting-started/installation.html) to compile the binding.
+* (for Linux only) `libudev`. You can install it with `apt install libudev-dev`.
+
+
+## Install the Library
+
+### Clone the Repository
+
+You can clone the [iota.rs client library](https://github.com/iotaledger/iota.rs) by running the following command:
+
+```bash
+git clone git@github.com:iotaledger/iota.rs.git
+```
+
+### Change to the Python Binding Directory
+
+After you have cloned the repository, you should change directory to `iota.rs/bindings/python/native`. You can do so by
+running the following command:
+
+```bash
+cd iota.rs/bindings/python/native
+```
+
+### Install the Required Dependencies and Build the Wheel
+
+Once you have [cloned the library](#clone-the-library),
+and [moved to the binding's directory](#change-to-the-python-binding-directory), you should install dependencies and build the wheel file.
+
+You can do so by running the following commands:
+
+```bash
+pip install -r requirements-dev.txt
+pip install .
+```
+
+### (optional) Create and Use a Virtual Environment
+
+If you want to isolate the library from the rest of your system, you can create a virtual environment by running the
+following commands:
+
+#### Linux/MacOs
+
+```bash
+python3 -m venv iota_client_venv
+source iota_client_venv/bin/activate
+```
+
+#### Windows
+
+```shell
+.\iota_client_venv\Scripts\activate
+```
+
+### (optional) Deactivate the virtual environment
+
+If you want to deactivate the virtual environment, you should run the following command from the virtual environment:
+
+```bash
+deactivate
+```
+
+## Use the Library
+
+After you installed the library, you can create a `IotaClient` instance and interface with it.
+
+```python
+from iota_client import IotaClient
+
+# Create an IotaClient instance
+client = IotaClient({'nodes': ['https://api.testnet.shimmer.network']})
+
+# Get the node info
+node_info = client.get_info()
+print(f'{node_info}')
+```
+
+## What's Next?
+
+Now that you are up and running, you can get acquainted with the library using
+its [how-to guides](../how_tos/00_run_how_tos.mdx) and the
+repository's [code examples](https://github.com/iotaledger/iota.rs/tree/develop/bindings/nodejs/examples).

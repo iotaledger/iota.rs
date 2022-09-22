@@ -12,5 +12,5 @@ metadata = client.get_block_metadata(blockIdAndBlock[0])
 print(f'{metadata}')
 
 # Request the block by its id
-block = client.get_block(blockIdAndBlock[0])
+block = client.get_block_data(blockIdAndBlock[0])
 print(f'{block}')

@@ -1,0 +1,75 @@
+---
+title: Generate Addresses
+description: You can generate an IOTA address using the Client.get_addresses() function that will return a list of tuples with the generated addresses.
+image: /img/logo/iota_mark_light.png
+keywords:
+- how to
+- address
+- iota address
+- addressgetter
+- environment variable
+- java
+- nodejs
+- python
+- rust
+- wasm
+---
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+import JavaCode from "../libraries/java/how_to/_03_generate_addresses/_code_sample.mdx";
+import JavaOutput from "../libraries/java/how_to/_03_generate_addresses/_expected_output.md";
+import NodejsCode from "../libraries/nodejs/how_to/_03_generate_addresses/_code_sample.mdx";
+import NodejsOutput from "../libraries/nodejs/how_to/_03_generate_addresses/_expected_output.md";
+import PythonCode from "../libraries/python/how_to/_03_generate_addresses/_code_sample.mdx";
+import PythonOutput from "../libraries/python/how_to/_03_generate_addresses/_expected_output.md";
+import RustCode from "../libraries/rust/how_to/_03_generate_addresses/_code_sample.mdx";
+import RustOutput from "../libraries/rust/how_to/_03_generate_addresses/_expected_output.md";
+import IotaJs from "../_admonitions/_iotajs_example.mdx"
+
+You can generate an IOTA address using the `Client.get_addresses()` function that will return a list of tuples with the
+generated addresses.
+
+The following code example will:
+
+1. Create a `Client` which will connect to the [Shimmer Testnet](https://api.testnet.shimmer.network).
+2. Create a `SecretManager` from a [mnemonic](02_generate_mnemonic.mdx).
+3. Generate a public address.
+4. Generate an internal address.
+5. Generate an offline address.
+
+<IotaJs exampleURL="https://wiki.iota.org/iotajs/how_tos/address"/>
+
+## Code Example
+
+<Tabs groupId="language">
+    <TabItem value="rust" label="Rust">
+        <RustCode/>
+    </TabItem>
+    <TabItem value="nodejs" label="Nodejs">
+        <NodejsCode/>
+    </TabItem>
+    <TabItem value="python" label="Python">
+        <PythonCode/>
+    </TabItem>
+    <TabItem value="java" label="Java">
+        <JavaCode/>
+    </TabItem>
+</Tabs>
+
+## Expected Output
+
+<Tabs groupId="language">
+    <TabItem value="rust" label="Rust">
+        <RustOutput/>
+    </TabItem>
+    <TabItem value="nodejs" label="Nodejs">
+        <NodejsOutput/>
+    </TabItem>
+    <TabItem value="python" label="Python">
+        <PythonOutput/>
+    </TabItem>
+    <TabItem value="java" label="Java">
+        <JavaOutput/>
+    </TabItem>
+</Tabs>
+

@@ -1,0 +1,14 @@
+import CodeBlock from '@theme/CodeBlock';
+import CreateBlock from '!!raw-loader!../../../../../../bindings/nodejs/examples/06_simple_block.ts';
+import DotEnvWarning from "../../../../_admonitions/_dot_env_warning.md"
+
+<DotEnvWarning/>
+<CodeBlock className="language-typescript">
+  {CreateBlock}
+</CodeBlock>
+
+You can run the example by running the following command from the `bindings/node/examples/` folder:
+
+<CodeBlock className="language-bash">
+    node dist/06_simple_block.ts
+</CodeBlock>

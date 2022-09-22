@@ -36,7 +36,7 @@ pub fn hex_to_bech32(hex: &str, bech32_hrp: &str) -> Result<String> {
 pub fn hex_public_key_to_bech32_address(hex: &str, bech32_hrp: &str) -> Result<String> {
     let public_key: [u8; Ed25519Address::LENGTH] = prefix_hex::decode(hex)?;
 
-    let address = Blake2b256::digest(&public_key)
+    let address = Blake2b256::digest(public_key)
         .try_into()
         .map_err(|_e| Error::Blake2b256Error("Hashing the public key failed."))?;
     let address: Ed25519Address = Ed25519Address::new(address);

@@ -1,0 +1,43 @@
+## Prerequisites
+
+Before you can run the examples, please refer to the [Node.js Getting Started guide](./../getting_started/nodejs) to install
+the library.
+
+## Build the Examples
+
+### Set Up Your `.env` File
+
+The examples use variables from a `.env` file.  Though you can create your own, for the examples you can simply copy the
+existing [`.env.example`](https://github.com/iotaledger/iota.rs/blob/develop/bindings/nodejs/.env.example) file. You can
+do this running the following command from the `bindings/nodejs` directory:
+
+```bash
+cp .env.example .env
+```
+
+### Build All the Examples
+
+Since the [examples](https://github.com/iotaledger/iota.rs/tree/develop/bindings/nodejs/examples) are written in
+TypeScript, they first need to be compiled to JavaScript, before you can run them. To do this run the following command
+in the [examples folder](https://github.com/iotaledger/iota.rs/tree/develop/bindings/nodejs/examples) :
+
+```bash
+npm run build
+```
+
+After you have run this command, you should have a newly create `dist` folder within the `examples` folder with all the
+compiled examples.
+
+### Build a Single Example
+
+You can also use `tsc exampleName.js` from the `examples` folder to compile a specific example.
+
+## Run the Examples
+
+To run any Node.js example, you need to select any of the
+[Node.js examples](https://github.com/iotaledger/iota.rs/tree/dev/bindings/nodejs/examples) and run it with your local
+Node.js interpreter. The following snippet runs `00_get_info.js` from the project root:
+
+```bash
+node bindings/nodejs/examples/dist/00_get_info.js
+```

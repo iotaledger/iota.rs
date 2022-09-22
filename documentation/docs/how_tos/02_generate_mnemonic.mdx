@@ -1,0 +1,64 @@
+---
+title: Generate a Mnemonic
+description: You can generate a mnemonic using any Client instance.
+image: /img/logo/iota_mark_light.png
+keywords:
+- how to
+- generate mnemonic
+- java
+- nodejs
+- python
+- rust
+---
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+import JavaCode from "../libraries/java/how_to/_02_generate_mnemonic/_code_sample.mdx";
+import JavaOutput from "../libraries/java/how_to/_02_generate_mnemonic/_expected_output.md";
+import NodejsCode from "../libraries/nodejs/how_to/_02_generate_mnemonic/_code_sample.mdx";
+import NodejsOutput from "../libraries/nodejs/how_to/_02_generate_mnemonic/_expected_output.md";
+import PythonCode from "../libraries/python/how_to/_02_generate_mnemonic/_code_sample.mdx";
+import PythonOutput from "../libraries/python/how_to/_02_generate_mnemonic/_expected_output.md";
+import RustCode from "../libraries/rust/how_to/_02_generate_mnemonic/_code_sample.mdx";
+import RustOutput from "../libraries/rust/how_to/_02_generate_mnemonic/_expected_output.md";
+
+The following example will generate a mnemonic using a `Client` instance.  Since this functionality doesn't need to
+communicate with any nodes, you can start your `Client` in offline mode.
+
+The following code example will:
+
+1. Create a `Client` in offline mode.
+2. Use the created client to generate a mnemonic.
+
+## Code Examples
+
+<Tabs groupId="language">
+    <TabItem value="rust" label="Rust">
+        <RustCode/>
+    </TabItem>
+    <TabItem value="nodejs" label="Nodejs">
+        <NodejsCode/>
+    </TabItem>
+    <TabItem value="python" label="Python">
+        <PythonCode/>
+    </TabItem>
+    <TabItem value="java" label="Java">
+        <JavaCode/>
+    </TabItem>
+</Tabs>
+
+## Expected Output
+
+<Tabs groupId="language">
+    <TabItem value="rust" label="Rust">
+        <RustOutput/>
+    </TabItem>
+    <TabItem value="nodejs" label="Nodejs">
+        <NodejsOutput/>
+    </TabItem>
+    <TabItem value="python" label="Python">
+        <PythonOutput/>
+    </TabItem>
+    <TabItem value="java" label="Java">
+        <JavaOutput/>
+    </TabItem>
+</Tabs>
