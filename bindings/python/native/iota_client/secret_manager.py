@@ -1,4 +1,7 @@
 class LedgerNanoSecretManager(dict):
+    """Secret manager that uses a Ledger Nano hardware wallet or Speculos simulator.
+    """
+
     def __init__(self, is_simulator):
         """Initialize a ledger nano secret manager.
         """
@@ -7,6 +10,9 @@ class LedgerNanoSecretManager(dict):
 
 
 class MnemonicSecretManager(dict):
+    """Secret manager that uses a mnemonic in plain memory. It's not recommended for production use. Use LedgerNano or Stronghold instead.
+    """
+
     def __init__(self, mnemonic):
         """Initialize a mnemonic secret manager.
         """
@@ -15,6 +21,9 @@ class MnemonicSecretManager(dict):
 
 
 class StrongholdSecretManager(dict):
+    """Secret manager that uses Stronghold.
+    """
+
     def __init__(self, snapshot_path, password):
         """Initialize a stronghold secret manager.
         """
