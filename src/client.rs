@@ -243,7 +243,7 @@ impl Client {
             *sync = synced_nodes;
         }
 
-        (*network_info.write().map_err(|_| crate::Error::PoisonError)?).synced = true;
+        network_info.write().map_err(|_| crate::Error::PoisonError)?.synced = true;
 
         Ok(())
     }

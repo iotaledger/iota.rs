@@ -37,11 +37,12 @@ impl<'a> ClientBlockBuilder<'a> {
 
         let mut inputs_data = Vec::new();
         let current_time = self.client.get_time_checked().await?;
+        let token_supply = self.client.get_token_supply()?;
 
         if let Some(inputs) = &self.inputs {
             for input in inputs {
                 let output_response = self.client.get_output(input.output_id()).await?;
-                let output = Output::try_from_dto(&output_response.output, self.client.get_token_supply()?)?;
+                let output = Output::try_from_dto(&output_response.output, token_supply)?;
 
                 if !output_response.metadata.is_spent {
                     let (_output_amount, output_address) = ClientBlockBuilder::get_output_amount_and_address(
@@ -99,7 +100,7 @@ impl<'a> ClientBlockBuilder<'a> {
             rent_structure,
             allow_burning,
             current_time,
-            self.client.get_token_supply()?,
+            token_supply,
         )?;
 
         Ok(selected_transaction_data)

@@ -412,8 +412,8 @@ impl<'a> ClientBlockBuilder<'a> {
                 parents.sort_unstable_by_key(PackableExt::pack_to_vec);
                 parents.dedup();
 
-                let min_pow_score = self.client.get_min_pow_score()?;
                 let miner = self.client.get_pow_provider();
+                let min_pow_score = self.client.get_min_pow_score()?;
                 do_pow(miner, min_pow_score, payload, parents)?
             }
             None => crate::api::pow::finish_pow(self.client, payload).await?,
