@@ -222,8 +222,7 @@ impl Client {
         if let Some(nodes) = network_nodes.get(most_nodes.0) {
             let pow_feature = String::from("pow");
 
-            // TODO why do we set this in a loop?
-            for (info, node_url) in nodes.iter() {
+            if let Some((info, node_url)) = nodes.first() {
                 if let Ok(mut client_network_info) = network_info.write() {
                     client_network_info.protocol_parameters = ProtocolParameters::try_from(info.protocol.clone())?;
 
