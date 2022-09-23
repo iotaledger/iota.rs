@@ -306,12 +306,7 @@ impl Client {
             }
         }
 
-        let res = self.network_info.read().expect("TODO").clone();
-
-        // TODO ???
-        // .map_or(NetworkInfo::default(), |info| info.clone());
-
-        Ok(res)
+        Ok(self.network_info.read().map_err(|_| crate::Error::PoisonError)?.clone())
     }
 
     /// Gets the protocol parameters of the node we're connecting to.
