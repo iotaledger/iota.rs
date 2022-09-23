@@ -174,28 +174,6 @@ async fn test_get_block_raw() {
 
 #[ignore]
 #[tokio::test]
-async fn test_get_address_balance() {
-    let client = setup_client_with_sync_disabled();
-    let secret_manager = setup_secret_manager();
-
-    let address = client
-        .get_addresses(&secret_manager)
-        .with_range(0..1)
-        .get_raw()
-        .await
-        .unwrap()[0];
-
-    let r = client
-        .get_address()
-        .balance(&address.to_bech32(&client.get_bech32_hrp().unwrap()))
-        .await
-        .unwrap();
-
-    println!("{:#?}", r);
-}
-
-#[ignore]
-#[tokio::test]
 async fn test_get_address_outputs() {
     let client = setup_client_with_sync_disabled();
     let secret_manager = setup_secret_manager();

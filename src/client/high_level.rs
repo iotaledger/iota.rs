@@ -23,7 +23,7 @@ use crate::{
         DEFAULT_RETRY_UNTIL_INCLUDED_INTERVAL, DEFAULT_RETRY_UNTIL_INCLUDED_MAX_AMOUNT, FIVE_MINUTES_IN_SECONDS,
     },
     error::{Error, Result},
-    node_api::{high_level::GetAddressBuilder, indexer::query_parameters::QueryParameter},
+    node_api::indexer::query_parameters::QueryParameter,
     secret::SecretManager,
 };
 
@@ -62,11 +62,6 @@ impl Client {
     /// Return a list of addresses from a secret manager regardless of their validity.
     pub fn get_addresses<'a>(&'a self, secret_manager: &'a SecretManager) -> GetAddressesBuilder<'a> {
         GetAddressesBuilder::new(secret_manager).with_client(self)
-    }
-
-    /// GET /api/indexer/v1/outputs/basic{query} endpoint
-    pub fn get_address(&self) -> GetAddressBuilder<'_> {
-        GetAddressBuilder::new(self)
     }
 
     /// Find all blocks by provided block IDs.

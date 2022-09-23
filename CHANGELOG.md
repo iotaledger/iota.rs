@@ -37,6 +37,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Made a lot of functions/methods async;
 - Added `#[serde(rename_all = "camelCase")]` to enums;
 
+### Removed
+
+- `GetAddressBuilder` and `AddressBalance`;
+
 ### Fixed
 
 - Check expiration for remainder address;

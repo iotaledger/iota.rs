@@ -19,9 +19,7 @@ use tokio::{
 };
 #[cfg(feature = "mqtt")]
 use {
-    crate::node_api::mqtt::TopicEvent,
-    crate::node_api::mqtt::{BrokerOptions, MqttEvent, MqttManager, TopicHandlerMap},
-    crate::Topic,
+    crate::node_api::mqtt::{BrokerOptions, MqttEvent, TopicHandlerMap},
     rumqttc::AsyncClient as MqttClient,
     tokio::sync::watch::{Receiver as WatchReceiver, Sender as WatchSender},
 };
@@ -234,37 +232,5 @@ impl Client {
             .map_or(NetworkInfo::default().fallback_to_local_pow, |info| {
                 info.fallback_to_local_pow
             })
-    }
-
-    ///////////////////////////////////////////////////////////////////////
-    // MQTT API
-    //////////////////////////////////////////////////////////////////////
-
-    /// Returns a handle to the MQTT topics manager.
-    #[cfg(feature = "mqtt")]
-    pub fn subscriber(&mut self) -> MqttManager<'_> {
-        MqttManager::new(self)
-    }
-
-    /// Subscribe to MQTT events with a callback.
-    #[cfg(feature = "mqtt")]
-    pub async fn subscribe<C: Fn(&TopicEvent) + Send + Sync + 'static>(
-        &mut self,
-        topics: Vec<Topic>,
-        callback: C,
-    ) -> crate::Result<()> {
-        MqttManager::new(self).with_topics(topics).subscribe(callback).await
-    }
-
-    /// Unsubscribe from MQTT events.
-    #[cfg(feature = "mqtt")]
-    pub async fn unsubscribe(&mut self, topics: Vec<Topic>) -> crate::Result<()> {
-        MqttManager::new(self).with_topics(topics).unsubscribe().await
-    }
-
-    /// Returns the mqtt event receiver.
-    #[cfg(feature = "mqtt")]
-    pub fn mqtt_event_receiver(&self) -> WatchReceiver<MqttEvent> {
-        self.mqtt_event_channel.1.clone()
     }
 }
