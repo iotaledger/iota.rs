@@ -16,7 +16,7 @@ export interface LedgerApp {
 
 /** The Ledger Device Type */
 export enum LedgerDeviceType {
-    LedgerNanoS = 'LedgerNanoS',
-    LedgerNanoX = 'LedgerNanoX',
-    LedgerNanoSPlus = 'LedgerNanoSPlus',
+    LedgerNanoS = 'ledgerNanoS',
+    LedgerNanoX = 'ledgerNanoX',
+    LedgerNanoSPlus = 'ledgerNanoSPlus',
 }

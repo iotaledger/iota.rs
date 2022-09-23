@@ -22,7 +22,7 @@ async function run() {
             throw new Error('.env mnemonic is undefined, see .env.example');
         }
         const secretManager = {
-            Mnemonic: process.env.NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1,
+            mnemonic: process.env.NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1,
         };
 
         const addresses = await client.generateAddresses(secretManager, {

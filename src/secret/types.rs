@@ -74,6 +74,7 @@ impl LedgerApp {
 
 /// Ledger Device Type
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub enum LedgerDeviceType {
     /// Device Type Nano S
     LedgerNanoS,

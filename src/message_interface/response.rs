@@ -29,7 +29,7 @@ use crate::{api::PreparedTransactionDataDto, builder::NetworkInfo, node_manager:
 
 /// The response message.
 #[derive(Serialize, Debug)]
-#[serde(tag = "type", content = "payload")]
+#[serde(tag = "type", content = "payload", rename_all = "camelCase")]
 pub enum Response {
     /// Response for:
     /// - [`BuildAliasOutput`](crate::message_interface::Message::BuildAliasOutput)

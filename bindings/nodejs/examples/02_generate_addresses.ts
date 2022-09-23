@@ -28,7 +28,7 @@ async function run() {
             throw new Error('.env mnemonic is undefined, see .env.example');
         }
         const secretManager = {
-            Mnemonic: process.env.NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1,
+            mnemonic: process.env.NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1,
         };
 
         // Generate public address with custom account index and range.

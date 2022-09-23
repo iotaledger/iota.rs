@@ -30,7 +30,7 @@ use crate::{
 
 /// Each public client method.
 #[derive(Clone, Debug, Deserialize)]
-#[serde(tag = "name", content = "data")]
+#[serde(tag = "name", content = "data", rename_all = "camelCase")]
 pub enum Message {
     /// Build an AliasOutput.
     /// Expected response: [`BuiltOutput`](crate::message_interface::Response::BuiltOutput)

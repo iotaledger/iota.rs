@@ -27,7 +27,7 @@ public class MiscellaneousApi extends BaseApi {
     public Output buildAliasOutput(
             AliasOutputBuilderParams params
     ) throws ClientException {
-        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("BuildAliasOutput", params.getJson()));
+        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("buildAliasOutput", params.getJson()));
 
         return new Output(responsePayload);
     }
@@ -35,7 +35,7 @@ public class MiscellaneousApi extends BaseApi {
     public Output buildBasicOutput(
             BasicOutputBuilderParams params
     ) throws ClientException {
-        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("BuildBasicOutput", params.getJson()));
+        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("buildBasicOutput", params.getJson()));
 
         return new Output(responsePayload);
     }
@@ -43,7 +43,7 @@ public class MiscellaneousApi extends BaseApi {
     public Output buildFoundryOutput(
             FoundryOutputBuilderParams params
     ) throws ClientException {
-        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("BuildFoundryOutput", params.getJson()));
+        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("buildFoundryOutput", params.getJson()));
 
         return new Output(responsePayload);
     }
@@ -51,7 +51,7 @@ public class MiscellaneousApi extends BaseApi {
     public Output buildNftOutput(
             NftOutputBuilderParams params
     ) throws ClientException {
-        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("BuildNftOutput", params.getJson()));
+        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("buildNftOutput", params.getJson()));
 
         return new Output(responsePayload);
     }
@@ -61,7 +61,7 @@ public class MiscellaneousApi extends BaseApi {
         o.add("secretManager", secretManager.getJson());
         o.add("options", generateAddressesOptions.getJson());
 
-        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand("GenerateAddresses", o));
+        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand("generateAddresses", o));
 
         String[] addresses = new String[responsePayload.size()];
         for (int i = 0; i < responsePayload.size(); i++) {
@@ -76,7 +76,7 @@ public class MiscellaneousApi extends BaseApi {
         o.add("secretManager", secretManager != null ? secretManager.getJson() : null);
         o.add("options", options != null ? options.getJson() : null);
 
-        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand("BuildAndPostBlock", o));
+        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand("buildAndPostBlock", o));
 
         BlockId blockId = new BlockId(responsePayload.get(0).getAsString());
         Block block = new Block(responsePayload.get(1).getAsJsonObject());
@@ -85,47 +85,47 @@ public class MiscellaneousApi extends BaseApi {
     }
 
     public Node getNode() throws ClientException {
-        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("GetNode"));
+        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("getNode"));
         return new Node(responsePayload);
     }
 
     public JsonObject getNetworkInfo() throws ClientException {
-        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("GetNetworkInfo"));
+        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("getNetworkInfo"));
         return responsePayload;
     }
 
     public int getNetworkId() throws ClientException {
-        Integer responsePayload = callBaseApi(new ClientCommand("GetNetworkId")).getAsInt();
+        Integer responsePayload = callBaseApi(new ClientCommand("getNetworkId")).getAsInt();
         return responsePayload;
     }
 
     public String getBech32Hrp() throws ClientException {
-        String responsePayload = callBaseApi(new ClientCommand("GetBech32Hrp")).getAsString();
+        String responsePayload = callBaseApi(new ClientCommand("getBech32Hrp")).getAsString();
         return responsePayload;
     }
 
     public int getMinPowScore() throws ClientException {
-        Integer responsePayload = callBaseApi(new ClientCommand("GetMinPowScore")).getAsInt();
+        Integer responsePayload = callBaseApi(new ClientCommand("getMinPowScore")).getAsInt();
         return responsePayload;
     }
 
     public int getTipsInterval() throws ClientException {
-        Integer responsePayload = callBaseApi(new ClientCommand("GetTipsInterval")).getAsInt();
+        Integer responsePayload = callBaseApi(new ClientCommand("getTipsInterval")).getAsInt();
         return responsePayload;
     }
 
     public boolean getLocalPow() throws ClientException {
-        Boolean responsePayload = callBaseApi(new ClientCommand("GetLocalPow")).getAsBoolean();
+        Boolean responsePayload = callBaseApi(new ClientCommand("getLocalPow")).getAsBoolean();
         return responsePayload;
     }
 
     public boolean isFallbackToLocalPow() throws ClientException {
-        Boolean responsePayload = callBaseApi(new ClientCommand("GetFallbackToLocalPow")).getAsBoolean();
+        Boolean responsePayload = callBaseApi(new ClientCommand("getFallbackToLocalPow")).getAsBoolean();
         return responsePayload;
     }
 
     public Node[] getUnsyncedNodes() throws ClientException {
-        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand("UnsyncedNodes"));
+        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand("unsyncedNodes"));
 
         Node[] nodes = new Node[responsePayload.size()];
         for (int i = 0; i < responsePayload.size(); i++) {
@@ -137,9 +137,9 @@ public class MiscellaneousApi extends BaseApi {
 
     public LedgerNanoStatus getLedgerNanoStatus(boolean isSimulator) throws ClientException {
         JsonObject o = new JsonObject();
-        o.addProperty("LedgerNano", isSimulator);
+        o.addProperty("ledgerNano", isSimulator);
 
-        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("GetLedgerNanoStatus", o));
+        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("getLedgerNanoStatus", o));
 
         return new LedgerNanoStatus(responsePayload);
     }
@@ -149,7 +149,7 @@ public class MiscellaneousApi extends BaseApi {
         o.add("secretManager", secretManager.getJson());
         o.add("buildBlockOptions", buildBlockOptions.getJson());
 
-        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("PrepareTransaction", o));
+        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("prepareTransaction", o));
 
         return new PreparedTransactionData(responsePayload);
     }
@@ -159,7 +159,7 @@ public class MiscellaneousApi extends BaseApi {
         o.add("secretManager", secretManager.getJson());
         o.add("preparedTransactionData", preparedTransactionData.toJson());
 
-        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("SignTransaction", o));
+        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("signTransaction", o));
 
         return new TransactionPayload(responsePayload);
     }
@@ -169,14 +169,14 @@ public class MiscellaneousApi extends BaseApi {
         o.add("secretManager", secretManager.getJson());
         o.addProperty("mnemonic", mnemonic);
 
-        callBaseApi(new ClientCommand("StoreMnemonic", o));
+        callBaseApi(new ClientCommand("storeMnemonic", o));
     }
 
     public Map.Entry<BlockId, Block> postBlockPayload(BlockPayload payload) throws ClientException {
         JsonObject o = new JsonObject();
         o.add("payload", payload.toJson());
 
-        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand("PostBlockPayload", o));
+        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand("postBlockPayload", o));
 
         BlockId blockId = new BlockId(responsePayload.get(0).getAsString());
         Block block = new Block(responsePayload.get(1).getAsJsonObject());

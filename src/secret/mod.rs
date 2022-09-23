@@ -130,6 +130,7 @@ impl FromStr for SecretManager {
 
 /// DTO for secret manager types with required data.
 #[derive(Debug, Clone, Serialize, Deserialize, ZeroizeOnDrop)]
+#[serde(rename_all = "camelCase")]
 pub enum SecretManagerDto {
     /// Stronghold
     #[cfg(feature = "stronghold")]
