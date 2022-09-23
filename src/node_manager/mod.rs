@@ -199,7 +199,7 @@ impl NodeManager {
                                 // Handle node_info extra because we also want to return the url
                                 if path == "api/core/v2/info" {
                                     let node_info: InfoResponse = res.into_json().await?;
-                                    let wrapper = crate::client::NodeInfoWrapper {
+                                    let wrapper = crate::node_api::core::routes::NodeInfoWrapper {
                                         node_info,
                                         url: format!("{}://{}", node.url.scheme(), node.url.host_str().unwrap_or("")),
                                     };

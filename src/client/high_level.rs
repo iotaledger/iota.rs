@@ -1,365 +1,33 @@
-// Copyright 2021 IOTA Stiftung
+// Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! The Client module to connect through HORNET or Bee with API usages
+use std::{collections::HashSet, str::FromStr, time::Duration};
 
-use std::{
-    collections::HashSet,
-    str::FromStr,
-    sync::{Arc, RwLock},
-    time::Duration,
-};
-
-use bee_api_types::{
-    dtos::LedgerInclusionStateDto,
-    responses::{InfoResponse as NodeInfo, OutputResponse},
-};
+use bee_api_types::{dtos::LedgerInclusionStateDto, responses::OutputResponse};
 use bee_block::{
-    address::Address,
     input::{Input, UtxoInput, INPUT_COUNT_MAX},
-    output::{Output, OutputId, RentStructure},
+    output::{Output, OutputId},
     payload::{
         transaction::{TransactionEssence, TransactionId},
-        Payload, TaggedDataPayload,
+        Payload,
     },
-    protocol::ProtocolParameters,
     Block, BlockId,
 };
-use bee_pow::providers::{NonceProvider, NonceProviderBuilder};
-use crypto::keys::slip10::Seed;
 #[cfg(not(target_family = "wasm"))]
-use tokio::{
-    runtime::{Handle, Runtime},
-    sync::broadcast::Sender,
-    time::sleep,
-};
-use url::Url;
-#[cfg(feature = "mqtt")]
-use {
-    crate::node_api::mqtt::TopicEvent,
-    crate::node_api::mqtt::{BrokerOptions, MqttEvent, MqttManager, TopicHandlerMap},
-    crate::Topic,
-    rumqttc::AsyncClient as MqttClient,
-    tokio::sync::watch::{Receiver as WatchReceiver, Sender as WatchSender},
-};
+use tokio::time::sleep;
 
+use super::Client;
 use crate::{
     api::{do_pow, ClientBlockBuilder, GetAddressesBuilder},
-    builder::{ClientBuilder, NetworkInfo},
     constants::{
-        DEFAULT_API_TIMEOUT, DEFAULT_RETRY_UNTIL_INCLUDED_INTERVAL, DEFAULT_RETRY_UNTIL_INCLUDED_MAX_AMOUNT,
-        DEFAULT_TIPS_INTERVAL, FIVE_MINUTES_IN_SECONDS,
+        DEFAULT_RETRY_UNTIL_INCLUDED_INTERVAL, DEFAULT_RETRY_UNTIL_INCLUDED_MAX_AMOUNT, FIVE_MINUTES_IN_SECONDS,
     },
     error::{Error, Result},
     node_api::{high_level::GetAddressBuilder, indexer::query_parameters::QueryParameter},
-    node_manager::node::{Node, NodeAuth},
     secret::SecretManager,
-    utils::{
-        bech32_to_hex, generate_mnemonic, hex_public_key_to_bech32_address, hex_to_bech32, is_address_valid,
-        mnemonic_to_hex_seed, mnemonic_to_seed, parse_bech32_address,
-    },
 };
 
-/// NodeInfo wrapper which contains the node info and the url from the node (useful when multiple nodes are used)
-#[derive(Debug, Serialize, Deserialize)]
-pub struct NodeInfoWrapper {
-    /// The returned node info
-    #[serde(rename = "nodeInfo")]
-    pub node_info: NodeInfo,
-    /// The url from the node which returned the node info
-    pub url: String,
-}
-
-/// An instance of the client using HORNET or Bee URI
-// #[cfg_attr(target_family = "wasm", derive(Clone))]
-#[derive(Clone)]
-pub struct Client {
-    #[allow(dead_code)]
-    #[cfg(not(target_family = "wasm"))]
-    pub(crate) runtime: Option<Arc<Runtime>>,
-    /// Node manager
-    pub(crate) node_manager: crate::node_manager::NodeManager,
-    /// Flag to stop the node syncing
-    #[cfg(not(target_family = "wasm"))]
-    pub(crate) sync_kill_sender: Option<Arc<Sender<()>>>,
-    /// A MQTT client to subscribe/unsubscribe to topics.
-    #[cfg(feature = "mqtt")]
-    pub(crate) mqtt_client: Option<MqttClient>,
-    #[cfg(feature = "mqtt")]
-    pub(crate) mqtt_topic_handlers: Arc<tokio::sync::RwLock<TopicHandlerMap>>,
-    #[cfg(feature = "mqtt")]
-    pub(crate) broker_options: BrokerOptions,
-    #[cfg(feature = "mqtt")]
-    pub(crate) mqtt_event_channel: (Arc<WatchSender<MqttEvent>>, WatchReceiver<MqttEvent>),
-    pub(crate) network_info: Arc<RwLock<NetworkInfo>>,
-    /// HTTP request timeout.
-    pub(crate) api_timeout: Duration,
-    /// HTTP request timeout for remote PoW API call.
-    pub(crate) remote_pow_timeout: Duration,
-    #[allow(dead_code)] // not used for wasm
-    /// pow_worker_count for local PoW.
-    pub(crate) pow_worker_count: Option<usize>,
-}
-
-impl std::fmt::Debug for Client {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let mut d = f.debug_struct("Client");
-        d.field("node_manager", &self.node_manager);
-        #[cfg(feature = "mqtt")]
-        d.field("broker_options", &self.broker_options);
-        d.field("network_info", &self.network_info).finish()
-    }
-}
-
-impl Drop for Client {
-    /// Gracefully shutdown the `Client`
-    fn drop(&mut self) {
-        #[cfg(not(target_family = "wasm"))]
-        if let Some(sender) = self.sync_kill_sender.take() {
-            sender.send(()).expect("failed to stop syncing process");
-        }
-
-        #[cfg(not(target_family = "wasm"))]
-        if let Some(runtime) = self.runtime.take() {
-            if let Ok(runtime) = Arc::try_unwrap(runtime) {
-                runtime.shutdown_background();
-            }
-        }
-
-        #[cfg(feature = "mqtt")]
-        if let Some(mqtt_client) = self.mqtt_client.take() {
-            std::thread::spawn(move || {
-                // ignore errors in case the event loop was already dropped
-                // .cancel() finishes the event loop right away
-                let _ = crate::async_runtime::block_on(mqtt_client.cancel());
-            })
-            .join()
-            .unwrap();
-        }
-    }
-}
-
 impl Client {
-    /// Create the builder to instantiate the IOTA Client.
-    pub fn builder() -> ClientBuilder {
-        ClientBuilder::new()
-    }
-
-    /// Get a node candidate from the synced node pool.
-    pub fn get_node(&self) -> Result<Node> {
-        if let Some(primary_node) = &self.node_manager.primary_node {
-            return Ok(primary_node.clone());
-        }
-
-        let pool = self.node_manager.nodes.clone();
-
-        pool.into_iter().next().ok_or(Error::SyncedNodePoolEmpty)
-    }
-
-    /// Gets the miner to use based on the Pow setting
-    pub fn get_pow_provider(&self) -> impl NonceProvider {
-        let local_pow: bool = self.get_local_pow();
-        #[cfg(target_family = "wasm")]
-        let miner = crate::api::wasm_miner::SingleThreadedMiner::builder()
-            .local_pow(local_pow)
-            .finish();
-        #[cfg(not(target_family = "wasm"))]
-        let miner = {
-            let mut miner = crate::api::miner::ClientMiner::builder().with_local_pow(local_pow);
-            if let Some(worker_count) = self.pow_worker_count {
-                miner = miner.with_worker_count(worker_count)
-            }
-            miner.finish()
-        };
-
-        miner
-    }
-
-    /// Gets the network related information such as network_id and min_pow_score
-    /// and if it's the default one, sync it first and set the NetworkInfo.
-    pub fn get_network_info(&self) -> Result<NetworkInfo> {
-        // For WASM we don't have the node syncing process, which updates the network_info every 60 seconds, but the Pow
-        // difficulty or the byte cost could change via a milestone, so we request the node info every time, so we don't
-        // create invalid transactions/blocks.
-        #[cfg(target_family = "wasm")]
-        {
-            let info = futures::executor::block_on(async move { self.get_info().await })?.node_info;
-            let mut client_network_info = self.network_info.write().map_err(|_| crate::Error::PoisonError)?;
-            client_network_info.protocol_parameters = info.protocol.try_into()?;
-        }
-        #[cfg(not(target_family = "wasm"))]
-        {
-            let synced = !self
-                .node_manager
-                .synced_nodes
-                .read()
-                .map_err(|_| crate::Error::PoisonError)?
-                .is_empty();
-
-            if !synced {
-                let handle = Handle::current();
-                let _ = handle.enter();
-
-                let info = futures::executor::block_on(async move { self.get_info().await })?.node_info;
-                let mut client_network_info = self.network_info.write().map_err(|_| crate::Error::PoisonError)?;
-                client_network_info.protocol_parameters = info.protocol.try_into()?;
-            }
-        }
-
-        Ok(self.network_info.read().map_err(|_| crate::Error::PoisonError)?.clone())
-    }
-
-    /// Gets the protocol parameters of the node we're connecting to.
-    pub fn get_protocol_parameters(&self) -> Result<ProtocolParameters> {
-        Ok(self.get_network_info()?.protocol_parameters)
-    }
-
-    /// Gets the protocol version of the node we're connecting to.
-    pub fn get_protocol_version(&self) -> Result<u8> {
-        Ok(self.get_network_info()?.protocol_parameters.protocol_version())
-    }
-
-    /// Gets the network name of the node we're connecting to.
-    pub fn get_network_name(&self) -> Result<String> {
-        Ok(self.get_network_info()?.protocol_parameters.network_name().into())
-    }
-
-    /// Gets the network id of the node we're connecting to.
-    pub fn get_network_id(&self) -> Result<u64> {
-        Ok(self.get_network_info()?.protocol_parameters.network_id())
-    }
-
-    /// Gets the bech32 HRP of the node we're connecting to.
-    pub fn get_bech32_hrp(&self) -> Result<String> {
-        Ok(self.get_network_info()?.protocol_parameters.bech32_hrp().into())
-    }
-
-    /// Gets the minimum pow score of the node we're connecting to.
-    pub fn get_min_pow_score(&self) -> Result<u32> {
-        Ok(self.get_network_info()?.protocol_parameters.min_pow_score())
-    }
-
-    /// Gets the below maximum depth of the node we're connecting to.
-    pub fn get_below_max_depth(&self) -> Result<u8> {
-        Ok(self.get_network_info()?.protocol_parameters.below_max_depth())
-    }
-
-    /// Gets the rent structure of the node we're connecting to.
-    pub fn get_rent_structure(&self) -> Result<RentStructure> {
-        Ok(self.get_network_info()?.protocol_parameters.rent_structure().clone())
-    }
-
-    /// Gets the token supply of the node we're connecting to.
-    pub fn get_token_supply(&self) -> Result<u64> {
-        Ok(self.get_network_info()?.protocol_parameters.token_supply())
-    }
-
-    /// returns the tips interval
-    pub fn get_tips_interval(&self) -> u64 {
-        self.network_info
-            .read()
-            .map_or(DEFAULT_TIPS_INTERVAL, |info| info.tips_interval)
-    }
-
-    /// returns if local pow should be used or not
-    pub fn get_local_pow(&self) -> bool {
-        self.network_info
-            .read()
-            .map_or(NetworkInfo::default().local_pow, |info| info.local_pow)
-    }
-
-    pub(crate) fn get_timeout(&self) -> Duration {
-        self.api_timeout
-    }
-
-    pub(crate) fn get_remote_pow_timeout(&self) -> Duration {
-        self.remote_pow_timeout
-    }
-
-    /// returns the fallback_to_local_pow
-    pub fn get_fallback_to_local_pow(&self) -> bool {
-        self.network_info
-            .read()
-            .map_or(NetworkInfo::default().fallback_to_local_pow, |info| {
-                info.fallback_to_local_pow
-            })
-    }
-
-    ///////////////////////////////////////////////////////////////////////
-    // MQTT API
-    //////////////////////////////////////////////////////////////////////
-
-    /// Returns a handle to the MQTT topics manager.
-    #[cfg(feature = "mqtt")]
-    pub fn subscriber(&mut self) -> MqttManager<'_> {
-        MqttManager::new(self)
-    }
-
-    /// Subscribe to MQTT events with a callback.
-    #[cfg(feature = "mqtt")]
-    pub async fn subscribe<C: Fn(&TopicEvent) + Send + Sync + 'static>(
-        &mut self,
-        topics: Vec<Topic>,
-        callback: C,
-    ) -> crate::Result<()> {
-        MqttManager::new(self).with_topics(topics).subscribe(callback).await
-    }
-
-    /// Unsubscribe from MQTT events.
-    #[cfg(feature = "mqtt")]
-    pub async fn unsubscribe(&mut self, topics: Vec<Topic>) -> crate::Result<()> {
-        MqttManager::new(self).with_topics(topics).unsubscribe().await
-    }
-
-    /// Returns the mqtt event receiver.
-    #[cfg(feature = "mqtt")]
-    pub fn mqtt_event_receiver(&self) -> WatchReceiver<MqttEvent> {
-        self.mqtt_event_channel.1.clone()
-    }
-
-    //////////////////////////////////////////////////////////////////////
-    // Node core API
-    //////////////////////////////////////////////////////////////////////
-
-    /// GET /api/core/v2/info endpoint
-    pub async fn get_node_info(url: &str, auth: Option<NodeAuth>) -> Result<NodeInfo> {
-        let mut url = crate::node_manager::builder::validate_url(Url::parse(url)?)?;
-        if let Some(auth) = &auth {
-            if let Some((name, password)) = &auth.basic_auth_name_pwd {
-                url.set_username(name)
-                    .map_err(|_| crate::Error::UrlAuthError("username".to_string()))?;
-                url.set_password(Some(password))
-                    .map_err(|_| crate::Error::UrlAuthError("password".to_string()))?;
-            }
-        }
-        let path = "api/core/v2/info";
-        url.set_path(path);
-
-        let resp: NodeInfo = crate::node_manager::http_client::HttpClient::new()
-            .get(
-                Node {
-                    url,
-                    auth,
-                    disabled: false,
-                },
-                DEFAULT_API_TIMEOUT,
-            )
-            .await?
-            .into_json()
-            .await?;
-
-        Ok(resp)
-    }
-
-    /// GET /api/indexer/v1/outputs/basic{query} endpoint
-    pub fn get_address(&self) -> GetAddressBuilder<'_> {
-        GetAddressBuilder::new(self)
-    }
-
-    //////////////////////////////////////////////////////////////////////
-    // High level API
-    //////////////////////////////////////////////////////////////////////
-
     /// Get the inputs of a transaction for the given transaction id.
     pub async fn inputs_from_transaction_id(&self, transaction_id: &TransactionId) -> Result<Vec<OutputResponse>> {
         let block = self.get_included_block(transaction_id).await?;
@@ -394,6 +62,11 @@ impl Client {
     /// Return a list of addresses from a secret manager regardless of their validity.
     pub fn get_addresses<'a>(&'a self, secret_manager: &'a SecretManager) -> GetAddressesBuilder<'a> {
         GetAddressesBuilder::new(secret_manager).with_client(self)
+    }
+
+    /// GET /api/indexer/v1/outputs/basic{query} endpoint
+    pub fn get_address(&self) -> GetAddressBuilder<'_> {
+        GetAddressBuilder::new(self)
     }
 
     /// Find all blocks by provided block IDs.
@@ -683,74 +356,5 @@ impl Client {
             });
         }
         Ok(current_time)
-    }
-
-    //////////////////////////////////////////////////////////////////////
-    // Utils
-    //////////////////////////////////////////////////////////////////////
-
-    /// Transforms bech32 to hex
-    pub fn bech32_to_hex(bech32: &str) -> crate::Result<String> {
-        bech32_to_hex(bech32)
-    }
-
-    /// Transforms a hex encoded address to a bech32 encoded address
-    pub fn hex_to_bech32(&self, hex: &str, bech32_hrp: Option<&str>) -> crate::Result<String> {
-        let bech32_hrp = match bech32_hrp {
-            Some(hrp) => hrp.into(),
-            None => self.get_bech32_hrp()?,
-        };
-        hex_to_bech32(hex, &bech32_hrp)
-    }
-
-    /// Transforms a hex encoded public key to a bech32 encoded address
-    pub fn hex_public_key_to_bech32_address(&self, hex: &str, bech32_hrp: Option<&str>) -> crate::Result<String> {
-        let bech32_hrp = match bech32_hrp {
-            Some(hrp) => hrp.into(),
-            None => self.get_bech32_hrp()?,
-        };
-        hex_public_key_to_bech32_address(hex, &bech32_hrp)
-    }
-
-    /// Returns a valid Address parsed from a String.
-    pub fn parse_bech32_address(address: &str) -> crate::Result<Address> {
-        parse_bech32_address(address)
-    }
-
-    /// Checks if a String is a valid bech32 encoded address.
-    #[must_use]
-    pub fn is_address_valid(address: &str) -> bool {
-        is_address_valid(address)
-    }
-
-    /// Generates a new mnemonic.
-    pub fn generate_mnemonic() -> Result<String> {
-        generate_mnemonic()
-    }
-
-    /// Returns a seed for a mnemonic.
-    pub fn mnemonic_to_seed(mnemonic: &str) -> Result<Seed> {
-        mnemonic_to_seed(mnemonic)
-    }
-
-    /// Returns a hex encoded seed for a mnemonic.
-    pub fn mnemonic_to_hex_seed(mnemonic: &str) -> Result<String> {
-        mnemonic_to_hex_seed(mnemonic)
-    }
-
-    /// UTF-8 encodes the `tag` of a given TaggedDataPayload.
-    pub fn tag_to_utf8(payload: &TaggedDataPayload) -> Result<String> {
-        String::from_utf8(payload.tag().to_vec()).map_err(|_| Error::TaggedDataError("found invalid UTF-8".to_string()))
-    }
-
-    /// UTF-8 encodes the `data` of a given TaggedDataPayload.
-    pub fn data_to_utf8(payload: &TaggedDataPayload) -> Result<String> {
-        String::from_utf8(payload.data().to_vec())
-            .map_err(|_| Error::TaggedDataError("found invalid UTF-8".to_string()))
-    }
-
-    /// UTF-8 encodes both the `tag` and `data` of a given TaggedDataPayload.
-    pub fn tagged_data_to_utf8(payload: &TaggedDataPayload) -> Result<(String, String)> {
-        Ok((Client::tag_to_utf8(payload)?, Client::data_to_utf8(payload)?))
     }
 }

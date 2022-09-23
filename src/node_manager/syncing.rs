@@ -16,9 +16,20 @@ use {
 };
 
 use super::Node;
-use crate::{builder::NetworkInfo, Client, Result};
+use crate::{builder::NetworkInfo, Client, Error, Result};
 
 impl Client {
+    /// Get a node candidate from the synced node pool.
+    pub fn get_node(&self) -> Result<Node> {
+        if let Some(primary_node) = &self.node_manager.primary_node {
+            return Ok(primary_node.clone());
+        }
+
+        let pool = self.node_manager.nodes.clone();
+
+        pool.into_iter().next().ok_or(Error::SyncedNodePoolEmpty)
+    }
+
     /// returns the unsynced nodes.
     #[cfg(not(target_family = "wasm"))]
     pub fn unsynced_nodes(&self) -> HashSet<&Node> {
