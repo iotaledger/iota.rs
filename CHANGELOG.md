@@ -33,6 +33,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cleaned up error enum;
 - Replaced `force_use_all_inputs` in `try_select_inputs()` with `mandatory_inputs`;
 - Rename `inputs` parameter in `try_select_inputs()` to `additional_inputs`;
+- Adapt the whole codebase to bee's packable visitor changes;
+- Made a lot of functions/methods async;
 
 ### Fixed
 
