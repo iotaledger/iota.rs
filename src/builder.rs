@@ -292,15 +292,6 @@ impl ClientBuilder {
 
     /// Build the Client instance.
     pub fn finish(self) -> Result<Client> {
-        // TODO is this safe to be completely removed? Even the error checking?
-        // Add default nodes
-        // if !self.offline {
-        //     self.node_manager_builder = self.node_manager_builder.add_default_nodes(&self.network_info)?;
-        //     // Return error if we don't have a node
-        //     if self.node_manager_builder.nodes.is_empty() && self.node_manager_builder.primary_node.is_none() {
-        //         return Err(Error::MissingParameter("Node"));
-        //     }
-        // }
         let network_info = Arc::new(RwLock::new(self.network_info));
         let nodes = self
             .node_manager_builder
@@ -308,6 +299,7 @@ impl ClientBuilder {
             .iter()
             .map(|node| node.clone().into())
             .collect();
+
         #[cfg(target_family = "wasm")]
         let (sync, network_info) = (Arc::new(RwLock::new(nodes)), network_info);
         #[cfg(not(target_family = "wasm"))]
