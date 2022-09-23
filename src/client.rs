@@ -287,18 +287,15 @@ impl Client {
 
         // For WASM we don't have the node syncing process, which updates the network_info every 60 seconds, but the Pow
         // difficulty or the byte cost could change via a milestone, so we request the node info every time, so we don't
-        // create invalid transactions/blocks
-        if !synced || cfg!(target_family = "wasm") {
-            // TODO ???
-            // let runtime = self.runtime.as_ref().unwrap();
-            // let info = runtime.block_on(async move { self.get_info().await })?.node_info;
-            let handle = Handle::current();
-            let e = handle.enter();
-            let info = futures::executor::block_on(async move { self.get_info().await })?.node_info;
-            drop(e);
-
-            // TODO keep?
-            // let network_id = network_name_to_id(&info.protocol.network_name);
+        // create invalid transactions/blocks.
+        if !synced {
+            let info = if cfg!(not(target_family = "wasm")) {
+                let handle = Handle::current();
+                let _ = handle.enter();
+                futures::executor::block_on(async move { self.get_info().await })?.node_info
+            } else {
+                futures::executor::block_on(async move { self.get_info().await })?.node_info
+            };
 
             let mut client_network_info = self.network_info.write().map_err(|_| crate::Error::PoisonError)?;
             client_network_info.protocol_parameters = info.protocol.try_into()?;
