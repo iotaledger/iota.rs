@@ -7,6 +7,7 @@ pub mod builder;
 pub(crate) mod http_client;
 /// Structs for nodes
 pub mod node;
+pub(crate) mod syncing;
 
 use std::{
     collections::{HashMap, HashSet},
