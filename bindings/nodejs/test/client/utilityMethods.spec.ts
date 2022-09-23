@@ -17,14 +17,14 @@ describe('Client utility methods', () => {
     it.skip('generates and stores mnemonic', async () => {
         const mnemonic = await offlineClient.generateMnemonic();
 
-        const StrongholdSecretManager = {
-            Stronghold: {
+        const strongholdSecretManager = {
+            stronghold: {
                 password: 'some_hopefully_secure_password',
                 snapshotPath: './stronghold',
             },
         };
         await expect(
-            offlineClient.storeMnemonic(StrongholdSecretManager, mnemonic),
+            offlineClient.storeMnemonic(strongholdSecretManager, mnemonic),
         ).resolves.toBe(null);
     });
 

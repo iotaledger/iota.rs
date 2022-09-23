@@ -6,7 +6,7 @@ class LedgerNanoSecretManager(dict):
         """Initialize a ledger nano secret manager.
         """
 
-        dict.__init__(self, LedgerNano=is_simulator)
+        dict.__init__(self, ledgerNano=is_simulator)
 
 
 class MnemonicSecretManager(dict):
@@ -17,7 +17,7 @@ class MnemonicSecretManager(dict):
         """Initialize a mnemonic secret manager.
         """
 
-        dict.__init__(self, Mnemonic=mnemonic)
+        dict.__init__(self, mnemonic=mnemonic)
 
 
 class StrongholdSecretManager(dict):
@@ -28,7 +28,7 @@ class StrongholdSecretManager(dict):
         """Initialize a stronghold secret manager.
         """
 
-        dict.__init__(self, Stronghold=StrongholdSecretManager.Inner(
+        dict.__init__(self, stronghold=StrongholdSecretManager.Inner(
             snapshot_path, password))
 
     class Inner(dict):

@@ -15,7 +15,7 @@ public class MnemonicSecretManager extends SecretManager {
     @Override
     public JsonObject getJson() {
         JsonObject o = new JsonObject();
-        o.addProperty("Mnemonic", mnemonic);
+        o.addProperty("mnemonic", mnemonic);
 
         return o;
     }

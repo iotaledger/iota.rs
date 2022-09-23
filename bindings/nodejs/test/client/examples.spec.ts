@@ -14,7 +14,7 @@ const client = new Client({
 });
 
 const secretManager = {
-    Mnemonic:
+    mnemonic:
         'endorse answer radar about source reunion marriage tag sausage weekend frost daring base attack because joke dream slender leisure group reason prepare broken river',
 };
 

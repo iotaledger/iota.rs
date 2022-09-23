@@ -28,7 +28,7 @@ async function run() {
             throw new Error('.env mnemonic is undefined, see .env.example');
         }
         const secretManager = {
-            Stronghold: {
+            stronghold: {
                 password: process.env.STRONGHOLD_PASSWORD,
                 snapshotPath: 'client.stronghold',
             },

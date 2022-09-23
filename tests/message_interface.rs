@@ -25,7 +25,7 @@ async fn generate_addresses() {
     let message_handler = message_interface::create_message_handler(Some(client_config)).unwrap();
 
     let secret_manager = format!(
-        "{{\"Mnemonic\":\"{}\"}}",
+        "{{\"mnemonic\":\"{}\"}}",
         "endorse answer radar about source reunion marriage tag sausage weekend frost daring base attack because joke dream slender leisure group reason prepare broken river"
     );
     let options = GenerateAddressesOptions {
@@ -73,7 +73,7 @@ async fn build_and_post_block() {
 
     // Generate addresses
     let secret_manager = format!(
-        "{{\"Mnemonic\":\"{}\"}}",
+        "{{\"mnemonic\":\"{}\"}}",
         &env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap()
     );
     let options = GenerateAddressesOptions {
@@ -179,7 +179,7 @@ async fn stronghold() {
     let client_config = r#"{"offline": true}"#.to_string();
     let message_handler = message_interface::create_message_handler(Some(client_config)).unwrap();
 
-    let secret_manager_dto = r#"{"Stronghold": {"password": "some_hopefully_secure_password", "snapshotPath": "teststronghold.stronghold"}}"#;
+    let secret_manager_dto = r#"{"stronghold": {"password": "some_hopefully_secure_password", "snapshotPath": "teststronghold.stronghold"}}"#;
     let mnemonic = String::from(
         "acoustic trophy damage hint search taste love bicycle foster cradle brown govern endless depend situate athlete pudding blame question genius transfer van random vast",
     );
