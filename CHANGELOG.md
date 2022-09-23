@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `finish_pow` function to avoid the caller having to check for wasm family;
+- Debug logs for GET requests;
 
 ### Changed
 
