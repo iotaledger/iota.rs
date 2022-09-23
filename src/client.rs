@@ -240,12 +240,10 @@ impl Client {
             }
         }
 
-        // Update the sync list
-        if let Ok(mut sync) = sync.write() {
-            *sync = synced_nodes;
-        }
-
-        network_info.write().map_err(|_| crate::Error::PoisonError)?.synced = true;
+        // Update the synced flag.
+        network_info.write().map_err(|_| crate::Error::PoisonError)?.synced = !synced_nodes.is_empty();
+        // Update the sync list.
+        *sync.write().map_err(|_| crate::Error::PoisonError)? = synced_nodes;
 
         Ok(())
     }
@@ -296,7 +294,7 @@ impl Client {
         {
             let synced = !self.network_info.read().map_or(true, |info| info.synced);
 
-            if synced {
+            if !synced {
                 let handle = Handle::current();
                 let _ = handle.enter();
 
