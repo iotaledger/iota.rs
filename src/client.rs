@@ -240,8 +240,6 @@ impl Client {
             }
         }
 
-        // Update the synced flag.
-        network_info.write().map_err(|_| crate::Error::PoisonError)?.synced = !synced_nodes.is_empty();
         // Update the sync list.
         *sync.write().map_err(|_| crate::Error::PoisonError)? = synced_nodes;
 
@@ -292,7 +290,12 @@ impl Client {
         }
         #[cfg(not(target_family = "wasm"))]
         {
-            let synced = !self.network_info.read().map_or(true, |info| info.synced);
+            let synced = !self
+                .node_manager
+                .synced_nodes
+                .read()
+                .map_err(|_| crate::Error::PoisonError)?
+                .is_empty();
 
             if !synced {
                 let handle = Handle::current();

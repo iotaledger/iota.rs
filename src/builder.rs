@@ -29,9 +29,6 @@ use crate::{
 /// Struct containing network and PoW related information
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct NetworkInfo {
-    /// Whether any node is synced or not.
-    #[serde(default = "default_synced")]
-    pub synced: bool,
     // TODO do we really want a default?
     /// Protocol parameters.
     #[serde(rename = "protocolParameters", default = "ProtocolParameters::default")]
@@ -45,10 +42,6 @@ pub struct NetworkInfo {
     /// Tips request interval during PoW in seconds.
     #[serde(rename = "tipsInterval", default = "default_tips_interval")]
     pub tips_interval: u64,
-}
-
-fn default_synced() -> bool {
-    false
 }
 
 fn default_local_pow() -> bool {
@@ -110,7 +103,6 @@ fn default_remote_pow_timeout() -> Duration {
 impl Default for NetworkInfo {
     fn default() -> Self {
         Self {
-            synced: false,
             // TODO do we really want a default?
             protocol_parameters: ProtocolParameters::default(),
             local_pow: default_local_pow(),
