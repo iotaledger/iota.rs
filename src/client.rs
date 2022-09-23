@@ -221,18 +221,21 @@ impl Client {
 
         if let Some(nodes) = network_nodes.get(most_nodes.0) {
             let pow_feature = String::from("pow");
+            let local_pow = network_info.read().map_err(|_| crate::Error::PoisonError)?.local_pow;
 
-            if let Some((info, node_url)) = nodes.first() {
-                if let Ok(mut client_network_info) = network_info.write() {
-                    client_network_info.protocol_parameters = ProtocolParameters::try_from(info.protocol.clone())?;
+            if let Some((info, _node_url)) = nodes.first() {
+                let mut network_info = network_info.write().map_err(|_| crate::Error::PoisonError)?;
 
-                    if !client_network_info.local_pow {
-                        if info.features.contains(&pow_feature) {
-                            synced_nodes.insert(node_url.clone());
-                        }
-                    } else {
+                network_info.protocol_parameters = ProtocolParameters::try_from(info.protocol.clone())?;
+            }
+
+            for (info, node_url) in nodes.iter() {
+                if !local_pow {
+                    if info.features.contains(&pow_feature) {
                         synced_nodes.insert(node_url.clone());
                     }
+                } else {
+                    synced_nodes.insert(node_url.clone());
                 }
             }
         }
