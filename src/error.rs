@@ -180,7 +180,7 @@ pub enum Error {
     UnpackError(#[from] packable::error::UnpackError<bee_block::Error, UnexpectedEOF>),
     /// URL auth error
     #[error("can't set {0} to URL")]
-    UrlAuthError(String),
+    UrlAuthError(&'static str),
     /// URL error
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]

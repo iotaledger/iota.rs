@@ -94,9 +94,9 @@ impl Client {
         if let Some(auth) = &auth {
             if let Some((name, password)) = &auth.basic_auth_name_pwd {
                 url.set_username(name)
-                    .map_err(|_| crate::Error::UrlAuthError("username".to_string()))?;
+                    .map_err(|_| crate::Error::UrlAuthError("username"))?;
                 url.set_password(Some(password))
-                    .map_err(|_| crate::Error::UrlAuthError("password".to_string()))?;
+                    .map_err(|_| crate::Error::UrlAuthError("password"))?;
             }
         }
         let path = "api/core/v2/info";
