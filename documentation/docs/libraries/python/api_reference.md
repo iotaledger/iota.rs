@@ -270,7 +270,7 @@ Build and post a block.
 def get_node()
 ```
 
-Get a node candidate from the synced node pool.
+Get a node candidate from the healthy node pool.
 
 <a id="iota_client.client.IotaClient.get_network_info"></a>
 
@@ -342,15 +342,15 @@ def get_fall_back_to_local_pow()
 
 Get fallback to local proof of work timeout.
 
-<a id="iota_client.client.IotaClient.unsynced_nodes"></a>
+<a id="iota_client.client.IotaClient.unhealthy_nodes"></a>
 
-#### unsynced\_nodes
+#### unhealthy\_nodes
 
 ```python
-def unsynced_nodes()
+def unhealthy_nodes()
 ```
 
-Returns the unsynced nodes.
+Returns the unhealthy nodes.
 
 <a id="iota_client.client.IotaClient.get_ledger_nano_status"></a>
 

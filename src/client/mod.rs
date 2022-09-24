@@ -138,14 +138,14 @@ impl Client {
         }
         #[cfg(not(target_family = "wasm"))]
         {
-            let synced = !self
+            let healthy = !self
                 .node_manager
-                .synced_nodes
+                .healthy_nodes
                 .read()
                 .map_err(|_| crate::Error::PoisonError)?
                 .is_empty();
 
-            if !synced {
+            if !healthy {
                 let handle = Handle::current();
                 let _ = handle.enter();
 

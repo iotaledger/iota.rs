@@ -1,7 +1,7 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! The node manager that takes care of sending requests with synced nodes and quorum if enabled
+//! The node manager that takes care of sending requests with healthy nodes and quorum if enabled
 
 use std::time::Duration;
 

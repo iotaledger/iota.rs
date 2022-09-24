@@ -37,6 +37,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Adapt the whole codebase to bee's packable visitor changes;
 - Made a lot of functions/methods async;
 - Added `#[serde(rename_all = "camelCase")]` to enums;
+- Renamed `synced_nodes` to `healthy_nodes`;
+- Renamed `unsynced_nodes()` to `unhealthy_nodes()`;
 
 ### Removed
 

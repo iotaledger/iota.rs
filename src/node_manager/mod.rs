@@ -1,7 +1,7 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! The node manager that takes care of sending requests with synced nodes and quorum if enabled
+//! The node manager that takes care of sending requests with healthy nodes and quorum if enabled
 
 pub mod builder;
 pub(crate) mod http_client;
@@ -34,7 +34,7 @@ pub(crate) struct NodeManager {
     permanodes: Option<HashSet<Node>>,
     pub(crate) node_sync_enabled: bool,
     node_sync_interval: Duration,
-    pub(crate) synced_nodes: Arc<RwLock<HashSet<Node>>>,
+    pub(crate) healthy_nodes: Arc<RwLock<HashSet<Node>>>,
     quorum: bool,
     min_quorum_size: usize,
     quorum_threshold: usize,
@@ -50,7 +50,7 @@ impl std::fmt::Debug for NodeManager {
         d.field("permanodes", &self.permanodes);
         d.field("node_sync_enabled", &self.node_sync_enabled);
         d.field("node_sync_interval", &self.node_sync_interval);
-        d.field("synced_nodes", &self.synced_nodes);
+        d.field("healthy_nodes", &self.healthy_nodes);
         d.field("quorum", &self.quorum);
         d.field("min_quorum_size", &self.min_quorum_size);
         d.field("quorum_threshold", &self.quorum_threshold).finish()
@@ -99,7 +99,10 @@ impl NodeManager {
         let nodes_random_order = if self.node_sync_enabled {
             #[cfg(not(target_family = "wasm"))]
             {
-                self.synced_nodes.read().map_err(|_| crate::Error::PoisonError)?.clone()
+                self.healthy_nodes
+                    .read()
+                    .map_err(|_| crate::Error::PoisonError)?
+                    .clone()
             }
             #[cfg(target_family = "wasm")]
             {
@@ -120,7 +123,7 @@ impl NodeManager {
         nodes_with_modified_url.retain(|n| !n.disabled);
 
         if nodes_with_modified_url.is_empty() {
-            return Err(crate::Error::SyncedNodePoolEmpty);
+            return Err(crate::Error::HealthyNodePoolEmpty);
         }
 
         // Set path and query parameters

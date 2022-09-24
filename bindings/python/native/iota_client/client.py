@@ -112,7 +112,7 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
         })
 
     def get_node(self):
-        """Get a node candidate from the synced node pool.
+        """Get a node candidate from the healthy node pool.
         """
         return self.send_message('getNode')
 
@@ -151,10 +151,10 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
         """
         return self.send_message('getFallbackToLocalPow')
 
-    def unsynced_nodes(self):
-        """Returns the unsynced nodes.
+    def unhealthy_nodes(self):
+        """Returns the unhealthy nodes.
         """
-        return self.send_message('unsyncedNodes')
+        return self.send_message('unhealthyNodes')
 
     def get_ledger_nano_status(self, is_simulator):
         """Returns the Ledger Status.

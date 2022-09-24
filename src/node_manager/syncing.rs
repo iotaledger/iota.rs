@@ -19,7 +19,7 @@ use super::Node;
 use crate::{builder::NetworkInfo, Client, Error, Result};
 
 impl Client {
-    /// Get a node candidate from the synced node pool.
+    /// Get a node candidate from the healthy node pool.
     pub fn get_node(&self) -> Result<Node> {
         if let Some(primary_node) = &self.node_manager.primary_node {
             return Ok(primary_node.clone());
@@ -27,19 +27,22 @@ impl Client {
 
         let pool = self.node_manager.nodes.clone();
 
-        pool.into_iter().next().ok_or(Error::SyncedNodePoolEmpty)
+        pool.into_iter().next().ok_or(Error::HealthyNodePoolEmpty)
     }
 
-    /// returns the unsynced nodes.
+    /// returns the unhealthy nodes.
     #[cfg(not(target_family = "wasm"))]
-    pub fn unsynced_nodes(&self) -> HashSet<&Node> {
-        self.node_manager.synced_nodes.read().map_or(HashSet::new(), |synced| {
-            self.node_manager
-                .nodes
-                .iter()
-                .filter(|node| !synced.contains(node))
-                .collect()
-        })
+    pub fn unhealthy_nodes(&self) -> HashSet<&Node> {
+        self.node_manager
+            .healthy_nodes
+            .read()
+            .map_or(HashSet::new(), |healthy_nodes| {
+                self.node_manager
+                    .nodes
+                    .iter()
+                    .filter(|node| !healthy_nodes.contains(node))
+                    .collect()
+            })
     }
 
     /// Sync the node lists per node_sync_interval milliseconds
@@ -76,7 +79,7 @@ impl Client {
         network_info: &Arc<RwLock<NetworkInfo>>,
     ) -> Result<()> {
         log::debug!("sync_nodes");
-        let mut synced_nodes = HashSet::new();
+        let mut healthy_nodes = HashSet::new();
         let mut network_nodes: HashMap<String, Vec<(NodeInfo, Node)>> = HashMap::new();
 
         for node in nodes {
@@ -121,16 +124,16 @@ impl Client {
             for (info, node_url) in nodes.iter() {
                 if !local_pow {
                     if info.features.contains(&pow_feature) {
-                        synced_nodes.insert(node_url.clone());
+                        healthy_nodes.insert(node_url.clone());
                     }
                 } else {
-                    synced_nodes.insert(node_url.clone());
+                    healthy_nodes.insert(node_url.clone());
                 }
             }
         }
 
         // Update the sync list.
-        *sync.write().map_err(|_| crate::Error::PoisonError)? = synced_nodes;
+        *sync.write().map_err(|_| crate::Error::PoisonError)? = healthy_nodes;
 
         Ok(())
     }

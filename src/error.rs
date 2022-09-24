@@ -141,9 +141,9 @@ pub enum Error {
     /// Specifically used for `TryInfo` implementations for `SecretManager`.
     #[error("cannot unwrap a SecretManager: type mismatch!")]
     SecretManagerMismatch,
-    /// No node available in the synced node pool
-    #[error("no synced node available")]
-    SyncedNodePoolEmpty,
+    /// No node available in the healthy node pool
+    #[error("no healthy node available")]
+    HealthyNodePoolEmpty,
     /// Error when building tagged_data blocks
     #[error("error when building tagged_data block: {0}")]
     TaggedDataError(String),

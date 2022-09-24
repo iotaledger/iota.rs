@@ -1,7 +1,7 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! The node manager that takes care of sending requests with synced nodes and quorum if enabled
+//! The node manager that takes care of sending requests with healthy nodes and quorum if enabled
 
 use std::{
     collections::HashSet,
@@ -207,7 +207,7 @@ impl NodeManagerBuilder {
         self
     }
 
-    pub(crate) fn build(self, synced_nodes: Arc<RwLock<HashSet<Node>>>) -> NodeManager {
+    pub(crate) fn build(self, healthy_nodes: Arc<RwLock<HashSet<Node>>>) -> NodeManager {
         NodeManager {
             primary_node: self.primary_node.map(|node| node.into()),
             primary_pow_node: self.primary_pow_node.map(|node| node.into()),
@@ -217,7 +217,7 @@ impl NodeManagerBuilder {
                 .map(|nodes| nodes.into_iter().map(|node| node.into()).collect()),
             node_sync_enabled: self.node_sync_enabled,
             node_sync_interval: self.node_sync_interval,
-            synced_nodes,
+            healthy_nodes,
             quorum: self.quorum,
             min_quorum_size: self.min_quorum_size,
             quorum_threshold: self.quorum_threshold,
