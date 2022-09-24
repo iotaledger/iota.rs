@@ -1,7 +1,7 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! The node manager that takes care of sending requests with synced nodes and quorum if enabled
+//! The node manager that takes care of sending requests with healthy nodes and quorum if enabled
 
 use std::time::Duration;
 
@@ -69,7 +69,17 @@ impl HttpClient {
         {
             request_builder = request_builder.timeout(_timeout);
         }
+        #[cfg(feature = "wasm")]
+        let start_time = instant::Instant::now();
+        #[cfg(not(feature = "wasm"))]
+        let start_time = std::time::Instant::now();
         let resp = request_builder.send().await?;
+        log::debug!(
+            "GET: {:?} ms for {} {}",
+            start_time.elapsed().as_millis(),
+            resp.status(),
+            node.url
+        );
         Self::parse_response(resp, &node.url).await
     }
 

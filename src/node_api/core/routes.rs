@@ -8,8 +8,9 @@ use std::str::FromStr;
 use bee_api_types::{
     dtos::{PeerDto, ReceiptDto},
     responses::{
-        BlockMetadataResponse, BlockResponse, MilestoneResponse, OutputMetadataResponse, OutputResponse, PeersResponse,
-        ReceiptsResponse, RoutesResponse, SubmitBlockResponse, TipsResponse, TreasuryResponse, UtxoChangesResponse,
+        BlockMetadataResponse, BlockResponse, InfoResponse, MilestoneResponse, OutputMetadataResponse, OutputResponse,
+        PeersResponse, ReceiptsResponse, RoutesResponse, SubmitBlockResponse, TipsResponse, TreasuryResponse,
+        UtxoChangesResponse,
     },
 };
 use bee_block::{
@@ -23,7 +24,21 @@ use bee_block::{
 use packable::PackableExt;
 use url::Url;
 
-use crate::{constants::DEFAULT_API_TIMEOUT, node_manager::node::Node, Client, Error, NodeInfoWrapper, Result};
+use crate::{
+    constants::DEFAULT_API_TIMEOUT,
+    node_manager::node::{Node, NodeAuth},
+    Client, Error, Result,
+};
+
+/// NodeInfo wrapper which contains the node info and the url from the node (useful when multiple nodes are used)
+#[derive(Debug, Serialize, Deserialize)]
+pub struct NodeInfoWrapper {
+    /// The returned node info
+    #[serde(rename = "nodeInfo")]
+    pub node_info: InfoResponse,
+    /// The url from the node which returned the node info
+    pub url: String,
+}
 
 impl Client {
     // Node routes.
@@ -71,6 +86,36 @@ impl Client {
         self.node_manager
             .get_request(path, None, self.get_timeout(), false, false)
             .await
+    }
+
+    /// GET /api/core/v2/info endpoint
+    pub async fn get_node_info(url: &str, auth: Option<NodeAuth>) -> Result<InfoResponse> {
+        let mut url = crate::node_manager::builder::validate_url(Url::parse(url)?)?;
+        if let Some(auth) = &auth {
+            if let Some((name, password)) = &auth.basic_auth_name_pwd {
+                url.set_username(name)
+                    .map_err(|_| crate::Error::UrlAuthError("username"))?;
+                url.set_password(Some(password))
+                    .map_err(|_| crate::Error::UrlAuthError("password"))?;
+            }
+        }
+        let path = "api/core/v2/info";
+        url.set_path(path);
+
+        let resp: InfoResponse = crate::node_manager::http_client::HttpClient::new()
+            .get(
+                Node {
+                    url,
+                    auth,
+                    disabled: false,
+                },
+                DEFAULT_API_TIMEOUT,
+            )
+            .await?
+            .into_json()
+            .await?;
+
+        Ok(resp)
     }
 
     // Tangle routes.

@@ -20,10 +20,43 @@ use rumqttc::{
     AsyncClient as MqttClient, Event, EventLoop, Incoming, MqttOptions, QoS, Request, Subscribe, SubscribeFilter,
     Transport,
 };
-use tokio::sync::{watch::Sender, RwLock};
+use tokio::sync::{
+    watch::{Receiver as WatchReceiver, Sender},
+    RwLock,
+};
 
 pub use self::types::*;
 use crate::{builder::NetworkInfo, Client, Result};
+
+impl Client {
+    /// Returns a handle to the MQTT topics manager.
+    #[cfg(feature = "mqtt")]
+    pub fn subscriber(&mut self) -> MqttManager<'_> {
+        MqttManager::new(self)
+    }
+
+    /// Subscribe to MQTT events with a callback.
+    #[cfg(feature = "mqtt")]
+    pub async fn subscribe<C: Fn(&TopicEvent) + Send + Sync + 'static>(
+        &mut self,
+        topics: Vec<Topic>,
+        callback: C,
+    ) -> crate::Result<()> {
+        MqttManager::new(self).with_topics(topics).subscribe(callback).await
+    }
+
+    /// Unsubscribe from MQTT events.
+    #[cfg(feature = "mqtt")]
+    pub async fn unsubscribe(&mut self, topics: Vec<Topic>) -> crate::Result<()> {
+        MqttManager::new(self).with_topics(topics).unsubscribe().await
+    }
+
+    /// Returns the mqtt event receiver.
+    #[cfg(feature = "mqtt")]
+    pub fn mqtt_event_receiver(&self) -> WatchReceiver<MqttEvent> {
+        self.mqtt_event_channel.1.clone()
+    }
+}
 
 async fn get_mqtt_client(client: &mut Client) -> Result<&mut MqttClient> {
     // if the client was disconnected, we clear it so we can start over
@@ -38,9 +71,9 @@ async fn get_mqtt_client(client: &mut Client) -> Result<&mut MqttClient> {
                 {
                     client
                         .node_manager
-                        .synced_nodes
+                        .healthy_nodes
                         .read()
-                        .map_or(client.node_manager.nodes.clone(), |synced_nodes| synced_nodes.clone())
+                        .map_or(client.node_manager.nodes.clone(), |healthy_nodes| healthy_nodes.clone())
                 }
                 #[cfg(target_family = "wasm")]
                 {

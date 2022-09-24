@@ -378,8 +378,8 @@ impl ClientMessageHandler {
                 Ok(Response::BlockIdWithBlock(block_id, BlockDto::from(&block)))
             }
             #[cfg(not(target_family = "wasm"))]
-            Message::UnsyncedNodes => Ok(Response::UnsyncedNodes(
-                self.client.unsynced_nodes().into_iter().cloned().collect(),
+            Message::UnhealthyNodes => Ok(Response::UnhealthyNodes(
+                self.client.unhealthy_nodes().into_iter().cloned().collect(),
             )),
             Message::GetHealth { url } => Ok(Response::Health(self.client.get_health(&url).await?)),
             Message::GetNodeInfo { url, auth } => Ok(Response::NodeInfo(Client::get_node_info(&url, auth).await?)),

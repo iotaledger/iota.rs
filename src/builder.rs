@@ -285,29 +285,32 @@ impl ClientBuilder {
     /// Build the Client instance.
     pub fn finish(self) -> Result<Client> {
         let network_info = Arc::new(RwLock::new(self.network_info));
-        let nodes = self
-            .node_manager_builder
-            .nodes
-            .iter()
-            .map(|node| node.clone().into())
-            .collect();
 
         #[cfg(target_family = "wasm")]
-        let (sync, network_info) = (Arc::new(RwLock::new(nodes)), network_info);
+        let (sync, network_info) = (Arc::new(RwLock::new(HashSet::new())), network_info);
         #[cfg(not(target_family = "wasm"))]
-        let (runtime, sync, sync_kill_sender, network_info) = if self.node_manager_builder.node_sync_enabled {
-            let sync = Arc::new(RwLock::new(HashSet::new()));
-            let sync_ = sync.clone();
+        let (runtime, healthy_nodes, sync_kill_sender, network_info) = if self.node_manager_builder.node_sync_enabled {
+            let nodes = self
+                .node_manager_builder
+                .primary_node
+                .iter()
+                .chain(self.node_manager_builder.nodes.iter())
+                .map(|node| node.clone().into())
+                .collect();
+
+            let healthy_nodes = Arc::new(RwLock::new(HashSet::new()));
+            let healthy_nodes_ = healthy_nodes.clone();
             let network_info_ = network_info.clone();
             let (sync_kill_sender, sync_kill_receiver) = channel(1);
+
             let runtime = std::thread::spawn(move || {
                 let runtime = Runtime::new().expect("failed to create Tokio runtime");
-                if let Err(e) = runtime.block_on(Client::sync_nodes(&sync_, &nodes, &network_info_)) {
+                if let Err(e) = runtime.block_on(Client::sync_nodes(&healthy_nodes_, &nodes, &network_info_)) {
                     panic!("failed to sync nodes: {:?}", e);
                 }
                 Client::start_sync_process(
                     &runtime,
-                    sync_,
+                    healthy_nodes_,
                     nodes,
                     self.node_manager_builder.node_sync_interval,
                     network_info_,
@@ -317,15 +320,20 @@ impl ClientBuilder {
             })
             .join()
             .expect("failed to init node syncing process");
-            (Some(Arc::new(runtime)), sync, Some(sync_kill_sender), network_info)
+            (
+                Some(Arc::new(runtime)),
+                healthy_nodes,
+                Some(sync_kill_sender),
+                network_info,
+            )
         } else {
-            (None, Arc::new(RwLock::new(nodes)), None, network_info)
+            (None, Arc::new(RwLock::new(HashSet::new())), None, network_info)
         };
 
         #[cfg(feature = "mqtt")]
         let (mqtt_event_tx, mqtt_event_rx) = tokio::sync::watch::channel(MqttEvent::Connected);
         let client = Client {
-            node_manager: self.node_manager_builder.build(sync),
+            node_manager: self.node_manager_builder.build(healthy_nodes),
             #[cfg(not(target_family = "wasm"))]
             runtime,
             #[cfg(not(target_family = "wasm"))]
