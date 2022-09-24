@@ -26,18 +26,18 @@ public class NodeCoreApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.addProperty("url", nodeUrl);
 
-        Boolean responsePayload = callBaseApi(new ClientCommand("GetHealth", o)).getAsBoolean();
+        Boolean responsePayload = callBaseApi(new ClientCommand("getHealth", o)).getAsBoolean();
 
         return responsePayload;
     }
 
     public NodeInfoResponse getNodeInfo() throws ClientException {
-        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("GetInfo"));
+        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("getInfo"));
         return new NodeInfoResponse(responsePayload);
     }
 
     public BlockId[] getTips() throws ClientException {
-        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand("GetTips"));
+        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand("getTips"));
 
         BlockId[] blockIds = new BlockId[responsePayload.size()];
         for (int i = 0; i < responsePayload.size(); i++)
@@ -50,7 +50,7 @@ public class NodeCoreApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.add("block", block.toJson());
 
-        String responsePayload = callBaseApi(new ClientCommand("PostBlock", o)).getAsString();
+        String responsePayload = callBaseApi(new ClientCommand("postBlock", o)).getAsString();
         return new BlockId(responsePayload);
     }
 
@@ -58,7 +58,7 @@ public class NodeCoreApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.add("blockBytes", JsonUtils.toJson(blockBytes));
 
-        String responsePayload = callBaseApi(new ClientCommand("PostBlockRaw", o)).getAsString();
+        String responsePayload = callBaseApi(new ClientCommand("postBlockRaw", o)).getAsString();
         return new BlockId(responsePayload);
     }
 
@@ -66,7 +66,7 @@ public class NodeCoreApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.addProperty("blockId", blockId.toString());
 
-        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("GetBlock", o));
+        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("getBlock", o));
         return new Block(responsePayload);
     }
 
@@ -74,7 +74,7 @@ public class NodeCoreApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.addProperty("blockId", blockId.toString());
 
-        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand("GetBlockRaw", o));
+        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand("getBlockRaw", o));
 
         byte[] blockBytes = new byte[responsePayload.size()];
 
@@ -89,7 +89,7 @@ public class NodeCoreApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.addProperty("blockId", blockId.toString());
 
-        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("GetBlockMetadata", o));
+        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("getBlockMetadata", o));
 
         return new BlockMetadata(responsePayload);
     }
@@ -98,7 +98,7 @@ public class NodeCoreApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.addProperty("outputId", outputId.toString());
 
-        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("GetOutput", o));
+        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("getOutput", o));
 
         Output output = new Output(responsePayload.get("output").getAsJsonObject());
         OutputMetadata metadata = new OutputMetadata(responsePayload.getAsJsonObject().get("metadata").getAsJsonObject());
@@ -110,7 +110,7 @@ public class NodeCoreApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.addProperty("outputId", outputId.toString());
 
-        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("GetOutputMetadata", o));
+        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("getOutputMetadata", o));
 
         return new OutputMetadata(responsePayload);
     }
@@ -119,7 +119,7 @@ public class NodeCoreApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.addProperty("milestoneIndex", milestoneIndex);
 
-        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand("GetReceiptsMigratedAt", o));
+        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand("getReceiptsMigratedAt", o));
 
         Receipt[] receipts = new Receipt[responsePayload.size()];
         for (int i = 0; i < responsePayload.size(); i++) {
@@ -130,7 +130,7 @@ public class NodeCoreApi extends BaseApi {
     }
 
     public Receipt[] getReceipts() throws ClientException {
-        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand("GetReceipts"));
+        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand("getReceipts"));
 
         Receipt[] receipts = new Receipt[responsePayload.size()];
         for (int i = 0; i < responsePayload.size(); i++) {
@@ -141,7 +141,7 @@ public class NodeCoreApi extends BaseApi {
     }
 
     public TreasuryResponse getTreasury() throws ClientException {
-        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("GetTreasury"));
+        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("getTreasury"));
 
         return new TreasuryResponse(responsePayload);
     }
@@ -150,7 +150,7 @@ public class NodeCoreApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.addProperty("transactionId", transactionId.toString());
 
-        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("GetIncludedBlock", o));
+        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("getIncludedBlock", o));
 
         return new Block(responsePayload);
     }
@@ -159,7 +159,7 @@ public class NodeCoreApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.addProperty("milestoneId", milestoneId.toString());
 
-        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("GetMilestoneById", o));
+        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("getMilestoneById", o));
 
         return new MilestonePayload(responsePayload);
     }
@@ -168,7 +168,7 @@ public class NodeCoreApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.addProperty("index", index);
 
-        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("GetMilestoneByIndex", o));
+        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("getMilestoneByIndex", o));
 
         return new MilestonePayload(responsePayload);
     }
@@ -177,7 +177,7 @@ public class NodeCoreApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.addProperty("milestoneId", milestoneId.toString());
 
-        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand("GetMilestoneByIdRaw", o));
+        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand("getMilestoneByIdRaw", o));
 
         byte[] milestoneBytes = new byte[responsePayload.size()];
 
@@ -192,7 +192,7 @@ public class NodeCoreApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.addProperty("index", index);
 
-        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand("GetMilestoneByIndexRaw", o));
+        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand("getMilestoneByIndexRaw", o));
 
         byte[] milestoneBytes = new byte[responsePayload.size()];
 
@@ -207,7 +207,7 @@ public class NodeCoreApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.addProperty("milestoneId", milestoneId.toString());
 
-        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("GetUtxoChangesById", o));
+        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("getUtxoChangesById", o));
 
         return new UtxoChangesResponse(responsePayload);
     }
@@ -216,13 +216,13 @@ public class NodeCoreApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.addProperty("index", index);
 
-        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("GetUtxoChangesByIndex", o));
+        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("getUtxoChangesByIndex", o));
 
         return new UtxoChangesResponse(responsePayload);
     }
 
     public Peer[] getPeers() throws ClientException {
-        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand("GetPeers"));
+        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand("getPeers"));
 
         Peer[] peers = new Peer[responsePayload.size()];
         for (int i = 0; i < responsePayload.size(); i++) {

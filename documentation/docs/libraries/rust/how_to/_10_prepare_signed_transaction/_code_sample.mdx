@@ -1,0 +1,16 @@
+import CodeBlock from '@theme/CodeBlock';
+import Transaction from '!!raw-loader!../../../../../../examples/block/transaction.rs';
+import DotEnvWarning from "../../../../_admonitions/_dot_env_warning.md"
+
+<DotEnvWarning/>
+<CodeBlock className="language-rust">
+    {Transaction}
+</CodeBlock>
+
+### Run the Example
+
+Run the example by running the following command:
+
+<CodeBlock className="language-bash">
+    cargo run --example transaction --release
+</CodeBlock>

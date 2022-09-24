@@ -76,10 +76,13 @@ impl LedgerApp {
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub enum LedgerDeviceType {
     /// Device Type Nano S
+    #[serde(alias = "ledgerNanoS")]
     LedgerNanoS,
     /// Device Type Nano X
+    #[serde(alias = "ledgerNanoX")]
     LedgerNanoX,
     /// Device Type Nano S Plus
+    #[serde(alias = "ledgerNanoSPlus")]
     LedgerNanoSPlus,
 }
 

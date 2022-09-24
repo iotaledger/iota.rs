@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `finish_pow` function to avoid the caller having to check for wasm family;
+- Added `#[serde(rename_all = "camelCase")]` to enums and aliases for `SecretManagerDto` and `LedgerDeviceType` fields;
 
 ### Changed
 
@@ -31,12 +32,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - PoW node feature from `PoW` to `pow` to match TIP25;
 - Made `finish_multi_threaded_pow` and `finish_single_threaded_pow` private;
 - Cleaned up error enum;
+- Replaced `force_use_all_inputs` in `try_select_inputs()` with `mandatory_inputs`;
+- Rename `inputs` parameter in `try_select_inputs()` to `additional_inputs`;
 
 ### Fixed
 
 - Check expiration for remainder address;
 - Input selection when only native tokens are remaining;
 - Fix cpufeatures advisory;
+- Input selection for sender and issuer features features;
 
 ## 2.0.0-beta.3 - 2022-08-30
 

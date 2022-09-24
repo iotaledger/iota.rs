@@ -4,17 +4,17 @@
 /** Secret manager that uses a Ledger Nano hardware wallet or Speculos simulator. */
 export interface LedgerNanoSecretManager {
     /** boolean indicates whether it's a simulator or not. */
-    LedgerNano: boolean;
+    ledgerNano: boolean;
 }
 
-/** Secret manager that uses only a mnemonic. */
+/** Secret manager that uses a mnemonic in plain memory. It's not recommended for production use. Use LedgerNano or Stronghold instead.. */
 export interface MnemonicSecretManager {
-    Mnemonic: string;
+    mnemonic: string;
 }
 
 /** Secret manager that uses Stronghold. */
 export interface StrongholdSecretManager {
-    Stronghold: {
+    stronghold: {
         password?: string;
         snapshotPath: string;
     };

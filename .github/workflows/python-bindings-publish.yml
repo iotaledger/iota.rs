@@ -50,6 +50,12 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      - name: Install required packages (Ubuntu)
+        if: ${{ startsWith(matrix.os, 'ubuntu') }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install libudev-dev libusb-1.0-0-dev
+
       - name: Build Wheels
         working-directory: bindings/python/native
         run: |

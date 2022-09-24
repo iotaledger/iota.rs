@@ -55,7 +55,7 @@ export class Client {
      */
     async getInfo(): Promise<INodeInfoWrapper> {
         const response = await this.messageHandler.sendMessage({
-            name: 'GetInfo',
+            name: 'getInfo',
         });
 
         return JSON.parse(response).payload;
@@ -66,7 +66,7 @@ export class Client {
      */
     async getNetworkInfo(): Promise<INetworkInfo> {
         const response = await this.messageHandler.sendMessage({
-            name: 'GetNetworkInfo',
+            name: 'getNetworkInfo',
         });
 
         return JSON.parse(response).payload;
@@ -75,7 +75,7 @@ export class Client {
     /** Fetch basic output IDs based on query parameters */
     async basicOutputIds(queryParameters: QueryParameter[]): Promise<string[]> {
         const response = await this.messageHandler.sendMessage({
-            name: 'BasicOutputIds',
+            name: 'basicOutputIds',
             data: {
                 queryParameters,
             },
@@ -87,7 +87,7 @@ export class Client {
     /** Get output from a known outputID */
     async getOutput(outputId: string): Promise<IOutputResponse> {
         const response = await this.messageHandler.sendMessage({
-            name: 'GetOutput',
+            name: 'getOutput',
             data: {
                 outputId,
             },
@@ -99,7 +99,7 @@ export class Client {
     /** Fetch OutputResponse from provided OutputIds (requests are sent in parallel) */
     async getOutputs(outputIds: string[]): Promise<IOutputResponse[]> {
         const response = await this.messageHandler.sendMessage({
-            name: 'GetOutputs',
+            name: 'getOutputs',
             data: {
                 outputIds,
             },
@@ -113,7 +113,7 @@ export class Client {
      */
     async generateMnemonic(): Promise<string> {
         const response = await this.messageHandler.sendMessage({
-            name: 'GenerateMnemonic',
+            name: 'generateMnemonic',
         });
 
         return JSON.parse(response).payload;
@@ -124,7 +124,7 @@ export class Client {
      */
     async mnemonicToHexSeed(mnemonic: string): Promise<string> {
         const response = await this.messageHandler.sendMessage({
-            name: 'MnemonicToHexSeed',
+            name: 'mnemonicToHexSeed',
             data: {
                 mnemonic,
             },
@@ -139,7 +139,7 @@ export class Client {
         generateAddressesOptions: IGenerateAddressesOptions,
     ): Promise<string[]> {
         const response = await this.messageHandler.sendMessage({
-            name: 'GenerateAddresses',
+            name: 'generateAddresses',
             data: {
                 secretManager,
                 options: generateAddressesOptions,
@@ -155,7 +155,7 @@ export class Client {
         options?: IBuildBlockOptions,
     ): Promise<[BlockId, IBlock]> {
         const response = await this.messageHandler.sendMessage({
-            name: 'BuildAndPostBlock',
+            name: 'buildAndPostBlock',
             data: {
                 secretManager,
                 options,
@@ -171,7 +171,7 @@ export class Client {
      */
     async getTips(): Promise<BlockId[]> {
         const response = await this.messageHandler.sendMessage({
-            name: 'GetTips',
+            name: 'getTips',
         });
 
         return JSON.parse(response).payload;
@@ -182,7 +182,7 @@ export class Client {
      */
     async postBlock(block: IBlock): Promise<BlockId> {
         const response = await this.messageHandler.sendMessage({
-            name: 'PostBlock',
+            name: 'postBlock',
             data: {
                 block,
             },
@@ -196,7 +196,7 @@ export class Client {
      */
     async getBlock(blockId: BlockId): Promise<IBlock> {
         const response = await this.messageHandler.sendMessage({
-            name: 'GetBlock',
+            name: 'getBlock',
             data: {
                 blockId,
             },
@@ -210,7 +210,7 @@ export class Client {
      */
     async getBlockMetadata(blockId: BlockId): Promise<IBlockMetadata> {
         const response = await this.messageHandler.sendMessage({
-            name: 'GetBlockMetadata',
+            name: 'getBlockMetadata',
             data: {
                 blockId,
             },
@@ -227,7 +227,7 @@ export class Client {
         amount: number,
     ): Promise<IUTXOInput[]> {
         const response = await this.messageHandler.sendMessage({
-            name: 'FindInputs',
+            name: 'findInputs',
             data: {
                 addresses,
                 amount,
@@ -246,7 +246,7 @@ export class Client {
         addresses: string[],
     ): Promise<IOutputResponse[]> {
         const response = await this.messageHandler.sendMessage({
-            name: 'FindOutputs',
+            name: 'findOutputs',
             data: {
                 outputIds,
                 addresses,
@@ -261,7 +261,7 @@ export class Client {
      */
     async getLedgerNanoStatus(isSimulator: boolean): Promise<LedgerNanoStatus> {
         const response = await this.messageHandler.sendMessage({
-            name: 'GetLedgerNanoStatus',
+            name: 'getLedgerNanoStatus',
             data: {
                 isSimulator,
             },
@@ -278,7 +278,7 @@ export class Client {
         options?: IBuildBlockOptions,
     ): Promise<IPreparedTransactionData> {
         const response = await this.messageHandler.sendMessage({
-            name: 'PrepareTransaction',
+            name: 'prepareTransaction',
             data: {
                 secretManager,
                 options,
@@ -296,7 +296,7 @@ export class Client {
         mnemonic: string,
     ): Promise<void> {
         const response = await this.messageHandler.sendMessage({
-            name: 'StoreMnemonic',
+            name: 'storeMnemonic',
             data: {
                 secretManager,
                 mnemonic,
@@ -314,7 +314,7 @@ export class Client {
         preparedTransactionData: IPreparedTransactionData,
     ): Promise<PayloadTypes> {
         const response = await this.messageHandler.sendMessage({
-            name: 'SignTransaction',
+            name: 'signTransaction',
             data: {
                 secretManager,
                 preparedTransactionData,
@@ -329,7 +329,7 @@ export class Client {
      */
     async submitPayload(payload: PayloadTypes): Promise<IBlock> {
         const response = await this.messageHandler.sendMessage({
-            name: 'SubmitPayload',
+            name: 'submitPayload',
             data: {
                 payload,
             },
@@ -343,7 +343,7 @@ export class Client {
      */
     async parseBech32Address(address: string): Promise<AddressTypes> {
         const response = await this.messageHandler.sendMessage({
-            name: 'ParseBech32Address',
+            name: 'parseBech32Address',
             data: {
                 address,
             },
@@ -357,7 +357,7 @@ export class Client {
      */
     async blockId(block: IBlock): Promise<BlockId> {
         const response = await this.messageHandler.sendMessage({
-            name: 'BlockId',
+            name: 'blockId',
             data: {
                 block,
             },
@@ -371,7 +371,7 @@ export class Client {
      */
     async getNode(): Promise<INode> {
         const response = await this.messageHandler.sendMessage({
-            name: 'GetNode',
+            name: 'getNode',
         });
 
         return JSON.parse(response).payload;
@@ -382,7 +382,7 @@ export class Client {
      */
     async getNetworkId(): Promise<number> {
         const response = await this.messageHandler.sendMessage({
-            name: 'GetNetworkId',
+            name: 'getNetworkId',
         });
 
         return JSON.parse(response).payload;
@@ -393,7 +393,7 @@ export class Client {
      */
     async getBech32Hrp(): Promise<string> {
         const response = await this.messageHandler.sendMessage({
-            name: 'GetBech32Hrp',
+            name: 'getBech32Hrp',
         });
 
         return JSON.parse(response).payload;
@@ -404,7 +404,7 @@ export class Client {
      */
     async getMinPowScore(): Promise<number> {
         const response = await this.messageHandler.sendMessage({
-            name: 'GetMinPowScore',
+            name: 'getMinPowScore',
         });
 
         return JSON.parse(response).payload;
@@ -415,7 +415,7 @@ export class Client {
      */
     async getTipsInterval(): Promise<number> {
         const response = await this.messageHandler.sendMessage({
-            name: 'GetTipsInterval',
+            name: 'getTipsInterval',
         });
 
         return JSON.parse(response).payload;
@@ -426,7 +426,7 @@ export class Client {
      */
     async getLocalPow(): Promise<boolean> {
         const response = await this.messageHandler.sendMessage({
-            name: 'GetLocalPow',
+            name: 'getLocalPow',
         });
 
         return JSON.parse(response).payload;
@@ -437,7 +437,7 @@ export class Client {
      */
     async getFallbackToLocalPow(): Promise<boolean> {
         const response = await this.messageHandler.sendMessage({
-            name: 'GetFallbackToLocalPow',
+            name: 'getFallbackToLocalPow',
         });
 
         return JSON.parse(response).payload;
@@ -448,7 +448,7 @@ export class Client {
      */
     async getHealth(url: string): Promise<boolean> {
         const response = await this.messageHandler.sendMessage({
-            name: 'GetHealth',
+            name: 'getHealth',
             data: {
                 url,
             },
@@ -462,7 +462,7 @@ export class Client {
      */
     async getNodeInfo(url: string, auth?: IAuth): Promise<INodeInfo> {
         const response = await this.messageHandler.sendMessage({
-            name: 'GetNodeInfo',
+            name: 'getNodeInfo',
             data: {
                 url,
                 auth,
@@ -477,7 +477,7 @@ export class Client {
      */
     async getPeers(): Promise<IPeer[]> {
         const response = await this.messageHandler.sendMessage({
-            name: 'GetPeers',
+            name: 'getPeers',
         });
 
         return JSON.parse(response).payload;
@@ -488,7 +488,7 @@ export class Client {
      */
     async postBlockRaw(block: IBlock): Promise<BlockId> {
         const response = await this.messageHandler.sendMessage({
-            name: 'PostBlockRaw',
+            name: 'postBlockRaw',
             data: {
                 block,
             },
@@ -500,9 +500,9 @@ export class Client {
     /**
      * Get block as raw bytes.
      */
-    async getBlockRaw(blockId: BlockId): Promise<number[]> {
+    async getBlockRaw(blockId: BlockId): Promise<Uint8Array> {
         const response = await this.messageHandler.sendMessage({
-            name: 'GetBlockRaw',
+            name: 'getBlockRaw',
             data: {
                 blockId,
             },
@@ -516,7 +516,7 @@ export class Client {
      */
     async getMilestoneById(milestoneId: string): Promise<IMilestonePayload> {
         const response = await this.messageHandler.sendMessage({
-            name: 'GetMilestoneById',
+            name: 'getMilestoneById',
             data: {
                 milestoneId,
             },
@@ -532,7 +532,7 @@ export class Client {
         milestoneId: string,
     ): Promise<IMilestoneUtxoChangesResponse> {
         const response = await this.messageHandler.sendMessage({
-            name: 'GetUtxoChangesById',
+            name: 'getUtxoChangesById',
             data: {
                 milestoneId,
             },
@@ -545,7 +545,7 @@ export class Client {
      */
     async getMilestoneByIndex(index: number): Promise<IMilestonePayload> {
         const response = await this.messageHandler.sendMessage({
-            name: 'GetMilestoneByIndex',
+            name: 'getMilestoneByIndex',
             data: {
                 index,
             },
@@ -561,7 +561,7 @@ export class Client {
         index: number,
     ): Promise<IMilestoneUtxoChangesResponse> {
         const response = await this.messageHandler.sendMessage({
-            name: 'GetUtxoChangesByIndex',
+            name: 'getUtxoChangesByIndex',
             data: {
                 index,
             },
@@ -575,7 +575,7 @@ export class Client {
      */
     async getReceipts(): Promise<IReceiptsResponse> {
         const response = await this.messageHandler.sendMessage({
-            name: 'GetReceipts',
+            name: 'getReceipts',
         });
 
         return JSON.parse(response).payload;
@@ -588,7 +588,7 @@ export class Client {
         milestoneIndex: number,
     ): Promise<IReceiptsResponse[]> {
         const response = await this.messageHandler.sendMessage({
-            name: 'GetReceiptsMigratedAt',
+            name: 'getReceiptsMigratedAt',
             data: {
                 milestoneIndex,
             },
@@ -602,7 +602,7 @@ export class Client {
      */
     async getTreasury(): Promise<ITreasury> {
         const response = await this.messageHandler.sendMessage({
-            name: 'GetTreasury',
+            name: 'getTreasury',
         });
 
         return JSON.parse(response).payload;
@@ -613,7 +613,7 @@ export class Client {
      */
     async getIncludedBlock(transactionId: string): Promise<IBlock> {
         const response = await this.messageHandler.sendMessage({
-            name: 'GetIncludedBlock',
+            name: 'getIncludedBlock',
             data: {
                 transactionId,
             },
@@ -627,7 +627,7 @@ export class Client {
      */
     async bech32ToHex(bech32: string): Promise<string> {
         const response = await this.messageHandler.sendMessage({
-            name: 'Bech32ToHex',
+            name: 'bech32ToHex',
             data: {
                 bech32,
             },
@@ -641,7 +641,7 @@ export class Client {
      */
     async hexToBech32(hex: string, bech32Hrp?: string): Promise<string> {
         const response = await this.messageHandler.sendMessage({
-            name: 'HexToBech32',
+            name: 'hexToBech32',
             data: {
                 hex,
                 bech32Hrp,
@@ -659,7 +659,7 @@ export class Client {
         bech32Hrp?: string,
     ): Promise<string> {
         const response = await this.messageHandler.sendMessage({
-            name: 'HexPublicKeyToBech32Address',
+            name: 'hexPublicKeyToBech32Address',
             data: {
                 hex,
                 bech32Hrp,
@@ -674,7 +674,7 @@ export class Client {
      */
     async isAddressValid(address: string): Promise<boolean> {
         const response = await this.messageHandler.sendMessage({
-            name: 'IsAddressValid',
+            name: 'isAddressValid',
             data: {
                 address,
             },
@@ -690,7 +690,7 @@ export class Client {
         queryParameters: AliasQueryParameter[],
     ): Promise<string[]> {
         const response = await this.messageHandler.sendMessage({
-            name: 'AliasOutputIds',
+            name: 'aliasOutputIds',
             data: {
                 queryParameters,
             },
@@ -704,7 +704,7 @@ export class Client {
      */
     async aliasOutputId(aliasId: string): Promise<string> {
         const response = await this.messageHandler.sendMessage({
-            name: 'AliasOutputId',
+            name: 'aliasOutputId',
             data: {
                 aliasId,
             },
@@ -720,7 +720,7 @@ export class Client {
         queryParameters: NftQueryParameter[],
     ): Promise<string[]> {
         const response = await this.messageHandler.sendMessage({
-            name: 'NftOutputIds',
+            name: 'nftOutputIds',
             data: {
                 queryParameters,
             },
@@ -734,7 +734,7 @@ export class Client {
      */
     async nftOutputId(nftId: string): Promise<string> {
         const response = await this.messageHandler.sendMessage({
-            name: 'NftOutputId',
+            name: 'nftOutputId',
             data: {
                 nftId,
             },
@@ -750,7 +750,7 @@ export class Client {
         queryParameters: FoundryQueryParameter[],
     ): Promise<string[]> {
         const response = await this.messageHandler.sendMessage({
-            name: 'FoundryOutputIds',
+            name: 'foundryOutputIds',
             data: {
                 queryParameters,
             },
@@ -764,7 +764,7 @@ export class Client {
      */
     async foundryOutputId(foundryId: string): Promise<string> {
         const response = await this.messageHandler.sendMessage({
-            name: 'FoundryOutputId',
+            name: 'foundryOutputId',
             data: {
                 foundryId,
             },
@@ -779,7 +779,7 @@ export class Client {
      */
     async tryGetOutputs(outputIds: string[]): Promise<IOutputResponse[]> {
         const response = await this.messageHandler.sendMessage({
-            name: 'TryGetOutputs',
+            name: 'tryGetOutputs',
             data: {
                 outputIds,
             },
@@ -793,7 +793,7 @@ export class Client {
      */
     async findBlocks(blockIds: BlockId[]): Promise<IBlock[]> {
         const response = await this.messageHandler.sendMessage({
-            name: 'FindBlocks',
+            name: 'findBlocks',
             data: {
                 blockIds,
             },
@@ -808,7 +808,7 @@ export class Client {
      */
     async retry(blockId: BlockId): Promise<[BlockId, IBlock]> {
         const response = await this.messageHandler.sendMessage({
-            name: 'Retry',
+            name: 'retry',
             data: {
                 blockId,
             },
@@ -828,7 +828,7 @@ export class Client {
         maxAttempts?: number,
     ): Promise<[BlockId, IBlock][]> {
         const response = await this.messageHandler.sendMessage({
-            name: 'RetryUntilIncluded',
+            name: 'retryUntilIncluded',
             data: {
                 blockId,
                 interval,
@@ -848,7 +848,7 @@ export class Client {
         generateAddressesOptions: IGenerateAddressesOptions,
     ): Promise<string> {
         const response = await this.messageHandler.sendMessage({
-            name: 'ConsolidateFunds',
+            name: 'consolidateFunds',
             data: {
                 secretManager,
                 generateAddressesOptions,
@@ -864,7 +864,7 @@ export class Client {
      */
     async reattach(blockId: BlockId): Promise<[BlockId, IBlock]> {
         const response = await this.messageHandler.sendMessage({
-            name: 'Reattach',
+            name: 'reattach',
             data: {
                 blockId,
             },
@@ -878,7 +878,7 @@ export class Client {
      */
     async reattachUnchecked(blockId: BlockId): Promise<[BlockId, IBlock]> {
         const response = await this.messageHandler.sendMessage({
-            name: 'ReattachUnchecked',
+            name: 'reattachUnchecked',
             data: {
                 blockId,
             },
@@ -893,7 +893,7 @@ export class Client {
      */
     async promote(blockId: BlockId): Promise<[BlockId, IBlock]> {
         const response = await this.messageHandler.sendMessage({
-            name: 'Promote',
+            name: 'promote',
             data: {
                 blockId,
             },
@@ -906,7 +906,7 @@ export class Client {
      */
     async promoteUnchecked(blockId: BlockId): Promise<[BlockId, IBlock]> {
         const response = await this.messageHandler.sendMessage({
-            name: 'PromoteUnchecked',
+            name: 'promoteUnchecked',
             data: {
                 blockId,
             },
@@ -920,7 +920,7 @@ export class Client {
      */
     async unsyncedNodes(): Promise<Set<INode>> {
         const response = await this.messageHandler.sendMessage({
-            name: 'UnsyncedNodes',
+            name: 'unsyncedNodes',
         });
 
         return JSON.parse(response).payload;
@@ -933,7 +933,7 @@ export class Client {
         options: IBasicOutputBuilderOptions,
     ): Promise<IBasicOutput> {
         const response = await this.messageHandler.sendMessage({
-            name: 'BuildBasicOutput',
+            name: 'buildBasicOutput',
             data: options,
         });
 
@@ -947,7 +947,7 @@ export class Client {
         options: IAliasOutputBuilderOptions,
     ): Promise<IAliasOutput> {
         const response = await this.messageHandler.sendMessage({
-            name: 'BuildAliasOutput',
+            name: 'buildAliasOutput',
             data: options,
         });
 
@@ -961,7 +961,7 @@ export class Client {
         options: IFoundryOutputBuilderOptions,
     ): Promise<IFoundryOutput> {
         const response = await this.messageHandler.sendMessage({
-            name: 'BuildFoundryOutput',
+            name: 'buildFoundryOutput',
             data: options,
         });
 
@@ -975,7 +975,7 @@ export class Client {
         options: INftOutputBuilderOptions,
     ): Promise<INftOutput> {
         const response = await this.messageHandler.sendMessage({
-            name: 'BuildNftOutput',
+            name: 'buildNftOutput',
             data: options,
         });
 

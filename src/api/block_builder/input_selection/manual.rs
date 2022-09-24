@@ -24,10 +24,9 @@ use crate::{
 impl<'a> ClientBlockBuilder<'a> {
     /// If custom inputs are provided we check if they are unspent, get the balance and search the Ed25519 addresses for
     /// them with the provided input_range so we can later sign them.
-    /// Forwards to [try_select_inputs()] with `force_use_all_inputs` set to true, so all inputs will be included in the
-    /// transaction, even if not required for the provided outputs.
-    /// Careful with setting `allow_burning` to `true`, native tokens, nfts or alias outputs can get easily burned by
-    /// accident.
+    /// Forwards to [try_select_inputs()] with all inputs in `mandatory_inputs`, so they will all be included in the
+    /// transaction, even if not required for the provided outputs. Careful with setting `allow_burning` to `true`,
+    /// native tokens, nfts or alias outputs can get easily burned by accident.
     pub(crate) async fn get_custom_inputs(
         &self,
         governance_transition: Option<HashSet<AliasId>>,
@@ -35,9 +34,10 @@ impl<'a> ClientBlockBuilder<'a> {
         allow_burning: bool,
     ) -> Result<SelectedTransactionData> {
         log::debug!("[get_custom_inputs]");
-        let mut inputs_data = Vec::new();
 
+        let mut inputs_data = Vec::new();
         let current_time = self.client.get_time_checked().await?;
+
         if let Some(inputs) = &self.inputs {
             for input in inputs {
                 let output_response = self.client.get_output(input.output_id()).await?;
@@ -65,11 +65,11 @@ impl<'a> ClientBlockBuilder<'a> {
                                     )
                                     .await?,
                                 ),
-                                // Alias and NFT addresses can't be generated from a private key
+                                // Alias and NFT addresses can't be generated from a private key.
                                 _ => None,
                             }
                         }
-                        // Assuming default for offline signing
+                        // Assuming default for offline signing.
                         None => Some((0, false)),
                     };
 
@@ -90,15 +90,17 @@ impl<'a> ClientBlockBuilder<'a> {
                 }
             }
         }
+
         let selected_transaction_data = try_select_inputs(
             inputs_data,
+            Vec::new(),
             self.outputs.clone(),
-            true,
             self.custom_remainder_address,
             rent_structure,
             allow_burning,
             current_time,
         )?;
+
         Ok(selected_transaction_data)
     }
 }

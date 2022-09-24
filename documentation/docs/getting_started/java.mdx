@@ -1,0 +1,98 @@
+---
+description: Getting started with the official IOTA Client Library Java binding.
+image: /img/logo/iota_mark_light.png
+keywords:
+
+- Java
+- Rust
+- jar
+- Gradle
+
+---
+import WarningPasswordStorage from '../_admonitions/_password_storage.md';
+
+# Getting Started with Java
+
+## Security
+
+<WarningPasswordStorage/>
+
+## Requirements
+
+* The latest [Java Development Kit (JDK)](https://www.oracle.com/java/technologies/downloads/).
+* [Rust and Cargo](https://doc.rust-lang.org/cargo/getting-started/installation.html) to compile the binding.
+* (for Linux only) `libudev`. You can install it with `apt install libudev-dev`.
+
+## Build the JAR for Your Operating System (Linux, macOS, Windows)
+
+To use the IOTA Java Client Library in your Java project, you must first build the library JAR for your operating
+system.
+
+### Clone the Repository
+
+You can clone the [iota.rs client library](https://github.com/iotaledger/iota.rs) by running the following command:
+
+```bash
+git clone git@github.com:iotaledger/iota.rs.git
+```
+
+### Change to the Java Binding Directory
+
+After you have cloned the repository, you should change directory to `iota.rs/bindings/java/iota-client-java`. You can do so by
+running the following command:
+
+```bash
+cd iota.rs/bindings/java/iota-client-java
+```
+
+### Make `gradlew` Executable
+
+If needed, you can make the `gradlew` file executable by running the following command:
+
+```bash
+chmod +x gradlew
+```
+
+### Build Your JAR
+
+You can now build your JAR file by running the following command:
+
+```bash
+./gradlew jar
+```
+
+This will produce a `JAR` file in `build/libs/` which you can add to your Java project.
+
+## Use the Library
+
+After you linked the library, you can create a Client instance and interface with it as shown in the following snippet:
+
+```java
+import org.iota.Client;
+import org.iota.types.ClientConfig;
+import org.iota.types.ClientException;
+import org.iota.types.responses.NodeInfoResponse;
+
+public class HelloWorld {
+    public static void main(String[] args) throws ClientException {
+        // Build the client.
+        Client client = new Client(new ClientConfig().withNodes(new String[]{"https://api.testnet.shimmer.network"}));
+
+        // Get the node information for a given node.
+        NodeInfoResponse response = client.getNodeInfo();
+
+        // Print the URL of the node that was requested.
+        System.out.println(response.getNodeUrl());
+
+        // Print the node information for the requested node.
+        System.out.println(response.getNodeInfo());
+    }
+}
+```
+
+## Keep Learning
+
+Now that you are up and running, you can get acquainted with the library using
+its [how-to guides](../how_tos/00_run_how_tos.mdx) and the
+repository's [code example project ](https://github.com/iotaledger/iota.rs/tree/develop/bindings/java/iota-client-java/examples/ExampleProject/src).
+

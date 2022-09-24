@@ -28,7 +28,7 @@ async function run() {
         }
 
         const secretManager = {
-            Mnemonic: process.env.NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1,
+            mnemonic: process.env.NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1,
         };
 
         // Generates addresses offline.

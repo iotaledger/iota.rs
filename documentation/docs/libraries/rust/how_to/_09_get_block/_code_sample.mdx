@@ -1,0 +1,19 @@
+import CodeBlock from '@theme/CodeBlock';
+import GetBlock from '!!raw-loader!../../../../../../examples/node_api_core/06_get_block.rs';
+import DotEnvWarning from "../../../../_admonitions/_dot_env_warning.md"
+
+<DotEnvWarning/>
+<CodeBlock className="language-rust">
+    {GetBlock}
+</CodeBlock>
+
+### Run the Example
+
+Run the example by running the following command:
+
+<CodeBlock className="language-bash">
+    cargo run --example node_api_core_get_block --release -- https://api.testnet.shimmer.network 0xa9f11aba1e9965173dc21a47ec4fbfe5b953a6e60277857a3f7a5c1499e7c454
+</CodeBlock>
+
+* You can replace `https://api.testnet.shimmer.network` with any node url.
+* You can replace `0x78680faa5ee34d77399ad7eff5fec9b9ceb99fea86822a16f57f49aa69771ee5` with any other Block ID.

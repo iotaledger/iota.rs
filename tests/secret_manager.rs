@@ -5,7 +5,7 @@ use iota_client::{api::GetAddressesBuilder, constants::SHIMMER_TESTNET_BECH32_HR
 
 #[tokio::test]
 async fn mnemonic_secret_manager_dto() -> Result<()> {
-    let dto = r#"{"Mnemonic": "acoustic trophy damage hint search taste love bicycle foster cradle brown govern endless depend situate athlete pudding blame question genius transfer van random vast"}"#;
+    let dto = r#"{"mnemonic": "acoustic trophy damage hint search taste love bicycle foster cradle brown govern endless depend situate athlete pudding blame question genius transfer van random vast"}"#;
     let secret_manager: SecretManager = dto.parse()?;
 
     let addresses = GetAddressesBuilder::new(&secret_manager)
@@ -27,7 +27,7 @@ async fn mnemonic_secret_manager_dto() -> Result<()> {
 #[cfg(feature = "stronghold")]
 #[tokio::test]
 async fn stronghold_secret_manager_dto() -> Result<()> {
-    let dto = r#"{"Stronghold": {"password": "some_hopefully_secure_password", "snapshotPath": "snapshot_test_dir/test.stronghold"}}"#;
+    let dto = r#"{"stronghold": {"password": "some_hopefully_secure_password", "snapshotPath": "snapshot_test_dir/test.stronghold"}}"#;
     let mnemonic = String::from(
         "acoustic trophy damage hint search taste love bicycle foster cradle brown govern endless depend situate athlete pudding blame question genius transfer van random vast",
     );

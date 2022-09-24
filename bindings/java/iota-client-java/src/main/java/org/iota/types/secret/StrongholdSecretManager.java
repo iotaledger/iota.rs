@@ -34,7 +34,7 @@ public class StrongholdSecretManager extends SecretManager {
         dto.addProperty("snapshotPath", snapshotPath);
 
         JsonObject o = new JsonObject();
-        o.add("Stronghold", dto);
+        o.add("stronghold", dto);
 
         return o;
     }

@@ -12,12 +12,13 @@ keywords:
 
 There are currently available the following official bindings to `iota.rs`:
 
-- [Rust](rust/getting_started.mdx) 
-- [Node.js](nodejs/getting_started.md) 
-- [Python](python/getting_started.md) 
-- [Java](java/getting_started.md) 
+- [Rust](../getting_started/rust.mdx) 
+- [Node.js](../getting_started/nodejs.mdx) 
+- [Python](../getting_started/python.mdx) 
+- [Java](../getting_started/java.mdx) 
 
 ## Getting Started
+
 It is a recommended approach to start your interactions with IOTA on a `testnet` network. API load balancer: https://api.testnet.shimmer.network
 
 Network explorer is available at [IOTA Tangle Explorer](https://explorer.shimmer.network/testnet).

@@ -27,7 +27,7 @@ async function run() {
         }
 
         const secretManager = {
-            Mnemonic: process.env.NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1,
+            mnemonic: process.env.NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1,
         };
 
         // Read in prepared transaction from example 2_transaction_preparation
