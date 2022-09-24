@@ -130,20 +130,24 @@ impl FromStr for SecretManager {
 
 /// DTO for secret manager types with required data.
 #[derive(Debug, Clone, Serialize, Deserialize, ZeroizeOnDrop)]
-#[serde(rename_all = "camelCase")]
 pub enum SecretManagerDto {
     /// Stronghold
     #[cfg(feature = "stronghold")]
     #[cfg_attr(docsrs, doc(cfg(feature = "stronghold")))]
+    #[serde(alias = "stronghold")]
     Stronghold(StrongholdDto),
     /// Ledger Device, bool specifies if it's a simulator or not
     #[cfg(feature = "ledger_nano")]
+    #[serde(alias = "ledgerNano")]
     LedgerNano(bool),
     /// Mnemonic
+    #[serde(alias = "mnemonic")]
     Mnemonic(String),
     /// Hex seed
+    #[serde(alias = "hexSeed")]
     HexSeed(String),
     /// Placeholder
+    #[serde(alias = "placeholder")]
     Placeholder,
 }
 
