@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `finish_pow` function to avoid the caller having to check for wasm family;
 - Debug logs for GET requests;
+- Added `#[serde(rename_all = "camelCase")]` to enums and aliases for `SecretManagerDto` and `LedgerDeviceType` fields;
 
 ### Changed
 
