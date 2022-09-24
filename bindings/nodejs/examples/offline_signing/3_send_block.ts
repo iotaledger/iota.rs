@@ -29,10 +29,13 @@ async function run() {
         );
 
         // Send block with the signed transaction as a payload
-        const blockIdAndBlock = await onlineClient.postBlockPayload(signedTransaction);
+        const blockIdAndBlock = await onlineClient.postBlockPayload(
+            signedTransaction,
+        );
 
         console.log(
-            `Transaction sent: ${process.env.EXPLORER_URL}/block/` + blockIdAndBlock[0],
+            `Transaction sent: ${process.env.EXPLORER_URL}/block/` +
+                blockIdAndBlock[0],
         );
     } catch (error) {
         console.error(error);
