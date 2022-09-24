@@ -287,7 +287,7 @@ impl ClientBuilder {
         let network_info = Arc::new(RwLock::new(self.network_info));
 
         #[cfg(target_family = "wasm")]
-        let (sync, network_info) = (Arc::new(RwLock::new(HashSet::new())), network_info);
+        let (healthy_nodes, network_info) = (Arc::new(RwLock::new(HashSet::new())), network_info);
         #[cfg(not(target_family = "wasm"))]
         let (runtime, healthy_nodes, sync_kill_sender, network_info) = if self.node_manager_builder.node_sync_enabled {
             let nodes = self
