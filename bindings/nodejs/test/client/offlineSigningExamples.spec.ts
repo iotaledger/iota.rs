@@ -34,12 +34,12 @@ describe('Offline signing examples', () => {
         const addresses = await offlineClient.generateAddresses(secretManager, {
             range: {
                 start: 0,
-                end: 10,
+                end: 1,
             },
             bech32Hrp: SHIMMER_TESTNET_BECH32_HRP,
         });
 
-        expect(addresses.length).toBe(10);
+        expect(addresses.length).toBe(1);
         addresses.forEach((address) => {
             expect(address).toBeValidAddress();
         });
@@ -75,7 +75,7 @@ describe('Offline signing examples', () => {
     // transaction tests disabled for workflows, because they fail if we don't have funds
     it.skip('sends a transaction', async () => {
         // Send block with the signed transaction as a payload
-        const block = await onlineClient.submitPayload(
+        const block = await onlineClient.postBlockPayload(
             // Imported JSON is typed with literal types
             signedTransactionJson as unknown as PayloadTypes,
         );

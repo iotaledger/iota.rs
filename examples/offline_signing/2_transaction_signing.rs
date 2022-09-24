@@ -54,9 +54,11 @@ fn read_prepared_transaction_from_file<P: AsRef<Path>>(path: P) -> Result<Prepar
     let mut json = String::new();
     file.read_to_string(&mut json).unwrap();
 
+    // TODO: read from file https://github.com/iotaledger/iota.rs/issues/1267
+    // Make sure that these values match the network you use.
     let protocol_parameters = ProtocolParameters::new(
         2,
-        String::from("shimmer"),
+        String::from("testnet"),
         String::from("smr"),
         1500,
         15,
