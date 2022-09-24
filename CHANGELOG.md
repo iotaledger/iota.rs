@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `finish_pow` function to avoid the caller having to check for wasm family;
+- Added `#[serde(rename_all = "camelCase")]` to enums and aliases for `SecretManagerDto` and `LedgerDeviceType` fields;
 
 ### Changed
 
@@ -33,7 +34,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cleaned up error enum;
 - Replaced `force_use_all_inputs` in `try_select_inputs()` with `mandatory_inputs`;
 - Rename `inputs` parameter in `try_select_inputs()` to `additional_inputs`;
-- Added `#[serde(rename_all = "camelCase")]` to enums;
 
 ### Fixed
 
