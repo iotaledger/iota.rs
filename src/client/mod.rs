@@ -31,7 +31,6 @@ use crate::{
 };
 
 /// An instance of the client using HORNET or Bee URI
-// #[cfg_attr(target_family = "wasm", derive(Clone))]
 #[derive(Clone)]
 pub struct Client {
     #[allow(dead_code)]
