@@ -3,16 +3,14 @@
 
 //! Builder of the Client Instance
 use std::{
+    collections::HashSet,
     sync::{Arc, RwLock},
     time::Duration,
 };
 
 use bee_block::protocol::ProtocolParameters;
 #[cfg(not(target_family = "wasm"))]
-use {
-    std::collections::HashSet,
-    tokio::{runtime::Runtime, sync::broadcast::channel},
-};
+use tokio::{runtime::Runtime, sync::broadcast::channel};
 
 #[cfg(feature = "mqtt")]
 use crate::node_api::mqtt::{BrokerOptions, MqttEvent};
@@ -286,10 +284,10 @@ impl ClientBuilder {
     pub fn finish(self) -> Result<Client> {
         let network_info = Arc::new(RwLock::new(self.network_info));
 
-        #[cfg(target_family = "wasm")]
-        let (healthy_nodes, network_info) = (Arc::new(RwLock::new(HashSet::new())), network_info);
+        let healthy_nodes = Arc::new(RwLock::new(HashSet::new()));
+
         #[cfg(not(target_family = "wasm"))]
-        let (runtime, healthy_nodes, sync_kill_sender, network_info) = if self.node_manager_builder.node_sync_enabled {
+        let (runtime, sync_kill_sender) = if self.node_manager_builder.node_sync_enabled {
             let nodes = self
                 .node_manager_builder
                 .primary_node
@@ -298,7 +296,6 @@ impl ClientBuilder {
                 .map(|node| node.clone().into())
                 .collect();
 
-            let healthy_nodes = Arc::new(RwLock::new(HashSet::new()));
             let healthy_nodes_ = healthy_nodes.clone();
             let network_info_ = network_info.clone();
             let (sync_kill_sender, sync_kill_receiver) = channel(1);
@@ -320,14 +317,9 @@ impl ClientBuilder {
             })
             .join()
             .expect("failed to init node syncing process");
-            (
-                Some(Arc::new(runtime)),
-                healthy_nodes,
-                Some(sync_kill_sender),
-                network_info,
-            )
+            (Some(Arc::new(runtime)), Some(sync_kill_sender))
         } else {
-            (None, Arc::new(RwLock::new(HashSet::new())), None, network_info)
+            (None, None)
         };
 
         #[cfg(feature = "mqtt")]
