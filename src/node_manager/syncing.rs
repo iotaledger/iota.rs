@@ -1,22 +1,22 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use std::{
-    collections::HashSet,
-    sync::{Arc, RwLock},
-    time::Duration,
-};
-
-use bee_api_types::responses::InfoResponse as NodeInfo;
-use bee_block::protocol::ProtocolParameters;
 #[cfg(not(target_family = "wasm"))]
 use {
+    crate::builder::NetworkInfo,
+    bee_api_types::responses::InfoResponse as NodeInfo,
+    bee_block::protocol::ProtocolParameters,
     std::collections::HashMap,
+    std::{
+        collections::HashSet,
+        sync::{Arc, RwLock},
+        time::Duration,
+    },
     tokio::{runtime::Runtime, sync::broadcast::Receiver, time::sleep},
 };
 
 use super::Node;
-use crate::{builder::NetworkInfo, Client, Error, Result};
+use crate::{Client, Error, Result};
 
 impl Client {
     /// Get a node candidate from the healthy node pool.

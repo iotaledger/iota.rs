@@ -144,8 +144,8 @@ export interface __StoreMnemonicMessage__ {
     };
 }
 
-export interface __SubmitPayloadMessage__ {
-    name: 'submitPayload';
+export interface __PostBlockPayloadMessage__ {
+    name: 'postBlockPayload';
     data: {
         payload: PayloadTypes;
     };

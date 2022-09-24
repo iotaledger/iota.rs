@@ -327,9 +327,9 @@ export class Client {
     /**
      * Submit a payload in a block
      */
-    async submitPayload(payload: PayloadTypes): Promise<IBlock> {
+    async postBlockPayload(payload: PayloadTypes): Promise<IBlock> {
         const response = await this.messageHandler.sendMessage({
-            name: 'submitPayload',
+            name: 'postBlockPayload',
             data: {
                 payload,
             },

@@ -188,6 +188,6 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
     def submit_payload(self, payload_dto):
         """Submit a payload in a block.
         """
-        return self.send_message('submitPayload', {
+        return self.send_message('postBlockPayload', {
             'payloadDto': payload_dto
         })

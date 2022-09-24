@@ -1,7 +1,7 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use std::{collections::HashSet, str::FromStr, time::Duration};
+use std::{collections::HashSet, str::FromStr};
 
 use bee_api_types::{dtos::LedgerInclusionStateDto, responses::OutputResponse};
 use bee_block::{
@@ -14,7 +14,7 @@ use bee_block::{
     Block, BlockId,
 };
 #[cfg(not(target_family = "wasm"))]
-use tokio::time::sleep;
+use {std::time::Duration, tokio::time::sleep};
 
 use super::Client;
 use crate::{
