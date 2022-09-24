@@ -327,7 +327,7 @@ impl<'a> ClientBlockBuilder<'a> {
         }
         if !self.outputs.is_empty() {
             if self.secret_manager.is_none() && self.inputs.is_none() {
-                return Err(Error::MissingParameter("Seed"));
+                return Err(Error::MissingParameter("seed"));
             }
             // Send block with transaction
             let prepared_transaction_data = self.prepare_transaction().await?;

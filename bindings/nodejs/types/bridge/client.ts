@@ -17,43 +17,43 @@ import type { IFoundryOutputBuilderOptions } from '../outputBuilderOptions/found
 import type { INftOutputBuilderOptions } from '../outputBuilderOptions/nftOutputOptions';
 
 export interface __GetInfoMessage__ {
-    name: 'GetInfo';
+    name: 'getInfo';
 }
 
 export interface __GetOutputMessage__ {
-    name: 'GetOutput';
+    name: 'getOutput';
     data: {
         outputId: string;
     };
 }
 
 export interface __GetBasicOutputIdsMessage__ {
-    name: 'BasicOutputIds';
+    name: 'basicOutputIds';
     data: {
         queryParameters: QueryParameter[];
     };
 }
 
 export interface __GetOutputsMessage__ {
-    name: 'GetOutputs';
+    name: 'getOutputs';
     data: {
         outputIds: string[];
     };
 }
 
 export interface __GenerateMnemonicMessage__ {
-    name: 'GenerateMnemonic';
+    name: 'generateMnemonic';
 }
 
 export interface __MnemonicToHexSeedMessage__ {
-    name: 'MnemonicToHexSeed';
+    name: 'mnemonicToHexSeed';
     data: {
         mnemonic: string;
     };
 }
 
 export interface __GenerateAddressesMessage__ {
-    name: 'GenerateAddresses';
+    name: 'generateAddresses';
     data: {
         secretManager: SecretManager;
         options: IGenerateAddressesOptions;
@@ -61,14 +61,14 @@ export interface __GenerateAddressesMessage__ {
 }
 
 export interface __PostBlockMessage__ {
-    name: 'PostBlock';
+    name: 'postBlock';
     data: {
         block: IBlock;
     };
 }
 
 export interface __BuildAndPostBlockMessage__ {
-    name: 'BuildAndPostBlock';
+    name: 'buildAndPostBlock';
     data: {
         secretManager?: SecretManager;
         options?: IBuildBlockOptions;
@@ -76,29 +76,29 @@ export interface __BuildAndPostBlockMessage__ {
 }
 
 export interface __GetTipsMessage__ {
-    name: 'GetTips';
+    name: 'getTips';
 }
 
 export interface __GetNetworkInfoMessage__ {
-    name: 'GetNetworkInfo';
+    name: 'getNetworkInfo';
 }
 
 export interface __GetBlockMessage__ {
-    name: 'GetBlock';
+    name: 'getBlock';
     data: {
         blockId: BlockId;
     };
 }
 
 export interface __GetBlockMetadataMessage__ {
-    name: 'GetBlockMetadata';
+    name: 'getBlockMetadata';
     data: {
         blockId: BlockId;
     };
 }
 
 export interface __FindInputsMessage__ {
-    name: 'FindInputs';
+    name: 'findInputs';
     data: {
         addresses: string[];
         amount: number;
@@ -106,7 +106,7 @@ export interface __FindInputsMessage__ {
 }
 
 export interface __FindOutputsMessage__ {
-    name: 'FindOutputs';
+    name: 'findOutputs';
     data: {
         outputIds: string[];
         addresses: string[];
@@ -114,14 +114,14 @@ export interface __FindOutputsMessage__ {
 }
 
 export interface __GetLedgerNanoStatusMessage__ {
-    name: 'GetLedgerNanoStatus';
+    name: 'getLedgerNanoStatus';
     data: {
         isSimulator: boolean;
     };
 }
 
 export interface __PrepareTransactionMessage__ {
-    name: 'PrepareTransaction';
+    name: 'prepareTransaction';
     data: {
         secretManager?: SecretManager;
         options?: IBuildBlockOptions;
@@ -129,7 +129,7 @@ export interface __PrepareTransactionMessage__ {
 }
 
 export interface __SignTransactionMessage__ {
-    name: 'SignTransaction';
+    name: 'signTransaction';
     data: {
         secretManager: SecretManager;
         preparedTransactionData: IPreparedTransactionData;
@@ -137,7 +137,7 @@ export interface __SignTransactionMessage__ {
 }
 
 export interface __StoreMnemonicMessage__ {
-    name: 'StoreMnemonic';
+    name: 'storeMnemonic';
     data: {
         secretManager: SecretManager;
         mnemonic: string;
@@ -145,63 +145,63 @@ export interface __StoreMnemonicMessage__ {
 }
 
 export interface __SubmitPayloadMessage__ {
-    name: 'SubmitPayload';
+    name: 'submitPayload';
     data: {
         payload: PayloadTypes;
     };
 }
 
 export interface __ParseBech32AddressMessage__ {
-    name: 'ParseBech32Address';
+    name: 'parseBech32Address';
     data: {
         address: string;
     };
 }
 
 export interface __BlockIdMessage__ {
-    name: 'BlockId';
+    name: 'blockId';
     data: {
         block: IBlock;
     };
 }
 
 export interface __GetNodeMessage__ {
-    name: 'GetNode';
+    name: 'getNode';
 }
 
 export interface __GetNetworkIdMessage__ {
-    name: 'GetNetworkId';
+    name: 'getNetworkId';
 }
 
 export interface __GetBech32HrpMessage__ {
-    name: 'GetBech32Hrp';
+    name: 'getBech32Hrp';
 }
 
 export interface __GetMinPowScoreMessage__ {
-    name: 'GetMinPowScore';
+    name: 'getMinPowScore';
 }
 
 export interface __GetTipsIntervalMessage__ {
-    name: 'GetTipsInterval';
+    name: 'getTipsInterval';
 }
 
 export interface __GetLocalPowMessage__ {
-    name: 'GetLocalPow';
+    name: 'getLocalPow';
 }
 
 export interface __GetFallbackToLocalPowMessage__ {
-    name: 'GetFallbackToLocalPow';
+    name: 'getFallbackToLocalPow';
 }
 
 export interface __GetHealthMessage__ {
-    name: 'GetHealth';
+    name: 'getHealth';
     data: {
         url: string;
     };
 }
 
 export interface __GetNodeInfoMessage__ {
-    name: 'GetNodeInfo';
+    name: 'getNodeInfo';
     data: {
         url: string;
         auth?: IAuth;
@@ -209,81 +209,81 @@ export interface __GetNodeInfoMessage__ {
 }
 
 export interface __GetPeersMessage__ {
-    name: 'GetPeers';
+    name: 'getPeers';
 }
 
 export interface __PostBlockRawMessage__ {
-    name: 'PostBlockRaw';
+    name: 'postBlockRaw';
     data: {
         block: IBlock;
     };
 }
 
 export interface __GetBlockRawMessage__ {
-    name: 'GetBlockRaw';
+    name: 'getBlockRaw';
     data: {
         blockId: BlockId;
     };
 }
 
 export interface __GetMilestoneByIdMessage__ {
-    name: 'GetMilestoneById';
+    name: 'getMilestoneById';
     data: {
         milestoneId: string;
     };
 }
 
 export interface __GetUtxoChangesByIdMessage__ {
-    name: 'GetUtxoChangesById';
+    name: 'getUtxoChangesById';
     data: {
         milestoneId: string;
     };
 }
 export interface __GetMilestoneByIndexMessage__ {
-    name: 'GetMilestoneByIndex';
+    name: 'getMilestoneByIndex';
     data: {
         index: number;
     };
 }
 
 export interface __GetUtxoChangesByIndexMessage__ {
-    name: 'GetUtxoChangesByIndex';
+    name: 'getUtxoChangesByIndex';
     data: {
         index: number;
     };
 }
 
 export interface __GetReceiptsMessage__ {
-    name: 'GetReceipts';
+    name: 'getReceipts';
 }
 
 export interface __GetReceiptsMigratedAtMessage__ {
-    name: 'GetReceiptsMigratedAt';
+    name: 'getReceiptsMigratedAt';
     data: {
         milestoneIndex: number;
     };
 }
 
 export interface __GetTreasuryMessage__ {
-    name: 'GetTreasury';
+    name: 'getTreasury';
 }
 
 export interface __GetIncludedBlockMessage__ {
-    name: 'GetIncludedBlock';
+    name: 'getIncludedBlock';
     data: {
         transactionId: string;
     };
 }
 
 export interface __Bech32ToHexMessage__ {
-    name: 'Bech32ToHex';
+    name: 'bech32ToHex';
     data: {
         bech32: string;
     };
 }
 
 export interface __HexToBech32Message__ {
-    name: 'HexToBech32';
+    name: 'hexToBech32';
     data: {
         hex: string;
         bech32Hrp?: string;
@@ -291,7 +291,7 @@ export interface __HexToBech32Message__ {
 }
 
 export interface __HexPublicKeyToBech32AddressMessage__ {
-    name: 'HexPublicKeyToBech32Address';
+    name: 'hexPublicKeyToBech32Address';
     data: {
         hex: string;
         bech32Hrp?: string;
@@ -299,77 +299,77 @@ export interface __HexPublicKeyToBech32AddressMessage__ {
 }
 
 export interface __IsAddressValidMessage__ {
-    name: 'IsAddressValid';
+    name: 'isAddressValid';
     data: {
         address: string;
     };
 }
 
 export interface __AliasOutputIdsMessage__ {
-    name: 'AliasOutputIds';
+    name: 'aliasOutputIds';
     data: {
         queryParameters: AliasQueryParameter[];
     };
 }
 
 export interface __AliasOutputIdMessage__ {
-    name: 'AliasOutputId';
+    name: 'aliasOutputId';
     data: {
         aliasId: string;
     };
 }
 
 export interface __NftOutputIdsMessage__ {
-    name: 'NftOutputIds';
+    name: 'nftOutputIds';
     data: {
         queryParameters: NftQueryParameter[];
     };
 }
 
 export interface __NftOutputIdMessage__ {
-    name: 'NftOutputId';
+    name: 'nftOutputId';
     data: {
         nftId: string;
     };
 }
 
 export interface __FoundryOutputIdsMessage__ {
-    name: 'FoundryOutputIds';
+    name: 'foundryOutputIds';
     data: {
         queryParameters: FoundryQueryParameter[];
     };
 }
 
 export interface __FoundryOutputIdMessage__ {
-    name: 'FoundryOutputId';
+    name: 'foundryOutputId';
     data: {
         foundryId: string;
     };
 }
 
 export interface __TryGetOutputsMessage__ {
-    name: 'TryGetOutputs';
+    name: 'tryGetOutputs';
     data: {
         outputIds: string[];
     };
 }
 
 export interface __FindBlocksMessage__ {
-    name: 'FindBlocks';
+    name: 'findBlocks';
     data: {
         blockIds: string[];
     };
 }
 
 export interface __RetryMessage__ {
-    name: 'Retry';
+    name: 'retry';
     data: {
         blockId: string;
     };
 }
 
 export interface __RetryUntilIncludedMessage__ {
-    name: 'RetryUntilIncluded';
+    name: 'retryUntilIncluded';
     data: {
         blockId: string;
         interval?: number;
@@ -378,7 +378,7 @@ export interface __RetryUntilIncludedMessage__ {
 }
 
 export interface __ConsolidateFundsMessage__ {
-    name: 'ConsolidateFunds';
+    name: 'consolidateFunds';
     data: {
         secretManager: SecretManager;
         generateAddressesOptions: IGenerateAddressesOptions;
@@ -386,53 +386,53 @@ export interface __ConsolidateFundsMessage__ {
 }
 
 export interface __ReattachMessage__ {
-    name: 'Reattach';
+    name: 'reattach';
     data: {
         blockId: BlockId;
     };
 }
 
 export interface __ReattachUncheckedMessage__ {
-    name: 'ReattachUnchecked';
+    name: 'reattachUnchecked';
     data: {
         blockId: BlockId;
     };
 }
 
 export interface __PromoteMessage__ {
-    name: 'Promote';
+    name: 'promote';
     data: {
         blockId: BlockId;
     };
 }
 
 export interface __PromoteUncheckedMessage__ {
-    name: 'PromoteUnchecked';
+    name: 'promoteUnchecked';
     data: {
         blockId: BlockId;
     };
 }
 
 export interface __UnsyncedNodesMessage__ {
-    name: 'UnsyncedNodes';
+    name: 'unsyncedNodes';
 }
 
 export interface __BuildBasicOutputMessage__ {
-    name: 'BuildBasicOutput';
+    name: 'buildBasicOutput';
     data: IBasicOutputBuilderOptions;
 }
 
 export interface __BuildAliasOutputMessage__ {
-    name: 'BuildAliasOutput';
+    name: 'buildAliasOutput';
     data: IAliasOutputBuilderOptions;
 }
 
 export interface __BuildFoundryOutputMessage__ {
-    name: 'BuildFoundryOutput';
+    name: 'buildFoundryOutput';
     data: IFoundryOutputBuilderOptions;
 }
 
 export interface __BuildNftOutputMessage__ {
-    name: 'BuildNftOutput';
+    name: 'buildNftOutput';
     data: INftOutputBuilderOptions;
 }

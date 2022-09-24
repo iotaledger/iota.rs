@@ -31,7 +31,7 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
                            immutable_features=None):
         """Build an AliasOutput.
         """
-        return self.send_message('BuildAliasOutput', {
+        return self.send_message('buildAliasOutput', {
             'aliasId': alias_id,
             'unlockConditions': unlock_conditions,
             'amount': amount,
@@ -50,7 +50,7 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
                            features=None):
         """Build a BasicOutput.
         """
-        return self.send_message('BuildBasicOutput', {
+        return self.send_message('buildBasicOutput', {
             'unlockConditions': unlock_conditions,
             'amount': amount,
             'nativeTokens': native_tokens,
@@ -67,7 +67,7 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
                              immutable_features=None):
         """Build a FoundryOutput.
         """
-        return self.send_message('BuildFoundryOutput', {
+        return self.send_message('buildFoundryOutput', {
             'serial_number': serial_number,
             'token_scheme': token_scheme,
             'unlockConditions': unlock_conditions,
@@ -86,7 +86,7 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
                          immutable_features=None):
         """Build an NftOutput.
         """
-        return self.send_message('BuildNftOutput', {
+        return self.send_message('buildNftOutput', {
             'nftId': nft_id,
             'unlockConditions': unlock_conditions,
             'amount': amount,
@@ -98,7 +98,7 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
     def generate_addresses(self, secret_manager, options):
         """Generate addresses.
         """
-        return self.send_message('GenerateAddresses', {
+        return self.send_message('generateAddresses', {
             'secretManager': secret_manager,
             'options': options
         })
@@ -106,7 +106,7 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
     def build_and_post_block(self, secret_manager=None, options=None):
         """Build and post a block.
         """
-        return self.send_message('BuildAndPostBlock', {
+        return self.send_message('buildAndPostBlock', {
             'secretManager': secret_manager,
             'options': options
         })
@@ -114,57 +114,57 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
     def get_node(self):
         """Get a node candidate from the synced node pool.
         """
-        return self.send_message('GetNode')
+        return self.send_message('getNode')
 
     def get_network_info(self):
         """Gets the network related information such as network_id and min_pow_score.
         """
-        return self.send_message('GetNetworkInfo')
+        return self.send_message('getNetworkInfo')
 
     def get_network_id(self):
         """Gets the network id of the node we're connecting to.
         """
-        return self.send_message('GetNetworkId')
+        return self.send_message('getNetworkId')
 
     def get_bech32_hrp(self):
         """Returns the bech32_hrp.
         """
-        return self.send_message('GetBech32Hrp')
+        return self.send_message('getBech32Hrp')
 
     def get_min_pow_score(self):
         """Returns the min pow score.
         """
-        return self.send_message('GetMinPowScore')
+        return self.send_message('getMinPowScore')
 
     def get_tips_interval(self):
         """Returns the tips interval.
         """
-        return self.send_message('GetTipsInterval')
+        return self.send_message('getTipsInterval')
 
     def get_local_pow(self):
         """Returns if local pow should be used or not.
         """
-        return self.send_message('GetLocalPow')
+        return self.send_message('getLocalPow')
 
     def get_fall_back_to_local_pow(self):
         """Get fallback to local proof of work timeout.
         """
-        return self.send_message('GetFallbackToLocalPow')
+        return self.send_message('getFallbackToLocalPow')
 
     def unsynced_nodes(self):
         """Returns the unsynced nodes.
         """
-        return self.send_message('UnsyncedNodes')
+        return self.send_message('unsyncedNodes')
 
     def get_ledger_nano_status(self, is_simulator):
         """Returns the Ledger Status.
         """
-        return self.send_message('GetLedgerNanoStatus', { 'isSimulator': is_simulator })
+        return self.send_message('getLedgerNanoStatus', { 'isSimulator': is_simulator })
 
     def prepare_transaction(self, secret_manager=None, options=None):
         """Prepare a transaction for signing.
         """
-        return self.send_message('PrepareTransaction', {
+        return self.send_message('prepareTransaction', {
             'secretManager': secret_manager,
             'options': options
         })
@@ -172,7 +172,7 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
     def sign_transaction(self, secret_manager, prepared_transaction_data):
         """Sign a transaction.
         """
-        return self.send_message('SignTransaction', {
+        return self.send_message('signTransaction', {
             'secretManager': secret_manager,
             'preparedTransactionData': prepared_transaction_data
         })
@@ -180,7 +180,7 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
     def store_mnemonic(self, secret_manager, mnemonic):
         """Store a mnemonic in the Stronghold vault.
         """
-        return self.send_message('StoreMnemonic', {
+        return self.send_message('storeMnemonic', {
             'secretManager': secret_manager,
             'mnemonic': mnemonic
         })
@@ -188,6 +188,6 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
     def submit_payload(self, payload_dto):
         """Submit a payload in a block.
         """
-        return self.send_message('SubmitPayload', {
+        return self.send_message('submitPayload', {
             'payloadDto': payload_dto
         })

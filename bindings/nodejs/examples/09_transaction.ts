@@ -27,7 +27,7 @@ async function run() {
         // Configure your own mnemonic in ".env". Since the output amount cannot be zero, the mnemonic must contain non-zero
         // balance
         const secretManager = {
-            Mnemonic: process.env.NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1,
+            mnemonic: process.env.NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1,
         };
 
         // We generate an address from our own mnemonic so that we send the funds to ourselves

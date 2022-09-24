@@ -35,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Rename `inputs` parameter in `try_select_inputs()` to `additional_inputs`;
 - Adapt the whole codebase to bee's packable visitor changes;
 - Made a lot of functions/methods async;
+- Added `#[serde(rename_all = "camelCase")]` to enums;
 
 ### Fixed
 

@@ -23,7 +23,7 @@ async function run() {
     try {
         const isSimulator = false;
 
-        const secretManager = { LedgerNano: isSimulator };
+        const secretManager = { ledgerNano: isSimulator };
 
         const ledgerNanoStatus = await client.getLedgerNanoStatus(isSimulator);
 

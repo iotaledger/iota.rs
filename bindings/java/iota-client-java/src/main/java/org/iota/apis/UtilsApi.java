@@ -20,7 +20,7 @@ public class UtilsApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.addProperty("bech32", bech32);
 
-        String responsePayload = callBaseApi(new ClientCommand("Bech32ToHex", o)).getAsString();
+        String responsePayload = callBaseApi(new ClientCommand("bech32ToHex", o)).getAsString();
 
         return responsePayload;
     }
@@ -30,7 +30,7 @@ public class UtilsApi extends BaseApi {
         o.addProperty("hex", hex);
         o.addProperty("bech32Hrp", bech32);
 
-        String responsePayload = callBaseApi(new ClientCommand("HexToBech32", o)).getAsString();
+        String responsePayload = callBaseApi(new ClientCommand("hexToBech32", o)).getAsString();
 
         return responsePayload;
     }
@@ -40,7 +40,7 @@ public class UtilsApi extends BaseApi {
         o.addProperty("hex", hex);
         o.addProperty("bech32", bech32);
 
-        String responsePayload = callBaseApi(new ClientCommand("HexPublicKeyToBech32Address", o)).getAsString();
+        String responsePayload = callBaseApi(new ClientCommand("hexPublicKeyToBech32Address", o)).getAsString();
 
         return responsePayload;
     }
@@ -49,7 +49,7 @@ public class UtilsApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.addProperty("address", address);
 
-        String responsePayload = callBaseApi(new ClientCommand("ParseBech32Address", o)).getAsString();
+        String responsePayload = callBaseApi(new ClientCommand("parseBech32Address", o)).getAsString();
 
         return responsePayload;
     }
@@ -58,13 +58,13 @@ public class UtilsApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.addProperty("address", address);
 
-        Boolean responsePayload = callBaseApi(new ClientCommand("IsAddressValid", o)).getAsBoolean();
+        Boolean responsePayload = callBaseApi(new ClientCommand("isAddressValid", o)).getAsBoolean();
 
         return responsePayload;
     }
 
     public String generateMnemonic() throws ClientException {
-        String responsePayload = callBaseApi(new ClientCommand("GenerateMnemonic")).getAsString();
+        String responsePayload = callBaseApi(new ClientCommand("generateMnemonic")).getAsString();
         return responsePayload;
     }
 
@@ -72,7 +72,7 @@ public class UtilsApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.addProperty("mnemonic", mnemonic);
 
-        String responsePayload = callBaseApi(new ClientCommand("MnemonicToHexSeed", o)).getAsString();
+        String responsePayload = callBaseApi(new ClientCommand("mnemonicToHexSeed", o)).getAsString();
         return responsePayload;
     }
 
@@ -80,7 +80,7 @@ public class UtilsApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.add("block", block.toJson());
 
-        String responsePayload = callBaseApi(new ClientCommand("BlockId", o)).getAsString();
+        String responsePayload = callBaseApi(new ClientCommand("blockId", o)).getAsString();
 
         return new BlockId(responsePayload);
     }
@@ -89,7 +89,7 @@ public class UtilsApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.add("payload", payload.toJson());
 
-        String responsePayload = callBaseApi(new ClientCommand("TransactionId", o)).getAsString();
+        String responsePayload = callBaseApi(new ClientCommand("transactionId", o)).getAsString();
 
         return new TransactionId(responsePayload);
     }
@@ -99,7 +99,7 @@ public class UtilsApi extends BaseApi {
         o.addProperty("url", faucetUrl);
         o.addProperty("address", address);
 
-        String responsePayload = callBaseApi(new ClientCommand("Faucet", o)).getAsString();
+        String responsePayload = callBaseApi(new ClientCommand("faucet", o)).getAsString();
 
         return responsePayload;
     }
@@ -108,7 +108,7 @@ public class UtilsApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.addProperty("outputId", outputId.toString());
 
-        String responsePayload = callBaseApi(new ClientCommand("ComputeAliasId", o)).getAsString();
+        String responsePayload = callBaseApi(new ClientCommand("computeAliasId", o)).getAsString();
 
         return new AliasId(responsePayload);
     }
@@ -117,7 +117,7 @@ public class UtilsApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.addProperty("outputId", outputId.toString());
 
-        String responsePayload = callBaseApi(new ClientCommand("ComputeNftId", o)).getAsString();
+        String responsePayload = callBaseApi(new ClientCommand("computeNftId", o)).getAsString();
 
         return new NftId(responsePayload);
     }
@@ -128,7 +128,7 @@ public class UtilsApi extends BaseApi {
         o.addProperty("serialNumber", serialNumber);
         o.addProperty("tokenSchemeKind", tokenScheme);
 
-        String responsePayload = callBaseApi(new ClientCommand("ComputeFoundryId", o)).getAsString();
+        String responsePayload = callBaseApi(new ClientCommand("computeFoundryId", o)).getAsString();
 
         return new FoundryId(responsePayload);
     }

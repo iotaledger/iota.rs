@@ -24,7 +24,7 @@ async function run() {
     };
     try {
         const mnemonic = await client.generateMnemonic();
-        const secretManager = { Mnemonic: mnemonic };
+        const secretManager = { mnemonic: mnemonic };
 
         // Create block with tagged payload
         const blockIdAndBlock = await client.buildAndPostBlock(
