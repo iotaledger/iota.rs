@@ -23,7 +23,6 @@ async function run() {
         // TODO: remove when https://github.com/iotaledger/iota.rs/issues/1263 is implemented
         // Insert your node URL in the .env.
         nodes: [process.env.NODE_URL],
-        offline: true,
     });
 
     try {

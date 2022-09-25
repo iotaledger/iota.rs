@@ -1,7 +1,7 @@
 from iota_client import IotaClient
 
 # Create an IotaClient instance
-client = IotaClient({'offline': True})
+client = IotaClient()
 
 # Generate a random BIP39 mnemonic
 mnemonic = client.generate_mnemonic()

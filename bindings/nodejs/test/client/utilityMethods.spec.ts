@@ -2,15 +2,7 @@ import { Client } from '../../lib';
 import '../customMatchers';
 import 'dotenv/config';
 
-const offlineClient = new Client({
-    offline: true,
-    nodes: [
-        {
-            url: 'http://localhost:14265',
-        },
-    ],
-    localPow: true,
-});
+const offlineClient = new Client({});
 
 describe('Client utility methods', () => {
     // Requires "stronghold" in cargo toml iota-client features

@@ -44,6 +44,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - `GetAddressBuilder` and `AddressBalance`;
+- `offline` field in `ClientBuilder`;
 
 ### Fixed
 
