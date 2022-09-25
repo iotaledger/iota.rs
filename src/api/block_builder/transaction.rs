@@ -26,12 +26,13 @@ impl<'a> ClientBlockBuilder<'a> {
     /// Prepare a transaction
     pub async fn prepare_transaction(&self) -> Result<PreparedTransactionData> {
         log::debug!("[prepare_transaction]");
-        let rent_structure = self.client.get_rent_structure().await?;
+        let rent_structure = self.client.get_rent_structure()?;
+        let token_supply = self.client.get_token_supply()?;
 
         let mut governance_transition: Option<HashSet<AliasId>> = None;
         for output in &self.outputs {
             // Check if the outputs have enough amount to cover the storage deposit
-            output.verify_storage_deposit(&rent_structure)?;
+            output.verify_storage_deposit(rent_structure.clone(), token_supply)?;
             if let Output::Alias(x) = output {
                 if x.state_index() > 0 {
                     // Check if the transaction is a governance_transition, by checking if the new index is the same as
@@ -50,7 +51,7 @@ impl<'a> ClientBlockBuilder<'a> {
             }
         }
 
-        // Inputselection
+        // Input selection
         let selected_transaction_data = if self.inputs.is_some() {
             self.get_custom_inputs(governance_transition, &rent_structure, self.allow_burning)
                 .await?
@@ -61,7 +62,7 @@ impl<'a> ClientBlockBuilder<'a> {
         // Build transaction payload
         let inputs_commitment = InputsCommitment::new(selected_transaction_data.inputs.iter().map(|i| &i.output));
 
-        let mut essence = RegularTransactionEssence::builder(self.client.get_network_id().await?, inputs_commitment);
+        let mut essence = RegularTransactionEssence::builder(inputs_commitment);
         let inputs = selected_transaction_data
             .inputs
             .iter()
@@ -81,7 +82,8 @@ impl<'a> ClientBlockBuilder<'a> {
             let tagged_data_payload = TaggedDataPayload::new(index.to_vec(), self.data.clone().unwrap_or_default())?;
             essence = essence.with_payload(Payload::TaggedData(Box::new(tagged_data_payload)));
         }
-        let regular_essence = essence.finish()?;
+
+        let regular_essence = essence.finish(&self.client.get_protocol_parameters()?)?;
         let essence = TransactionEssence::Regular(regular_essence);
 
         Ok(PreparedTransactionData {

@@ -30,8 +30,8 @@ pub fn do_pow<P: NonceProvider>(
         block = block.with_payload(p);
     }
     block
-        .with_nonce_provider(miner, min_pow_score)
-        .finish()
+        .with_nonce_provider(miner)
+        .finish(min_pow_score)
         .map_err(Error::BlockError)
 }
 
@@ -50,10 +50,10 @@ pub async fn finish_pow(client: &Client, payload: Option<Payload>) -> Result<Blo
 /// Always fetches new tips after each tips interval elapses.
 #[cfg(not(target_family = "wasm"))]
 async fn finish_multi_threaded_pow(client: &Client, payload: Option<Payload>) -> Result<Block> {
-    let local_pow = client.get_local_pow().await;
+    let local_pow = client.get_local_pow();
     let pow_worker_count = client.pow_worker_count;
-    let min_pow_score = client.get_min_pow_score().await?;
-    let tips_interval = client.get_tips_interval().await;
+    let min_pow_score = client.get_min_pow_score()?;
+    let tips_interval = client.get_tips_interval();
     loop {
         let cancel = MinerCancel::new();
         let cancel_2 = cancel.clone();
@@ -103,9 +103,9 @@ fn pow_timeout(after_seconds: u64, cancel: MinerCancel) -> (u64, Option<Block>) 
 /// Always fetches new tips after each tips interval elapses.
 #[cfg(target_family = "wasm")]
 async fn finish_single_threaded_pow(client: &Client, payload: Option<Payload>) -> Result<Block> {
-    let min_pow_score: u32 = client.get_min_pow_score().await?;
-    let tips_interval: u64 = client.get_tips_interval().await;
-    let local_pow: bool = client.get_local_pow().await;
+    let min_pow_score: u32 = client.get_min_pow_score()?;
+    let tips_interval: u64 = client.get_tips_interval();
+    let local_pow: bool = client.get_local_pow();
     let mut parent_blocks = client.get_tips().await?;
     loop {
         parent_blocks.sort_unstable_by_key(PackableExt::pack_to_vec);

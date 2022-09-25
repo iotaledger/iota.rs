@@ -27,7 +27,7 @@ async fn main() -> Result<()> {
         .with_node_sync_disabled()
         .finish()?;
 
-    let signed_transaction_payload = read_signed_transaction_from_file(SIGNED_TRANSACTION_FILE_NAME)?;
+    let signed_transaction_payload = read_signed_transaction_from_file(&online_client, SIGNED_TRANSACTION_FILE_NAME)?;
 
     let current_time = online_client.get_time_checked().await?;
 
@@ -58,12 +58,15 @@ async fn main() -> Result<()> {
     Ok(())
 }
 
-fn read_signed_transaction_from_file<P: AsRef<Path>>(path: P) -> Result<SignedTransactionData> {
+fn read_signed_transaction_from_file<P: AsRef<Path>>(client: &Client, path: P) -> Result<SignedTransactionData> {
     let mut file = File::open(&path).unwrap();
     let mut json = String::new();
     file.read_to_string(&mut json).unwrap();
 
     let dto = serde_json::from_str::<SignedTransactionDataDto>(&json)?;
 
-    Ok(SignedTransactionData::try_from(&dto)?)
+    Ok(SignedTransactionData::try_from_dto(
+        &dto,
+        &client.get_protocol_parameters()?,
+    )?)
 }

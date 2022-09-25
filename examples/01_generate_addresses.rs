@@ -48,7 +48,7 @@ async fn main() -> Result<()> {
     // human readable part) from the node info, generating it "offline" requires setting it with
     // `with_bech32_hrp(bech32_hrp)`
     let addresses = GetAddressesBuilder::new(&secret_manager)
-        .with_bech32_hrp(client.get_bech32_hrp().await?)
+        .with_bech32_hrp(client.get_bech32_hrp()?)
         .with_account_index(0)
         .with_range(0..4)
         .finish()

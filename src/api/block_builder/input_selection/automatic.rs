@@ -60,6 +60,7 @@ impl<'a> ClientBlockBuilder<'a> {
         let mut gap_index = self.initial_address_index;
         let mut empty_address_count: u64 = 0;
         let mut cached_error = None;
+        let token_supply = self.client.get_token_supply()?;
 
         log::debug!("[get_inputs from utxo chains]");
 
@@ -80,6 +81,7 @@ impl<'a> ClientBlockBuilder<'a> {
             // could lead to burned native tokens by accident.
             false,
             current_time,
+            token_supply,
         ) {
             return Ok(selected_transaction_data);
         };
@@ -127,7 +129,7 @@ impl<'a> ClientBlockBuilder<'a> {
                     empty_address_count = 0;
 
                     for output_response in address_outputs {
-                        let output = Output::try_from(&output_response.output)?;
+                        let output = Output::try_from_dto(&output_response.output, token_supply)?;
                         let address = Address::try_from_bech32(str_address)?.1;
 
                         if is_basic_output_address_unlockable(&output, &address, current_time) {
@@ -155,6 +157,7 @@ impl<'a> ClientBlockBuilder<'a> {
                         // could lead to burned native tokens by accident.
                         false,
                         current_time,
+                        token_supply,
                     ) {
                         Ok(r) => r,
                         // for these errors, just try again in the next round with more addresses which might have more

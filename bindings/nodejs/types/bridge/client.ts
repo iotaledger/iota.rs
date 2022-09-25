@@ -144,8 +144,8 @@ export interface __StoreMnemonicMessage__ {
     };
 }
 
-export interface __SubmitPayloadMessage__ {
-    name: 'submitPayload';
+export interface __PostBlockPayloadMessage__ {
+    name: 'postBlockPayload';
     data: {
         payload: PayloadTypes;
     };
@@ -413,8 +413,8 @@ export interface __PromoteUncheckedMessage__ {
     };
 }
 
-export interface __UnsyncedNodesMessage__ {
-    name: 'unsyncedNodes';
+export interface __UnhealthyNodesMessage__ {
+    name: 'unhealthyNodes';
 }
 
 export interface __BuildBasicOutputMessage__ {

@@ -1,7 +1,7 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! The node manager that takes care of sending requests with synced nodes and quorum if enabled
+//! The node manager that takes care of sending requests with healthy nodes and quorum if enabled
 
 use std::{
     collections::HashSet,
@@ -13,7 +13,6 @@ use serde::{Deserialize, Serialize};
 use url::Url;
 
 use crate::{
-    builder::NetworkInfo,
     constants::{DEFAULT_MIN_QUORUM_SIZE, DEFAULT_QUORUM_THRESHOLD, NODE_SYNC_INTERVAL},
     error::{Error, Result},
     node_manager::{
@@ -91,9 +90,9 @@ impl NodeManagerBuilder {
         if let Some(auth) = &auth {
             if let Some((name, password)) = &auth.basic_auth_name_pwd {
                 url.set_username(name)
-                    .map_err(|_| crate::Error::UrlAuthError("username".to_string()))?;
+                    .map_err(|_| crate::Error::UrlAuthError("username"))?;
                 url.set_password(Some(password))
-                    .map_err(|_| crate::Error::UrlAuthError("password".to_string()))?;
+                    .map_err(|_| crate::Error::UrlAuthError("password"))?;
             }
         }
         self.primary_node.replace(NodeDto::Node(Node {
@@ -109,9 +108,9 @@ impl NodeManagerBuilder {
         if let Some(auth) = &auth {
             if let Some((name, password)) = &auth.basic_auth_name_pwd {
                 url.set_username(name)
-                    .map_err(|_| crate::Error::UrlAuthError("username".to_string()))?;
+                    .map_err(|_| crate::Error::UrlAuthError("username"))?;
                 url.set_password(Some(password))
-                    .map_err(|_| crate::Error::UrlAuthError("password".to_string()))?;
+                    .map_err(|_| crate::Error::UrlAuthError("password"))?;
             }
         }
         self.primary_pow_node.replace(NodeDto::Node(Node {
@@ -127,9 +126,9 @@ impl NodeManagerBuilder {
         if let Some(auth) = &auth {
             if let Some((name, password)) = &auth.basic_auth_name_pwd {
                 url.set_username(name)
-                    .map_err(|_| crate::Error::UrlAuthError("username".to_string()))?;
+                    .map_err(|_| crate::Error::UrlAuthError("username"))?;
                 url.set_password(Some(password))
-                    .map_err(|_| crate::Error::UrlAuthError("password".to_string()))?;
+                    .map_err(|_| crate::Error::UrlAuthError("password"))?;
             }
         }
         match self.permanodes {
@@ -163,9 +162,9 @@ impl NodeManagerBuilder {
         if let Some(auth) = &auth {
             if let Some((name, password)) = &auth.basic_auth_name_pwd {
                 url.set_username(name)
-                    .map_err(|_| crate::Error::UrlAuthError("username".to_string()))?;
+                    .map_err(|_| crate::Error::UrlAuthError("username"))?;
                 url.set_password(Some(password))
-                    .map_err(|_| crate::Error::UrlAuthError("password".to_string()))?;
+                    .map_err(|_| crate::Error::UrlAuthError("password"))?;
             }
         }
         self.nodes.insert(NodeDto::Node(Node {
@@ -208,25 +207,7 @@ impl NodeManagerBuilder {
         self
     }
 
-    pub(crate) fn add_default_nodes(mut self, network_info: &NetworkInfo) -> Result<Self> {
-        let default_testnet_nodes = vec![];
-        if self.nodes.is_empty() && self.primary_node.is_none() {
-            match network_info.network {
-                Some(ref network) => match network.to_lowercase().as_str() {
-                    "testnet" | "devnet" | "test" | "dev" => {
-                        self = self.with_nodes(&default_testnet_nodes[..])?;
-                    }
-                    _ => return Err(Error::SyncedNodePoolEmpty),
-                },
-                _ => {
-                    self = self.with_nodes(&default_testnet_nodes[..])?;
-                }
-            }
-        }
-        Ok(self)
-    }
-
-    pub(crate) fn build(self, synced_nodes: Arc<RwLock<HashSet<Node>>>) -> NodeManager {
+    pub(crate) fn build(self, healthy_nodes: Arc<RwLock<HashSet<Node>>>) -> NodeManager {
         NodeManager {
             primary_node: self.primary_node.map(|node| node.into()),
             primary_pow_node: self.primary_pow_node.map(|node| node.into()),
@@ -236,7 +217,7 @@ impl NodeManagerBuilder {
                 .map(|nodes| nodes.into_iter().map(|node| node.into()).collect()),
             node_sync_enabled: self.node_sync_enabled,
             node_sync_interval: self.node_sync_interval,
-            synced_nodes,
+            healthy_nodes,
             quorum: self.quorum,
             min_quorum_size: self.min_quorum_size,
             quorum_threshold: self.quorum_threshold,

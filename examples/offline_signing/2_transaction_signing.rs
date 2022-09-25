@@ -13,7 +13,7 @@ use std::{
 
 use iota_client::{
     api::{PreparedTransactionData, PreparedTransactionDataDto, SignedTransactionData, SignedTransactionDataDto},
-    block::payload::transaction::TransactionPayload,
+    block::{output::RentStructureBuilder, payload::transaction::TransactionPayload, protocol::ProtocolParameters},
     secret::{mnemonic::MnemonicSecretManager, SecretManageExt, SecretManager},
     Result,
 };
@@ -54,9 +54,27 @@ fn read_prepared_transaction_from_file<P: AsRef<Path>>(path: P) -> Result<Prepar
     let mut json = String::new();
     file.read_to_string(&mut json).unwrap();
 
-    Ok(PreparedTransactionData::try_from(&serde_json::from_str::<
-        PreparedTransactionDataDto,
-    >(&json)?)?)
+    // TODO: read from file https://github.com/iotaledger/iota.rs/issues/1267
+    // Make sure that these values match the network you use.
+    let protocol_parameters = ProtocolParameters::new(
+        2,
+        String::from("testnet"),
+        String::from("smr"),
+        1500,
+        15,
+        RentStructureBuilder::new()
+            .byte_cost(100)
+            .key_factor(1)
+            .data_factor(10)
+            .finish(),
+        1813620509061365,
+    )
+    .unwrap();
+
+    Ok(PreparedTransactionData::try_from_dto(
+        &serde_json::from_str::<PreparedTransactionDataDto>(&json)?,
+        &protocol_parameters,
+    )?)
 }
 
 fn write_signed_transaction_to_file<P: AsRef<Path>>(

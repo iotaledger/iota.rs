@@ -13,9 +13,9 @@ require('dotenv').config({ path: '../../../.env' });
 // From examples directory, run with:
 // node ./dist/offline_signing/0_address_generation.js
 
-const ADDRESS_FILE_NAME = __dirname + '/../../offline_signing/addresses.json';
+const ADDRESS_FILE_NAME = __dirname + '/../../offline_signing/address.json';
 
-// In this example we will generate addresses offline which will be used later to find inputs
+// In this example we will generate an address offline which will be used later to find inputs
 async function run() {
     initLogger();
     const offlineClient = new Client({
@@ -31,8 +31,8 @@ async function run() {
             mnemonic: process.env.NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1,
         };
 
-        // Generates addresses offline.
-        const offlineGeneratedAddresses = await offlineClient.generateAddresses(
+        // Generates an address offline.
+        const offlineGeneratedAddress = await offlineClient.generateAddresses(
             secretManager,
             {
                 coinType: CoinType.Shimmer,
@@ -46,7 +46,7 @@ async function run() {
 
         await writeFile(
             ADDRESS_FILE_NAME,
-            JSON.stringify(offlineGeneratedAddresses),
+            JSON.stringify(offlineGeneratedAddress),
         );
     } catch (error) {
         console.error('Error: ', error);

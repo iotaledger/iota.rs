@@ -29,6 +29,8 @@ async fn main() -> Result<()> {
     let secret_manager =
         MnemonicSecretManager::try_from_mnemonic(&std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap())?;
 
+    let token_supply = client.get_token_supply()?;
+
     // Generate the first address
     let addresses = client
         .get_addresses(&SecretManager::Mnemonic(secret_manager))
@@ -54,7 +56,7 @@ async fn main() -> Result<()> {
     let mut total_amount = 0;
     let mut total_native_tokens = NativeTokensBuilder::new();
     for output_response in outputs_responses {
-        let output = Output::try_from(&output_response.output)?;
+        let output = Output::try_from_dto(&output_response.output, token_supply)?;
 
         if let Some(native_tokens) = output.native_tokens() {
             total_native_tokens.add_native_tokens(native_tokens.clone())?;

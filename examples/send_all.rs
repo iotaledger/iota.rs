@@ -37,6 +37,8 @@ async fn main() -> Result<()> {
         &std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_SEED_2").unwrap(),
     )?);
 
+    let token_supply = client.get_token_supply()?;
+
     // Get output ids of outputs that can be controlled by this address without further unlock constraints
     let output_ids = client
         .basic_output_ids(vec![
@@ -62,7 +64,7 @@ async fn main() -> Result<()> {
     let mut total_native_tokens = NativeTokensBuilder::new();
 
     for output_response in outputs_responses {
-        let output = Output::try_from(&output_response.output)?;
+        let output = Output::try_from_dto(&output_response.output, token_supply)?;
 
         if let Some(native_tokens) = output.native_tokens() {
             total_native_tokens.add_native_tokens(native_tokens.clone())?;
@@ -87,7 +89,7 @@ async fn main() -> Result<()> {
     for native_token in total_native_tokens {
         basic_output_builder = basic_output_builder.add_native_token(native_token);
     }
-    let new_output = basic_output_builder.finish_output()?;
+    let new_output = basic_output_builder.finish_output(token_supply)?;
 
     let block = client
         .block()

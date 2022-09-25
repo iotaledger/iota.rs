@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `finish_pow` function to avoid the caller having to check for wasm family;
+- Debug logs for GET requests;
 - Added `#[serde(rename_all = "camelCase")]` to enums and aliases for `SecretManagerDto` and `LedgerDeviceType` fields;
 
 ### Changed
@@ -34,6 +35,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cleaned up error enum;
 - Replaced `force_use_all_inputs` in `try_select_inputs()` with `mandatory_inputs`;
 - Rename `inputs` parameter in `try_select_inputs()` to `additional_inputs`;
+- Adapt the whole codebase to bee's packable visitor changes;
+- Made a lot of functions/methods async;
+- Renamed `synced_nodes` to `healthy_nodes`;
+- Renamed `unsynced_nodes()` to `unhealthy_nodes()`;
+- `UrlAuthError(String)` to `UrlAuthError(&'static str)`;
+
+### Removed
+
+- `GetAddressBuilder` and `AddressBalance`;
 
 ### Fixed
 

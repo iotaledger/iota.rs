@@ -19,6 +19,10 @@ pub type Result<T> = std::result::Result<T, Error>;
 #[allow(clippy::large_enum_variant)]
 #[serde(tag = "type", content = "error", rename_all = "camelCase")]
 pub enum Error {
+    /// Block dtos error
+    #[error("{0}")]
+    #[serde(serialize_with = "display_string")]
+    ApiTypes(#[from] bee_api_types::error::Error),
     /// Blake2b256 Error
     #[error("{0}")]
     Blake2b256Error(&'static str),
@@ -137,9 +141,9 @@ pub enum Error {
     /// Specifically used for `TryInfo` implementations for `SecretManager`.
     #[error("cannot unwrap a SecretManager: type mismatch!")]
     SecretManagerMismatch,
-    /// No node available in the synced node pool
-    #[error("no synced node available")]
-    SyncedNodePoolEmpty,
+    /// No node available in the healthy node pool
+    #[error("no healthy node available")]
+    HealthyNodePoolEmpty,
     /// Error when building tagged_data blocks
     #[error("error when building tagged_data block: {0}")]
     TaggedDataError(String),
@@ -176,7 +180,7 @@ pub enum Error {
     UnpackError(#[from] packable::error::UnpackError<bee_block::Error, UnexpectedEOF>),
     /// URL auth error
     #[error("can't set {0} to URL")]
-    UrlAuthError(String),
+    UrlAuthError(&'static str),
     /// URL error
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]

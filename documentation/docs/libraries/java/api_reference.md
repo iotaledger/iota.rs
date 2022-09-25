@@ -480,11 +480,11 @@ Returns true if the client is configured to fallback to local proof of work if t
 
 * **Returns:** true if the client is configured to fallback to local proof of work, else returns false.
 
-## `public Node[] getUnsyncedNodes() throws ClientException`
+## `public Node[] getUnhealthyNodes() throws ClientException`
 
-Get the list of nodes that are not been synced
+Get the list of nodes that are not healthy
 
-* **Returns:** The array of nodes that are not synced.
+* **Returns:** The array of nodes that are not healthy.
 
 ## `public LedgerNanoStatus getLedgerNanoStatus(boolean isSimulator) throws ClientException`
 

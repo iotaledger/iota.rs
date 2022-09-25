@@ -44,6 +44,7 @@ use crate::{
 /// nft outputs that there previous output exist in the inputs, when required. Careful with setting `allow_burning` to
 /// `true`, native tokens, nfts or alias outputs can get easily burned by accident. Without burning, alias, foundry and
 /// nft outputs will be created on the output side, if not already present.
+#[allow(clippy::too_many_arguments)]
 pub fn try_select_inputs(
     mut mandatory_inputs: Vec<InputSigningData>,
     mut additional_inputs: Vec<InputSigningData>,
@@ -52,6 +53,7 @@ pub fn try_select_inputs(
     rent_structure: &RentStructure,
     allow_burning: bool,
     current_time: u32,
+    token_supply: u64,
 ) -> Result<SelectedTransactionData> {
     log::debug!("[try_select_inputs]");
 
@@ -131,6 +133,7 @@ pub fn try_select_inputs(
         allow_burning,
         current_time,
         rent_structure,
+        token_supply,
     )?;
 
     // No need to check for sender and issuer again, since these outputs already exist and we don't set new features
@@ -208,6 +211,7 @@ pub fn try_select_inputs(
             &required,
             rent_structure,
             current_time,
+            token_supply,
         )?;
 
         if selected_input_amount < required.amount || additional_required_remainder_amount > 0 {
@@ -258,6 +262,7 @@ pub fn try_select_inputs(
             &required,
             rent_structure,
             current_time,
+            token_supply,
         )?;
 
         if selected_input_amount < required.amount || additional_required_remainder_amount > 0 {
@@ -293,7 +298,7 @@ pub fn try_select_inputs(
 
     // Add possible required storage deposit return outputs
     let additional_storage_deposit_return_outputs =
-        get_storage_deposit_return_outputs(all_inputs, outputs.iter(), current_time)?;
+        get_storage_deposit_return_outputs(all_inputs, outputs.iter(), current_time, token_supply)?;
     outputs.extend(additional_storage_deposit_return_outputs.into_iter());
 
     // create remainder output if necessary
@@ -305,6 +310,7 @@ pub fn try_select_inputs(
         rent_structure,
         allow_burning,
         current_time,
+        token_supply,
     )?;
     if let Some(remainder_data) = &remainder_data {
         outputs.push(remainder_data.output.clone());

@@ -7,8 +7,7 @@ use bee_block::{
     address::{Address, AliasAddress, Ed25519Address, NftAddress},
     output::{
         unlock_condition::{AddressUnlockCondition, StorageDepositReturnUnlockCondition},
-        BasicOutputBuilder, NativeTokens, NativeTokensBuilder, Output, OutputAmount, OutputId, Rent, RentStructure,
-        UnlockCondition,
+        BasicOutputBuilder, NativeTokens, NativeTokensBuilder, Output, OutputId, Rent, RentStructure, UnlockCondition,
     },
 };
 
@@ -53,15 +52,16 @@ pub fn minimum_storage_deposit_basic_output(
     config: &RentStructure,
     address: &Address,
     native_tokens: &Option<NativeTokens>,
+    token_supply: u64,
 ) -> Result<u64> {
     let address_condition = UnlockCondition::Address(AddressUnlockCondition::new(*address));
-    let mut basic_output_builder = BasicOutputBuilder::new_with_amount(OutputAmount::MIN)?;
+    let mut basic_output_builder = BasicOutputBuilder::new_with_amount(Output::AMOUNT_MIN)?;
     if let Some(native_tokens) = native_tokens {
         basic_output_builder = basic_output_builder.with_native_tokens(native_tokens.clone());
     }
     let basic_output = basic_output_builder
         .add_unlock_condition(address_condition)
-        .finish_output()?;
+        .finish_output(token_supply)?;
 
     Ok(basic_output.rent_cost(config))
 }

@@ -3,10 +3,12 @@
 import { Client, initLogger } from '@iota/client';
 import { writeFile, readFile } from 'fs/promises';
 
+require('dotenv').config({ path: '../../../.env' });
+
 // From examples directory, run with:
 // node ./dist/offline_signing/1_transaction_preparation.js
 
-const ADDRESS_FILE_NAME = __dirname + '/../../offline_signing/addresses.json';
+const ADDRESS_FILE_NAME = __dirname + '/../../offline_signing/address.json';
 const PREPARED_TRANSACTION_FILE_NAME =
     __dirname + '/../../offline_signing/prepared_transaction.json';
 
@@ -26,11 +28,13 @@ async function run() {
         'rms1qqv5avetndkxzgr3jtrswdtz5ze6mag20s0jdqvzk4fwezve8q9vkpnqlqe';
     const amount = 1000000;
     try {
-        // Recovers addresses from example `0_address_generation`.
-        const addresses = JSON.parse(await readFile(ADDRESS_FILE_NAME, 'utf8'));
+        // Recovers the address from example `0_address_generation`.
+        const input_address = JSON.parse(
+            await readFile(ADDRESS_FILE_NAME, 'utf8'),
+        );
 
-        // Gets enough inputs related to these addresses to cover the amount.
-        const inputs = await onlineClient.findInputs(addresses, amount);
+        // Gets enough inputs related to the address to cover the amount.
+        const inputs = await onlineClient.findInputs(input_address, amount);
 
         // Prepares the transaction
         const preparedTransaction = await onlineClient.prepareTransaction(

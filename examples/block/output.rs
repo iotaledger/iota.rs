@@ -34,13 +34,15 @@ async fn main() -> Result<()> {
         &std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
     )?);
 
+    let token_supply = client.get_token_supply()?;
+
     let address = client.get_addresses(&secret_manager).with_range(0..1).get_raw().await?[0];
-    request_funds_from_faucet(&faucet_url, &address.to_bech32(client.get_bech32_hrp().await?)).await?;
+    request_funds_from_faucet(&faucet_url, &address.to_bech32(client.get_bech32_hrp()?)).await?;
 
     let outputs = vec![
         BasicOutputBuilder::new_with_amount(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-            .finish_output()?,
+            .finish_output(token_supply)?,
     ];
 
     let block = client

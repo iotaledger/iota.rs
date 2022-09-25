@@ -17,7 +17,7 @@ import type {
     __GetLedgerNanoStatusMessage__,
     __PrepareTransactionMessage__,
     __SignTransactionMessage__,
-    __SubmitPayloadMessage__,
+    __PostBlockPayloadMessage__,
     __ParseBech32AddressMessage__,
     __BlockIdMessage__,
     __GetNodeMessage__,
@@ -55,7 +55,7 @@ import type {
     __ReattachUncheckedMessage__,
     __PromoteMessage__,
     __PromoteUncheckedMessage__,
-    __UnsyncedNodesMessage__,
+    __UnhealthyNodesMessage__,
     __GetMilestoneByIdMessage__,
     __GetUtxoChangesByIdMessage__,
     __GetMilestoneByIndexMessage__,
@@ -87,7 +87,7 @@ export type __ClientMessages__ =
     | __PrepareTransactionMessage__
     | __SignTransactionMessage__
     | __StoreMnemonicMessage__
-    | __SubmitPayloadMessage__
+    | __PostBlockPayloadMessage__
     | __ParseBech32AddressMessage__
     | __BlockIdMessage__
     | __GetNodeMessage__
@@ -129,7 +129,7 @@ export type __ClientMessages__ =
     | __ReattachUncheckedMessage__
     | __PromoteMessage__
     | __PromoteUncheckedMessage__
-    | __UnsyncedNodesMessage__
+    | __UnhealthyNodesMessage__
     | __BuildBasicOutputMessage__
     | __BuildAliasOutputMessage__
     | __BuildFoundryOutputMessage__

@@ -171,7 +171,7 @@ impl<'a> ClientBlockBuilder<'a> {
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(
                 Address::try_from_bech32(address)?.1,
             )))
-            .finish_output()?;
+            .finish_output(self.client.get_token_supply()?)?;
         self.outputs.push(output);
         if !OUTPUT_COUNT_RANGE.contains(&(self.outputs.len() as u16)) {
             return Err(crate::Error::BlockError(bee_block::Error::InvalidOutputCount(
@@ -198,7 +198,7 @@ impl<'a> ClientBlockBuilder<'a> {
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(
                 address.parse::<Ed25519Address>()?.into(),
             )))
-            .finish_output()?;
+            .finish_output(self.client.get_token_supply()?)?;
         self.outputs.push(output);
         if !OUTPUT_COUNT_RANGE.contains(&(self.outputs.len() as u16)) {
             return Err(crate::Error::BlockError(bee_block::Error::InvalidOutputCount(
@@ -284,10 +284,12 @@ impl<'a> ClientBlockBuilder<'a> {
         }
 
         if let Some(outputs) = options.outputs {
+            let token_supply = self.client.get_token_supply()?;
+
             self = self.with_outputs(
                 outputs
                     .iter()
-                    .map(|o| Ok(Output::try_from(o)?))
+                    .map(|o| Ok(Output::try_from_dto(o, token_supply)?))
                     .collect::<Result<Vec<Output>>>()?,
             )?;
         }
@@ -410,8 +412,8 @@ impl<'a> ClientBlockBuilder<'a> {
                 parents.sort_unstable_by_key(PackableExt::pack_to_vec);
                 parents.dedup();
 
-                let min_pow_score = self.client.get_min_pow_score().await?;
-                let miner = self.client.get_pow_provider().await;
+                let miner = self.client.get_pow_provider();
+                let min_pow_score = self.client.get_min_pow_score()?;
                 do_pow(miner, min_pow_score, payload, parents)?
             }
             None => crate::api::pow::finish_pow(self.client, payload).await?,
@@ -419,7 +421,7 @@ impl<'a> ClientBlockBuilder<'a> {
 
         let block_id = self.client.post_block_raw(&final_block).await?;
         // Get block if we use remote PoW, because the node will change parents and nonce
-        if self.client.get_local_pow().await {
+        if self.client.get_local_pow() {
             Ok(final_block)
         } else {
             // Request block multiple times because the node maybe didn't process it completely in this time

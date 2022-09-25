@@ -327,9 +327,9 @@ export class Client {
     /**
      * Submit a payload in a block
      */
-    async submitPayload(payload: PayloadTypes): Promise<IBlock> {
+    async postBlockPayload(payload: PayloadTypes): Promise<IBlock> {
         const response = await this.messageHandler.sendMessage({
-            name: 'submitPayload',
+            name: 'postBlockPayload',
             data: {
                 payload,
             },
@@ -367,7 +367,7 @@ export class Client {
     }
 
     /**
-     * Get a node candidate from the synced node pool.
+     * Get a node candidate from the healthy node pool.
      */
     async getNode(): Promise<INode> {
         const response = await this.messageHandler.sendMessage({
@@ -916,11 +916,11 @@ export class Client {
     }
 
     /**
-     * Returns the unsynced nodes.
+     * Returns the unhealthy nodes.
      */
-    async unsyncedNodes(): Promise<Set<INode>> {
+    async unhealthyNodes(): Promise<Set<INode>> {
         const response = await this.messageHandler.sendMessage({
-            name: 'unsyncedNodes',
+            name: 'unhealthyNodes',
         });
 
         return JSON.parse(response).payload;

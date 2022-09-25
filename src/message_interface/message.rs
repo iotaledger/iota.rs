@@ -116,7 +116,7 @@ pub enum Message {
         /// Options
         options: Option<BuildBlockOptions>,
     },
-    /// Get a node candidate from the synced node pool.
+    /// Get a node candidate from the healthy node pool.
     GetNode,
     /// Gets the network related information such as network_id and min_pow_score
     GetNetworkInfo,
@@ -132,9 +132,9 @@ pub enum Message {
     GetLocalPow,
     /// Get fallback to local proof of work timeout
     GetFallbackToLocalPow,
-    /// returns the unsynced nodes.
+    /// Returns the unhealthy nodes.
     #[cfg(not(target_family = "wasm"))]
-    UnsyncedNodes,
+    UnhealthyNodes,
     /// Get the ledger status
     /// Expected response: [`LedgerNanoStatus`](crate::message_interface::Response::LedgerNanoStatus)
     #[cfg(feature = "ledger_nano")]

@@ -124,8 +124,8 @@ public class MiscellaneousApi extends BaseApi {
         return responsePayload;
     }
 
-    public Node[] getUnsyncedNodes() throws ClientException {
-        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand("unsyncedNodes"));
+    public Node[] getUnhealthyNodes() throws ClientException {
+        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand("unhealthyNodes"));
 
         Node[] nodes = new Node[responsePayload.size()];
         for (int i = 0; i < responsePayload.size(); i++) {

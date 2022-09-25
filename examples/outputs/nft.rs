@@ -40,20 +40,23 @@ async fn main() -> Result<()> {
         &std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
     )?);
 
+    let token_supply = client.get_token_supply()?;
+
     let address = client.get_addresses(&secret_manager).with_range(0..1).get_raw().await?[0];
-    request_funds_from_faucet(&faucet_url, &address.to_bech32(client.get_bech32_hrp().await?)).await?;
+    request_funds_from_faucet(&faucet_url, &address.to_bech32(client.get_bech32_hrp()?)).await?;
     tokio::time::sleep(std::time::Duration::from_secs(20)).await;
 
     //////////////////////////////////
     // create new nft output
     //////////////////////////////////
+
     let outputs = vec![
         // address of the owner of the NFT
         NftOutputBuilder::new_with_amount(1_000_000, NftId::null())?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
             // address of the minter of the NFT
             // .add_feature(Feature::Issuer(IssuerFeature::new(address)))
-            .finish_output()?,
+            .finish_output(token_supply)?,
     ];
 
     let block = client
@@ -72,11 +75,12 @@ async fn main() -> Result<()> {
     //////////////////////////////////
     // move funds from an NFT address
     //////////////////////////////////
+
     let nft_output_id = get_nft_output_id(block.payload().unwrap())?;
     let nft_id = NftId::from(nft_output_id);
 
     let nft_address = NftAddress::new(nft_id);
-    let bech32_nft_address = Address::Nft(nft_address).to_bech32(client.get_bech32_hrp().await?);
+    let bech32_nft_address = Address::Nft(nft_address).to_bech32(client.get_bech32_hrp()?);
     println!("bech32_nft_address {bech32_nft_address}");
     println!(
         "Faucet request {:?}",
@@ -88,7 +92,7 @@ async fn main() -> Result<()> {
         .basic_output_ids(vec![QueryParameter::Address(bech32_nft_address)])
         .await?;
     let output_response = client.get_output(&output_ids[0]).await?;
-    let output = Output::try_from(&output_response.output)?;
+    let output = Output::try_from_dto(&output_response.output, token_supply)?;
 
     let block = client
         .block()
@@ -98,7 +102,7 @@ async fn main() -> Result<()> {
         .with_outputs(vec![
             NftOutputBuilder::new_with_amount(1_000_000 + output.amount(), nft_id)?
                 .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-                .finish_output()?,
+                .finish_output(token_supply)?,
         ])?
         .finish()
         .await?;
@@ -113,13 +117,14 @@ async fn main() -> Result<()> {
     //////////////////////////////////
     // burn NFT
     //////////////////////////////////
+
     let nft_output_id = get_nft_output_id(block.payload().unwrap())?;
     let output_response = client.get_output(&nft_output_id).await?;
-    let output = Output::try_from(&output_response.output)?;
+    let output = Output::try_from_dto(&output_response.output, token_supply)?;
     let outputs = vec![
         BasicOutputBuilder::new_with_amount(output.amount())?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
-            .finish_output()?,
+            .finish_output(token_supply)?,
     ];
 
     let block = client
