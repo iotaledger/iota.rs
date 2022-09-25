@@ -14,15 +14,7 @@ const onlineClient = new Client({
     localPow: true,
 });
 
-const offlineClient = new Client({
-    offline: true,
-    nodes: [
-        {
-            url: process.env.NODE_URL || 'http://localhost:14265',
-        },
-    ],
-    localPow: true,
-});
+const offlineClient = new Client({});
 
 const secretManager = {
     mnemonic:

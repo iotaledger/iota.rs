@@ -9,10 +9,7 @@ import { Client, initLogger } from '@iota/client';
 async function run() {
     initLogger();
 
-    const client = new Client({
-        // We don't need a node to generate a mnemonic
-        offline: true,
-    });
+    const client = new Client({});
 
     try {
         const mnemonic = await client.generateMnemonic();

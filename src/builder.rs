@@ -82,9 +82,6 @@ pub struct ClientBuilder {
     /// Timeout when sending a block that requires remote proof of work
     #[serde(rename = "remotePowTimeout", default = "default_remote_pow_timeout")]
     pub remote_pow_timeout: Duration,
-    /// If the Client should be able to use without a node connection
-    #[serde(default)]
-    pub offline: bool,
     /// The amount of threads to be used for proof of work
     #[serde(rename = "powWorkerCount", default)]
     pub pow_worker_count: Option<usize>,
@@ -119,7 +116,6 @@ impl Default for ClientBuilder {
             network_info: NetworkInfo::default(),
             api_timeout: DEFAULT_API_TIMEOUT,
             remote_pow_timeout: DEFAULT_REMOTE_POW_API_TIMEOUT,
-            offline: false,
             pow_worker_count: None,
         }
     }
@@ -209,12 +205,6 @@ impl ClientBuilder {
     /// Every node will be considered healthy and ready to use.
     pub fn with_node_sync_disabled(mut self) -> Self {
         self.node_manager_builder = self.node_manager_builder.with_node_sync_disabled();
-        self
-    }
-
-    /// Allows creating the client without nodes for offline address generation or signing
-    pub fn with_offline_mode(mut self) -> Self {
-        self.offline = true;
         self
     }
 

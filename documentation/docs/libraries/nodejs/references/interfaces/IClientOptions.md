@@ -6,7 +6,6 @@ Options for the client builder
 
 ### Properties
 
-- [offline](IClientOptions.md#offline)
 - [primaryNode](IClientOptions.md#primarynode)
 - [primaryPowNode](IClientOptions.md#primarypownode)
 - [nodeSyncEnabled](IClientOptions.md#nodesyncenabled)
@@ -22,14 +21,6 @@ Options for the client builder
 - [localPow](IClientOptions.md#localpow)
 
 ## Properties
-
-### offline
-
-• `Optional` **offline**: `boolean`
-
-If the Client should be able to use without a node connection
-
-___
 
 ### primaryNode
 

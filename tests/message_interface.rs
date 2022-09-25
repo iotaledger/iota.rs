@@ -17,8 +17,7 @@ async fn generate_addresses() {
     let client_config = r#"{
             "nodes":[],
             "localPow":true,
-            "fallbackToLocalPow": true,
-            "offline": true
+            "fallbackToLocalPow": true
     }"#
     .to_string();
     let message_handler = message_interface::create_message_handler(Some(client_config)).unwrap();
@@ -64,8 +63,7 @@ async fn build_and_post_block() {
             ],
             "nodeSyncEnabled": false,
             "localPow":true,
-            "fallbackToLocalPow": true,
-            "offline": true
+            "fallbackToLocalPow": true
         }"#
     .to_string();
     let message_handler = message_interface::create_message_handler(Some(client_config)).unwrap();
@@ -135,8 +133,7 @@ async fn build_and_post_block() {
 // TODO commented until bee provides unverified DTO conversions
 // #[tokio::test]
 // async fn get_block_id() {
-//     let client_config = r#"{"offline": true}"#.to_string();
-//     let message_handler = message_interface::create_message_handler(Some(client_config)).unwrap();
+//     let message_handler = message_interface::create_message_handler(None).unwrap();
 
 //     let block = r#"
 //         {
@@ -177,8 +174,7 @@ async fn build_and_post_block() {
 #[cfg(feature = "stronghold")]
 #[tokio::test]
 async fn stronghold() {
-    let client_config = r#"{"offline": true}"#.to_string();
-    let message_handler = message_interface::create_message_handler(Some(client_config)).unwrap();
+    let message_handler = message_interface::create_message_handler(None).unwrap();
 
     let secret_manager_dto = r#"{"stronghold": {"password": "some_hopefully_secure_password", "snapshotPath": "teststronghold.stronghold"}}"#;
     let mnemonic = String::from(

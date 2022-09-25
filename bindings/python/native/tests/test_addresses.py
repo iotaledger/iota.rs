@@ -10,7 +10,7 @@ tv = dict()
 with open('../../../tests/fixtures/test_vectors.json') as json_file:
     tv = json.load(json_file)
 
-client = IotaClient({'offline': True})
+client = IotaClient()
 
 def test_mnemonic_address_generation():
     mnemonic_address_test_cases = tv['general']['address_generations']

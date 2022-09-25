@@ -18,9 +18,7 @@ const ADDRESS_FILE_NAME = __dirname + '/../../offline_signing/address.json';
 // In this example we will generate an address offline which will be used later to find inputs
 async function run() {
     initLogger();
-    const offlineClient = new Client({
-        offline: true,
-    });
+    const offlineClient = new Client({});
 
     try {
         if (!process.env.NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1) {
