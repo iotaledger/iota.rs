@@ -26,7 +26,7 @@ use tokio::sync::{
 };
 
 pub use self::types::*;
-use crate::{builder::NetworkInfo, Client, Result};
+use crate::{Client, NetworkInfo, Result};
 
 impl Client {
     /// Returns a handle to the MQTT topics manager.

@@ -25,7 +25,7 @@ use serde::Serialize;
 
 #[cfg(feature = "ledger_nano")]
 use crate::secret::LedgerNanoStatus;
-use crate::{api::PreparedTransactionDataDto, builder::NetworkInfo, node_manager::node::Node, Error, NodeInfoWrapper};
+use crate::{api::PreparedTransactionDataDto, node_manager::node::Node, Error, NetworkInfo, NodeInfoWrapper};
 
 /// The response message.
 #[derive(Serialize, Debug)]

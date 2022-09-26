@@ -3,6 +3,7 @@
 
 //! The Client module to connect through HORNET or Bee with API usages
 
+mod builder;
 mod high_level;
 
 use std::{
@@ -24,11 +25,8 @@ use {
     tokio::sync::watch::{Receiver as WatchReceiver, Sender as WatchSender},
 };
 
-use crate::{
-    builder::{ClientBuilder, NetworkInfo},
-    constants::DEFAULT_TIPS_INTERVAL,
-    error::Result,
-};
+pub use self::builder::{ClientBuilder, NetworkInfo};
+use crate::{constants::DEFAULT_TIPS_INTERVAL, error::Result};
 
 /// An instance of the client using HORNET or Bee URI
 #[derive(Clone)]
