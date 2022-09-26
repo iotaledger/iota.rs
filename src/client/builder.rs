@@ -275,10 +275,6 @@ impl ClientBuilder {
         let network_info = Arc::new(RwLock::new(self.network_info));
         let healthy_nodes = Arc::new(RwLock::new(HashSet::new()));
 
-        // TODO was this correct on wasm platforms?
-
-        #[cfg(target_family = "wasm")]
-        let (runtime, sync_kill_sender) = { (None, None) };
         #[cfg(not(target_family = "wasm"))]
         let (runtime, sync_kill_sender) = {
             let nodes = self
