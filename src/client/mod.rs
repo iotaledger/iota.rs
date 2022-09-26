@@ -13,10 +13,7 @@ use std::{
 use bee_block::{output::RentStructure, protocol::ProtocolParameters};
 use bee_pow::providers::{NonceProvider, NonceProviderBuilder};
 #[cfg(not(target_family = "wasm"))]
-use tokio::{
-    runtime::{Handle, Runtime},
-    sync::broadcast::Sender,
-};
+use tokio::{runtime::Runtime, sync::broadcast::Sender};
 #[cfg(feature = "mqtt")]
 use {
     crate::node_api::mqtt::{BrokerOptions, MqttEvent, TopicHandlerMap},
@@ -145,10 +142,18 @@ impl Client {
                 .is_empty();
 
             if !healthy {
-                let handle = Handle::current();
-                let _ = handle.enter();
+                let client = self.clone();
+                let info = std::thread::spawn(move || {
+                    client
+                        .runtime
+                        .clone()
+                        .unwrap()
+                        .block_on(async { client.get_info().await })
+                })
+                .join()
+                .expect("failed to get the node info")?
+                .node_info;
 
-                let info = futures::executor::block_on(async move { self.get_info().await })?.node_info;
                 let mut client_network_info = self.network_info.write().map_err(|_| crate::Error::PoisonError)?;
                 client_network_info.protocol_parameters = info.protocol.try_into()?;
             }
