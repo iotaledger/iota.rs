@@ -303,5 +303,28 @@ fn input_selection_alias() -> Result<()> {
         }
     });
 
+    // Destroy foundry
+    let mut inputs = build_input_signing_data_alias_outputs(vec![(alias_id_1, bech32_address, 50300)]);
+    inputs.extend(build_input_signing_data_foundry_outputs(vec![(
+        alias_id_1,
+        52800,
+        SimpleTokenScheme::new(U256::from(10), U256::from(10), U256::from(10)).unwrap(),
+        None,
+    )]));
+    // Alias output gets the amount from the foundry output added
+    let outputs = vec![build_alias_output(alias_id_1, bech32_address, 103100)];
+    let selected_transaction_data = try_select_inputs(
+        Vec::new(),
+        inputs,
+        outputs,
+        None,
+        &rent_structure,
+        true,
+        0,
+        TOKEN_SUPPLY,
+    )?;
+    // Alias next state
+    assert_eq!(selected_transaction_data.outputs.len(), 1);
+
     Ok(())
 }
