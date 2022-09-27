@@ -1,5 +1,14 @@
 # Changelog
 
+## \[3.0.0-alpha.10]
+
+- Rename submitPayload() to postBlockPayload().
+  - [509535f](https://github.com/iotaledger/iota.rs/commit/509535f6494f384e2fff863fb0637d808928a428) Fix dasel install ([#1276](https://github.com/iotaledger/iota.rs/pull/1276)) on 2022-09-27
+- Remove "offline" field from client options.
+  - [509535f](https://github.com/iotaledger/iota.rs/commit/509535f6494f384e2fff863fb0637d808928a428) Fix dasel install ([#1276](https://github.com/iotaledger/iota.rs/pull/1276)) on 2022-09-27
+- Rename `unsyncedNodes()` to `unhealthyNodes()`.
+  - [509535f](https://github.com/iotaledger/iota.rs/commit/509535f6494f384e2fff863fb0637d808928a428) Fix dasel install ([#1276](https://github.com/iotaledger/iota.rs/pull/1276)) on 2022-09-27
+
 ## \[3.0.0-alpha.9]
 
 - Fix input selection when only native tokens are remaining.
