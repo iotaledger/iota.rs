@@ -273,11 +273,10 @@ impl ClientBuilder {
     /// Build the Client instance.
     pub fn finish(self) -> Result<Client> {
         let network_info = Arc::new(RwLock::new(self.network_info));
-
         let healthy_nodes = Arc::new(RwLock::new(HashSet::new()));
 
         #[cfg(not(target_family = "wasm"))]
-        let (runtime, sync_kill_sender) = if self.node_manager_builder.node_sync_enabled {
+        let (runtime, sync_kill_sender) = {
             let nodes = self
                 .node_manager_builder
                 .primary_node
@@ -308,8 +307,6 @@ impl ClientBuilder {
             .join()
             .expect("failed to init node syncing process");
             (Some(Arc::new(runtime)), Some(sync_kill_sender))
-        } else {
-            (None, None)
         };
 
         #[cfg(feature = "mqtt")]

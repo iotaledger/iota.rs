@@ -3,7 +3,7 @@
 
 #[cfg(not(target_family = "wasm"))]
 use {
-    crate::builder::NetworkInfo,
+    crate::NetworkInfo,
     bee_api_types::responses::InfoResponse as NodeInfo,
     bee_block::protocol::ProtocolParameters,
     std::collections::HashMap,
