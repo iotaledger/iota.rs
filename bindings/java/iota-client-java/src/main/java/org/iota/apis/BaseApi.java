@@ -47,9 +47,9 @@ public class BaseApi {
         ClientResponse response = new Gson().fromJson(jsonResponse, ClientResponse.class);
 
         switch (response.type) {
-            case "Panic":
+            case "panic":
                 throw new RuntimeException(response.toString());
-            case "Error":
+            case "error":
                 throw new ClientException(command.methodName, response.payload.getAsJsonObject().toString());
 
             default:
