@@ -340,16 +340,19 @@ impl Client {
         };
 
         let status_response = self.get_info().await?.node_info.status;
-        let latest_ms_timestamp = status_response.latest_milestone.timestamp;
-        // Check the local time is in the range of +-5 minutes of the node to prevent locking funds by accident
-        if !(latest_ms_timestamp - FIVE_MINUTES_IN_SECONDS..latest_ms_timestamp + FIVE_MINUTES_IN_SECONDS)
-            .contains(&current_time)
-        {
-            return Err(Error::TimeNotSynced {
-                current_time,
-                milestone_timestamp: latest_ms_timestamp,
-            });
+
+        if let Some(latest_ms_timestamp) = status_response.latest_milestone.timestamp {
+            // Check the local time is in the range of +-5 minutes of the node to prevent locking funds by accident
+            if !(latest_ms_timestamp - FIVE_MINUTES_IN_SECONDS..latest_ms_timestamp + FIVE_MINUTES_IN_SECONDS)
+                .contains(&current_time)
+            {
+                return Err(Error::TimeNotSynced {
+                    current_time,
+                    milestone_timestamp: latest_ms_timestamp,
+                });
+            }
         }
+
         Ok(current_time)
     }
 }

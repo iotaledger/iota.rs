@@ -13,9 +13,9 @@ categories = [ "cryptography::cryptocurrencies" ]
 
 [dependencies]
 async-trait = { version = "0.1.57", default-features = false }
-bee-api-types = { git = "https://github.com/iotaledger/bee", rev = "a53ada3360b6554dc03f3b73aecc26032c20ab67", default-features = false }
-bee-block = { git = "https://github.com/iotaledger/bee", rev = "a53ada3360b6554dc03f3b73aecc26032c20ab67", default-features = false, features = [ "serde", "dto", "std" ] }
-bee-pow = { git = "https://github.com/iotaledger/bee", rev = "a53ada3360b6554dc03f3b73aecc26032c20ab67", default-features = false }
+bee-api-types = { version = "1.0.0", default-features = false }
+bee-block = { version = "1.0.0", default-features = false, features = [ "serde", "dto", "std" ] }
+bee-pow = { version = "1.0.0", default-features = false }
 derive_builder = { version = "0.11.2", default-features = false, features = [ "std" ]}
 futures = { version = "0.3.24", default-features = false, features = [ "thread-pool" ] }
 iota-crypto = { version = "0.14.2", default-features = false, features = [ "std", "chacha", "blake2b", "ed25519", "random", "slip10", "bip39", "bip39-en" ] }
@@ -56,7 +56,7 @@ bee-ternary = { version = "1.0.0-alpha.1", default-features = false }
 iota-crypto = { version = "0.14.2", default-features = false, features = [ "curl-p" ] }
 
 [dev-dependencies]
-bee-block = { git = "https://github.com/iotaledger/bee", rev = "a53ada3360b6554dc03f3b73aecc26032c20ab67", default-features = false, features = [ "rand" ] }
+bee-block = { version = "1.0.0", default-features = false, features = [ "rand" ] }
 dotenv = { version = "0.15.0", default-features = false }
 fern-logger = { version = "0.5.0", default-features = false }
 
