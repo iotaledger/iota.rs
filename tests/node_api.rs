@@ -231,6 +231,7 @@ async fn test_get_milestone_by_id() {
                 .status
                 .latest_milestone
                 .milestone_id
+                .unwrap()
                 .parse()
                 .unwrap(),
         )
@@ -269,6 +270,7 @@ async fn test_get_utxo_changes_by_id() {
                 .status
                 .latest_milestone
                 .milestone_id
+                .unwrap()
                 .parse()
                 .unwrap(),
         )

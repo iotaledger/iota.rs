@@ -253,7 +253,7 @@ fn input_selection_alias() -> Result<()> {
         }
         if let Output::Basic(basic_output) = &output {
             // Basic output remainder has the minted native tokens
-            assert_eq!(*basic_output.native_tokens().first().unwrap().amount(), U256::from(10));
+            assert_eq!(basic_output.native_tokens().first().unwrap().amount(), U256::from(10));
         }
     });
 
@@ -299,7 +299,7 @@ fn input_selection_alias() -> Result<()> {
         }
         if let Output::Basic(basic_output) = &output {
             // Basic output remainder has the remaining native tokens
-            assert_eq!(*basic_output.native_tokens().first().unwrap().amount(), U256::from(5));
+            assert_eq!(basic_output.native_tokens().first().unwrap().amount(), U256::from(5));
         }
     });
 

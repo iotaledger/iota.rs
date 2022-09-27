@@ -26,7 +26,7 @@ async fn main() -> Result<()> {
 
     // Fetch the latest milestone ID from the node.
     let info = client.get_info().await?;
-    let milestone_id = MilestoneId::from_str(&info.node_info.status.latest_milestone.milestone_id)?;
+    let milestone_id = MilestoneId::from_str(&info.node_info.status.latest_milestone.milestone_id.unwrap())?;
     // Send the request.
     let milestone = client.get_milestone_by_id(&milestone_id).await?;
 
