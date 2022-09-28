@@ -189,9 +189,9 @@ checksum = "d86b93f97252c47b41663388e6d155714a9d0c398b99f1005cbc5f978b29f445"
 
 [[package]]
 name = "bee-api-types"
-version = "1.0.0"
+version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "539b26b6963b744909bfa6d130a85d2abc0f45a9aaad2400633100604521422b"
+checksum = "dbcb42880efab2183bf20a7ac8ac079470a6075a95068d5997a24cda869213be"
 dependencies = [
  "bee-block",
  "bee-ledger-types",
@@ -201,9 +201,9 @@ dependencies = [
 
 [[package]]
 name = "bee-block"
-version = "1.0.0"
+version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7d124ffdd80872942bb979a0b2b21e9fe069b5eca6c38997e33de30749b94261"
+checksum = "f61cb248b6b443af950e7bf741ee258660aae08d2e437384ce2b954481427517"
 dependencies = [
  "bech32 0.9.1",
  "bee-pow",
@@ -1168,7 +1168,7 @@ dependencies = [
 
 [[package]]
 name = "iota-client"
-version = "2.0.0"
+version = "2.0.1-rc.1"
 dependencies = [
  "async-trait",
  "backtrace",
