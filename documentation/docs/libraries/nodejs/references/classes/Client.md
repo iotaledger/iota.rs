@@ -406,7 +406,7 @@ ___
 
 ### postBlockPayload
 
-▸ **postBlockPayload**(`payload`): `Promise`<`IBlock`\>
+▸ **postBlockPayload**(`payload`): `Promise`<[`string`, `IBlock`]\>
 
 Submit a payload in a block
 
@@ -418,7 +418,7 @@ Submit a payload in a block
 
 #### Returns
 
-`Promise`<`IBlock`\>
+`Promise`<[`string`, `IBlock`]\>
 
 ___
 

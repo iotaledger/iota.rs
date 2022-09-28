@@ -25,7 +25,7 @@ use serde::Serialize;
 
 #[cfg(feature = "ledger_nano")]
 use crate::secret::LedgerNanoStatus;
-use crate::{api::PreparedTransactionDataDto, node_manager::node::Node, Error, NetworkInfo, NodeInfoWrapper};
+use crate::{api::PreparedTransactionDataDto, node_manager::node::Node, Error, NetworkInfoDto, NodeInfoWrapper};
 
 /// The response message.
 #[derive(Serialize, Debug)]
@@ -45,7 +45,7 @@ pub enum Response {
     Node(Node),
     /// Response for:
     /// - [`GetNetworkInfo`](crate::message_interface::Message::GetNetworkInfo)
-    NetworkInfo(NetworkInfo),
+    NetworkInfo(NetworkInfoDto),
     /// Response for:
     /// - [`GetNetworkId`](crate::message_interface::Message::GetNetworkId)
     NetworkId(u64),

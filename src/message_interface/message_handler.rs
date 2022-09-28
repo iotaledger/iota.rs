@@ -294,7 +294,7 @@ impl ClientMessageHandler {
                 Ok(Response::BlockIdWithBlock(block_id, BlockDto::from(&block)))
             }
             Message::GetNode => Ok(Response::Node(self.client.get_node()?)),
-            Message::GetNetworkInfo => Ok(Response::NetworkInfo(self.client.get_network_info()?)),
+            Message::GetNetworkInfo => Ok(Response::NetworkInfo(self.client.get_network_info()?.into())),
             Message::GetNetworkId => Ok(Response::NetworkId(self.client.get_network_id()?)),
             Message::GetBech32Hrp => Ok(Response::Bech32Hrp(self.client.get_bech32_hrp()?)),
             Message::GetMinPowScore => Ok(Response::MinPowScore(self.client.get_min_pow_score()?)),
