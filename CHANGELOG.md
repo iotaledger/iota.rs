@@ -19,6 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security -->
 
+## 2.0.1-rc.1 - 2022-09-28
+
+Re-release as release candidate.
+
 ## 2.0.0 - 2022-09-27
 
 ### Added
