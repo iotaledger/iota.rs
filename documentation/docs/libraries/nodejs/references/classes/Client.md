@@ -25,7 +25,7 @@ The Client to interact with nodes.
 - [prepareTransaction](Client.md#preparetransaction)
 - [storeMnemonic](Client.md#storemnemonic)
 - [signTransaction](Client.md#signtransaction)
-- [postblockpayload](Client.md#postblockpayload)
+- [postBlockPayload](Client.md#postblockpayload)
 - [parseBech32Address](Client.md#parsebech32address)
 - [blockId](Client.md#blockid)
 - [getNode](Client.md#getnode)
