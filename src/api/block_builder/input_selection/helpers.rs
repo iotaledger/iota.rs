@@ -170,23 +170,30 @@ pub(crate) fn sort_input_signing_data(inputs: Vec<InputSigningData>) -> crate::R
 
 // Check if an address is required for unlocking an output in any unlock condition
 // Also returns true if the output is an alias or foundry address and the address to search for matches this one
+// If the output id is provided and the alias/nft address is null, we will calculate the correct one.
 pub(crate) fn output_contains_address(
     output: &Output,
-    output_id: OutputId,
+    output_id: Option<OutputId>,
     required_address: &Address,
     current_time: u32,
 ) -> bool {
     // Check alias and nft addresses
     match output {
         Output::Alias(alias_output) => {
-            if *required_address
-                == Address::Alias(AliasAddress::new(alias_output.alias_id().or_from_output_id(output_id)))
-            {
+            let alias_id = match output_id {
+                Some(output_id) => alias_output.alias_id().or_from_output_id(output_id),
+                None => *alias_output.alias_id(),
+            };
+            if *required_address == Address::Alias(AliasAddress::new(alias_id)) {
                 return true;
             }
         }
         Output::Nft(nft_output) => {
-            if *required_address == Address::Nft(NftAddress::new(nft_output.nft_id().or_from_output_id(output_id))) {
+            let nft_id = match output_id {
+                Some(output_id) => nft_output.nft_id().or_from_output_id(output_id),
+                None => *nft_output.nft_id(),
+            };
+            if *required_address == Address::Nft(NftAddress::new(nft_id)) {
                 return true;
             }
         }
