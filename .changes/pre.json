@@ -10,6 +10,7 @@
     ".changes/ledger-nano-status.md",
     ".changes/ledger-nano-unlocks.md",
     ".changes/native-token-remainder.md",
+    ".changes/nftaliasinputselection.md",
     ".changes/postBlockPayload.md",
     ".changes/pow-hrp-renaming.md",
     ".changes/pre-release.md",

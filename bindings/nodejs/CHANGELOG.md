@@ -1,5 +1,10 @@
 # Changelog
 
+## \[3.0.0-alpha.11]
+
+- Check correct alias and nft addresses of new outputs in input selection.
+  - [ba592b7](https://github.com/iotaledger/iota.rs/commit/ba592b7bec186d922a68e9e72a63417a8298e8a4) Check correct alias and nft addresses for new outputs in input selection ([#1279](https://github.com/iotaledger/iota.rs/pull/1279)) on 2022-09-28
+
 ## \[3.0.0-alpha.10]
 
 - Rename submitPayload() to postBlockPayload().
