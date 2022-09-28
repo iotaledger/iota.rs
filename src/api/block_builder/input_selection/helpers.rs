@@ -220,6 +220,52 @@ pub(crate) fn output_contains_address(
     false
 }
 
+// Check if an address is required for unlocking an output in any unlock condition
+// Also returns true if the output is an alias or foundry address and the address to search for matches this one
+// Checks for a new output where the output is not known yet
+pub(crate) fn new_output_contains_address(output: &Output, required_address: &Address, current_time: u32) -> bool {
+    // Check alias and nft addresses
+    match output {
+        Output::Alias(alias_output) => {
+            if *required_address == Address::Alias(AliasAddress::new(*alias_output.alias_id())) {
+                return true;
+            }
+        }
+        Output::Nft(nft_output) => {
+            if *required_address == Address::Nft(NftAddress::new(*nft_output.nft_id())) {
+                return true;
+            }
+        }
+        _ => {}
+    }
+
+    // Check unlock conditions
+    if let Some(unlock_conditions) = output.unlock_conditions() {
+        if let Some(address_unlock_condition) = unlock_conditions.address() {
+            if required_address == unlock_conditions.locked_address(address_unlock_condition.address(), current_time) {
+                return true;
+            }
+        }
+        if let Some(state_controller_unlock_condition) = unlock_conditions.state_controller_address() {
+            if required_address == state_controller_unlock_condition.address() {
+                return true;
+            }
+        }
+        if let Some(governor_controller_unlock_condition) = unlock_conditions.governor_address() {
+            if required_address == governor_controller_unlock_condition.address() {
+                return true;
+            }
+        }
+        if let Some(immutable_alias_address_unlock_condition) = unlock_conditions.immutable_alias_address() {
+            if required_address == immutable_alias_address_unlock_condition.address() {
+                return true;
+            }
+        }
+    }
+
+    false
+}
+
 pub(crate) fn is_basic_output_address_unlockable(output: &Output, address: &Address, current_time: u32) -> bool {
     match output {
         Output::Basic(_) => {
