@@ -21,7 +21,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 2.0.1-rc.1 - 2022-09-28
 
-Re-release as release candidate.
+Re-release as RC.
+
+### Fixed
+
+- Check correct alias and nft addresses of new outputs in input selection;
 
 ## 2.0.0 - 2022-09-27
 
