@@ -1,5 +1,10 @@
 # Changelog
 
+## \[3.0.0-rc.0]
+
+- Fix types in networkInfo.
+  - [061f773](https://github.com/iotaledger/iota.rs/commit/061f7737d899f5a3c746fb5b1e3ac36669b2580f) Fix types in networkInfo ([#1282](https://github.com/iotaledger/iota.rs/pull/1282)) on 2022-09-28
+
 ## \[3.0.0-alpha.11]
 
 - Check correct alias and nft addresses of new outputs in input selection.
