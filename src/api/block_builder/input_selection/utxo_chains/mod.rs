@@ -17,7 +17,7 @@ use bee_block::{
 
 use super::types::AccumulatedOutputAmounts;
 use crate::{
-    api::input_selection::{get_accumulated_output_amounts, helpers::new_output_contains_address, sdr_not_expired},
+    api::input_selection::{get_accumulated_output_amounts, helpers::output_contains_address, sdr_not_expired},
     secret::types::InputSigningData,
     Client, Result,
 };
@@ -84,7 +84,7 @@ pub(crate) fn select_utxo_chain_inputs(
                         let nft_address = Address::Nft(NftAddress::new(nft_id));
                         let nft_required_in_unlock_condition = outputs.iter().any(|output| {
                             // check if alias address is in unlock condition
-                            new_output_contains_address(output, &nft_address, current_time)
+                            output_contains_address(output, None, &nft_address, current_time)
                         });
 
                         // Don't add if it doesn't give us any amount or native tokens
@@ -125,7 +125,7 @@ pub(crate) fn select_utxo_chain_inputs(
                         let alias_address = Address::Alias(AliasAddress::new(alias_id));
                         let alias_required_in_unlock_condition = outputs.iter().any(|output| {
                             // check if alias address is in unlock condition
-                            new_output_contains_address(output, &alias_address, current_time)
+                            output_contains_address(output, None, &alias_address, current_time)
                         });
 
                         // Don't add if it doesn't give us any amount or native tokens

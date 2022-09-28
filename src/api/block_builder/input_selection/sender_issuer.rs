@@ -230,7 +230,7 @@ pub(crate) fn select_inputs_for_sender_and_issuer<'a>(
                 for input_signing_data in selected_inputs.iter() {
                     if output_contains_address(
                         &input_signing_data.output,
-                        input_signing_data.output_id()?,
+                        Some(input_signing_data.output_id()?),
                         &address,
                         current_time,
                     ) {
@@ -245,7 +245,7 @@ pub(crate) fn select_inputs_for_sender_and_issuer<'a>(
                     if selected_inputs_output_ids.contains(&output_id) {
                         continue;
                     }
-                    if output_contains_address(&input_signing_data.output, output_id, &address, current_time) {
+                    if output_contains_address(&input_signing_data.output, Some(output_id), &address, current_time) {
                         selected_inputs.push(input_signing_data.clone());
                         selected_inputs_output_ids.insert(output_id);
                         // break when we added the required output to the selected_inputs
@@ -350,7 +350,7 @@ fn get_required_addresses_for_sender_and_issuer(
                 if !selected_inputs.iter().any(|input_data| {
                     output_contains_address(
                         &input_data.output,
-                        input_data.output_id().expect("invalid output id in input signing data"),
+                        Some(input_data.output_id().expect("invalid output id in input signing data")),
                         sender_feature.address(),
                         current_time,
                     )
@@ -373,7 +373,7 @@ fn get_required_addresses_for_sender_and_issuer(
                     if !selected_inputs.iter().any(|input_data| {
                         output_contains_address(
                             &input_data.output,
-                            input_data.output_id().expect("invalid output id in input signing data"),
+                            Some(input_data.output_id().expect("invalid output id in input signing data")),
                             issuer_feature.address(),
                             current_time,
                         )
