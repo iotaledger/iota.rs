@@ -8,6 +8,7 @@ use std::{
     time::Duration,
 };
 
+use bee_api_types::responses::{ProtocolResponse, RentStructureResponse};
 use bee_block::protocol::ProtocolParameters;
 #[cfg(not(target_family = "wasm"))]
 use tokio::{runtime::Runtime, sync::broadcast::channel};
@@ -40,6 +41,46 @@ pub struct NetworkInfo {
     /// Tips request interval during PoW in seconds.
     #[serde(rename = "tipsInterval", default = "default_tips_interval")]
     pub tips_interval: u64,
+}
+
+/// Dto for the NetworkInfo
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct NetworkInfoDto {
+    /// Protocol parameters.
+    #[serde(rename = "protocolParameters")]
+    protocol_parameters: ProtocolResponse,
+    /// Local proof of work.
+    #[serde(rename = "localPow")]
+    local_pow: bool,
+    /// Fallback to local proof of work if the node doesn't support remote PoW.
+    #[serde(rename = "fallbackToLocalPow")]
+    fallback_to_local_pow: bool,
+    /// Tips request interval during PoW in seconds.
+    #[serde(rename = "tipsInterval")]
+    tips_interval: u64,
+}
+
+impl From<NetworkInfo> for NetworkInfoDto {
+    fn from(info: NetworkInfo) -> Self {
+        NetworkInfoDto {
+            protocol_parameters: ProtocolResponse {
+                version: info.protocol_parameters.protocol_version(),
+                network_name: info.protocol_parameters.network_name().to_string(),
+                bech32_hrp: info.protocol_parameters.bech32_hrp().to_string(),
+                min_pow_score: info.protocol_parameters.min_pow_score(),
+                below_max_depth: info.protocol_parameters.below_max_depth(),
+                rent_structure: RentStructureResponse {
+                    v_byte_cost: info.protocol_parameters.rent_structure().v_byte_cost,
+                    v_byte_factor_key: info.protocol_parameters.rent_structure().v_byte_factor_key,
+                    v_byte_factor_data: info.protocol_parameters.rent_structure().v_byte_factor_data,
+                },
+                token_supply: info.protocol_parameters.token_supply().to_string(),
+            },
+            local_pow: info.local_pow,
+            fallback_to_local_pow: info.fallback_to_local_pow,
+            tips_interval: info.tips_interval,
+        }
+    }
 }
 
 fn default_local_pow() -> bool {

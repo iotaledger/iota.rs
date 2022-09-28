@@ -43,7 +43,6 @@
 - [IMqttBrokerOptions](interfaces/IMqttBrokerOptions.md)
 - [INode](interfaces/INode.md)
 - [INetworkInfo](interfaces/INetworkInfo.md)
-- [IRentStructureResponse](interfaces/IRentStructureResponse.md)
 - [INodeInfoWrapper](interfaces/INodeInfoWrapper.md)
 - [IAliasOutputBuilderOptions](interfaces/IAliasOutputBuilderOptions.md)
 - [IBasicOutputBuilderOptions](interfaces/IBasicOutputBuilderOptions.md)

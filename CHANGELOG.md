@@ -19,6 +19,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security -->
 
+## Unreleased - YYYY-MM-DD
+
+### Added
+
+- `NetworkInfoDto`;
+
+### Changed
+
+- Update dependencies;
+- Return `NetworkInfoDto` instead of `NetworkInfo` in message_interface;
+
 ## 2.0.1-rc.1 - 2022-09-28
 
 Re-release as RC.

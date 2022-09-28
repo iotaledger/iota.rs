@@ -22,7 +22,7 @@ use {
     tokio::sync::watch::{Receiver as WatchReceiver, Sender as WatchSender},
 };
 
-pub use self::builder::{ClientBuilder, NetworkInfo};
+pub use self::builder::{ClientBuilder, NetworkInfo, NetworkInfoDto};
 use crate::{constants::DEFAULT_TIPS_INTERVAL, error::Result};
 
 /// An instance of the client using HORNET or Bee URI

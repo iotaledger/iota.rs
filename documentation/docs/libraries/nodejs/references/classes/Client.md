@@ -25,7 +25,7 @@ The Client to interact with nodes.
 - [prepareTransaction](Client.md#preparetransaction)
 - [storeMnemonic](Client.md#storemnemonic)
 - [signTransaction](Client.md#signtransaction)
-- [postblockpayload](Client.md#postblockpayload)
+- [postBlockPayload](Client.md#postblockpayload)
 - [parseBech32Address](Client.md#parsebech32address)
 - [blockId](Client.md#blockid)
 - [getNode](Client.md#getnode)
@@ -406,7 +406,7 @@ ___
 
 ### postBlockPayload
 
-▸ **postBlockPayload**(`payload`): `Promise`<`IBlock`\>
+▸ **postBlockPayload**(`payload`): `Promise`<[`string`, `IBlock`]\>
 
 Submit a payload in a block
 
@@ -418,7 +418,7 @@ Submit a payload in a block
 
 #### Returns
 
-`Promise`<`IBlock`\>
+`Promise`<[`string`, `IBlock`]\>
 
 ___
 
