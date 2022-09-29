@@ -65,10 +65,10 @@ public class WrongSeedConversionSecretManager {
         BuildBlockOptions.ClientBlockBuilderOutputAddress output = new BuildBlockOptions.ClientBlockBuilderOutputAddress(receiverAddress, Integer.toString(amountToMigrate));
 
         // Build block.
-        Block b = client.buildAndPostBlock(wrongSecretManager, new BuildBlockOptions().withInputs(inputs.stream().toArray(UtxoInput[]::new)).withOutput(output));
+        Map.Entry<BlockId, Block> b = client.buildAndPostBlock(wrongSecretManager, new BuildBlockOptions().withInputs(inputs.stream().toArray(UtxoInput[]::new)).withOutput(output));
 
         // Post the block.
-        BlockId blockId = client.postBlock(b);
+        BlockId blockId = client.postBlock(b.getValue());
 
         // Print the block ID.
         System.out.println(blockId);
