@@ -2,14 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example split_funds --release
+//! In this example we will send 100 basic outputs to our first address
 
 use iota_client::{
     request_funds_from_faucet,
     secret::{mnemonic::MnemonicSecretManager, SecretManager},
     Client, Result,
 };
-
-/// In this example we will send 100 basic outputs to our first address
 
 #[tokio::main]
 async fn main() -> Result<()> {

@@ -2,15 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example quorum --release
+//! In this example we will get outputs with quorum, which will compare the responses from the nodes.
 
 use iota_client::{
     node_api::indexer::query_parameters::QueryParameter,
     secret::{mnemonic::MnemonicSecretManager, SecretManager},
     Client, Result,
 };
-
-/// In this example we will get the account balance of a known seed with quorum, which will compare the responses from
-/// the nodes
 
 #[tokio::main]
 async fn main() -> Result<()> {

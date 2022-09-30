@@ -1,14 +1,13 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! cargo run --example transaction --release
+//! In this example we will send a transaction.
+//! Run: `cargo run --example transaction --release`.
 
 use iota_client::{
     secret::{mnemonic::MnemonicSecretManager, SecretManager},
     Client, Result,
 };
-
-/// In this example we will send a transaction
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -39,6 +38,8 @@ async fn main() -> Result<()> {
         )?
         .finish()
         .await?;
+
+    println!("{:#?}", block);
 
     println!(
         "Transaction sent: {}/block/{}",

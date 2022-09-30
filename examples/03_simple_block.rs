@@ -2,10 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example 03_simple_block --release
+//! In this example we will send a block without a payload.
 
 use iota_client::{Client, Result};
-
-/// In this example we will send a block without a payload
 
 #[tokio::main]
 async fn main() -> Result<()> {

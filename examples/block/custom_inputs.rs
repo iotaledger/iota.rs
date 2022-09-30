@@ -1,7 +1,9 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! cargo run --example custom_inputs --release
+//! In this example we will send 1_000_000 tokens to atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r.
+//! This address belongs to the first seed in .env.example.
+//! Run: `cargo run --example custom_inputs --release`.
 
 use iota_client::{
     block::input::UtxoInput,
@@ -11,12 +13,9 @@ use iota_client::{
     Client, Result,
 };
 
-/// In this example we will send 1_000_000 tokens to atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r
-/// This address belongs to the first seed in .env.example
-
 #[tokio::main]
 async fn main() -> Result<()> {
-    // This example uses dotenv, which is not safe for use in production
+    // This example uses dotenv, which is not safe for use in production.
     dotenv::dotenv().ok();
 
     let node_url = std::env::var("NODE_URL").unwrap();
@@ -55,6 +54,8 @@ async fn main() -> Result<()> {
         )?
         .finish()
         .await?;
+
+    println!("{:#?}", block);
 
     println!(
         "Transaction sent: {}/block/{}",

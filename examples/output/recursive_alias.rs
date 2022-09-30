@@ -5,10 +5,10 @@
 
 use std::env;
 
-use bee_block::address::{Address, AliasAddress};
 use dotenv::dotenv;
 use iota_client::{
     block::{
+        address::{Address, AliasAddress},
         output::{
             feature::{IssuerFeature, SenderFeature},
             unlock_condition::{

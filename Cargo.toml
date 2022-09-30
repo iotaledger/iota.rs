@@ -80,6 +80,40 @@ strip = "symbols"
 [package.metadata.cargo-udeps.ignore]
 normal = [ "async-trait", "derive_builder" ]
 
+# Block examples
+
+[[example]]
+name = "block_no_payload"
+path = "examples/block/00_block_no_payload.rs"
+
+[[example]]
+name = "block_confirmation_time"
+path = "examples/block/01_block_confirmation_time.rs"
+
+[[example]]
+name = "block_custom_parents"
+path = "examples/block/02_block_custom_parents.rs"
+
+[[example]]
+name = "block_custom_payload"
+path = "examples/block/03_block_custom_payload.rs"
+
+[[example]]
+name = "block_tagged_data"
+path = "examples/block/04_block_tagged_data.rs"
+
+[[example]]
+name = "custom_inputs"
+path = "examples/block/custom_inputs.rs"
+
+[[example]]
+name = "output"
+path = "examples/block/output.rs"
+
+[[example]]
+name = "transaction"
+path = "examples/block/transaction.rs"
+
 # Node API core examples
 
 [[example]]
@@ -231,38 +265,6 @@ name = "stronghold"
 required-features = [ "stronghold" ]
 
 [[example]]
-name = "block_time"
-path = "examples/block/block_time.rs"
-
-[[example]]
-name = "custom_inputs"
-path = "examples/block/custom_inputs.rs"
-
-[[example]]
-name = "custom_parent"
-path = "examples/block/custom_parent.rs"
-
-[[example]]
-name = "custom_payload"
-path = "examples/block/custom_payload.rs"
-
-[[example]]
-name = "data_block"
-path = "examples/block/data_block.rs"
-
-[[example]]
-name = "output"
-path = "examples/block/output.rs"
-
-[[example]]
-name = "simple_block"
-path = "examples/block/simple_block.rs"
-
-[[example]]
-name = "transaction"
-path = "examples/block/transaction.rs"
-
-[[example]]
 name = "0_address_generation"
 path = "examples/offline_signing/0_address_generation.rs"
 
@@ -280,40 +282,40 @@ path = "examples/offline_signing/3_send_block.rs"
 
 [[example]]
 name = "all"
-path = "examples/outputs/all.rs"
+path = "examples/output/all.rs"
 
 [[example]]
 name = "all_automatic_input_selection"
-path = "examples/outputs/all_automatic_input_selection.rs"
+path = "examples/output/all_automatic_input_selection.rs"
 
 [[example]]
 name = "alias"
-path = "examples/outputs/alias.rs"
+path = "examples/output/alias.rs"
 
 [[example]]
 name = "recursive_alias"
-path = "examples/outputs/recursive_alias.rs"
+path = "examples/output/recursive_alias.rs"
 
 [[example]]
 name = "basic"
-path = "examples/outputs/basic.rs"
+path = "examples/output/basic.rs"
 
 [[example]]
 name = "expiration"
-path = "examples/outputs/expiration.rs"
+path = "examples/output/expiration.rs"
 
 [[example]]
 name = "foundry"
-path = "examples/outputs/foundry.rs"
+path = "examples/output/foundry.rs"
 
 [[example]]
 name = "micro_transaction"
-path = "examples/outputs/micro_transaction.rs"
+path = "examples/output/micro_transaction.rs"
 
 [[example]]
 name = "native_tokens"
-path = "examples/outputs/native_tokens.rs"
+path = "examples/output/native_tokens.rs"
 
 [[example]]
 name = "nft"
-path = "examples/outputs/nft.rs"
+path = "examples/output/nft.rs"

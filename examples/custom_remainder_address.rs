@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! cargo run --example custom_remainder_address --release
+//! In this example we will send 9_000_000 tokens to a given receiver and 1_000_000 tokens to a custom remainder
+//! address. The used addresses belong to the first seed in .env.example.
 
 use iota_client::{
     node_api::indexer::query_parameters::QueryParameter,
@@ -9,9 +11,6 @@ use iota_client::{
     secret::{mnemonic::MnemonicSecretManager, SecretManager},
     Client, Result,
 };
-
-/// In this example we will send 9_000_000 tokens to a given receiver and 1_000_000 tokens to a custom remainder
-/// address. The used addresses belong to the first seed in .env.example.
 
 #[tokio::main]
 async fn main() -> Result<()> {

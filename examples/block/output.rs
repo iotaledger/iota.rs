@@ -1,7 +1,8 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! cargo run --example output --release
+//! In this example we will send a transaction.
+//! Run: `cargo run --example output --release`.
 
 use iota_client::{
     block::output::{
@@ -13,11 +14,9 @@ use iota_client::{
     Client, Result,
 };
 
-/// In this example we will send a transaction
-
 #[tokio::main]
 async fn main() -> Result<()> {
-    // This example uses dotenv, which is not safe for use in production
+    // This example uses dotenv, which is not safe for use in production.
     // Configure your own mnemonic in ".env". Since the output amount cannot be zero, the mnemonic must contain non-zero
     // balance
     dotenv::dotenv().ok();
@@ -52,26 +51,10 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
 
+    println!("{:#?}", block);
+
     println!("Transaction sent: {node_url}/api/core/v2/blocks/{}", block.id());
     println!("Block metadata: {node_url}/api/core/v2/blocks/{}/metadata", block.id());
 
-    // conflict reasons from https://github.com/gohornet/hornet/blob/4cd911a5aaed017c31a2093fc27bf4d06182ac67/pkg/model/storage/block_metadata.go#L31
-    // 	// ConflictInputUTXOAlreadySpent the referenced UTXO was already spent.
-    // ConflictInputUTXOAlreadySpent = 1
-
-    // // ConflictInputUTXOAlreadySpentInThisMilestone the referenced UTXO was already spent while confirming this
-    // milestone ConflictInputUTXOAlreadySpentInThisMilestone = 2
-
-    // // ConflictInputUTXONotFound the referenced UTXO cannot be found.
-    // ConflictInputUTXONotFound = 3
-
-    // // ConflictInputOutputSumMismatch the sum of the inputs and output values does not match.
-    // ConflictInputOutputSumMismatch = 4
-
-    // // ConflictInvalidSignature the unlock block signature is invalid.
-    // ConflictInvalidSignature = 5
-
-    // // ConflictSemanticValidationFailed the semantic validation failed.
-    // ConflictSemanticValidationFailed = 255
     Ok(())
 }
