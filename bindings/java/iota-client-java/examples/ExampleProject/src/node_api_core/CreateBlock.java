@@ -4,6 +4,9 @@ import org.iota.Client;
 import org.iota.types.Block;
 import org.iota.types.ClientConfig;
 import org.iota.types.ClientException;
+import org.iota.types.ids.BlockId;
+
+import java.util.Map;
 
 public class CreateBlock {
     public static void main(String[] args) throws ClientException {
