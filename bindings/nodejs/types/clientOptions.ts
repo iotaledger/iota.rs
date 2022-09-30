@@ -4,8 +4,6 @@ import type { IMqttBrokerOptions, INetworkInfo, INode } from './network';
 
 /** Options for the client builder */
 export interface IClientOptions {
-    /** If the Client should be able to use without a node connection */
-    offline?: boolean;
     /** Node which will be tried first for all requests */
     primaryNode?: string | INode;
     /** Node which will be tried first when using remote PoW, even before the primary_node */

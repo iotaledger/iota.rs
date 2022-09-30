@@ -46,10 +46,12 @@ async fn main() -> Result<()> {
         &std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
     )?);
 
+    let token_supply = client.get_token_supply()?;
+
     let address = client.get_addresses(&secret_manager).with_range(0..1).get_raw().await?[0];
     println!(
         "{}",
-        request_funds_from_faucet(&faucet_url, &address.to_bech32(client.get_bech32_hrp().await?)).await?
+        request_funds_from_faucet(&faucet_url, &address.to_bech32(client.get_bech32_hrp()?)).await?
     );
     tokio::time::sleep(std::time::Duration::from_secs(20)).await;
 
@@ -68,7 +70,7 @@ async fn main() -> Result<()> {
             address,
         )));
 
-    let outputs = vec![alias_output_builder.clone().finish_output()?];
+    let outputs = vec![alias_output_builder.clone().finish_output(token_supply)?];
 
     let block = client
         .block()
@@ -106,13 +108,13 @@ async fn main() -> Result<()> {
             .with_alias_id(alias_id)
             .with_state_index(1)
             .with_foundry_counter(1)
-            .finish_output()?,
+            .finish_output(token_supply)?,
         FoundryOutputBuilder::new_with_amount(1_000_000, 1, token_scheme)?
             .add_native_token(NativeToken::new(token_id, U256::from(70u8))?)
             .add_unlock_condition(UnlockCondition::ImmutableAliasAddress(
                 ImmutableAliasAddressUnlockCondition::new(AliasAddress::from(alias_id)),
             ))
-            .finish_output()?,
+            .finish_output(token_supply)?,
     ];
 
     let block = client
@@ -154,11 +156,11 @@ async fn main() -> Result<()> {
             .with_alias_id(alias_id)
             .with_state_index(2)
             .with_foundry_counter(1)
-            .finish_output()?,
+            .finish_output(token_supply)?,
         foundry_output_builder
             .clone()
             .add_native_token(NativeToken::new(token_id, U256::from(50u8))?)
-            .finish_output()?,
+            .finish_output(token_supply)?,
     ];
 
     let block = client
@@ -191,18 +193,18 @@ async fn main() -> Result<()> {
             .with_alias_id(alias_id)
             .with_state_index(3)
             .with_foundry_counter(1)
-            .finish_output()?,
-        foundry_output_builder.finish_output()?,
+            .finish_output(token_supply)?,
+        foundry_output_builder.finish_output(token_supply)?,
         basic_output_builder
             .clone()
             .add_native_token(NativeToken::new(token_id, U256::from(50u8))?)
-            .finish_output()?,
+            .finish_output(token_supply)?,
     ];
 
     // get additional input for the new basic output
     let output_ids = client
         .basic_output_ids(vec![QueryParameter::Address(
-            address.to_bech32(client.get_bech32_hrp().await?),
+            address.to_bech32(client.get_bech32_hrp()?),
         )])
         .await?;
 
@@ -229,7 +231,7 @@ async fn main() -> Result<()> {
         basic_output_builder
             .clone()
             .add_native_token(NativeToken::new(token_id, U256::from(50u8))?)
-            .finish_output()?,
+            .finish_output(token_supply)?,
     ];
 
     let block = client
@@ -252,7 +254,7 @@ async fn main() -> Result<()> {
     let outputs = vec![
         basic_output_builder
             .add_native_token(NativeToken::new(token_id, U256::from(30u8))?)
-            .finish_output()?,
+            .finish_output(token_supply)?,
     ];
 
     let block = client

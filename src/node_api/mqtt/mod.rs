@@ -4,7 +4,10 @@
 //! IOTA node MQTT API
 pub mod types;
 
-use std::{sync::Arc, time::Instant};
+use std::{
+    sync::{Arc, RwLock as StdRwLock},
+    time::Instant,
+};
 
 use bee_block::{
     payload::{milestone::ReceiptMilestoneOption, MilestonePayload},
@@ -17,10 +20,43 @@ use rumqttc::{
     AsyncClient as MqttClient, Event, EventLoop, Incoming, MqttOptions, QoS, Request, Subscribe, SubscribeFilter,
     Transport,
 };
-use tokio::sync::{watch::Sender, RwLock};
+use tokio::sync::{
+    watch::{Receiver as WatchReceiver, Sender},
+    RwLock,
+};
 
 pub use self::types::*;
-use crate::{Client, Result};
+use crate::{Client, NetworkInfo, Result};
+
+impl Client {
+    /// Returns a handle to the MQTT topics manager.
+    #[cfg(feature = "mqtt")]
+    pub fn subscriber(&mut self) -> MqttManager<'_> {
+        MqttManager::new(self)
+    }
+
+    /// Subscribe to MQTT events with a callback.
+    #[cfg(feature = "mqtt")]
+    pub async fn subscribe<C: Fn(&TopicEvent) + Send + Sync + 'static>(
+        &mut self,
+        topics: Vec<Topic>,
+        callback: C,
+    ) -> crate::Result<()> {
+        MqttManager::new(self).with_topics(topics).subscribe(callback).await
+    }
+
+    /// Unsubscribe from MQTT events.
+    #[cfg(feature = "mqtt")]
+    pub async fn unsubscribe(&mut self, topics: Vec<Topic>) -> crate::Result<()> {
+        MqttManager::new(self).with_topics(topics).unsubscribe().await
+    }
+
+    /// Returns the mqtt event receiver.
+    #[cfg(feature = "mqtt")]
+    pub fn mqtt_event_receiver(&self) -> WatchReceiver<MqttEvent> {
+        self.mqtt_event_channel.1.clone()
+    }
+}
 
 async fn get_mqtt_client(client: &mut Client) -> Result<&mut MqttClient> {
     // if the client was disconnected, we clear it so we can start over
@@ -35,9 +71,9 @@ async fn get_mqtt_client(client: &mut Client) -> Result<&mut MqttClient> {
                 {
                     client
                         .node_manager
-                        .synced_nodes
+                        .healthy_nodes
                         .read()
-                        .map_or(client.node_manager.nodes.clone(), |synced_nodes| synced_nodes.clone())
+                        .map_or(client.node_manager.nodes.clone(), |healthy_nodes| healthy_nodes.clone())
                 }
                 #[cfg(target_family = "wasm")]
                 {
@@ -88,6 +124,7 @@ async fn get_mqtt_client(client: &mut Client) -> Result<&mut MqttClient> {
                         client.broker_options.clone(),
                         client.mqtt_event_channel.0.clone(),
                         connection,
+                        client.network_info.clone(),
                     );
                 }
             }
@@ -101,6 +138,7 @@ fn poll_mqtt(
     options: BrokerOptions,
     event_sender: Arc<Sender<MqttEvent>>,
     mut event_loop: EventLoop,
+    network_info: Arc<StdRwLock<NetworkInfo>>,
 ) {
     std::thread::spawn(move || {
         let runtime = tokio::runtime::Builder::new_current_thread()
@@ -117,9 +155,11 @@ fn poll_mqtt(
             let mut error_instant = Instant::now();
             let mut connection_failure_count = 0;
             let handle = event_loop.handle();
+
             loop {
                 let event = event_loop.poll().await;
                 let mqtt_topic_handlers_guard = mqtt_topic_handlers_guard.clone();
+
                 match event {
                     Ok(Event::Incoming(Incoming::ConnAck(_))) => {
                         let _ = event_sender.send(MqttEvent::Connected);
@@ -138,13 +178,18 @@ fn poll_mqtt(
                     }
                     Ok(Event::Incoming(Incoming::Publish(p))) => {
                         let topic = p.topic.clone();
+                        let network_info = network_info.clone();
+
                         crate::async_runtime::spawn(async move {
                             let mqtt_topic_handlers = mqtt_topic_handlers_guard.read().await;
+
                             if let Some(handlers) = mqtt_topic_handlers.get(&Topic::new_unchecked(topic.clone())) {
                                 let event = {
                                     if topic.contains("blocks") || topic.contains("included-block") {
                                         let payload = &*p.payload;
-                                        match Block::unpack_verified(payload, &()) {
+                                        let protocol_parameters = &network_info.read().unwrap().protocol_parameters;
+
+                                        match Block::unpack_verified(payload, protocol_parameters) {
                                             Ok(block) => Ok(TopicEvent {
                                                 topic,
                                                 payload: MqttPayload::Block(block),
@@ -156,7 +201,9 @@ fn poll_mqtt(
                                         }
                                     } else if topic.contains("milestones") {
                                         let payload = &*p.payload;
-                                        match MilestonePayload::unpack_verified(payload, &()) {
+                                        let protocol_parameters = &network_info.read().unwrap().protocol_parameters;
+
+                                        match MilestonePayload::unpack_verified(payload, protocol_parameters) {
                                             Ok(milestone_payload) => Ok(TopicEvent {
                                                 topic,
                                                 payload: MqttPayload::MilestonePayload(milestone_payload),
@@ -168,7 +215,9 @@ fn poll_mqtt(
                                         }
                                     } else if topic.contains("receipts") {
                                         let payload = &*p.payload;
-                                        match ReceiptMilestoneOption::unpack_verified(payload, &()) {
+                                        let protocol_parameters = &network_info.read().unwrap().protocol_parameters;
+
+                                        match ReceiptMilestoneOption::unpack_verified(payload, protocol_parameters) {
                                             Ok(receipt) => Ok(TopicEvent {
                                                 topic,
                                                 payload: MqttPayload::Receipt(receipt),

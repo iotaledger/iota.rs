@@ -41,8 +41,10 @@ async fn main() -> Result<()> {
         &std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
     )?);
 
+    let token_supply = client.get_token_supply()?;
+
     let address = client.get_addresses(&secret_manager).with_range(0..1).get_raw().await?[0];
-    request_funds_from_faucet(&faucet_url, &address.to_bech32(client.get_bech32_hrp().await?)).await?;
+    request_funds_from_faucet(&faucet_url, &address.to_bech32(client.get_bech32_hrp()?)).await?;
     tokio::time::sleep(std::time::Duration::from_secs(15)).await;
 
     //////////////////////////////////
@@ -59,7 +61,7 @@ async fn main() -> Result<()> {
             address,
         )));
 
-    let outputs = vec![alias_output_builder.clone().finish_output()?];
+    let outputs = vec![alias_output_builder.clone().finish_output(token_supply)?];
 
     let block = client
         .block()
@@ -83,7 +85,7 @@ async fn main() -> Result<()> {
         alias_output_builder
             .with_alias_id(alias_id)
             .with_state_index(1)
-            .finish_output()?,
+            .finish_output(token_supply)?,
     ];
 
     let block = client

@@ -16,6 +16,8 @@ use crate::input_selection::{
     build_input_signing_data_foundry_outputs, build_input_signing_data_most_basic_outputs, build_most_basic_output,
 };
 
+const TOKEN_SUPPLY: u64 = 1_813_620_509_061_365;
+
 #[test]
 fn input_selection_alias() -> Result<()> {
     let rent_structure = RentStructure::build()
@@ -31,14 +33,31 @@ fn input_selection_alias() -> Result<()> {
     // input alias == output alias
     let inputs = build_input_signing_data_alias_outputs(vec![(alias_id_1, bech32_address, 1_000_000)]);
     let outputs = vec![build_alias_output(alias_id_1, bech32_address, 1_000_000)];
-    let selected_transaction_data =
-        try_select_inputs(Vec::new(), inputs.clone(), outputs, None, &rent_structure, false, 0)?;
+    let selected_transaction_data = try_select_inputs(
+        Vec::new(),
+        inputs.clone(),
+        outputs,
+        None,
+        &rent_structure,
+        false,
+        0,
+        TOKEN_SUPPLY,
+    )?;
     assert_eq!(selected_transaction_data.inputs, inputs);
 
     // output amount > input amount
     let inputs = build_input_signing_data_alias_outputs(vec![(alias_id_1, bech32_address, 1_000_000)]);
     let outputs = vec![build_most_basic_output(bech32_address, 2_000_000)];
-    match try_select_inputs(Vec::new(), inputs, outputs, None, &rent_structure, false, 0) {
+    match try_select_inputs(
+        Vec::new(),
+        inputs,
+        outputs,
+        None,
+        &rent_structure,
+        false,
+        0,
+        TOKEN_SUPPLY,
+    ) {
         Err(Error::NotEnoughBalance {
             found: 1_000_000,
             // Amount we want to send + storage deposit for alias remainder
@@ -50,14 +69,32 @@ fn input_selection_alias() -> Result<()> {
     // basic output with alias as input
     let inputs = build_input_signing_data_alias_outputs(vec![(alias_id_1, bech32_address, 2_251_500)]);
     let outputs = vec![build_most_basic_output(bech32_address, 2_000_000)];
-    let selected_transaction_data = try_select_inputs(Vec::new(), inputs, outputs, None, &rent_structure, false, 0)?;
+    let selected_transaction_data = try_select_inputs(
+        Vec::new(),
+        inputs,
+        outputs,
+        None,
+        &rent_structure,
+        false,
+        0,
+        TOKEN_SUPPLY,
+    )?;
     // basic output + alias remainder
     assert_eq!(selected_transaction_data.outputs.len(), 2);
 
     // mint alias
     let inputs = build_input_signing_data_most_basic_outputs(vec![(bech32_address, 2_000_000)]);
     let outputs = vec![build_alias_output(alias_id_0, bech32_address, 1_000_000)];
-    let selected_transaction_data = try_select_inputs(Vec::new(), inputs, outputs, None, &rent_structure, false, 0)?;
+    let selected_transaction_data = try_select_inputs(
+        Vec::new(),
+        inputs,
+        outputs,
+        None,
+        &rent_structure,
+        false,
+        0,
+        TOKEN_SUPPLY,
+    )?;
     // One output should be added for the remainder
     assert_eq!(selected_transaction_data.outputs.len(), 2);
     // Output contains the new minted alias id
@@ -72,7 +109,16 @@ fn input_selection_alias() -> Result<()> {
     // burn alias
     let inputs = build_input_signing_data_alias_outputs(vec![(alias_id_1, bech32_address, 2_000_000)]);
     let outputs = vec![build_most_basic_output(bech32_address, 2_000_000)];
-    let selected_transaction_data = try_select_inputs(Vec::new(), inputs, outputs, None, &rent_structure, true, 0)?;
+    let selected_transaction_data = try_select_inputs(
+        Vec::new(),
+        inputs,
+        outputs,
+        None,
+        &rent_structure,
+        true,
+        0,
+        TOKEN_SUPPLY,
+    )?;
     // No remainder
     assert_eq!(selected_transaction_data.outputs.len(), 1);
     // Output is a basic output
@@ -81,7 +127,16 @@ fn input_selection_alias() -> Result<()> {
     // not enough storage deposit for remainder
     let inputs = build_input_signing_data_alias_outputs(vec![(alias_id_1, bech32_address, 1_000_001)]);
     let outputs = vec![build_alias_output(alias_id_1, bech32_address, 1_000_000)];
-    match try_select_inputs(Vec::new(), inputs, outputs, None, &rent_structure, false, 0) {
+    match try_select_inputs(
+        Vec::new(),
+        inputs,
+        outputs,
+        None,
+        &rent_structure,
+        false,
+        0,
+        TOKEN_SUPPLY,
+    ) {
         Err(Error::BlockError(bee_block::Error::InsufficientStorageDepositAmount {
             amount: 1,
             required: 213000,
@@ -92,7 +147,16 @@ fn input_selection_alias() -> Result<()> {
     // missing input for output alias
     let inputs = build_input_signing_data_most_basic_outputs(vec![(bech32_address, 1_000_000)]);
     let outputs = vec![build_alias_output(alias_id_1, bech32_address, 1_000_000)];
-    match try_select_inputs(Vec::new(), inputs, outputs, None, &rent_structure, false, 0) {
+    match try_select_inputs(
+        Vec::new(),
+        inputs,
+        outputs,
+        None,
+        &rent_structure,
+        false,
+        0,
+        TOKEN_SUPPLY,
+    ) {
         Err(Error::MissingInput(err_msg)) => {
             assert_eq!(
                 &err_msg,
@@ -114,7 +178,16 @@ fn input_selection_alias() -> Result<()> {
         SimpleTokenScheme::new(U256::from(0), U256::from(0), U256::from(10)).unwrap(),
         None,
     )];
-    match try_select_inputs(Vec::new(), inputs, outputs, None, &rent_structure, false, 0) {
+    match try_select_inputs(
+        Vec::new(),
+        inputs,
+        outputs,
+        None,
+        &rent_structure,
+        false,
+        0,
+        TOKEN_SUPPLY,
+    ) {
         Err(Error::MissingInput(err_msg)) => {
             assert_eq!(
                 &err_msg,
@@ -132,7 +205,16 @@ fn input_selection_alias() -> Result<()> {
         SimpleTokenScheme::new(U256::from(0), U256::from(0), U256::from(10)).unwrap(),
         None,
     )];
-    let selected_transaction_data = try_select_inputs(Vec::new(), inputs, outputs, None, &rent_structure, false, 0)?;
+    let selected_transaction_data = try_select_inputs(
+        Vec::new(),
+        inputs,
+        outputs,
+        None,
+        &rent_structure,
+        false,
+        0,
+        TOKEN_SUPPLY,
+    )?;
     // Alias next state + foundry
     assert_eq!(selected_transaction_data.outputs.len(), 2);
     // Alias state index is increased
@@ -151,7 +233,16 @@ fn input_selection_alias() -> Result<()> {
         SimpleTokenScheme::new(U256::from(10), U256::from(0), U256::from(10)).unwrap(),
         None,
     )];
-    let selected_transaction_data = try_select_inputs(Vec::new(), inputs, outputs, None, &rent_structure, false, 0)?;
+    let selected_transaction_data = try_select_inputs(
+        Vec::new(),
+        inputs,
+        outputs,
+        None,
+        &rent_structure,
+        false,
+        0,
+        TOKEN_SUPPLY,
+    )?;
     // Alias next state + foundry + basic output with native tokens
     assert_eq!(selected_transaction_data.outputs.len(), 3);
     // Alias state index is increased
@@ -162,7 +253,7 @@ fn input_selection_alias() -> Result<()> {
         }
         if let Output::Basic(basic_output) = &output {
             // Basic output remainder has the minted native tokens
-            assert_eq!(*basic_output.native_tokens().first().unwrap().amount(), U256::from(10));
+            assert_eq!(basic_output.native_tokens().first().unwrap().amount(), U256::from(10));
         }
     });
 
@@ -188,8 +279,16 @@ fn input_selection_alias() -> Result<()> {
         SimpleTokenScheme::new(U256::from(10), U256::from(5), U256::from(10)).unwrap(),
         None,
     )];
-    let selected_transaction_data =
-        try_select_inputs(Vec::new(), inputs.clone(), outputs, None, &rent_structure, false, 0)?;
+    let selected_transaction_data = try_select_inputs(
+        Vec::new(),
+        inputs.clone(),
+        outputs,
+        None,
+        &rent_structure,
+        false,
+        0,
+        TOKEN_SUPPLY,
+    )?;
     // Alias next state + foundry + basic output with native tokens
     assert_eq!(selected_transaction_data.outputs.len(), 3);
     // Alias state index is increased
@@ -200,9 +299,32 @@ fn input_selection_alias() -> Result<()> {
         }
         if let Output::Basic(basic_output) = &output {
             // Basic output remainder has the remaining native tokens
-            assert_eq!(*basic_output.native_tokens().first().unwrap().amount(), U256::from(5));
+            assert_eq!(basic_output.native_tokens().first().unwrap().amount(), U256::from(5));
         }
     });
+
+    // Destroy foundry
+    let mut inputs = build_input_signing_data_alias_outputs(vec![(alias_id_1, bech32_address, 50300)]);
+    inputs.extend(build_input_signing_data_foundry_outputs(vec![(
+        alias_id_1,
+        52800,
+        SimpleTokenScheme::new(U256::from(10), U256::from(10), U256::from(10)).unwrap(),
+        None,
+    )]));
+    // Alias output gets the amount from the foundry output added
+    let outputs = vec![build_alias_output(alias_id_1, bech32_address, 103100)];
+    let selected_transaction_data = try_select_inputs(
+        Vec::new(),
+        inputs,
+        outputs,
+        None,
+        &rent_structure,
+        true,
+        0,
+        TOKEN_SUPPLY,
+    )?;
+    // Alias next state
+    assert_eq!(selected_transaction_data.outputs.len(), 1);
 
     Ok(())
 }

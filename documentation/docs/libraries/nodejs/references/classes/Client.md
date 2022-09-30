@@ -25,7 +25,7 @@ The Client to interact with nodes.
 - [prepareTransaction](Client.md#preparetransaction)
 - [storeMnemonic](Client.md#storemnemonic)
 - [signTransaction](Client.md#signtransaction)
-- [submitPayload](Client.md#submitpayload)
+- [postBlockPayload](Client.md#postblockpayload)
 - [parseBech32Address](Client.md#parsebech32address)
 - [blockId](Client.md#blockid)
 - [getNode](Client.md#getnode)
@@ -67,7 +67,7 @@ The Client to interact with nodes.
 - [reattachUnchecked](Client.md#reattachunchecked)
 - [promote](Client.md#promote)
 - [promoteUnchecked](Client.md#promoteunchecked)
-- [unsyncedNodes](Client.md#unsyncednodes)
+- [unhealthyNodes](Client.md#unhealthynodes)
 - [buildBasicOutput](Client.md#buildbasicoutput)
 - [buildAliasOutput](Client.md#buildaliasoutput)
 - [buildFoundryOutput](Client.md#buildfoundryoutput)
@@ -404,9 +404,9 @@ Sign a transaction
 
 ___
 
-### submitPayload
+### postBlockPayload
 
-▸ **submitPayload**(`payload`): `Promise`<`IBlock`\>
+▸ **postBlockPayload**(`payload`): `Promise`<[`string`, `IBlock`]\>
 
 Submit a payload in a block
 
@@ -418,7 +418,7 @@ Submit a payload in a block
 
 #### Returns
 
-`Promise`<`IBlock`\>
+`Promise`<[`string`, `IBlock`]\>
 
 ___
 
@@ -462,7 +462,7 @@ ___
 
 ▸ **getNode**(): `Promise`<[`INode`](../interfaces/INode.md)\>
 
-Get a node candidate from the synced node pool.
+Get a node candidate from the healthy node pool.
 
 #### Returns
 
@@ -1113,11 +1113,11 @@ Promote a block without checking if it should be promoted
 
 ___
 
-### unsyncedNodes
+### unhealthyNodes
 
-▸ **unsyncedNodes**(): `Promise`<`Set`<[`INode`](../interfaces/INode.md)\>\>
+▸ **unhealthyNodes**(): `Promise`<`Set`<[`INode`](../interfaces/INode.md)\>\>
 
-Returns the unsynced nodes.
+Returns the unhealthy nodes.
 
 #### Returns
 

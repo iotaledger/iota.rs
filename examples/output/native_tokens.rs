@@ -46,7 +46,9 @@ async fn main() -> Result<()> {
     let sender_address = addresses[0];
     let receiver_address = addresses[1];
 
-    request_funds_from_faucet(&faucet_url, &sender_address.to_bech32(client.get_bech32_hrp().await?)).await?;
+    let token_supply = client.get_token_supply()?;
+
+    request_funds_from_faucet(&faucet_url, &sender_address.to_bech32(client.get_bech32_hrp()?)).await?;
     tokio::time::sleep(std::time::Duration::from_secs(15)).await;
 
     let tomorrow = (SystemTime::now() + Duration::from_secs(24 * 3600))
@@ -66,7 +68,7 @@ async fn main() -> Result<()> {
         BasicOutputBuilder::new_with_amount(1_000_000)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(receiver_address)))
             .add_native_token(NativeToken::new(TokenId::new(token_id), U256::from(10))?)
-            .finish_output()?,
+            .finish_output(token_supply)?,
         // With StorageDepositReturnUnlockCondition, the receiver can consume the output to get the native tokens, but
         // he needs to send the amount back
         BasicOutputBuilder::new_with_amount(1_000_000)?
@@ -74,7 +76,7 @@ async fn main() -> Result<()> {
             .add_native_token(NativeToken::new(TokenId::new(token_id), U256::from(10))?)
             // Return the full amount.
             .add_unlock_condition(UnlockCondition::StorageDepositReturn(
-                StorageDepositReturnUnlockCondition::new(sender_address, 1_000_000)?,
+                StorageDepositReturnUnlockCondition::new(sender_address, 1_000_000, token_supply)?,
             ))
             // If the receiver does not consume this output, we unlock after a day to avoid
             // locking our funds forever.
@@ -82,7 +84,7 @@ async fn main() -> Result<()> {
                 sender_address,
                 tomorrow,
             )?))
-            .finish_output()?,
+            .finish_output(token_supply)?,
     ];
 
     let block = client

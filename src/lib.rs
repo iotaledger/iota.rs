@@ -41,7 +41,6 @@ macro_rules! lazy_static {
 }
 
 pub mod api;
-pub mod builder;
 pub mod client;
 pub mod constants;
 pub mod db;
@@ -64,7 +63,7 @@ pub use url::Url;
 
 #[cfg(feature = "mqtt")]
 pub use self::node_api::mqtt::*;
-pub use self::{builder::ClientBuilder, client::*, error::*, utils::*};
+pub use self::{client::*, error::*, node_api::core::routes::NodeInfoWrapper, utils::*};
 
 #[cfg(feature = "mqtt")]
 mod async_runtime {

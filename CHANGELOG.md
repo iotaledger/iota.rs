@@ -19,11 +19,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security -->
 
-## 2.0.0-beta.4 - 2022-XX-XX
+## 2.0.1-rc.2 - 2022-09-29
+
+### Added
+
+- `NetworkInfoDto`;
+
+### Changed
+
+- Update dependencies;
+- Return `NetworkInfoDto` instead of `NetworkInfo` in message_interface;
+- Use `#[cfg(target_family = "wasm")]` instead of `#[cfg(feature = "wasm")]`;
+
+## 2.0.1-rc.1 - 2022-09-28
+
+Re-release as RC.
+
+### Fixed
+
+- Check correct alias and nft addresses of new outputs in input selection;
+
+## 2.0.0 - 2022-09-27
 
 ### Added
 
 - `finish_pow` function to avoid the caller having to check for wasm family;
+- Debug logs for GET requests;
 - Added `#[serde(rename_all = "camelCase")]` to enums and aliases for `SecretManagerDto` and `LedgerDeviceType` fields;
 
 ### Changed
@@ -34,6 +55,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cleaned up error enum;
 - Replaced `force_use_all_inputs` in `try_select_inputs()` with `mandatory_inputs`;
 - Rename `inputs` parameter in `try_select_inputs()` to `additional_inputs`;
+- Adapt the whole codebase to bee's packable visitor changes;
+- Made a lot of functions/methods async;
+- Renamed `synced_nodes` to `healthy_nodes`;
+- Renamed `unsynced_nodes()` to `unhealthy_nodes()`;
+- `UrlAuthError(String)` to `UrlAuthError(&'static str)`;
+
+### Removed
+
+- `GetAddressBuilder` and `AddressBalance`;
+- `offline` field in `ClientBuilder`;
 
 ### Fixed
 

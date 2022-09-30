@@ -1,5 +1,24 @@
 # Changelog
 
+## \[3.0.0-rc.0]
+
+- Fix types in networkInfo.
+  - [061f773](https://github.com/iotaledger/iota.rs/commit/061f7737d899f5a3c746fb5b1e3ac36669b2580f) Fix types in networkInfo ([#1282](https://github.com/iotaledger/iota.rs/pull/1282)) on 2022-09-28
+
+## \[3.0.0-alpha.11]
+
+- Check correct alias and nft addresses of new outputs in input selection.
+  - [ba592b7](https://github.com/iotaledger/iota.rs/commit/ba592b7bec186d922a68e9e72a63417a8298e8a4) Check correct alias and nft addresses for new outputs in input selection ([#1279](https://github.com/iotaledger/iota.rs/pull/1279)) on 2022-09-28
+
+## \[3.0.0-alpha.10]
+
+- Rename submitPayload() to postBlockPayload().
+  - [509535f](https://github.com/iotaledger/iota.rs/commit/509535f6494f384e2fff863fb0637d808928a428) Fix dasel install ([#1276](https://github.com/iotaledger/iota.rs/pull/1276)) on 2022-09-27
+- Remove "offline" field from client options.
+  - [509535f](https://github.com/iotaledger/iota.rs/commit/509535f6494f384e2fff863fb0637d808928a428) Fix dasel install ([#1276](https://github.com/iotaledger/iota.rs/pull/1276)) on 2022-09-27
+- Rename `unsyncedNodes()` to `unhealthyNodes()`.
+  - [509535f](https://github.com/iotaledger/iota.rs/commit/509535f6494f384e2fff863fb0637d808928a428) Fix dasel install ([#1276](https://github.com/iotaledger/iota.rs/pull/1276)) on 2022-09-27
+
 ## \[3.0.0-alpha.9]
 
 - Fix input selection when only native tokens are remaining.

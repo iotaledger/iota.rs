@@ -30,8 +30,9 @@ impl<'a> ClientBlockBuilder<'a> {
         log::debug!("[get_inputs_for_sender_and_issuer]");
 
         let mut required_inputs = Vec::new();
-        let bech32_hrp = self.client.get_bech32_hrp().await?;
+        let bech32_hrp = self.client.get_bech32_hrp()?;
         let current_time = self.client.get_time_checked().await?;
+        let token_supply = self.client.get_token_supply()?;
 
         let all_required_addresses = get_required_addresses_for_sender_and_issuer(&[], &self.outputs, current_time)?;
 
@@ -53,7 +54,7 @@ impl<'a> ClientBlockBuilder<'a> {
 
                     let mut found_output = false;
                     for output_response in address_outputs {
-                        let output = Output::try_from(&output_response.output)?;
+                        let output = Output::try_from_dto(&output_response.output, token_supply)?;
 
                         if is_basic_output_address_unlockable(&output, &address, current_time) {
                             required_inputs.push(InputSigningData {
@@ -94,7 +95,7 @@ impl<'a> ClientBlockBuilder<'a> {
                         let output_id = self.client.alias_output_id(*alias_id).await?;
                         let output_response = self.client.get_output(&output_id).await?;
                         if let OutputDto::Alias(alias_output_dto) = &output_response.output {
-                            let alias_output = AliasOutput::try_from(alias_output_dto)?;
+                            let alias_output = AliasOutput::try_from_dto(alias_output_dto, token_supply)?;
                             // State transition if we add them to inputs
                             let unlock_address = alias_output.state_controller_address();
                             let address_index_internal = match self.secret_manager {
@@ -120,7 +121,7 @@ impl<'a> ClientBlockBuilder<'a> {
                             };
 
                             required_inputs.push(InputSigningData {
-                                output: Output::try_from(&output_response.output)?,
+                                output: Output::try_from_dto(&output_response.output, token_supply)?,
                                 output_metadata: OutputMetadata::try_from(&output_response.metadata)?,
                                 chain: address_index_internal.map(|(address_index, internal)| {
                                     Chain::from_u32_hardened(vec![
@@ -151,7 +152,7 @@ impl<'a> ClientBlockBuilder<'a> {
                         let output_id = self.client.nft_output_id(*nft_id).await?;
                         let output_response = self.client.get_output(&output_id).await?;
                         if let OutputDto::Nft(nft_output) = &output_response.output {
-                            let nft_output = NftOutput::try_from(nft_output)?;
+                            let nft_output = NftOutput::try_from_dto(nft_output, token_supply)?;
 
                             let unlock_address = nft_output
                                 .unlock_conditions()
@@ -180,7 +181,7 @@ impl<'a> ClientBlockBuilder<'a> {
                             };
 
                             required_inputs.push(InputSigningData {
-                                output: Output::try_from(&output_response.output)?,
+                                output: Output::try_from_dto(&output_response.output, token_supply)?,
                                 output_metadata: OutputMetadata::try_from(&output_response.metadata)?,
                                 chain: address_index_internal.map(|(address_index, internal)| {
                                     Chain::from_u32_hardened(vec![
@@ -229,7 +230,7 @@ pub(crate) fn select_inputs_for_sender_and_issuer<'a>(
                 for input_signing_data in selected_inputs.iter() {
                     if output_contains_address(
                         &input_signing_data.output,
-                        input_signing_data.output_id()?,
+                        Some(input_signing_data.output_id()?),
                         &address,
                         current_time,
                     ) {
@@ -244,7 +245,7 @@ pub(crate) fn select_inputs_for_sender_and_issuer<'a>(
                     if selected_inputs_output_ids.contains(&output_id) {
                         continue;
                     }
-                    if output_contains_address(&input_signing_data.output, output_id, &address, current_time) {
+                    if output_contains_address(&input_signing_data.output, Some(output_id), &address, current_time) {
                         selected_inputs.push(input_signing_data.clone());
                         selected_inputs_output_ids.insert(output_id);
                         // break when we added the required output to the selected_inputs
@@ -349,7 +350,7 @@ fn get_required_addresses_for_sender_and_issuer(
                 if !selected_inputs.iter().any(|input_data| {
                     output_contains_address(
                         &input_data.output,
-                        input_data.output_id().expect("invalid output id in input signing data"),
+                        Some(input_data.output_id().expect("invalid output id in input signing data")),
                         sender_feature.address(),
                         current_time,
                     )
@@ -372,7 +373,7 @@ fn get_required_addresses_for_sender_and_issuer(
                     if !selected_inputs.iter().any(|input_data| {
                         output_contains_address(
                             &input_data.output,
-                            input_data.output_id().expect("invalid output id in input signing data"),
+                            Some(input_data.output_id().expect("invalid output id in input signing data")),
                             issuer_feature.address(),
                             current_time,
                         )

@@ -3,6 +3,8 @@
 import { Client, initLogger } from '@iota/client';
 import { readFile } from 'fs/promises';
 
+require('dotenv').config({ path: '../../../.env' });
+
 // From examples directory, run with:
 // node ./dist/offline_signing/3_send_block.js
 
@@ -27,13 +29,13 @@ async function run() {
         );
 
         // Send block with the signed transaction as a payload
-        const block = await onlineClient.submitPayload(signedTransaction);
-
-        // Get the block ID from the block (Blake2b256 hash of the block bytes)
-        const blockId = await onlineClient.blockId(block);
+        const blockIdAndBlock = await onlineClient.postBlockPayload(
+            signedTransaction,
+        );
 
         console.log(
-            `Transaction sent: ${process.env.EXPLORER_URL}/block/` + blockId,
+            `Transaction sent: ${process.env.EXPLORER_URL}/block/` +
+                blockIdAndBlock[0],
         );
     } catch (error) {
         console.error(error);

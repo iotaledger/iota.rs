@@ -25,10 +25,12 @@ async fn main() -> Result<()> {
         .with_node_sync_disabled()
         .finish()?;
 
+    let min_pow_score = client.get_min_pow_score()?;
+
     // Get parents for the block.
     let parents = Parents::new(client.get_tips().await?)?;
     // Create the block.
-    let block = Block::build(parents).finish()?;
+    let block = Block::build(parents).finish(min_pow_score)?;
     // Post the block as raw bytes.
     let block_id = client.post_block_raw(&block).await?;
 

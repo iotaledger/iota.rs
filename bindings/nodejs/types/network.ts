@@ -1,6 +1,8 @@
 // Copyright 2021-2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+import type { INodeInfoProtocol } from '@iota/types';
+
 /**
  * Network types.
  */
@@ -43,9 +45,8 @@ export interface INode {
  * Struct containing network and PoW related information
  */
 export interface INetworkInfo {
-    network?: Network;
-    networkId?: number;
-    bech32Hrp: string;
+    /** Protocol parameters */
+    protocolParameters: INodeInfoProtocol;
     /** Minimum proof of work score*/
     minPowScore: number;
     /** Local proof of work */
@@ -54,15 +55,4 @@ export interface INetworkInfo {
     fallbackToLocalPow: boolean;
     /** Tips request interval during PoW in seconds */
     tipsInterval: number;
-    /** Rent structure of the protocol */
-    rentStructure: IRentStructureResponse;
-}
-
-/**
- * Rent information about the node.
- */
-export interface IRentStructureResponse {
-    vByteCost: number;
-    vByteFactorKey: number;
-    vByteFactorData: number;
 }

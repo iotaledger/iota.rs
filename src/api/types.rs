@@ -11,6 +11,7 @@ use bee_block::{
         },
         TransactionPayload,
     },
+    protocol::ProtocolParameters,
     DtoError,
 };
 
@@ -53,21 +54,26 @@ impl From<&PreparedTransactionData> for PreparedTransactionDataDto {
     }
 }
 
-impl TryFrom<&PreparedTransactionDataDto> for PreparedTransactionData {
-    type Error = DtoError;
-    fn try_from(value: &PreparedTransactionDataDto) -> Result<Self, Self::Error> {
+impl PreparedTransactionData {
+    /// Conversion from [`PreparedTransactionDataDto`] to [`PreparedTransactionData`].
+    pub fn try_from_dto(
+        value: &PreparedTransactionDataDto,
+        protocol_parameters: &ProtocolParameters,
+    ) -> Result<Self, DtoError> {
         Ok(PreparedTransactionData {
-            essence: TransactionEssence::try_from(&value.essence).map_err(|_| DtoError::InvalidField("essence"))?,
+            essence: TransactionEssence::try_from_dto(&value.essence, protocol_parameters)
+                .map_err(|_| DtoError::InvalidField("essence"))?,
             inputs_data: value
                 .inputs_data
                 .iter()
-                .map(InputSigningData::try_from)
+                .map(|i| InputSigningData::try_from_dto(i, protocol_parameters.token_supply()))
                 .collect::<crate::Result<Vec<InputSigningData>>>()
                 .map_err(|_| DtoError::InvalidField("input_data"))?,
             remainder: match &value.remainder {
-                Some(remainder) => {
-                    Some(RemainderData::try_from(remainder).map_err(|_| DtoError::InvalidField("remainder"))?)
-                }
+                Some(remainder) => Some(
+                    RemainderData::try_from_dto(remainder, protocol_parameters.token_supply())
+                        .map_err(|_| DtoError::InvalidField("remainder"))?,
+                ),
                 None => None,
             },
         })
@@ -105,16 +111,19 @@ impl From<&SignedTransactionData> for SignedTransactionDataDto {
     }
 }
 
-impl TryFrom<&SignedTransactionDataDto> for SignedTransactionData {
-    type Error = DtoError;
-    fn try_from(value: &SignedTransactionDataDto) -> Result<Self, Self::Error> {
+impl SignedTransactionData {
+    /// Conversion from [`SignedTransactionDataDto`] to [`SignedTransactionData`].
+    pub fn try_from_dto(
+        value: &SignedTransactionDataDto,
+        protocol_parameters: &ProtocolParameters,
+    ) -> Result<Self, DtoError> {
         Ok(SignedTransactionData {
-            transaction_payload: TransactionPayload::try_from(&value.transaction_payload)
+            transaction_payload: TransactionPayload::try_from_dto(&value.transaction_payload, protocol_parameters)
                 .map_err(|_| DtoError::InvalidField("transaction_payload"))?,
             inputs_data: value
                 .inputs_data
                 .iter()
-                .map(InputSigningData::try_from)
+                .map(|i| InputSigningData::try_from_dto(i, protocol_parameters.token_supply()))
                 .collect::<crate::Result<Vec<InputSigningData>>>()
                 .map_err(|_| DtoError::InvalidField("input_data"))?,
         })
@@ -143,17 +152,16 @@ pub struct RemainderDataDto {
     pub address: AddressDto,
 }
 
-impl TryFrom<&RemainderDataDto> for RemainderData {
-    type Error = crate::Error;
-
-    fn try_from(remainder: &RemainderDataDto) -> crate::Result<Self> {
+impl RemainderData {
+    pub(crate) fn try_from_dto(remainder: &RemainderDataDto, token_supply: u64) -> crate::Result<Self> {
         Ok(Self {
-            output: Output::try_from(&remainder.output)?,
+            output: Output::try_from_dto(&remainder.output, token_supply)?,
             chain: remainder.chain.clone(),
             address: Address::try_from(&remainder.address)?,
         })
     }
 }
+
 impl From<&RemainderData> for RemainderDataDto {
     fn from(remainder: &RemainderData) -> Self {
         Self {

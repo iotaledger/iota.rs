@@ -35,10 +35,10 @@ describe.skip('Client info methods', () => {
         expect(nodeHealth).toBeTruthy();
     });
 
-    it('gets the unsynced nodes', async () => {
-        const unsyncedNodes = await client.unsyncedNodes();
+    it('gets the unhealty nodes', async () => {
+        const unhealtyNodes = await client.unhealthyNodes();
 
-        expect(unsyncedNodes).toBeDefined();
+        expect(unhealtyNodes).toBeDefined();
     });
 
     it('gets tips', async () => {
@@ -58,7 +58,7 @@ describe.skip('Client info methods', () => {
 
         expect(networkInfo.localPow).toBeTruthy();
         expect(networkInfo.minPowScore).toBe(1000);
-        expect(networkInfo.bech32Hrp).toBe('rms');
+        expect(networkInfo.protocolParameters.bech32Hrp).toBe('rms');
     });
 
     it('gets networkId', async () => {

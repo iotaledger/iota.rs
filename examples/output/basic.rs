@@ -39,10 +39,12 @@ async fn main() -> Result<()> {
         &std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
     )?);
 
+    let token_supply = client.get_token_supply()?;
+
     let address = client.get_addresses(&secret_manager).with_range(0..1).get_raw().await?[0];
     println!(
         "{}",
-        request_funds_from_faucet(&faucet_url, &address.to_bech32(client.get_bech32_hrp().await?)).await?
+        request_funds_from_faucet(&faucet_url, &address.to_bech32(client.get_bech32_hrp()?)).await?
     );
 
     let basic_output_builder = BasicOutputBuilder::new_with_amount(1_000_000)?
@@ -50,30 +52,30 @@ async fn main() -> Result<()> {
 
     let outputs = vec![
         // most simple output
-        basic_output_builder.clone().finish_output()?,
+        basic_output_builder.clone().finish_output(token_supply)?,
         // with metadata feature block
         basic_output_builder
             .clone()
             .add_feature(Feature::Metadata(MetadataFeature::new(vec![13, 37])?))
-            .finish_output()?,
+            .finish_output(token_supply)?,
         // with storage deposit return
         basic_output_builder
             .clone()
             .with_amount(234_100)?
             .add_unlock_condition(UnlockCondition::StorageDepositReturn(
-                StorageDepositReturnUnlockCondition::new(address, 234_000)?,
+                StorageDepositReturnUnlockCondition::new(address, 234_000, token_supply)?,
             ))
-            .finish_output()?,
+            .finish_output(token_supply)?,
         // with expiration
         basic_output_builder
             .clone()
             .add_unlock_condition(UnlockCondition::Expiration(ExpirationUnlockCondition::new(address, 1)?))
-            .finish_output()?,
+            .finish_output(token_supply)?,
         // with timelock
         basic_output_builder
             .clone()
             .add_unlock_condition(UnlockCondition::Timelock(TimelockUnlockCondition::new(1)?))
-            .finish_output()?,
+            .finish_output(token_supply)?,
     ];
 
     let block = client

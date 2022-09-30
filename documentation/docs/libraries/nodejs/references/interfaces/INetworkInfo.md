@@ -6,13 +6,21 @@ Struct containing network and PoW related information
 
 ### Properties
 
+- [protocolParameters](INetworkInfo.md#protocolparameters)
 - [minPowScore](INetworkInfo.md#minpowscore)
 - [localPow](INetworkInfo.md#localpow)
 - [fallbackToLocalPow](INetworkInfo.md#fallbacktolocalpow)
 - [tipsInterval](INetworkInfo.md#tipsinterval)
-- [rentStructure](INetworkInfo.md#rentstructure)
 
 ## Properties
+
+### protocolParameters
+
+• **protocolParameters**: `INodeInfoProtocol`
+
+Protocol parameters
+
+___
 
 ### minPowScore
 
@@ -43,11 +51,3 @@ ___
 • **tipsInterval**: `number`
 
 Tips request interval during PoW in seconds
-
-___
-
-### rentStructure
-
-• **rentStructure**: [`IRentStructureResponse`](IRentStructureResponse.md)
-
-Rent structure of the protocol

@@ -15,7 +15,7 @@ use iota_client::{
     Client, Result,
 };
 
-const ADDRESS_FILE_NAME: &str = "examples/offline_signing/addresses.json";
+const ADDRESS_FILE_NAME: &str = "examples/offline_signing/address.json";
 const PREPARED_TRANSACTION_FILE_NAME: &str = "examples/offline_signing/prepared_transaction.json";
 
 #[tokio::main]

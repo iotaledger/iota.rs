@@ -26,7 +26,6 @@ public class ClientConfig {
     private RentStructure rentStructure;
     private ApiTimeout apiTimeout;
     private RemotePowTimeout remotePowTimeout;
-    private Boolean offline;
     private Integer powWorkerCount;
 
     public String getPrimaryNode() {
@@ -173,16 +172,6 @@ public class ClientConfig {
         return this;
     }
 
-    public boolean isOffline() {
-        return offline;
-    }
-
-    public ClientConfig withOffline(boolean offline) {
-        this.offline = offline;
-        return this;
-    }
-
-
     public RentStructure getRentStructure() {
         return rentStructure;
     }
@@ -325,8 +314,6 @@ public class ClientConfig {
             o.add("rentStructure", rentStructure.getJson());
         if (apiTimeout != null)
             o.add("apiTimeout", apiTimeout.getJson());
-        if (offline != null)
-            o.addProperty("offline", offline);
         if (powWorkerCount != null)
             o.addProperty("powWorkerCount", powWorkerCount);
 

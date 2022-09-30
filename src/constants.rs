@@ -13,7 +13,7 @@ pub(crate) const DEFAULT_RETRY_UNTIL_INCLUDED_MAX_AMOUNT: u64 = 40;
 /// Interval in seconds when new tips will be requested during PoW, so the final block always will be attached to a
 /// new part of the Tangle
 pub(crate) const DEFAULT_TIPS_INTERVAL: u64 = 5;
-/// Interval in which the node info will be requested and healthy nodes will be added to the synced node pool
+/// Interval in which the node info will be requested and healthy nodes will be added to the healthy node pool
 pub(crate) const NODE_SYNC_INTERVAL: Duration = Duration::from_secs(15);
 pub(crate) const DEFAULT_MIN_QUORUM_SIZE: usize = 3;
 pub(crate) const DEFAULT_QUORUM_THRESHOLD: usize = 66;

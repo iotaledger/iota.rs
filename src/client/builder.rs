@@ -3,23 +3,22 @@
 
 //! Builder of the Client Instance
 use std::{
+    collections::HashSet,
     sync::{Arc, RwLock},
     time::Duration,
 };
 
-use bee_api_types::responses::RentStructureResponse;
+use bee_api_types::responses::{ProtocolResponse, RentStructureResponse};
+use bee_block::protocol::ProtocolParameters;
 #[cfg(not(target_family = "wasm"))]
-use {
-    std::collections::HashSet,
-    tokio::{runtime::Runtime, sync::broadcast::channel},
-};
+use tokio::{runtime::Runtime, sync::broadcast::channel};
 
 #[cfg(feature = "mqtt")]
 use crate::node_api::mqtt::{BrokerOptions, MqttEvent};
 use crate::{
     client::Client,
     constants::{DEFAULT_API_TIMEOUT, DEFAULT_REMOTE_POW_API_TIMEOUT, DEFAULT_TIPS_INTERVAL},
-    error::{Error, Result},
+    error::Result,
     node_manager::{
         builder::validate_url,
         node::{Node, NodeAuth},
@@ -29,29 +28,59 @@ use crate::{
 /// Struct containing network and PoW related information
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct NetworkInfo {
-    /// Network
-    pub network: Option<String>,
-    /// Network ID
-    #[serde(rename = "networkId")]
-    pub network_id: Option<u64>,
-    /// Bech32 HRP
-    #[serde(rename = "bech32Hrp", default)]
-    pub bech32_hrp: Option<String>,
-    /// Minimum proof of work score
-    #[serde(rename = "minPowScore", default)]
-    pub min_pow_score: Option<u32>,
-    /// Local proof of work
+    // TODO do we really want a default?
+    /// Protocol parameters.
+    #[serde(rename = "protocolParameters", default = "ProtocolParameters::default")]
+    pub protocol_parameters: ProtocolParameters,
+    /// Local proof of work.
     #[serde(rename = "localPow", default = "default_local_pow")]
     pub local_pow: bool,
-    /// Fallback to local proof of work if the node doesn't support remote PoW
+    /// Fallback to local proof of work if the node doesn't support remote PoW.
     #[serde(rename = "fallbackToLocalPow", default = "default_fallback_to_local_pow")]
     pub fallback_to_local_pow: bool,
-    /// Tips request interval during PoW in seconds
+    /// Tips request interval during PoW in seconds.
     #[serde(rename = "tipsInterval", default = "default_tips_interval")]
     pub tips_interval: u64,
-    /// Rent structure of the protocol
-    #[serde(rename = "rentStructure", default)]
-    pub rent_structure: Option<RentStructureResponse>,
+}
+
+/// Dto for the NetworkInfo
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct NetworkInfoDto {
+    /// Protocol parameters.
+    #[serde(rename = "protocolParameters")]
+    protocol_parameters: ProtocolResponse,
+    /// Local proof of work.
+    #[serde(rename = "localPow")]
+    local_pow: bool,
+    /// Fallback to local proof of work if the node doesn't support remote PoW.
+    #[serde(rename = "fallbackToLocalPow")]
+    fallback_to_local_pow: bool,
+    /// Tips request interval during PoW in seconds.
+    #[serde(rename = "tipsInterval")]
+    tips_interval: u64,
+}
+
+impl From<NetworkInfo> for NetworkInfoDto {
+    fn from(info: NetworkInfo) -> Self {
+        NetworkInfoDto {
+            protocol_parameters: ProtocolResponse {
+                version: info.protocol_parameters.protocol_version(),
+                network_name: info.protocol_parameters.network_name().to_string(),
+                bech32_hrp: info.protocol_parameters.bech32_hrp().to_string(),
+                min_pow_score: info.protocol_parameters.min_pow_score(),
+                below_max_depth: info.protocol_parameters.below_max_depth(),
+                rent_structure: RentStructureResponse {
+                    v_byte_cost: info.protocol_parameters.rent_structure().v_byte_cost,
+                    v_byte_factor_key: info.protocol_parameters.rent_structure().v_byte_factor_key,
+                    v_byte_factor_data: info.protocol_parameters.rent_structure().v_byte_factor_data,
+                },
+                token_supply: info.protocol_parameters.token_supply().to_string(),
+            },
+            local_pow: info.local_pow,
+            fallback_to_local_pow: info.fallback_to_local_pow,
+            tips_interval: info.tips_interval,
+        }
+    }
 }
 
 fn default_local_pow() -> bool {
@@ -94,9 +123,6 @@ pub struct ClientBuilder {
     /// Timeout when sending a block that requires remote proof of work
     #[serde(rename = "remotePowTimeout", default = "default_remote_pow_timeout")]
     pub remote_pow_timeout: Duration,
-    /// If the Client should be able to use without a node connection
-    #[serde(default)]
-    pub offline: bool,
     /// The amount of threads to be used for proof of work
     #[serde(rename = "powWorkerCount", default)]
     pub pow_worker_count: Option<usize>,
@@ -113,14 +139,11 @@ fn default_remote_pow_timeout() -> Duration {
 impl Default for NetworkInfo {
     fn default() -> Self {
         Self {
-            network: None,
-            network_id: None,
-            min_pow_score: None,
+            // TODO do we really want a default?
+            protocol_parameters: ProtocolParameters::default(),
             local_pow: default_local_pow(),
             fallback_to_local_pow: true,
-            bech32_hrp: None,
             tips_interval: DEFAULT_TIPS_INTERVAL,
-            rent_structure: None,
         }
     }
 }
@@ -134,7 +157,6 @@ impl Default for ClientBuilder {
             network_info: NetworkInfo::default(),
             api_timeout: DEFAULT_API_TIMEOUT,
             remote_pow_timeout: DEFAULT_REMOTE_POW_API_TIMEOUT,
-            offline: false,
             pow_worker_count: None,
         }
     }
@@ -227,12 +249,6 @@ impl ClientBuilder {
         self
     }
 
-    /// Allows creating the client without nodes for offline address generation or signing
-    pub fn with_offline_mode(mut self) -> Self {
-        self.offline = true;
-        self
-    }
-
     /// Set if quorum should be used or not
     pub fn with_quorum(mut self, quorum: bool) -> Self {
         self.node_manager_builder = self.node_manager_builder.with_quorum(quorum);
@@ -249,15 +265,6 @@ impl ClientBuilder {
     pub fn with_quorum_threshold(mut self, threshold: usize) -> Self {
         let threshold = if threshold > 100 { 100 } else { threshold };
         self.node_manager_builder = self.node_manager_builder.with_quorum_threshold(threshold);
-        self
-    }
-
-    /// Selects the type of network to get default nodes for it, only "testnet" is supported at the moment.
-    /// Nodes that don't belong to this network are ignored. The &str must match a part or all of the networkId returned
-    /// in the node info from a node. For example, if the networkId is `"private-tangle"`, `"tangle"` can be used.
-    /// Default nodes are only used when no other nodes are provided.
-    pub fn with_network(mut self, network: &str) -> Self {
-        self.network_info.network.replace(network.into());
         self
     }
 
@@ -305,36 +312,32 @@ impl ClientBuilder {
     }
 
     /// Build the Client instance.
-    pub fn finish(mut self) -> Result<Client> {
-        // Add default nodes
-        if !self.offline {
-            self.node_manager_builder = self.node_manager_builder.add_default_nodes(&self.network_info)?;
-            // Return error if we don't have a node
-            if self.node_manager_builder.nodes.is_empty() && self.node_manager_builder.primary_node.is_none() {
-                return Err(Error::MissingParameter("Node"));
-            }
-        }
+    pub fn finish(self) -> Result<Client> {
         let network_info = Arc::new(RwLock::new(self.network_info));
-        let nodes = self
-            .node_manager_builder
-            .nodes
-            .iter()
-            .map(|node| node.clone().into())
-            .collect();
-        #[cfg(target_family = "wasm")]
-        let (sync, network_info) = (Arc::new(RwLock::new(nodes)), network_info);
+        let healthy_nodes = Arc::new(RwLock::new(HashSet::new()));
+
         #[cfg(not(target_family = "wasm"))]
-        let (runtime, sync, sync_kill_sender, network_info) = if self.node_manager_builder.node_sync_enabled {
-            let sync = Arc::new(RwLock::new(HashSet::new()));
-            let sync_ = sync.clone();
+        let (runtime, sync_kill_sender) = {
+            let nodes = self
+                .node_manager_builder
+                .primary_node
+                .iter()
+                .chain(self.node_manager_builder.nodes.iter())
+                .map(|node| node.clone().into())
+                .collect();
+
+            let healthy_nodes_ = healthy_nodes.clone();
             let network_info_ = network_info.clone();
             let (sync_kill_sender, sync_kill_receiver) = channel(1);
+
             let runtime = std::thread::spawn(move || {
                 let runtime = Runtime::new().expect("failed to create Tokio runtime");
-                runtime.block_on(Client::sync_nodes(&sync_, &nodes, &network_info_));
+                if let Err(e) = runtime.block_on(Client::sync_nodes(&healthy_nodes_, &nodes, &network_info_)) {
+                    panic!("failed to sync nodes: {:?}", e);
+                }
                 Client::start_sync_process(
                     &runtime,
-                    sync_,
+                    healthy_nodes_,
                     nodes,
                     self.node_manager_builder.node_sync_interval,
                     network_info_,
@@ -344,15 +347,13 @@ impl ClientBuilder {
             })
             .join()
             .expect("failed to init node syncing process");
-            (Some(Arc::new(runtime)), sync, Some(sync_kill_sender), network_info)
-        } else {
-            (None, Arc::new(RwLock::new(nodes)), None, network_info)
+            (Some(Arc::new(runtime)), Some(sync_kill_sender))
         };
 
         #[cfg(feature = "mqtt")]
         let (mqtt_event_tx, mqtt_event_rx) = tokio::sync::watch::channel(MqttEvent::Connected);
         let client = Client {
-            node_manager: self.node_manager_builder.build(sync),
+            node_manager: self.node_manager_builder.build(healthy_nodes),
             #[cfg(not(target_family = "wasm"))]
             runtime,
             #[cfg(not(target_family = "wasm"))]

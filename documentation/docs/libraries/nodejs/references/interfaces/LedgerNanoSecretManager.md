@@ -6,12 +6,12 @@ Secret manager that uses a Ledger Nano hardware wallet or Speculos simulator.
 
 ### Properties
 
-- [LedgerNano](LedgerNanoSecretManager.md#ledgernano)
+- [ledgerNano](LedgerNanoSecretManager.md#ledgernano)
 
 ## Properties
 
-### LedgerNano
+### ledgerNano
 
-• **LedgerNano**: `boolean`
+• **ledgerNano**: `boolean`
 
 boolean indicates whether it's a simulator or not.

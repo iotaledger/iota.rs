@@ -64,7 +64,7 @@ pub struct ClientMessageHandler {
 
 impl ClientMessageHandler {
     /// Creates a new instance of the message handler with the default client manager.
-    pub async fn new() -> Result<Self> {
+    pub fn new() -> Result<Self> {
         let instance = Self {
             client: Client::builder().finish()?,
         };
@@ -166,11 +166,11 @@ impl ClientMessageHandler {
                 features,
                 immutable_features,
             } => {
-                let output = Output::from(AliasOutput::from_dtos(
+                let output = Output::from(AliasOutput::try_from_dtos(
                     if let Some(amount) = amount {
                         OutputBuilderAmountDto::Amount(amount)
                     } else {
-                        OutputBuilderAmountDto::MinimumStorageDeposit(self.client.get_rent_structure().await?)
+                        OutputBuilderAmountDto::MinimumStorageDeposit(self.client.get_rent_structure()?)
                     },
                     native_tokens,
                     &alias_id,
@@ -180,6 +180,7 @@ impl ClientMessageHandler {
                     unlock_conditions,
                     features,
                     immutable_features,
+                    self.client.get_token_supply()?,
                 )?);
 
                 Ok(Response::BuiltOutput(OutputDto::from(&output)))
@@ -190,15 +191,16 @@ impl ClientMessageHandler {
                 unlock_conditions,
                 features,
             } => {
-                let output = Output::from(BasicOutput::from_dtos(
+                let output = Output::from(BasicOutput::try_from_dtos(
                     if let Some(amount) = amount {
                         OutputBuilderAmountDto::Amount(amount)
                     } else {
-                        OutputBuilderAmountDto::MinimumStorageDeposit(self.client.get_rent_structure().await?)
+                        OutputBuilderAmountDto::MinimumStorageDeposit(self.client.get_rent_structure()?)
                     },
                     native_tokens,
                     unlock_conditions,
                     features,
+                    self.client.get_token_supply()?,
                 )?);
 
                 Ok(Response::BuiltOutput(OutputDto::from(&output)))
@@ -212,11 +214,11 @@ impl ClientMessageHandler {
                 features,
                 immutable_features,
             } => {
-                let output = Output::from(FoundryOutput::from_dtos(
+                let output = Output::from(FoundryOutput::try_from_dtos(
                     if let Some(amount) = amount {
                         OutputBuilderAmountDto::Amount(amount)
                     } else {
-                        OutputBuilderAmountDto::MinimumStorageDeposit(self.client.get_rent_structure().await?)
+                        OutputBuilderAmountDto::MinimumStorageDeposit(self.client.get_rent_structure()?)
                     },
                     native_tokens,
                     serial_number,
@@ -224,6 +226,7 @@ impl ClientMessageHandler {
                     unlock_conditions,
                     features,
                     immutable_features,
+                    self.client.get_token_supply()?,
                 )?);
 
                 Ok(Response::BuiltOutput(OutputDto::from(&output)))
@@ -236,17 +239,18 @@ impl ClientMessageHandler {
                 features,
                 immutable_features,
             } => {
-                let output = Output::from(NftOutput::from_dtos(
+                let output = Output::from(NftOutput::try_from_dtos(
                     if let Some(amount) = amount {
                         OutputBuilderAmountDto::Amount(amount)
                     } else {
-                        OutputBuilderAmountDto::MinimumStorageDeposit(self.client.get_rent_structure().await?)
+                        OutputBuilderAmountDto::MinimumStorageDeposit(self.client.get_rent_structure()?)
                     },
                     native_tokens,
                     &nft_id,
                     unlock_conditions,
                     features,
                     immutable_features,
+                    self.client.get_token_supply()?,
                 )?);
 
                 Ok(Response::BuiltOutput(OutputDto::from(&output)))
@@ -289,16 +293,14 @@ impl ClientMessageHandler {
 
                 Ok(Response::BlockIdWithBlock(block_id, BlockDto::from(&block)))
             }
-            Message::GetNode => Ok(Response::Node(self.client.get_node().await?)),
-            Message::GetNetworkInfo => Ok(Response::NetworkInfo(self.client.get_network_info().await?)),
-            Message::GetNetworkId => Ok(Response::NetworkId(self.client.get_network_id().await?)),
-            Message::GetBech32Hrp => Ok(Response::Bech32Hrp(self.client.get_bech32_hrp().await?)),
-            Message::GetMinPowScore => Ok(Response::MinPowScore(self.client.get_min_pow_score().await?)),
-            Message::GetTipsInterval => Ok(Response::TipsInterval(self.client.get_tips_interval().await)),
-            Message::GetLocalPow => Ok(Response::LocalPow(self.client.get_local_pow().await)),
-            Message::GetFallbackToLocalPow => Ok(Response::FallbackToLocalPow(
-                self.client.get_fallback_to_local_pow().await,
-            )),
+            Message::GetNode => Ok(Response::Node(self.client.get_node()?)),
+            Message::GetNetworkInfo => Ok(Response::NetworkInfo(self.client.get_network_info()?.into())),
+            Message::GetNetworkId => Ok(Response::NetworkId(self.client.get_network_id()?)),
+            Message::GetBech32Hrp => Ok(Response::Bech32Hrp(self.client.get_bech32_hrp()?)),
+            Message::GetMinPowScore => Ok(Response::MinPowScore(self.client.get_min_pow_score()?)),
+            Message::GetTipsInterval => Ok(Response::TipsInterval(self.client.get_tips_interval())),
+            Message::GetLocalPow => Ok(Response::LocalPow(self.client.get_local_pow())),
+            Message::GetFallbackToLocalPow => Ok(Response::FallbackToLocalPow(self.client.get_fallback_to_local_pow())),
             #[cfg(feature = "ledger_nano")]
             Message::GetLedgerNanoStatus { is_simulator } => {
                 let ledger_nano = LedgerSecretManager::new(is_simulator);
@@ -340,7 +342,10 @@ impl ClientMessageHandler {
 
                 Ok(Response::SignedTransaction(PayloadDto::from(
                     &block_builder
-                        .sign_transaction(PreparedTransactionData::try_from(&prepared_transaction_data)?)
+                        .sign_transaction(PreparedTransactionData::try_from_dto(
+                            &prepared_transaction_data,
+                            &self.client.get_protocol_parameters()?,
+                        )?)
                         .await?,
                 )))
             }
@@ -362,7 +367,10 @@ impl ClientMessageHandler {
                 let block_builder = self.client.block();
 
                 let block = block_builder
-                    .finish_block(Some(Payload::try_from(&payload_dto)?))
+                    .finish_block(Some(Payload::try_from_dto(
+                        &payload_dto,
+                        &self.client.get_protocol_parameters()?,
+                    )?))
                     .await?;
 
                 let block_id = block.id();
@@ -370,8 +378,8 @@ impl ClientMessageHandler {
                 Ok(Response::BlockIdWithBlock(block_id, BlockDto::from(&block)))
             }
             #[cfg(not(target_family = "wasm"))]
-            Message::UnsyncedNodes => Ok(Response::UnsyncedNodes(
-                self.client.unsynced_nodes().await.into_iter().cloned().collect(),
+            Message::UnhealthyNodes => Ok(Response::UnhealthyNodes(
+                self.client.unhealthy_nodes().into_iter().cloned().collect(),
             )),
             Message::GetHealth { url } => Ok(Response::Health(self.client.get_health(&url).await?)),
             Message::GetNodeInfo { url, auth } => Ok(Response::NodeInfo(Client::get_node_info(&url, auth).await?)),
@@ -380,11 +388,19 @@ impl ClientMessageHandler {
             Message::GetTips => Ok(Response::Tips(self.client.get_tips().await?)),
             Message::PostBlockRaw { block_bytes } => Ok(Response::BlockId(
                 self.client
-                    .post_block_raw(&BeeBlock::unpack_strict(&block_bytes[..], &())?)
+                    .post_block_raw(&BeeBlock::unpack_strict(
+                        &block_bytes[..],
+                        &self.client.get_protocol_parameters()?,
+                    )?)
                     .await?,
             )),
             Message::PostBlock { block } => Ok(Response::BlockId(
-                self.client.post_block(&BeeBlock::try_from(&block)?).await?,
+                self.client
+                    .post_block(&BeeBlock::try_from_dto(
+                        &block,
+                        &self.client.get_protocol_parameters()?,
+                    )?)
+                    .await?,
             )),
             Message::GetBlock { block_id } => Ok(Response::Block(BlockDto::from(
                 &self.client.get_block(&block_id).await?,
@@ -511,12 +527,11 @@ impl ClientMessageHandler {
             }
             Message::Bech32ToHex { bech32 } => Ok(Response::Bech32ToHex(Client::bech32_to_hex(&bech32)?)),
             Message::HexToBech32 { hex, bech32_hrp } => Ok(Response::HexToBech32(
-                self.client.hex_to_bech32(&hex, bech32_hrp.as_deref()).await?,
+                self.client.hex_to_bech32(&hex, bech32_hrp.as_deref())?,
             )),
             Message::HexPublicKeyToBech32Address { hex, bech32_hrp } => Ok(Response::HexToBech32(
                 self.client
-                    .hex_public_key_to_bech32_address(&hex, bech32_hrp.as_deref())
-                    .await?,
+                    .hex_public_key_to_bech32_address(&hex, bech32_hrp.as_deref())?,
             )),
             Message::ParseBech32Address { address } => Ok(Response::ParsedBech32Address(AddressDto::from(
                 &Client::parse_bech32_address(&address)?,
@@ -531,11 +546,11 @@ impl ClientMessageHandler {
                 Ok(response)
             }
             Message::BlockId { block } => {
-                let block = BeeBlock::try_from(&block)?;
+                let block = BeeBlock::try_from_dto(&block, &self.client.get_protocol_parameters()?)?;
                 Ok(Response::BlockId(block.id()))
             }
             Message::TransactionId { payload } => {
-                let payload = TransactionPayload::try_from(&payload)?;
+                let payload = TransactionPayload::try_from_dto(&payload, &self.client.get_protocol_parameters()?)?;
                 Ok(Response::TransactionId(payload.id()))
             }
             Message::ComputeAliasId { output_id } => Ok(Response::AliasId(AliasId::from(output_id))),

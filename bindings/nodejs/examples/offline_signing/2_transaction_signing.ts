@@ -16,9 +16,13 @@ const SIGNED_TRANSACTION_FILE_NAME =
 // In this example we will sign the prepared transaction
 async function run() {
     initLogger();
-
+    if (!process.env.NODE_URL) {
+        throw new Error('.env NODE_URL is undefined, see .env.example');
+    }
     const offlineClient = new Client({
-        offline: true,
+        // TODO: remove when https://github.com/iotaledger/iota.rs/issues/1263 is implemented
+        // Insert your node URL in the .env.
+        nodes: [process.env.NODE_URL],
     });
 
     try {

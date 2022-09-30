@@ -63,7 +63,7 @@ async fn setup_transaction_block() -> (BlockId, TransactionId) {
         "{}",
         request_funds_from_faucet(
             DEFAULT_DEVNET_FAUCET_URL,
-            &addresses[0].to_bech32(client.get_bech32_hrp().await.unwrap()),
+            &addresses[0].to_bech32(client.get_bech32_hrp().unwrap()),
         )
         .await
         .unwrap()
@@ -75,7 +75,7 @@ async fn setup_transaction_block() -> (BlockId, TransactionId) {
         .with_secret_manager(&secret_manager)
         .with_output_hex(
             // Send funds back to the sender.
-            &bech32_to_hex(&addresses[1].to_bech32(client.get_bech32_hrp().await.unwrap())).unwrap(),
+            &bech32_to_hex(&addresses[1].to_bech32(client.get_bech32_hrp().unwrap())).unwrap(),
             // The amount to spend, cannot be zero.
             1_000_000,
         )
@@ -174,28 +174,6 @@ async fn test_get_block_raw() {
 
 #[ignore]
 #[tokio::test]
-async fn test_get_address_balance() {
-    let client = setup_client_with_sync_disabled();
-    let secret_manager = setup_secret_manager();
-
-    let address = client
-        .get_addresses(&secret_manager)
-        .with_range(0..1)
-        .get_raw()
-        .await
-        .unwrap()[0];
-
-    let r = client
-        .get_address()
-        .balance(&address.to_bech32(&client.get_bech32_hrp().await.unwrap()))
-        .await
-        .unwrap();
-
-    println!("{:#?}", r);
-}
-
-#[ignore]
-#[tokio::test]
 async fn test_get_address_outputs() {
     let client = setup_client_with_sync_disabled();
     let secret_manager = setup_secret_manager();
@@ -209,7 +187,7 @@ async fn test_get_address_outputs() {
 
     let address = client
         .basic_output_ids(vec![QueryParameter::Address(
-            address.to_bech32(&client.get_bech32_hrp().await.unwrap()),
+            address.to_bech32(&client.get_bech32_hrp().unwrap()),
         )])
         .await
         .unwrap();
@@ -253,6 +231,7 @@ async fn test_get_milestone_by_id() {
                 .status
                 .latest_milestone
                 .milestone_id
+                .unwrap()
                 .parse()
                 .unwrap(),
         )
@@ -291,6 +270,7 @@ async fn test_get_utxo_changes_by_id() {
                 .status
                 .latest_milestone
                 .milestone_id
+                .unwrap()
                 .parse()
                 .unwrap(),
         )

@@ -26,6 +26,7 @@ impl Client {
         secret_manager: &SecretManager,
         address_builder_options: GetAddressesBuilderOptions,
     ) -> Result<String> {
+        let token_supply = self.get_token_supply()?;
         let mut last_transfer_index = address_builder_options.range.as_ref().unwrap_or(&(0..1)).start;
         // use the start index as offset
         let offset = last_transfer_index;
@@ -82,7 +83,7 @@ impl Client {
                             output_response.metadata.output_index,
                         )?))?;
 
-                        let output = Output::try_from(&output_response.output)?;
+                        let output = Output::try_from_dto(&output_response.output, token_supply)?;
 
                         if let Some(native_tokens) = output.native_tokens() {
                             total_native_tokens.add_native_tokens(native_tokens.clone())?;
@@ -95,7 +96,7 @@ impl Client {
                             Address::try_from_bech32(&consolidation_address)?.1,
                         )))
                         .with_native_tokens(total_native_tokens.finish()?)
-                        .finish_output()?;
+                        .finish_output(token_supply)?;
 
                     let block = block_builder
                         .with_input_range(index..index + 1)

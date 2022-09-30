@@ -5,7 +5,10 @@
 
 use std::collections::HashMap;
 
-use bee_block::address::{Address, Ed25519Address};
+use bee_block::{
+    address::{Address, Ed25519Address},
+    payload::TaggedDataPayload,
+};
 use crypto::{
     hashes::{blake2b::Blake2b256, Digest},
     keys::{bip39::wordlist, slip10::Seed},
@@ -13,16 +16,8 @@ use crypto::{
 };
 use zeroize::Zeroize;
 
+use super::Client;
 use crate::error::{Error, Result};
-
-/// Hash the network id str from the node info to an u64 (used in blocks)
-pub fn hash_network(network_id_string: &str) -> Result<u64> {
-    let bytes = Blake2b256::digest(network_id_string.as_bytes())[0..8]
-        .try_into()
-        .map_err(|_e| Error::Blake2b256Error("Hashing the network id failed."))?;
-
-    Ok(u64::from_le_bytes(bytes))
-}
 
 /// Transforms bech32 to hex
 pub fn bech32_to_hex(bech32: &str) -> Result<String> {
@@ -104,4 +99,71 @@ pub async fn request_funds_from_faucet(url: &str, bech32_address: &str) -> Resul
     let client = reqwest::Client::new();
     let faucet_response = client.post(url).json(&map).send().await?.text().await?;
     Ok(faucet_response)
+}
+
+impl Client {
+    /// Transforms bech32 to hex
+    pub fn bech32_to_hex(bech32: &str) -> crate::Result<String> {
+        bech32_to_hex(bech32)
+    }
+
+    /// Transforms a hex encoded address to a bech32 encoded address
+    pub fn hex_to_bech32(&self, hex: &str, bech32_hrp: Option<&str>) -> crate::Result<String> {
+        let bech32_hrp = match bech32_hrp {
+            Some(hrp) => hrp.into(),
+            None => self.get_bech32_hrp()?,
+        };
+        hex_to_bech32(hex, &bech32_hrp)
+    }
+
+    /// Transforms a hex encoded public key to a bech32 encoded address
+    pub fn hex_public_key_to_bech32_address(&self, hex: &str, bech32_hrp: Option<&str>) -> crate::Result<String> {
+        let bech32_hrp = match bech32_hrp {
+            Some(hrp) => hrp.into(),
+            None => self.get_bech32_hrp()?,
+        };
+        hex_public_key_to_bech32_address(hex, &bech32_hrp)
+    }
+
+    /// Returns a valid Address parsed from a String.
+    pub fn parse_bech32_address(address: &str) -> crate::Result<Address> {
+        parse_bech32_address(address)
+    }
+
+    /// Checks if a String is a valid bech32 encoded address.
+    #[must_use]
+    pub fn is_address_valid(address: &str) -> bool {
+        is_address_valid(address)
+    }
+
+    /// Generates a new mnemonic.
+    pub fn generate_mnemonic() -> Result<String> {
+        generate_mnemonic()
+    }
+
+    /// Returns a seed for a mnemonic.
+    pub fn mnemonic_to_seed(mnemonic: &str) -> Result<Seed> {
+        mnemonic_to_seed(mnemonic)
+    }
+
+    /// Returns a hex encoded seed for a mnemonic.
+    pub fn mnemonic_to_hex_seed(mnemonic: &str) -> Result<String> {
+        mnemonic_to_hex_seed(mnemonic)
+    }
+
+    /// UTF-8 encodes the `tag` of a given TaggedDataPayload.
+    pub fn tag_to_utf8(payload: &TaggedDataPayload) -> Result<String> {
+        String::from_utf8(payload.tag().to_vec()).map_err(|_| Error::TaggedDataError("found invalid UTF-8".to_string()))
+    }
+
+    /// UTF-8 encodes the `data` of a given TaggedDataPayload.
+    pub fn data_to_utf8(payload: &TaggedDataPayload) -> Result<String> {
+        String::from_utf8(payload.data().to_vec())
+            .map_err(|_| Error::TaggedDataError("found invalid UTF-8".to_string()))
+    }
+
+    /// UTF-8 encodes both the `tag` and `data` of a given TaggedDataPayload.
+    pub fn tagged_data_to_utf8(payload: &TaggedDataPayload) -> Result<(String, String)> {
+        Ok((Client::tag_to_utf8(payload)?, Client::data_to_utf8(payload)?))
+    }
 }

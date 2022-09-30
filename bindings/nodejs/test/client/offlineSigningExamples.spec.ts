@@ -14,15 +14,7 @@ const onlineClient = new Client({
     localPow: true,
 });
 
-const offlineClient = new Client({
-    offline: true,
-    nodes: [
-        {
-            url: process.env.NODE_URL || 'http://localhost:14265',
-        },
-    ],
-    localPow: true,
-});
+const offlineClient = new Client({});
 
 const secretManager = {
     mnemonic:
@@ -34,12 +26,12 @@ describe('Offline signing examples', () => {
         const addresses = await offlineClient.generateAddresses(secretManager, {
             range: {
                 start: 0,
-                end: 10,
+                end: 1,
             },
             bech32Hrp: SHIMMER_TESTNET_BECH32_HRP,
         });
 
-        expect(addresses.length).toBe(10);
+        expect(addresses.length).toBe(1);
         addresses.forEach((address) => {
             expect(address).toBeValidAddress();
         });
@@ -75,15 +67,16 @@ describe('Offline signing examples', () => {
     // transaction tests disabled for workflows, because they fail if we don't have funds
     it.skip('sends a transaction', async () => {
         // Send block with the signed transaction as a payload
-        const block = await onlineClient.submitPayload(
+        const blockIdAndBlock = await onlineClient.postBlockPayload(
             // Imported JSON is typed with literal types
             signedTransactionJson as unknown as PayloadTypes,
         );
 
-        expect(block.payload).toBeDefined();
+        expect(blockIdAndBlock[1].payload).toBeDefined();
 
-        const blockId = await onlineClient.blockId(block);
+        const blockId = await onlineClient.blockId(blockIdAndBlock[1]);
 
+        expect(blockId).toBe(blockIdAndBlock[0]);
         expect(blockId).toBeValidBlockId;
     });
 });

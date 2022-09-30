@@ -101,9 +101,9 @@ checksum = "d86b93f97252c47b41663388e6d155714a9d0c398b99f1005cbc5f978b29f445"
 
 [[package]]
 name = "bee-api-types"
-version = "1.0.0-beta.7"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7ee8f42eece01082cb68ac6b56395799a4d1cf59efe223000fabd0aa2da3e612"
+checksum = "539b26b6963b744909bfa6d130a85d2abc0f45a9aaad2400633100604521422b"
 dependencies = [
  "bee-block",
  "bee-ledger-types",
@@ -113,9 +113,9 @@ dependencies = [
 
 [[package]]
 name = "bee-block"
-version = "1.0.0-beta.7"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "71668eae085ca48a59582e1c63a0d245b70c9fdbddd8fb31b37f1eb15a42bff5"
+checksum = "7d124ffdd80872942bb979a0b2b21e9fe069b5eca6c38997e33de30749b94261"
 dependencies = [
  "bech32 0.9.1",
  "bee-pow",
@@ -138,9 +138,9 @@ dependencies = [
 
 [[package]]
 name = "bee-ledger-types"
-version = "1.0.0-beta.5"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0fda485ea7a4c023f99b485288bb2c7f79bbbf24de4940ff80be2ab6504a9462"
+checksum = "8bb8f7b8c5bf371243e6fe36c6feb0985a84ff15ca6251b60749be490d2fd05a"
 dependencies = [
  "bee-block",
  "packable",
@@ -149,9 +149,9 @@ dependencies = [
 
 [[package]]
 name = "bee-pow"
-version = "1.0.0-beta.1"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f97ca064b7895679b723b1e188bad6103adad5cd712168185fb73fbfe6c205f0"
+checksum = "740c63e550d741613893a432c03db714bc1d6ff85882b88ded0f0920c06e98a6"
 dependencies = [
  "bee-ternary",
  "iota-crypto",
@@ -160,9 +160,9 @@ dependencies = [
 
 [[package]]
 name = "bee-ternary"
-version = "1.0.0-alpha.1"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a9252b65ddd9a863b0efc06ddab6c26334ecbe00fb8fa47bbde10babda2981b2"
+checksum = "303a046c924e0b635640033126ca5d87c1e905b070f8c3251478fb606acb55b3"
 dependencies = [
  "autocfg",
  "num-traits",
@@ -264,21 +264,21 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
 name = "chacha20"
-version = "0.7.1"
+version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fee7ad89dc1128635074c268ee661f90c3f7e83d9fd12910608c36b47d6c3412"
+checksum = "5c80e5460aa66fe3b91d40bcbdab953a597b60053e34d684ac6903f863b680a6"
 dependencies = [
  "cfg-if",
  "cipher",
- "cpufeatures 0.1.5",
+ "cpufeatures",
  "zeroize",
 ]
 
 [[package]]
 name = "chacha20poly1305"
-version = "0.8.0"
+version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1580317203210c517b6d44794abfbe600698276db18127e37ad3e69bf5e848e5"
+checksum = "a18446b09be63d457bbec447509e85f662f32952b035ce892290396bc0b0cff5"
 dependencies = [
  "aead",
  "chacha20",
@@ -304,15 +304,6 @@ checksum = "2a604e93b79d1808327a6fca85a6f2d69de66461e7620f5a4cbf5fb4d1d7c948"
 dependencies = [
  "bytes",
  "memchr",
-]
-
-[[package]]
-name = "cpufeatures"
-version = "0.1.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "66c99696f6c9dd7f35d486b9d04d7e6e202aa3e8c40d553f2fdf5e7e0c6a71ef"
-dependencies = [
- "libc",
 ]
 
 [[package]]
@@ -888,7 +879,7 @@ dependencies = [
 
 [[package]]
 name = "iota-client"
-version = "2.0.0-beta.2"
+version = "2.0.0"
 dependencies = [
  "async-trait",
  "backtrace",
@@ -930,9 +921,9 @@ dependencies = [
 
 [[package]]
 name = "iota-crypto"
-version = "0.14.0"
+version = "0.14.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "aee0fbdc68c475a78fd19a6509280b25166499f1bfe087a81237813e7b951667"
+checksum = "d53239ace29cccec48af2f3b509090d546bcc52648c6147866d88bc70f4352b3"
 dependencies = [
  "aead",
  "bee-ternary",
@@ -952,9 +943,9 @@ dependencies = [
 
 [[package]]
 name = "iota-ledger-nano"
-version = "1.0.0-alpha.1"
+version = "1.0.0-alpha.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "91ad1e0dac851bc0fb0ef980cdb05c82a4dfe2468f71cb580d3a7b62c32eab7b"
+checksum = "ef28b65fb2c58b5aa01793c36a33ef3d63333f6760abcba95659c4cb5b4e8fe5"
 dependencies = [
  "bech32 0.7.3",
  "enum-iterator",
@@ -1250,7 +1241,7 @@ version = "0.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "048aeb476be11a4b6ca432ca569e375810de9294ae78f4774e78ea98a9246ede"
 dependencies = [
- "cpufeatures 0.2.2",
+ "cpufeatures",
  "opaque-debug",
  "universal-hash",
 ]
@@ -1554,7 +1545,7 @@ checksum = "4d58a1e1bf39749807d89cf2d98ac2dfa0ff1cb3faa38fbb64dd88ac8013d800"
 dependencies = [
  "block-buffer 0.9.0",
  "cfg-if",
- "cpufeatures 0.2.2",
+ "cpufeatures",
  "digest 0.9.0",
  "opaque-debug",
 ]
@@ -1566,7 +1557,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "55deaec60f81eefe3cce0dc50bda92d6d8e88f2a27df7c5033b42afeb1ed2676"
 dependencies = [
  "cfg-if",
- "cpufeatures 0.2.2",
+ "cpufeatures",
  "digest 0.10.3",
 ]
 

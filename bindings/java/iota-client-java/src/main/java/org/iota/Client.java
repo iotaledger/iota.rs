@@ -716,12 +716,12 @@ public class Client {
     }
 
     /**
-     * Get the list of nodes that are not been synced
+     * Get the list of nodes that are not healthy
      *
-     * @return The array of nodes that are not synced.
+     * @return The array of nodes that are not healthy.
      */
-    public Node[] getUnsyncedNodes() throws ClientException {
-        return miscellaneousApi.getUnsyncedNodes();
+    public Node[] getUnhealthyNodes() throws ClientException {
+        return miscellaneousApi.getUnhealthyNodes();
     }
 
     /**
