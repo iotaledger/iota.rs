@@ -7,9 +7,9 @@ on:
     paths:
       - ".github/workflows/examine-core.yml"
       - ".github/actions/**"
-      - "src/**"
-      - "tests/**"
-      - "examples/**"
+      - "client/src/**"
+      - "client/tests/**"
+      - "client/examples/**"
       - "Cargo.toml"
       - "Cargo.lock"
   pull_request:
@@ -19,9 +19,9 @@ on:
     paths:
       - ".github/workflows/examine-core.yml"
       - ".github/actions/**"
-      - "src/**"
-      - "tests/**"
-      - "examples/**"
+      - "client/src/**"
+      - "client/tests/**"
+      - "client/examples/**"
       - "Cargo.toml"
       - "Cargo.lock"
   schedule:

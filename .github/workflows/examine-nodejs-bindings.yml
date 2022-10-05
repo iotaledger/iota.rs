@@ -7,7 +7,7 @@ on:
     paths:
       - ".github/workflows/examine-nodejs-bindings.yml"
       - ".github/actions/**"
-      - "bindings/nodejs/**"
+      - "client/bindings/nodejs/**"
       # Watch the Rust core too
       - "src/**"
       - "Cargo.toml"
@@ -19,7 +19,7 @@ on:
     paths:
       - ".github/workflows/examine-nodejs-bindings.yml"
       - ".github/actions/**"
-      - "bindings/nodejs/**"
+      - "client/bindings/nodejs/**"
       # Watch the Rust core too
       - "src/**"
       - "Cargo.toml"
@@ -52,7 +52,7 @@ jobs:
         with:
           toolchain: nightly
           cache: true
-          cache-root: bindings/nodejs/
+          cache-root: client/bindings/nodejs/
           cache-job-id: ${{ github.workflow }}-${{ github.job }}-${{ matrix.os }}-${{ matrix.node }}
           cache-hash: ${{ hashFiles('.github/workflows/examine-nodejs-bindings.yml') }}
 
@@ -61,7 +61,7 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
           cache: yarn
-          cache-dependency-path: bindings/nodejs/yarn.lock
+          cache-dependency-path: client/bindings/nodejs/yarn.lock
 
       # This step is required for bindgen to work on Windows.
       - name: Set Up Clang/LLVM (Windows)
@@ -75,17 +75,17 @@ jobs:
           sudo apt-get install libudev-dev libusb-1.0-0-dev
 
       - name: Run Yarn Install
-        working-directory: bindings/nodejs/
+        working-directory: client/bindings/nodejs/
         run: yarn install
 
       - name: Run Cargo Test
         uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --manifest-path bindings/nodejs/Cargo.toml --all-features --release
+          args: --manifest-path client/bindings/nodejs/Cargo.toml --all-features --release
 
       - name: Run Yarn Test
-        working-directory: bindings/nodejs/
+        working-directory: client/bindings/nodejs/
         run: yarn test
 
   lint:
@@ -103,7 +103,7 @@ jobs:
           toolchain: beta
           components: clippy
           cache: true
-          cache-root: bindings/nodejs/
+          cache-root: client/bindings/nodejs/
           cache-job-id: ${{ github.workflow }}-${{ github.job }}
           cache-hash: ${{ hashFiles('.github/workflows/examine-nodejs-bindings.yml') }}
 
@@ -116,22 +116,22 @@ jobs:
         uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          args: --manifest-path bindings/nodejs/Cargo.toml --all-features --all-targets -- --deny warnings
+          args: --manifest-path client/bindings/nodejs/Cargo.toml --all-features --all-targets -- --deny warnings
           name: Clippy Results for the Node.js Bindings
 
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
           cache: yarn
-          cache-dependency-path: bindings/nodejs/yarn.lock
+          cache-dependency-path: client/bindings/nodejs/yarn.lock
           node-version: 14.x
 
       - name: Install Dependencies
-        working-directory: bindings/nodejs/
+        working-directory: client/bindings/nodejs/
         run: yarn
 
       - name: Lint
-        working-directory: bindings/nodejs/
+        working-directory: client/bindings/nodejs/
         run: yarn lint
 
   check-unused-deps:
@@ -149,7 +149,7 @@ jobs:
           toolchain: nightly
           cache: true
           install: cargo-udeps
-          cache-root: bindings/nodejs/
+          cache-root: client/bindings/nodejs/
           cache-job-id: ${{ github.workflow }}-${{ github.job }}
           cache-hash: ${{ hashFiles('.github/workflows/examine-nodejs-bindings.yml') }}
 
@@ -162,7 +162,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: udeps
-          args: --manifest-path bindings/nodejs/Cargo.toml --all-targets --all-features
+          args: --manifest-path client/bindings/nodejs/Cargo.toml --all-targets --all-features
 
       # TODO: Check yarn too
 
@@ -197,7 +197,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: fmt
-          args: --manifest-path bindings/nodejs/Cargo.toml --all -- --check
+          args: --manifest-path client/bindings/nodejs/Cargo.toml --all -- --check
 
       - name: Run cargo-license-template
         uses: actions-rs/cargo@v1
@@ -209,15 +209,15 @@ jobs:
         uses: actions/setup-node@v2
         with:
           cache: yarn
-          cache-dependency-path: bindings/nodejs/yarn.lock
+          cache-dependency-path: client/bindings/nodejs/yarn.lock
           node-version: 14.x
 
       - name: Install Dependencies
-        working-directory: bindings/nodejs/
+        working-directory: client/bindings/nodejs/
         run: yarn
 
       - name: Format
-        working-directory: bindings/nodejs/
+        working-directory: client/bindings/nodejs/
         run: yarn format-check
 
   audit:
@@ -241,6 +241,6 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: audit
-          args: --file bindings/nodejs/Cargo.lock --deny warnings
+          args: --file client/bindings/nodejs/Cargo.lock --deny warnings
 
       # TODO: Check the JavaScript code too

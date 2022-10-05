@@ -7,7 +7,7 @@ on:
     paths:
       - ".github/workflows/examine-python-bindings.yml"
       - ".github/actions/**"
-      - "bindings/python/**"
+      - "client/bindings/python/**"
       # Watch the Rust core too
       - "src/**"
       - "Cargo.toml"
@@ -19,7 +19,7 @@ on:
     paths:
       - ".github/workflows/examine-python-bindings.yml"
       - ".github/actions/**"
-      - "bindings/python/**"
+      - "client/bindings/python/**"
       # Watch the Rust core too
       - "src/**"
       - "Cargo.toml"
@@ -52,7 +52,7 @@ jobs:
         with:
           toolchain: nightly
           cache: true
-          cache-root: bindings/python/native/
+          cache-root: client/bindings/python/native/
           cache-job-id: ${{ github.workflow }}-${{ github.job }}-${{ matrix.os }}-${{ matrix.python }}
           cache-hash: ${{ hashFiles('.github/workflows/examine-python-bindings.yml') }}
 
@@ -61,7 +61,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
-          cache-dependency-path: bindings/python/native/requirements-dev.txt
+          cache-dependency-path: client/bindings/python/native/requirements-dev.txt
 
       # This step is required for bindgen to work on Windows.
       - name: Set Up Clang/LLVM (Windows)
@@ -81,7 +81,7 @@ jobs:
 
       # Tox will run cargo test.
       - name: Run Tox
-        working-directory: bindings/python/native/
+        working-directory: client/bindings/python/native/
         run: tox
 
   lint:
@@ -99,7 +99,7 @@ jobs:
           toolchain: beta
           components: clippy
           cache: true
-          cache-root: bindings/python/native/
+          cache-root: client/bindings/python/native/
           cache-job-id: ${{ github.workflow }}-${{ github.job }}
           cache-hash: ${{ hashFiles('.github/workflows/examine-python-bindings.yml') }}
 
@@ -112,7 +112,7 @@ jobs:
         uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          args: --manifest-path bindings/python/native/Cargo.toml --all-features --all-targets -- --deny warnings
+          args: --manifest-path client/bindings/python/native/Cargo.toml --all-features --all-targets -- --deny warnings
           name: Clippy Results for the Python Bindings
 
       # TODO: Lint the Python code too
@@ -132,7 +132,7 @@ jobs:
           toolchain: nightly
           cache: true
           install: cargo-udeps
-          cache-root: bindings/python/native/
+          cache-root: client/bindings/python/native/
           cache-job-id: ${{ github.workflow }}-${{ github.job }}
           cache-hash: ${{ hashFiles('.github/workflows/examine-python-bindings.yml') }}
 
@@ -145,7 +145,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: udeps
-          args: --manifest-path bindings/python/native/Cargo.toml --all-targets --all-features
+          args: --manifest-path client/bindings/python/native/Cargo.toml --all-targets --all-features
 
       # TODO: Check requirements.txt too
 
@@ -175,7 +175,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: fmt
-          args: --manifest-path bindings/python/native/Cargo.toml --all -- --check
+          args: --manifest-path client/bindings/python/native/Cargo.toml --all -- --check
 
       - name: Run cargo-license-template
         uses: actions-rs/cargo@v1
@@ -206,6 +206,6 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: audit
-          args: --file bindings/python/native/Cargo.lock --deny warnings
+          args: --file client/bindings/python/native/Cargo.lock --deny warnings
 
       # TODO: Check the Python code too

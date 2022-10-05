@@ -9,7 +9,7 @@ on:
       - ".github/workflows/examine-wasm.yml"
       - ".github/actions/**"
       # Watch the Rust core too
-      - "src/**"
+      - "**.rs"
       - "Cargo.toml"
       - "Cargo.lock"
   pull_request:
@@ -20,7 +20,7 @@ on:
       - ".github/workflows/examine-wasm.yml"
       - ".github/actions/**"
       # Watch the Rust core too
-      - "src/**"
+      - "**.rs"
       - "Cargo.toml"
       - "Cargo.lock"
 
