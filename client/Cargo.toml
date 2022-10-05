@@ -68,15 +68,6 @@ tls = [ "reqwest/rustls-tls" ]
 stronghold = [ "iota_stronghold" ]
 message_interface = [ "backtrace" ]
 
-[profile.release]
-panic = "abort"
-
-[profile.production]
-codegen-units = 1
-inherits = "release"
-lto = true
-strip = "symbols"
-
 [package.metadata.cargo-udeps.ignore]
 normal = [ "async-trait", "derive_builder" ]
 
