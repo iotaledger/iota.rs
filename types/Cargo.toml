@@ -18,8 +18,6 @@ all-features = true
 rustdoc-args = [ "--cfg", "doc_cfg" ]
 
 [dependencies]
-serde = { version = "1.0.145", default-features = false, features = [ "derive" ], optional = true }
-thiserror = { version = "1.0.37", default-features = false }
 bee-pow = { version = "1.0.0", default-features = false }
 bee-ternary = { version = "1.0.0", default-features = false, features = [ "serde" ] }
 bech32 = { version = "0.9.1", default-features = false }
@@ -35,9 +33,10 @@ packable = { version = "0.6.2", default-features = false, features = [ "serde", 
 prefix-hex = { version = "0.4.0", default-features = false, features = [ "primitive-types" ] }
 primitive-types = { version = "0.11.1", default-features = false, features = [ "serde" ] }
 rand = { version = "0.8.5", default-features = false, features = [ "min_const_gen", "std_rng" ], optional = true }
+serde = { version = "1.0.145", default-features = false, features = [ "derive" ], optional = true }
 serde-big-array = { version = "0.4.1", default-features = false, optional = true }
 serde_json = { version = "1.0.85", default-features = false, features = [ "alloc" ], optional = true }
-
+thiserror = { version = "1.0.37", default-features = false }
 
 [dev-dependencies]
 num_cpus = { version = "1.13.1", default-features = false }
