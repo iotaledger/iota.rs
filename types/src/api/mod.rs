@@ -1,10 +1,10 @@
 // Copyright 2020-2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! Bee REST API
+//! API-related types like responses and DTOs.
 
-#![allow(missing_docs, warnings)]
+#![allow(missing_docs)]
 
-pub mod dtos;
+pub mod dto;
 pub mod error;
-pub mod responses;
+pub mod response;

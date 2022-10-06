@@ -1,12 +1,11 @@
 // Copyright 2020-2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use serde::{Deserialize, Serialize};
-
 use crate::block::payload::milestone::option::dto::ReceiptMilestoneOptionDto;
 
 /// Describes a peer.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct PeerDto {
     pub id: String,
     #[serde(rename = "multiAddresses")]
@@ -20,14 +19,16 @@ pub struct PeerDto {
 }
 
 /// Returns all information about the gossip stream with the peer.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, Default)]
+#[derive(Clone, Debug, Eq, PartialEq, Default)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct GossipDto {
     pub heartbeat: HeartbeatDto,
     pub metrics: MetricsDto,
 }
 
 /// Describes the relation with the peer.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum RelationDto {
     #[serde(rename = "known")]
     Known,
@@ -38,7 +39,8 @@ pub enum RelationDto {
 }
 
 /// Describes the heartbeat of a node.
-#[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct HeartbeatDto {
     #[serde(rename = "solidMilestoneIndex")]
     pub solid_milestone_index: u32,
@@ -53,7 +55,8 @@ pub struct HeartbeatDto {
 }
 
 /// Describes metrics of a gossip stream.
-#[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct MetricsDto {
     #[serde(rename = "newBlocks")]
     pub new_blocks: u64,
@@ -80,7 +83,8 @@ pub struct MetricsDto {
 }
 
 /// Describes a receipt.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct ReceiptDto {
     pub receipt: ReceiptMilestoneOptionDto,
     #[serde(rename = "milestoneIndex")]
@@ -88,7 +92,8 @@ pub struct ReceiptDto {
 }
 
 /// Describes the ledger inclusion state of a transaction.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum LedgerInclusionStateDto {
     #[serde(rename = "conflicting")]
     Conflicting,

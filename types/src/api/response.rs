@@ -1,11 +1,9 @@
 // Copyright 2020-2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use serde::{Deserialize, Serialize};
-
 use crate::{
     api::{
-        dtos::{LedgerInclusionStateDto, PeerDto, ReceiptDto},
+        dto::{LedgerInclusionStateDto, PeerDto, ReceiptDto},
         error::Error,
     },
     block::{
@@ -18,7 +16,8 @@ use crate::{
 
 /// Response of GET /api/core/v2/info.
 /// Returns general information about the node.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct InfoResponse {
     pub name: String,
     pub version: String,
@@ -36,7 +35,8 @@ pub struct InfoResponse {
 
 /// Returned in [`InfoResponse`].
 /// Status information about the node.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct StatusResponse {
     #[serde(rename = "isHealthy")]
     pub is_healthy: bool,
@@ -50,7 +50,8 @@ pub struct StatusResponse {
 
 /// Returned in [`StatusResponse`].
 /// Information about the latest milestone.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct LatestMilestoneResponse {
     pub index: u32,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -61,7 +62,8 @@ pub struct LatestMilestoneResponse {
 
 /// Returned in [`StatusResponse`].
 /// Information about the confirmed milestone.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct ConfirmedMilestoneResponse {
     pub index: u32,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -72,7 +74,8 @@ pub struct ConfirmedMilestoneResponse {
 
 /// Returned in [`InfoResponse`].
 /// Protocol information about the node.
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct ProtocolResponse {
     pub version: u8,
     #[serde(rename = "networkName")]
@@ -110,7 +113,8 @@ impl TryFrom<ProtocolResponse> for ProtocolParameters {
 
 /// Returned in [`InfoResponse`].
 /// Pending protocol parameters.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct PendingProtocolParameter {
     #[serde(rename = "type")]
     pub kind: u8,
@@ -123,7 +127,8 @@ pub struct PendingProtocolParameter {
 
 /// Returned in [`InfoResponse`].
 /// Information about the base token.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct BaseTokenResponse {
     pub name: String,
     #[serde(rename = "tickerSymbol")]
@@ -138,7 +143,8 @@ pub struct BaseTokenResponse {
 
 /// Returned in [`InfoResponse`].
 /// Rent information about the node.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct RentStructureResponse {
     #[serde(rename = "vByteCost")]
     pub v_byte_cost: u32,
@@ -160,7 +166,8 @@ impl From<RentStructureResponse> for RentStructure {
 
 /// Returned in [`InfoResponse`].
 /// Metric information about the node.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct MetricsResponse {
     #[serde(rename = "blocksPerSecond")]
     pub blocks_per_second: f64,
@@ -172,14 +179,16 @@ pub struct MetricsResponse {
 
 /// Response of GET /api/core/v2/tips.
 /// Returns non-lazy tips.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct TipsResponse {
     pub tips: Vec<String>,
 }
 
 /// Response of POST /api/core/v2/blocks.
 /// Returns the block identifier of the submitted block.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct SubmitBlockResponse {
     #[serde(rename = "blockId")]
     pub block_id: String,
@@ -187,7 +196,8 @@ pub struct SubmitBlockResponse {
 
 /// Response of GET /api/core/v2/blocks/{block_id}.
 /// Returns a specific block.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[serde(untagged)]
 pub enum BlockResponse {
     Json(BlockDto),
@@ -196,7 +206,8 @@ pub enum BlockResponse {
 
 /// Response of GET /api/core/v2/blocks/{block_id}/metadata.
 /// Returns the metadata of a block.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct BlockMetadataResponse {
     #[serde(rename = "blockId")]
     pub block_id: String,
@@ -221,7 +232,8 @@ pub struct BlockMetadataResponse {
 
 /// Response of GET /api/core/v2/outputs/{output_id}.
 /// Returns an output and its metadata.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct OutputResponse {
     pub metadata: OutputMetadataResponse,
     pub output: OutputDto,
@@ -229,7 +241,8 @@ pub struct OutputResponse {
 
 /// Response of GET /api/core/v2/outputs/{output_id}/metadata.
 /// Returns an output metadata.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct OutputMetadataResponse {
     #[serde(rename = "blockId")]
     pub block_id: String,
@@ -256,14 +269,16 @@ pub struct OutputMetadataResponse {
 /// Response of:
 /// * GET /api/core/v2/receipts/{milestone_index}, returns all stored receipts for the given milestone index.
 /// * GET /api/core/v2/receipts, returns all stored receipts, independent of a milestone index.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct ReceiptsResponse {
     pub receipts: Vec<ReceiptDto>,
 }
 
 /// Response of GET /api/core/v2/treasury.
 /// Returns all information about the treasury.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct TreasuryResponse {
     #[serde(rename = "milestoneId")]
     pub milestone_id: String,
@@ -272,7 +287,8 @@ pub struct TreasuryResponse {
 
 /// Response of GET /api/core/v2/milestone/{milestone_index}.
 /// Returns information about a milestone.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[serde(untagged)]
 pub enum MilestoneResponse {
     Json(MilestonePayloadDto),
@@ -281,7 +297,8 @@ pub enum MilestoneResponse {
 
 /// Response of GET /api/core/v2/milestone/{milestone_index}/utxo-changes.
 /// Returns all UTXO changes that happened at a specific milestone.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct UtxoChangesResponse {
     pub index: u32,
     #[serde(rename = "createdOutputs")]
@@ -292,22 +309,26 @@ pub struct UtxoChangesResponse {
 
 /// Response of GET /api/core/v2/peers.
 /// Returns information about all peers of the node.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct PeersResponse(pub Vec<PeerDto>);
 
 /// Response of POST /api/core/v2/peers.
 /// Returns information about the added peer.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct AddPeerResponse(pub PeerDto);
 
 /// Response of GET /api/core/v2/peer/{peer_id}.
 /// Returns information about a specific peer of the node.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct PeerResponse(pub PeerDto);
 
 /// Response of GET /api/plugins/debug/whiteflag.
 /// Returns the computed merkle tree hash for the given white flag traversal.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct WhiteFlagResponse {
     #[serde(rename = "merkleTreeHash")]
     pub merkle_tree_hash: String,
@@ -315,7 +336,8 @@ pub struct WhiteFlagResponse {
 
 /// Response of GET /api/routes.
 /// Returns the available API route groups of the node.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct RoutesResponse {
     pub routes: Vec<String>,
 }
