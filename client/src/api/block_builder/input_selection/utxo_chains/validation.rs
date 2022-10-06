@@ -3,7 +3,7 @@
 
 //! input selection for utxo chains
 
-use bee_block::output::Output;
+use iota_types::block::output::Output;
 
 use crate::secret::types::InputSigningData;
 

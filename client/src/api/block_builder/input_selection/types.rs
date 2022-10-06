@@ -3,7 +3,7 @@
 
 //! Types used during transaction creation
 
-use bee_block::output::{NativeTokensBuilder, Output};
+use iota_types::block::output::{NativeTokensBuilder, Output};
 
 use crate::api::{block_builder::input_selection::InputSigningData, RemainderData};
 

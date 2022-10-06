@@ -8,16 +8,16 @@
 use std::{collections::HashMap, ops::Range};
 
 use async_trait::async_trait;
-use bee_block::{
+use iota_ledger_nano::{
+    get_app_config, get_buffer_size, get_ledger, get_opened_app, LedgerBIP32Index, Packable as LedgerNanoPackable,
+    TransportTypes,
+};
+use iota_types::block::{
     address::{Address, AliasAddress, Ed25519Address, NftAddress},
     output::Output,
     payload::transaction::TransactionEssence,
     signature::Signature,
     unlock::{AliasUnlock, NftUnlock, ReferenceUnlock, Unlock, Unlocks},
-};
-use iota_ledger_nano::{
-    get_app_config, get_buffer_size, get_ledger, get_opened_app, LedgerBIP32Index, Packable as LedgerNanoPackable,
-    TransportTypes,
 };
 use packable::{unpacker::SliceUnpacker, Packable, PackableExt};
 use tokio::sync::Mutex;

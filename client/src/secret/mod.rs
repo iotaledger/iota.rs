@@ -20,7 +20,7 @@ use std::time::Duration;
 use std::{collections::HashMap, ops::Range, str::FromStr};
 
 use async_trait::async_trait;
-use bee_block::{
+use iota_types::block::{
     address::{Address, AliasAddress, NftAddress},
     output::Output,
     unlock::{AliasUnlock, NftUnlock, ReferenceUnlock, Unlock, Unlocks},

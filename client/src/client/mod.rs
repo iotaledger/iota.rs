@@ -11,8 +11,8 @@ use std::{
     time::Duration,
 };
 
-use bee_block::{output::RentStructure, protocol::ProtocolParameters};
 use bee_pow::providers::{NonceProvider, NonceProviderBuilder};
+use iota_types::block::{output::RentStructure, protocol::ProtocolParameters};
 #[cfg(not(target_family = "wasm"))]
 use tokio::{runtime::Runtime, sync::broadcast::Sender};
 #[cfg(feature = "mqtt")]

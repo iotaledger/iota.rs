@@ -3,7 +3,7 @@
 
 //! Helper functions used in the input selection
 
-use bee_block::{
+use iota_types::block::{
     address::{Address, AliasAddress, Ed25519Address, NftAddress},
     output::{
         unlock_condition::{AddressUnlockCondition, StorageDepositReturnUnlockCondition},
@@ -77,7 +77,11 @@ pub(crate) fn sdr_not_expired(output: &Output, current_time: u32) -> Option<&Sto
             };
 
             // We only have to send the storage deposit return back if the output is not expired
-            if !expired { Some(sdr) } else { None }
+            if !expired {
+                Some(sdr)
+            } else {
+                None
+            }
         } else {
             None
         }

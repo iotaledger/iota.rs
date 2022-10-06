@@ -5,9 +5,9 @@
 
 use std::collections::HashSet;
 
-use bee_block::{
+use iota_types::block::{
     input::{Input, UtxoInput},
-    output::{dto::OutputDto, InputsCommitment, Output, OutputId},
+    output::{dto::OutputDto, AliasId, InputsCommitment, Output, OutputId},
     payload::{
         transaction::{RegularTransactionEssence, TransactionEssence, TransactionPayload},
         Payload, TaggedDataPayload,
@@ -17,7 +17,6 @@ use bee_block::{
 
 use crate::{
     api::{types::PreparedTransactionData, ClientBlockBuilder},
-    block::output::AliasId,
     secret::{types::InputSigningData, SecretManageExt},
     Error, Result,
 };

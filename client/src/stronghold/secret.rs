@@ -6,15 +6,15 @@
 use std::ops::Range;
 
 use async_trait::async_trait;
-use bee_block::{
-    address::{Address, Ed25519Address},
-    signature::{Ed25519Signature, Signature},
-    unlock::{SignatureUnlock, Unlock},
-};
 use crypto::hashes::{blake2b::Blake2b256, Digest};
 use iota_stronghold::{
     procedures::{self, Chain, KeyType, Slip10DeriveInput},
     Location,
+};
+use iota_types::block::{
+    address::{Address, Ed25519Address},
+    signature::{Ed25519Signature, Signature},
+    unlock::{SignatureUnlock, Unlock},
 };
 use zeroize::Zeroize;
 
@@ -286,18 +286,16 @@ mod tests {
         stronghold_adapter.clear_key().await;
 
         // Address generation returns an error when the key is cleared.
-        assert!(
-            stronghold_adapter
-                .generate_addresses(
-                    IOTA_COIN_TYPE,
-                    0,
-                    0..1,
-                    false,
-                    GenerateAddressMetadata { syncing: false },
-                )
-                .await
-                .is_err()
-        );
+        assert!(stronghold_adapter
+            .generate_addresses(
+                IOTA_COIN_TYPE,
+                0,
+                0..1,
+                false,
+                GenerateAddressMetadata { syncing: false },
+            )
+            .await
+            .is_err());
 
         stronghold_adapter.set_password("drowssap").await.unwrap();
 

@@ -5,8 +5,7 @@
 
 pub mod routes;
 
-use bee_api_types::responses::OutputResponse;
-use bee_block::output::OutputId;
+use iota_types::{api::response::OutputResponse, block::output::OutputId};
 
 #[cfg(not(target_family = "wasm"))]
 use crate::constants::MAX_PARALLEL_API_REQUESTS;

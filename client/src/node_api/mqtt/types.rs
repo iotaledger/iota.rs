@@ -5,7 +5,7 @@
 
 use std::{collections::HashMap, sync::Arc, time::Duration};
 
-use bee_block::{
+use iota_types::block::{
     payload::{milestone::ReceiptMilestoneOption, MilestonePayload},
     Block,
 };

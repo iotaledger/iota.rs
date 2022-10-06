@@ -13,12 +13,12 @@ pub mod types;
 mod utxo_chains;
 use std::collections::HashSet;
 
-use bee_block::{
+pub use helpers::minimum_storage_deposit_basic_output;
+use iota_types::block::{
     address::Address,
     input::INPUT_COUNT_MAX,
     output::{Output, OutputId, RentStructure, OUTPUT_COUNT_MAX},
 };
-pub use helpers::minimum_storage_deposit_basic_output;
 use packable::bounded::TryIntoBoundedU16Error;
 
 use self::{
@@ -317,7 +317,7 @@ pub fn try_select_inputs(
 
         // check if we have too many outputs after adding the remainder output
         if outputs.len() as u16 > OUTPUT_COUNT_MAX {
-            return Err(Error::BlockError(bee_block::Error::InvalidOutputCount(
+            return Err(Error::BlockError(iota_types::block::Error::InvalidOutputCount(
                 TryIntoBoundedU16Error::Truncated(outputs.len()),
             )));
         }

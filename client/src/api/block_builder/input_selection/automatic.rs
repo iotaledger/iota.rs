@@ -3,12 +3,14 @@
 
 //! Automatic input selection for transactions
 
-use bee_api_types::responses::OutputResponse;
-use bee_block::{
-    address::Address,
-    output::{Output, RentStructure},
-};
 use crypto::keys::slip10::Chain;
+use iota_types::{
+    api::response::OutputResponse,
+    block::{
+        address::Address,
+        output::{Output, RentStructure},
+    },
+};
 
 use crate::{
     api::{
@@ -182,7 +184,7 @@ impl<'a> ClientBlockBuilder<'a> {
                         }
                         // Not enough balance for a remainder.
                         Err(crate::Error::BlockError(block_error)) => match block_error {
-                            bee_block::Error::InvalidStorageDepositAmount { .. } => {
+                            iota_types::block::Error::InvalidStorageDepositAmount { .. } => {
                                 cached_error.replace(crate::Error::BlockError(block_error));
                                 continue;
                             }

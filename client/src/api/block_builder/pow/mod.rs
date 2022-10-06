@@ -8,8 +8,8 @@ pub mod wasm_miner;
 
 pub mod miner;
 
-use bee_block::{parent::Parents, payload::Payload, Block, BlockBuilder, BlockId};
 use bee_pow::providers::{NonceProvider, NonceProviderBuilder};
+use iota_types::block::{parent::Parents, payload::Payload, Block, BlockBuilder, BlockId};
 use packable::PackableExt;
 #[cfg(target_family = "wasm")]
 use wasm_miner::SingleThreadedMiner;

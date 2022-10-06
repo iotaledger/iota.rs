@@ -5,11 +5,11 @@
 
 use std::collections::HashSet;
 
-use bee_block::{
+use crypto::keys::slip10::Chain;
+use iota_types::block::{
     address::Address,
     output::{dto::OutputDto, feature::Features, AliasOutput, NftOutput, Output, OutputId},
 };
-use crypto::keys::slip10::Chain;
 
 use crate::{
     api::{

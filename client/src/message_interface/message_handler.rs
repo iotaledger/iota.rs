@@ -6,7 +6,8 @@ use std::sync::mpsc::Sender;
 use std::{any::Any, panic::AssertUnwindSafe};
 
 use backtrace::Backtrace;
-use bee_block::{
+use futures::{Future, FutureExt};
+use iota_types::block::{
     address::dto::AddressDto,
     input::dto::UtxoInputDto,
     output::{
@@ -19,7 +20,6 @@ use bee_block::{
     },
     Block as BeeBlock, BlockDto,
 };
-use futures::{Future, FutureExt};
 #[cfg(not(target_family = "wasm"))]
 use tokio::sync::mpsc::UnboundedSender;
 use zeroize::Zeroize;

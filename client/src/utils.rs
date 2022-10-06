@@ -5,14 +5,14 @@
 
 use std::collections::HashMap;
 
-use bee_block::{
-    address::{Address, Ed25519Address},
-    payload::TaggedDataPayload,
-};
 use crypto::{
     hashes::{blake2b::Blake2b256, Digest},
     keys::{bip39::wordlist, slip10::Seed},
     utils,
+};
+use iota_types::block::{
+    address::{Address, Ed25519Address},
+    payload::TaggedDataPayload,
 };
 use zeroize::Zeroize;
 
