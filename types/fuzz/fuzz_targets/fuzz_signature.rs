@@ -3,7 +3,7 @@
 
 #![no_main]
 
-use bee_block::signature::Signature;
+use iota_types::block::signature::Signature;
 
 use libfuzzer_sys::fuzz_target;
 use packable::PackableExt;

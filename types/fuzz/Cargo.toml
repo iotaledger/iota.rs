@@ -1,5 +1,5 @@
 [package]
-name = "bee-block-fuzz"
+name = "iota-types-fuzz"
 version = "0.0.0"
 authors = [ "Automatically generated" ]
 publish = false
@@ -9,9 +9,9 @@ edition = "2021"
 cargo-fuzz = true
 
 [dependencies]
-bee-block = { path = "..", default-features = false }
+iota-types = { path = "..", default-features = false }
 
-libfuzzer-sys = { version = "0.4.3", default-features = false }
+libfuzzer-sys = { version = "0.4.4", default-features = false }
 packable = { version = "0.6.2", default-features = false }
 
 # Prevent this from interfering with workspaces

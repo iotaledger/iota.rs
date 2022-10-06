@@ -3,7 +3,7 @@
 
 #![no_main]
 
-use bee_block::output::Output;
+use iota_types::block::output::Output;
 
 use libfuzzer_sys::fuzz_target;
 use packable::PackableExt;
