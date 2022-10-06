@@ -17,7 +17,7 @@ bee-pow = { version = "1.0.0", default-features = false }
 derive_builder = { version = "0.11.2", default-features = false, features = [ "std" ]}
 futures = { version = "0.3.24", default-features = false, features = [ "thread-pool" ] }
 iota-crypto = { version = "0.14.2", default-features = false, features = [ "std", "chacha", "blake2b", "ed25519", "random", "slip10", "bip39", "bip39-en" ] }
-iota-types = { version = "1.0.0-rc.1", path = "../types", default-features = false, features = [ "api", "serde", "dto", "std" ] }
+iota-types = { version = "1.0.0-rc.1", path = "../types", default-features = false, features = [ "api", "block", "serde", "dto", "std" ] }
 log = { version = "0.4.17", default-features = false }
 num_cpus = { version = "1.13.1", default-features = false }
 packable = { version = "0.6.1", default-features = false, features = [ "serde", "primitive-types", "std" ] }
@@ -55,7 +55,7 @@ bee-ternary = { version = "1.0.0-alpha.1", default-features = false }
 iota-crypto = { version = "0.14.2", default-features = false, features = [ "curl-p" ] }
 
 [dev-dependencies]
-bee-block = { version = "1.0.1", default-features = false, features = [ "rand" ] }
+iota-types = { version = "1.0.0-rc.1", path = "../types", default-features = false, features = [ "rand" ] }
 dotenv = { version = "0.15.0", default-features = false }
 fern-logger = { version = "0.5.0", default-features = false }
 

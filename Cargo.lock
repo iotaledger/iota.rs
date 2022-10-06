@@ -254,29 +254,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d86b93f97252c47b41663388e6d155714a9d0c398b99f1005cbc5f978b29f445"
 
 [[package]]
-name = "bee-block"
-version = "1.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f61cb248b6b443af950e7bf741ee258660aae08d2e437384ce2b954481427517"
-dependencies = [
- "bech32 0.9.1",
- "bee-pow",
- "bee-ternary",
- "bitflags",
- "bytemuck",
- "derive_more",
- "hashbrown",
- "hex",
- "iota-crypto 0.14.3",
- "iterator-sorted",
- "packable",
- "prefix-hex",
- "primitive-types",
- "rand",
- "thiserror",
-]
-
-[[package]]
 name = "bee-pow"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1248,7 +1225,6 @@ version = "2.0.1-rc.2"
 dependencies = [
  "async-trait",
  "backtrace",
- "bee-block",
  "bee-pow",
  "bee-ternary",
  "derive_builder",

@@ -2,17 +2,17 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // These are E2E test samples, so they are ignored by default.
-use bee_block::{
-    output::OutputId,
-    payload::{transaction::TransactionId, Payload},
-    BlockId,
-};
 use iota_client::{
     bech32_to_hex,
     node_api::indexer::query_parameters::QueryParameter,
     request_funds_from_faucet,
     secret::{mnemonic::MnemonicSecretManager, SecretManager},
     Client,
+};
+use iota_types::block::{
+    output::OutputId,
+    payload::{transaction::TransactionId, Payload},
+    BlockId,
 };
 
 const DEFAULT_DEVNET_NODE_URL: &str = "http://localhost:14265";

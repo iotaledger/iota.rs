@@ -135,7 +135,7 @@ fn input_selection_nfts() -> Result<()> {
         0,
         TOKEN_SUPPLY,
     ) {
-        Err(Error::BlockError(bee_block::Error::InsufficientStorageDepositAmount {
+        Err(Error::BlockError(iota_types::block::Error::InsufficientStorageDepositAmount {
             amount: 1,
             required: 213000,
         })) => {}
