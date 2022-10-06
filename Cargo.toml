@@ -1,6 +1,7 @@
 [workspace]
 members = [
 	"client",
+	"types",
 ]
 
 [profile.dev]
