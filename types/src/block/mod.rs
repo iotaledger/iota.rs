@@ -15,6 +15,7 @@ pub mod dto;
 /// A module that provides types and syntactic validations of addresses.
 pub mod address;
 /// A module that provides types and syntactic validations of blocks.
+#[allow(clippy::module_inception)]
 pub mod block;
 /// A module that contains helper functions and types.
 pub mod helper;
