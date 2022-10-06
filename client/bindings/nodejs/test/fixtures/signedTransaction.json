@@ -1,0 +1,53 @@
+{
+    "type": 6,
+    "essence": {
+        "type": 1,
+        "networkId": "1020014395361784349",
+        "inputs": [
+            {
+                "type": 0,
+                "transactionId": "0x60740e02678a6e29cad19e5df4ac367897c88904d9c137a88b7b37c473df9ba4",
+                "transactionOutputIndex": 1
+            }
+        ],
+        "inputsCommitment": "0xf027c155a58527f1e3d2c0e93ffe101edcc6cc58d7ce7ec0bea0cdbfb08f73ef",
+        "outputs": [
+            {
+                "type": 3,
+                "amount": "1000000",
+                "unlockConditions": [
+                    {
+                        "type": 0,
+                        "address": {
+                            "type": 0,
+                            "pubKeyHash": "0x194eb32b9b6c61207192c7073562a0b3adf50a7c1f268182b552ec8999380acb"
+                        }
+                    }
+                ]
+            },
+            {
+                "type": 3,
+                "amount": "2043446000",
+                "unlockConditions": [
+                    {
+                        "type": 0,
+                        "address": {
+                            "type": 0,
+                            "pubKeyHash": "0x7ffec9e1233204d9c6dce6812b1539ee96af691ca2e4d9065daa85907d33e5d3"
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "unlocks": [
+        {
+            "type": 0,
+            "signature": {
+                "type": 0,
+                "publicKey": "0x67b7fc3f78763c9394fc4fcdb52cf3a973b6e064bdc3defb40a6cb2c880e6f5c",
+                "signature": "0xb0b507effca036496504003afb237413a25c61d473fd02e82a151ff0b34c90965c232e5c9b8f7eb489fbe12da408df69b4dd40df0828cc59670dea8a9c9a330b"
+            }
+        }
+    ]
+}
