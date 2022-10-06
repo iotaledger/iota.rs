@@ -54,6 +54,11 @@ jobs:
           cache-job-id: ${{ github.workflow }}-${{ github.job }}-${{ matrix.os }}
           cache-hash: ${{ hashFiles('.github/workflows/examine-core.yml') }}
 
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v1
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Install Required Dependencies (Ubuntu)
         if: ${{ startsWith(matrix.os, 'ubuntu') }}
         run: |
