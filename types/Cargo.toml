@@ -43,14 +43,12 @@ serde_json = { version = "1.0.85", default-features = false, features = [ "alloc
 num_cpus = { version = "1.13.1", default-features = false }
 
 [features]
-api = [ ]
-block = [ ]
+default = [ "api", "block", "std" ]
 
+api = [ "dto" ]
+block = [  ]
 dto = [ "serde", "dep:serde_json" ]
 inx = [ "dep:inx", "std" ]
+rand = [ "dep:rand", "std" ]
 serde = [ "dep:serde", "serde-big-array" ]
 std = [  ]
-rand = [ "dep:rand", "std" ]
-
-
-default = [  ]
