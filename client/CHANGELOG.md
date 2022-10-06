@@ -19,6 +19,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security -->
 
+## 2.0.1-rc.3 - 2022-XX-XX
+
+### Changed
+
+- Use new `iota-types` crate instead of `bee-api-types` and `bee-block`;
+
 ## 2.0.1-rc.2 - 2022-09-29
 
 ### Added

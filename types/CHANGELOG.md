@@ -19,6 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security -->
 
+## 1.0.0-rc.1 - 2022-XX-XX
+
+First release based on `bee-api-types` and `bee-block`.
+
 <!-- We include the past changelogs of `bee-api-types` and `bee-block` for reference as they have been merged into the client repository as a new crate.
 
 # bee-api-types
