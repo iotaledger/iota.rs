@@ -100,54 +100,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d86b93f97252c47b41663388e6d155714a9d0c398b99f1005cbc5f978b29f445"
 
 [[package]]
-name = "bee-api-types"
-version = "1.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dbcb42880efab2183bf20a7ac8ac079470a6075a95068d5997a24cda869213be"
-dependencies = [
- "bee-block",
- "bee-ledger-types",
- "serde",
- "thiserror",
-]
-
-[[package]]
-name = "bee-block"
-version = "1.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f61cb248b6b443af950e7bf741ee258660aae08d2e437384ce2b954481427517"
-dependencies = [
- "bech32 0.9.1",
- "bee-pow",
- "bee-ternary",
- "bitflags",
- "bytemuck",
- "derive_more",
- "hashbrown 0.12.3",
- "hex",
- "iota-crypto",
- "iterator-sorted",
- "packable",
- "prefix-hex",
- "primitive-types",
- "serde",
- "serde-big-array",
- "serde_json",
- "thiserror",
-]
-
-[[package]]
-name = "bee-ledger-types"
-version = "1.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8bb8f7b8c5bf371243e6fe36c6feb0985a84ff15ca6251b60749be490d2fd05a"
-dependencies = [
- "bee-block",
- "packable",
- "thiserror",
-]
-
-[[package]]
 name = "bee-pow"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -883,8 +835,6 @@ version = "2.0.1-rc.2"
 dependencies = [
  "async-trait",
  "backtrace",
- "bee-api-types",
- "bee-block",
  "bee-pow",
  "bee-ternary",
  "derive_builder",
@@ -893,6 +843,7 @@ dependencies = [
  "instant",
  "iota-crypto",
  "iota-ledger-nano",
+ "iota-types",
  "log",
  "num_cpus",
  "packable",
@@ -959,6 +910,29 @@ dependencies = [
  "serde",
  "thiserror",
  "trait-async",
+]
+
+[[package]]
+name = "iota-types"
+version = "1.0.0-rc.1"
+dependencies = [
+ "bech32 0.9.1",
+ "bee-pow",
+ "bee-ternary",
+ "bitflags",
+ "bytemuck",
+ "derive_more",
+ "hashbrown 0.12.3",
+ "hex",
+ "iota-crypto",
+ "iterator-sorted",
+ "packable",
+ "prefix-hex",
+ "primitive-types",
+ "serde",
+ "serde-big-array",
+ "serde_json",
+ "thiserror",
 ]
 
 [[package]]
@@ -1487,9 +1461,9 @@ dependencies = [
 
 [[package]]
 name = "serde"
-version = "1.0.144"
+version = "1.0.145"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0f747710de3dcd43b88c9168773254e809d8ddbdf9653b84e2554ab219f17860"
+checksum = "728eb6351430bccb993660dfffc5a72f91ccc1295abaa8ce19b27ebe4f75568b"
 dependencies = [
  "serde_derive",
 ]
@@ -1505,9 +1479,9 @@ dependencies = [
 
 [[package]]
 name = "serde_derive"
-version = "1.0.144"
+version = "1.0.145"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "94ed3a816fb1d101812f83e789f888322c34e291f894f19590dc310963e87a00"
+checksum = "81fa1584d3d1bcacd84c277a0dfe21f5b0f6accf4a23d04d4c6d61f1af522b4c"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1654,18 +1628,18 @@ checksum = "55937e1799185b12863d447f42597ed69d9928686b8d88a1df17376a097d8369"
 
 [[package]]
 name = "thiserror"
-version = "1.0.32"
+version = "1.0.37"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f5f6586b7f764adc0231f4c79be7b920e766bb2f3e51b3661cdb263828f19994"
+checksum = "10deb33631e3c9018b9baf9dcbbc4f737320d2b576bac10f6aefa048fa407e3e"
 dependencies = [
  "thiserror-impl",
 ]
 
 [[package]]
 name = "thiserror-impl"
-version = "1.0.32"
+version = "1.0.37"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "12bafc5b54507e0149cdf1b145a5d80ab80a90bcd9275df43d4fff68460f6c21"
+checksum = "982d17546b47146b28f7c22e3d08465f6b8903d0ea13c1660d9d84a6e7adcdbb"
 dependencies = [
  "proc-macro2",
  "quote",
