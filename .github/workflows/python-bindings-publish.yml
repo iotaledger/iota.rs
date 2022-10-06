@@ -11,8 +11,8 @@ on:
       - 'client/bindings/python/**'
       # Watch the Rust core too
       - 'src/**'
-      - 'Cargo.toml'
-      - 'Cargo.lock'
+      - 'client/Cargo.toml'
+      - 'client/Cargo.lock'
 
 concurrency: 
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}

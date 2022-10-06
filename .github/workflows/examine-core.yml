@@ -10,8 +10,8 @@ on:
       - "client/src/**"
       - "client/tests/**"
       - "client/examples/**"
-      - "Cargo.toml"
-      - "Cargo.lock"
+      - "client/Cargo.toml"
+      - "client/Cargo.lock"
   pull_request:
     branches:
       - develop
@@ -22,8 +22,8 @@ on:
       - "client/src/**"
       - "client/tests/**"
       - "client/examples/**"
-      - "Cargo.toml"
-      - "Cargo.lock"
+      - "client/Cargo.toml"
+      - "client/Cargo.lock"
   schedule:
     - cron: "0 1 * * *"
   workflow_dispatch:
