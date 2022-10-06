@@ -1,3 +1,5 @@
+[workspace]
+
 [package]
 # NOTE: cargo-cp-artifact reads the name of crate for artifacts, so this stays
 # the same as the one specified in `../package.json`.

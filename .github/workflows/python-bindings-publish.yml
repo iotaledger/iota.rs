@@ -8,11 +8,11 @@ on:
     paths:
       - '.github/workflows/python-bindings-publish.yml'
       - '.github/actions/**'
-      - 'bindings/python/**'
+      - 'client/bindings/python/**'
       # Watch the Rust core too
       - 'src/**'
-      - 'Cargo.toml'
-      - 'Cargo.lock'
+      - 'client/Cargo.toml'
+      - 'client/Cargo.lock'
 
 concurrency: 
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
@@ -57,7 +57,7 @@ jobs:
           sudo apt-get install libudev-dev libusb-1.0-0-dev
 
       - name: Build Wheels
-        working-directory: bindings/python/native
+        working-directory: client/bindings/python/native
         run: |
           python3 -m pip install -v maturin
           maturin build --release --manylinux off
@@ -66,4 +66,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: ${{ matrix.identifier }}-iota-client-py${{ matrix.python-version }}-wheel
-          path: bindings/python/native/target/wheels/
+          path: client/bindings/python/native/target/wheels/

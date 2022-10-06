@@ -7,11 +7,11 @@ on:
     paths:
       - ".github/workflows/examine-core.yml"
       - ".github/actions/**"
-      - "src/**"
-      - "tests/**"
-      - "examples/**"
-      - "Cargo.toml"
-      - "Cargo.lock"
+      - "client/src/**"
+      - "client/tests/**"
+      - "client/examples/**"
+      - "client/Cargo.toml"
+      - "client/Cargo.lock"
   pull_request:
     branches:
       - develop
@@ -19,11 +19,11 @@ on:
     paths:
       - ".github/workflows/examine-core.yml"
       - ".github/actions/**"
-      - "src/**"
-      - "tests/**"
-      - "examples/**"
-      - "Cargo.toml"
-      - "Cargo.lock"
+      - "client/src/**"
+      - "client/tests/**"
+      - "client/examples/**"
+      - "client/Cargo.toml"
+      - "client/Cargo.lock"
   schedule:
     - cron: "0 1 * * *"
   workflow_dispatch:
