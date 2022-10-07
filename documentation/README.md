@@ -32,5 +32,5 @@ This command starts a local, wiki themed development server and opens up a brows
 Example:
 
 ```console
-{@import ../../../../bindings/nodejs/docs/api-reference.md}
+{@import ../../../../client/bindings/nodejs/docs/api-reference.md}
 ```
