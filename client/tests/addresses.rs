@@ -1,7 +1,6 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use bee_block::address::Address;
 #[cfg(feature = "message_interface")]
 use iota_client::api::GetAddressesBuilderOptions;
 #[cfg(feature = "message_interface")]
@@ -20,6 +19,7 @@ use iota_client::{
     secret::{mnemonic::MnemonicSecretManager, SecretManager},
     Client,
 };
+use iota_types::block::address::Address;
 use serde::{Deserialize, Serialize};
 
 #[tokio::test]

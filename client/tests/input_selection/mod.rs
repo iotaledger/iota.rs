@@ -1,10 +1,6 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use bee_block::output::{
-    unlock_condition::{GovernorAddressUnlockCondition, StateControllerAddressUnlockCondition},
-    SimpleTokenScheme, TokenScheme,
-};
 use iota_client::{
     block::{
         address::{Address, AliasAddress},
@@ -17,6 +13,10 @@ use iota_client::{
     },
     constants::SHIMMER_TESTNET_BECH32_HRP,
     secret::types::{InputSigningData, OutputMetadata},
+};
+use iota_types::block::output::{
+    unlock_condition::{GovernorAddressUnlockCondition, StateControllerAddressUnlockCondition},
+    SimpleTokenScheme, TokenScheme,
 };
 
 mod alias_foundry_outputs;

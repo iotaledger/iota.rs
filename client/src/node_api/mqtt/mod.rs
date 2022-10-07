@@ -9,11 +9,11 @@ use std::{
     time::Instant,
 };
 
-use bee_block::{
+use crypto::utils;
+use iota_types::block::{
     payload::{milestone::ReceiptMilestoneOption, MilestonePayload},
     Block,
 };
-use crypto::utils;
 use log::warn;
 use packable::PackableExt;
 use rumqttc::{

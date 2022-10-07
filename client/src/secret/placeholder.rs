@@ -6,7 +6,7 @@
 use std::ops::Range;
 
 use async_trait::async_trait;
-use bee_block::{
+use iota_types::block::{
     address::Address,
     unlock::{Unlock, Unlocks},
 };

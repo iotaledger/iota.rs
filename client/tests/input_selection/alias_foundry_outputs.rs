@@ -3,12 +3,12 @@
 
 use std::str::FromStr;
 
-use bee_block::output::{NativeToken, SimpleTokenScheme, TokenId};
 use iota_client::{
     api::input_selection::try_select_inputs,
     block::output::{AliasId, Output, RentStructure},
     Error, Result,
 };
+use iota_types::block::output::{NativeToken, SimpleTokenScheme, TokenId};
 use primitive_types::U256;
 
 use crate::input_selection::{
@@ -137,7 +137,7 @@ fn input_selection_alias() -> Result<()> {
         0,
         TOKEN_SUPPLY,
     ) {
-        Err(Error::BlockError(bee_block::Error::InsufficientStorageDepositAmount {
+        Err(Error::BlockError(iota_types::block::Error::InsufficientStorageDepositAmount {
             amount: 1,
             required: 213000,
         })) => {}

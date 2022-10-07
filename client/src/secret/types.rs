@@ -5,14 +5,16 @@
 
 use std::str::FromStr;
 
-use bee_api_types::responses::OutputMetadataResponse;
-use bee_block::{
-    address::Address,
-    output::{dto::OutputDto, Output, OutputId},
-    payload::transaction::TransactionId,
-    BlockId,
-};
 use crypto::keys::slip10::Chain;
+use iota_types::{
+    api::response::OutputMetadataResponse,
+    block::{
+        address::Address,
+        output::{dto::OutputDto, Output, OutputId},
+        payload::transaction::TransactionId,
+        BlockId,
+    },
+};
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "stronghold")]
 use zeroize::ZeroizeOnDrop;

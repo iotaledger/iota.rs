@@ -254,55 +254,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d86b93f97252c47b41663388e6d155714a9d0c398b99f1005cbc5f978b29f445"
 
 [[package]]
-name = "bee-api-types"
-version = "1.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dbcb42880efab2183bf20a7ac8ac079470a6075a95068d5997a24cda869213be"
-dependencies = [
- "bee-block",
- "bee-ledger-types",
- "serde",
- "thiserror",
-]
-
-[[package]]
-name = "bee-block"
-version = "1.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f61cb248b6b443af950e7bf741ee258660aae08d2e437384ce2b954481427517"
-dependencies = [
- "bech32 0.9.1",
- "bee-pow",
- "bee-ternary",
- "bitflags",
- "bytemuck",
- "derive_more",
- "hashbrown",
- "hex",
- "iota-crypto 0.14.3",
- "iterator-sorted",
- "packable",
- "prefix-hex",
- "primitive-types",
- "rand",
- "serde",
- "serde-big-array",
- "serde_json",
- "thiserror",
-]
-
-[[package]]
-name = "bee-ledger-types"
-version = "1.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "228ee3d4030f55ef8847af93bf6fb01c7007cd60bd129db365c3da4105285255"
-dependencies = [
- "bee-block",
- "packable",
- "thiserror",
-]
-
-[[package]]
 name = "bee-pow"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1274,8 +1225,6 @@ version = "2.0.1-rc.2"
 dependencies = [
  "async-trait",
  "backtrace",
- "bee-api-types",
- "bee-block",
  "bee-pow",
  "bee-ternary",
  "derive_builder",
@@ -1286,6 +1235,7 @@ dependencies = [
  "instant",
  "iota-crypto 0.14.3",
  "iota-ledger-nano",
+ "iota-types",
  "iota_stronghold",
  "log",
  "num_cpus",

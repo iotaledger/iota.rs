@@ -7,13 +7,13 @@ pub mod transaction;
 
 use std::{collections::HashSet, ops::Range};
 
-use bee_block::{
+use iota_types::block::{
     address::{Address, Ed25519Address},
-    input::{UtxoInput, INPUT_COUNT_MAX},
+    input::{dto::UtxoInputDto, UtxoInput, INPUT_COUNT_MAX},
     output::{
         dto::OutputDto,
         unlock_condition::{AddressUnlockCondition, UnlockCondition},
-        AliasId, Output, OUTPUT_COUNT_RANGE,
+        AliasId, BasicOutputBuilder, Output, OUTPUT_COUNT_RANGE,
     },
     payload::{Payload, TaggedDataPayload},
     Block, BlockId,
@@ -24,13 +24,7 @@ use packable::{
 };
 
 pub use self::transaction::verify_semantic;
-use crate::{
-    api::do_pow,
-    block::{input::dto::UtxoInputDto, output::BasicOutputBuilder},
-    constants::SHIMMER_COIN_TYPE,
-    secret::SecretManager,
-    Client, Error, Result,
-};
+use crate::{api::do_pow, constants::SHIMMER_COIN_TYPE, secret::SecretManager, Client, Error, Result};
 
 /// Builder of the block API
 #[must_use]
@@ -174,7 +168,7 @@ impl<'a> ClientBlockBuilder<'a> {
             .finish_output(self.client.get_token_supply()?)?;
         self.outputs.push(output);
         if !OUTPUT_COUNT_RANGE.contains(&(self.outputs.len() as u16)) {
-            return Err(crate::Error::BlockError(bee_block::Error::InvalidOutputCount(
+            return Err(crate::Error::BlockError(iota_types::block::Error::InvalidOutputCount(
                 TryIntoBoundedU16Error::Truncated(self.outputs.len()),
             )));
         }
@@ -185,7 +179,7 @@ impl<'a> ClientBlockBuilder<'a> {
     pub fn with_outputs(mut self, outputs: Vec<Output>) -> Result<Self> {
         self.outputs.extend(outputs);
         if !OUTPUT_COUNT_RANGE.contains(&(self.outputs.len() as u16)) {
-            return Err(crate::Error::BlockError(bee_block::Error::InvalidOutputCount(
+            return Err(crate::Error::BlockError(iota_types::block::Error::InvalidOutputCount(
                 TryIntoBoundedU16Error::Truncated(self.outputs.len()),
             )));
         }
@@ -201,7 +195,7 @@ impl<'a> ClientBlockBuilder<'a> {
             .finish_output(self.client.get_token_supply()?)?;
         self.outputs.push(output);
         if !OUTPUT_COUNT_RANGE.contains(&(self.outputs.len() as u16)) {
-            return Err(crate::Error::BlockError(bee_block::Error::InvalidOutputCount(
+            return Err(crate::Error::BlockError(iota_types::block::Error::InvalidOutputCount(
                 TryIntoBoundedU16Error::Truncated(self.outputs.len()),
             )));
         }
@@ -230,7 +224,7 @@ impl<'a> ClientBlockBuilder<'a> {
     /// Set 1-8 custom parent block ids
     pub fn with_parents(mut self, parent_ids: Vec<BlockId>) -> Result<Self> {
         if !(1..=8).contains(&parent_ids.len()) {
-            return Err(crate::Error::BlockError(bee_block::Error::InvalidParentCount(
+            return Err(crate::Error::BlockError(iota_types::block::Error::InvalidParentCount(
                 TryIntoBoundedU8Error::Truncated(parent_ids.len()),
             )));
         }

@@ -3,12 +3,14 @@
 
 //! automatic input selection for utxo chains
 
-use bee_api_types::responses::OutputResponse;
-use bee_block::{
-    address::Address,
-    output::{dto::OutputDto, AliasOutput, FoundryOutput, NftOutput, Output},
-};
 use crypto::keys::slip10::Chain;
+use iota_types::{
+    api::response::OutputResponse,
+    block::{
+        address::Address,
+        output::{dto::OutputDto, AliasOutput, FoundryOutput, NftOutput, Output},
+    },
+};
 
 use super::get_alias_and_nft_outputs_recursively;
 use crate::{

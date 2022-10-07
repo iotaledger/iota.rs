@@ -5,14 +5,16 @@
 
 use std::{collections::HashSet, ops::Deref, str::FromStr};
 
-use bee_api_types::responses::OutputResponse;
-use bee_block::{
-    address::{Address, AliasAddress, NftAddress},
-    output::{
-        dto::OutputDto, feature::SenderFeature, AliasOutput, AliasOutputBuilder, FoundryOutputBuilder,
-        NativeTokensBuilder, NftOutput, NftOutputBuilder, Output, OutputId, Rent, RentStructure,
+use iota_types::{
+    api::response::OutputResponse,
+    block::{
+        address::{Address, AliasAddress, NftAddress},
+        output::{
+            dto::OutputDto, feature::SenderFeature, AliasOutput, AliasOutputBuilder, FoundryOutputBuilder,
+            NativeTokensBuilder, NftOutput, NftOutputBuilder, Output, OutputId, Rent, RentStructure,
+        },
+        payload::transaction::TransactionId,
     },
-    payload::transaction::TransactionId,
 };
 
 use super::types::AccumulatedOutputAmounts;

@@ -8,8 +8,10 @@ use std::{
     time::Duration,
 };
 
-use bee_api_types::responses::{ProtocolResponse, RentStructureResponse};
-use bee_block::protocol::ProtocolParameters;
+use iota_types::{
+    api::response::{ProtocolResponse, RentStructureResponse},
+    block::protocol::ProtocolParameters,
+};
 #[cfg(not(target_family = "wasm"))]
 use tokio::{runtime::Runtime, sync::broadcast::channel};
 

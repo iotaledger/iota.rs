@@ -5,21 +5,23 @@
 
 use std::str::FromStr;
 
-use bee_api_types::{
-    dtos::{PeerDto, ReceiptDto},
-    responses::{
-        BlockMetadataResponse, BlockResponse, InfoResponse, MilestoneResponse, OutputMetadataResponse, OutputResponse,
-        PeersResponse, ReceiptsResponse, RoutesResponse, SubmitBlockResponse, TipsResponse, TreasuryResponse,
-        UtxoChangesResponse,
+use iota_types::{
+    api::{
+        dto::{PeerDto, ReceiptDto},
+        response::{
+            BlockMetadataResponse, BlockResponse, InfoResponse, MilestoneResponse, OutputMetadataResponse,
+            OutputResponse, PeersResponse, ReceiptsResponse, RoutesResponse, SubmitBlockResponse, TipsResponse,
+            TreasuryResponse, UtxoChangesResponse,
+        },
     },
-};
-use bee_block::{
-    output::OutputId,
-    payload::{
-        milestone::{MilestoneId, MilestonePayload},
-        transaction::TransactionId,
+    block::{
+        output::OutputId,
+        payload::{
+            milestone::{MilestoneId, MilestonePayload},
+            transaction::TransactionId,
+        },
+        Block, BlockDto, BlockId,
     },
-    Block, BlockDto, BlockId,
 };
 use packable::PackableExt;
 use url::Url;

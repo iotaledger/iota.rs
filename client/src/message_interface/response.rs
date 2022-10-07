@@ -4,22 +4,24 @@
 #[cfg(not(target_family = "wasm"))]
 use std::collections::HashSet;
 
-use bee_api_types::{
-    dtos::{PeerDto, ReceiptDto},
-    responses::{
-        BlockMetadataResponse, InfoResponse as NodeInfo, OutputMetadataResponse, OutputResponse, TreasuryResponse,
-        UtxoChangesResponse as MilestoneUTXOChanges,
+use iota_types::{
+    api::{
+        dto::{PeerDto, ReceiptDto},
+        response::{
+            BlockMetadataResponse, InfoResponse as NodeInfo, OutputMetadataResponse, OutputResponse, TreasuryResponse,
+            UtxoChangesResponse as MilestoneUTXOChanges,
+        },
     },
-};
-use bee_block::{
-    address::dto::AddressDto,
-    input::dto::UtxoInputDto,
-    output::{dto::OutputDto, AliasId, FoundryId, NftId, OutputId},
-    payload::{
-        dto::{MilestonePayloadDto, PayloadDto},
-        transaction::TransactionId,
+    block::{
+        address::dto::AddressDto,
+        input::dto::UtxoInputDto,
+        output::{dto::OutputDto, AliasId, FoundryId, NftId, OutputId},
+        payload::{
+            dto::{MilestonePayloadDto, PayloadDto},
+            transaction::TransactionId,
+        },
+        BlockDto, BlockId,
     },
-    BlockDto, BlockId,
 };
 use serde::Serialize;
 

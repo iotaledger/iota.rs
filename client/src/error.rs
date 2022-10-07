@@ -5,7 +5,7 @@
 
 use std::fmt::{Debug, Display};
 
-use bee_block::{output::NativeTokens, semantic::ConflictReason};
+use iota_types::block::{output::NativeTokens, semantic::ConflictReason};
 use packable::error::UnexpectedEOF;
 use serde::{ser::Serializer, Serialize};
 
@@ -22,18 +22,18 @@ pub enum Error {
     /// Block dtos error
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
-    ApiTypes(#[from] bee_api_types::error::Error),
+    ApiTypes(#[from] iota_types::api::error::Error),
     /// Blake2b256 Error
     #[error("{0}")]
     Blake2b256Error(&'static str),
     /// Block dtos error
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
-    BlockDtoError(#[from] bee_block::DtoError),
+    BlockDtoError(#[from] iota_types::block::DtoError),
     /// Block types error
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
-    BlockError(#[from] bee_block::Error),
+    BlockError(#[from] iota_types::block::Error),
     /// The wallet account has enough funds, but split on too many outputs
     #[error("the wallet account has enough funds, but split on too many outputs: {0}, max. is 128, consolidate them")]
     ConsolidationRequired(usize),
@@ -177,7 +177,7 @@ pub enum Error {
     /// Unpack error
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
-    UnpackError(#[from] packable::error::UnpackError<bee_block::Error, UnexpectedEOF>),
+    UnpackError(#[from] packable::error::UnpackError<iota_types::block::Error, UnexpectedEOF>),
     /// URL auth error
     #[error("can't set {0} to URL")]
     UrlAuthError(&'static str),

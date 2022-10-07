@@ -3,15 +3,17 @@
 
 use std::{collections::HashSet, str::FromStr};
 
-use bee_api_types::{dtos::LedgerInclusionStateDto, responses::OutputResponse};
-use bee_block::{
-    input::{Input, UtxoInput, INPUT_COUNT_MAX},
-    output::{Output, OutputId},
-    payload::{
-        transaction::{TransactionEssence, TransactionId},
-        Payload,
+use iota_types::{
+    api::{dto::LedgerInclusionStateDto, response::OutputResponse},
+    block::{
+        input::{Input, UtxoInput, INPUT_COUNT_MAX},
+        output::{Output, OutputId},
+        payload::{
+            transaction::{TransactionEssence, TransactionId},
+            Payload,
+        },
+        Block, BlockId,
     },
-    Block, BlockId,
 };
 #[cfg(not(target_family = "wasm"))]
 use {std::time::Duration, tokio::time::sleep};

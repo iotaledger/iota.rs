@@ -3,7 +3,7 @@
 
 //! Helper functions used in the input selection
 
-use bee_block::{
+use iota_types::block::{
     address::{Address, AliasAddress, Ed25519Address, NftAddress},
     output::{
         unlock_condition::{AddressUnlockCondition, StorageDepositReturnUnlockCondition},

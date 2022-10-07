@@ -15,7 +15,7 @@ use std::{
     time::Duration,
 };
 
-use bee_api_types::responses::InfoResponse;
+use iota_types::api::response::InfoResponse;
 use serde_json::Value;
 
 use self::{http_client::HttpClient, node::Node};

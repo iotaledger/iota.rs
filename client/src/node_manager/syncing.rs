@@ -4,8 +4,7 @@
 #[cfg(not(target_family = "wasm"))]
 use {
     crate::NetworkInfo,
-    bee_api_types::responses::InfoResponse as NodeInfo,
-    bee_block::protocol::ProtocolParameters,
+    iota_types::{api::response::InfoResponse as NodeInfo, block::protocol::ProtocolParameters},
     std::collections::HashMap,
     std::{
         collections::HashSet,

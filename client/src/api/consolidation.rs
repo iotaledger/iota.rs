@@ -3,7 +3,7 @@
 
 use std::str::FromStr;
 
-use bee_block::{
+use iota_types::block::{
     address::Address,
     input::{UtxoInput, INPUT_COUNT_MAX},
     output::{

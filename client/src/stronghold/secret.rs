@@ -6,15 +6,15 @@
 use std::ops::Range;
 
 use async_trait::async_trait;
-use bee_block::{
-    address::{Address, Ed25519Address},
-    signature::{Ed25519Signature, Signature},
-    unlock::{SignatureUnlock, Unlock},
-};
 use crypto::hashes::{blake2b::Blake2b256, Digest};
 use iota_stronghold::{
     procedures::{self, Chain, KeyType, Slip10DeriveInput},
     Location,
+};
+use iota_types::block::{
+    address::{Address, Ed25519Address},
+    signature::{Ed25519Signature, Signature},
+    unlock::{SignatureUnlock, Unlock},
 };
 use zeroize::Zeroize;
 

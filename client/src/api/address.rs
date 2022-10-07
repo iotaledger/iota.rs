@@ -3,7 +3,7 @@
 
 use std::ops::Range;
 
-use bee_block::address::Address;
+use iota_types::block::address::Address;
 use serde::Deserialize;
 
 use crate::{

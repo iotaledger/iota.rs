@@ -3,7 +3,7 @@
 
 use std::collections::HashMap;
 
-use bee_block::{
+use iota_types::block::{
     address::Address,
     output::{
         unlock_condition::{AddressUnlockCondition, UnlockCondition},
