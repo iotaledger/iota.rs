@@ -8,7 +8,7 @@
   },
   "packages": {
     "nodejs-binding": {
-      "path": "./bindings/nodejs",
+      "path": "./client/bindings/nodejs",
       "manager": "javascript",
       "getPublishedVersion": "npm view ${ pkgFile.pkg.name } version",
       "prepublish": [

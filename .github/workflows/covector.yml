@@ -122,15 +122,15 @@ jobs:
           sudo apt-get install libudev-dev libusb-1.0-0-dev
 
       - name: Run Yarn Install
-        working-directory: bindings/nodejs/
+        working-directory: client/bindings/nodejs/
         run: yarn install
 
       - name: Build Node.js Prebuilds
-        working-directory: bindings/nodejs/
+        working-directory: client/bindings/nodejs/
         run: yarn prebuild:node
 
       - name: Upload Prebuilds to GitHub Release
-        working-directory: bindings/nodejs/
+        working-directory: client/bindings/nodejs/
         run: yarn prebuild --upload-all ${{ secrets.GITHUB_TOKEN }} --tag-prefix nodejs-binding-v
 
   electron-binding-prebuild:
@@ -169,13 +169,13 @@ jobs:
           sudo apt-get install libudev-dev libusb-1.0-0-dev
 
       - name: Run Yarn Install
-        working-directory: bindings/nodejs/
+        working-directory: client/bindings/nodejs/
         run: yarn install
 
       - name: Build Electron Prebuilds
-        working-directory: bindings/nodejs/
+        working-directory: client/bindings/nodejs/
         run: yarn prebuild:electron
 
       - name: Upload Prebuilds to GitHub Release
-        working-directory: bindings/nodejs/
+        working-directory: client/bindings/nodejs/
         run: yarn prebuild --upload-all ${{ secrets.GITHUB_TOKEN }} --tag-prefix nodejs-binding-v
