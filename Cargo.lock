@@ -272,7 +272,6 @@ checksum = "303a046c924e0b635640033126ca5d87c1e905b070f8c3251478fb606acb55b3"
 dependencies = [
  "autocfg",
  "num-traits",
- "serde",
 ]
 
 [[package]]
@@ -1338,7 +1337,6 @@ dependencies = [
  "autocfg",
  "bech32 0.9.1",
  "bee-pow",
- "bee-ternary",
  "bitflags",
  "bytemuck",
  "derive_more",

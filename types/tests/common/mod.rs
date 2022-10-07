@@ -6,7 +6,7 @@
 
 use std::ops::Range;
 
-use bee_ternary::*;
+use iota_types::ternary::*;
 use rand::{thread_rng, Rng};
 
 /// Generates a random balanced i8 trit.

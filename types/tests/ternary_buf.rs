@@ -3,8 +3,8 @@
 
 mod common;
 
-use bee_ternary::*;
 use common::{fuzz, gen_buf_balanced, gen_buf_unbalanced, gen_trit_balanced, gen_trit_unbalanced};
+use iota_types::ternary::*;
 use rand::{thread_rng, Rng};
 
 fn create_generic<T: raw::RawEncodingBuf>() {

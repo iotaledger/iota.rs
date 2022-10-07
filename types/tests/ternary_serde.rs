@@ -3,8 +3,8 @@
 
 mod common;
 
-use bee_ternary::{raw::*, *};
 use common::{gen_buf_balanced, gen_buf_unbalanced};
+use iota_types::ternary::{raw::*, *};
 use serde::{de::DeserializeOwned, *};
 
 fn serialize_generic<T: raw::RawEncodingBuf>()

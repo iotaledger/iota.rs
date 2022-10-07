@@ -3,8 +3,8 @@
 
 mod common;
 
-use bee_ternary::*;
 use common::{fuzz, gen_buf_balanced, gen_buf_unbalanced};
+use iota_types::ternary::*;
 use rand::{thread_rng, Rng};
 
 fn get_generic<T: raw::RawEncodingBuf + Clone>() {
@@ -94,11 +94,10 @@ fn set_generic<T: raw::RawEncodingBuf + Clone>() {
                 sl = &mut sl[idx..idx + len];
             }
 
-            assert!(
-                a.iter()
-                    .zip(a_i8.iter())
-                    .all(|(a, b)| a == (*b).try_into().unwrap_or_else(|_| unreachable!()))
-            );
+            assert!(a
+                .iter()
+                .zip(a_i8.iter())
+                .all(|(a, b)| a == (*b).try_into().unwrap_or_else(|_| unreachable!())));
 
             assert_eq!(a.len(), a_i8.len());
         });
@@ -135,11 +134,10 @@ fn set_generic_unbalanced<T: raw::RawEncodingBuf + Clone>() {
                 sl = &mut sl[idx..idx + len];
             }
 
-            assert!(
-                a.iter()
-                    .zip(a_i8.iter())
-                    .all(|(a, b)| a == (*b).try_into().unwrap_or_else(|_| unreachable!()))
-            );
+            assert!(a
+                .iter()
+                .zip(a_i8.iter())
+                .all(|(a, b)| a == (*b).try_into().unwrap_or_else(|_| unreachable!())));
 
             assert_eq!(a.len(), a_i8.len());
         });
@@ -153,11 +151,10 @@ fn chunks_generic<T: raw::RawEncodingBuf + Clone>() {
         let chunk_len = thread_rng().gen_range(1..a.len());
         for (a, a_i8) in a.chunks(chunk_len).zip(a_i8.chunks(chunk_len)) {
             assert_eq!(a.len(), a_i8.len());
-            assert!(
-                a.iter()
-                    .zip(a_i8.iter())
-                    .all(|(a, b)| a == (*b).try_into().unwrap_or_else(|_| unreachable!()))
-            );
+            assert!(a
+                .iter()
+                .zip(a_i8.iter())
+                .all(|(a, b)| a == (*b).try_into().unwrap_or_else(|_| unreachable!())));
         }
     });
 }
@@ -169,11 +166,10 @@ fn chunks_generic_unbalanced<T: raw::RawEncodingBuf + Clone>() {
         let chunk_len = thread_rng().gen_range(1..a.len());
         for (a, a_i8) in a.chunks(chunk_len).zip(a_i8.chunks(chunk_len)) {
             assert_eq!(a.len(), a_i8.len());
-            assert!(
-                a.iter()
-                    .zip(a_i8.iter())
-                    .all(|(a, b)| a == (*b).try_into().unwrap_or_else(|_| unreachable!()))
-            );
+            assert!(a
+                .iter()
+                .zip(a_i8.iter())
+                .all(|(a, b)| a == (*b).try_into().unwrap_or_else(|_| unreachable!())));
         }
     });
 }
@@ -239,11 +235,10 @@ fn chunks_mut() {
         let chunk_len = thread_rng().gen_range(1..a.len());
         for (a, a_i8) in a.chunks_mut(chunk_len).zip(a_i8.chunks_mut(chunk_len)) {
             assert_eq!(a.len(), a_i8.len());
-            assert!(
-                a.iter()
-                    .zip(a_i8.iter())
-                    .all(|(a, b)| a == (*b).try_into().unwrap_or_else(|_| unreachable!()))
-            );
+            assert!(a
+                .iter()
+                .zip(a_i8.iter())
+                .all(|(a, b)| a == (*b).try_into().unwrap_or_else(|_| unreachable!())));
         }
     });
 }

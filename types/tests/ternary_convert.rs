@@ -6,7 +6,7 @@ use std::{
     time::Instant,
 };
 
-use bee_ternary::{
+use iota_types::ternary::{
     convert::*,
     trit::{Btrit, Utrit},
     T1B1Buf, TritBuf,

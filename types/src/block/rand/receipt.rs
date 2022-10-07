@@ -1,12 +1,14 @@
 // Copyright 2020-2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use bee_ternary::{T5B1Buf, Tryte, TryteBuf};
 use bytemuck::cast_slice;
 
-use crate::block::{
-    payload::milestone::option::{MigratedFundsEntry, TailTransactionHash},
-    rand::{address::rand_address, number::rand_number_range, string::rand_string_charset},
+use crate::{
+    block::{
+        payload::milestone::option::{MigratedFundsEntry, TailTransactionHash},
+        rand::{address::rand_address, number::rand_number_range, string::rand_string_charset},
+    },
+    ternary::{T5B1Buf, Tryte, TryteBuf},
 };
 
 /// Generates a random tail transaction hash.

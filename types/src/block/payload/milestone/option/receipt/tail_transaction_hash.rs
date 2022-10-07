@@ -4,7 +4,6 @@
 use alloc::string::String;
 use core::fmt;
 
-use bee_ternary::{T5B1Buf, TritBuf, Trits, T5B1};
 use bytemuck::cast_slice;
 use packable::{
     error::{UnpackError, UnpackErrorExt},
@@ -13,7 +12,10 @@ use packable::{
     Packable,
 };
 
-use crate::block::Error;
+use crate::{
+    block::Error,
+    ternary::{T5B1Buf, TritBuf, Trits, T5B1},
+};
 
 /// Represents a tail transaction hash of a legacy bundle.
 #[derive(Clone, Eq, PartialEq)]
