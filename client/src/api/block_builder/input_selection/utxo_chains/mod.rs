@@ -49,6 +49,8 @@ pub(crate) fn select_utxo_chain_inputs(
     // We track here for which outputs we did that, to prevent doing it multiple times.
     let mut added_output_for_input_signing_data = HashSet::new();
 
+    let mut required_alias_nft_addresses = HashSet::new();
+
     // Add existing selected inputs we added for sender and issuer features before
     for input_signing_data in selected_inputs.iter() {
         // Add inputs to outputs if not already there, so they don't get burned
@@ -56,6 +58,10 @@ pub(crate) fn select_utxo_chain_inputs(
             add_output_for_input(input_signing_data, rent_structure, outputs, token_supply)?;
         }
         added_output_for_input_signing_data.insert(input_signing_data.output_id()?);
+        let address = Address::try_from_bech32(&input_signing_data.bech32_address)?.1;
+        if address.is_alias() || address.is_nft() {
+            required_alias_nft_addresses.insert(address);
+        }
     }
 
     loop {
@@ -75,14 +81,16 @@ pub(crate) fn select_utxo_chain_inputs(
                 Output::Nft(nft_input) => {
                     let nft_id = nft_input.nft_id().or_from_output_id(output_id);
                     // or if an output contains an nft output with the same nft id
-                    let is_required = outputs.iter().any(|output| {
+                    let is_required_for_output = outputs.iter().any(|output| {
                         if let Output::Nft(nft_output) = output {
                             nft_id == *nft_output.nft_id()
                         } else {
                             false
                         }
                     });
-                    if !is_required && !allow_burning {
+                    let is_required_for_input =
+                        required_alias_nft_addresses.contains(&Address::Nft(NftAddress::new(nft_id)));
+                    if !is_required_for_output && !allow_burning || is_required_for_input {
                         let nft_address = Address::Nft(NftAddress::new(nft_id));
                         let nft_required_in_unlock_condition = outputs.iter().any(|output| {
                             // check if alias address is in unlock condition
@@ -93,6 +101,7 @@ pub(crate) fn select_utxo_chain_inputs(
                         if !nft_required_in_unlock_condition
                             && input_signing_data.output.amount() == minimum_required_storage_deposit
                             && nft_input.native_tokens().is_empty()
+                            && !is_required_for_input
                         {
                             continue;
                         }
@@ -116,14 +125,17 @@ pub(crate) fn select_utxo_chain_inputs(
                 Output::Alias(alias_input) => {
                     let alias_id = alias_input.alias_id().or_from_output_id(output_id);
                     // Don't add if output has not the same AliasId, so we don't burn it
-                    if !outputs.iter().any(|output| {
+                    let is_required_for_output = outputs.iter().any(|output| {
                         if let Output::Alias(alias_output) = output {
                             alias_id == *alias_output.alias_id()
                         } else {
                             false
                         }
-                    }) && !allow_burning
-                    {
+                    });
+                    let is_required_for_input =
+                        required_alias_nft_addresses.contains(&Address::Alias(AliasAddress::new(alias_id)));
+
+                    if !is_required_for_output && !allow_burning || is_required_for_input {
                         let alias_address = Address::Alias(AliasAddress::new(alias_id));
                         let alias_required_in_unlock_condition = outputs.iter().any(|output| {
                             // check if alias address is in unlock condition
@@ -134,6 +146,7 @@ pub(crate) fn select_utxo_chain_inputs(
                         if !alias_required_in_unlock_condition
                             && input_signing_data.output.amount() == minimum_required_storage_deposit
                             && alias_input.native_tokens().is_empty()
+                            && !is_required_for_input
                         {
                             continue;
                         }

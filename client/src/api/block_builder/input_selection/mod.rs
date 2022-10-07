@@ -301,6 +301,21 @@ pub fn try_select_inputs(
         get_storage_deposit_return_outputs(all_inputs, outputs.iter(), current_time, token_supply)?;
     outputs.extend(additional_storage_deposit_return_outputs.into_iter());
 
+    // Check utxo chain inputs again, because new inputs could have an alias or nft address in their unlock condition
+    select_utxo_chain_inputs(
+        &mut selected_inputs,
+        &mut selected_inputs_output_ids,
+        &mut selected_input_amount,
+        &mut selected_input_native_tokens,
+        &mut outputs,
+        &mut required,
+        &utxo_chain_inputs,
+        allow_burning,
+        current_time,
+        rent_structure,
+        token_supply,
+    )?;
+
     // create remainder output if necessary
     // get_remainder also checks for amounts and returns an error if we don't have enough
     let remainder_data = get_remainder_output(
