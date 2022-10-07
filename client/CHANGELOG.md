@@ -19,6 +19,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security -->
 
+## 2.0.1-rc.2 - YYYY-MM-DD
+
+### Fixed
+
+- Add alias and nfts output in `try_select_input` to the inputs, when required for an unlock condition of an input;
+
 ## 2.0.1-rc.2 - 2022-09-29
 
 ### Added
