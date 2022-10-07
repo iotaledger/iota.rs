@@ -1335,6 +1335,7 @@ dependencies = [
 name = "iota-types"
 version = "1.0.0-rc.1"
 dependencies = [
+ "autocfg",
  "bech32 0.9.1",
  "bee-pow",
  "bee-ternary",
@@ -1346,6 +1347,7 @@ dependencies = [
  "inx",
  "iota-crypto 0.14.3",
  "iterator-sorted",
+ "num-traits",
  "num_cpus",
  "packable",
  "prefix-hex",

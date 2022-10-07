@@ -15,3 +15,5 @@ extern crate std;
 pub mod api;
 #[cfg(feature = "block")]
 pub mod block;
+#[cfg(feature = "ternary")]
+pub mod ternary;
