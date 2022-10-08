@@ -1,5 +1,5 @@
 ---
-description:  Choose your programming language and get started with the IOTA Client Library.
+description: Get started with the IOTA Client Library and choose your programming language.
 image: /img/Banner/banner_client_lib_getting_started.png
 keywords:
 - rust
@@ -7,8 +7,7 @@ keywords:
 - python
 - java
 - javascript
-- IDE
-- reference
+- client
 ---
 # Getting Started
 
