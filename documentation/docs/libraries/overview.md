@@ -23,4 +23,4 @@ It is a recommended approach to start your interactions with IOTA on a `testnet`
 
 Network explorer is available at [IOTA Tangle Explorer](https://explorer.shimmer.network/testnet).
 
-In order to properly test value-based transactions on testnet network, you are going to need some tokens! You can get some testnet tokens using the [faucet](https://faucet.testnet.shimmer.network). However, we strongly recommend to leverage official [wallet.rs](https://wiki.iota.org/wallet.rs/develop/welcome) library in case of value-based IOTA transfers.
+In order to properly test value-based transactions on testnet network, you are going to need some tokens! You can get some testnet tokens using the [faucet](https://faucet.testnet.shimmer.network). However, we strongly recommend to leverage official [wallet.rs](https://wiki.iota.org/shimmer/wallet.rs/welcome) library in case of value-based IOTA transfers.
