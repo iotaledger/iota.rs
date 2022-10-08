@@ -32,7 +32,7 @@ https://api.testnet.shimmer.network
 
 ## Explore the Network
 
-You can use the [Shimmer Tangle Explorer](https://explorer.shimmer.network/) to view transactions and data stored in
+You can use the [Shimmer Tangle Explorer](https://explorer.shimmer.network/testnet) to view transactions and data stored in
 the IOTA Tangle.
 
 ## Get Test Tokens
