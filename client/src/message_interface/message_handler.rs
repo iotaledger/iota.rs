@@ -302,7 +302,6 @@ impl ClientMessageHandler {
             Message::GetBech32Hrp => Ok(Response::Bech32Hrp(self.client.get_bech32_hrp()?)),
             Message::GetMinPowScore => Ok(Response::MinPowScore(self.client.get_min_pow_score()?)),
             Message::GetTipsInterval => Ok(Response::TipsInterval(self.client.get_tips_interval())),
-            Message::GetTokenSupply => Ok(Response::TokenSupply(self.client.get_token_supply()?.to_string())),
             Message::GetProtocolParameters => {
                 let params = self.client.get_protocol_parameters()?;
                 let protocol_response = ProtocolResponse {

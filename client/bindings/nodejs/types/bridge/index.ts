@@ -25,7 +25,6 @@ import type {
     __GetBech32HrpMessage__,
     __GetMinPowScoreMessage__,
     __GetTipsIntervalMessage__,
-    __GetTokenSupplyMessage__,
     __GetProtocolParametersMessage__,
     __GetLocalPowMessage__,
     __GetFallbackToLocalPowMessage__,
@@ -97,7 +96,6 @@ export type __ClientMessages__ =
     | __GetBech32HrpMessage__
     | __GetMinPowScoreMessage__
     | __GetTipsIntervalMessage__
-    | __GetTokenSupplyMessage__
     | __GetProtocolParametersMessage__
     | __GetLocalPowMessage__
     | __GetFallbackToLocalPowMessage__

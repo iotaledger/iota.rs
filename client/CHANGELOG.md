@@ -23,7 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `GetTokenSupply` and `GetProtocolParameters` to the message interface;
+- `GetProtocolParameters` to the message interface;
 
 ### Changed
 

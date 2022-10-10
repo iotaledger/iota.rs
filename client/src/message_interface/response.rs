@@ -61,9 +61,6 @@ pub enum Response {
     /// - [`GetTipsInterval`](crate::message_interface::Message::GetTipsInterval)
     TipsInterval(u64),
     /// Response for:
-    /// - [`GetTokenSupply`](crate::message_interface::Message::GetTokenSupply)
-    TokenSupply(String),
-    /// Response for:
     /// - [`GetProtocolParameters`](crate::message_interface::Message::GetProtocolParameters)
     ProtocolParameters(ProtocolResponse),
     /// Response for:

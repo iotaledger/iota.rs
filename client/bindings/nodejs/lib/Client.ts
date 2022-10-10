@@ -426,11 +426,7 @@ export class Client {
      * Returns the token supply.
      */
     async getTokenSupply(): Promise<string> {
-        const response = await this.messageHandler.sendMessage({
-            name: 'getTokenSupply',
-        });
-
-        return JSON.parse(response).payload;
+        return (await this.getProtocolParameters()).tokenSupply;
     }
 
     /**

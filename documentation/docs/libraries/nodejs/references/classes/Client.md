@@ -33,7 +33,6 @@ The Client to interact with nodes.
 - [getBech32Hrp](Client.md#getbech32hrp)
 - [getMinPowScore](Client.md#getminpowscore)
 - [getTipsInterval](Client.md#gettipsinterval)
-- [getTokenSupply](Client.md#gettokensupply)
 - [getProtocolParameters](Client.md#getprotocolparameters)
 - [getLocalPow](Client.md#getlocalpow)
 - [getFallbackToLocalPow](Client.md#getfallbacktolocalpow)
@@ -517,18 +516,6 @@ Returns the tips interval.
 #### Returns
 
 `Promise`<`number`\>
-
-___
-
-### getTokenSupply
-
-▸ **getTokenSupply**(): `Promise`<`string`\>
-
-Returns the token supply.
-
-#### Returns
-
-`Promise`<`string`\>
 
 ___
 
