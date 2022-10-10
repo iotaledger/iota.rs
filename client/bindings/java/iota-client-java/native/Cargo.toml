@@ -21,6 +21,6 @@ iota-client = { path = "../../../..", features = [ "ledger_nano", "message_inter
 
 futures = { version = "0.3.24", default-features = false }
 jni = { version = "0.19.0", default-features = false }
-once_cell = { version = "1.13.1", default-features = false }
-serde_json = { version = "1.0.85", default-features = false }
-tokio = { version = "1.20.1", default-features = false, features = [ "macros" ] }
+once_cell = { version = "1.15.0", default-features = false }
+serde_json = { version = "1.0.86", default-features = false }
+tokio = { version = "1.21.2", default-features = false, features = [ "macros" ] }

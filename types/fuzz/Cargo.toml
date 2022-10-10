@@ -12,7 +12,7 @@ cargo-fuzz = true
 iota-types = { path = "..", default-features = false }
 
 libfuzzer-sys = { version = "0.4.4", default-features = false }
-packable = { version = "0.6.2", default-features = false }
+packable = { version = "0.7.0", default-features = false }
 
 # Prevent this from interfering with workspaces
 [workspace]
