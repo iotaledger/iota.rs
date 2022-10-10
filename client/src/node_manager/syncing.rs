@@ -4,7 +4,7 @@
 #[cfg(not(target_family = "wasm"))]
 use {
     crate::NetworkInfo,
-    iota_types::{api::response::InfoResponse as NodeInfo, block::protocol::ProtocolParameters},
+    iota_types::{api::response::InfoResponse, block::protocol::ProtocolParameters},
     std::collections::HashMap,
     std::{
         collections::HashSet,
@@ -39,7 +39,7 @@ impl Client {
                 self.node_manager
                     .nodes
                     .iter()
-                    .filter(|node| !healthy_nodes.contains(node))
+                    .filter(|node| !healthy_nodes.contains_key(node))
                     .collect()
             })
     }
@@ -48,7 +48,7 @@ impl Client {
     #[cfg(not(target_family = "wasm"))]
     pub(crate) fn start_sync_process(
         runtime: &Runtime,
-        sync: Arc<RwLock<HashSet<Node>>>,
+        sync: Arc<RwLock<HashMap<Node, InfoResponse>>>,
         nodes: HashSet<Node>,
         node_sync_interval: Duration,
         network_info: Arc<RwLock<NetworkInfo>>,
@@ -73,13 +73,13 @@ impl Client {
 
     #[cfg(not(target_family = "wasm"))]
     pub(crate) async fn sync_nodes(
-        sync: &Arc<RwLock<HashSet<Node>>>,
+        sync: &Arc<RwLock<HashMap<Node, InfoResponse>>>,
         nodes: &HashSet<Node>,
         network_info: &Arc<RwLock<NetworkInfo>>,
     ) -> Result<()> {
         log::debug!("sync_nodes");
-        let mut healthy_nodes = HashSet::new();
-        let mut network_nodes: HashMap<String, Vec<(NodeInfo, Node)>> = HashMap::new();
+        let mut healthy_nodes = HashMap::new();
+        let mut network_nodes: HashMap<String, Vec<(InfoResponse, Node)>> = HashMap::new();
 
         for node in nodes {
             // Put the healthy node url into the network_nodes
@@ -111,23 +111,14 @@ impl Client {
         }
 
         if let Some(nodes) = network_nodes.get(most_nodes.0) {
-            let pow_feature = String::from("pow");
-            let local_pow = network_info.read().map_err(|_| crate::Error::PoisonError)?.local_pow;
-
             if let Some((info, _node_url)) = nodes.first() {
                 let mut network_info = network_info.write().map_err(|_| crate::Error::PoisonError)?;
 
                 network_info.protocol_parameters = ProtocolParameters::try_from(info.protocol.clone())?;
             }
 
-            for (info, node_url) in nodes.iter() {
-                if !local_pow {
-                    if info.features.contains(&pow_feature) {
-                        healthy_nodes.insert(node_url.clone());
-                    }
-                } else {
-                    healthy_nodes.insert(node_url.clone());
-                }
+            for (info, node_url) in nodes {
+                healthy_nodes.insert(node_url.clone(), info.clone());
             }
         }
 

@@ -3,7 +3,7 @@
 
 //! Builder of the Client Instance
 use std::{
-    collections::HashSet,
+    collections::HashMap,
     sync::{Arc, RwLock},
     time::Duration,
 };
@@ -316,7 +316,7 @@ impl ClientBuilder {
     /// Build the Client instance.
     pub fn finish(self) -> Result<Client> {
         let network_info = Arc::new(RwLock::new(self.network_info));
-        let healthy_nodes = Arc::new(RwLock::new(HashSet::new()));
+        let healthy_nodes = Arc::new(RwLock::new(HashMap::new()));
 
         #[cfg(not(target_family = "wasm"))]
         let (runtime, sync_kill_sender) = {
