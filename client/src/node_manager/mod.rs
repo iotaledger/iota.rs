@@ -34,7 +34,7 @@ pub(crate) struct NodeManager {
     permanodes: Option<HashSet<Node>>,
     pub(crate) node_sync_enabled: bool,
     node_sync_interval: Duration,
-    pub(crate) healthy_nodes: Arc<RwLock<HashSet<Node>>>,
+    pub(crate) healthy_nodes: Arc<RwLock<HashMap<Node, InfoResponse>>>,
     quorum: bool,
     min_quorum_size: usize,
     quorum_threshold: usize,
@@ -66,7 +66,7 @@ impl NodeManager {
         &self,
         path: &str,
         query: Option<&str>,
-        use_primary_pow_node: bool,
+        use_pow_nodes: bool,
         prefer_permanode: bool,
     ) -> Result<Vec<Node>> {
         let mut nodes_with_modified_url: Vec<Node> = Vec::new();
@@ -81,7 +81,7 @@ impl NodeManager {
             }
         }
 
-        if use_primary_pow_node {
+        if use_pow_nodes {
             if let Some(pow_node) = self.primary_pow_node.clone() {
                 if !nodes_with_modified_url.iter().any(|n| n.url == pow_node.url) {
                     nodes_with_modified_url.push(pow_node);
@@ -102,7 +102,22 @@ impl NodeManager {
                 self.healthy_nodes
                     .read()
                     .map_err(|_| crate::Error::PoisonError)?
-                    .clone()
+                    .iter()
+                    .filter_map(|(n, info)| {
+                        // Only add nodes with pow feature enabled, when remote PoW is used
+                        if use_pow_nodes {
+                            let pow_feature = String::from("pow");
+
+                            if info.features.contains(&pow_feature) {
+                                Some(n.clone())
+                            } else {
+                                None
+                            }
+                        } else {
+                            Some(n.clone())
+                        }
+                    })
+                    .collect()
             }
             #[cfg(target_family = "wasm")]
             {

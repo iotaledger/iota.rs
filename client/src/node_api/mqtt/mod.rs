@@ -73,7 +73,9 @@ async fn get_mqtt_client(client: &mut Client) -> Result<&mut MqttClient> {
                         .node_manager
                         .healthy_nodes
                         .read()
-                        .map_or(client.node_manager.nodes.clone(), |healthy_nodes| healthy_nodes.clone())
+                        .map_or(client.node_manager.nodes.clone(), |healthy_nodes| {
+                            healthy_nodes.iter().map(|(node, _)| node.clone()).collect()
+                        })
                 }
                 #[cfg(target_family = "wasm")]
                 {

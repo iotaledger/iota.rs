@@ -4,11 +4,12 @@
 //! The node manager that takes care of sending requests with healthy nodes and quorum if enabled
 
 use std::{
-    collections::HashSet,
+    collections::{HashMap, HashSet},
     sync::{Arc, RwLock},
     time::Duration,
 };
 
+use iota_types::api::response::InfoResponse;
 use serde::{Deserialize, Serialize};
 use url::Url;
 
@@ -207,7 +208,7 @@ impl NodeManagerBuilder {
         self
     }
 
-    pub(crate) fn build(self, healthy_nodes: Arc<RwLock<HashSet<Node>>>) -> NodeManager {
+    pub(crate) fn build(self, healthy_nodes: Arc<RwLock<HashMap<Node, InfoResponse>>>) -> NodeManager {
         NodeManager {
             primary_node: self.primary_node.map(|node| node.into()),
             primary_pow_node: self.primary_pow_node.map(|node| node.into()),
