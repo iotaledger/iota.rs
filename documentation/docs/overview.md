@@ -18,7 +18,7 @@ keywords:
 ![IOTA Client Library Overview](/img/Banner/banner_client_lib_overview.png)
 
 The iota.rs library is designed to simplify how you connect and interact
-with [nodes](https://wiki.iota.org/introduction/develop/explanations/node_software) in the IOTA network. You can use it to generate
+with [nodes](https://wiki.iota.org/shimmer/introduction/explanations/node_software) in the IOTA network. You can use it to generate
 addresses, send messages, sign and send transactions, and more.
 
 Beyond establishing the initial connection to a node, iota.rs has no state. Operations use only the data you pass during
@@ -48,7 +48,7 @@ the [main operational network (mainnet)](https://wiki.iota.org/introduction/refe
 a [network for testing purposes (devnet)](https://wiki.iota.org/introduction/reference/networks/devnet).
 
 Different nodes can run on different software, but they always expose the same interface to clients. For example, one
-node could be a [Hornet](https://wiki.iota.org/hornet/develop/welcome) node, and the other could be
+node could be a [Hornet](https://wiki.iota.org/shimmer/hornet/welcome) node, and the other could be
 a [Bee](https://wiki.iota.org/bee/welcome) node, and they both would appear the same for any client.
 
 ![A diagram that illustrates the text above. It has three layers: the application layer that includes iota.rs and its bindings, communication layer (the Internet network), and IOTA network layer with nodes that operate on one of the IOTA networks.](/img/overview/layered_overview.svg "An overview of IOTA layers.")
