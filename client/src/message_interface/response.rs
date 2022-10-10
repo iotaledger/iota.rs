@@ -8,8 +8,8 @@ use iota_types::{
     api::{
         dto::{PeerDto, ReceiptDto},
         response::{
-            BlockMetadataResponse, InfoResponse as NodeInfo, OutputMetadataResponse, OutputResponse, TreasuryResponse,
-            UtxoChangesResponse as MilestoneUTXOChanges,
+            BlockMetadataResponse, InfoResponse as NodeInfo, OutputMetadataResponse, OutputResponse, ProtocolResponse,
+            TreasuryResponse, UtxoChangesResponse as MilestoneUTXOChanges,
         },
     },
     block::{
@@ -60,6 +60,12 @@ pub enum Response {
     /// Response for:
     /// - [`GetTipsInterval`](crate::message_interface::Message::GetTipsInterval)
     TipsInterval(u64),
+    /// Response for:
+    /// - [`GetTokenSupply`](crate::message_interface::Message::GetTokenSupply)
+    TokenSupply(String),
+    /// Response for:
+    /// - [`GetProtocolParameters`](crate::message_interface::Message::GetProtocolParameters)
+    ProtocolParameters(ProtocolResponse),
     /// Response for:
     /// - [`GetLocalPow`](crate::message_interface::Message::GetLocalPow)
     LocalPow(bool),

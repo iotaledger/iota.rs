@@ -7,18 +7,21 @@ use std::{any::Any, panic::AssertUnwindSafe};
 
 use backtrace::Backtrace;
 use futures::{Future, FutureExt};
-use iota_types::block::{
-    address::dto::AddressDto,
-    input::dto::UtxoInputDto,
-    output::{
-        dto::{OutputBuilderAmountDto, OutputDto},
-        AliasId, AliasOutput, BasicOutput, FoundryId, FoundryOutput, NftId, NftOutput, Output,
+use iota_types::{
+    api::response::{ProtocolResponse, RentStructureResponse},
+    block::{
+        address::dto::AddressDto,
+        input::dto::UtxoInputDto,
+        output::{
+            dto::{OutputBuilderAmountDto, OutputDto},
+            AliasId, AliasOutput, BasicOutput, FoundryId, FoundryOutput, NftId, NftOutput, Output,
+        },
+        payload::{
+            dto::{MilestonePayloadDto, PayloadDto},
+            Payload, TransactionPayload,
+        },
+        Block as BeeBlock, BlockDto,
     },
-    payload::{
-        dto::{MilestonePayloadDto, PayloadDto},
-        Payload, TransactionPayload,
-    },
-    Block as BeeBlock, BlockDto,
 };
 #[cfg(not(target_family = "wasm"))]
 use tokio::sync::mpsc::UnboundedSender;
@@ -299,6 +302,24 @@ impl ClientMessageHandler {
             Message::GetBech32Hrp => Ok(Response::Bech32Hrp(self.client.get_bech32_hrp()?)),
             Message::GetMinPowScore => Ok(Response::MinPowScore(self.client.get_min_pow_score()?)),
             Message::GetTipsInterval => Ok(Response::TipsInterval(self.client.get_tips_interval())),
+            Message::GetTokenSupply => Ok(Response::TokenSupply(self.client.get_token_supply()?.to_string())),
+            Message::GetProtocolParameters => {
+                let params = self.client.get_protocol_parameters()?;
+                let protocol_response = ProtocolResponse {
+                    version: params.protocol_version(),
+                    network_name: params.network_name().to_string(),
+                    bech32_hrp: params.bech32_hrp().to_string(),
+                    min_pow_score: params.min_pow_score(),
+                    below_max_depth: params.below_max_depth(),
+                    rent_structure: RentStructureResponse {
+                        v_byte_cost: params.rent_structure().v_byte_cost,
+                        v_byte_factor_key: params.rent_structure().v_byte_factor_key,
+                        v_byte_factor_data: params.rent_structure().v_byte_factor_data,
+                    },
+                    token_supply: params.token_supply().to_string(),
+                };
+                Ok(Response::ProtocolParameters(protocol_response))
+            }
             Message::GetLocalPow => Ok(Response::LocalPow(self.client.get_local_pow())),
             Message::GetFallbackToLocalPow => Ok(Response::FallbackToLocalPow(self.client.get_fallback_to_local_pow())),
             #[cfg(feature = "ledger_nano")]

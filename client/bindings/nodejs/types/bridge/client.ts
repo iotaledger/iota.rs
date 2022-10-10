@@ -185,6 +185,14 @@ export interface __GetTipsIntervalMessage__ {
     name: 'getTipsInterval';
 }
 
+export interface __GetTokenSupplyMessage__ {
+    name: 'getTokenSupply';
+}
+
+export interface __GetProtocolParametersMessage__ {
+    name: 'getProtocolParameters';
+}
+
 export interface __GetLocalPowMessage__ {
     name: 'getLocalPow';
 }

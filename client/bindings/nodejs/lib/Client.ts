@@ -38,6 +38,7 @@ import type {
     IAliasOutput,
     IFoundryOutput,
     INftOutput,
+    INodeInfoProtocol,
 } from '@iota/types';
 import type { INodeInfoWrapper } from '../types/nodeInfo';
 
@@ -416,6 +417,28 @@ export class Client {
     async getTipsInterval(): Promise<number> {
         const response = await this.messageHandler.sendMessage({
             name: 'getTipsInterval',
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Returns the token supply.
+     */
+    async getTokenSupply(): Promise<string> {
+        const response = await this.messageHandler.sendMessage({
+            name: 'getTokenSupply',
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Returns the protocol parameters.
+     */
+    async getProtocolParameters(): Promise<INodeInfoProtocol> {
+        const response = await this.messageHandler.sendMessage({
+            name: 'getProtocolParameters',
         });
 
         return JSON.parse(response).payload;
