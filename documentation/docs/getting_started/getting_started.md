@@ -1,43 +1,41 @@
 ---
-description:  Choose your binding and get started with the IOTA Client Library.
+description: Get started with the IOTA Client Library and choose your programming language.
 image: /img/Banner/banner_client_lib_getting_started.png
 keywords:
 - rust
-- python
 - node.js
+- python
 - java
 - javascript
-- IDE
-- reference
+- client
 ---
 # Getting Started
 
 ![IOTA Client Library getting started](/img/Banner/banner_client_lib_getting_started.png)
 
-## Required Prior Knowledge
+## Choose Your Programming Language
 
-This wiki assumes that you already know the basics of your programming language of choice. Companies and communities
-behind each language provide their documentation for beginners you can use as reference:
+* [Rust](./rust.mdx)
+* [Node.js](./nodejs.mdx)
+* [Python](./python.mdx)
+* [Java](./java.mdx)
 
-* [Java](https://www.java.com/).
-* [JavaScript](https://www.w3schools.com/js/).
-* [TypeScript](https://www.typescriptlang.org/docs/).
-* [Node.js](https://nodejs.org/en/docs/guides/).
-* [Python](https://www.python.org/about/gettingstarted/).
-* [Rust](https://www.rust-lang.org/learn/get-started).
+## Connect to the Testnet API
 
-If you have little experience coding, you could start with any of those first or refer to these guides as you read
-through our iota.rs documentation. If you have never programmed in your life, MIT has published an
-open [introductory course to programming](https://ocw.mit.edu/courses/6-00sc-introduction-to-computer-science-and-programming-spring-2011/) which could help you
-get started.
+We recommended that you start your interactions with Shimmer on a _testnet_ network. The _testnet_ will allow you to safely
+get acquainted with the `iota.rs` library, without the risk of losing any funds if you make a mistake along the way.
+You can use this Shimmer Testnet API load balancer: 
 
-## Choose Your Language
+```plaintext
+https://api.testnet.shimmer.network
+```
 
-To check out our examples and write and test your own code, you will need an IDE or a code editor of your choice and a
-stable internet connection. You also need to set up your environment by following instructions for one of the
-languages:
+## Explore the Network
 
-* [Java](./java.mdx).
-* [Node.js](./nodejs.mdx).
-* [Python](./python.mdx).
-* [Rust](./rust.mdx).
+You can use the [Shimmer Tangle Explorer](https://explorer.shimmer.network/testnet) to view transactions and data stored in
+the IOTA Tangle.
+
+## Get Test Tokens
+
+In order to properly test value-based transactions on testnet network, you are going to need some tokens. You can get
+some testnet tokens through the [Shimmer Faucet](https://faucet.testnet.shimmer.network).
