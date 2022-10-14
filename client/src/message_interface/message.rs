@@ -128,6 +128,8 @@ pub enum Message {
     GetMinPowScore,
     /// Returns the tips interval
     GetTipsInterval,
+    /// Returns the protocol parameters
+    GetProtocolParameters,
     /// Returns if local pow should be used or not
     GetLocalPow,
     /// Get fallback to local proof of work timeout

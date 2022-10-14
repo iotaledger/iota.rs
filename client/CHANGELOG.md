@@ -21,6 +21,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 2.0.1-rc.3 - 2022-XX-XX
 
+### Added
+
+- `GetProtocolParameters` to the message interface;
+
 ### Changed
 
 - Update dependencies;
