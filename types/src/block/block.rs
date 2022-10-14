@@ -92,6 +92,32 @@ impl<P: NonceProvider> BlockBuilder<P> {
 
         Ok(block)
     }
+
+    // TODO: temporary until we decide if we do PoW in finish or not.
+    fn _finish(self) -> Result<Block, Error> {
+        verify_payload(self.payload.as_ref())?;
+
+        let mut block = Block {
+            protocol_version: self.protocol_version.unwrap_or(PROTOCOL_VERSION),
+            parents: self.parents,
+            payload: self.payload.into(),
+            nonce: 0,
+        };
+
+        let block_bytes = block.pack_to_vec();
+
+        if block_bytes.len() > Block::LENGTH_MAX {
+            return Err(Error::InvalidBlockLength(block_bytes.len()));
+        }
+
+        let nonce_provider = self.nonce_provider.unwrap_or_else(|| P::Builder::new().finish());
+
+        block.nonce = nonce_provider
+            .nonce(&block_bytes[..block_bytes.len() - core::mem::size_of::<u64>()], 0)
+            .unwrap_or(Self::DEFAULT_NONCE);
+
+        Ok(block)
+    }
 }
 
 /// Represent the object that nodes gossip around the network.
@@ -303,6 +329,30 @@ pub mod dto {
             }
 
             Ok(builder.finish(protocol_parameters.min_pow_score())?)
+        }
+
+        pub fn try_from_dto_unverified(value: &BlockDto) -> Result<Block, DtoError> {
+            let parents = Parents::new(
+                value
+                    .parents
+                    .iter()
+                    .map(|m| m.parse::<BlockId>().map_err(|_| DtoError::InvalidField("parents")))
+                    .collect::<Result<Vec<BlockId>, DtoError>>()?,
+            )?;
+
+            let mut builder = BlockBuilder::new(parents)
+                .with_protocol_version(value.protocol_version)
+                .with_nonce_provider(
+                    value
+                        .nonce
+                        .parse::<u64>()
+                        .map_err(|_| DtoError::InvalidField("nonce"))?,
+                );
+            if let Some(p) = value.payload.as_ref() {
+                builder = builder.with_payload(Payload::try_from_dto_unverified(p)?);
+            }
+
+            Ok(builder._finish()?)
         }
     }
 }
