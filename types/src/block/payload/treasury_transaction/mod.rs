@@ -102,9 +102,9 @@ pub mod dto {
     }
 
     impl TreasuryTransactionPayload {
-        pub fn try_from_dto(
+        fn _try_from_dto(
             value: &TreasuryTransactionPayloadDto,
-            token_supply: u64,
+            output: TreasuryOutput,
         ) -> Result<TreasuryTransactionPayload, DtoError> {
             Ok(TreasuryTransactionPayload::new(
                 if let InputDto::Treasury(ref input) = value.input {
@@ -112,12 +112,35 @@ pub mod dto {
                 } else {
                     return Err(DtoError::InvalidField("input"));
                 },
+                output,
+            )?)
+        }
+
+        pub fn try_from_dto(
+            value: &TreasuryTransactionPayloadDto,
+            token_supply: u64,
+        ) -> Result<TreasuryTransactionPayload, DtoError> {
+            Self::_try_from_dto(
+                value,
                 if let OutputDto::Treasury(ref output) = value.output {
                     TreasuryOutput::try_from_dto(output, token_supply)?
                 } else {
                     return Err(DtoError::InvalidField("output"));
                 },
-            )?)
+            )
+        }
+
+        pub fn try_from_dto_unverified(
+            value: &TreasuryTransactionPayloadDto,
+        ) -> Result<TreasuryTransactionPayload, DtoError> {
+            Self::_try_from_dto(
+                value,
+                if let OutputDto::Treasury(ref output) = value.output {
+                    TreasuryOutput::try_from_dto_unverified(output)?
+                } else {
+                    return Err(DtoError::InvalidField("output"));
+                },
+            )
         }
     }
 }
