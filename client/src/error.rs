@@ -53,6 +53,22 @@ pub enum Error {
     /// Invalid mnemonic error
     #[error("invalid mnemonic {0}")]
     InvalidMnemonic(String),
+    /// The transaction essence is too large
+    #[error("the transaction essence is too large. Its length is {length}, max length is {max_length}")]
+    InvalidRegularTransactionEssenceLength {
+        /// The found length.
+        length: usize,
+        /// The max supported length.
+        max_length: usize,
+    },
+    /// The transaction payload is too large
+    #[error("the transaction payload is too large. Its length is {length}, max length is {max_length}")]
+    InvalidTransactionPayloadLength {
+        /// The found length.
+        length: usize,
+        /// The max length.
+        max_length: usize,
+    },
     /// JSON error
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
