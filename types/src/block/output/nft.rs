@@ -174,8 +174,7 @@ impl NftOutputBuilder {
         Ok(self)
     }
 
-    ///
-    pub fn finish(self, token_supply: u64) -> Result<NftOutput, Error> {
+    fn _finish(self) -> Result<NftOutput, Error> {
         let unlock_conditions = UnlockConditions::new(self.unlock_conditions)?;
 
         verify_unlock_conditions(&unlock_conditions, &self.nft_id)?;
@@ -204,9 +203,21 @@ impl NftOutputBuilder {
             }
         };
 
+        Ok(output)
+    }
+
+    ///
+    pub fn finish(self, token_supply: u64) -> Result<NftOutput, Error> {
+        let output = self._finish()?;
+
         verify_output_amount::<true>(&output.amount, &token_supply)?;
 
         Ok(output)
+    }
+
+    ///
+    pub fn finish_unverified(self) -> Result<NftOutput, Error> {
+        self._finish()
     }
 
     /// Finishes the [`NftOutputBuilder`] into an [`Output`].
@@ -546,6 +557,34 @@ pub mod dto {
             }
 
             Ok(builder.finish(token_supply)?)
+        }
+
+        pub fn try_from_dto_unverified(value: &NftOutputDto) -> Result<NftOutput, DtoError> {
+            let mut builder = NftOutputBuilder::new_with_amount(
+                value
+                    .amount
+                    .parse::<u64>()
+                    .map_err(|_| DtoError::InvalidField("amount"))?,
+                (&value.nft_id).try_into()?,
+            )?;
+
+            for t in &value.native_tokens {
+                builder = builder.add_native_token(t.try_into()?);
+            }
+
+            for u in &value.unlock_conditions {
+                builder = builder.add_unlock_condition(UnlockCondition::try_from_dto_unverified(u)?);
+            }
+
+            for b in &value.features {
+                builder = builder.add_feature(b.try_into()?);
+            }
+
+            for b in &value.immutable_features {
+                builder = builder.add_immutable_feature(b.try_into()?);
+            }
+
+            Ok(builder.finish_unverified()?)
         }
 
         pub fn try_from_dtos(

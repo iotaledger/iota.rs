@@ -198,7 +198,7 @@ impl FoundryOutputBuilder {
     }
 
     ///
-    pub fn finish(self, token_supply: u64) -> Result<FoundryOutput, Error> {
+    fn _finish(self) -> Result<FoundryOutput, Error> {
         let unlock_conditions = UnlockConditions::new(self.unlock_conditions)?;
 
         verify_unlock_conditions(&unlock_conditions)?;
@@ -228,9 +228,21 @@ impl FoundryOutputBuilder {
             }
         };
 
+        Ok(output)
+    }
+
+    ///
+    pub fn finish(self, token_supply: u64) -> Result<FoundryOutput, Error> {
+        let output = self._finish()?;
+
         verify_output_amount::<true>(&output.amount, &token_supply)?;
 
         Ok(output)
+    }
+
+    ///
+    pub fn finish_unverified(self) -> Result<FoundryOutput, Error> {
+        self._finish()
     }
 
     /// Finishes the [`FoundryOutputBuilder`] into an [`Output`].
@@ -682,6 +694,35 @@ pub mod dto {
             }
 
             Ok(builder.finish(token_supply)?)
+        }
+
+        pub fn try_from_dto_unverified(value: &FoundryOutputDto) -> Result<FoundryOutput, DtoError> {
+            let mut builder = FoundryOutputBuilder::new_with_amount(
+                value
+                    .amount
+                    .parse::<u64>()
+                    .map_err(|_| DtoError::InvalidField("amount"))?,
+                value.serial_number,
+                (&value.token_scheme).try_into()?,
+            )?;
+
+            for t in &value.native_tokens {
+                builder = builder.add_native_token(t.try_into()?);
+            }
+
+            for u in &value.unlock_conditions {
+                builder = builder.add_unlock_condition(UnlockCondition::try_from_dto_unverified(u)?);
+            }
+
+            for b in &value.features {
+                builder = builder.add_feature(b.try_into()?);
+            }
+
+            for b in &value.immutable_features {
+                builder = builder.add_immutable_feature(b.try_into()?);
+            }
+
+            Ok(builder.finish_unverified()?)
         }
 
         #[allow(clippy::too_many_arguments)]

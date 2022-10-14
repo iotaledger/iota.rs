@@ -131,7 +131,7 @@ impl BasicOutputBuilder {
     }
 
     ///
-    pub fn finish(self, token_supply: u64) -> Result<BasicOutput, Error> {
+    fn _finish(self) -> Result<BasicOutput, Error> {
         let unlock_conditions = UnlockConditions::new(self.unlock_conditions)?;
 
         verify_unlock_conditions::<true>(&unlock_conditions)?;
@@ -154,9 +154,21 @@ impl BasicOutputBuilder {
             }
         };
 
+        Ok(output)
+    }
+
+    ///
+    pub fn finish(self, token_supply: u64) -> Result<BasicOutput, Error> {
+        let output = self._finish()?;
+
         verify_output_amount::<true>(&output.amount, &token_supply)?;
 
         Ok(output)
+    }
+
+    ///
+    pub fn finish_unverified(self) -> Result<BasicOutput, Error> {
+        self._finish()
     }
 
     /// Finishes the [`BasicOutputBuilder`] into an [`Output`].
@@ -386,6 +398,26 @@ pub mod dto {
             }
 
             Ok(builder.finish(token_supply)?)
+        }
+
+        pub fn try_from_dto_unverified(value: &BasicOutputDto) -> Result<BasicOutput, DtoError> {
+            let mut builder = BasicOutputBuilder::new_with_amount(
+                value.amount.parse().map_err(|_| DtoError::InvalidField("amount"))?,
+            )?;
+
+            for t in &value.native_tokens {
+                builder = builder.add_native_token(t.try_into()?);
+            }
+
+            for u in &value.unlock_conditions {
+                builder = builder.add_unlock_condition(UnlockCondition::try_from_dto_unverified(u)?);
+            }
+
+            for b in &value.features {
+                builder = builder.add_feature(b.try_into()?);
+            }
+
+            Ok(builder.finish_unverified()?)
         }
 
         pub fn try_from_dtos(

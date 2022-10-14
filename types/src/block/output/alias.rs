@@ -204,7 +204,7 @@ impl AliasOutputBuilder {
     }
 
     ///
-    pub fn finish(self, token_supply: u64) -> Result<AliasOutput, Error> {
+    fn _finish(self) -> Result<AliasOutput, Error> {
         let state_index = self.state_index.unwrap_or(0);
         let foundry_counter = self.foundry_counter.unwrap_or(0);
 
@@ -247,9 +247,21 @@ impl AliasOutputBuilder {
             }
         };
 
+        Ok(output)
+    }
+
+    ///
+    pub fn finish(self, token_supply: u64) -> Result<AliasOutput, Error> {
+        let output = self._finish()?;
+
         verify_output_amount::<true>(&output.amount, &token_supply)?;
 
         Ok(output)
+    }
+
+    ///
+    pub fn finish_unverified(self) -> Result<AliasOutput, Error> {
+        self._finish()
     }
 
     /// Finishes the [`AliasOutputBuilder`] into an [`Output`].
@@ -751,6 +763,44 @@ pub mod dto {
             }
 
             Ok(builder.finish(token_supply)?)
+        }
+
+        pub fn try_from_dto_unverified(value: &AliasOutputDto) -> Result<AliasOutput, DtoError> {
+            let mut builder = AliasOutputBuilder::new_with_amount(
+                value
+                    .amount
+                    .parse::<u64>()
+                    .map_err(|_| DtoError::InvalidField("amount"))?,
+                (&value.alias_id).try_into()?,
+            )?;
+
+            builder = builder.with_state_index(value.state_index);
+
+            if !value.state_metadata.is_empty() {
+                builder = builder.with_state_metadata(
+                    prefix_hex::decode(&value.state_metadata).map_err(|_| DtoError::InvalidField("state_metadata"))?,
+                );
+            }
+
+            builder = builder.with_foundry_counter(value.foundry_counter);
+
+            for t in &value.native_tokens {
+                builder = builder.add_native_token(t.try_into()?);
+            }
+
+            for u in &value.unlock_conditions {
+                builder = builder.add_unlock_condition(UnlockCondition::try_from_dto_unverified(u)?);
+            }
+
+            for b in &value.features {
+                builder = builder.add_feature(b.try_into()?);
+            }
+
+            for b in &value.immutable_features {
+                builder = builder.add_immutable_feature(b.try_into()?);
+            }
+
+            Ok(builder.finish_unverified()?)
         }
 
         #[allow(clippy::too_many_arguments)]
