@@ -95,6 +95,37 @@ impl RegularTransactionEssenceBuilder {
             payload,
         })
     }
+
+    ///
+    pub fn finish_unverified(self) -> Result<RegularTransactionEssence, Error> {
+        let inputs: BoxedSlicePrefix<Input, InputCount> = self
+            .inputs
+            .into_boxed_slice()
+            .try_into()
+            .map_err(Error::InvalidInputCount)?;
+
+        verify_inputs::<true>(&inputs)?;
+
+        let outputs: BoxedSlicePrefix<Output, OutputCount> = self
+            .outputs
+            .into_boxed_slice()
+            .try_into()
+            .map_err(Error::InvalidOutputCount)?;
+
+        verify_outputs_unverified::<true>(&outputs)?;
+
+        let payload = OptionalPayload::from(self.payload);
+
+        verify_payload::<true>(&payload)?;
+
+        Ok(RegularTransactionEssence {
+            network_id: protocol_parameters.network_id(),
+            inputs,
+            inputs_commitment: self.inputs_commitment,
+            outputs,
+            payload,
+        })
+    }
 }
 
 pub(crate) type InputCount = BoundedU16<{ *INPUT_COUNT_RANGE.start() }, { *INPUT_COUNT_RANGE.end() }>;
@@ -232,6 +263,37 @@ fn verify_outputs<const VERIFY: bool>(outputs: &[Output], visitor: &ProtocolPara
     Ok(())
 }
 
+fn verify_outputs_unverified<const VERIFY: bool>(outputs: &[Output]) -> Result<(), Error> {
+    if VERIFY {
+        let mut amount_sum: u64 = 0;
+        let mut native_tokens_count: u8 = 0;
+
+        for output in outputs.iter() {
+            let (amount, native_tokens) = match output {
+                Output::Basic(output) => (output.amount(), output.native_tokens()),
+                Output::Alias(output) => (output.amount(), output.native_tokens()),
+                Output::Foundry(output) => (output.amount(), output.native_tokens()),
+                Output::Nft(output) => (output.amount(), output.native_tokens()),
+                _ => return Err(Error::InvalidOutputKind(output.kind())),
+            };
+
+            amount_sum = amount_sum
+                .checked_add(amount)
+                .ok_or(Error::InvalidTransactionAmountSum(amount_sum as u128 + amount as u128))?;
+
+            native_tokens_count = native_tokens_count.checked_add(native_tokens.len() as u8).ok_or(
+                Error::InvalidTransactionNativeTokensCount(native_tokens_count as u16 + native_tokens.len() as u16),
+            )?;
+
+            if native_tokens_count > NativeTokens::COUNT_MAX {
+                return Err(Error::InvalidTransactionNativeTokensCount(native_tokens_count as u16));
+            }
+        }
+    }
+
+    Ok(())
+}
+
 fn verify_payload<const VERIFY: bool>(payload: &OptionalPayload) -> Result<(), Error> {
     if VERIFY {
         match &payload.0 {
@@ -297,6 +359,7 @@ pub mod dto {
             value: &RegularTransactionEssenceDto,
             protocol_parameters: &ProtocolParameters,
         ) -> Result<RegularTransactionEssence, DtoError> {
+            let network_id = value.network_id;
             let inputs = value
                 .inputs
                 .iter()
@@ -306,6 +369,36 @@ pub mod dto {
                 .outputs
                 .iter()
                 .map(|o| Output::try_from_dto(o, protocol_parameters.token_supply()))
+                .collect::<Result<Vec<Output>, DtoError>>()?;
+
+            let mut builder = RegularTransactionEssence::builder(InputsCommitment::from_str(&value.inputs_commitment)?)
+                .with_inputs(inputs)
+                .with_outputs(outputs);
+            builder = if let Some(p) = &value.payload {
+                if let PayloadDto::TaggedData(i) = p {
+                    builder.with_payload(Payload::TaggedData(Box::new((i.as_ref()).try_into()?)))
+                } else {
+                    return Err(DtoError::InvalidField("payload"));
+                }
+            } else {
+                builder
+            };
+
+            builder.finish(protocol_parameters).map_err(Into::into)
+        }
+
+        pub fn try_from_dto_unverified(
+            value: &RegularTransactionEssenceDto,
+        ) -> Result<RegularTransactionEssence, DtoError> {
+            let inputs = value
+                .inputs
+                .iter()
+                .map(TryInto::try_into)
+                .collect::<Result<Vec<Input>, DtoError>>()?;
+            let outputs = value
+                .outputs
+                .iter()
+                .map(|o| Output::try_from_dto_unverified(o))
                 .collect::<Result<Vec<Output>, DtoError>>()?;
 
             let mut builder = RegularTransactionEssence::builder(InputsCommitment::from_str(&value.inputs_commitment)?)
