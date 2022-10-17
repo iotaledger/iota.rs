@@ -722,7 +722,7 @@ pub mod dto {
     }
 
     impl AliasOutput {
-        pub fn try_from_dto(value: &AliasOutputDto, token_supply: u64) -> Result<AliasOutput, DtoError> {
+        fn _try_from_dto(value: &AliasOutputDto) -> Result<AliasOutputBuilder, DtoError> {
             let mut builder = AliasOutputBuilder::new_with_amount(
                 value
                     .amount
@@ -745,54 +745,32 @@ pub mod dto {
                 builder = builder.add_native_token(t.try_into()?);
             }
 
-            for u in &value.unlock_conditions {
-                builder = builder.add_unlock_condition(UnlockCondition::try_from_dto(u, token_supply)?);
-            }
-
             for b in &value.features {
                 builder = builder.add_feature(b.try_into()?);
             }
 
             for b in &value.immutable_features {
                 builder = builder.add_immutable_feature(b.try_into()?);
+            }
+
+            Ok(builder)
+        }
+
+        pub fn try_from_dto(value: &AliasOutputDto, token_supply: u64) -> Result<AliasOutput, DtoError> {
+            let mut builder = Self::_try_from_dto(value)?;
+
+            for u in &value.unlock_conditions {
+                builder = builder.add_unlock_condition(UnlockCondition::try_from_dto(u, token_supply)?);
             }
 
             Ok(builder.finish(token_supply)?)
         }
 
         pub fn try_from_dto_unverified(value: &AliasOutputDto) -> Result<AliasOutput, DtoError> {
-            let mut builder = AliasOutputBuilder::new_with_amount(
-                value
-                    .amount
-                    .parse::<u64>()
-                    .map_err(|_| DtoError::InvalidField("amount"))?,
-                (&value.alias_id).try_into()?,
-            )?;
-
-            builder = builder.with_state_index(value.state_index);
-
-            if !value.state_metadata.is_empty() {
-                builder = builder.with_state_metadata(
-                    prefix_hex::decode(&value.state_metadata).map_err(|_| DtoError::InvalidField("state_metadata"))?,
-                );
-            }
-
-            builder = builder.with_foundry_counter(value.foundry_counter);
-
-            for t in &value.native_tokens {
-                builder = builder.add_native_token(t.try_into()?);
-            }
+            let mut builder = Self::_try_from_dto(value)?;
 
             for u in &value.unlock_conditions {
                 builder = builder.add_unlock_condition(UnlockCondition::try_from_dto_unverified(u)?);
-            }
-
-            for b in &value.features {
-                builder = builder.add_feature(b.try_into()?);
-            }
-
-            for b in &value.immutable_features {
-                builder = builder.add_immutable_feature(b.try_into()?);
             }
 
             Ok(builder.finish_unverified()?)

@@ -375,7 +375,7 @@ pub mod dto {
     }
 
     impl BasicOutput {
-        pub fn try_from_dto(value: &BasicOutputDto, token_supply: u64) -> Result<BasicOutput, DtoError> {
+        fn _try_from_dto(value: &BasicOutputDto) -> Result<BasicOutputBuilder, DtoError> {
             let mut builder = BasicOutputBuilder::new_with_amount(
                 value.amount.parse().map_err(|_| DtoError::InvalidField("amount"))?,
             )?;
@@ -384,32 +384,28 @@ pub mod dto {
                 builder = builder.add_native_token(t.try_into()?);
             }
 
-            for u in &value.unlock_conditions {
-                builder = builder.add_unlock_condition(UnlockCondition::try_from_dto(u, token_supply)?);
-            }
-
             for b in &value.features {
                 builder = builder.add_feature(b.try_into()?);
+            }
+
+            Ok(builder)
+        }
+
+        pub fn try_from_dto(value: &BasicOutputDto, token_supply: u64) -> Result<BasicOutput, DtoError> {
+            let mut builder = Self::_try_from_dto(value)?;
+
+            for u in &value.unlock_conditions {
+                builder = builder.add_unlock_condition(UnlockCondition::try_from_dto(u, token_supply)?);
             }
 
             Ok(builder.finish(token_supply)?)
         }
 
         pub fn try_from_dto_unverified(value: &BasicOutputDto) -> Result<BasicOutput, DtoError> {
-            let mut builder = BasicOutputBuilder::new_with_amount(
-                value.amount.parse().map_err(|_| DtoError::InvalidField("amount"))?,
-            )?;
-
-            for t in &value.native_tokens {
-                builder = builder.add_native_token(t.try_into()?);
-            }
+            let mut builder = Self::_try_from_dto(value)?;
 
             for u in &value.unlock_conditions {
                 builder = builder.add_unlock_condition(UnlockCondition::try_from_dto_unverified(u)?);
-            }
-
-            for b in &value.features {
-                builder = builder.add_feature(b.try_into()?);
             }
 
             Ok(builder.finish_unverified()?)
