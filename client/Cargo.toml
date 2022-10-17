@@ -50,8 +50,6 @@ tokio = { version = "1.21.2", default-features = false, features = [ "macros", "
 [target.'cfg(target_family = "wasm")'.dependencies]
 instant = { version = "0.1.12", default-features = false }
 gloo-timers = { version = "0.2.4", default-features = false, features = [ "futures" ] }
-# Single-threaded PoW for Wasm.
-bee-ternary = { version = "1.0.0-alpha.1", default-features = false }
 
 [dev-dependencies]
 iota-types = { version = "1.0.0-rc.1", path = "../types", default-features = false, features = [ "rand" ] }

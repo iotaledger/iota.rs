@@ -3,14 +3,16 @@
 
 //! Single-threaded PoW miner
 
-use crypto::hashes::{
-    blake2b::Blake2b256,
+use crypto::{
     encoding::ternary::{b1t6, Btrit, T1B1Buf, TritBuf},
-    ternary::{
-        curl_p::{CurlPBatchHasher, BATCH_SIZE},
-        HASH_LENGTH,
+    hashes::{
+        blake2b::Blake2b256,
+        ternary::{
+            curl_p::{CurlPBatchHasher, BATCH_SIZE},
+            HASH_LENGTH,
+        },
+        Digest,
     },
-    Digest,
 };
 use iota_pow::providers::{NonceProvider, NonceProviderBuilder};
 
@@ -77,7 +79,7 @@ impl NonceProvider for SingleThreadedMiner {
             (((bytes.len() + std::mem::size_of::<u64>()) as f64 * target_score as f64).ln() / LN_3).ceil() as usize;
         if target_zeros > HASH_LENGTH {
             return Err(crate::Error::Pow(
-                bee_pow::providers::miner::Error::InvalidPowScore(target_score, target_zeros).to_string(),
+                iota_pow::providers::miner::Error::InvalidPowScore(target_score, target_zeros).to_string(),
             ));
         }
 
@@ -122,7 +124,7 @@ impl NonceProvider for SingleThreadedMiner {
         }
 
         Err(crate::Error::Pow(
-            bee_pow::providers::miner::Error::Cancelled.to_string(),
+            iota_pow::providers::miner::Error::Cancelled.to_string(),
         ))
     }
 }
