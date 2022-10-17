@@ -3,7 +3,7 @@
 
 //! input selection for utxo chains
 
-use std::{collections::HashSet, ops::Deref, str::FromStr};
+use std::{collections::HashSet, str::FromStr};
 
 use iota_types::{
     api::response::OutputResponse,
@@ -39,7 +39,7 @@ pub(crate) fn select_utxo_chain_inputs(
     selected_input_native_tokens: &mut NativeTokensBuilder,
     outputs: &mut Vec<Output>,
     required: &mut AccumulatedOutputAmounts,
-    utxo_chain_inputs: &Vec<&InputSigningData>,
+    utxo_chain_inputs: &mut [InputSigningData],
     allow_burning: bool,
     current_time: u32,
     rent_structure: &RentStructure,
@@ -67,7 +67,7 @@ pub(crate) fn select_utxo_chain_inputs(
     loop {
         let outputs_len_beginning = outputs.len();
 
-        for input_signing_data in utxo_chain_inputs {
+        for input_signing_data in utxo_chain_inputs.iter_mut() {
             let output_id = input_signing_data.output_id()?;
 
             // Skip inputs where we already added the required output.
@@ -76,6 +76,9 @@ pub(crate) fn select_utxo_chain_inputs(
             }
 
             let minimum_required_storage_deposit = input_signing_data.output.rent_cost(rent_structure);
+
+            // Since we can have two different types of transitions, we track which address is required
+            let mut alias_transition_unlock_address = None;
 
             match &input_signing_data.output {
                 Output::Nft(nft_input) => {
@@ -125,13 +128,25 @@ pub(crate) fn select_utxo_chain_inputs(
                 Output::Alias(alias_input) => {
                     let alias_id = alias_input.alias_id().or_from_output_id(output_id);
                     // Don't add if output has not the same AliasId, so we don't burn it
-                    let is_required_for_output = outputs.iter().any(|output| {
-                        if let Output::Alias(alias_output) = output {
-                            alias_id == *alias_output.alias_id()
+                    let alias_in_outputs = outputs
+                        .iter()
+                        .find(|output| {
+                            if let Output::Alias(alias_output) = output {
+                                alias_id == *alias_output.alias_id()
+                            } else {
+                                false
+                            }
+                        })
+                        .cloned();
+                    let is_required_for_output = alias_in_outputs.is_some();
+                    // Determine if it's a governance or state transition
+                    if let Some(Output::Alias(alias_output)) = alias_in_outputs {
+                        if alias_output.state_index() == alias_input.state_index() {
+                            alias_transition_unlock_address = Some(*alias_input.governor_address());
                         } else {
-                            false
+                            alias_transition_unlock_address = Some(*alias_input.state_controller_address());
                         }
-                    });
+                    }
                     let is_required_for_input =
                         required_alias_nft_addresses.contains(&Address::Alias(AliasAddress::new(alias_id)));
 
@@ -210,7 +225,13 @@ pub(crate) fn select_utxo_chain_inputs(
                     required.amount += sdr.amount();
                 }
 
-                selected_inputs.push(input_signing_data.deref().clone());
+                // Update bech32 address for alias outputs depending on the transition type
+                if let Some(unlock_address) = alias_transition_unlock_address {
+                    let (bech32_hrp, _) = Address::try_from_bech32(&input_signing_data.bech32_address)?;
+                    input_signing_data.bech32_address = unlock_address.to_bech32(bech32_hrp);
+                }
+
+                selected_inputs.push(input_signing_data.clone());
                 selected_inputs_output_ids.insert(output_id);
 
                 // Updated required value with possible new input

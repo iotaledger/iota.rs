@@ -228,7 +228,34 @@ pub(crate) fn select_inputs_for_sender_and_issuer<'a>(
             Address::Ed25519(_) => {
                 // first check already selected outputs
                 for input_signing_data in selected_inputs.iter() {
-                    if output_contains_address(
+                    if let Output::Alias(alias_input) = &input_signing_data.output {
+                        let alias_id = alias_input
+                            .alias_id()
+                            .or_from_output_id(input_signing_data.output_id()?);
+                        // Check if alias exists in the outputs and get the required address for the transition
+                        let unlock_address = outputs
+                            .iter()
+                            .find_map(|o| {
+                                if let Output::Alias(alias_output) = o {
+                                    if *alias_output.alias_id() == alias_id {
+                                        if alias_output.state_index() == alias_input.state_index() {
+                                            Some(*alias_output.governor_address())
+                                        } else {
+                                            Some(*alias_output.state_controller_address())
+                                        }
+                                    } else {
+                                        None
+                                    }
+                                } else {
+                                    None
+                                }
+                                // if not find in the outputs, the alias gets burned which requires the governor address
+                            })
+                            .unwrap_or_else(|| *alias_input.governor_address());
+                        if unlock_address == address {
+                            continue 'addresses_loop;
+                        }
+                    } else if output_contains_address(
                         &input_signing_data.output,
                         Some(input_signing_data.output_id()?),
                         &address,
@@ -245,7 +272,39 @@ pub(crate) fn select_inputs_for_sender_and_issuer<'a>(
                     if selected_inputs_output_ids.contains(&output_id) {
                         continue;
                     }
-                    if output_contains_address(&input_signing_data.output, Some(output_id), &address, current_time) {
+                    if let Output::Alias(alias_input) = &input_signing_data.output {
+                        let alias_id = alias_input
+                            .alias_id()
+                            .or_from_output_id(input_signing_data.output_id()?);
+                        // Check if alias exists in the outputs and get the required address for the transition
+                        let unlock_address = outputs
+                            .iter()
+                            .find_map(|o| {
+                                if let Output::Alias(alias_output) = o {
+                                    if *alias_output.alias_id() == alias_id {
+                                        if alias_output.state_index() == alias_input.state_index() {
+                                            Some(*alias_input.governor_address())
+                                        } else {
+                                            Some(*alias_input.state_controller_address())
+                                        }
+                                    } else {
+                                        None
+                                    }
+                                } else {
+                                    None
+                                }
+                                // if not find in the outputs, the alias gets burned which requires the governor address
+                            })
+                            .unwrap_or_else(|| *alias_input.governor_address());
+                        if unlock_address == address {
+                            continue 'addresses_loop;
+                        }
+                    } else if output_contains_address(
+                        &input_signing_data.output,
+                        Some(output_id),
+                        &address,
+                        current_time,
+                    ) {
                         selected_inputs.push(input_signing_data.clone());
                         selected_inputs_output_ids.insert(output_id);
                         // break when we added the required output to the selected_inputs
@@ -351,6 +410,8 @@ fn get_required_addresses_for_sender_and_issuer(
                     output_contains_address(
                         &input_data.output,
                         Some(input_data.output_id().expect("invalid output id in input signing data")),
+                        // TODO: alias transition: would currently be valid for governor and state controller, but only
+                        // one of them will sign
                         sender_feature.address(),
                         current_time,
                     )

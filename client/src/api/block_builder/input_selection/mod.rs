@@ -112,7 +112,9 @@ pub fn try_select_inputs(
     for input_signing_data in all_inputs.clone() {
         match input_signing_data.output {
             Output::Basic(_) => basic_outputs.push(input_signing_data),
-            Output::Alias(_) | Output::Foundry(_) | Output::Nft(_) => utxo_chain_inputs.push(input_signing_data),
+            Output::Alias(_) | Output::Foundry(_) | Output::Nft(_) => {
+                utxo_chain_inputs.push(input_signing_data.clone())
+            }
             Output::Treasury(_) => {}
         }
     }
@@ -129,7 +131,7 @@ pub fn try_select_inputs(
         &mut selected_input_native_tokens,
         &mut outputs,
         &mut required,
-        &utxo_chain_inputs,
+        &mut utxo_chain_inputs,
         allow_burning,
         current_time,
         rent_structure,
@@ -309,7 +311,7 @@ pub fn try_select_inputs(
         &mut selected_input_native_tokens,
         &mut outputs,
         &mut required,
-        &utxo_chain_inputs,
+        &mut utxo_chain_inputs,
         allow_burning,
         current_time,
         rent_structure,
