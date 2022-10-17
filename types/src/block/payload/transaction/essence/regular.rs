@@ -408,7 +408,7 @@ pub mod dto {
             let outputs = value
                 .outputs
                 .iter()
-                .map(|o| Output::try_from_dto_unverified(o))
+                .map(Output::try_from_dto_unverified)
                 .collect::<Result<Vec<Output>, DtoError>>()?;
 
             let mut builder =

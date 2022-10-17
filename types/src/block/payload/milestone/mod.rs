@@ -301,7 +301,7 @@ pub mod dto {
                     value
                         .options
                         .iter()
-                        .map(|o| MilestoneOption::try_from_dto_unverified(o))
+                        .map(MilestoneOption::try_from_dto_unverified)
                         .collect::<Result<Vec<_>, _>>()?,
                 )?;
                 let metadata = if !value.metadata.is_empty() {

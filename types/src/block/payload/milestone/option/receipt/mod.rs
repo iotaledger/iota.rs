@@ -214,7 +214,7 @@ pub mod dto {
             let funds = value
                 .funds
                 .iter()
-                .map(|f| MigratedFundsEntry::try_from_dto_unverified(f))
+                .map(MigratedFundsEntry::try_from_dto_unverified)
                 .collect::<Result<Vec<_>, _>>()?;
 
             Ok(ReceiptMilestoneOption {
