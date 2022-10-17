@@ -575,7 +575,7 @@ pub mod dto {
                 UnlockConditionDto::Address(v) => UnlockCondition::Address(AddressUnlockCondition::new(
                     (&v.address)
                         .try_into()
-                        .map_err(|_e| DtoError::InvalidField("AddressUnlockCondition"))?,
+                        .map_err(|_e| DtoError::InvalidField("addressUnlockCondition"))?,
                 )),
                 UnlockConditionDto::StorageDepositReturn(v) => {
                     UnlockCondition::StorageDepositReturn(StorageDepositReturnUnlockCondition::new(
@@ -586,42 +586,42 @@ pub mod dto {
                 }
                 UnlockConditionDto::Timelock(v) => UnlockCondition::Timelock(
                     TimelockUnlockCondition::new(v.timestamp)
-                        .map_err(|_| DtoError::InvalidField("TimelockUnlockCondition"))?,
+                        .map_err(|_| DtoError::InvalidField("timelockUnlockCondition"))?,
                 ),
                 UnlockConditionDto::Expiration(v) => UnlockCondition::Expiration(
                     ExpirationUnlockCondition::new(
                         (&v.return_address)
                             .try_into()
-                            .map_err(|_e| DtoError::InvalidField("ExpirationUnlockCondition"))?,
+                            .map_err(|_e| DtoError::InvalidField("expirationUnlockCondition"))?,
                         v.timestamp,
                     )
-                    .map_err(|_| DtoError::InvalidField("ExpirationUnlockCondition"))?,
+                    .map_err(|_| DtoError::InvalidField("expirationUnlockCondition"))?,
                 ),
                 UnlockConditionDto::StateControllerAddress(v) => {
                     UnlockCondition::StateControllerAddress(StateControllerAddressUnlockCondition::new(
                         (&v.address)
                             .try_into()
-                            .map_err(|_e| DtoError::InvalidField("StateControllerAddressUnlockCondition"))?,
+                            .map_err(|_e| DtoError::InvalidField("stateControllerAddressUnlockCondition"))?,
                     ))
                 }
                 UnlockConditionDto::GovernorAddress(v) => {
                     UnlockCondition::GovernorAddress(GovernorAddressUnlockCondition::new(
                         (&v.address)
                             .try_into()
-                            .map_err(|_e| DtoError::InvalidField("GovernorAddressUnlockCondition"))?,
+                            .map_err(|_e| DtoError::InvalidField("governorAddressUnlockCondition"))?,
                     ))
                 }
                 UnlockConditionDto::ImmutableAliasAddress(v) => {
                     let address: Address = (&v.address)
                         .try_into()
-                        .map_err(|_e| DtoError::InvalidField("ImmutableAliasAddressUnlockCondition"))?;
+                        .map_err(|_e| DtoError::InvalidField("immutableAliasAddressUnlockCondition"))?;
                     // An ImmutableAliasAddressUnlockCondition must have an AliasAddress.
                     if let Address::Alias(alias_address) = &address {
                         UnlockCondition::ImmutableAliasAddress(ImmutableAliasAddressUnlockCondition::new(
                             *alias_address,
                         ))
                     } else {
-                        return Err(DtoError::InvalidField("ImmutableAliasAddressUnlockCondition"));
+                        return Err(DtoError::InvalidField("immutableAliasAddressUnlockCondition"));
                     }
                 }
             })
@@ -632,7 +632,7 @@ pub mod dto {
                 UnlockConditionDto::Address(v) => UnlockCondition::Address(AddressUnlockCondition::new(
                     (&v.address)
                         .try_into()
-                        .map_err(|_e| DtoError::InvalidField("AddressUnlockCondition"))?,
+                        .map_err(|_e| DtoError::InvalidField("addressUnlockCondition"))?,
                 )),
                 UnlockConditionDto::StorageDepositReturn(v) => {
                     UnlockCondition::StorageDepositReturn(StorageDepositReturnUnlockCondition {
@@ -642,42 +642,42 @@ pub mod dto {
                 }
                 UnlockConditionDto::Timelock(v) => UnlockCondition::Timelock(
                     TimelockUnlockCondition::new(v.timestamp)
-                        .map_err(|_| DtoError::InvalidField("TimelockUnlockCondition"))?,
+                        .map_err(|_| DtoError::InvalidField("timelockUnlockCondition"))?,
                 ),
                 UnlockConditionDto::Expiration(v) => UnlockCondition::Expiration(
                     ExpirationUnlockCondition::new(
                         (&v.return_address)
                             .try_into()
-                            .map_err(|_e| DtoError::InvalidField("ExpirationUnlockCondition"))?,
+                            .map_err(|_e| DtoError::InvalidField("expirationUnlockCondition"))?,
                         v.timestamp,
                     )
-                    .map_err(|_| DtoError::InvalidField("ExpirationUnlockCondition"))?,
+                    .map_err(|_| DtoError::InvalidField("expirationUnlockCondition"))?,
                 ),
                 UnlockConditionDto::StateControllerAddress(v) => {
                     UnlockCondition::StateControllerAddress(StateControllerAddressUnlockCondition::new(
                         (&v.address)
                             .try_into()
-                            .map_err(|_e| DtoError::InvalidField("StateControllerAddressUnlockCondition"))?,
+                            .map_err(|_e| DtoError::InvalidField("stateControllerAddressUnlockCondition"))?,
                     ))
                 }
                 UnlockConditionDto::GovernorAddress(v) => {
                     UnlockCondition::GovernorAddress(GovernorAddressUnlockCondition::new(
                         (&v.address)
                             .try_into()
-                            .map_err(|_e| DtoError::InvalidField("GovernorAddressUnlockCondition"))?,
+                            .map_err(|_e| DtoError::InvalidField("governorAddressUnlockCondition"))?,
                     ))
                 }
                 UnlockConditionDto::ImmutableAliasAddress(v) => {
                     let address: Address = (&v.address)
                         .try_into()
-                        .map_err(|_e| DtoError::InvalidField("ImmutableAliasAddressUnlockCondition"))?;
+                        .map_err(|_e| DtoError::InvalidField("immutableAliasAddressUnlockCondition"))?;
                     // An ImmutableAliasAddressUnlockCondition must have an AliasAddress.
                     if let Address::Alias(alias_address) = &address {
                         UnlockCondition::ImmutableAliasAddress(ImmutableAliasAddressUnlockCondition::new(
                             *alias_address,
                         ))
                     } else {
-                        return Err(DtoError::InvalidField("ImmutableAliasAddressUnlockCondition"));
+                        return Err(DtoError::InvalidField("immutableAliasAddressUnlockCondition"));
                     }
                 }
             })
