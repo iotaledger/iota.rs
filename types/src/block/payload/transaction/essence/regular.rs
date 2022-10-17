@@ -69,6 +69,13 @@ impl RegularTransactionEssenceBuilder {
 
     /// Finishes a [`RegularTransactionEssenceBuilder`] into a [`RegularTransactionEssence`].
     pub fn finish(self, protocol_parameters: &ProtocolParameters) -> Result<RegularTransactionEssence, Error> {
+        if self.network_id != protocol_parameters.network_id() {
+            return Err(Error::NetworkIdMismatch {
+                expected: protocol_parameters.network_id(),
+                actual: self.network_id,
+            });
+        }
+
         let inputs: BoxedSlicePrefix<Input, InputCount> = self
             .inputs
             .into_boxed_slice()
