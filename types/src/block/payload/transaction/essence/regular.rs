@@ -18,6 +18,7 @@ use crate::block::{
 #[derive(Debug, Clone)]
 #[must_use]
 pub struct RegularTransactionEssenceBuilder {
+    network_id: u64,
     inputs: Vec<Input>,
     inputs_commitment: InputsCommitment,
     outputs: Vec<Output>,
@@ -26,8 +27,9 @@ pub struct RegularTransactionEssenceBuilder {
 
 impl RegularTransactionEssenceBuilder {
     /// Creates a new [`RegularTransactionEssenceBuilder`].
-    pub fn new(inputs_commitment: InputsCommitment) -> Self {
+    pub fn new(network_id: u64, inputs_commitment: InputsCommitment) -> Self {
         Self {
+            network_id,
             inputs: Vec::new(),
             inputs_commitment,
             outputs: Vec::new(),
@@ -88,7 +90,7 @@ impl RegularTransactionEssenceBuilder {
         verify_payload::<true>(&payload)?;
 
         Ok(RegularTransactionEssence {
-            network_id: protocol_parameters.network_id(),
+            network_id: self.network_id,
             inputs,
             inputs_commitment: self.inputs_commitment,
             outputs,
@@ -119,7 +121,7 @@ impl RegularTransactionEssenceBuilder {
         verify_payload::<true>(&payload)?;
 
         Ok(RegularTransactionEssence {
-            network_id: protocol_parameters.network_id(),
+            network_id: self.network_id,
             inputs,
             inputs_commitment: self.inputs_commitment,
             outputs,
@@ -157,8 +159,8 @@ impl RegularTransactionEssence {
     pub const KIND: u8 = 1;
 
     /// Creates a new [`RegularTransactionEssenceBuilder`] to build a [`RegularTransactionEssence`].
-    pub fn builder(inputs_commitment: InputsCommitment) -> RegularTransactionEssenceBuilder {
-        RegularTransactionEssenceBuilder::new(inputs_commitment)
+    pub fn builder(network_id: u64, inputs_commitment: InputsCommitment) -> RegularTransactionEssenceBuilder {
+        RegularTransactionEssenceBuilder::new(network_id, inputs_commitment)
     }
 
     /// Returns the network ID of a [`RegularTransactionEssence`].
@@ -359,7 +361,10 @@ pub mod dto {
             value: &RegularTransactionEssenceDto,
             protocol_parameters: &ProtocolParameters,
         ) -> Result<RegularTransactionEssence, DtoError> {
-            let network_id = value.network_id;
+            let network_id = value
+                .network_id
+                .parse::<u64>()
+                .map_err(|_| DtoError::InvalidField("network_id"))?;
             let inputs = value
                 .inputs
                 .iter()
@@ -371,9 +376,10 @@ pub mod dto {
                 .map(|o| Output::try_from_dto(o, protocol_parameters.token_supply()))
                 .collect::<Result<Vec<Output>, DtoError>>()?;
 
-            let mut builder = RegularTransactionEssence::builder(InputsCommitment::from_str(&value.inputs_commitment)?)
-                .with_inputs(inputs)
-                .with_outputs(outputs);
+            let mut builder =
+                RegularTransactionEssence::builder(network_id, InputsCommitment::from_str(&value.inputs_commitment)?)
+                    .with_inputs(inputs)
+                    .with_outputs(outputs);
             builder = if let Some(p) = &value.payload {
                 if let PayloadDto::TaggedData(i) = p {
                     builder.with_payload(Payload::TaggedData(Box::new((i.as_ref()).try_into()?)))
@@ -390,6 +396,10 @@ pub mod dto {
         pub fn try_from_dto_unverified(
             value: &RegularTransactionEssenceDto,
         ) -> Result<RegularTransactionEssence, DtoError> {
+            let network_id = value
+                .network_id
+                .parse::<u64>()
+                .map_err(|_| DtoError::InvalidField("network_id"))?;
             let inputs = value
                 .inputs
                 .iter()
@@ -401,9 +411,10 @@ pub mod dto {
                 .map(|o| Output::try_from_dto_unverified(o))
                 .collect::<Result<Vec<Output>, DtoError>>()?;
 
-            let mut builder = RegularTransactionEssence::builder(InputsCommitment::from_str(&value.inputs_commitment)?)
-                .with_inputs(inputs)
-                .with_outputs(outputs);
+            let mut builder =
+                RegularTransactionEssence::builder(network_id, InputsCommitment::from_str(&value.inputs_commitment)?)
+                    .with_inputs(inputs)
+                    .with_outputs(outputs);
             builder = if let Some(p) = &value.payload {
                 if let PayloadDto::TaggedData(i) = p {
                     builder.with_payload(Payload::TaggedData(Box::new((i.as_ref()).try_into()?)))
@@ -414,7 +425,7 @@ pub mod dto {
                 builder
             };
 
-            builder.finish(protocol_parameters).map_err(Into::into)
+            builder.finish_unverified().map_err(Into::into)
         }
     }
 }

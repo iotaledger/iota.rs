@@ -9,10 +9,12 @@ use crate::block::{address::Address, output::verify_output_amount, protocol::Pro
 #[packable(unpack_visitor = ProtocolParameters)]
 pub struct StorageDepositReturnUnlockCondition {
     // The [`Address`] to return the amount to.
-    return_address: Address,
+    // TODO remove pub(crate) when there are specific DTOs for all unlock conditions.
+    pub(crate) return_address: Address,
     // Amount of IOTA coins the consuming transaction should deposit to `return_address`.
+    // TODO remove pub(crate) when there are specific DTOs for all unlock conditions.
     #[packable(verify_with = verify_amount_packable)]
-    amount: u64,
+    pub(crate) amount: u64,
 }
 
 impl StorageDepositReturnUnlockCondition {
