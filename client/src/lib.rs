@@ -54,8 +54,8 @@ pub mod secret;
 pub mod stronghold;
 pub mod utils;
 
-pub use bee_pow as pow;
 pub use crypto::{self, keys::slip10::Seed};
+pub use iota_pow as pow;
 pub use iota_types::{api as api_types, block};
 pub use packable;
 pub use url::Url;

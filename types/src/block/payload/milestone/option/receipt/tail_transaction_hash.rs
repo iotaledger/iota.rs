@@ -4,8 +4,8 @@
 use alloc::string::String;
 use core::fmt;
 
-use bee_ternary::{T5B1Buf, TritBuf, Trits, T5B1};
 use bytemuck::cast_slice;
+use crypto::encoding::ternary::{T5B1Buf, TritBuf, Trits, T5B1};
 use packable::{
     error::{UnpackError, UnpackErrorExt},
     packer::Packer,

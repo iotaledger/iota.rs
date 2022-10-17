@@ -3,16 +3,16 @@
 
 //! Single-threaded PoW miner
 
-use bee_pow::providers::{NonceProvider, NonceProviderBuilder};
-use bee_ternary::{b1t6, Btrit, T1B1Buf, TritBuf};
 use crypto::hashes::{
     blake2b::Blake2b256,
+    encoding::ternary::{b1t6, Btrit, T1B1Buf, TritBuf},
     ternary::{
         curl_p::{CurlPBatchHasher, BATCH_SIZE},
         HASH_LENGTH,
     },
     Digest,
 };
+use iota_pow::providers::{NonceProvider, NonceProviderBuilder};
 
 // Precomputed natural logarithm of 3 for performance reasons.
 // See https://oeis.org/A002391.
