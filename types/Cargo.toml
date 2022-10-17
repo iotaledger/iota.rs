@@ -43,7 +43,7 @@ num_cpus = { version = "1.13.1", default-features = false }
 [features]
 default = [ "api", "block", "std" ]
 
-api = [ "dto" ]
+api = [ "block", "dto" ]
 block = [  ]
 dto = [ "serde", "dep:serde_json" ]
 inx = [ "dep:inx", "std" ]
