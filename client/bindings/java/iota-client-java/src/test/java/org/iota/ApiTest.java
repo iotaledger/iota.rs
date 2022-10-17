@@ -53,14 +53,8 @@ public abstract class ApiTest {
     }
 
     protected OutputId setupOutputId(String address) throws ClientException {
-        OutputId[] outputIds = client.getBasicOutputIds(new NodeIndexerApi.QueryParams().withParam("address", address));
-
-        if(outputIds.length == 0) {
-            requestFundsFromFaucet(address);
-            outputIds = client.getBasicOutputIds(new NodeIndexerApi.QueryParams().withParam("address", address));
-        }
-
-        return outputIds[0];
+        requestFundsFromFaucet(address);
+        return client.getBasicOutputIds(new NodeIndexerApi.QueryParams().withParam("address", address))[0];
     }
 
     protected String generateAddress(String mnemonic) throws ClientException {
