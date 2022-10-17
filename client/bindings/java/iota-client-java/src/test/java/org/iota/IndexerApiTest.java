@@ -3,14 +3,19 @@
 
 package org.iota;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import org.iota.apis.NodeIndexerApi;
 import org.iota.types.*;
-import org.iota.types.ids.AliasId;
-import org.iota.types.ids.FoundryId;
-import org.iota.types.ids.NftId;
-import org.iota.types.ids.OutputId;
+import org.iota.types.ids.*;
 
+import org.iota.types.output_builder.AliasOutputBuilderParams;
+import org.iota.types.secret.BuildBlockOptions;
+import org.iota.types.secret.MnemonicSecretManager;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -36,11 +41,20 @@ public class IndexerApiTest extends ApiTest {
 
     @Test
     public void testGetFoundryOutputIds() throws ClientException {
-        for (OutputId outputId : client.getFoundryOutputIds(new NodeIndexerApi.QueryParams()))
+        JsonObject json = new Gson().fromJson(
+                "{\"type\":4,\"amount\":\"1000000\",\"aliasId\":\"0x0000000000000000000000000000000000000000000000000000000000000000\",\"stateIndex\":0,\"foundryCounter\":0,\"unlockConditions\":[{\"type\":4,\"address\":{\"type\":0,\"pubKeyHash\":\"0x4cfde0600797ae07d19d67d78910e70950bfdaf716f0035e9a30b97828aaf6a2\"}},{\"type\":5,\"address\":{\"type\":0,\"pubKeyHash\":\"0x4cfde0600797ae07d19d67d78910e70950bfdaf716f0035e9a30b97828aaf6a2\"}}],\"features\":[{\"type\":0,\"address\":{\"type\":0,\"pubKeyHash\":\"0x4cfde0600797ae07d19d67d78910e70950bfdaf716f0035e9a30b97828aaf6a2\"}},{\"type\":2,\"data\":\"0x010203\"}],\"immutableFeatures\":[{\"type\":1,\"address\":{\"type\":0,\"pubKeyHash\":\"0x4cfde0600797ae07d19d67d78910e70950bfdaf716f0035e9a30b97828aaf6a2\"}}]}",
+                JsonObject.class
+        );
+        Output o = new Output(json);
+
+        client.buildAndPostBlock(new MnemonicSecretManager(DEFAULT_DEVELOPMENT_MNEMONIC), new BuildBlockOptions().withOutputs(new Output[] { o }));
+
+        for (OutputId outputId : client.getFoundryOutputIds(new NodeIndexerApi.QueryParams().withParam("aliasAddress", "rms1pz022kd0zjmu4dms8whgnfus3ph347cmr8th3kk5g2qn7sl5xzfcj33gfu4")))
             System.out.println(outputId);
     }
 
     @Test
+    @Disabled
     public void testGetAliasOutputIdByAliasId() throws ClientException {
         OutputId outputId = null;
         for (OutputId id : client.getAliasOutputIds(new NodeIndexerApi.QueryParams())) {
@@ -54,6 +68,7 @@ public class IndexerApiTest extends ApiTest {
     }
 
     @Test
+    @Disabled
     public void testGetFoundryOutputIdByFoundryId() throws ClientException {
         OutputId foundryOutputId = client.getFoundryOutputIds(new NodeIndexerApi.QueryParams())[0];
         Output foundryOutput = client.getOutput(foundryOutputId).getKey();
@@ -65,6 +80,7 @@ public class IndexerApiTest extends ApiTest {
     }
 
     @Test
+    @Disabled
     public void testGetNftOutputIdByNftId() throws ClientException {
         OutputId nftOutputId = null;
         for (OutputId id : client.getNftOutputIds(new NodeIndexerApi.QueryParams())) {
