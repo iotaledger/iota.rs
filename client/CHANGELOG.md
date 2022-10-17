@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Update dependencies;
 - Use new `iota-types` crate instead of `bee-api-types` and `bee-block`;
+- Use new `iota-pow` crate instead of `bee-pow`;
 
 ### Fixed
 
