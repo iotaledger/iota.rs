@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `GetProtocolParameters` to the message interface;
+- Max length checks for transaction payload and essence, so the block size isn't exceeded, even with 8 parents;
 
 ### Changed
 
