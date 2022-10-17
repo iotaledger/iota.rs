@@ -8,6 +8,10 @@ import org.iota.apis.UtilsApi;
 import org.iota.types.*;
 import org.iota.types.ids.OutputId;
 import org.iota.types.ids.TransactionId;
+import org.iota.types.secret.GenerateAddressesOptions;
+import org.iota.types.secret.MnemonicSecretManager;
+import org.iota.types.secret.Range;
+import org.iota.types.secret.SecretManager;
 import org.junit.jupiter.api.BeforeEach;
 
 public abstract class ApiTest {
@@ -25,11 +29,15 @@ public abstract class ApiTest {
     }
 
     protected void requestFundsFromFaucet(String address) throws ClientException {
-        new UtilsApi(config).requestFundsFromFaucet(DEFAULT_TESTNET_FAUCET_URL, address);
-        try {
-            Thread.sleep(1000 * 25);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        OutputId[] outputIds = client.getBasicOutputIds(new NodeIndexerApi.QueryParams().withParam("address", address));
+
+        if(outputIds.length == 0) {
+            new UtilsApi(config).requestFundsFromFaucet(DEFAULT_TESTNET_FAUCET_URL, address);
+            try {
+                Thread.sleep(1000 * 15);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -37,20 +45,28 @@ public abstract class ApiTest {
         return client.postBlockPayload(new TaggedDataPayload("{ \"type\": 5, \"tag\": \"0x68656c6c6f20776f726c64\", \"data\": \"0x5370616d6d696e6720646174612e0a436f756e743a203037323935320a54696d657374616d703a20323032312d30322d31315431303a32333a34392b30313a30300a54697073656c656374696f6e3a203934c2b573\" }")).getValue();
     }
 
-    protected TransactionId setUpTransactionId() throws ClientException {
-        for(OutputId outputId: client.getBasicOutputIds(new NodeIndexerApi.QueryParams())) {
-            try {
-                OutputMetadata metadata = client.getOutputMetadata(outputId);
-                TransactionId ret = new TransactionId(metadata.toJson().get("transactionId").getAsString());
-                client.getIncludedBlock(ret);
-                return ret;
-            } catch (ClientException e) { ; }
-        }
-        throw new RuntimeException("cannot setup transaction ID");
+    protected TransactionId setUpTransactionId(String address) throws ClientException {
+        OutputMetadata metadata = client.getOutputMetadata(setupOutputId(address));
+        TransactionId ret = new TransactionId(metadata.toJson().get("transactionId").getAsString());
+        client.getIncludedBlock(ret);
+        return ret;
     }
 
-    protected OutputId setupOutputId() throws ClientException {
-        return client.getBasicOutputIds(new NodeIndexerApi.QueryParams())[0];
+    protected OutputId setupOutputId(String address) throws ClientException {
+        OutputId[] outputIds = client.getBasicOutputIds(new NodeIndexerApi.QueryParams().withParam("address", address));
+
+        if(outputIds.length == 0) {
+            requestFundsFromFaucet(address);
+            outputIds = client.getBasicOutputIds(new NodeIndexerApi.QueryParams().withParam("address", address));
+        }
+
+        return outputIds[0];
+    }
+
+    protected String generateAddress(String mnemonic) throws ClientException {
+        SecretManager secretManager = new MnemonicSecretManager(DEFAULT_DEVELOPMENT_MNEMONIC);
+        String[] addresses = client.generateAddresses(secretManager, new GenerateAddressesOptions().withRange(new Range(0, 1)));
+        return addresses[0];
     }
 
 }

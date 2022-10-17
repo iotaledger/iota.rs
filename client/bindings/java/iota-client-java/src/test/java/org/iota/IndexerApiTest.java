@@ -18,19 +18,19 @@ public class IndexerApiTest extends ApiTest {
 
     @Test
     public void testGetBasicOutputIds() throws ClientException {
-        for (OutputId outputId : client.getBasicOutputIds(new NodeIndexerApi.QueryParams()))
+        for (OutputId outputId : client.getBasicOutputIds(new NodeIndexerApi.QueryParams().withParam("address", generateAddress(DEFAULT_DEVELOPMENT_MNEMONIC))))
             System.out.println(outputId);
     }
 
     @Test
     public void testGetAliasOutputIds() throws ClientException {
-        for (OutputId outputId : client.getAliasOutputIds(new NodeIndexerApi.QueryParams()))
+        for (OutputId outputId : client.getAliasOutputIds(new NodeIndexerApi.QueryParams().withParam("issuer", generateAddress(DEFAULT_DEVELOPMENT_MNEMONIC))))
             System.out.println(outputId);
     }
 
     @Test
     public void testGetNftOutputIds() throws ClientException {
-        for (OutputId outputId : client.getNftOutputIds(new NodeIndexerApi.QueryParams()))
+        for (OutputId outputId : client.getNftOutputIds(new NodeIndexerApi.QueryParams().withParam("address", generateAddress(DEFAULT_DEVELOPMENT_MNEMONIC))))
             System.out.println(outputId);
     }
 

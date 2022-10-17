@@ -59,14 +59,14 @@ public class NodeCoreApiTest extends ApiTest {
 
     @Test
     public void testGetOutput() throws ClientException {
-        Map.Entry<Output, OutputMetadata> r = client.getOutput(setupOutputId());
+        Map.Entry<Output, OutputMetadata> r = client.getOutput(setupOutputId(generateAddress(DEFAULT_DEVELOPMENT_MNEMONIC)));
         System.out.println(r.getKey());
         System.out.println(r.getValue());
     }
 
     @Test
     public void testGetOutputMetadata() throws ClientException {
-        OutputMetadata r = client.getOutputMetadata(setupOutputId());
+        OutputMetadata r = client.getOutputMetadata(setupOutputId(generateAddress(DEFAULT_DEVELOPMENT_MNEMONIC)));
         System.out.println(r);
     }
 
@@ -92,7 +92,7 @@ public class NodeCoreApiTest extends ApiTest {
 
     @Test
     public void testGetIncludedBlock() throws ClientException {
-        System.out.println(client.getIncludedBlock(setUpTransactionId()));
+        System.out.println(client.getIncludedBlock(setUpTransactionId(generateAddress(DEFAULT_DEVELOPMENT_MNEMONIC))));
     }
 
     @Test

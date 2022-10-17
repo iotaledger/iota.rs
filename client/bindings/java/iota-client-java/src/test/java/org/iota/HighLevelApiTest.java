@@ -22,20 +22,16 @@ public class HighLevelApiTest extends ApiTest {
 
     @Test
     public void testGetOutputs() throws ClientException {
-        OutputId[] outputs = client.getBasicOutputIds(new NodeIndexerApi.QueryParams());
-        // Limit outputs to 5 to not send thousands of requests
-        OutputId[] limited_outputs = Arrays.copyOfRange(outputs, 0, 5);
-        for (Map.Entry e : client.getOutputs(limited_outputs)) {
+        OutputId[] outputs = new OutputId[] { setupOutputId(generateAddress(DEFAULT_DEVELOPMENT_MNEMONIC)) };
+        for (Map.Entry e : client.getOutputs(outputs)) {
             System.out.println(e.getKey());
         }
     }
 
     @Test
     public void testTryGetOutputs() throws ClientException {
-        OutputId[] outputs = client.getBasicOutputIds(new NodeIndexerApi.QueryParams());
-        // Limit outputs to 5 to not send thousands of requests
-        OutputId[] limited_outputs = Arrays.copyOfRange(outputs, 0, 5);
-        for (Map.Entry e : client.tryGetOutputs(limited_outputs)) {
+        OutputId[] outputs = new OutputId[] { setupOutputId(generateAddress(DEFAULT_DEVELOPMENT_MNEMONIC)) };
+        for (Map.Entry e : client.tryGetOutputs(outputs)) {
             System.out.println(e.getKey());
         }
     }
@@ -62,7 +58,7 @@ public class HighLevelApiTest extends ApiTest {
 
     @Test
     public void testRetryUntilIncludedBlock() throws ClientException {
-        SecretManager secretManager = new MnemonicSecretManager(client.generateMnemonic());
+        SecretManager secretManager = new MnemonicSecretManager(DEFAULT_DEVELOPMENT_MNEMONIC);
         String[] addresses = client.generateAddresses(secretManager, new GenerateAddressesOptions().withRange(new Range(0, 2)));
         requestFundsFromFaucet(addresses[0]);
         BuildBlockOptions.ClientBlockBuilderOutputAddress output = new BuildBlockOptions.ClientBlockBuilderOutputAddress(addresses[1], Integer.toString(1000000));
