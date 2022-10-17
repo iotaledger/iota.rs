@@ -52,11 +52,11 @@ After you have linked the library, you can create a [`Client`](./../libraries/no
 instance and interface with it.
 
 ```javascript
-const {ClientBuilder} = require('@iota/client')
+import { Client } from '@iota/client';
 
-const client = new ClientBuilder()
-    .node('https://api.testnet.shimmer.network')
-    .build()
+const client = new Client({
+    nodes: ['https://api.testnet.shimmer.network'],
+});
 
 client.getInfo().then(console.log).catch(console.error)
 ```
