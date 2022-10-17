@@ -229,30 +229,10 @@ pub(crate) fn select_inputs_for_sender_and_issuer<'a>(
                 // first check already selected outputs
                 for input_signing_data in selected_inputs.iter() {
                     if let Output::Alias(alias_input) = &input_signing_data.output {
-                        let alias_id = alias_input
-                            .alias_id()
-                            .or_from_output_id(input_signing_data.output_id()?);
-                        // Check if alias exists in the outputs and get the required address for the transition
-                        let unlock_address = outputs
-                            .iter()
-                            .find_map(|o| {
-                                if let Output::Alias(alias_output) = o {
-                                    if *alias_output.alias_id() == alias_id {
-                                        if alias_output.state_index() == alias_input.state_index() {
-                                            Some(*alias_output.governor_address())
-                                        } else {
-                                            Some(*alias_output.state_controller_address())
-                                        }
-                                    } else {
-                                        None
-                                    }
-                                } else {
-                                    None
-                                }
-                                // if not find in the outputs, the alias gets burned which requires the governor address
-                            })
-                            .unwrap_or_else(|| *alias_input.governor_address());
-                        if unlock_address == address {
+                        let required_unlock_address =
+                            alias_required_unlock_address(alias_input, input_signing_data, outputs)?;
+
+                        if required_unlock_address == address {
                             continue 'addresses_loop;
                         }
                     } else if output_contains_address(
@@ -273,30 +253,10 @@ pub(crate) fn select_inputs_for_sender_and_issuer<'a>(
                         continue;
                     }
                     if let Output::Alias(alias_input) = &input_signing_data.output {
-                        let alias_id = alias_input
-                            .alias_id()
-                            .or_from_output_id(input_signing_data.output_id()?);
-                        // Check if alias exists in the outputs and get the required address for the transition
-                        let unlock_address = outputs
-                            .iter()
-                            .find_map(|o| {
-                                if let Output::Alias(alias_output) = o {
-                                    if *alias_output.alias_id() == alias_id {
-                                        if alias_output.state_index() == alias_input.state_index() {
-                                            Some(*alias_input.governor_address())
-                                        } else {
-                                            Some(*alias_input.state_controller_address())
-                                        }
-                                    } else {
-                                        None
-                                    }
-                                } else {
-                                    None
-                                }
-                                // if not find in the outputs, the alias gets burned which requires the governor address
-                            })
-                            .unwrap_or_else(|| *alias_input.governor_address());
-                        if unlock_address == address {
+                        let required_unlock_address =
+                            alias_required_unlock_address(alias_input, input_signing_data, outputs)?;
+
+                        if required_unlock_address == address {
                             continue 'addresses_loop;
                         }
                     } else if output_contains_address(
@@ -447,4 +407,37 @@ fn get_required_addresses_for_sender_and_issuer(
     }
 
     Ok(all_required_addresses)
+}
+
+// Checks the type of alias transition with the provided outputs and returns the required address to unlock the alias
+// output.
+fn alias_required_unlock_address(
+    alias_input: &AliasOutput,
+    input_signing_data: &InputSigningData,
+    outputs: &[Output],
+) -> Result<Address> {
+    let alias_id = alias_input
+        .alias_id()
+        .or_from_output_id(input_signing_data.output_id()?);
+    // Check if alias exists in the outputs and get the required address for the transition
+    let unlock_address = outputs
+        .iter()
+        .find_map(|o| {
+            if let Output::Alias(alias_output) = o {
+                if *alias_output.alias_id() == alias_id {
+                    if alias_output.state_index() == alias_input.state_index() {
+                        Some(*alias_output.governor_address())
+                    } else {
+                        Some(*alias_output.state_controller_address())
+                    }
+                } else {
+                    None
+                }
+            } else {
+                None
+            }
+            // if not find in the outputs, the alias gets burned which requires the governor address
+        })
+        .unwrap_or_else(|| *alias_input.governor_address());
+    Ok(unlock_address)
 }
