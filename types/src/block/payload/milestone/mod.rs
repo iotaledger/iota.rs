@@ -219,6 +219,7 @@ pub mod dto {
     }
 
     impl MilestonePayload {
+        // TODO: find a solution to factorize.
         pub fn try_from_dto(
             value: &MilestonePayloadDto,
             protocol_parameters: &ProtocolParameters,
