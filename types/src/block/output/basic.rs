@@ -131,7 +131,7 @@ impl BasicOutputBuilder {
     }
 
     ///
-    fn _finish(self) -> Result<BasicOutput, Error> {
+    pub fn finish_unverified(self) -> Result<BasicOutput, Error> {
         let unlock_conditions = UnlockConditions::new(self.unlock_conditions)?;
 
         verify_unlock_conditions::<true>(&unlock_conditions)?;
@@ -159,16 +159,11 @@ impl BasicOutputBuilder {
 
     ///
     pub fn finish(self, token_supply: u64) -> Result<BasicOutput, Error> {
-        let output = self._finish()?;
+        let output = self.finish_unverified()?;
 
         verify_output_amount::<true>(&output.amount, &token_supply)?;
 
         Ok(output)
-    }
-
-    ///
-    pub fn finish_unverified(self) -> Result<BasicOutput, Error> {
-        self._finish()
     }
 
     /// Finishes the [`BasicOutputBuilder`] into an [`Output`].

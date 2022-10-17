@@ -204,7 +204,7 @@ impl AliasOutputBuilder {
     }
 
     ///
-    fn _finish(self) -> Result<AliasOutput, Error> {
+    pub fn finish_unverified(self) -> Result<AliasOutput, Error> {
         let state_index = self.state_index.unwrap_or(0);
         let foundry_counter = self.foundry_counter.unwrap_or(0);
 
@@ -252,16 +252,11 @@ impl AliasOutputBuilder {
 
     ///
     pub fn finish(self, token_supply: u64) -> Result<AliasOutput, Error> {
-        let output = self._finish()?;
+        let output = self.finish_unverified()?;
 
         verify_output_amount::<true>(&output.amount, &token_supply)?;
 
         Ok(output)
-    }
-
-    ///
-    pub fn finish_unverified(self) -> Result<AliasOutput, Error> {
-        self._finish()
     }
 
     /// Finishes the [`AliasOutputBuilder`] into an [`Output`].

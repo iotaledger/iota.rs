@@ -174,7 +174,8 @@ impl NftOutputBuilder {
         Ok(self)
     }
 
-    fn _finish(self) -> Result<NftOutput, Error> {
+    ///
+    pub fn finish_unverified(self) -> Result<NftOutput, Error> {
         let unlock_conditions = UnlockConditions::new(self.unlock_conditions)?;
 
         verify_unlock_conditions(&unlock_conditions, &self.nft_id)?;
@@ -208,16 +209,11 @@ impl NftOutputBuilder {
 
     ///
     pub fn finish(self, token_supply: u64) -> Result<NftOutput, Error> {
-        let output = self._finish()?;
+        let output = self.finish_unverified()?;
 
         verify_output_amount::<true>(&output.amount, &token_supply)?;
 
         Ok(output)
-    }
-
-    ///
-    pub fn finish_unverified(self) -> Result<NftOutput, Error> {
-        self._finish()
     }
 
     /// Finishes the [`NftOutputBuilder`] into an [`Output`].

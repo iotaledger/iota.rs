@@ -198,7 +198,7 @@ impl FoundryOutputBuilder {
     }
 
     ///
-    fn _finish(self) -> Result<FoundryOutput, Error> {
+    pub fn finish_unverified(self) -> Result<FoundryOutput, Error> {
         let unlock_conditions = UnlockConditions::new(self.unlock_conditions)?;
 
         verify_unlock_conditions(&unlock_conditions)?;
@@ -233,16 +233,11 @@ impl FoundryOutputBuilder {
 
     ///
     pub fn finish(self, token_supply: u64) -> Result<FoundryOutput, Error> {
-        let output = self._finish()?;
+        let output = self.finish_unverified()?;
 
         verify_output_amount::<true>(&output.amount, &token_supply)?;
 
         Ok(output)
-    }
-
-    ///
-    pub fn finish_unverified(self) -> Result<FoundryOutput, Error> {
-        self._finish()
     }
 
     /// Finishes the [`FoundryOutputBuilder`] into an [`Output`].
