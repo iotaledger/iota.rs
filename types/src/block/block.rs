@@ -3,8 +3,8 @@
 
 use core::ops::Deref;
 
-use bee_pow::providers::{miner::Miner, NonceProvider, NonceProviderBuilder};
 use crypto::hashes::{blake2b::Blake2b256, Digest};
+use iota_pow::providers::{miner::Miner, NonceProvider, NonceProviderBuilder};
 use packable::{
     error::{UnexpectedEOF, UnpackError, UnpackErrorExt},
     packer::Packer,

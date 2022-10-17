@@ -3,7 +3,7 @@
 
 //! Multi-threaded PoW miner
 
-use bee_pow::providers::{
+use iota_pow::providers::{
     miner::{MinerBuilder, MinerCancel},
     NonceProvider, NonceProviderBuilder,
 };

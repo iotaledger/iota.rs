@@ -8,13 +8,13 @@ pub mod wasm_miner;
 
 pub mod miner;
 
-use bee_pow::providers::{NonceProvider, NonceProviderBuilder};
+use iota_pow::providers::{NonceProvider, NonceProviderBuilder};
 use iota_types::block::{parent::Parents, payload::Payload, Block, BlockBuilder, BlockId};
 use packable::PackableExt;
 #[cfg(target_family = "wasm")]
 use wasm_miner::SingleThreadedMiner;
 #[cfg(not(target_family = "wasm"))]
-use {crate::api::miner::ClientMiner, bee_pow::providers::miner::MinerCancel};
+use {crate::api::miner::ClientMiner, iota_pow::providers::miner::MinerCancel};
 
 use crate::{Client, Error, Result};
 
