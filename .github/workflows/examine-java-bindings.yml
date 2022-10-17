@@ -82,9 +82,9 @@ jobs:
         uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b
       - name: Run Gradle Test
         working-directory: client/bindings/java/iota-client-java/
-        uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
-        with:
-          arguments: test
+        run: |
+          chmod +x gradlew
+          ./gradlew test
 
   lint:
     name: Lint
