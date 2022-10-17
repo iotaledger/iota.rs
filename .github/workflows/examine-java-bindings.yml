@@ -56,13 +56,6 @@ jobs:
           cache-job-id: ${{ github.workflow }}-${{ github.job }}-${{ matrix.os }}-${{ matrix.java }}
           cache-hash: ${{ hashFiles('.github/workflows/examine-java-bindings.yml') }}
 
-      - name: Set Up Java ${{ matrix.java }} and Gradle Cache
-        uses: actions/setup-java@v2
-        with:
-          distribution: temurin
-          java-version: ${{ matrix.java }}
-          cache: gradle
-
       # This step is required for bindgen to work on Windows.
       - name: Set Up Clang/LLVM (Windows)
         if: ${{ startsWith(matrix.os, 'windows') }}
@@ -80,11 +73,17 @@ jobs:
           command: test
           args: --manifest-path client/bindings/java/iota-client-java/native/Cargo.toml --all-features --release
 
+      - name: Set Up Java ${{ matrix.java }}
+        uses: actions/setup-java@v3
+        with:
+          java-version: ${{ matrix.java }}
+          distribution: 'adopt'
+      - name: Validate Gradle wrapper
+        uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b
       - name: Run Gradle Test
-        working-directory: client/bindings/java/iota-client-java/
-        run: |
-          chmod +x gradlew
-          ./gradlew test
+        uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
+        with:
+          arguments: test
 
   lint:
     name: Lint
@@ -149,7 +148,7 @@ jobs:
           command: udeps
           args: --manifest-path client/bindings/java/iota-client-java/native/Cargo.toml --all-targets --all-features
 
-      # TODO: Check gradle too
+      # TODO: Check Java code too
 
   check-format:
     name: Check Format
