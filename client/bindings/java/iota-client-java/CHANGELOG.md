@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Allow integers values in QueryParams;
 
 ### Changed
+
 - Improve performance of tests by avoiding unnecessary indexer requests;
 
 ## 1.0.0-rc.1 - 2022-09-29
