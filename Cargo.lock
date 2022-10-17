@@ -1209,7 +1209,7 @@ dependencies = [
  "futures",
  "gloo-timers",
  "instant",
- "iota-crypto 0.15.0",
+ "iota-crypto 0.15.1",
  "iota-ledger-nano",
  "iota-pow",
  "iota-types",
@@ -1268,9 +1268,9 @@ dependencies = [
 
 [[package]]
 name = "iota-crypto"
-version = "0.15.0"
+version = "0.15.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b193e28a489287caa2cf8456a464479a54731a7f7369be9b8c880185551dd78a"
+checksum = "5e4304d8d30a6c768eb31dc2ca37d80ba60168c5c0c5429ba2111daa7621ee28"
 dependencies = [
  "aead",
  "autocfg",
@@ -1313,7 +1313,7 @@ dependencies = [
 name = "iota-pow"
 version = "1.0.0-rc.1"
 dependencies = [
- "iota-crypto 0.15.0",
+ "iota-crypto 0.15.1",
  "iota-types",
  "thiserror",
 ]
@@ -1329,7 +1329,7 @@ dependencies = [
  "hashbrown",
  "hex",
  "inx",
- "iota-crypto 0.15.0",
+ "iota-crypto 0.15.1",
  "iota-pow",
  "iterator-sorted",
  "num_cpus",
