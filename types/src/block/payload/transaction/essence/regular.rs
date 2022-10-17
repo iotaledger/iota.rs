@@ -272,6 +272,7 @@ fn verify_outputs<const VERIFY: bool>(outputs: &[Output], visitor: &ProtocolPara
     Ok(())
 }
 
+// TODO: find a solution to avoid this duplication.
 fn verify_outputs_unverified<const VERIFY: bool>(outputs: &[Output]) -> Result<(), Error> {
     if VERIFY {
         let mut amount_sum: u64 = 0;
