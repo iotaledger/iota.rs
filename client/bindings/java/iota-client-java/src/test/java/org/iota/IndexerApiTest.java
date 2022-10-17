@@ -54,7 +54,6 @@ public class IndexerApiTest extends ApiTest {
     }
 
     @Test
-    @Disabled
     public void testGetAliasOutputIdByAliasId() throws ClientException {
         OutputId outputId = null;
         for (OutputId id : client.getAliasOutputIds(new NodeIndexerApi.QueryParams())) {
@@ -68,7 +67,6 @@ public class IndexerApiTest extends ApiTest {
     }
 
     @Test
-    @Disabled
     public void testGetFoundryOutputIdByFoundryId() throws ClientException {
         OutputId foundryOutputId = client.getFoundryOutputIds(new NodeIndexerApi.QueryParams())[0];
         Output foundryOutput = client.getOutput(foundryOutputId).getKey();
@@ -80,7 +78,6 @@ public class IndexerApiTest extends ApiTest {
     }
 
     @Test
-    @Disabled
     public void testGetNftOutputIdByNftId() throws ClientException {
         OutputId nftOutputId = null;
         for (OutputId id : client.getNftOutputIds(new NodeIndexerApi.QueryParams())) {
