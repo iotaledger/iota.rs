@@ -243,6 +243,15 @@ impl InputSigningData {
             bech32_address: input.bech32_address.clone(),
         })
     }
+
+    pub(crate) fn try_from_dto_unverified(input: &InputSigningDataDto) -> Result<InputSigningData> {
+        Ok(Self {
+            output: Output::try_from_dto_unverified(&input.output)?,
+            output_metadata: input.output_metadata.clone(),
+            chain: input.chain.clone(),
+            bech32_address: input.bech32_address.clone(),
+        })
+    }
 }
 
 impl From<&InputSigningData> for InputSigningDataDto {

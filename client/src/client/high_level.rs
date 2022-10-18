@@ -203,10 +203,11 @@ impl Client {
 
         let mut basic_outputs = Vec::new();
         let current_time = self.get_time_checked().await?;
+        let token_supply = self.get_token_supply()?;
 
         for output_resp in available_outputs {
             let (amount, _) = ClientBlockBuilder::get_output_amount_and_address(
-                &Output::try_from_dto(&output_resp.output, self.get_token_supply()?)?,
+                &Output::try_from_dto(&output_resp.output, token_supply)?,
                 None,
                 current_time,
             )?;

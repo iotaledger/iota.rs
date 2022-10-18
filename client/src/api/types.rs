@@ -78,6 +78,27 @@ impl PreparedTransactionData {
             },
         })
     }
+
+    /// Unverified conversion from [`PreparedTransactionDataDto`] to [`PreparedTransactionData`].
+    pub fn try_from_dto_unverified(value: &PreparedTransactionDataDto) -> Result<Self, DtoError> {
+        Ok(PreparedTransactionData {
+            essence: TransactionEssence::try_from_dto_unverified(&value.essence)
+                .map_err(|_| DtoError::InvalidField("essence"))?,
+            inputs_data: value
+                .inputs_data
+                .iter()
+                .map(InputSigningData::try_from_dto_unverified)
+                .collect::<crate::Result<Vec<InputSigningData>>>()
+                .map_err(|_| DtoError::InvalidField("inputs_data"))?,
+            remainder: match &value.remainder {
+                Some(remainder) => Some(
+                    RemainderData::try_from_dto_unverified(remainder)
+                        .map_err(|_| DtoError::InvalidField("remainder"))?,
+                ),
+                None => None,
+            },
+        })
+    }
 }
 
 /// Helper struct for offline signing
@@ -128,6 +149,20 @@ impl SignedTransactionData {
                 .map_err(|_| DtoError::InvalidField("input_data"))?,
         })
     }
+
+    /// Unverified conversion from [`SignedTransactionDataDto`] to [`SignedTransactionData`].
+    pub fn try_from_dto_unverified(value: &SignedTransactionDataDto) -> Result<Self, DtoError> {
+        Ok(SignedTransactionData {
+            transaction_payload: TransactionPayload::try_from_dto_unverified(&value.transaction_payload)
+                .map_err(|_| DtoError::InvalidField("transaction_payload"))?,
+            inputs_data: value
+                .inputs_data
+                .iter()
+                .map(InputSigningData::try_from_dto_unverified)
+                .collect::<crate::Result<Vec<InputSigningData>>>()
+                .map_err(|_| DtoError::InvalidField("inputs_data"))?,
+        })
+    }
 }
 
 /// Data for a remainder output, used for ledger nano
@@ -156,6 +191,14 @@ impl RemainderData {
     pub(crate) fn try_from_dto(remainder: &RemainderDataDto, token_supply: u64) -> crate::Result<Self> {
         Ok(Self {
             output: Output::try_from_dto(&remainder.output, token_supply)?,
+            chain: remainder.chain.clone(),
+            address: Address::try_from(&remainder.address)?,
+        })
+    }
+
+    pub(crate) fn try_from_dto_unverified(remainder: &RemainderDataDto) -> crate::Result<Self> {
+        Ok(Self {
+            output: Output::try_from_dto_unverified(&remainder.output)?,
             chain: remainder.chain.clone(),
             address: Address::try_from(&remainder.address)?,
         })
