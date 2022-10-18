@@ -116,7 +116,7 @@ impl<'a> ClientBlockBuilder<'a> {
 
         validate_transaction_payload_length(&tx_payload)?;
 
-        let current_time = self.client.get_time_checked().await?;
+        let current_time = self.client.get_time_checked()?;
 
         let conflict = verify_semantic(&prepared_transaction_data.inputs_data, &tx_payload, current_time)?;
 

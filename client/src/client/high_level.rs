@@ -202,7 +202,7 @@ impl Client {
         }
 
         let mut basic_outputs = Vec::new();
-        let current_time = self.get_time_checked().await?;
+        let current_time = self.get_time_checked()?;
         let token_supply = self.get_token_supply()?;
 
         for output_resp in available_outputs {
@@ -332,7 +332,7 @@ impl Client {
 
     /// Returns the local time checked with the timestamp of the latest milestone, if the difference is larger than 5
     /// minutes an error is returned to prevent locking outputs by accident for a wrong time.
-    pub async fn get_time_checked(&self) -> Result<u32> {
+    pub fn get_time_checked(&self) -> Result<u32> {
         let current_time = {
             #[cfg(all(target_arch = "wasm32", not(target_os = "wasi")))]
             let now = instant::SystemTime::now().duration_since(instant::SystemTime::UNIX_EPOCH);
