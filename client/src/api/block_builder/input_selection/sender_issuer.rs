@@ -7,7 +7,7 @@ use std::collections::HashSet;
 
 use crypto::keys::slip10::Chain;
 use iota_types::block::{
-    address::Address,
+    address::{Address, AliasAddress, NftAddress},
     output::{dto::OutputDto, feature::Features, AliasOutput, NftOutput, Output, OutputId},
 };
 
@@ -360,22 +360,52 @@ fn get_required_addresses_for_sender_and_issuer(
 ) -> crate::Result<HashSet<Address>> {
     log::debug!("[get_required_addresses_for_sender_and_issuer]");
 
+    // Addresses in the inputs that will be unlocked in the transaction
+    let mut unlocked_addresses = HashSet::new();
+    for input_signing_data in selected_inputs {
+        match &input_signing_data.output {
+            Output::Alias(alias_input) => {
+                let required_unlock_address = alias_required_unlock_address(alias_input, input_signing_data, outputs)?;
+
+                unlocked_addresses.insert(required_unlock_address);
+
+                // Alias address is only unlocked if it's a state transition
+                if required_unlock_address == *alias_input.state_controller_address() {
+                    let alias_id = alias_input
+                        .alias_id()
+                        .or_from_output_id(input_signing_data.output_id()?);
+                    let alias_address = Address::Alias(AliasAddress::new(alias_id));
+                    unlocked_addresses.insert(alias_address);
+                }
+            }
+            Output::Basic(basic_input) => {
+                let unlock_address = basic_input
+                    .unlock_conditions()
+                    .locked_address(basic_input.address(), current_time);
+                unlocked_addresses.insert(*unlock_address);
+            }
+            Output::Nft(nft_input) => {
+                let unlock_address = nft_input
+                    .unlock_conditions()
+                    .locked_address(nft_input.address(), current_time);
+                unlocked_addresses.insert(*unlock_address);
+
+                let nft_id = nft_input.nft_id().or_from_output_id(input_signing_data.output_id()?);
+                let nft_address = Address::Nft(NftAddress::new(nft_id));
+                unlocked_addresses.insert(nft_address);
+            }
+            // Foundries can't unlock anything and the alias address will be added for the alias output already
+            _ => {}
+        }
+    }
+
     let mut all_required_addresses = HashSet::new();
 
     for output in outputs {
         if let Some(sender_feature) = output.features().and_then(Features::sender) {
             if !all_required_addresses.contains(sender_feature.address()) {
                 // Only add if not already present in the selected inputs.
-                if !selected_inputs.iter().any(|input_data| {
-                    output_contains_address(
-                        &input_data.output,
-                        Some(input_data.output_id().expect("invalid output id in input signing data")),
-                        // TODO: alias transition: would currently be valid for governor and state controller, but only
-                        // one of them will sign
-                        sender_feature.address(),
-                        current_time,
-                    )
-                }) {
+                if !unlocked_addresses.contains(sender_feature.address()) {
                     all_required_addresses.insert(*sender_feature.address());
                 }
             }
@@ -391,14 +421,7 @@ fn get_required_addresses_for_sender_and_issuer(
             if let Some(issuer_feature) = output.immutable_features().and_then(Features::issuer) {
                 if !all_required_addresses.contains(issuer_feature.address()) {
                     // Only add if not already present in the selected inputs.
-                    if !selected_inputs.iter().any(|input_data| {
-                        output_contains_address(
-                            &input_data.output,
-                            Some(input_data.output_id().expect("invalid output id in input signing data")),
-                            issuer_feature.address(),
-                            current_time,
-                        )
-                    }) {
+                    if !unlocked_addresses.contains(issuer_feature.address()) {
                         all_required_addresses.insert(*issuer_feature.address());
                     }
                 }
