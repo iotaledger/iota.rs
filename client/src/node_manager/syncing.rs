@@ -114,6 +114,7 @@ impl Client {
             if let Some((info, _node_url)) = nodes.first() {
                 let mut network_info = network_info.write().map_err(|_| crate::Error::PoisonError)?;
 
+                network_info.latest_milestone_timestamp = info.status.latest_milestone.timestamp;
                 network_info.protocol_parameters = ProtocolParameters::try_from(info.protocol.clone())?;
             }
 

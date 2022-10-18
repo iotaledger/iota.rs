@@ -342,9 +342,9 @@ impl Client {
             now.expect("time went backwards").as_secs() as u32
         };
 
-        let status_response = self.get_info().await?.node_info.status;
+        let network_info = self.network_info.read().map_err(|_| crate::Error::PoisonError)?;
 
-        if let Some(latest_ms_timestamp) = status_response.latest_milestone.timestamp {
+        if let Some(latest_ms_timestamp) = network_info.latest_milestone_timestamp {
             // Check the local time is in the range of +-5 minutes of the node to prevent locking funds by accident
             if !(latest_ms_timestamp - FIVE_MINUTES_IN_SECONDS..latest_ms_timestamp + FIVE_MINUTES_IN_SECONDS)
                 .contains(&current_time)

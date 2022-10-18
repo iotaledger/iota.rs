@@ -43,6 +43,9 @@ pub struct NetworkInfo {
     /// Tips request interval during PoW in seconds.
     #[serde(rename = "tipsInterval", default = "default_tips_interval")]
     pub tips_interval: u64,
+    /// The latest milestone timestamp.
+    #[serde(rename = "latestMilestoneTimestamp")]
+    pub latest_milestone_timestamp: Option<u32>,
 }
 
 /// Dto for the NetworkInfo
@@ -146,6 +149,7 @@ impl Default for NetworkInfo {
             local_pow: default_local_pow(),
             fallback_to_local_pow: true,
             tips_interval: DEFAULT_TIPS_INTERVAL,
+            latest_milestone_timestamp: None,
         }
     }
 }
