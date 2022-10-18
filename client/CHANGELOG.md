@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `GetProtocolParameters` to the message interface;
 - Max length checks for transaction payload and essence, so the block size isn't exceeded, even with 8 parents;
 - `{PreparedTransactionData, SignedTransactionData, RemainderData, InputSigningData}::try_from_dto_unverified`;
+- `NetworkInfo::latest_milestone_timestamp` field;
 
 ### Changed
 
@@ -33,6 +34,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Use new `iota-types` crate instead of `bee-api-types` and `bee-block`;
 - Use new `iota-pow` crate instead of `bee-pow`;
 - `Message::{SignTransaction, BlockId, TransactionId}` now uses unverified DTO conversions;
+- `get_time_checked` has been made sync;
+- `get_time_checked` doesn't call `get_info` anymore but returns the cached `latest_milestone_timestamp`;
+- Syncing nodes also updates the `latest_milestone_timestamp`;
 
 ### Fixed
 
