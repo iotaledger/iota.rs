@@ -36,7 +36,7 @@ impl TaggedDataPayload {
     /// Valid lengths for the tag.
     pub const TAG_LENGTH_RANGE: RangeInclusive<u8> = 0..=64;
     /// Valid lengths for the data.
-    pub const DATA_LENGTH_RANGE: RangeInclusive<u32> = 0..=Block::LENGTH_MAX as u32;
+    pub const DATA_LENGTH_RANGE: RangeInclusive<u32> = 0..=(Block::LENGTH_MAX - Block::LENGTH_MIN) as u32;
 
     /// Creates a new [`TaggedDataPayload`].
     pub fn new(tag: Vec<u8>, data: Vec<u8>) -> Result<Self, Error> {

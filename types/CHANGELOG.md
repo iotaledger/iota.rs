@@ -21,6 +21,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 1.0.0-rc.1 - 2022-XX-XX
 
+### Added
+
+- `AliasTransition` enum;
+- `alias_address()` to `AliasOutput`;
+- `nft_address()` to `NftOutput`;
+- `unlocked_addresses()` to `Output`;
+
+### Changed
+
+- Reduced `DATA_LENGTH_RANGE` of `TaggedDataPayload`;
+
 First release based on `bee-api-types` and `bee-block`.
 
 <!-- We include the past changelogs of `bee-api-types` and `bee-block` for reference as they have been merged into the client repository as a new crate.

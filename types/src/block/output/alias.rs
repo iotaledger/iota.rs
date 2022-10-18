@@ -26,6 +26,16 @@ use crate::block::{
     Error,
 };
 
+/// Transition types for an [`AliasOutput`].
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub enum AliasTransition {
+    /// State transition
+    State,
+    /// Governor transition
+    Governor,
+}
+
 ///
 #[derive(Clone)]
 #[must_use]
@@ -430,6 +440,11 @@ impl AliasOutput {
     #[inline(always)]
     pub fn chain_id(&self) -> ChainId {
         ChainId::Alias(self.alias_id)
+    }
+
+    /// Returns the alias address for this output.
+    pub fn alias_address(&self, output_id: OutputId) -> AliasAddress {
+        AliasAddress::new(self.alias_id().or_from_output_id(output_id))
     }
 
     ///
