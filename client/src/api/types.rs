@@ -89,7 +89,7 @@ impl PreparedTransactionData {
                 .iter()
                 .map(InputSigningData::try_from_dto_unverified)
                 .collect::<crate::Result<Vec<InputSigningData>>>()
-                .map_err(|_| DtoError::InvalidField("input_data"))?,
+                .map_err(|_| DtoError::InvalidField("inputs_data"))?,
             remainder: match &value.remainder {
                 Some(remainder) => Some(
                     RemainderData::try_from_dto_unverified(remainder)
