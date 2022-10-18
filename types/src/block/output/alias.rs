@@ -26,6 +26,16 @@ use crate::block::{
     Error,
 };
 
+/// Transition types for an [`AliasOutput`].
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub enum AliasTransition {
+    /// State transition
+    State,
+    /// Governor transition
+    Governor,
+}
+
 ///
 #[derive(Clone)]
 #[must_use]

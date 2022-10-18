@@ -39,6 +39,7 @@ use packable::{
     Packable, PackableExt,
 };
 
+use self::alias::AliasTransition;
 pub(crate) use self::{
     alias::StateMetadataLength,
     feature::{MetadataFeatureLength, TagFeatureLength},
@@ -137,6 +138,48 @@ impl Output {
             Self::Alias(output) => Some(output.native_tokens()),
             Self::Foundry(output) => Some(output.native_tokens()),
             Self::Nft(output) => Some(output.native_tokens()),
+        }
+    }
+
+    /// Returns the the address that is required to unlock this [`Output`] and the alias or nft address that gets
+    /// unlocked by it, if its an alias or nft.
+    pub fn unlocked_addresses(
+        &self,
+        current_time: u32,
+        alias_transition: Option<AliasTransition>,
+        output_id: OutputId,
+    ) -> Result<(Address, Option<Address>), Error> {
+        match self {
+            Output::Alias(output) => {
+                if let Some(alias_transition) = alias_transition {
+                    match alias_transition {
+                        AliasTransition::State => {
+                            // Alias address is only unlocked if it's a state transition
+                            Ok((
+                                *output.state_controller_address(),
+                                Some(Address::Alias(output.alias_address(output_id))),
+                            ))
+                        }
+                        AliasTransition::Governor => Ok((*output.governor_address(), None)),
+                    }
+                } else {
+                    todo!("new error?")
+                }
+            }
+            Output::Basic(output) => Ok((
+                *output
+                    .unlock_conditions()
+                    .locked_address(output.address(), current_time),
+                None,
+            )),
+            Output::Nft(output) => Ok((
+                *output
+                    .unlock_conditions()
+                    .locked_address(output.address(), current_time),
+                Some(Address::Nft(output.nft_address(output_id))),
+            )),
+            Self::Foundry(output) => Ok((Address::Alias(*output.alias_address()), None)),
+            Self::Treasury(_) => Err(Error::UnsupportedOutputKind(TreasuryOutput::KIND)),
         }
     }
 
