@@ -17,8 +17,7 @@ const SIGNED_TRANSACTION_FILE_NAME =
 async function run() {
     initLogger();
 
-    const offlineClient = new Client({
-    });
+    const offlineClient = new Client({});
 
     try {
         if (!process.env.NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1) {
