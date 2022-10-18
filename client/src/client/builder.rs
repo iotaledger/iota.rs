@@ -43,7 +43,7 @@ pub struct NetworkInfo {
     /// Tips request interval during PoW in seconds.
     #[serde(rename = "tipsInterval", default = "default_tips_interval")]
     pub tips_interval: u64,
-    /// The latest milestone timestamp.
+    /// The latest cached milestone timestamp.
     #[serde(rename = "latestMilestoneTimestamp")]
     pub latest_milestone_timestamp: Option<u32>,
 }
