@@ -20,7 +20,7 @@ use iota_types::{
             dto::{MilestonePayloadDto, PayloadDto},
             Payload, TransactionPayload,
         },
-        Block as BeeBlock, BlockDto,
+        Block, BlockDto,
     },
 };
 #[cfg(not(target_family = "wasm"))]
@@ -362,9 +362,8 @@ impl ClientMessageHandler {
 
                 Ok(Response::SignedTransaction(PayloadDto::from(
                     &block_builder
-                        .sign_transaction(PreparedTransactionData::try_from_dto(
+                        .sign_transaction(PreparedTransactionData::try_from_dto_unverified(
                             &prepared_transaction_data,
-                            &self.client.get_protocol_parameters()?,
                         )?)
                         .await?,
                 )))
@@ -408,7 +407,7 @@ impl ClientMessageHandler {
             Message::GetTips => Ok(Response::Tips(self.client.get_tips().await?)),
             Message::PostBlockRaw { block_bytes } => Ok(Response::BlockId(
                 self.client
-                    .post_block_raw(&BeeBlock::unpack_strict(
+                    .post_block_raw(&Block::unpack_strict(
                         &block_bytes[..],
                         &self.client.get_protocol_parameters()?,
                     )?)
@@ -416,10 +415,7 @@ impl ClientMessageHandler {
             )),
             Message::PostBlock { block } => Ok(Response::BlockId(
                 self.client
-                    .post_block(&BeeBlock::try_from_dto(
-                        &block,
-                        &self.client.get_protocol_parameters()?,
-                    )?)
+                    .post_block(&Block::try_from_dto(&block, &self.client.get_protocol_parameters()?)?)
                     .await?,
             )),
             Message::GetBlock { block_id } => Ok(Response::Block(BlockDto::from(
@@ -566,11 +562,11 @@ impl ClientMessageHandler {
                 Ok(response)
             }
             Message::BlockId { block } => {
-                let block = BeeBlock::try_from_dto(&block, &self.client.get_protocol_parameters()?)?;
+                let block = Block::try_from_dto_unverified(&block)?;
                 Ok(Response::BlockId(block.id()))
             }
             Message::TransactionId { payload } => {
-                let payload = TransactionPayload::try_from_dto(&payload, &self.client.get_protocol_parameters()?)?;
+                let payload = TransactionPayload::try_from_dto_unverified(&payload)?;
                 Ok(Response::TransactionId(payload.id()))
             }
             Message::ComputeAliasId { output_id } => Ok(Response::AliasId(AliasId::from(output_id))),
