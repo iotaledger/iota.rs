@@ -71,7 +71,7 @@ impl<'a> ClientBlockBuilder<'a> {
         // Build transaction payload
         let inputs_commitment = InputsCommitment::new(selected_transaction_data.inputs.iter().map(|i| &i.output));
 
-        let mut essence = RegularTransactionEssence::builder(inputs_commitment);
+        let mut essence = RegularTransactionEssence::builder(self.client.get_network_id()?, inputs_commitment);
         let inputs = selected_transaction_data
             .inputs
             .iter()

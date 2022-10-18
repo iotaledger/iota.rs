@@ -209,5 +209,25 @@ pub mod dto {
                 token_supply,
             )?)
         }
+
+        pub fn try_from_dto_unverified(value: &ReceiptMilestoneOptionDto) -> Result<ReceiptMilestoneOption, DtoError> {
+            let funds = value
+                .funds
+                .iter()
+                .map(MigratedFundsEntry::try_from_dto_unverified)
+                .collect::<Result<Vec<_>, _>>()?;
+
+            Ok(ReceiptMilestoneOption {
+                migrated_at: MilestoneIndex(value.migrated_at),
+                last: value.last,
+                funds: VecPrefix::<MigratedFundsEntry, ReceiptFundsCount>::try_from(funds)
+                    .map_err(Error::InvalidReceiptFundsCount)?,
+                transaction: if let PayloadDto::TreasuryTransaction(ref transaction) = value.transaction {
+                    TreasuryTransactionPayload::try_from_dto_unverified(transaction.as_ref())?.into()
+                } else {
+                    return Err(DtoError::InvalidField("transaction"));
+                },
+            })
+        }
     }
 }

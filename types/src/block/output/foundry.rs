@@ -198,7 +198,7 @@ impl FoundryOutputBuilder {
     }
 
     ///
-    pub fn finish(self, token_supply: u64) -> Result<FoundryOutput, Error> {
+    pub fn finish_unverified(self) -> Result<FoundryOutput, Error> {
         let unlock_conditions = UnlockConditions::new(self.unlock_conditions)?;
 
         verify_unlock_conditions(&unlock_conditions)?;
@@ -227,6 +227,13 @@ impl FoundryOutputBuilder {
                 Output::Foundry(output.clone()).rent_cost(&rent_structure)
             }
         };
+
+        Ok(output)
+    }
+
+    ///
+    pub fn finish(self, token_supply: u64) -> Result<FoundryOutput, Error> {
+        let output = self.finish_unverified()?;
 
         verify_output_amount::<true>(&output.amount, &token_supply)?;
 
@@ -655,7 +662,7 @@ pub mod dto {
     }
 
     impl FoundryOutput {
-        pub fn try_from_dto(value: &FoundryOutputDto, token_supply: u64) -> Result<FoundryOutput, DtoError> {
+        fn _try_from_dto(value: &FoundryOutputDto) -> Result<FoundryOutputBuilder, DtoError> {
             let mut builder = FoundryOutputBuilder::new_with_amount(
                 value
                     .amount
@@ -669,10 +676,6 @@ pub mod dto {
                 builder = builder.add_native_token(t.try_into()?);
             }
 
-            for u in &value.unlock_conditions {
-                builder = builder.add_unlock_condition(UnlockCondition::try_from_dto(u, token_supply)?);
-            }
-
             for b in &value.features {
                 builder = builder.add_feature(b.try_into()?);
             }
@@ -681,7 +684,27 @@ pub mod dto {
                 builder = builder.add_immutable_feature(b.try_into()?);
             }
 
+            Ok(builder)
+        }
+
+        pub fn try_from_dto(value: &FoundryOutputDto, token_supply: u64) -> Result<FoundryOutput, DtoError> {
+            let mut builder = Self::_try_from_dto(value)?;
+
+            for u in &value.unlock_conditions {
+                builder = builder.add_unlock_condition(UnlockCondition::try_from_dto(u, token_supply)?);
+            }
+
             Ok(builder.finish(token_supply)?)
+        }
+
+        pub fn try_from_dto_unverified(value: &FoundryOutputDto) -> Result<FoundryOutput, DtoError> {
+            let mut builder = Self::_try_from_dto(value)?;
+
+            for u in &value.unlock_conditions {
+                builder = builder.add_unlock_condition(UnlockCondition::try_from_dto_unverified(u)?);
+            }
+
+            Ok(builder.finish_unverified()?)
         }
 
         #[allow(clippy::too_many_arguments)]

@@ -92,6 +92,32 @@ impl<P: NonceProvider> BlockBuilder<P> {
 
         Ok(block)
     }
+
+    // TODO: temporary until we decide if we do PoW in finish or not.
+    fn _finish(self) -> Result<Block, Error> {
+        verify_payload(self.payload.as_ref())?;
+
+        let mut block = Block {
+            protocol_version: self.protocol_version.unwrap_or(PROTOCOL_VERSION),
+            parents: self.parents,
+            payload: self.payload.into(),
+            nonce: 0,
+        };
+
+        let block_bytes = block.pack_to_vec();
+
+        if block_bytes.len() > Block::LENGTH_MAX {
+            return Err(Error::InvalidBlockLength(block_bytes.len()));
+        }
+
+        let nonce_provider = self.nonce_provider.unwrap_or_else(|| P::Builder::new().finish());
+
+        block.nonce = nonce_provider
+            .nonce(&block_bytes[..block_bytes.len() - core::mem::size_of::<u64>()], 0)
+            .unwrap_or(Self::DEFAULT_NONCE);
+
+        Ok(block)
+    }
 }
 
 /// Represent the object that nodes gossip around the network.
@@ -281,7 +307,7 @@ pub mod dto {
     }
 
     impl Block {
-        pub fn try_from_dto(value: &BlockDto, protocol_parameters: &ProtocolParameters) -> Result<Block, DtoError> {
+        fn _try_from_dto(value: &BlockDto) -> Result<BlockBuilder<u64>, DtoError> {
             let parents = Parents::new(
                 value
                     .parents
@@ -290,7 +316,7 @@ pub mod dto {
                     .collect::<Result<Vec<BlockId>, DtoError>>()?,
             )?;
 
-            let mut builder = BlockBuilder::new(parents)
+            let builder = BlockBuilder::new(parents)
                 .with_protocol_version(value.protocol_version)
                 .with_nonce_provider(
                     value
@@ -298,11 +324,28 @@ pub mod dto {
                         .parse::<u64>()
                         .map_err(|_| DtoError::InvalidField("nonce"))?,
                 );
+
+            Ok(builder)
+        }
+
+        pub fn try_from_dto(value: &BlockDto, protocol_parameters: &ProtocolParameters) -> Result<Block, DtoError> {
+            let mut builder = Self::_try_from_dto(value)?;
+
             if let Some(p) = value.payload.as_ref() {
                 builder = builder.with_payload(Payload::try_from_dto(p, protocol_parameters)?);
             }
 
             Ok(builder.finish(protocol_parameters.min_pow_score())?)
+        }
+
+        pub fn try_from_dto_unverified(value: &BlockDto) -> Result<Block, DtoError> {
+            let mut builder = Self::_try_from_dto(value)?;
+
+            if let Some(p) = value.payload.as_ref() {
+                builder = builder.with_payload(Payload::try_from_dto_unverified(p)?);
+            }
+
+            Ok(builder._finish()?)
         }
     }
 }
