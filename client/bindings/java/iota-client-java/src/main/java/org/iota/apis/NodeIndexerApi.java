@@ -114,6 +114,14 @@ public class NodeIndexerApi extends BaseApi {
             return this;
         }
 
+        public QueryParams withParam(String name, int value) {
+            JsonObject o = new JsonObject();
+            o.addProperty(name, value);
+            queryParams.add(o);
+            return this;
+        }
+
+
         public JsonArray getJson() {
             return queryParams;
         }
