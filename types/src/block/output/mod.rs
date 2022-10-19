@@ -189,8 +189,8 @@ impl Output {
     pub fn unlocked_addresses(
         &self,
         current_time: u32,
-        alias_transition: Option<AliasTransition>,
         output_id: OutputId,
+        alias_transition: Option<AliasTransition>,
     ) -> Result<(Address, Option<Address>), Error> {
         match self {
             Output::Alias(output) => {
