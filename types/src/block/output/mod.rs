@@ -184,7 +184,7 @@ impl Output {
         }
     }
 
-    /// Returns the the address that is required to unlock this [`Output`] and the alias or nft address that gets
+    /// Returns the address that is required to unlock this [`Output`] and the alias or nft address that gets
     /// unlocked by it, if its an alias or nft.
     pub fn unlocked_addresses(
         &self,
