@@ -277,7 +277,7 @@ impl fmt::Display for Error {
                 write!(f, "milestone signatures are not unique and/or sorted")
             }
             Error::MissingAddressUnlockCondition => write!(f, "missing address unlock condition"),
-            Error::MissingAliasTransitionType => write!(f, "missing alias state transition type"),
+            Error::MissingAliasTransitionType => write!(f, "missing alias transition type"),
             Error::MissingGovernorUnlockCondition => write!(f, "missing governor unlock condition"),
             Error::MissingPayload => write!(f, "missing payload"),
             Error::MissingRequiredSenderBlock => write!(f, "missing required sender block"),
