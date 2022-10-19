@@ -39,7 +39,7 @@ once_cell = { version = "1.15.0", default-features = false, features = [ "std" ]
 iota-ledger-nano = { version = "1.0.0-alpha.2", default-features = false, optional = true }
 
 # stronghold secret manager integration
-iota_stronghold = { version = "0.8.1", default-features = false, features = [ "std" ], optional = true }
+iota_stronghold = { version = "1.0.3", default-features = false, features = [ "std" ], optional = true }
 
 # message_interface
 backtrace = { version = "0.3.66", default-features = false, features = [ "std" ], optional = true }

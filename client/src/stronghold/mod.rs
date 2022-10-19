@@ -117,7 +117,7 @@ fn check_or_create_snapshot(
     match result {
         Err(iota_stronghold::ClientError::SnapshotFileMissing(_)) => {
             stronghold.create_client(PRIVATE_DATA_CLIENT_PATH)?;
-            stronghold.commit(snapshot_path, key_provider)?;
+            stronghold.commit_with_keyprovider(snapshot_path, key_provider)?;
             stronghold.load_client_from_snapshot(PRIVATE_DATA_CLIENT_PATH, key_provider, snapshot_path)?;
         }
         Err(iota_stronghold::ClientError::Inner(ref err_msg)) => {
@@ -488,7 +488,7 @@ impl StrongholdAdapter {
             return Err(Error::StrongholdKeyCleared);
         };
 
-        self.stronghold.lock().await.commit(
+        self.stronghold.lock().await.commit_with_keyprovider(
             &SnapshotPath::from_path(snapshot_path.unwrap_or(&self.snapshot_path)),
             key_provider,
         )?;
