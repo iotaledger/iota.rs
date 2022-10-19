@@ -31,7 +31,7 @@ impl<'a> ClientBlockBuilder<'a> {
 
         let mut required_inputs = Vec::new();
         let bech32_hrp = self.client.get_bech32_hrp()?;
-        let current_time = self.client.get_time_checked().await?;
+        let current_time = self.client.get_time_checked()?;
         let token_supply = self.client.get_token_supply()?;
 
         let all_required_addresses = get_required_addresses_for_sender_and_issuer(&[], &self.outputs, current_time)?;

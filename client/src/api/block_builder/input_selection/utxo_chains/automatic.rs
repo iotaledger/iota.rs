@@ -29,7 +29,7 @@ impl<'a> ClientBlockBuilder<'a> {
         log::debug!("[get_utxo_chains_inputs]");
         let client = self.client;
         let bech32_hrp = client.get_bech32_hrp()?;
-        let current_time = self.client.get_time_checked().await?;
+        let current_time = self.client.get_time_checked()?;
         let token_supply = client.get_token_supply()?;
 
         let mut utxo_chains: Vec<(Address, OutputResponse)> = Vec::new();

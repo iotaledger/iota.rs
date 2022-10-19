@@ -70,7 +70,7 @@ impl<'a> ClientBlockBuilder<'a> {
         let mut available_inputs = self.get_utxo_chains_inputs(self.outputs.iter()).await?;
         let required_inputs_for_sender_or_issuer = self.get_inputs_for_sender_and_issuer(&available_inputs).await?;
 
-        let current_time = self.client.get_time_checked().await?;
+        let current_time = self.client.get_time_checked()?;
 
         // Try to select inputs with required inputs for utxo chains alone before requesting more inputs from addresses.
         if let Ok(selected_transaction_data) = try_select_inputs(
