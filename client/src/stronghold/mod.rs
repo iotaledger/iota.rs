@@ -138,8 +138,10 @@ impl StrongholdAdapterBuilder {
     pub fn password(mut self, password: &str) -> Self {
         // Note that derive_builder always adds another layer of Option<T>.
         // PANIC: Unwrapping is fine since `derive_key_from_password` returns a vector of 32 bytes.
-        self.key_provider =
-            Some(KeyProvider::try_from((*self::common::derive_key_from_password(password)).clone()).unwrap());
+        self.key_provider = Some(
+            KeyProvider::with_passphrase_truncated((*self::common::derive_key_from_password(password)).clone())
+                .unwrap(),
+        );
 
         self
     }
@@ -231,7 +233,8 @@ impl StrongholdAdapter {
     pub async fn set_password(&mut self, password: &str) -> Result<()> {
         let mut key_provider_guard = self.key_provider.lock().await;
 
-        let key_provider = KeyProvider::try_from((*self::common::derive_key_from_password(password)).clone())?;
+        let key_provider =
+            KeyProvider::with_passphrase_truncated((*self::common::derive_key_from_password(password)).clone())?;
 
         if let Some(old_key_provider) = &*key_provider_guard {
             if old_key_provider.try_unlock()? != key_provider.try_unlock()? {
@@ -335,7 +338,7 @@ impl StrongholdAdapter {
         let old_key_provider = {
             let mut lock = self.key_provider.lock().await;
             let old_key_provider = lock.take();
-            *lock = Some(KeyProvider::try_from(
+            *lock = Some(KeyProvider::with_passphrase_truncated(
                 (*self::common::derive_key_from_password(new_password)).clone(),
             )?);
 
