@@ -54,13 +54,13 @@ fn invalid_length() {
     let res = BlockBuilder::new(Parents::new(rand_block_ids(2)).unwrap())
         .with_nonce_provider(42)
         .with_payload(
-            TaggedDataPayload::new(vec![42], vec![0u8; Block::LENGTH_MAX])
+            TaggedDataPayload::new(vec![42], vec![0u8; Block::LENGTH_MAX - Block::LENGTH_MIN - 9])
                 .unwrap()
                 .into(),
         )
         .finish(protocol_parameters().min_pow_score());
 
-    assert!(matches!(res, Err(Error::InvalidBlockLength(len)) if len == Block::LENGTH_MAX + 88));
+    assert!(matches!(res, Err(Error::InvalidBlockLength(len)) if len == Block::LENGTH_MAX + 33));
 }
 
 #[test]
