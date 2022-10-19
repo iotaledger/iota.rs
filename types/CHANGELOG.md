@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `alias_address()` to `AliasOutput`;
 - `nft_address()` to `NftOutput`;
 - `unlocked_addresses()` to `Output`;
+- `MissingAliasTransitionType` error variant;
 
 ### Changed
 

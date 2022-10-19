@@ -163,7 +163,7 @@ impl Output {
                         AliasTransition::Governor => Ok((*output.governor_address(), None)),
                     }
                 } else {
-                    todo!("new error?")
+                    Err(Error::MissingAliasTransitionType)
                 }
             }
             Output::Basic(output) => Ok((
