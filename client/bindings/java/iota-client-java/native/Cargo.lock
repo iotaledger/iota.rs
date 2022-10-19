@@ -847,9 +847,9 @@ dependencies = [
 
 [[package]]
 name = "iota-crypto"
-version = "0.15.1"
+version = "0.15.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5e4304d8d30a6c768eb31dc2ca37d80ba60168c5c0c5429ba2111daa7621ee28"
+checksum = "4006145223dce11aed9f71c714a6008bd79ba4173e83c81553707332f372ca48"
 dependencies = [
  "aead",
  "autocfg",

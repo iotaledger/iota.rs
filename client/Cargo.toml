@@ -15,7 +15,7 @@ categories = [ "cryptography::cryptocurrencies" ]
 async-trait = { version = "0.1.57", default-features = false }
 derive_builder = { version = "0.11.2", default-features = false, features = [ "std" ]}
 futures = { version = "0.3.24", default-features = false, features = [ "thread-pool" ] }
-iota-crypto = { version = "0.15.1", default-features = false, features = [ "std", "chacha", "blake2b", "ed25519", "random", "slip10", "bip39", "bip39-en", "ternary_encoding" ] }
+iota-crypto = { version = "0.15.2", default-features = false, features = [ "std", "chacha", "blake2b", "ed25519", "random", "slip10", "bip39", "bip39-en", "ternary_encoding" ] }
 iota-pow = { version = "1.0.0-rc.1", path = "../pow", default-features = false }
 iota-types = { version = "1.0.0-rc.1", path = "../types", default-features = false, features = [ "api", "block", "serde", "dto", "std" ] }
 log = { version = "0.4.17", default-features = false }
