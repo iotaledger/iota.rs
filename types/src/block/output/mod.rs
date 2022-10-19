@@ -47,7 +47,7 @@ pub(crate) use self::{
     unlock_condition::AddressUnlockCondition,
 };
 pub use self::{
-    alias::{AliasOutput, AliasOutputBuilder, AliasTransition},
+    alias::{AliasOutput, AliasOutputBuilder},
     alias_id::AliasId,
     basic::{BasicOutput, BasicOutputBuilder},
     chain_id::ChainId,
@@ -190,23 +190,18 @@ impl Output {
         &self,
         current_time: u32,
         output_id: OutputId,
-        alias_transition: Option<AliasTransition>,
+        alias_state_transition: bool,
     ) -> Result<(Address, Option<Address>), Error> {
         match self {
             Output::Alias(output) => {
-                if let Some(alias_transition) = alias_transition {
-                    match alias_transition {
-                        AliasTransition::State => {
-                            // Alias address is only unlocked if it's a state transition
-                            Ok((
-                                *output.state_controller_address(),
-                                Some(Address::Alias(output.alias_address(output_id))),
-                            ))
-                        }
-                        AliasTransition::Governor => Ok((*output.governor_address(), None)),
-                    }
+                if alias_state_transition {
+                    // Alias address is only unlocked if it's a state transition
+                    Ok((
+                        *output.state_controller_address(),
+                        Some(Address::Alias(output.alias_address(output_id))),
+                    ))
                 } else {
-                    Err(Error::MissingAliasTransitionType)
+                    Ok((*output.governor_address(), None))
                 }
             }
             Output::Basic(output) => Ok((

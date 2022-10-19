@@ -25,11 +25,9 @@ First release based on `bee-api-types` and `bee-block`.
 
 ### Added
 
-- `AliasTransition` enum;
 - `alias_address()` to `AliasOutput`;
 - `nft_address()` to `NftOutput`;
 - `unlocked_addresses()` to `Output`;
-- `MissingAliasTransitionType` error variant;
 
 ### Changed
 
