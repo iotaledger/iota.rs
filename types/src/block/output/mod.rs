@@ -39,7 +39,6 @@ use packable::{
     Packable, PackableExt,
 };
 
-use self::alias::AliasTransition;
 pub(crate) use self::{
     alias::StateMetadataLength,
     feature::{MetadataFeatureLength, TagFeatureLength},
@@ -48,7 +47,7 @@ pub(crate) use self::{
     unlock_condition::AddressUnlockCondition,
 };
 pub use self::{
-    alias::{AliasOutput, AliasOutputBuilder},
+    alias::{AliasOutput, AliasOutputBuilder, AliasTransition},
     alias_id::AliasId,
     basic::{BasicOutput, BasicOutputBuilder},
     chain_id::ChainId,
