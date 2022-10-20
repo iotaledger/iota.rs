@@ -82,14 +82,13 @@ pub fn try_select_inputs(
 
     // select outputs for sender/issuer features. Alias and nft outputs added to the inputs will be added to the outputs
     // in select_utxo_chain_inputs().
-    // Ignore any errors here, since required outputs might be only added later
-    let _ = select_inputs_for_sender_and_issuer(
+    select_inputs_for_sender_and_issuer(
         all_inputs.clone(),
         &mut selected_inputs,
         &mut selected_inputs_output_ids,
         &mut outputs,
         current_time,
-    );
+    )?;
 
     let mut required = get_accumulated_output_amounts(&input_outputs, outputs.iter())?;
     // Add the minted tokens to the inputs, because we don't need to provide other inputs for them

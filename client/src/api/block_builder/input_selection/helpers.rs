@@ -167,28 +167,3 @@ pub(crate) fn sort_input_signing_data(inputs: Vec<InputSigningData>) -> crate::R
 
     Ok(sorted_inputs)
 }
-
-pub(crate) fn is_basic_output_address_unlockable(output: &Output, address: &Address, current_time: u32) -> bool {
-    match output {
-        Output::Basic(_) => {
-            if let Some(unlock_conditions) = output.unlock_conditions() {
-                if unlock_conditions.is_time_locked(current_time) {
-                    return false;
-                }
-
-                if let Some(expiration) = unlock_conditions.expiration() {
-                    if let Some(expiration_address) = expiration.return_address_expired(current_time) {
-                        return expiration_address == address;
-                    }
-                }
-
-                // PANIC: safe to unwrap as basic outputs always have an address.
-                unlock_conditions.address().unwrap().address() == address
-            } else {
-                // Should not happen anyway as there should always be at least the address unlock condition.
-                false
-            }
-        }
-        _ => false,
-    }
-}

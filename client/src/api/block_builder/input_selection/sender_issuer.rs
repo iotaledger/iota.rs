@@ -12,7 +12,7 @@ use iota_types::block::{
 };
 
 use crate::{
-    api::{address::search_address, input_selection::helpers::is_basic_output_address_unlockable, ClientBlockBuilder},
+    api::{address::search_address, ClientBlockBuilder},
     constants::HD_WALLET_TYPE,
     secret::types::{InputSigningData, OutputMetadata},
     Error, Result,
@@ -30,29 +30,39 @@ impl<'a> ClientBlockBuilder<'a> {
         let current_time = self.client.get_time_checked()?;
         let token_supply = self.client.get_token_supply()?;
 
-        let all_required_addresses = get_required_addresses_for_sender_and_issuer(&[], &self.outputs, current_time)?;
+        let required_sender_or_issuer_addresses =
+            get_required_addresses_for_sender_and_issuer(&[], &self.outputs, current_time)?;
 
-        for address in all_required_addresses {
-            match address {
+        for sender_or_issuer_address in required_sender_or_issuer_addresses {
+            match sender_or_issuer_address {
                 Address::Ed25519(_) => {
+                    // Check if the address is derived from the seed
                     let (address_index, internal) = search_address(
                         self.secret_manager.ok_or(Error::MissingParameter("secret manager"))?,
                         &bech32_hrp,
                         self.coin_type,
                         self.account_index,
                         self.input_range.clone(),
-                        &address,
+                        &sender_or_issuer_address,
                     )
                     .await?;
-                    // If it didn't return with an error, then the address was found.
-
-                    let address_outputs = self.address_outputs(address.to_bech32(&bech32_hrp)).await?;
+                    let address_outputs = self
+                        .basic_address_outputs(sender_or_issuer_address.to_bech32(&bech32_hrp))
+                        .await?;
 
                     let mut found_output = false;
                     for output_response in address_outputs {
                         let output = Output::try_from_dto(&output_response.output, token_supply)?;
 
-                        if is_basic_output_address_unlockable(&output, &address, current_time) {
+                        // We can ignore the unlocked_alias_or_nft_address, since we only requested basic outputs
+                        let (required_unlock_address, _unlocked_alias_or_nft_address) = output
+                            .required_and_unlocked_address(
+                                current_time,
+                                output_response.metadata.output_id()?,
+                                false,
+                            )?;
+
+                        if required_unlock_address == sender_or_issuer_address {
                             required_inputs.push(InputSigningData {
                                 output,
                                 output_metadata: OutputMetadata::try_from(&output_response.metadata)?,
@@ -63,10 +73,8 @@ impl<'a> ClientBlockBuilder<'a> {
                                     internal as u32,
                                     address_index,
                                 ])),
-                                bech32_address: address.to_bech32(&bech32_hrp),
+                                bech32_address: sender_or_issuer_address.to_bech32(&bech32_hrp),
                             });
-                            // we want to include all outputs, because another output might be better balance wise,
-                            // but will not unlock the address we need
                             found_output = true;
                             break;
                         }
@@ -218,17 +226,16 @@ pub(crate) fn select_inputs_for_sender_and_issuer<'a>(
 ) -> Result<()> {
     log::debug!("[select_inputs_for_sender_and_issuer]");
 
-    let all_required_addresses = get_required_addresses_for_sender_and_issuer(selected_inputs, outputs, current_time)?;
-    'addresses_loop: for required_address in all_required_addresses {
+    let required_sender_or_issuer_addresses =
+        get_required_addresses_for_sender_and_issuer(selected_inputs, outputs, current_time)?;
+    'addresses_loop: for required_address in required_sender_or_issuer_addresses {
         // first check already selected outputs
         for input_signing_data in selected_inputs.iter() {
-            let alias_state_transition = alias_state_transition(input_signing_data, outputs)?;
-            let (required_unlock_address, unlocked_alias_or_nft_address) =
-                input_signing_data.output.required_and_unlocked_address(
-                    current_time,
-                    input_signing_data.output_id()?,
-                    alias_state_transition.unwrap_or(false),
-                )?;
+            // Default to `true`, since it will be a state transition if we add it here
+            let alias_state_transition = alias_state_transition(input_signing_data, outputs)?.unwrap_or(true);
+            let (required_unlock_address, unlocked_alias_or_nft_address) = input_signing_data
+                .output
+                .required_and_unlocked_address(current_time, input_signing_data.output_id()?, alias_state_transition)?;
 
             if required_unlock_address == required_address {
                 continue 'addresses_loop;
@@ -247,10 +254,12 @@ pub(crate) fn select_inputs_for_sender_and_issuer<'a>(
             if selected_inputs_output_ids.contains(&output_id) {
                 continue;
             }
-            let alias_state_transition = alias_state_transition(input_signing_data, outputs)?;
+
+            // Default to `true`, since it will be a state transition if we add it here
+            let alias_state_transition = alias_state_transition(input_signing_data, outputs)?.unwrap_or(true);
             let (required_unlock_address, unlocked_alias_or_nft_address) = input_signing_data
                 .output
-                .required_and_unlocked_address(current_time, output_id, alias_state_transition.unwrap_or(true))?;
+                .required_and_unlocked_address(current_time, output_id, alias_state_transition)?;
 
             if required_unlock_address == required_address {
                 selected_inputs.push(input_signing_data.clone());
@@ -298,14 +307,14 @@ fn get_required_addresses_for_sender_and_issuer(
         }
     }
 
-    let mut all_required_addresses = HashSet::new();
+    let mut required_sender_or_issuer_addresses = HashSet::new();
 
     for output in outputs {
         if let Some(sender_feature) = output.features().and_then(Features::sender) {
-            if !all_required_addresses.contains(sender_feature.address()) {
+            if !required_sender_or_issuer_addresses.contains(sender_feature.address()) {
                 // Only add if not already present in the selected inputs.
                 if !unlocked_addresses.contains(sender_feature.address()) {
-                    all_required_addresses.insert(*sender_feature.address());
+                    required_sender_or_issuer_addresses.insert(*sender_feature.address());
                 }
             }
         }
@@ -318,17 +327,17 @@ fn get_required_addresses_for_sender_and_issuer(
         };
         if utxo_chain_creation {
             if let Some(issuer_feature) = output.immutable_features().and_then(Features::issuer) {
-                if !all_required_addresses.contains(issuer_feature.address()) {
+                if !required_sender_or_issuer_addresses.contains(issuer_feature.address()) {
                     // Only add if not already present in the selected inputs.
                     if !unlocked_addresses.contains(issuer_feature.address()) {
-                        all_required_addresses.insert(*issuer_feature.address());
+                        required_sender_or_issuer_addresses.insert(*issuer_feature.address());
                     }
                 }
             }
         }
     }
 
-    Ok(all_required_addresses)
+    Ok(required_sender_or_issuer_addresses)
 }
 
 // Returns if alias transition is a state transition with the provided outputs for a given input.
