@@ -47,7 +47,7 @@ pub(crate) use self::{
     unlock_condition::AddressUnlockCondition,
 };
 pub use self::{
-    alias::{AliasOutput, AliasOutputBuilder, AliasTransition},
+    alias::{AliasOutput, AliasOutputBuilder},
     alias_id::AliasId,
     basic::{BasicOutput, BasicOutputBuilder},
     chain_id::ChainId,
