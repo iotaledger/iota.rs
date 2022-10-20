@@ -7,16 +7,12 @@ use std::collections::HashSet;
 
 use crypto::keys::slip10::Chain;
 use iota_types::block::{
-    address::{Address, AliasAddress, NftAddress},
+    address::Address,
     output::{dto::OutputDto, feature::Features, AliasOutput, NftOutput, Output, OutputId},
 };
 
 use crate::{
-    api::{
-        address::search_address,
-        input_selection::{helpers::is_basic_output_address_unlockable, output_contains_address},
-        ClientBlockBuilder,
-    },
+    api::{address::search_address, input_selection::helpers::is_basic_output_address_unlockable, ClientBlockBuilder},
     constants::HD_WALLET_TYPE,
     secret::types::{InputSigningData, OutputMetadata},
     Error, Result,
@@ -223,130 +219,56 @@ pub(crate) fn select_inputs_for_sender_and_issuer<'a>(
     log::debug!("[select_inputs_for_sender_and_issuer]");
 
     let all_required_addresses = get_required_addresses_for_sender_and_issuer(selected_inputs, outputs, current_time)?;
-    'addresses_loop: for address in all_required_addresses {
-        match address {
-            Address::Ed25519(_) => {
-                // first check already selected outputs
-                for input_signing_data in selected_inputs.iter() {
-                    if let Output::Alias(alias_input) = &input_signing_data.output {
-                        let required_unlock_address =
-                            alias_required_unlock_address(alias_input, input_signing_data, outputs)?;
+    'addresses_loop: for required_address in all_required_addresses {
+        // first check already selected outputs
+        for input_signing_data in selected_inputs.iter() {
+            let alias_state_transition = alias_state_transition(input_signing_data, outputs)?;
+            let (required_unlock_address, unlocked_alias_or_nft_address) =
+                input_signing_data.output.required_and_unlocked_address(
+                    current_time,
+                    input_signing_data.output_id()?,
+                    alias_state_transition.unwrap_or(false),
+                )?;
 
-                        if required_unlock_address == address {
-                            continue 'addresses_loop;
-                        }
-                    } else if output_contains_address(
-                        &input_signing_data.output,
-                        Some(input_signing_data.output_id()?),
-                        &address,
-                        current_time,
-                    ) {
-                        continue 'addresses_loop;
-                    }
-                }
-
-                // if not found, check currently not selected outputs
-                for input_signing_data in inputs.clone() {
-                    // Skip already added inputs
-                    let output_id = input_signing_data.output_id()?;
-                    if selected_inputs_output_ids.contains(&output_id) {
-                        continue;
-                    }
-                    if let Output::Alias(alias_input) = &input_signing_data.output {
-                        let required_unlock_address =
-                            alias_required_unlock_address(alias_input, input_signing_data, outputs)?;
-
-                        if required_unlock_address == address {
-                            continue 'addresses_loop;
-                        }
-                    } else if output_contains_address(
-                        &input_signing_data.output,
-                        Some(output_id),
-                        &address,
-                        current_time,
-                    ) {
-                        selected_inputs.push(input_signing_data.clone());
-                        selected_inputs_output_ids.insert(output_id);
-                        // break when we added the required output to the selected_inputs
-                        continue 'addresses_loop;
-                    }
-                }
-
-                return Err(Error::MissingInput(format!(
-                    "missing input with {address:?} for sender or issuer feature"
-                )));
+            if required_unlock_address == required_address {
+                continue 'addresses_loop;
             }
-            Address::Alias(alias_address) => {
-                // Check if output is alias address.
-                let alias_id = alias_address.alias_id();
-
-                // check if already selected.
-                for selected_input in selected_inputs.iter() {
-                    if let Output::Alias(alias_output) = &selected_input.output {
-                        if alias_id == &alias_output.alias_id().or_from_output_id(selected_input.output_id()?) {
-                            continue 'addresses_loop;
-                        }
-                    }
+            if let Some(unlocked_alias_or_nft_address) = unlocked_alias_or_nft_address {
+                if unlocked_alias_or_nft_address == required_address {
+                    continue 'addresses_loop;
                 }
-
-                // if not found, check currently not selected outputs
-                for input_signing_data in inputs.clone() {
-                    // Skip already added inputs
-                    let output_id = input_signing_data.output_id()?;
-                    if selected_inputs_output_ids.contains(&output_id) {
-                        continue;
-                    }
-                    if let Output::Alias(alias_output) = &input_signing_data.output {
-                        if alias_id
-                            == &alias_output
-                                .alias_id()
-                                .or_from_output_id(input_signing_data.output_id()?)
-                        {
-                            selected_inputs.push(input_signing_data.clone());
-                            selected_inputs_output_ids.insert(output_id);
-                            // break when we added the required output to the selected_inputs
-                            continue 'addresses_loop;
-                        }
-                    }
-                }
-                return Err(Error::MissingInput(format!(
-                    "missing alias {alias_id} for sender or issuer feature"
-                )));
-            }
-            Address::Nft(nft_address) => {
-                // Check if output is nft address.
-                let nft_id = nft_address.nft_id();
-
-                // check if already selected.
-                for selected_input in selected_inputs.iter() {
-                    if let Output::Nft(nft_output) = &selected_input.output {
-                        if nft_id == &nft_output.nft_id().or_from_output_id(selected_input.output_id()?) {
-                            continue 'addresses_loop;
-                        }
-                    }
-                }
-
-                // if not found, check currently not selected outputs
-                for input_signing_data in inputs.clone() {
-                    // Skip already added inputs
-                    let output_id = input_signing_data.output_id()?;
-                    if selected_inputs_output_ids.contains(&output_id) {
-                        continue;
-                    }
-                    if let Output::Nft(nft_output) = &input_signing_data.output {
-                        if nft_id == &nft_output.nft_id().or_from_output_id(input_signing_data.output_id()?) {
-                            selected_inputs.push(input_signing_data.clone());
-                            selected_inputs_output_ids.insert(output_id);
-                            // break when we added the required output to the selected_inputs
-                            continue 'addresses_loop;
-                        }
-                    }
-                }
-                return Err(Error::MissingInput(format!(
-                    "missing nft {nft_id} for sender or issuer feature"
-                )));
             }
         }
+
+        // if not found, check currently not selected outputs
+        for input_signing_data in inputs.clone() {
+            // Skip already added inputs
+            let output_id = input_signing_data.output_id()?;
+            if selected_inputs_output_ids.contains(&output_id) {
+                continue;
+            }
+            let alias_state_transition = alias_state_transition(input_signing_data, outputs)?;
+            let (required_unlock_address, unlocked_alias_or_nft_address) = input_signing_data
+                .output
+                .required_and_unlocked_address(current_time, output_id, alias_state_transition.unwrap_or(true))?;
+
+            if required_unlock_address == required_address {
+                selected_inputs.push(input_signing_data.clone());
+                selected_inputs_output_ids.insert(output_id);
+                continue 'addresses_loop;
+            }
+            if let Some(unlocked_alias_or_nft_address) = unlocked_alias_or_nft_address {
+                if unlocked_alias_or_nft_address == required_address {
+                    selected_inputs.push(input_signing_data.clone());
+                    selected_inputs_output_ids.insert(output_id);
+                    continue 'addresses_loop;
+                }
+            }
+        }
+
+        return Err(Error::MissingInput(format!(
+            "missing input with {required_address:?} for sender or issuer feature"
+        )));
     }
 
     Ok(())
@@ -363,39 +285,16 @@ fn get_required_addresses_for_sender_and_issuer(
     // Addresses in the inputs that will be unlocked in the transaction
     let mut unlocked_addresses = HashSet::new();
     for input_signing_data in selected_inputs {
-        match &input_signing_data.output {
-            Output::Alias(alias_input) => {
-                let required_unlock_address = alias_required_unlock_address(alias_input, input_signing_data, outputs)?;
-
-                unlocked_addresses.insert(required_unlock_address);
-
-                // Alias address is only unlocked if it's a state transition
-                if required_unlock_address == *alias_input.state_controller_address() {
-                    let alias_id = alias_input
-                        .alias_id()
-                        .or_from_output_id(input_signing_data.output_id()?);
-                    let alias_address = Address::Alias(AliasAddress::new(alias_id));
-                    unlocked_addresses.insert(alias_address);
-                }
-            }
-            Output::Basic(basic_input) => {
-                let unlock_address = basic_input
-                    .unlock_conditions()
-                    .locked_address(basic_input.address(), current_time);
-                unlocked_addresses.insert(*unlock_address);
-            }
-            Output::Nft(nft_input) => {
-                let unlock_address = nft_input
-                    .unlock_conditions()
-                    .locked_address(nft_input.address(), current_time);
-                unlocked_addresses.insert(*unlock_address);
-
-                let nft_id = nft_input.nft_id().or_from_output_id(input_signing_data.output_id()?);
-                let nft_address = Address::Nft(NftAddress::new(nft_id));
-                unlocked_addresses.insert(nft_address);
-            }
-            // Foundries can't unlock anything and the alias address will be added for the alias output already
-            _ => {}
+        let alias_state_transition = alias_state_transition(input_signing_data, outputs)?;
+        let (required_unlock_address, unlocked_alias_or_nft_address) =
+            input_signing_data.output.required_and_unlocked_address(
+                current_time,
+                input_signing_data.output_id()?,
+                alias_state_transition.unwrap_or(false),
+            )?;
+        unlocked_addresses.insert(required_unlock_address);
+        if let Some(unlocked_alias_or_nft_address) = unlocked_alias_or_nft_address {
+            unlocked_addresses.insert(unlocked_alias_or_nft_address);
         }
     }
 
@@ -432,35 +331,36 @@ fn get_required_addresses_for_sender_and_issuer(
     Ok(all_required_addresses)
 }
 
-// Checks the type of alias transition with the provided outputs and returns the required address to unlock the alias
-// output.
-fn alias_required_unlock_address(
-    alias_input: &AliasOutput,
+// Returns if alias transition is a state transition with the provided outputs for a given input.
+pub(crate) fn alias_state_transition(
     input_signing_data: &InputSigningData,
     outputs: &[Output],
-) -> Result<Address> {
-    let alias_id = alias_input
-        .alias_id()
-        .or_from_output_id(input_signing_data.output_id()?);
-    // Check if alias exists in the outputs and get the required address for the transition
-    let unlock_address = outputs
-        .iter()
-        .find_map(|o| {
-            if let Output::Alias(alias_output) = o {
-                if *alias_output.alias_id() == alias_id {
-                    if alias_output.state_index() == alias_input.state_index() {
-                        Some(*alias_output.governor_address())
+) -> Result<Option<bool>> {
+    Ok(if let Output::Alias(alias_input) = &input_signing_data.output {
+        let alias_id = alias_input
+            .alias_id()
+            .or_from_output_id(input_signing_data.output_id()?);
+        // Check if alias exists in the outputs and get the required transition type
+        outputs
+            .iter()
+            .find_map(|o| {
+                if let Output::Alias(alias_output) = o {
+                    if *alias_output.alias_id() == alias_id {
+                        if alias_output.state_index() == alias_input.state_index() {
+                            Some(Some(false))
+                        } else {
+                            Some(Some(true))
+                        }
                     } else {
-                        Some(*alias_output.state_controller_address())
+                        None
                     }
                 } else {
                     None
                 }
-            } else {
-                None
-            }
-            // if not find in the outputs, the alias gets burned which requires the governor address
-        })
-        .unwrap_or_else(|| *alias_input.governor_address());
-    Ok(unlock_address)
+                // if not find in the outputs, the alias gets burned which is a governance transaction
+            })
+            .unwrap_or(None)
+    } else {
+        None
+    })
 }

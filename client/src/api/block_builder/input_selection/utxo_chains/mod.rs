@@ -19,7 +19,7 @@ use iota_types::{
 
 use super::types::AccumulatedOutputAmounts;
 use crate::{
-    api::input_selection::{get_accumulated_output_amounts, helpers::output_contains_address, sdr_not_expired},
+    api::input_selection::{get_accumulated_output_amounts, sdr_not_expired},
     secret::types::InputSigningData,
     Client, Result,
 };
@@ -96,8 +96,28 @@ pub(crate) fn select_utxo_chain_inputs(
                     if !is_required_for_output && !allow_burning || is_required_for_input {
                         let nft_address = Address::Nft(NftAddress::new(nft_id));
                         let nft_required_in_unlock_condition = outputs.iter().any(|output| {
-                            // check if alias address is in unlock condition
-                            output_contains_address(output, None, &nft_address, current_time)
+                            if let Ok((required_unlock_address, unlocked_alias_or_nft_address)) = output
+                                .required_and_unlocked_address(
+                                    current_time,
+                                    // It's a new output, so the output id doesn't matter
+                                    OutputId::from_str(
+                                        "0x00000000000000000000000000000000000000000000000000000000000000000000",
+                                    )
+                                    .expect("Invalid output id"),
+                                    false,
+                                )
+                            {
+                                // check if nft address is in unlock condition
+                                if required_unlock_address == nft_address {
+                                    true
+                                } else if let Some(unlocked_alias_or_nft_address) = unlocked_alias_or_nft_address {
+                                    unlocked_alias_or_nft_address == nft_address
+                                } else {
+                                    false
+                                }
+                            } else {
+                                false
+                            }
                         });
 
                         // Don't add if it doesn't give us any amount or native tokens
@@ -154,7 +174,28 @@ pub(crate) fn select_utxo_chain_inputs(
                         let alias_address = Address::Alias(AliasAddress::new(alias_id));
                         let alias_required_in_unlock_condition = outputs.iter().any(|output| {
                             // check if alias address is in unlock condition
-                            output_contains_address(output, None, &alias_address, current_time)
+                            if let Ok((required_unlock_address, unlocked_alias_or_nft_address)) = output
+                                .required_and_unlocked_address(
+                                    current_time,
+                                    // It's a new output, so the output id doesn't matter
+                                    OutputId::from_str(
+                                        "0x00000000000000000000000000000000000000000000000000000000000000000000",
+                                    )
+                                    .expect("Invalid output id"),
+                                    true,
+                                )
+                            {
+                                // check if alias address is in unlock condition
+                                if required_unlock_address == alias_address {
+                                    true
+                                } else if let Some(unlocked_alias_or_nft_address) = unlocked_alias_or_nft_address {
+                                    unlocked_alias_or_nft_address == alias_address
+                                } else {
+                                    false
+                                }
+                            } else {
+                                false
+                            }
                         });
 
                         // Don't add if it doesn't give us any amount or native tokens
@@ -269,14 +310,10 @@ pub(crate) async fn get_alias_and_nft_outputs_recursively(
 
         match Output::try_from_dto(&output_response.output, token_supply)? {
             Output::Alias(alias_output) => {
-                processed_alias_nft_addresses.insert(Address::Alias(AliasAddress::new(
-                    alias_output.alias_id().or_from_output_id(output_id),
-                )));
+                processed_alias_nft_addresses.insert(Address::Alias(alias_output.alias_address(output_id)));
             }
             Output::Nft(nft_output) => {
-                processed_alias_nft_addresses.insert(Address::Nft(NftAddress::new(
-                    nft_output.nft_id().or_from_output_id(output_id),
-                )));
+                processed_alias_nft_addresses.insert(Address::Nft(nft_output.nft_address(output_id)));
             }
             _ => {}
         }
