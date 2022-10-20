@@ -350,6 +350,11 @@ impl NftOutput {
         ChainId::Nft(self.nft_id)
     }
 
+    /// Returns the nft address for this output.
+    pub fn nft_address(&self, output_id: OutputId) -> NftAddress {
+        NftAddress::new(self.nft_id().or_from_output_id(output_id))
+    }
+
     ///
     pub fn unlock(
         &self,

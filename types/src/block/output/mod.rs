@@ -184,6 +184,43 @@ impl Output {
         }
     }
 
+    /// Returns the address that is required to unlock this [`Output`] and the alias or nft address that gets
+    /// unlocked by it, if it's an alias or nft.
+    pub fn required_and_unlocked_address(
+        &self,
+        current_time: u32,
+        output_id: OutputId,
+        alias_state_transition: bool,
+    ) -> Result<(Address, Option<Address>), Error> {
+        match self {
+            Output::Alias(output) => {
+                if alias_state_transition {
+                    // Alias address is only unlocked if it's a state transition
+                    Ok((
+                        *output.state_controller_address(),
+                        Some(Address::Alias(output.alias_address(output_id))),
+                    ))
+                } else {
+                    Ok((*output.governor_address(), None))
+                }
+            }
+            Output::Basic(output) => Ok((
+                *output
+                    .unlock_conditions()
+                    .locked_address(output.address(), current_time),
+                None,
+            )),
+            Output::Nft(output) => Ok((
+                *output
+                    .unlock_conditions()
+                    .locked_address(output.address(), current_time),
+                Some(Address::Nft(output.nft_address(output_id))),
+            )),
+            Self::Foundry(output) => Ok((Address::Alias(*output.alias_address()), None)),
+            Self::Treasury(_) => Err(Error::UnsupportedOutputKind(TreasuryOutput::KIND)),
+        }
+    }
+
     ///
     pub fn verify_state_transition(
         current_state: Option<&Output>,

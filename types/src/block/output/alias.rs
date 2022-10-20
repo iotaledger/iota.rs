@@ -432,6 +432,11 @@ impl AliasOutput {
         ChainId::Alias(self.alias_id)
     }
 
+    /// Returns the alias address for this output.
+    pub fn alias_address(&self, output_id: OutputId) -> AliasAddress {
+        AliasAddress::new(self.alias_id().or_from_output_id(output_id))
+    }
+
     ///
     pub fn unlock(
         &self,

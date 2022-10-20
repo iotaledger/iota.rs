@@ -1,14 +1,16 @@
 // Copyright 2020-2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+use core::str::FromStr;
+
 use crate::{
     api::{
         dto::{LedgerInclusionStateDto, PeerDto, ReceiptDto},
         error::Error,
     },
     block::{
-        output::{dto::OutputDto, RentStructure, RentStructureBuilder},
-        payload::dto::MilestonePayloadDto,
+        output::{dto::OutputDto, OutputId, RentStructure, RentStructureBuilder},
+        payload::{dto::MilestonePayloadDto, transaction::TransactionId},
         protocol::ProtocolParameters,
         BlockDto,
     },
@@ -291,6 +293,13 @@ pub struct OutputMetadataResponse {
     pub milestone_index_booked: u32,
     pub milestone_timestamp_booked: u32,
     pub ledger_index: u32,
+}
+
+impl OutputMetadataResponse {
+    /// Returns the output id.
+    pub fn output_id(&self) -> Result<OutputId, crate::block::Error> {
+        OutputId::new(TransactionId::from_str(&self.transaction_id)?, self.output_index)
+    }
 }
 
 /// Response of:
