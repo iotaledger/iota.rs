@@ -36,6 +36,7 @@ pub(super) fn key_provider_from_password(password: &str) -> KeyProvider {
     // Safe to unwrap because rounds > 0.
     crypto::keys::pbkdf::PBKDF2_HMAC_SHA512(password.as_bytes(), PBKDF_SALT, PBKDF_ITER, buffer.as_mut()).unwrap();
 
+    // PANIC: the passphrase length is guaranteed to be 32.
     let key_provider = KeyProvider::with_passphrase_truncated(buffer[..32].to_vec()).unwrap();
 
     buffer.zeroize();
