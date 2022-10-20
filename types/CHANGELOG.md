@@ -27,7 +27,7 @@ First release based on `bee-api-types` and `bee-block`.
 
 - `alias_address()` to `AliasOutput`;
 - `nft_address()` to `NftOutput`;
-- `unlocked_addresses()` to `Output`;
+- `required_and_unlocked_address()` to `Output`;
 - `output_id()` to `OutputMetadataResponse`;
 
 ### Changed
