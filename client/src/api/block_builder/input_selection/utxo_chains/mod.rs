@@ -99,7 +99,9 @@ pub(crate) fn select_utxo_chain_inputs(
                             if let Ok((required_unlock_address, unlocked_alias_or_nft_address)) = output
                                 .required_and_unlocked_address(
                                     current_time,
-                                    // It's a new output, so the output id doesn't matter
+                                    // It's a new output, so the output id doesn't matter, since the id will either
+                                    // already be set and then the null output id isn't used, or it will be null and
+                                    // then it can't unlock anything anyways
                                     OutputId::null(),
                                     false,
                                 )
@@ -174,8 +176,14 @@ pub(crate) fn select_utxo_chain_inputs(
                             if let Ok((required_unlock_address, unlocked_alias_or_nft_address)) = output
                                 .required_and_unlocked_address(
                                     current_time,
-                                    // It's a new output, so the output id doesn't matter
+                                    // It's a new output, so the output id doesn't matter, since the id will either
+                                    // already be set and then the null output id isn't used, or it will be null and
+                                    // then it can't unlock anything anyways
                                     OutputId::null(),
+                                    // The alias address is only returned if it's a state transition, so we set it to
+                                    // true, even if it's not a state transition, because we're checking the output and
+                                    // not the input and then we want to see if the alias is required in the input,
+                                    // which is independent of the transition type.
                                     true,
                                 )
                             {
