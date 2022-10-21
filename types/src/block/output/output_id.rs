@@ -31,15 +31,6 @@ impl OutputId {
             .map_err(Error::InvalidInputOutputIndex)
     }
 
-    /// Creates a null [`OutputId`].
-    pub fn null() -> Self {
-        Self {
-            transaction_id: TransactionId::null(),
-            // Unwrap is fine because index is already known and valid.
-            index: 0u16.try_into().unwrap(),
-        }
-    }
-
     /// Returns the [`TransactionId`] of an [`OutputId`].
     #[inline(always)]
     pub fn transaction_id(&self) -> &TransactionId {
@@ -50,6 +41,15 @@ impl OutputId {
     #[inline(always)]
     pub fn index(&self) -> u16 {
         self.index.get()
+    }
+
+    /// Creates a null [`OutputId`].
+    pub fn null() -> Self {
+        Self {
+            transaction_id: TransactionId::null(),
+            // Unwrap is fine because index is already known and valid.
+            index: 0u16.try_into().unwrap(),
+        }
     }
 
     /// Splits an [`OutputId`] into its [`TransactionId`] and index.
