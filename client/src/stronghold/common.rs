@@ -3,7 +3,8 @@
 
 //! Commonly used constants and utilities.
 
-use zeroize::Zeroizing;
+use iota_stronghold::KeyProvider;
+use zeroize::Zeroize;
 
 /// Stronghold vault path to secrets.
 ///
@@ -28,14 +29,17 @@ pub(super) const PRIVATE_DATA_CLIENT_PATH: &[u8] = b"iota_seed";
 const PBKDF_SALT: &[u8] = b"wallet.rs";
 const PBKDF_ITER: usize = 100;
 
-pub(crate) type EncryptionKey = Zeroizing<Vec<u8>>;
-
 /// Hash a password, deriving a key, for accessing Stronghold.
-pub(super) fn derive_key_from_password(password: &str) -> EncryptionKey {
-    let mut buffer = Zeroizing::new([0u8; 64]);
+pub(super) fn key_provider_from_password(password: &str) -> KeyProvider {
+    let mut buffer = [0u8; 64];
 
     // Safe to unwrap because rounds > 0.
     crypto::keys::pbkdf::PBKDF2_HMAC_SHA512(password.as_bytes(), PBKDF_SALT, PBKDF_ITER, buffer.as_mut()).unwrap();
 
-    Zeroizing::new(buffer[..32].to_vec())
+    // PANIC: the passphrase length is guaranteed to be 32.
+    let key_provider = KeyProvider::with_passphrase_truncated(buffer[..32].to_vec()).unwrap();
+
+    buffer.zeroize();
+
+    key_provider
 }

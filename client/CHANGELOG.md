@@ -38,6 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `get_time_checked` doesn't call `get_info` anymore but returns the cached `latest_milestone_timestamp`;
 - Syncing nodes also updates the `latest_milestone_timestamp`;
 - `NODE_SYNC_INTERVAL` from 15s to 60s;
+- `fn derive_key_from_password(password: &str) -> EncryptionKey` to `key_provider_from_password(password: &str) -> KeyProvider`;
 
 ### Fixed
 

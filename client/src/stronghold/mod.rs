@@ -117,8 +117,10 @@ fn check_or_create_snapshot(
     match result {
         Err(iota_stronghold::ClientError::SnapshotFileMissing(_)) => {
             stronghold.create_client(PRIVATE_DATA_CLIENT_PATH)?;
-            stronghold.commit(snapshot_path, key_provider)?;
-            stronghold.load_client_from_snapshot(PRIVATE_DATA_CLIENT_PATH, key_provider, snapshot_path)?;
+            stronghold.commit_with_keyprovider(snapshot_path, key_provider)?;
+        }
+        Err(iota_stronghold::ClientError::ClientAlreadyLoaded(_)) => {
+            stronghold.get_client(PRIVATE_DATA_CLIENT_PATH)?;
         }
         Err(iota_stronghold::ClientError::Inner(ref err_msg)) => {
             // Matching the error string is not ideal but stronghold doesn't wrap the error types at the moment.
@@ -137,9 +139,7 @@ impl StrongholdAdapterBuilder {
     /// Use an user-input password string to derive a key to use Stronghold.
     pub fn password(mut self, password: &str) -> Self {
         // Note that derive_builder always adds another layer of Option<T>.
-        // PANIC: Unwrapping is fine since `derive_key_from_password` returns a vector of 32 bytes.
-        self.key_provider =
-            Some(KeyProvider::try_from((*self::common::derive_key_from_password(password)).clone()).unwrap());
+        self.key_provider = Some(self::common::key_provider_from_password(password));
 
         self
     }
@@ -231,7 +231,7 @@ impl StrongholdAdapter {
     pub async fn set_password(&mut self, password: &str) -> Result<()> {
         let mut key_provider_guard = self.key_provider.lock().await;
 
-        let key_provider = KeyProvider::try_from((*self::common::derive_key_from_password(password)).clone())?;
+        let key_provider = self::common::key_provider_from_password(password);
 
         if let Some(old_key_provider) = &*key_provider_guard {
             if old_key_provider.try_unlock()? != key_provider.try_unlock()? {
@@ -335,9 +335,7 @@ impl StrongholdAdapter {
         let old_key_provider = {
             let mut lock = self.key_provider.lock().await;
             let old_key_provider = lock.take();
-            *lock = Some(KeyProvider::try_from(
-                (*self::common::derive_key_from_password(new_password)).clone(),
-            )?);
+            *lock = Some(self::common::key_provider_from_password(new_password));
 
             old_key_provider
         };
@@ -488,7 +486,7 @@ impl StrongholdAdapter {
             return Err(Error::StrongholdKeyCleared);
         };
 
-        self.stronghold.lock().await.commit(
+        self.stronghold.lock().await.commit_with_keyprovider(
             &SnapshotPath::from_path(snapshot_path.unwrap_or(&self.snapshot_path)),
             key_provider,
         )?;
