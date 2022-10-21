@@ -28,6 +28,14 @@ fn new_valid() {
 }
 
 #[test]
+fn null() {
+    assert_eq!(
+        format!("{:?}", OutputId::null()),
+        "OutputId(0x00000000000000000000000000000000000000000000000000000000000000000000)"
+    );
+}
+
+#[test]
 fn split_valid() {
     let transaction_id = TransactionId::from_str(TRANSACTION_ID).unwrap();
     let output_id = OutputId::new(transaction_id, 42).unwrap();

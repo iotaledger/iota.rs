@@ -100,10 +100,7 @@ pub(crate) fn select_utxo_chain_inputs(
                                 .required_and_unlocked_address(
                                     current_time,
                                     // It's a new output, so the output id doesn't matter
-                                    OutputId::from_str(
-                                        "0x00000000000000000000000000000000000000000000000000000000000000000000",
-                                    )
-                                    .expect("Invalid output id"),
+                                    OutputId::null(),
                                     false,
                                 )
                             {
@@ -178,10 +175,7 @@ pub(crate) fn select_utxo_chain_inputs(
                                 .required_and_unlocked_address(
                                     current_time,
                                     // It's a new output, so the output id doesn't matter
-                                    OutputId::from_str(
-                                        "0x00000000000000000000000000000000000000000000000000000000000000000000",
-                                    )
-                                    .expect("Invalid output id"),
+                                    OutputId::null(),
                                     true,
                                 )
                             {
