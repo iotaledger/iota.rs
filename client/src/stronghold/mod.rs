@@ -118,7 +118,6 @@ fn check_or_create_snapshot(
         Err(iota_stronghold::ClientError::SnapshotFileMissing(_)) => {
             stronghold.create_client(PRIVATE_DATA_CLIENT_PATH)?;
             stronghold.commit_with_keyprovider(snapshot_path, key_provider)?;
-            stronghold.load_client_from_snapshot(PRIVATE_DATA_CLIENT_PATH, key_provider, snapshot_path)?;
         }
         Err(iota_stronghold::ClientError::Inner(ref err_msg)) => {
             // Matching the error string is not ideal but stronghold doesn't wrap the error types at the moment.
