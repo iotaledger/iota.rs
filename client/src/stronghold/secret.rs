@@ -234,6 +234,8 @@ mod tests {
     #[tokio::test]
     async fn test_address_generation() {
         let stronghold_path = "test_address_generation.stronghold";
+        // Remove potential old stronghold file
+        std::fs::remove_file(stronghold_path).unwrap_or(());
         let mnemonic = String::from(
             "giant dynamic museum toddler six deny defense ostrich bomb access mercy blood explain muscle shoot shallow glad autumn author calm heavy hawk abuse rally",
         );
@@ -270,6 +272,8 @@ mod tests {
     #[tokio::test]
     async fn test_key_cleared() {
         let stronghold_path = "test_key_cleared.stronghold";
+        // Remove potential old stronghold file
+        std::fs::remove_file(stronghold_path).unwrap_or(());
         let mnemonic = String::from(
             "giant dynamic museum toddler six deny defense ostrich bomb access mercy blood explain muscle shoot shallow glad autumn author calm heavy hawk abuse rally",
         );
@@ -286,18 +290,16 @@ mod tests {
         stronghold_adapter.clear_key().await;
 
         // Address generation returns an error when the key is cleared.
-        assert!(
-            stronghold_adapter
-                .generate_addresses(
-                    IOTA_COIN_TYPE,
-                    0,
-                    0..1,
-                    false,
-                    GenerateAddressMetadata { syncing: false },
-                )
-                .await
-                .is_err()
-        );
+        assert!(stronghold_adapter
+            .generate_addresses(
+                IOTA_COIN_TYPE,
+                0,
+                0..1,
+                false,
+                GenerateAddressMetadata { syncing: false },
+            )
+            .await
+            .is_err());
 
         stronghold_adapter.set_password("drowssap").await.unwrap();
 
