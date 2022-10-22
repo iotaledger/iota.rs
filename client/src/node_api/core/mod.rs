@@ -77,8 +77,38 @@ impl Client {
     }
 
     pub async fn try_get_metadata_for_outputs(&self, output_ids: Vec<OutputId>) -> Result<Vec<OutputMetadataResponse>> {
-        let output_responses = self.try_get_outputs(output_ids).await?;
-        let output_metadata_responses = output_responses.iter().map(|output_response| output_response.metadata.clone()).collect();
+        let mut output_metadata_responses = Vec::new();
+
+        #[cfg(target_family = "wasm")]
+        for output_id in output_ids {
+            if let Ok(output_metadata_response) = self.get_output_metadata(&output_id).await {
+                output_metadata_responses.push(output_metadata_response);
+            }
+        }
+
+        #[cfg(not(target_family = "wasm"))]
+        for output_ids_chunk in output_ids.chunks(MAX_PARALLEL_API_REQUESTS).map(<[OutputId]>::to_vec) {
+            let mut tasks = Vec::new();
+            for output_id in output_ids_chunk {
+                let client_ = self.clone();
+
+                tasks.push(async move {
+                    tokio::spawn(async move {
+                        // Ignore possible errors
+                        if let Ok(output_metadata_response) = client_.get_output_metadata(&output_id).await {
+                            Some(output_metadata_response)
+                        } else {
+                            None
+                        }
+                    })
+                        .await
+                });
+            }
+            for output_metadata_response in (futures::future::try_join_all(tasks).await?).into_iter().flatten() {
+                output_metadata_responses.push(output_metadata_response);
+            }
+        }
+
         Ok(output_metadata_responses)
     }
 }
