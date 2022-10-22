@@ -6,6 +6,7 @@
 pub mod routes;
 
 use iota_types::{api::response::OutputResponse, block::output::OutputId};
+use iota_types::api::response::OutputMetadataResponse;
 
 #[cfg(not(target_family = "wasm"))]
 use crate::constants::MAX_PARALLEL_API_REQUESTS;
@@ -74,5 +75,11 @@ impl Client {
             }
         }
         Ok(outputs)
+    }
+
+    pub async fn try_get_metadata_for_outputs(&self, output_ids: Vec<OutputId>) -> Result<Vec<OutputMetadataResponse>> {
+        let output_responses = self.try_get_outputs(output_ids).await?;
+        let output_metadata_responses = output_responses.iter().map(|output_response| output_response.metadata.clone()).collect();
+        Ok(output_metadata_responses)
     }
 }
