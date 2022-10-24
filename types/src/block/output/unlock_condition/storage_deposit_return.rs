@@ -75,6 +75,16 @@ pub mod dto {
         pub amount: String,
     }
 
+    impl From<&StorageDepositReturnUnlockCondition> for StorageDepositReturnUnlockConditionDto {
+        fn from(value: &StorageDepositReturnUnlockCondition) -> Self {
+            StorageDepositReturnUnlockConditionDto {
+                kind: StorageDepositReturnUnlockCondition::KIND,
+                return_address: AddressDto::from(value.return_address()),
+                amount: value.amount().to_string(),
+            }
+        }
+    }
+
     impl StorageDepositReturnUnlockCondition {
         pub fn try_from_dto(
             value: &StorageDepositReturnUnlockConditionDto,

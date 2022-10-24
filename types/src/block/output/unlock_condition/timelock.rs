@@ -55,6 +55,15 @@ pub mod dto {
         pub timestamp: u32,
     }
 
+    impl From<&TimelockUnlockCondition> for TimelockUnlockConditionDto {
+        fn from(value: &TimelockUnlockCondition) -> Self {
+            TimelockUnlockConditionDto {
+                kind: TimelockUnlockCondition::KIND,
+                timestamp: value.timestamp(),
+            }
+        }
+    }
+
     impl TimelockUnlockCondition {
         pub fn try_from_dto(value: &TimelockUnlockConditionDto) -> Result<TimelockUnlockCondition, DtoError> {
             Ok(TimelockUnlockCondition::new(value.timestamp)

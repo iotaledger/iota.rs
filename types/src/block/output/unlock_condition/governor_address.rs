@@ -43,6 +43,15 @@ pub mod dto {
         pub address: AddressDto,
     }
 
+    impl From<&GovernorAddressUnlockCondition> for GovernorAddressUnlockConditionDto {
+        fn from(value: &GovernorAddressUnlockCondition) -> Self {
+            GovernorAddressUnlockConditionDto {
+                kind: GovernorAddressUnlockCondition::KIND,
+                address: value.address().into(),
+            }
+        }
+    }
+
     impl GovernorAddressUnlockCondition {
         pub fn try_from_dto(
             value: &GovernorAddressUnlockConditionDto,

@@ -43,6 +43,15 @@ pub mod dto {
         pub address: AddressDto,
     }
 
+    impl From<&StateControllerAddressUnlockCondition> for StateControllerAddressUnlockConditionDto {
+        fn from(value: &StateControllerAddressUnlockCondition) -> Self {
+            StateControllerAddressUnlockConditionDto {
+                kind: StateControllerAddressUnlockCondition::KIND,
+                address: value.address().into(),
+            }
+        }
+    }
+
     impl StateControllerAddressUnlockCondition {
         pub fn try_from_dto(
             value: &StateControllerAddressUnlockConditionDto,

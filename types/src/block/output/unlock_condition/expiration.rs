@@ -83,6 +83,16 @@ pub mod dto {
         pub timestamp: u32,
     }
 
+    impl From<&ExpirationUnlockCondition> for ExpirationUnlockConditionDto {
+        fn from(value: &ExpirationUnlockCondition) -> Self {
+            ExpirationUnlockConditionDto {
+                kind: ExpirationUnlockCondition::KIND,
+                return_address: value.return_address().into(),
+                timestamp: value.timestamp(),
+            }
+        }
+    }
+
     impl ExpirationUnlockCondition {
         pub fn try_from_dto(value: &ExpirationUnlockConditionDto) -> Result<ExpirationUnlockCondition, DtoError> {
             Ok(ExpirationUnlockCondition::new(

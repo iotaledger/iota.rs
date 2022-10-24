@@ -395,7 +395,7 @@ pub mod dto {
         storage_deposit_return::dto::StorageDepositReturnUnlockConditionDto, timelock::dto::TimelockUnlockConditionDto,
     };
     use super::*;
-    use crate::block::{address::dto::AddressDto, error::dto::DtoError};
+    use crate::block::error::dto::DtoError;
 
     #[derive(Clone, Debug, Eq, PartialEq, From)]
     pub enum UnlockConditionDto {
@@ -526,41 +526,20 @@ pub mod dto {
     impl From<&UnlockCondition> for UnlockConditionDto {
         fn from(value: &UnlockCondition) -> Self {
             match value {
-                UnlockCondition::Address(v) => Self::Address(AddressUnlockConditionDto {
-                    kind: AddressUnlockCondition::KIND,
-                    address: v.address().into(),
-                }),
+                UnlockCondition::Address(v) => Self::Address(AddressUnlockConditionDto::from(v)),
                 UnlockCondition::StorageDepositReturn(v) => {
-                    Self::StorageDepositReturn(StorageDepositReturnUnlockConditionDto {
-                        kind: StorageDepositReturnUnlockCondition::KIND,
-                        return_address: AddressDto::from(v.return_address()),
-                        amount: v.amount().to_string(),
-                    })
+                    Self::StorageDepositReturn(StorageDepositReturnUnlockConditionDto::from(v))
                 }
-                UnlockCondition::Timelock(v) => Self::Timelock(TimelockUnlockConditionDto {
-                    kind: TimelockUnlockCondition::KIND,
-                    timestamp: v.timestamp(),
-                }),
-                UnlockCondition::Expiration(v) => Self::Expiration(ExpirationUnlockConditionDto {
-                    kind: ExpirationUnlockCondition::KIND,
-                    return_address: v.return_address().into(),
-                    timestamp: v.timestamp(),
-                }),
+                UnlockCondition::Timelock(v) => Self::Timelock(TimelockUnlockConditionDto::from(v)),
+                UnlockCondition::Expiration(v) => Self::Expiration(ExpirationUnlockConditionDto::from(v)),
                 UnlockCondition::StateControllerAddress(v) => {
-                    Self::StateControllerAddress(StateControllerAddressUnlockConditionDto {
-                        kind: StateControllerAddressUnlockCondition::KIND,
-                        address: v.address().into(),
-                    })
+                    Self::StateControllerAddress(StateControllerAddressUnlockConditionDto::from(v))
                 }
-                UnlockCondition::GovernorAddress(v) => Self::GovernorAddress(GovernorAddressUnlockConditionDto {
-                    kind: GovernorAddressUnlockCondition::KIND,
-                    address: v.address().into(),
-                }),
+                UnlockCondition::GovernorAddress(v) => {
+                    Self::GovernorAddress(GovernorAddressUnlockConditionDto::from(v))
+                }
                 UnlockCondition::ImmutableAliasAddress(v) => {
-                    Self::ImmutableAliasAddress(ImmutableAliasAddressUnlockConditionDto {
-                        kind: ImmutableAliasAddressUnlockCondition::KIND,
-                        address: v.address().into(),
-                    })
+                    Self::ImmutableAliasAddress(ImmutableAliasAddressUnlockConditionDto::from(v))
                 }
             }
         }

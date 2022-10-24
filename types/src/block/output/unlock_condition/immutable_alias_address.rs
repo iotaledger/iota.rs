@@ -67,6 +67,15 @@ pub mod dto {
         pub address: AddressDto,
     }
 
+    impl From<&ImmutableAliasAddressUnlockCondition> for ImmutableAliasAddressUnlockConditionDto {
+        fn from(value: &ImmutableAliasAddressUnlockCondition) -> Self {
+            ImmutableAliasAddressUnlockConditionDto {
+                kind: ImmutableAliasAddressUnlockCondition::KIND,
+                address: value.address().into(),
+            }
+        }
+    }
+
     impl ImmutableAliasAddressUnlockCondition {
         pub fn try_from_dto(
             value: &ImmutableAliasAddressUnlockConditionDto,
