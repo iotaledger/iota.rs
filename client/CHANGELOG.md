@@ -45,6 +45,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add alias and nfts output in `try_select_input` to the inputs, when required for an unlock condition of an input;
 - Healthy node list, when building with `.with_local_pow(false)`;
 - Infinite PoW loop on wasm if min pow score == 0;
+- Checks for unlock address;
 
 ## 2.0.1-rc.2 - 2022-09-29
 

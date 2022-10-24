@@ -14,8 +14,7 @@ use iota_types::{
 
 use crate::{
     api::{
-        block_builder::input_selection::types::SelectedTransactionData,
-        input_selection::{helpers::is_basic_output_address_unlockable, try_select_inputs},
+        block_builder::input_selection::types::SelectedTransactionData, input_selection::try_select_inputs,
         ClientBlockBuilder, ADDRESS_GAP_RANGE,
     },
     constants::HD_WALLET_TYPE,
@@ -25,8 +24,8 @@ use crate::{
 };
 
 impl<'a> ClientBlockBuilder<'a> {
-    // Get basic outputs for an address
-    pub(crate) async fn address_outputs(&self, address: String) -> Result<Vec<OutputResponse>> {
+    // Get basic outputs for an address without storage deposit return unlock condition
+    pub(crate) async fn basic_address_outputs(&self, address: String) -> Result<Vec<OutputResponse>> {
         let mut output_ids = Vec::new();
 
         // First request to get all basic outputs that can directly be unlocked by the address.
@@ -46,6 +45,13 @@ impl<'a> ClientBlockBuilder<'a> {
                     QueryParameter::ExpirationReturnAddress(address),
                     QueryParameter::HasExpiration(true),
                     QueryParameter::HasStorageDepositReturn(false),
+                    // Ignore outputs that aren't expired yet
+                    QueryParameter::ExpiresBefore(
+                        std::time::SystemTime::now()
+                            .duration_since(std::time::UNIX_EPOCH)
+                            .expect("time went backwards")
+                            .as_secs() as u32,
+                    ),
                 ])
                 .await?,
         );
@@ -115,7 +121,7 @@ impl<'a> ClientBlockBuilder<'a> {
             let mut address_index = gap_index;
 
             for (index, (str_address, internal)) in public_and_internal_addresses.iter().enumerate() {
-                let address_outputs = self.address_outputs(str_address.to_string()).await?;
+                let address_outputs = self.basic_address_outputs(str_address.to_string()).await?;
 
                 // If there are more than 20 (ADDRESS_GAP_RANGE) consecutive empty addresses, then we stop
                 // looking up the addresses belonging to the seed. Note that we don't
@@ -134,7 +140,14 @@ impl<'a> ClientBlockBuilder<'a> {
                         let output = Output::try_from_dto(&output_response.output, token_supply)?;
                         let address = Address::try_from_bech32(str_address)?.1;
 
-                        if is_basic_output_address_unlockable(&output, &address, current_time) {
+                        // We can ignore the unlocked_alias_or_nft_address, since we only requested basic outputs
+                        let (required_unlock_address, _unlocked_alias_or_nft_address) = output
+                            .required_and_unlocked_address(
+                                current_time,
+                                output_response.metadata.output_id()?,
+                                false,
+                            )?;
+                        if required_unlock_address == address {
                             available_inputs.push(InputSigningData {
                                 output,
                                 output_metadata: OutputMetadata::try_from(&output_response.metadata)?,

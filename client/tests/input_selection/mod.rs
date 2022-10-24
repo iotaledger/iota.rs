@@ -141,7 +141,7 @@ fn build_input_signing_data_alias_outputs(outputs: Vec<(AliasId, &str, u64)>) ->
                 ledger_index: 0,
             },
             chain: None,
-            bech32_address: Address::Alias(AliasAddress::new(alias_id)).to_bech32(SHIMMER_TESTNET_BECH32_HRP),
+            bech32_address: bech32_address.to_string(),
         })
         .collect()
 }
