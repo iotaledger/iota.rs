@@ -51,8 +51,10 @@ pub mod dto {
         }
     }
 
-    impl AddressUnlockCondition {
-        pub fn try_from_dto(value: &AddressUnlockConditionDto) -> Result<AddressUnlockCondition, DtoError> {
+    impl TryFrom<&AddressUnlockConditionDto> for AddressUnlockCondition {
+        type Error = DtoError;
+
+        fn try_from(value: &AddressUnlockConditionDto) -> Result<AddressUnlockCondition, DtoError> {
             Ok(AddressUnlockCondition::new(
                 (&value.address)
                     .try_into()

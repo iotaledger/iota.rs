@@ -52,10 +52,10 @@ pub mod dto {
         }
     }
 
-    impl GovernorAddressUnlockCondition {
-        pub fn try_from_dto(
-            value: &GovernorAddressUnlockConditionDto,
-        ) -> Result<GovernorAddressUnlockCondition, DtoError> {
+    impl TryFrom<&GovernorAddressUnlockConditionDto> for GovernorAddressUnlockCondition {
+        type Error = DtoError;
+
+        fn try_from(value: &GovernorAddressUnlockConditionDto) -> Result<GovernorAddressUnlockCondition, DtoError> {
             Ok(GovernorAddressUnlockCondition::new(
                 (&value.address)
                     .try_into()

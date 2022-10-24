@@ -76,8 +76,10 @@ pub mod dto {
         }
     }
 
-    impl ImmutableAliasAddressUnlockCondition {
-        pub fn try_from_dto(
+    impl TryFrom<&ImmutableAliasAddressUnlockConditionDto> for ImmutableAliasAddressUnlockCondition {
+        type Error = DtoError;
+
+        fn try_from(
             value: &ImmutableAliasAddressUnlockConditionDto,
         ) -> Result<ImmutableAliasAddressUnlockCondition, DtoError> {
             let address: Address = (&value.address)

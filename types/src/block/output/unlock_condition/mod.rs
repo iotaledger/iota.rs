@@ -548,44 +548,44 @@ pub mod dto {
     impl UnlockCondition {
         pub fn try_from_dto(value: &UnlockConditionDto, token_supply: u64) -> Result<UnlockCondition, DtoError> {
             Ok(match value {
-                UnlockConditionDto::Address(v) => UnlockCondition::Address(AddressUnlockCondition::try_from_dto(v)?),
+                UnlockConditionDto::Address(v) => UnlockCondition::Address(AddressUnlockCondition::try_from(v)?),
                 UnlockConditionDto::StorageDepositReturn(v) => UnlockCondition::StorageDepositReturn(
                     StorageDepositReturnUnlockCondition::try_from_dto(v, token_supply)?,
                 ),
-                UnlockConditionDto::Timelock(v) => UnlockCondition::Timelock(TimelockUnlockCondition::try_from_dto(v)?),
+                UnlockConditionDto::Timelock(v) => UnlockCondition::Timelock(TimelockUnlockCondition::try_from(v)?),
                 UnlockConditionDto::Expiration(v) => {
-                    UnlockCondition::Expiration(ExpirationUnlockCondition::try_from_dto(v)?)
+                    UnlockCondition::Expiration(ExpirationUnlockCondition::try_from(v)?)
                 }
                 UnlockConditionDto::StateControllerAddress(v) => {
-                    UnlockCondition::StateControllerAddress(StateControllerAddressUnlockCondition::try_from_dto(v)?)
+                    UnlockCondition::StateControllerAddress(StateControllerAddressUnlockCondition::try_from(v)?)
                 }
                 UnlockConditionDto::GovernorAddress(v) => {
-                    UnlockCondition::GovernorAddress(GovernorAddressUnlockCondition::try_from_dto(v)?)
+                    UnlockCondition::GovernorAddress(GovernorAddressUnlockCondition::try_from(v)?)
                 }
                 UnlockConditionDto::ImmutableAliasAddress(v) => {
-                    UnlockCondition::ImmutableAliasAddress(ImmutableAliasAddressUnlockCondition::try_from_dto(v)?)
+                    UnlockCondition::ImmutableAliasAddress(ImmutableAliasAddressUnlockCondition::try_from(v)?)
                 }
             })
         }
 
         pub fn try_from_dto_unverified(value: &UnlockConditionDto) -> Result<UnlockCondition, DtoError> {
             Ok(match value {
-                UnlockConditionDto::Address(v) => UnlockCondition::Address(AddressUnlockCondition::try_from_dto(v)?),
+                UnlockConditionDto::Address(v) => UnlockCondition::Address(AddressUnlockCondition::try_from(v)?),
                 UnlockConditionDto::StorageDepositReturn(v) => UnlockCondition::StorageDepositReturn(
                     StorageDepositReturnUnlockCondition::try_from_dto_unverified(v)?,
                 ),
-                UnlockConditionDto::Timelock(v) => UnlockCondition::Timelock(TimelockUnlockCondition::try_from_dto(v)?),
+                UnlockConditionDto::Timelock(v) => UnlockCondition::Timelock(TimelockUnlockCondition::try_from(v)?),
                 UnlockConditionDto::Expiration(v) => {
-                    UnlockCondition::Expiration(ExpirationUnlockCondition::try_from_dto(v)?)
+                    UnlockCondition::Expiration(ExpirationUnlockCondition::try_from(v)?)
                 }
                 UnlockConditionDto::StateControllerAddress(v) => {
-                    UnlockCondition::StateControllerAddress(StateControllerAddressUnlockCondition::try_from_dto(v)?)
+                    UnlockCondition::StateControllerAddress(StateControllerAddressUnlockCondition::try_from(v)?)
                 }
                 UnlockConditionDto::GovernorAddress(v) => {
-                    UnlockCondition::GovernorAddress(GovernorAddressUnlockCondition::try_from_dto(v)?)
+                    UnlockCondition::GovernorAddress(GovernorAddressUnlockCondition::try_from(v)?)
                 }
                 UnlockConditionDto::ImmutableAliasAddress(v) => {
-                    UnlockCondition::ImmutableAliasAddress(ImmutableAliasAddressUnlockCondition::try_from_dto(v)?)
+                    UnlockCondition::ImmutableAliasAddress(ImmutableAliasAddressUnlockCondition::try_from(v)?)
                 }
             })
         }

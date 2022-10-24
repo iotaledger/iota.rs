@@ -93,8 +93,10 @@ pub mod dto {
         }
     }
 
-    impl ExpirationUnlockCondition {
-        pub fn try_from_dto(value: &ExpirationUnlockConditionDto) -> Result<ExpirationUnlockCondition, DtoError> {
+    impl TryFrom<&ExpirationUnlockConditionDto> for ExpirationUnlockCondition {
+        type Error = DtoError;
+
+        fn try_from(value: &ExpirationUnlockConditionDto) -> Result<ExpirationUnlockCondition, DtoError> {
             Ok(ExpirationUnlockCondition::new(
                 (&value.return_address)
                     .try_into()

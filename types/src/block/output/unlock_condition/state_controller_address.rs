@@ -52,8 +52,10 @@ pub mod dto {
         }
     }
 
-    impl StateControllerAddressUnlockCondition {
-        pub fn try_from_dto(
+    impl TryFrom<&StateControllerAddressUnlockConditionDto> for StateControllerAddressUnlockCondition {
+        type Error = DtoError;
+
+        fn try_from(
             value: &StateControllerAddressUnlockConditionDto,
         ) -> Result<StateControllerAddressUnlockCondition, DtoError> {
             Ok(StateControllerAddressUnlockCondition::new(

@@ -64,8 +64,10 @@ pub mod dto {
         }
     }
 
-    impl TimelockUnlockCondition {
-        pub fn try_from_dto(value: &TimelockUnlockConditionDto) -> Result<TimelockUnlockCondition, DtoError> {
+    impl TryFrom<&TimelockUnlockConditionDto> for TimelockUnlockCondition {
+        type Error = DtoError;
+
+        fn try_from(value: &TimelockUnlockConditionDto) -> Result<TimelockUnlockCondition, DtoError> {
             Ok(TimelockUnlockCondition::new(value.timestamp)
                 .map_err(|_| DtoError::InvalidField("timelockUnlockCondition"))?)
         }
