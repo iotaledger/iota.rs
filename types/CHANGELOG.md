@@ -29,6 +29,7 @@ First release based on `bee-api-types` and `bee-block`.
 - `nft_address()` to `NftOutput`;
 - `required_and_unlocked_address()` to `Output`;
 - `output_id()` to `OutputMetadataResponse`;
+- Independent `From`/`TryFrom` implementations for all unlock conditions DTOs;
 
 ### Changed
 
