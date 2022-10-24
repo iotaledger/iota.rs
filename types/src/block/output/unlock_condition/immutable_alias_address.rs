@@ -57,12 +57,30 @@ fn verify_alias_address<const VERIFY: bool>(address: &Address, _: &()) -> Result
 pub mod dto {
     use serde::{Deserialize, Serialize};
 
-    use crate::block::address::dto::AddressDto;
+    use super::*;
+    use crate::block::{address::dto::AddressDto, error::dto::DtoError};
 
     #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
     pub struct ImmutableAliasAddressUnlockConditionDto {
         #[serde(rename = "type")]
         pub kind: u8,
         pub address: AddressDto,
+    }
+
+    impl ImmutableAliasAddressUnlockCondition {
+        pub fn try_from_dto(
+            value: &ImmutableAliasAddressUnlockConditionDto,
+        ) -> Result<ImmutableAliasAddressUnlockCondition, DtoError> {
+            let address: Address = (&value.address)
+                .try_into()
+                .map_err(|_e| DtoError::InvalidField("immutableAliasAddressUnlockCondition"))?;
+
+            // An ImmutableAliasAddressUnlockCondition must have an AliasAddress.
+            if let Address::Alias(alias_address) = &address {
+                Ok(ImmutableAliasAddressUnlockCondition::new(*alias_address))
+            } else {
+                Err(DtoError::InvalidField("immutableAliasAddressUnlockCondition"))
+            }
+        }
     }
 }

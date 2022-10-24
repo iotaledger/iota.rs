@@ -33,12 +33,25 @@ impl StateControllerAddressUnlockCondition {
 pub mod dto {
     use serde::{Deserialize, Serialize};
 
-    use crate::block::address::dto::AddressDto;
+    use super::*;
+    use crate::block::{address::dto::AddressDto, error::dto::DtoError};
 
     #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
     pub struct StateControllerAddressUnlockConditionDto {
         #[serde(rename = "type")]
         pub kind: u8,
         pub address: AddressDto,
+    }
+
+    impl StateControllerAddressUnlockCondition {
+        pub fn try_from_dto(
+            value: &StateControllerAddressUnlockConditionDto,
+        ) -> Result<StateControllerAddressUnlockCondition, DtoError> {
+            Ok(StateControllerAddressUnlockCondition::new(
+                (&value.address)
+                    .try_into()
+                    .map_err(|_e| DtoError::InvalidField("stateControllerAddressUnlockCondition"))?,
+            ))
+        }
     }
 }

@@ -70,7 +70,8 @@ fn verify_timestamp<const VERIFY: bool>(timestamp: &u32, _: &()) -> Result<(), E
 pub mod dto {
     use serde::{Deserialize, Serialize};
 
-    use crate::block::address::dto::AddressDto;
+    use super::*;
+    use crate::block::{address::dto::AddressDto, error::dto::DtoError};
 
     #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
     pub struct ExpirationUnlockConditionDto {
@@ -80,5 +81,17 @@ pub mod dto {
         pub return_address: AddressDto,
         #[serde(rename = "unixTime")]
         pub timestamp: u32,
+    }
+
+    impl ExpirationUnlockCondition {
+        pub fn try_from_dto(value: &ExpirationUnlockConditionDto) -> Result<ExpirationUnlockCondition, DtoError> {
+            Ok(ExpirationUnlockCondition::new(
+                (&value.return_address)
+                    .try_into()
+                    .map_err(|_e| DtoError::InvalidField("expirationUnlockCondition"))?,
+                value.timestamp,
+            )
+            .map_err(|_| DtoError::InvalidField("expirationUnlockCondition"))?)
+        }
     }
 }

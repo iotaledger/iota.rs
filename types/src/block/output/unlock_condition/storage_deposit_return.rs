@@ -63,7 +63,8 @@ fn verify_amount_packable<const VERIFY: bool>(
 pub mod dto {
     use serde::{Deserialize, Serialize};
 
-    use crate::block::address::dto::AddressDto;
+    use super::*;
+    use crate::block::{address::dto::AddressDto, error::dto::DtoError};
 
     #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
     pub struct StorageDepositReturnUnlockConditionDto {
@@ -72,5 +73,33 @@ pub mod dto {
         #[serde(rename = "returnAddress")]
         pub return_address: AddressDto,
         pub amount: String,
+    }
+
+    impl StorageDepositReturnUnlockCondition {
+        pub fn try_from_dto(
+            value: &StorageDepositReturnUnlockConditionDto,
+            token_supply: u64,
+        ) -> Result<StorageDepositReturnUnlockCondition, DtoError> {
+            Ok(StorageDepositReturnUnlockCondition::new(
+                Address::try_from(&value.return_address)?,
+                value
+                    .amount
+                    .parse::<u64>()
+                    .map_err(|_| DtoError::InvalidField("amount"))?,
+                token_supply,
+            )?)
+        }
+
+        pub fn try_from_dto_unverified(
+            value: &StorageDepositReturnUnlockConditionDto,
+        ) -> Result<StorageDepositReturnUnlockCondition, DtoError> {
+            Ok(StorageDepositReturnUnlockCondition {
+                return_address: Address::try_from(&value.return_address)?,
+                amount: value
+                    .amount
+                    .parse::<u64>()
+                    .map_err(|_| DtoError::InvalidField("amount"))?,
+            })
+        }
     }
 }
