@@ -5,14 +5,17 @@
 
 pub mod routes;
 
-use iota_types::{api::response::{OutputMetadataResponse, OutputResponse}, block::output::OutputId};
+use iota_types::{
+    api::response::{OutputMetadataResponse, OutputResponse},
+    block::output::OutputId,
+};
 
 #[cfg(not(target_family = "wasm"))]
 use crate::constants::MAX_PARALLEL_API_REQUESTS;
 use crate::{Client, Result};
 
 impl Client {
-    /// Request outputs by their output id in parallel
+    /// Request outputs by their output ID in parallel
     pub async fn get_outputs(&self, output_ids: Vec<OutputId>) -> Result<Vec<OutputResponse>> {
         let mut outputs = Vec::new();
 
@@ -43,7 +46,7 @@ impl Client {
         Ok(outputs)
     }
 
-    /// Request outputs by their output id in parallel, ignores failed requests
+    /// Request outputs by their output ID in parallel, ignoring failed requests
     /// Useful to get data about spent outputs, that might not be pruned yet
     pub async fn try_get_outputs(&self, output_ids: Vec<OutputId>) -> Result<Vec<OutputResponse>> {
         let mut outputs = Vec::new();
@@ -61,11 +64,7 @@ impl Client {
             for output_id in output_ids_chunk {
                 let client_ = self.clone();
 
-                tasks.push(async move {
-                    tokio::spawn(async move {
-                        client_.get_output(&output_id).await.ok()
-                    }).await
-                });
+                tasks.push(async move { tokio::spawn(async move { client_.get_output(&output_id).await.ok() }).await });
             }
             for output_response in (futures::future::try_join_all(tasks).await?).into_iter().flatten() {
                 outputs.push(output_response);
@@ -74,6 +73,7 @@ impl Client {
         Ok(outputs)
     }
 
+    /// Requests metadata for outputs by their output ID in parallel, ignoring failed requests
     pub async fn try_get_metadata_for_outputs(&self, output_ids: Vec<OutputId>) -> Result<Vec<OutputMetadataResponse>> {
         let mut output_metadata_responses = Vec::new();
 
@@ -91,9 +91,7 @@ impl Client {
                 let client_ = self.clone();
 
                 tasks.push(async move {
-                    tokio::spawn(async move {
-                        client_.get_output_metadata(&output_id).await.ok()
-                    }).await
+                    tokio::spawn(async move { client_.get_output_metadata(&output_id).await.ok() }).await
                 });
             }
             for output_metadata_response in (futures::future::try_join_all(tasks).await?).into_iter().flatten() {
