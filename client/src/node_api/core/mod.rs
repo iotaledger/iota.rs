@@ -15,10 +15,12 @@ impl Client {
     /// Request outputs by their output id in parallel
     pub async fn get_outputs(&self, output_ids: Vec<OutputId>) -> Result<Vec<OutputResponse>> {
         let mut outputs = Vec::new();
+
         #[cfg(target_family = "wasm")]
         for output_id in output_ids {
             outputs.push(self.get_output(&output_id).await?);
         }
+
         #[cfg(not(target_family = "wasm"))]
         for output_ids_chunk in output_ids.chunks(MAX_PARALLEL_API_REQUESTS).map(<[OutputId]>::to_vec) {
             let mut tasks = Vec::new();
@@ -45,12 +47,14 @@ impl Client {
     /// Useful to get data about spent outputs, that might not be pruned yet
     pub async fn try_get_outputs(&self, output_ids: Vec<OutputId>) -> Result<Vec<OutputResponse>> {
         let mut outputs = Vec::new();
+
         #[cfg(target_family = "wasm")]
         for output_id in output_ids {
             if let Ok(output_response) = self.get_output(&output_id).await {
                 outputs.push(output_response);
             }
         }
+
         #[cfg(not(target_family = "wasm"))]
         for output_ids_chunk in output_ids.chunks(MAX_PARALLEL_API_REQUESTS).map(<[OutputId]>::to_vec) {
             let mut tasks = Vec::new();
@@ -59,14 +63,8 @@ impl Client {
 
                 tasks.push(async move {
                     tokio::spawn(async move {
-                        // Ignore possible errors
-                        if let Ok(output_response) = client_.get_output(&output_id).await {
-                            Some(output_response)
-                        } else {
-                            None
-                        }
-                    })
-                    .await
+                        client_.get_output(&output_id).await.ok()
+                    }).await
                 });
             }
             for output_response in (futures::future::try_join_all(tasks).await?).into_iter().flatten() {
@@ -94,14 +92,8 @@ impl Client {
 
                 tasks.push(async move {
                     tokio::spawn(async move {
-                        // Ignore possible errors
-                        if let Ok(output_metadata_response) = client_.get_output_metadata(&output_id).await {
-                            Some(output_metadata_response)
-                        } else {
-                            None
-                        }
-                    })
-                        .await
+                        client_.get_output_metadata(&output_id).await.ok()
+                    }).await
                 });
             }
             for output_metadata_response in (futures::future::try_join_all(tasks).await?).into_iter().flatten() {
