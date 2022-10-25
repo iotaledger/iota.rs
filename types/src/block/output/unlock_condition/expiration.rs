@@ -97,13 +97,13 @@ pub mod dto {
         type Error = DtoError;
 
         fn try_from(value: &ExpirationUnlockConditionDto) -> Result<ExpirationUnlockCondition, DtoError> {
-            Ok(ExpirationUnlockCondition::new(
+            ExpirationUnlockCondition::new(
                 (&value.return_address)
                     .try_into()
                     .map_err(|_e| DtoError::InvalidField("expirationUnlockCondition"))?,
                 value.timestamp,
             )
-            .map_err(|_| DtoError::InvalidField("expirationUnlockCondition"))?)
+            .map_err(|_| DtoError::InvalidField("expirationUnlockCondition"))
         }
     }
 }

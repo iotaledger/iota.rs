@@ -68,8 +68,7 @@ pub mod dto {
         type Error = DtoError;
 
         fn try_from(value: &TimelockUnlockConditionDto) -> Result<TimelockUnlockCondition, DtoError> {
-            Ok(TimelockUnlockCondition::new(value.timestamp)
-                .map_err(|_| DtoError::InvalidField("timelockUnlockCondition"))?)
+            TimelockUnlockCondition::new(value.timestamp).map_err(|_| DtoError::InvalidField("timelockUnlockCondition"))
         }
     }
 }
