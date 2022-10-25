@@ -49,6 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Healthy node list, when building with `.with_local_pow(false)`;
 - Infinite PoW loop on wasm if min pow score == 0;
 - Checks for unlock address;
+- Missing options in `GetAddressesBuilder::set_options()`;
 
 ## 2.0.1-rc.2 - 2022-09-29
 

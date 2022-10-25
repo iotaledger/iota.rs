@@ -126,6 +126,10 @@ impl<'a> GetAddressesBuilder<'a> {
             self = self.with_bech32_hrp(bech32_hrp);
         };
 
+        if let Some(options) = options.options {
+            self = self.with_options(options);
+        };
+
         Ok(self)
     }
 
