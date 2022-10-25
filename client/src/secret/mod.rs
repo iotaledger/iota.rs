@@ -25,7 +25,7 @@ use iota_types::block::{
     output::Output,
     unlock::{AliasUnlock, NftUnlock, ReferenceUnlock, Unlock, Unlocks},
 };
-pub use types::{GenerateAddressMetadata, LedgerNanoStatus};
+pub use types::{GenerateAddressOptions, LedgerNanoStatus};
 use zeroize::ZeroizeOnDrop;
 
 #[cfg(feature = "ledger_nano")]
@@ -52,7 +52,7 @@ pub trait SecretManage: Send + Sync {
         account_index: u32,
         address_indexes: Range<u32>,
         internal: bool,
-        metadata: GenerateAddressMetadata,
+        options: Option<GenerateAddressOptions>,
     ) -> crate::Result<Vec<Address>>;
 
     /// Sign on `essence`, unlock `input` by returning an [Unlock].
@@ -217,29 +217,29 @@ impl SecretManage for SecretManager {
         account_index: u32,
         address_indexes: Range<u32>,
         internal: bool,
-        metadata: GenerateAddressMetadata,
+        options: Option<GenerateAddressOptions>,
     ) -> crate::Result<Vec<Address>> {
         match self {
             #[cfg(feature = "stronghold")]
             SecretManager::Stronghold(secret_manager) => {
                 secret_manager
-                    .generate_addresses(coin_type, account_index, address_indexes, internal, metadata)
+                    .generate_addresses(coin_type, account_index, address_indexes, internal, options)
                     .await
             }
             #[cfg(feature = "ledger_nano")]
             SecretManager::LedgerNano(secret_manager) => {
                 secret_manager
-                    .generate_addresses(coin_type, account_index, address_indexes, internal, metadata)
+                    .generate_addresses(coin_type, account_index, address_indexes, internal, options)
                     .await
             }
             SecretManager::Mnemonic(secret_manager) => {
                 secret_manager
-                    .generate_addresses(coin_type, account_index, address_indexes, internal, metadata)
+                    .generate_addresses(coin_type, account_index, address_indexes, internal, options)
                     .await
             }
             SecretManager::Placeholder(secret_manager) => {
                 secret_manager
-                    .generate_addresses(coin_type, account_index, address_indexes, internal, metadata)
+                    .generate_addresses(coin_type, account_index, address_indexes, internal, options)
                     .await
             }
         }

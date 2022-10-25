@@ -11,7 +11,7 @@ use iota_types::block::{
     unlock::{Unlock, Unlocks},
 };
 
-use super::{types::InputSigningData, GenerateAddressMetadata, SecretManage, SecretManageExt};
+use super::{types::InputSigningData, GenerateAddressOptions, SecretManage, SecretManageExt};
 use crate::secret::{PreparedTransactionData, RemainderData};
 
 /// Secret manager that is only useful to prevent accidental address generation in a wallet
@@ -26,7 +26,7 @@ impl SecretManage for PlaceholderSecretManager {
         _account_index: u32,
         _address_indexes: Range<u32>,
         _internal: bool,
-        _: GenerateAddressMetadata,
+        _: Option<GenerateAddressOptions>,
     ) -> crate::Result<Vec<Address>> {
         return Err(crate::Error::PlaceholderSecretManager);
     }

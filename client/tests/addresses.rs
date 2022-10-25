@@ -229,7 +229,7 @@ async fn address_generation() {
                 }),
                 internal: Some(address.internal),
                 bech32_hrp: Some(address.bech32_hrp.to_string()),
-                metadata: None,
+                options: None,
             };
             let message = Message::GenerateAddresses {
                 secret_manager: SecretManagerDto::Mnemonic(address.mnemonic.clone()),
@@ -278,7 +278,7 @@ async fn address_generation() {
                 }),
                 internal: Some(address.internal),
                 bech32_hrp: Some(address.bech32_hrp.to_string()),
-                metadata: None,
+                options: None,
             };
             let message = Message::GenerateAddresses {
                 secret_manager: SecretManagerDto::Stronghold(secret_manager_dto),

@@ -24,7 +24,7 @@ use super::{
 };
 use crate::{
     api::RemainderData,
-    secret::{types::InputSigningData, GenerateAddressMetadata, SecretManage},
+    secret::{types::InputSigningData, GenerateAddressOptions, SecretManage},
     Error, Result,
 };
 
@@ -36,7 +36,7 @@ impl SecretManage for StrongholdAdapter {
         account_index: u32,
         address_indexes: Range<u32>,
         internal: bool,
-        _metadata: GenerateAddressMetadata,
+        _options: Option<GenerateAddressOptions>,
     ) -> Result<Vec<Address>> {
         // Prevent the method from being invoked when the key has been cleared from the memory. Do note that Stronghold
         // only asks for a key for reading / writing a snapshot, so without our cached key this method is invocable, but
@@ -250,13 +250,7 @@ mod tests {
         assert!(Path::new(stronghold_path).exists());
 
         let addresses = stronghold_adapter
-            .generate_addresses(
-                IOTA_COIN_TYPE,
-                0,
-                0..1,
-                false,
-                GenerateAddressMetadata { syncing: false },
-            )
+            .generate_addresses(IOTA_COIN_TYPE, 0, 0..1, false, None)
             .await
             .unwrap();
 
@@ -292,13 +286,7 @@ mod tests {
         // Address generation returns an error when the key is cleared.
         assert!(
             stronghold_adapter
-                .generate_addresses(
-                    IOTA_COIN_TYPE,
-                    0,
-                    0..1,
-                    false,
-                    GenerateAddressMetadata { syncing: false },
-                )
+                .generate_addresses(IOTA_COIN_TYPE, 0, 0..1, false, None,)
                 .await
                 .is_err()
         );
@@ -307,13 +295,7 @@ mod tests {
 
         // After setting the correct password it works again.
         let addresses = stronghold_adapter
-            .generate_addresses(
-                IOTA_COIN_TYPE,
-                0,
-                0..1,
-                false,
-                GenerateAddressMetadata { syncing: false },
-            )
+            .generate_addresses(IOTA_COIN_TYPE, 0, 0..1, false, None)
             .await
             .unwrap();
 

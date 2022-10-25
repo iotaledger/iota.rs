@@ -9,7 +9,7 @@ use serde::Deserialize;
 use crate::{
     api::types::{Bech32Addresses, RawAddresses},
     constants::{SHIMMER_COIN_TYPE, SHIMMER_TESTNET_BECH32_HRP},
-    secret::{GenerateAddressMetadata, SecretManage, SecretManager},
+    secret::{GenerateAddressOptions, SecretManage, SecretManager},
     Client, Result,
 };
 
@@ -23,7 +23,7 @@ pub struct GetAddressesBuilder<'a> {
     range: Range<u32>,
     internal: bool,
     bech32_hrp: Option<String>,
-    metadata: GenerateAddressMetadata,
+    options: Option<GenerateAddressOptions>,
 }
 
 /// Get address builder from string
@@ -40,8 +40,8 @@ pub struct GetAddressesBuilderOptions {
     pub internal: Option<bool>,
     /// Bech32 human readable part
     pub bech32_hrp: Option<String>,
-    /// Metadata
-    pub metadata: Option<GenerateAddressMetadata>,
+    /// Options
+    pub options: Option<GenerateAddressOptions>,
 }
 
 impl<'a> GetAddressesBuilder<'a> {
@@ -55,7 +55,7 @@ impl<'a> GetAddressesBuilder<'a> {
             range: 0..super::ADDRESS_GAP_RANGE,
             internal: false,
             bech32_hrp: None,
-            metadata: GenerateAddressMetadata { syncing: true },
+            options: None,
         }
     }
 
@@ -96,8 +96,8 @@ impl<'a> GetAddressesBuilder<'a> {
     }
 
     /// Set the metadata for the address generation (used for ledger to display addresses or not)
-    pub fn with_generate_metadata(mut self, metadata: GenerateAddressMetadata) -> Self {
-        self.metadata = metadata;
+    pub fn with_options(mut self, options: GenerateAddressOptions) -> Self {
+        self.options = Some(options);
         self
     }
 
@@ -124,6 +124,10 @@ impl<'a> GetAddressesBuilder<'a> {
             self = self.with_bech32_hrp(bech32_hrp);
         };
 
+        if let Some(options) = options.options {
+            self = self.with_options(options);
+        };
+
         Ok(self)
     }
 
@@ -144,7 +148,7 @@ impl<'a> GetAddressesBuilder<'a> {
                 self.account_index,
                 self.range,
                 self.internal,
-                self.metadata.clone(),
+                self.options.clone(),
             )
             .await?
             .into_iter()
@@ -161,7 +165,7 @@ impl<'a> GetAddressesBuilder<'a> {
                 self.account_index,
                 self.range,
                 false,
-                self.metadata.clone(),
+                self.options.clone(),
             )
             .await
     }
@@ -196,7 +200,7 @@ impl<'a> GetAddressesBuilder<'a> {
                 self.account_index,
                 self.range.clone(),
                 false,
-                self.metadata.clone(),
+                self.options.clone(),
             )
             .await?;
 
@@ -207,7 +211,7 @@ impl<'a> GetAddressesBuilder<'a> {
                 self.account_index,
                 self.range,
                 true,
-                self.metadata.clone(),
+                self.options.clone(),
             )
             .await?;
 
