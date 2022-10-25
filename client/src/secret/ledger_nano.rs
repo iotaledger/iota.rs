@@ -68,7 +68,7 @@ impl SecretManage for LedgerSecretManager {
         account_index: u32,
         address_indexes: Range<u32>,
         internal: bool,
-        options: GenerateAddressOptions,
+        options: Option<GenerateAddressOptions>,
     ) -> crate::Result<Vec<Address>> {
         // lock the mutex to prevent multiple simultaneous requests to a ledger
         let _lock = self.mutex.lock().await;
@@ -82,7 +82,7 @@ impl SecretManage for LedgerSecretManager {
         // get ledger
         let ledger = get_ledger(coin_type, bip32_account, self.is_simulator)?;
 
-        let addresses = if options.ledger_nano_prompt {
+        let addresses = if options.unwrap_or_default().ledger_nano_prompt {
             // and generate a single address that is shown to the user
             ledger.get_addresses(true, bip32, address_indexes.len())?
         } else {

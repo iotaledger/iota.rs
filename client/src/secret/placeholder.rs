@@ -26,7 +26,7 @@ impl SecretManage for PlaceholderSecretManager {
         _account_index: u32,
         _address_indexes: Range<u32>,
         _internal: bool,
-        _: GenerateAddressOptions,
+        _: Option<GenerateAddressOptions>,
     ) -> crate::Result<Vec<Address>> {
         return Err(crate::Error::PlaceholderSecretManager);
     }

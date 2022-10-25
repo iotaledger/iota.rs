@@ -32,7 +32,7 @@ impl SecretManage for MnemonicSecretManager {
         account_index: u32,
         address_indexes: Range<u32>,
         internal: bool,
-        _: GenerateAddressOptions,
+        _: Option<GenerateAddressOptions>,
     ) -> crate::Result<Vec<Address>> {
         let mut addresses = Vec::new();
 
@@ -107,21 +107,13 @@ mod tests {
 
     #[tokio::test]
     async fn address() {
-        use crate::{constants::IOTA_COIN_TYPE, secret::GenerateAddressOptions};
+        use crate::constants::IOTA_COIN_TYPE;
 
         let mnemonic = "giant dynamic museum toddler six deny defense ostrich bomb access mercy blood explain muscle shoot shallow glad autumn author calm heavy hawk abuse rally";
         let secret_manager = MnemonicSecretManager::try_from_mnemonic(mnemonic).unwrap();
 
         let addresses = secret_manager
-            .generate_addresses(
-                IOTA_COIN_TYPE,
-                0,
-                0..1,
-                false,
-                GenerateAddressOptions {
-                    ledger_nano_prompt: false,
-                },
-            )
+            .generate_addresses(IOTA_COIN_TYPE, 0, 0..1, false, None)
             .await
             .unwrap();
 
@@ -133,21 +125,13 @@ mod tests {
 
     #[tokio::test]
     async fn seed_address() {
-        use crate::{constants::IOTA_COIN_TYPE, secret::GenerateAddressOptions};
+        use crate::constants::IOTA_COIN_TYPE;
 
         let seed = "0x256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2";
         let secret_manager = MnemonicSecretManager::try_from_hex_seed(seed).unwrap();
 
         let addresses = secret_manager
-            .generate_addresses(
-                IOTA_COIN_TYPE,
-                0,
-                0..1,
-                false,
-                GenerateAddressOptions {
-                    ledger_nano_prompt: false,
-                },
-            )
+            .generate_addresses(IOTA_COIN_TYPE, 0, 0..1, false, None)
             .await
             .unwrap();
 

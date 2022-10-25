@@ -52,7 +52,7 @@ pub trait SecretManage: Send + Sync {
         account_index: u32,
         address_indexes: Range<u32>,
         internal: bool,
-        options: GenerateAddressOptions,
+        options: Option<GenerateAddressOptions>,
     ) -> crate::Result<Vec<Address>>;
 
     /// Sign on `essence`, unlock `input` by returning an [Unlock].
@@ -217,7 +217,7 @@ impl SecretManage for SecretManager {
         account_index: u32,
         address_indexes: Range<u32>,
         internal: bool,
-        options: GenerateAddressOptions,
+        options: Option<GenerateAddressOptions>,
     ) -> crate::Result<Vec<Address>> {
         match self {
             #[cfg(feature = "stronghold")]

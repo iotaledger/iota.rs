@@ -45,7 +45,7 @@ pub struct AccountAddress {
     pub internal: bool,
 }
 
-/// Metadata provided to `generate_address()`.
+/// Options provided to `generate_address()`.
 #[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 pub struct GenerateAddressOptions {
     /// Display the address on ledger devices.

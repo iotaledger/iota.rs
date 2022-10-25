@@ -146,7 +146,7 @@ impl<'a> GetAddressesBuilder<'a> {
                 self.account_index,
                 self.range,
                 self.internal,
-                self.options.clone(),
+                Some(self.options.clone()),
             )
             .await?
             .into_iter()
@@ -163,7 +163,7 @@ impl<'a> GetAddressesBuilder<'a> {
                 self.account_index,
                 self.range,
                 false,
-                self.options.clone(),
+                Some(self.options.clone()),
             )
             .await
     }
@@ -198,7 +198,7 @@ impl<'a> GetAddressesBuilder<'a> {
                 self.account_index,
                 self.range.clone(),
                 false,
-                self.options.clone(),
+                Some(self.options.clone()),
             )
             .await?;
 
@@ -209,7 +209,7 @@ impl<'a> GetAddressesBuilder<'a> {
                 self.account_index,
                 self.range,
                 true,
-                self.options.clone(),
+                Some(self.options.clone()),
             )
             .await?;
 
