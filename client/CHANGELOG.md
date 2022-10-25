@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security -->
 
-## 2.0.1-rc.3 - 2022-XX-XX
+## 2.0.1-rc.3 - 2022-10-25
 
 ### Added
 
@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Max length checks for transaction payload and essence, so the block size isn't exceeded, even with 8 parents;
 - `{PreparedTransactionData, SignedTransactionData, RemainderData, InputSigningData}::try_from_dto_unverified`;
 - `NetworkInfo::latest_milestone_timestamp` field;
+- `Client::try_get_outputs_metadata`;
 
 ### Changed
 
