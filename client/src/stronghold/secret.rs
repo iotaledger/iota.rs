@@ -24,7 +24,7 @@ use super::{
 };
 use crate::{
     api::RemainderData,
-    secret::{types::InputSigningData, GenerateAddressMetadata, SecretManage},
+    secret::{types::InputSigningData, GenerateAddressOptions, SecretManage},
     Error, Result,
 };
 
@@ -36,7 +36,7 @@ impl SecretManage for StrongholdAdapter {
         account_index: u32,
         address_indexes: Range<u32>,
         internal: bool,
-        _metadata: GenerateAddressMetadata,
+        _options: GenerateAddressOptions,
     ) -> Result<Vec<Address>> {
         // Prevent the method from being invoked when the key has been cleared from the memory. Do note that Stronghold
         // only asks for a key for reading / writing a snapshot, so without our cached key this method is invocable, but
@@ -255,7 +255,9 @@ mod tests {
                 0,
                 0..1,
                 false,
-                GenerateAddressMetadata { syncing: false },
+                GenerateAddressOptions {
+                    ledger_nano_prompt: false,
+                },
             )
             .await
             .unwrap();
@@ -297,7 +299,9 @@ mod tests {
                     0,
                     0..1,
                     false,
-                    GenerateAddressMetadata { syncing: false },
+                    GenerateAddressOptions {
+                        ledger_nano_prompt: false
+                    },
                 )
                 .await
                 .is_err()
@@ -312,7 +316,9 @@ mod tests {
                 0,
                 0..1,
                 false,
-                GenerateAddressMetadata { syncing: false },
+                GenerateAddressOptions {
+                    ledger_nano_prompt: false,
+                },
             )
             .await
             .unwrap();

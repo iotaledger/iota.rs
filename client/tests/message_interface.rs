@@ -9,7 +9,7 @@ use dotenv::dotenv;
 use iota_client::{
     api::GetAddressesBuilderOptions as GenerateAddressesOptions,
     message_interface::{self, Message, Response},
-    secret::{GenerateAddressMetadata, SecretManagerDto},
+    secret::{GenerateAddressOptions, SecretManagerDto},
 };
 
 #[tokio::test]
@@ -32,7 +32,9 @@ async fn generate_addresses() {
         range: Some(std::ops::Range { start: 0, end: 10 }),
         internal: None,
         bech32_hrp: Some("atoi".to_string()),
-        metadata: Some(GenerateAddressMetadata { syncing: false }),
+        options: Some(GenerateAddressOptions {
+            ledger_nano_prompt: false,
+        }),
     };
     let message = Message::GenerateAddresses {
         secret_manager: serde_json::from_str::<SecretManagerDto>(&secret_manager).unwrap(),
@@ -79,7 +81,9 @@ async fn build_and_post_block() {
         range: Some(std::ops::Range { start: 0, end: 10 }),
         internal: None,
         bech32_hrp: Some("atoi".to_string()),
-        metadata: Some(GenerateAddressMetadata { syncing: false }),
+        options: Some(GenerateAddressOptions {
+            ledger_nano_prompt: false,
+        }),
     };
 
     let generate_addresses_message = Message::GenerateAddresses {
@@ -194,7 +198,7 @@ async fn stronghold() {
         range: Some(std::ops::Range { start: 0, end: 1 }),
         internal: None,
         bech32_hrp: Some("rms".to_string()),
-        metadata: None,
+        options: None,
     };
     let message = Message::GenerateAddresses {
         secret_manager: serde_json::from_str(secret_manager_dto).unwrap(),

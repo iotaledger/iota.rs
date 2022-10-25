@@ -22,7 +22,7 @@ use iota_types::block::{
 use packable::{unpacker::SliceUnpacker, Packable, PackableExt};
 use tokio::sync::Mutex;
 
-use super::{types::InputSigningData, GenerateAddressMetadata, SecretManage, SecretManageExt};
+use super::{types::InputSigningData, GenerateAddressOptions, SecretManage, SecretManageExt};
 use crate::{
     secret::{
         types::{LedgerApp, LedgerDeviceType},
@@ -68,7 +68,7 @@ impl SecretManage for LedgerSecretManager {
         account_index: u32,
         address_indexes: Range<u32>,
         internal: bool,
-        meta: GenerateAddressMetadata,
+        options: GenerateAddressOptions,
     ) -> crate::Result<Vec<Address>> {
         // lock the mutex to prevent multiple simultaneous requests to a ledger
         let _lock = self.mutex.lock().await;
@@ -82,9 +82,7 @@ impl SecretManage for LedgerSecretManager {
         // get ledger
         let ledger = get_ledger(coin_type, bip32_account, self.is_simulator)?;
 
-        // if it's not for syncing, then it's a new receiving / remainder address
-        // that needs shown to the user
-        let addresses = if !meta.syncing {
+        let addresses = if options.ledger_nano_prompt {
             // and generate a single address that is shown to the user
             ledger.get_addresses(true, bip32, address_indexes.len())?
         } else {

@@ -11,7 +11,7 @@ public class GenerateAddressesOptions {
     private Range range;
     private Boolean internal;
     private String bech32Hrp;
-    private GenerateAddressMetadata metadata;
+    private GenerateAddressOptions options;
 
     public GenerateAddressesOptions withCoinType(Integer coinType) {
         this.coinType = coinType;
@@ -38,8 +38,8 @@ public class GenerateAddressesOptions {
         return this;
     }
 
-    public GenerateAddressesOptions withMetadata(GenerateAddressMetadata metadata) {
-        this.metadata = metadata;
+    public GenerateAddressesOptions withOptions(GenerateAddressOptions options) {
+        this.options = options;
         return this;
     }
 
@@ -50,22 +50,22 @@ public class GenerateAddressesOptions {
         o.add("range", range != null ? range.getAsJson() : null);
         o.addProperty("internal", internal);
         o.addProperty("bech32Hrp", bech32Hrp);
-        o.add("metadata", metadata != null ? metadata.getAsJson() : null);
+        o.add("options", options != null ? options.getAsJson() : null);
 
         return o;
     }
 
-    static class GenerateAddressMetadata {
-        private boolean syncing;
+    static class GenerateAddressOptions {
+        private boolean ledgerNanoPrompt;
 
-        public GenerateAddressMetadata withSyncing(boolean syncing) {
-            this.syncing = syncing;
+        public GenerateAddressOptions withLedgerNanoPrompt(boolean ledgerNanoPrompt) {
+            this.ledgerNanoPrompt = ledgerNanoPrompt;
             return this;
         }
 
         public JsonObject getAsJson() {
             JsonObject o = new JsonObject();
-            o.addProperty("syncing", syncing);
+            o.addProperty("ledgerNanoPrompt", ledgerNanoPrompt);
 
             return o;
         }

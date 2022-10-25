@@ -46,12 +46,11 @@ pub struct AccountAddress {
 }
 
 /// Metadata provided to `generate_address()`.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct GenerateAddressMetadata {
-    /// Indicates that the address is being generated as part of the account syncing process.
-    /// This means that the account might not be saved.
-    /// If it is false, the prompt will be displayed on ledger devices.
-    pub syncing: bool,
+#[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
+pub struct GenerateAddressOptions {
+    /// Display the address on ledger devices.
+    #[serde(rename = "ledgerNanoPrompt")]
+    pub ledger_nano_prompt: bool,
 }
 
 /// The Ledger device status.

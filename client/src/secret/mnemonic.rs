@@ -16,7 +16,7 @@ use iota_types::block::{
     unlock::{SignatureUnlock, Unlock},
 };
 
-use super::{types::InputSigningData, GenerateAddressMetadata, SecretManage};
+use super::{types::InputSigningData, GenerateAddressOptions, SecretManage};
 use crate::{constants::HD_WALLET_TYPE, secret::RemainderData, Client, Result};
 
 /// Secret manager that uses only a mnemonic.
@@ -32,7 +32,7 @@ impl SecretManage for MnemonicSecretManager {
         account_index: u32,
         address_indexes: Range<u32>,
         internal: bool,
-        _: GenerateAddressMetadata,
+        _: GenerateAddressOptions,
     ) -> crate::Result<Vec<Address>> {
         let mut addresses = Vec::new();
 
@@ -107,7 +107,7 @@ mod tests {
 
     #[tokio::test]
     async fn address() {
-        use crate::{constants::IOTA_COIN_TYPE, secret::GenerateAddressMetadata};
+        use crate::{constants::IOTA_COIN_TYPE, secret::GenerateAddressOptions};
 
         let mnemonic = "giant dynamic museum toddler six deny defense ostrich bomb access mercy blood explain muscle shoot shallow glad autumn author calm heavy hawk abuse rally";
         let secret_manager = MnemonicSecretManager::try_from_mnemonic(mnemonic).unwrap();
@@ -118,7 +118,9 @@ mod tests {
                 0,
                 0..1,
                 false,
-                GenerateAddressMetadata { syncing: false },
+                GenerateAddressOptions {
+                    ledger_nano_prompt: false,
+                },
             )
             .await
             .unwrap();
@@ -131,7 +133,7 @@ mod tests {
 
     #[tokio::test]
     async fn seed_address() {
-        use crate::{constants::IOTA_COIN_TYPE, secret::GenerateAddressMetadata};
+        use crate::{constants::IOTA_COIN_TYPE, secret::GenerateAddressOptions};
 
         let seed = "0x256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2";
         let secret_manager = MnemonicSecretManager::try_from_hex_seed(seed).unwrap();
@@ -142,7 +144,9 @@ mod tests {
                 0,
                 0..1,
                 false,
-                GenerateAddressMetadata { syncing: false },
+                GenerateAddressOptions {
+                    ledger_nano_prompt: false,
+                },
             )
             .await
             .unwrap();
