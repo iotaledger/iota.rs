@@ -74,7 +74,7 @@ impl Client {
     }
 
     /// Requests metadata for outputs by their output ID in parallel, ignoring failed requests
-    pub async fn try_get_metadata_for_outputs(&self, output_ids: Vec<OutputId>) -> Result<Vec<OutputMetadataResponse>> {
+    pub async fn try_get_outputs_metadata(&self, output_ids: Vec<OutputId>) -> Result<Vec<OutputMetadataResponse>> {
         let mut output_metadata_responses = Vec::new();
 
         #[cfg(target_family = "wasm")]
