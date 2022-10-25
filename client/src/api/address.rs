@@ -23,7 +23,7 @@ pub struct GetAddressesBuilder<'a> {
     range: Range<u32>,
     internal: bool,
     bech32_hrp: Option<String>,
-    options: GenerateAddressOptions,
+    options: Option<GenerateAddressOptions>,
 }
 
 /// Get address builder from string
@@ -55,9 +55,7 @@ impl<'a> GetAddressesBuilder<'a> {
             range: 0..super::ADDRESS_GAP_RANGE,
             internal: false,
             bech32_hrp: None,
-            options: GenerateAddressOptions {
-                ledger_nano_prompt: true,
-            },
+            options: None,
         }
     }
 
@@ -99,7 +97,7 @@ impl<'a> GetAddressesBuilder<'a> {
 
     /// Set the metadata for the address generation (used for ledger to display addresses or not)
     pub fn with_options(mut self, options: GenerateAddressOptions) -> Self {
-        self.options = options;
+        self.options = Some(options);
         self
     }
 
@@ -150,7 +148,7 @@ impl<'a> GetAddressesBuilder<'a> {
                 self.account_index,
                 self.range,
                 self.internal,
-                Some(self.options.clone()),
+                self.options.clone(),
             )
             .await?
             .into_iter()
@@ -167,7 +165,7 @@ impl<'a> GetAddressesBuilder<'a> {
                 self.account_index,
                 self.range,
                 false,
-                Some(self.options.clone()),
+                self.options.clone(),
             )
             .await
     }
@@ -202,7 +200,7 @@ impl<'a> GetAddressesBuilder<'a> {
                 self.account_index,
                 self.range.clone(),
                 false,
-                Some(self.options.clone()),
+                self.options.clone(),
             )
             .await?;
 
@@ -213,7 +211,7 @@ impl<'a> GetAddressesBuilder<'a> {
                 self.account_index,
                 self.range,
                 true,
-                Some(self.options.clone()),
+                self.options.clone(),
             )
             .await?;
 
