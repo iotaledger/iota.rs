@@ -41,7 +41,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `NODE_SYNC_INTERVAL` from 15s to 60s;
 - `fn derive_key_from_password(password: &str) -> EncryptionKey` to `key_provider_from_password(password: &str) -> KeyProvider`;
 - `generate_addresses()` to accept `GenerateAddressOptions`;
-- Renamed `GenerateAddressOptions` to `GenerateAddressOptions` and replaced its `syncing` field with `ledger_nano_prompt`;
+- Renamed `GenerateAddressMetadata` to `GenerateAddressOptions` and replaced its `syncing` field with `ledger_nano_prompt`;
 
 ### Fixed
 
