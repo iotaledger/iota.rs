@@ -9,7 +9,7 @@ use dotenv::dotenv;
 use iota_client::{
     api::GetAddressesBuilderOptions as GenerateAddressesOptions,
     message_interface::{self, Message, Response},
-    secret::{GenerateAddressOptions, SecretManagerDto},
+    secret::SecretManagerDto,
 };
 
 #[tokio::test]
