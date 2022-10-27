@@ -1,6 +1,10 @@
 {
   "tag": "rc",
   "changes": [
-    ".changes/networkinfo.md"
+    ".changes/alias-nft-unlock.md",
+    ".changes/ledger-nano-prompt.md",
+    ".changes/networkinfo.md",
+    ".changes/prebuilds.md",
+    ".changes/protocol-parameters.md"
   ]
 }

@@ -1,5 +1,16 @@
 # Changelog
 
+## \[3.0.0-rc.1]
+
+- Add alias and nfts output in `try_select_input` to the inputs, when required for an unlock condition of an input.
+  - [c18d9d7](https://github.com/iotaledger/iota.rs/commit/c18d9d77e8a18aef8e47c386ebe0736493bd134f) Rename `GenerateAddressMetadata` to `GenerateAddressOptions` ([#1330](https://github.com/iotaledger/iota.rs/pull/1330)) on 2022-10-25
+- Rename `IGenerateAddressOptions` to `IGenerateAddressOptions` and replace its syncing field with ledgerNanoPrompt.
+  - [c18d9d7](https://github.com/iotaledger/iota.rs/commit/c18d9d77e8a18aef8e47c386ebe0736493bd134f) Rename `GenerateAddressMetadata` to `GenerateAddressOptions` ([#1330](https://github.com/iotaledger/iota.rs/pull/1330)) on 2022-10-25
+- Fix prebuild scripts.
+  - [c18d9d7](https://github.com/iotaledger/iota.rs/commit/c18d9d77e8a18aef8e47c386ebe0736493bd134f) Rename `GenerateAddressMetadata` to `GenerateAddressOptions` ([#1330](https://github.com/iotaledger/iota.rs/pull/1330)) on 2022-10-25
+- Add `getTokenSupply` and `getProtocolParameters`.
+  - [c18d9d7](https://github.com/iotaledger/iota.rs/commit/c18d9d77e8a18aef8e47c386ebe0736493bd134f) Rename `GenerateAddressMetadata` to `GenerateAddressOptions` ([#1330](https://github.com/iotaledger/iota.rs/pull/1330)) on 2022-10-25
+
 ## \[3.0.0-rc.0]
 
 - Fix types in networkInfo.
