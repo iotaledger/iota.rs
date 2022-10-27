@@ -53,7 +53,7 @@ use iota_client;
 
 ## Examples
 
-You can see examples using the library in the [examples](examples/) directory. Try them with:
+You can see examples using the library in the [examples](client/examples/) directory. Try them with:
 
 ```shell
 # cargo run --example <name of the example without .rs>
@@ -74,11 +74,11 @@ cargo doc --document-private-items --no-deps --open
 
 ## Bindings
 
-Bindings to other programming languages are available under the folder [bindings](bindings/).
+Bindings to other programming languages are available under the folder [bindings](client/bindings/).
 
-* [Node.js binding](bindings/nodejs/)
-* [Python binding](bindings/python/)
-* [Java binding](bindings/java/)
+* [Node.js binding](client/bindings/nodejs/)
+* [Python binding](client/bindings/python/)
+* [Java binding](client/bindings/java/)
 
 ## Joining the discussion
 
