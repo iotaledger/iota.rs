@@ -1,5 +1,10 @@
 # Changelog
 
+## \[3.0.0-rc.2]
+
+- Fix build script filename.
+  - [eef5530](https://github.com/iotaledger/iota.rs/commit/eef55302e5b75e298e734352d3ec64f601b42eee) Fix build script filename ([#1331](https://github.com/iotaledger/iota.rs/pull/1331)) on 2022-10-27
+
 ## \[3.0.0-rc.1]
 
 - Add alias and nfts output in `try_select_input` to the inputs, when required for an unlock condition of an input.
