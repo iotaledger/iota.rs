@@ -11,15 +11,20 @@ mod remainder;
 mod sender_issuer;
 pub mod types;
 mod utxo_chains;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 pub use helpers::minimum_storage_deposit_basic_output;
 use iota_types::block::{
     address::Address,
+    dto::U256Dto,
     input::INPUT_COUNT_MAX,
-    output::{Output, OutputId, RentStructure, OUTPUT_COUNT_MAX},
+    output::{
+        dto::{AliasIdDto, NftIdDto, TokenIdDto},
+        AliasId, FoundryId, NftId, Output, OutputId, RentStructure, TokenId, OUTPUT_COUNT_MAX,
+    },
 };
 use packable::bounded::TryIntoBoundedU16Error;
+use primitive_types::U256;
 
 use self::{
     helpers::get_accumulated_output_amounts,
@@ -39,6 +44,58 @@ use crate::{
     Error, Result,
 };
 
+/// Struct to specify the to be burned aliases, nfts, foundries, native tokens
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
+pub struct ToBeBurned {
+    /// Aliases to burn
+    pub aliases: HashSet<AliasId>,
+    /// NFTs to burn
+    pub nfts: HashSet<NftId>,
+    /// Foundries to burn
+    pub foundries: HashSet<FoundryId>,
+    /// Native tokens with the amount to burn
+    pub native_tokens: HashMap<TokenId, U256>,
+}
+
+impl TryFrom<&ToBeBurnedDto> for ToBeBurned {
+    type Error = Error;
+    /// Conversion from [`ToBeBurnedDto`] to [`ToBeBurned`].
+    fn try_from(value: &ToBeBurnedDto) -> Result<Self> {
+        let mut native_tokens = HashMap::new();
+        for (token_id, amount) in &value.native_tokens {
+            native_tokens.insert(TokenId::try_from(token_id)?, U256::try_from(amount)?);
+        }
+
+        Ok(Self {
+            aliases: value
+                .aliases
+                .iter()
+                .map(|a| AliasId::try_from(a).map_err(Into::into))
+                .collect::<Result<HashSet<AliasId>>>()?,
+            nfts: value
+                .nfts
+                .iter()
+                .map(|a| NftId::try_from(a).map_err(Into::into))
+                .collect::<Result<HashSet<NftId>>>()?,
+            foundries: value.foundries.clone(),
+            native_tokens,
+        })
+    }
+}
+
+/// Dto for [`ToBeBurned`]
+#[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
+pub struct ToBeBurnedDto {
+    /// Aliases to burn
+    pub aliases: HashSet<AliasIdDto>,
+    /// NFTs to burn
+    pub nfts: HashSet<NftIdDto>,
+    /// Foundries to burn
+    pub foundries: HashSet<FoundryId>,
+    /// Native tokens with the amount to burn
+    pub native_tokens: HashMap<TokenIdDto, U256Dto>,
+}
+
 /// Select inputs from provided mandatory_inputs([InputSigningData]) and additional_inputs([InputSigningData]) for
 /// provided [Output]s, validate amounts and create remainder output if necessary. Also checks for alias, foundry and
 /// nft outputs that there previous output exist in the inputs, when required. Careful with setting `allow_burning` to
@@ -51,10 +108,10 @@ pub fn try_select_inputs(
     mut outputs: Vec<Output>,
     remainder_address: Option<Address>,
     rent_structure: &RentStructure,
-    allow_burning: bool,
+    burn: Option<ToBeBurned>,
     current_time: u32,
     token_supply: u64,
-) -> Result<SelectedTransactionData> {
+) -> crate::Result<SelectedTransactionData> {
     log::debug!("[try_select_inputs]");
 
     // Can't select inputs if there are no inputs.
@@ -132,7 +189,7 @@ pub fn try_select_inputs(
         &mut outputs,
         &mut required,
         &mut utxo_chain_inputs,
-        allow_burning,
+        burn.clone(),
         current_time,
         rent_structure,
         token_supply,
@@ -312,7 +369,7 @@ pub fn try_select_inputs(
         &mut outputs,
         &mut required,
         &mut utxo_chain_inputs,
-        allow_burning,
+        burn.clone(),
         current_time,
         rent_structure,
         token_supply,
@@ -325,7 +382,7 @@ pub fn try_select_inputs(
         outputs.iter(),
         remainder_address,
         rent_structure,
-        allow_burning,
+        burn,
         current_time,
         token_supply,
     )?;

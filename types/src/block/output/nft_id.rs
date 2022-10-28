@@ -29,7 +29,7 @@ pub mod dto {
     use super::*;
     use crate::block::error::dto::DtoError;
 
-    #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+    #[derive(Clone, Debug, Eq, Hash, PartialEq, Serialize, Deserialize)]
     pub struct NftIdDto(pub String);
 
     impl From<&NftId> for NftIdDto {

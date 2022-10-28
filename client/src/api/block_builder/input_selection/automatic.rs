@@ -85,9 +85,7 @@ impl<'a> ClientBlockBuilder<'a> {
             self.outputs.clone(),
             self.custom_remainder_address,
             rent_structure,
-            // Don't allow burning of native tokens during automatic input selection, because otherwise it
-            // could lead to burned native tokens by accident.
-            false,
+            None,
             current_time,
             token_supply,
         ) {
@@ -168,9 +166,7 @@ impl<'a> ClientBlockBuilder<'a> {
                         self.outputs.clone(),
                         self.custom_remainder_address,
                         rent_structure,
-                        // Don't allow burning of native tokens during automatic input selection, because otherwise it
-                        // could lead to burned native tokens by accident.
-                        false,
+                        None,
                         current_time,
                         token_supply,
                     ) {

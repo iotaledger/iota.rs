@@ -11,6 +11,7 @@ use iota_types::block::{
     },
 };
 
+use super::ToBeBurned;
 use crate::{
     api::{
         input_selection::{
@@ -84,7 +85,7 @@ pub(crate) fn get_remainder_output<'a>(
     outputs: impl Iterator<Item = &'a Output> + Clone,
     remainder_address: Option<Address>,
     rent_structure: &RentStructure,
-    allow_burning: bool,
+    burn: Option<ToBeBurned>,
     current_time: u32,
     token_supply: u64,
 ) -> Result<Option<RemainderData>> {
@@ -138,7 +139,7 @@ pub(crate) fn get_remainder_output<'a>(
     } else {
         // if we have remaining native tokens, but no amount left, then we can't create this transaction unless we want
         // to burn them
-        if native_token_remainder.is_some() && !allow_burning {
+        if native_token_remainder.is_some() && burn.is_none() {
             return Err(Error::NoBalanceForNativeTokenRemainder);
         }
         None

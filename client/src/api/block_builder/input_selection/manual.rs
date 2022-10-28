@@ -11,6 +11,7 @@ use iota_types::block::{
     output::{AliasId, Output, RentStructure},
 };
 
+use super::ToBeBurned;
 use crate::{
     api::{
         address::search_address, block_builder::input_selection::types::SelectedTransactionData,
@@ -31,7 +32,7 @@ impl<'a> ClientBlockBuilder<'a> {
         &self,
         governance_transition: Option<HashSet<AliasId>>,
         rent_structure: &RentStructure,
-        allow_burning: bool,
+        burn: Option<ToBeBurned>,
     ) -> Result<SelectedTransactionData> {
         log::debug!("[get_custom_inputs]");
 
@@ -98,7 +99,7 @@ impl<'a> ClientBlockBuilder<'a> {
             self.outputs.clone(),
             self.custom_remainder_address,
             rent_structure,
-            allow_burning,
+            burn,
             current_time,
             token_supply,
         )?;

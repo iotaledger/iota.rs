@@ -23,8 +23,14 @@ use packable::{
     PackableExt,
 };
 
+use self::input_selection::ToBeBurned;
 pub use self::transaction::verify_semantic;
-use crate::{api::do_pow, constants::SHIMMER_COIN_TYPE, secret::SecretManager, Client, Error, Result};
+use crate::{
+    api::{do_pow, input_selection::ToBeBurnedDto},
+    constants::SHIMMER_COIN_TYPE,
+    secret::SecretManager,
+    Client, Error, Result,
+};
 
 /// Builder of the block API
 #[must_use]
@@ -41,7 +47,7 @@ pub struct ClientBlockBuilder<'a> {
     tag: Option<Vec<u8>>,
     data: Option<Vec<u8>>,
     parents: Option<Vec<BlockId>>,
-    allow_burning: bool,
+    burn: Option<ToBeBurned>,
 }
 
 /// Block output address
@@ -84,7 +90,7 @@ pub struct ClientBlockBuilderOptions {
     /// Parents
     pub parents: Option<Vec<BlockId>>,
     /// Allow burning of native tokens
-    pub allow_burning: Option<bool>,
+    pub burn: Option<ToBeBurnedDto>,
 }
 
 impl<'a> ClientBlockBuilder<'a> {
@@ -103,13 +109,13 @@ impl<'a> ClientBlockBuilder<'a> {
             tag: None,
             data: None,
             parents: None,
-            allow_burning: false,
+            burn: None,
         }
     }
 
-    /// Allow burning of native tokens when custom inputs are provided.
-    pub fn with_burning_allowed(mut self, allow_burning: bool) -> Self {
-        self.allow_burning = allow_burning;
+    /// Burn the provided aliases, nfts, foundries, native tokens.
+    pub fn with_burning(mut self, burn: ToBeBurned) -> Self {
+        self.burn = Some(burn);
         self
     }
 
@@ -307,8 +313,8 @@ impl<'a> ClientBlockBuilder<'a> {
         if let Some(parents) = options.parents {
             self = self.with_parents(parents)?;
         }
-        if let Some(allow_burning) = options.allow_burning {
-            self = self.with_burning_allowed(allow_burning);
+        if let Some(burn) = options.burn {
+            self = self.with_burning(ToBeBurned::try_from(&burn)?);
         }
 
         Ok(self)

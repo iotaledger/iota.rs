@@ -5,7 +5,7 @@ use primitive_types::U256;
 use serde::{Deserialize, Serialize};
 
 /// Describes a U256.
-#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq, Ord, PartialOrd, Serialize, Deserialize)]
 pub struct U256Dto(pub String);
 
 impl From<&U256> for U256Dto {

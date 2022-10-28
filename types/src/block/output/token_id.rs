@@ -23,7 +23,7 @@ pub mod dto {
     use crate::block::error::dto::DtoError;
 
     /// Describes a token id.
-    #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+    #[derive(Clone, Debug, Eq, Hash, PartialEq, Serialize, Deserialize)]
     pub struct TokenIdDto(pub String);
 
     impl From<&TokenId> for TokenIdDto {

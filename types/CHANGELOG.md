@@ -24,7 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `OutputResponse` enum with `Json` and `Raw` variants;
-
+- `Hash` derivation on ID DTOs;
 ### Changed
 
 - Renamed `OutputResponse` to `OutputWithMetadataResponse`;

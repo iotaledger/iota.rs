@@ -21,9 +21,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 2.0.1-rc.4 - 20XX-XX-XX
 
+### Added
+
+- `ToBeBurned` and `ToBeBurnedDto`;
+
 ### Changed
 
 - Use `OutputWithMetadataResponse` instead of `OutputResponse`;
+- `allow_burning` in `try_select_inputs()` to `burn` which accepts `ToBeBurned`;
 
 ## 2.0.1-rc.3 - 2022-10-25
 

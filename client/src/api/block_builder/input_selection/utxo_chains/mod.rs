@@ -17,7 +17,7 @@ use iota_types::{
     },
 };
 
-use super::types::AccumulatedOutputAmounts;
+use super::{types::AccumulatedOutputAmounts, ToBeBurned};
 use crate::{
     api::input_selection::{get_accumulated_output_amounts, sdr_not_expired},
     secret::types::InputSigningData,
@@ -40,7 +40,7 @@ pub(crate) fn select_utxo_chain_inputs(
     outputs: &mut Vec<Output>,
     required: &mut AccumulatedOutputAmounts,
     utxo_chain_inputs: &mut [InputSigningData],
-    allow_burning: bool,
+    burn: Option<ToBeBurned>,
     current_time: u32,
     rent_structure: &RentStructure,
     token_supply: u64,
@@ -54,7 +54,7 @@ pub(crate) fn select_utxo_chain_inputs(
     // Add existing selected inputs we added for sender and issuer features before
     for input_signing_data in selected_inputs.iter() {
         // Add inputs to outputs if not already there, so they don't get burned
-        if !allow_burning {
+        if burn.is_none() {
             add_output_for_input(input_signing_data, rent_structure, outputs, token_supply)?;
         }
         added_output_for_input_signing_data.insert(input_signing_data.output_id()?);
@@ -93,7 +93,7 @@ pub(crate) fn select_utxo_chain_inputs(
                     });
                     let is_required_for_input =
                         required_alias_nft_addresses.contains(&Address::Nft(NftAddress::new(nft_id)));
-                    if !is_required_for_output && !allow_burning || is_required_for_input {
+                    if !is_required_for_output && burn.is_none() || is_required_for_input {
                         let nft_address = Address::Nft(NftAddress::new(nft_id));
                         let nft_required_in_unlock_condition = outputs.iter().any(|output| {
                             if let Ok((required_unlock_address, unlocked_alias_or_nft_address)) = output
@@ -169,7 +169,7 @@ pub(crate) fn select_utxo_chain_inputs(
                     let is_required_for_input =
                         required_alias_nft_addresses.contains(&Address::Alias(AliasAddress::new(alias_id)));
 
-                    if !is_required_for_output && !allow_burning || is_required_for_input {
+                    if !is_required_for_output && burn.is_none() || is_required_for_input {
                         let alias_address = Address::Alias(AliasAddress::new(alias_id));
                         let alias_required_in_unlock_condition = outputs.iter().any(|output| {
                             // check if alias address is in unlock condition
@@ -235,7 +235,7 @@ pub(crate) fn select_utxo_chain_inputs(
                         } else {
                             false
                         }
-                    }) && !allow_burning
+                    }) && burn.is_none()
                     {
                         // Don't add if it doesn't give us any amount or native tokens
                         if input_signing_data.output.amount() == minimum_required_storage_deposit
