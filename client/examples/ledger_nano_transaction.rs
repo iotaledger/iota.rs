@@ -41,7 +41,8 @@ async fn main() -> Result<()> {
             // We generate an address from our seed so that we send the funds to ourselves
             &addresses[1],
             1_000_000,
-        )?
+        )
+        .await?
         .finish()
         .await?;
 

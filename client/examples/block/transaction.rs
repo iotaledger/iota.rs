@@ -35,7 +35,8 @@ async fn main() -> Result<()> {
             // We generate an address from our own mnemonic so that we send the funds to ourselves
             &client.get_addresses(&secret_manager).with_range(1..2).finish().await?[0],
             1_000_000,
-        )?
+        )
+        .await?
         .finish()
         .await?;
 

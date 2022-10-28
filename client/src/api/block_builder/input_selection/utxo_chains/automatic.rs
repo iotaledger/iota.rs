@@ -28,9 +28,9 @@ impl<'a> ClientBlockBuilder<'a> {
     ) -> Result<Vec<InputSigningData>> {
         log::debug!("[get_utxo_chains_inputs]");
         let client = self.client;
-        let bech32_hrp = client.get_bech32_hrp()?;
+        let bech32_hrp = client.get_bech32_hrp().await?;
         let current_time = self.client.get_time_checked()?;
-        let token_supply = client.get_token_supply()?;
+        let token_supply = client.get_token_supply().await?;
 
         let mut utxo_chains: Vec<(Address, OutputWithMetadataResponse)> = Vec::new();
         for output in outputs {

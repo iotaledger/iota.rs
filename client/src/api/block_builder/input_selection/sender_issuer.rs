@@ -26,9 +26,9 @@ impl<'a> ClientBlockBuilder<'a> {
         log::debug!("[get_inputs_for_sender_and_issuer]");
 
         let mut required_inputs = Vec::new();
-        let bech32_hrp = self.client.get_bech32_hrp()?;
+        let bech32_hrp = self.client.get_bech32_hrp().await?;
         let current_time = self.client.get_time_checked()?;
-        let token_supply = self.client.get_token_supply()?;
+        let token_supply = self.client.get_token_supply().await?;
 
         let required_sender_or_issuer_addresses =
             get_required_addresses_for_sender_and_issuer(&[], &self.outputs, current_time)?;

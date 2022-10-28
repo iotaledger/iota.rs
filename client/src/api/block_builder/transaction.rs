@@ -35,8 +35,8 @@ impl<'a> ClientBlockBuilder<'a> {
     /// Prepare a transaction
     pub async fn prepare_transaction(&self) -> Result<PreparedTransactionData> {
         log::debug!("[prepare_transaction]");
-        let rent_structure = self.client.get_rent_structure()?;
-        let token_supply = self.client.get_token_supply()?;
+        let rent_structure = self.client.get_rent_structure().await?;
+        let token_supply = self.client.get_token_supply().await?;
 
         let mut governance_transition: Option<HashSet<AliasId>> = None;
         for output in &self.outputs {
@@ -71,7 +71,7 @@ impl<'a> ClientBlockBuilder<'a> {
         // Build transaction payload
         let inputs_commitment = InputsCommitment::new(selected_transaction_data.inputs.iter().map(|i| &i.output));
 
-        let mut essence = RegularTransactionEssence::builder(self.client.get_network_id()?, inputs_commitment);
+        let mut essence = RegularTransactionEssence::builder(self.client.get_network_id().await?, inputs_commitment);
         let inputs = selected_transaction_data
             .inputs
             .iter()
@@ -92,7 +92,7 @@ impl<'a> ClientBlockBuilder<'a> {
             essence = essence.with_payload(Payload::from(tagged_data_payload));
         }
 
-        let regular_essence = essence.finish(&self.client.get_protocol_parameters()?)?;
+        let regular_essence = essence.finish(&self.client.get_protocol_parameters().await?)?;
 
         validate_regular_transaction_essence_length(&regular_essence)?;
 

@@ -36,7 +36,7 @@ async fn main() -> Result<()> {
         &std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_SEED_2").unwrap(),
     )?);
 
-    let token_supply = client.get_token_supply()?;
+    let token_supply = client.get_token_supply().await?;
 
     // Get output ids of outputs that can be controlled by this address without further unlock constraints
     let output_ids = client

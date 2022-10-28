@@ -206,7 +206,7 @@ impl Client {
 
         let mut basic_outputs = Vec::new();
         let current_time = self.get_time_checked()?;
-        let token_supply = self.get_token_supply()?;
+        let token_supply = self.get_token_supply().await?;
 
         for output_resp in available_outputs {
             let (amount, _) = ClientBlockBuilder::get_output_amount_and_address(
@@ -321,7 +321,7 @@ impl Client {
     pub async fn promote_unchecked(&self, block_id: &BlockId) -> Result<(BlockId, Block)> {
         // Create a new block (zero value block) for which one tip would be the actual block.
         let mut tips = self.get_tips().await?;
-        let min_pow_score = self.get_min_pow_score()?;
+        let min_pow_score = self.get_min_pow_score().await?;
         tips.push(*block_id);
 
         let miner = self.get_pow_provider();

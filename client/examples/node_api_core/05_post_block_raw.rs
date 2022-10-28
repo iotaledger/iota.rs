@@ -25,7 +25,7 @@ async fn main() -> Result<()> {
         .with_node_sync_disabled()
         .finish()?;
 
-    let min_pow_score = client.get_min_pow_score()?;
+    let min_pow_score = client.get_min_pow_score().await?;
 
     // Get parents for the block.
     let parents = Parents::new(client.get_tips().await?)?;

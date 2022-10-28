@@ -68,7 +68,7 @@ impl<'a> ClientBlockBuilder<'a> {
         let mut gap_index = self.initial_address_index;
         let mut empty_address_count: u64 = 0;
         let mut cached_error = None;
-        let token_supply = self.client.get_token_supply()?;
+        let token_supply = self.client.get_token_supply().await?;
 
         log::debug!("[get_inputs from utxo chains]");
 

@@ -108,19 +108,19 @@ impl Client {
     }
 
     /// Transforms a hex encoded address to a bech32 encoded address
-    pub fn hex_to_bech32(&self, hex: &str, bech32_hrp: Option<&str>) -> crate::Result<String> {
+    pub async fn hex_to_bech32(&self, hex: &str, bech32_hrp: Option<&str>) -> crate::Result<String> {
         let bech32_hrp = match bech32_hrp {
             Some(hrp) => hrp.into(),
-            None => self.get_bech32_hrp()?,
+            None => self.get_bech32_hrp().await?,
         };
         hex_to_bech32(hex, &bech32_hrp)
     }
 
     /// Transforms a hex encoded public key to a bech32 encoded address
-    pub fn hex_public_key_to_bech32_address(&self, hex: &str, bech32_hrp: Option<&str>) -> crate::Result<String> {
+    pub async fn hex_public_key_to_bech32_address(&self, hex: &str, bech32_hrp: Option<&str>) -> crate::Result<String> {
         let bech32_hrp = match bech32_hrp {
             Some(hrp) => hrp.into(),
-            None => self.get_bech32_hrp()?,
+            None => self.get_bech32_hrp().await?,
         };
         hex_public_key_to_bech32_address(hex, &bech32_hrp)
     }

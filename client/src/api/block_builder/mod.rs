@@ -160,12 +160,12 @@ impl<'a> ClientBlockBuilder<'a> {
     }
 
     /// Set a transfer to the builder
-    pub fn with_output(mut self, address: &str, amount: u64) -> Result<Self> {
+    pub async fn with_output(mut self, address: &str, amount: u64) -> Result<ClientBlockBuilder<'a>> {
         let output = BasicOutputBuilder::new_with_amount(amount)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(
                 Address::try_from_bech32(address)?.1,
             )))
-            .finish_output(self.client.get_token_supply()?)?;
+            .finish_output(self.client.get_token_supply().await?)?;
         self.outputs.push(output);
         if !OUTPUT_COUNT_RANGE.contains(&(self.outputs.len() as u16)) {
             return Err(crate::Error::BlockError(iota_types::block::Error::InvalidOutputCount(
@@ -187,12 +187,12 @@ impl<'a> ClientBlockBuilder<'a> {
     }
 
     /// Set a transfer to the builder, address needs to be hex encoded
-    pub fn with_output_hex(mut self, address: &str, amount: u64) -> Result<Self> {
+    pub async fn with_output_hex(mut self, address: &str, amount: u64) -> Result<ClientBlockBuilder<'a>> {
         let output = BasicOutputBuilder::new_with_amount(amount)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(
                 address.parse::<Ed25519Address>()?.into(),
             )))
-            .finish_output(self.client.get_token_supply()?)?;
+            .finish_output(self.client.get_token_supply().await?)?;
         self.outputs.push(output);
         if !OUTPUT_COUNT_RANGE.contains(&(self.outputs.len() as u16)) {
             return Err(crate::Error::BlockError(iota_types::block::Error::InvalidOutputCount(
@@ -234,7 +234,7 @@ impl<'a> ClientBlockBuilder<'a> {
 
     /// Set multiple options from client block builder options type
     /// Useful for bindings
-    pub fn set_options(mut self, options: ClientBlockBuilderOptions) -> Result<Self> {
+    pub async fn set_options(mut self, options: ClientBlockBuilderOptions) -> Result<ClientBlockBuilder<'a>> {
         if let Some(coin_type) = options.coin_type {
             self = self.with_coin_type(coin_type);
         }
@@ -258,27 +258,31 @@ impl<'a> ClientBlockBuilder<'a> {
         }
 
         if let Some(output) = options.output {
-            self = self.with_output(
-                &output.address,
-                output
-                    .amount
-                    .parse::<u64>()
-                    .map_err(|_| Error::InvalidAmount(output.amount))?,
-            )?;
+            self = self
+                .with_output(
+                    &output.address,
+                    output
+                        .amount
+                        .parse::<u64>()
+                        .map_err(|_| Error::InvalidAmount(output.amount))?,
+                )
+                .await?;
         }
 
         if let Some(output_hex) = options.output_hex {
-            self = self.with_output_hex(
-                &output_hex.address,
-                output_hex
-                    .amount
-                    .parse::<u64>()
-                    .map_err(|_| Error::InvalidAmount(output_hex.amount))?,
-            )?;
+            self = self
+                .with_output_hex(
+                    &output_hex.address,
+                    output_hex
+                        .amount
+                        .parse::<u64>()
+                        .map_err(|_| Error::InvalidAmount(output_hex.amount))?,
+                )
+                .await?;
         }
 
         if let Some(outputs) = options.outputs {
-            let token_supply = self.client.get_token_supply()?;
+            let token_supply = self.client.get_token_supply().await?;
 
             self = self.with_outputs(
                 outputs
@@ -407,7 +411,7 @@ impl<'a> ClientBlockBuilder<'a> {
                 parents.dedup();
 
                 let miner = self.client.get_pow_provider();
-                let min_pow_score = self.client.get_min_pow_score()?;
+                let min_pow_score = self.client.get_min_pow_score().await?;
                 do_pow(miner, min_pow_score, payload, parents)?
             }
             None => crate::api::pow::finish_pow(self.client, payload).await?,
