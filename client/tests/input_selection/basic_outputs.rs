@@ -25,7 +25,7 @@ fn input_selection_basic_outputs() -> Result<()> {
         outputs,
         None,
         &rent_structure,
-        false,
+        None,
         0,
         TOKEN_SUPPLY,
     )?;
@@ -40,7 +40,7 @@ fn input_selection_basic_outputs() -> Result<()> {
         outputs,
         None,
         &rent_structure,
-        false,
+        None,
         0,
         TOKEN_SUPPLY,
     ) {
@@ -60,7 +60,7 @@ fn input_selection_basic_outputs() -> Result<()> {
         outputs,
         None,
         &rent_structure,
-        false,
+        None,
         0,
         TOKEN_SUPPLY,
     )?;
@@ -78,7 +78,7 @@ fn input_selection_basic_outputs() -> Result<()> {
         outputs,
         None,
         &rent_structure,
-        false,
+        None,
         0,
         TOKEN_SUPPLY,
     )?;
@@ -96,7 +96,7 @@ fn input_selection_basic_outputs() -> Result<()> {
         outputs,
         None,
         &rent_structure,
-        false,
+        None,
         0,
         TOKEN_SUPPLY,
     ) {

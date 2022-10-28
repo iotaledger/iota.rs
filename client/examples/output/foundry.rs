@@ -4,6 +4,7 @@
 //! cargo run --example foundry --release
 
 use iota_client::{
+    api::input_selection::ToBeBurned,
     block::{
         address::AliasAddress,
         output::{
@@ -260,7 +261,8 @@ async fn main() -> Result<()> {
     let block = client
         .block()
         .with_secret_manager(&secret_manager)
-        .with_burning_allowed(true)
+        // todo: provide to be burned value
+        .with_burning(ToBeBurned { ..Default::default() })
         .with_input(basic_output_id.into())?
         .with_outputs(outputs)?
         .finish()

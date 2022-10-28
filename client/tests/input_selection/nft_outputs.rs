@@ -4,7 +4,7 @@
 use std::str::FromStr;
 
 use iota_client::{
-    api::input_selection::try_select_inputs,
+    api::input_selection::{try_select_inputs, ToBeBurned},
     block::output::{NftId, Output, RentStructure},
     Error, Result,
 };
@@ -37,7 +37,7 @@ fn input_selection_nfts() -> Result<()> {
         outputs,
         None,
         &rent_structure,
-        false,
+        None,
         0,
         TOKEN_SUPPLY,
     )?;
@@ -52,7 +52,7 @@ fn input_selection_nfts() -> Result<()> {
         outputs,
         None,
         &rent_structure,
-        false,
+        None,
         0,
         TOKEN_SUPPLY,
     ) {
@@ -73,7 +73,7 @@ fn input_selection_nfts() -> Result<()> {
         outputs,
         None,
         &rent_structure,
-        false,
+        None,
         0,
         TOKEN_SUPPLY,
     )?;
@@ -89,7 +89,7 @@ fn input_selection_nfts() -> Result<()> {
         outputs,
         None,
         &rent_structure,
-        false,
+        None,
         0,
         TOKEN_SUPPLY,
     )?;
@@ -113,7 +113,8 @@ fn input_selection_nfts() -> Result<()> {
         outputs,
         None,
         &rent_structure,
-        true,
+        // todo: provide to be burned value
+        Some(ToBeBurned { ..Default::default() }),
         0,
         TOKEN_SUPPLY,
     )?;
@@ -131,7 +132,7 @@ fn input_selection_nfts() -> Result<()> {
         outputs,
         None,
         &rent_structure,
-        false,
+        None,
         0,
         TOKEN_SUPPLY,
     ) {
@@ -151,7 +152,7 @@ fn input_selection_nfts() -> Result<()> {
         outputs,
         None,
         &rent_structure,
-        false,
+        None,
         0,
         TOKEN_SUPPLY,
     ) {
