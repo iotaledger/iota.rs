@@ -19,6 +19,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security -->
 
+## 2.0.1-rc.4 - 20XX-XX-XX
+
+### Changed
+
+- Use `OutputWithMetadataResponse` instead of `OutputResponse`;
+
 ## 2.0.1-rc.3 - 2022-10-25
 
 ### Added

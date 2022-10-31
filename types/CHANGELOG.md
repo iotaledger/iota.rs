@@ -19,6 +19,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security -->
 
+## 1.0.0-rc.2 - 20XX-XX-XX
+
+### Added
+
+- `OutputResponse` enum with `Json` and `Raw` variants;
+
+### Changed
+
+- Renamed `OutputResponse` to `OutputWithMetadataResponse`;
+
 ## 1.0.0-rc.1 - 2022-10-25
 
 First release based on `bee-api-types` and `bee-block`.
