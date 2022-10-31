@@ -22,6 +22,12 @@
           "command": "dasel put string -f Cargo.toml '.dependencies.iota-client.features.[1]' mqtt"
         },
         {
+          "command": "yarn --ignore-scripts"
+        },
+        {
+          "command": "tsc"
+        },
+        {
           "command": "cat Cargo.toml"
         }
       ],

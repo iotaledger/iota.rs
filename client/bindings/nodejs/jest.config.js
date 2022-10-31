@@ -4,6 +4,6 @@ module.exports = {
     testEnvironment: 'node',
     testMatch: ['<rootDir>/test/**/*.(test|spec).ts'],
     moduleNameMapper: {
-        'index.node': '<rootDir>/index.node',
+        'index.node': '<rootDir>/build/Release/index.node',
     },
 };
