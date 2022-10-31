@@ -1,5 +1,10 @@
 # Changelog
 
+## \[3.0.0-rc.3]
+
+- Run tsc before publishing.
+  - [f9efaf6](https://github.com/iotaledger/iota.rs/commit/f9efaf6384d93d9f08d81be6043923f2b13cd4dd) Fix nodejs package and path ([#1341](https://github.com/iotaledger/iota.rs/pull/1341)) on 2022-10-31
+
 ## \[3.0.0-rc.2]
 
 - Fix build script filename.
