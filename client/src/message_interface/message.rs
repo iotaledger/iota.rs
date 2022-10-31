@@ -338,14 +338,14 @@ pub enum Message {
     //////////////////////////////////////////////////////////////////////
     // High level API
     //////////////////////////////////////////////////////////////////////
-    /// Fetch OutputResponse from provided OutputIds (requests are sent in parallel)
+    /// Fetch OutputWithMetadataResponse from provided OutputIds (requests are sent in parallel)
     GetOutputs {
         /// Output IDs
         #[serde(rename = "outputIds")]
         output_ids: Vec<OutputId>,
     },
-    /// Try to get OutputResponse from provided OutputIds (requests are sent in parallel and errors are ignored, can be
-    /// useful for spent outputs)
+    /// Try to get OutputWithMetadataResponse from provided OutputIds (requests are sent in parallel and errors are
+    /// ignored, can be useful for spent outputs)
     TryGetOutputs {
         /// Output IDs
         #[serde(rename = "outputIds")]
