@@ -48,13 +48,13 @@ async fn main() -> Result<()> {
     let address = client.get_addresses(&secret_manager).with_range(0..1).get_raw().await?[0];
     println!(
         "{}",
-        request_funds_from_faucet(&faucet_url, &address.to_bech32(client.get_bech32_hrp()?)).await?
+        request_funds_from_faucet(&faucet_url, &address.to_bech32(client.get_bech32_hrp().await?)).await?
     );
     // Wait some time for the faucet transaction
     tokio::time::sleep(std::time::Duration::from_secs(15)).await;
 
-    let rent_structure = client.get_rent_structure()?;
-    let token_supply = client.get_token_supply()?;
+    let rent_structure = client.get_rent_structure().await?;
+    let token_supply = client.get_token_supply().await?;
 
     //////////////////////////////////
     // create three new alias outputs

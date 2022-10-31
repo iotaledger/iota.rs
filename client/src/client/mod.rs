@@ -120,13 +120,13 @@ impl Client {
 
     /// Gets the network related information such as network_id and min_pow_score
     /// and if it's the default one, sync it first and set the NetworkInfo.
-    pub fn get_network_info(&self) -> Result<NetworkInfo> {
+    pub async fn get_network_info(&self) -> Result<NetworkInfo> {
         // For WASM we don't have the node syncing process, which updates the network_info every 60 seconds, but the Pow
         // difficulty or the byte cost could change via a milestone, so we request the node info every time, so we don't
         // create invalid transactions/blocks.
         #[cfg(target_family = "wasm")]
         {
-            let info = futures::executor::block_on(async move { self.get_info().await })?.node_info;
+            let info = self.get_info().await?.node_info;
             let mut client_network_info = self.network_info.write().map_err(|_| crate::Error::PoisonError)?;
             client_network_info.protocol_parameters = info.protocol.try_into()?;
         }
@@ -135,48 +135,53 @@ impl Client {
     }
 
     /// Gets the protocol parameters of the node we're connecting to.
-    pub fn get_protocol_parameters(&self) -> Result<ProtocolParameters> {
-        Ok(self.get_network_info()?.protocol_parameters)
+    pub async fn get_protocol_parameters(&self) -> Result<ProtocolParameters> {
+        Ok(self.get_network_info().await?.protocol_parameters)
     }
 
     /// Gets the protocol version of the node we're connecting to.
-    pub fn get_protocol_version(&self) -> Result<u8> {
-        Ok(self.get_network_info()?.protocol_parameters.protocol_version())
+    pub async fn get_protocol_version(&self) -> Result<u8> {
+        Ok(self.get_network_info().await?.protocol_parameters.protocol_version())
     }
 
     /// Gets the network name of the node we're connecting to.
-    pub fn get_network_name(&self) -> Result<String> {
-        Ok(self.get_network_info()?.protocol_parameters.network_name().into())
+    pub async fn get_network_name(&self) -> Result<String> {
+        Ok(self.get_network_info().await?.protocol_parameters.network_name().into())
     }
 
     /// Gets the network id of the node we're connecting to.
-    pub fn get_network_id(&self) -> Result<u64> {
-        Ok(self.get_network_info()?.protocol_parameters.network_id())
+    pub async fn get_network_id(&self) -> Result<u64> {
+        Ok(self.get_network_info().await?.protocol_parameters.network_id())
     }
 
     /// Gets the bech32 HRP of the node we're connecting to.
-    pub fn get_bech32_hrp(&self) -> Result<String> {
-        Ok(self.get_network_info()?.protocol_parameters.bech32_hrp().into())
+    pub async fn get_bech32_hrp(&self) -> Result<String> {
+        Ok(self.get_network_info().await?.protocol_parameters.bech32_hrp().into())
     }
 
     /// Gets the minimum pow score of the node we're connecting to.
-    pub fn get_min_pow_score(&self) -> Result<u32> {
-        Ok(self.get_network_info()?.protocol_parameters.min_pow_score())
+    pub async fn get_min_pow_score(&self) -> Result<u32> {
+        Ok(self.get_network_info().await?.protocol_parameters.min_pow_score())
     }
 
     /// Gets the below maximum depth of the node we're connecting to.
-    pub fn get_below_max_depth(&self) -> Result<u8> {
-        Ok(self.get_network_info()?.protocol_parameters.below_max_depth())
+    pub async fn get_below_max_depth(&self) -> Result<u8> {
+        Ok(self.get_network_info().await?.protocol_parameters.below_max_depth())
     }
 
     /// Gets the rent structure of the node we're connecting to.
-    pub fn get_rent_structure(&self) -> Result<RentStructure> {
-        Ok(self.get_network_info()?.protocol_parameters.rent_structure().clone())
+    pub async fn get_rent_structure(&self) -> Result<RentStructure> {
+        Ok(self
+            .get_network_info()
+            .await?
+            .protocol_parameters
+            .rent_structure()
+            .clone())
     }
 
     /// Gets the token supply of the node we're connecting to.
-    pub fn get_token_supply(&self) -> Result<u64> {
-        Ok(self.get_network_info()?.protocol_parameters.token_supply())
+    pub async fn get_token_supply(&self) -> Result<u64> {
+        Ok(self.get_network_info().await?.protocol_parameters.token_supply())
     }
 
     /// returns the tips interval

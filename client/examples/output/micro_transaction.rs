@@ -47,9 +47,9 @@ async fn main() -> Result<()> {
     let sender_address = addresses[0];
     let receiver_address = addresses[1];
 
-    let token_supply = client.get_token_supply()?;
+    let token_supply = client.get_token_supply().await?;
 
-    request_funds_from_faucet(&faucet_url, &sender_address.to_bech32(client.get_bech32_hrp()?)).await?;
+    request_funds_from_faucet(&faucet_url, &sender_address.to_bech32(client.get_bech32_hrp().await?)).await?;
     tokio::time::sleep(std::time::Duration::from_secs(15)).await;
 
     let tomorrow = (SystemTime::now() + Duration::from_secs(24 * 3600))

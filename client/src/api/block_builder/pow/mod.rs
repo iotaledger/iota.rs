@@ -52,7 +52,7 @@ pub async fn finish_pow(client: &Client, payload: Option<Payload>) -> Result<Blo
 async fn finish_multi_threaded_pow(client: &Client, payload: Option<Payload>) -> Result<Block> {
     let local_pow = client.get_local_pow();
     let pow_worker_count = client.pow_worker_count;
-    let min_pow_score = client.get_min_pow_score()?;
+    let min_pow_score = client.get_min_pow_score().await?;
     let tips_interval = client.get_tips_interval();
     loop {
         let cancel = MinerCancel::new();
@@ -103,7 +103,7 @@ fn pow_timeout(after_seconds: u64, cancel: MinerCancel) -> (u64, Option<Block>) 
 /// Always fetches new tips after each tips interval elapses.
 #[cfg(target_family = "wasm")]
 async fn finish_single_threaded_pow(client: &Client, payload: Option<Payload>) -> Result<Block> {
-    let min_pow_score: u32 = client.get_min_pow_score()?;
+    let min_pow_score: u32 = client.get_min_pow_score().await?;
     let tips_interval: u64 = client.get_tips_interval();
     let local_pow: bool = client.get_local_pow();
     let mut parent_blocks = client.get_tips().await?;

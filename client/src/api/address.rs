@@ -136,7 +136,7 @@ impl<'a> GetAddressesBuilder<'a> {
         let bech32_hrp = match self.bech32_hrp.clone() {
             Some(bech32_hrp) => bech32_hrp,
             None => match self.client {
-                Some(client) => client.get_bech32_hrp()?,
+                Some(client) => client.get_bech32_hrp().await?,
                 None => SHIMMER_TESTNET_BECH32_HRP.to_string(),
             },
         };
@@ -175,7 +175,7 @@ impl<'a> GetAddressesBuilder<'a> {
         let bech32_hrp = match self.bech32_hrp.clone() {
             Some(bech32_hrp) => bech32_hrp,
             None => match self.client {
-                Some(client) => client.get_bech32_hrp()?,
+                Some(client) => client.get_bech32_hrp().await?,
                 None => SHIMMER_TESTNET_BECH32_HRP.to_string(),
             },
         };

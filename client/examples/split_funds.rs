@@ -32,7 +32,7 @@ async fn main() -> Result<()> {
     let address = client.get_addresses(&secret_manager).with_range(0..1).get_raw().await?[0];
     println!(
         "{}",
-        request_funds_from_faucet(&faucet_url, &address.to_bech32(client.get_bech32_hrp()?)).await?
+        request_funds_from_faucet(&faucet_url, &address.to_bech32(client.get_bech32_hrp().await?)).await?
     );
 
     // wait so the faucet can send the funds
@@ -41,11 +41,13 @@ async fn main() -> Result<()> {
     let mut block_builder = client.block().with_secret_manager(&secret_manager);
     // Insert the output address and amount to spent. The amount cannot be zero.
     for _ in 0..100 {
-        block_builder = block_builder.with_output(
-            // We generate an address from our seed so that we send the funds to ourselves
-            &client.get_addresses(&secret_manager).with_range(0..1).finish().await?[0],
-            1_000_000,
-        )?;
+        block_builder = block_builder
+            .with_output(
+                // We generate an address from our seed so that we send the funds to ourselves
+                &client.get_addresses(&secret_manager).with_range(0..1).finish().await?[0],
+                1_000_000,
+            )
+            .await?;
     }
     let block = block_builder.finish().await?;
 

@@ -51,7 +51,8 @@ async fn main() -> Result<()> {
         .with_output(
             "atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r",
             1_000_000,
-        )?
+        )
+        .await?
         .finish()
         .await?;
 

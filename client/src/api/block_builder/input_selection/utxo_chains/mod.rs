@@ -299,7 +299,7 @@ pub(crate) async fn get_alias_and_nft_outputs_recursively(
 ) -> Result<()> {
     log::debug!("[get_alias_and_nft_outputs_recursively]");
     let current_time = client.get_time_checked()?;
-    let token_supply = client.get_token_supply()?;
+    let token_supply = client.get_token_supply().await?;
 
     let mut processed_alias_nft_addresses = std::collections::HashSet::new();
 

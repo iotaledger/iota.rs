@@ -47,7 +47,8 @@ async fn main() -> Result<()> {
         transaction_builder = transaction_builder.with_input(input)?;
     }
     let prepared_transaction = transaction_builder
-        .with_output(address, amount)?
+        .with_output(address, amount)
+        .await?
         .prepare_transaction()
         .await?;
 

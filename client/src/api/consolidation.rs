@@ -26,7 +26,7 @@ impl Client {
         secret_manager: &SecretManager,
         address_builder_options: GetAddressesBuilderOptions,
     ) -> Result<String> {
-        let token_supply = self.get_token_supply()?;
+        let token_supply = self.get_token_supply().await?;
         let mut last_transfer_index = address_builder_options.range.as_ref().unwrap_or(&(0..1)).start;
         // use the start index as offset
         let offset = last_transfer_index;

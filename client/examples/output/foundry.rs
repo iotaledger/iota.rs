@@ -46,12 +46,12 @@ async fn main() -> Result<()> {
         &std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
     )?);
 
-    let token_supply = client.get_token_supply()?;
+    let token_supply = client.get_token_supply().await?;
 
     let address = client.get_addresses(&secret_manager).with_range(0..1).get_raw().await?[0];
     println!(
         "{}",
-        request_funds_from_faucet(&faucet_url, &address.to_bech32(client.get_bech32_hrp()?)).await?
+        request_funds_from_faucet(&faucet_url, &address.to_bech32(client.get_bech32_hrp().await?)).await?
     );
     tokio::time::sleep(std::time::Duration::from_secs(20)).await;
 
@@ -204,7 +204,7 @@ async fn main() -> Result<()> {
     // get additional input for the new basic output
     let output_ids = client
         .basic_output_ids(vec![QueryParameter::Address(
-            address.to_bech32(client.get_bech32_hrp()?),
+            address.to_bech32(client.get_bech32_hrp().await?),
         )])
         .await?;
 

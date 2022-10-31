@@ -58,7 +58,8 @@ async fn main() -> Result<()> {
             // We generate an address from our seed so that we send the funds to ourselves
             receiver_address,
             9_000_000,
-        )?
+        )
+        .await?
         // We send the remainder to an address where we don't have access to.
         .with_custom_remainder_address(remainder_address)?
         .finish()

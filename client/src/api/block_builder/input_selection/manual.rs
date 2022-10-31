@@ -37,7 +37,7 @@ impl<'a> ClientBlockBuilder<'a> {
 
         let mut inputs_data = Vec::new();
         let current_time = self.client.get_time_checked()?;
-        let token_supply = self.client.get_token_supply()?;
+        let token_supply = self.client.get_token_supply().await?;
 
         if let Some(inputs) = &self.inputs {
             for input in inputs {
@@ -51,7 +51,7 @@ impl<'a> ClientBlockBuilder<'a> {
                         current_time,
                     )?;
 
-                    let bech32_hrp = self.client.get_bech32_hrp()?;
+                    let bech32_hrp = self.client.get_bech32_hrp().await?;
                     let address_index_internal = match self.secret_manager {
                         Some(secret_manager) => {
                             match output_address {
