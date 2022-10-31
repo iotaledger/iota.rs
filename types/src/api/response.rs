@@ -312,7 +312,7 @@ impl OutputMetadataResponse {
     serde(untagged)
 )]
 pub enum OutputResponse {
-    Json(OutputWithMetadataResponse),
+    Json(Box<OutputWithMetadataResponse>),
     Raw(Vec<u8>),
 }
 
