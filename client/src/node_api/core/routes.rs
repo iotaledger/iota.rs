@@ -10,8 +10,8 @@ use iota_types::{
         dto::{PeerDto, ReceiptDto},
         response::{
             BlockMetadataResponse, BlockResponse, InfoResponse, MilestoneResponse, OutputMetadataResponse,
-            OutputResponse, OutputWithMetadataResponse, PeersResponse, ReceiptsResponse, RoutesResponse,
-            SubmitBlockResponse, TipsResponse, TreasuryResponse, UtxoChangesResponse,
+            OutputWithMetadataResponse, PeersResponse, ReceiptsResponse, RoutesResponse, SubmitBlockResponse,
+            TipsResponse, TreasuryResponse, UtxoChangesResponse,
         },
     },
     block::{
@@ -320,15 +320,9 @@ impl Client {
     pub async fn get_output(&self, output_id: &OutputId) -> Result<OutputWithMetadataResponse> {
         let path = &format!("api/core/v2/outputs/{}", output_id);
 
-        let resp = self
-            .node_manager
+        self.node_manager
             .get_request(path, None, self.get_timeout(), false, true)
-            .await?;
-
-        match resp {
-            OutputResponse::Json(dto) => Ok(dto),
-            OutputResponse::Raw(_) => Err(crate::Error::UnexpectedApiResponse),
-        }
+            .await
     }
 
     /// Finds an output, as raw bytes, by its OutputId (TransactionId + output_index).
