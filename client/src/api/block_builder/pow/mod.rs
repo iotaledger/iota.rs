@@ -25,13 +25,12 @@ pub fn do_pow<P: NonceProvider>(
     payload: Option<Payload>,
     parent_blocks: Vec<BlockId>,
 ) -> Result<Block> {
-    let mut block = BlockBuilder::<P>::new(Parents::new(parent_blocks)?);
+    let mut block = BlockBuilder::new(Parents::new(parent_blocks)?);
     if let Some(p) = payload {
         block = block.with_payload(p);
     }
     block
-        .with_nonce_provider(miner)
-        .finish(min_pow_score)
+        .finish_nonce_provider(|bytes| miner.nonce(bytes, min_pow_score).unwrap())
         .map_err(Error::BlockError)
 }
 
