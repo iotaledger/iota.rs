@@ -24,6 +24,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Use `OutputWithMetadataResponse` instead of `OutputResponse`;
+- `ClientBlockBuilder::{with_output, with_output_hex, set_options}` made async;
+- `Client::{hex_to_bech32, hex_public_key_to_bech32_address}` made async;
+- `Client::{get_network_info, get_protocol_parameters, get_protocol_version, get_network_name, get_network_id, get_bech32_hrp, get_min_pow_score, get_below_max_depth, get_rent_structure, get_token_supply}` made async;
 
 ## 2.0.1-rc.3 - 2022-10-25
 
