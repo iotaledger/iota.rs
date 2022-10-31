@@ -6,7 +6,7 @@
 pub mod routes;
 
 use iota_types::{
-    api::response::{OutputMetadataResponse, OutputResponse},
+    api::response::{OutputMetadataResponse, OutputWithMetadataResponse},
     block::output::OutputId,
 };
 
@@ -16,7 +16,7 @@ use crate::{Client, Result};
 
 impl Client {
     /// Request outputs by their output ID in parallel
-    pub async fn get_outputs(&self, output_ids: Vec<OutputId>) -> Result<Vec<OutputResponse>> {
+    pub async fn get_outputs(&self, output_ids: Vec<OutputId>) -> Result<Vec<OutputWithMetadataResponse>> {
         let mut outputs = Vec::new();
 
         #[cfg(target_family = "wasm")]
@@ -48,7 +48,7 @@ impl Client {
 
     /// Request outputs by their output ID in parallel, ignoring failed requests
     /// Useful to get data about spent outputs, that might not be pruned yet
-    pub async fn try_get_outputs(&self, output_ids: Vec<OutputId>) -> Result<Vec<OutputResponse>> {
+    pub async fn try_get_outputs(&self, output_ids: Vec<OutputId>) -> Result<Vec<OutputWithMetadataResponse>> {
         let mut outputs = Vec::new();
 
         #[cfg(target_family = "wasm")]

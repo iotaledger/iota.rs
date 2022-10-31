@@ -10,8 +10,8 @@ use iota_types::{
         dto::{PeerDto, ReceiptDto},
         response::{
             BlockMetadataResponse, BlockResponse, InfoResponse, MilestoneResponse, OutputMetadataResponse,
-            OutputResponse, PeersResponse, ReceiptsResponse, RoutesResponse, SubmitBlockResponse, TipsResponse,
-            TreasuryResponse, UtxoChangesResponse,
+            OutputWithMetadataResponse, PeersResponse, ReceiptsResponse, RoutesResponse, SubmitBlockResponse,
+            TipsResponse, TreasuryResponse, UtxoChangesResponse,
         },
     },
     block::{
@@ -317,7 +317,7 @@ impl Client {
 
     /// Finds an output, as JSON, by its OutputId (TransactionId + output_index).
     /// GET /api/core/v2/outputs/{outputId}
-    pub async fn get_output(&self, output_id: &OutputId) -> Result<OutputResponse> {
+    pub async fn get_output(&self, output_id: &OutputId) -> Result<OutputWithMetadataResponse> {
         let path = &format!("api/core/v2/outputs/{}", output_id);
 
         self.node_manager

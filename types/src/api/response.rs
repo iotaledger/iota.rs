@@ -266,7 +266,7 @@ pub struct BlockMetadataResponse {
     derive(serde::Serialize, serde::Deserialize),
     serde(rename_all = "camelCase")
 )]
-pub struct OutputResponse {
+pub struct OutputWithMetadataResponse {
     pub metadata: OutputMetadataResponse,
     pub output: OutputDto,
 }
@@ -300,6 +300,20 @@ impl OutputMetadataResponse {
     pub fn output_id(&self) -> Result<OutputId, crate::block::Error> {
         OutputId::new(TransactionId::from_str(&self.transaction_id)?, self.output_index)
     }
+}
+
+/// Response of GET /api/core/v2/outputs/{output_id}.
+/// Returns an output and its metadata as JSON or raw bytes.
+#[derive(Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(serde::Serialize, serde::Deserialize),
+    serde(rename_all = "camelCase"),
+    serde(untagged)
+)]
+pub enum OutputResponse {
+    Json(Box<OutputWithMetadataResponse>),
+    Raw(Vec<u8>),
 }
 
 /// Response of:

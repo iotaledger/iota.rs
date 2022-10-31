@@ -5,7 +5,7 @@
 
 use crypto::keys::slip10::Chain;
 use iota_types::{
-    api::response::OutputResponse,
+    api::response::OutputWithMetadataResponse,
     block::{
         address::Address,
         output::{Output, RentStructure},
@@ -25,7 +25,7 @@ use crate::{
 
 impl<'a> ClientBlockBuilder<'a> {
     // Get basic outputs for an address without storage deposit return unlock condition
-    pub(crate) async fn basic_address_outputs(&self, address: String) -> Result<Vec<OutputResponse>> {
+    pub(crate) async fn basic_address_outputs(&self, address: String) -> Result<Vec<OutputWithMetadataResponse>> {
         let mut output_ids = Vec::new();
 
         // First request to get all basic outputs that can directly be unlocked by the address.
