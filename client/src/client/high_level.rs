@@ -4,7 +4,7 @@
 use std::{collections::HashSet, str::FromStr};
 
 use iota_types::{
-    api::{dto::LedgerInclusionStateDto, response::OutputResponse},
+    api::{dto::LedgerInclusionStateDto, response::OutputWithMetadataResponse},
     block::{
         input::{Input, UtxoInput, INPUT_COUNT_MAX},
         output::{Output, OutputId},
@@ -31,7 +31,10 @@ use crate::{
 
 impl Client {
     /// Get the inputs of a transaction for the given transaction id.
-    pub async fn inputs_from_transaction_id(&self, transaction_id: &TransactionId) -> Result<Vec<OutputResponse>> {
+    pub async fn inputs_from_transaction_id(
+        &self,
+        transaction_id: &TransactionId,
+    ) -> Result<Vec<OutputWithMetadataResponse>> {
         let block = self.get_included_block(transaction_id).await?;
 
         let inputs = match block.payload() {
@@ -249,7 +252,11 @@ impl Client {
 
     /// Find all outputs based on the requests criteria. This method will try to query multiple nodes if
     /// the request amount exceeds individual node limit.
-    pub async fn find_outputs(&self, output_ids: &[OutputId], addresses: &[String]) -> Result<Vec<OutputResponse>> {
+    pub async fn find_outputs(
+        &self,
+        output_ids: &[OutputId],
+        addresses: &[String],
+    ) -> Result<Vec<OutputWithMetadataResponse>> {
         let mut output_responses = self.get_outputs(output_ids.to_vec()).await?;
 
         // Use `get_address()` API to get the address outputs first,

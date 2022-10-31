@@ -5,7 +5,7 @@
 
 use crypto::keys::slip10::Chain;
 use iota_types::{
-    api::response::OutputResponse,
+    api::response::OutputWithMetadataResponse,
     block::{
         address::Address,
         output::{dto::OutputDto, AliasOutput, FoundryOutput, NftOutput, Output},
@@ -32,7 +32,7 @@ impl<'a> ClientBlockBuilder<'a> {
         let current_time = self.client.get_time_checked()?;
         let token_supply = client.get_token_supply()?;
 
-        let mut utxo_chains: Vec<(Address, OutputResponse)> = Vec::new();
+        let mut utxo_chains: Vec<(Address, OutputWithMetadataResponse)> = Vec::new();
         for output in outputs {
             match output {
                 Output::Alias(alias_output) => {

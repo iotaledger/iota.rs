@@ -8,8 +8,8 @@ use iota_types::{
     api::{
         dto::{PeerDto, ReceiptDto},
         response::{
-            BlockMetadataResponse, InfoResponse as NodeInfo, OutputMetadataResponse, OutputResponse, ProtocolResponse,
-            TreasuryResponse, UtxoChangesResponse as MilestoneUTXOChanges,
+            BlockMetadataResponse, InfoResponse as NodeInfo, OutputMetadataResponse, OutputWithMetadataResponse,
+            ProtocolResponse, TreasuryResponse, UtxoChangesResponse as MilestoneUTXOChanges,
         },
     },
     block::{
@@ -115,7 +115,7 @@ pub enum Response {
     BlockRaw(Vec<u8>),
     /// Response for:
     /// - [`GetOutput`](crate::message_interface::Message::GetOutput)
-    Output(OutputResponse),
+    Output(OutputWithMetadataResponse),
     /// Response for:
     /// - [`GetOutputMetadata`](crate::message_interface::Message::GetOutputMetadata)
     OutputMetadata(OutputMetadataResponse),
@@ -123,7 +123,7 @@ pub enum Response {
     /// - [`GetOutputs`](crate::message_interface::Message::GetOutputs)
     /// - [`TryGetOutputs`](crate::message_interface::Message::TryGetOutputs)
     /// - [`FindOutputs`](crate::message_interface::Message::FindOutputs)
-    Outputs(Vec<OutputResponse>),
+    Outputs(Vec<OutputWithMetadataResponse>),
     /// Response for:
     /// - [`GetMilestoneById`](crate::message_interface::Message::GetMilestoneById)
     /// - [`GetMilestoneByIndex`](crate::message_interface::Message::GetMilestoneByIndex)

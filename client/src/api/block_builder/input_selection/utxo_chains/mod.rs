@@ -6,7 +6,7 @@
 use std::{collections::HashSet, str::FromStr};
 
 use iota_types::{
-    api::response::OutputResponse,
+    api::response::OutputWithMetadataResponse,
     block::{
         address::{Address, AliasAddress, NftAddress},
         output::{
@@ -295,7 +295,7 @@ pub(crate) fn select_utxo_chain_inputs(
 /// Get recursively owned alias and nft outputs and add them to the utxo_chains
 pub(crate) async fn get_alias_and_nft_outputs_recursively(
     client: &Client,
-    utxo_chains: &mut Vec<(Address, OutputResponse)>,
+    utxo_chains: &mut Vec<(Address, OutputWithMetadataResponse)>,
 ) -> Result<()> {
     log::debug!("[get_alias_and_nft_outputs_recursively]");
     let current_time = client.get_time_checked()?;
@@ -324,7 +324,7 @@ pub(crate) async fn get_alias_and_nft_outputs_recursively(
     let mut processed_utxo_chains = Vec::new();
 
     // Make the outputs response optional, because we don't know it yet for new required outputs
-    let mut utxo_chain_optional_response: Vec<(Address, Option<OutputResponse>)> =
+    let mut utxo_chain_optional_response: Vec<(Address, Option<OutputWithMetadataResponse>)> =
         utxo_chains.iter_mut().map(|(a, o)| (*a, Some(o.clone()))).collect();
 
     // Get alias or nft addresses when needed or just add the input again
