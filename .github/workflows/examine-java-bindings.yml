@@ -67,12 +67,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install libudev-dev libusb-1.0-0-dev
 
-      - name: Run Cargo Test
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --manifest-path client/bindings/java/iota-client-java/native/Cargo.toml --all-features --release
-
       - name: Set Up Java ${{ matrix.java }}
         uses: actions/setup-java@v3
         with:
