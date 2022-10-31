@@ -1,5 +1,10 @@
 # Changelog
 
+## \[3.0.0-rc.4]
+
+- Fix rebuild script.
+  - [6f3f9a7](https://github.com/iotaledger/iota.rs/commit/6f3f9a7f1b448bdf59bd0634ad822f43d5706fb1) Fix rebuild script ([#1344](https://github.com/iotaledger/iota.rs/pull/1344)) on 2022-10-31
+
 ## \[3.0.0-rc.3]
 
 - Run tsc before publishing.
