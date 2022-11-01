@@ -61,7 +61,7 @@ impl OutputId {
     /// Hash the [`OutputId`] with BLAKE2b-256.
     #[inline(always)]
     pub fn hash(self) -> [u8; 32] {
-        Blake2b256::digest(&self.pack_to_vec()).into()
+        Blake2b256::digest(self.pack_to_vec()).into()
     }
 }
 
