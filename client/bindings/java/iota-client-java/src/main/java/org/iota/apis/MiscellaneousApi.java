@@ -11,6 +11,7 @@ import org.iota.types.output_builder.AliasOutputBuilderParams;
 import org.iota.types.output_builder.BasicOutputBuilderParams;
 import org.iota.types.output_builder.FoundryOutputBuilderParams;
 import org.iota.types.output_builder.NftOutputBuilderParams;
+import org.iota.types.responses.ProtocolParametersResponse;
 import org.iota.types.secret.GenerateAddressesOptions;
 import org.iota.types.secret.BuildBlockOptions;
 import org.iota.types.secret.SecretManager;
@@ -183,6 +184,15 @@ public class MiscellaneousApi extends BaseApi {
 
         return new AbstractMap.SimpleEntry<>(blockId, block);
     }
+
+    /**
+     * Returns the protocol parameters.
+     */
+    public ProtocolParametersResponse getProtocolParameters() throws ClientException {
+        JsonObject responsePayload = (JsonObject) callBaseApi(new ClientCommand("getProtocolParameters"));
+        return new ProtocolParametersResponse(responsePayload);
+    }
+
 
 }
 

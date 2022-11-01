@@ -12,6 +12,7 @@ import org.iota.types.output_builder.BasicOutputBuilderParams;
 import org.iota.types.output_builder.FoundryOutputBuilderParams;
 import org.iota.types.output_builder.NftOutputBuilderParams;
 import org.iota.types.responses.NodeInfoResponse;
+import org.iota.types.responses.ProtocolParametersResponse;
 import org.iota.types.responses.TreasuryResponse;
 import org.iota.types.responses.UtxoChangesResponse;
 import org.iota.types.secret.BuildBlockOptions;
@@ -774,6 +775,24 @@ public class Client {
      */
     public Map.Entry<BlockId, Block> postBlockPayload(BlockPayload payload) throws ClientException {
         return miscellaneousApi.postBlockPayload(payload);
+    }
+
+    /**
+     * Returns the token supply.
+     *
+     * @return The token supply.
+     */
+    public String getTokenSupply() throws ClientException {
+        return getProtocolParameters().getTokenSupply();
+    }
+
+    /**
+     * Returns the protocol parameters.
+     *
+     * @return The protocol parameters.
+     */
+    public ProtocolParametersResponse getProtocolParameters() throws ClientException {
+        return miscellaneousApi.getProtocolParameters();
     }
 
 }
