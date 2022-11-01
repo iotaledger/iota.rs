@@ -173,7 +173,7 @@ impl Block {
     /// Computes the identifier of the block.
     #[inline(always)]
     pub fn id(&self) -> BlockId {
-        BlockId::new(Blake2b256::digest(&self.pack_to_vec()).into())
+        BlockId::new(Blake2b256::digest(self.pack_to_vec()).into())
     }
 
     /// Consumes the [`Block`], and returns ownership over its [`Parents`].

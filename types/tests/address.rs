@@ -47,8 +47,7 @@ fn generate_bech32_testnet_string() {
 fn bech32_string_to_address() {
     let bytes: [u8; 32] = prefix_hex::decode(ED25519_ADDRESS).unwrap();
 
-    let (hrp, address) =
-        Address::try_from_bech32(&Address::from(Ed25519Address::new(bytes)).to_bech32("iota")).unwrap();
+    let (hrp, address) = Address::try_from_bech32(Address::from(Ed25519Address::new(bytes)).to_bech32("iota")).unwrap();
     let ed = match address {
         Address::Ed25519(ed) => ed,
         _ => unreachable!(),
@@ -57,8 +56,7 @@ fn bech32_string_to_address() {
     assert_eq!(hrp, "iota");
     assert_eq!(ed.to_string(), ED25519_ADDRESS);
 
-    let (hrp, address) =
-        Address::try_from_bech32(&Address::from(Ed25519Address::new(bytes)).to_bech32("atoi")).unwrap();
+    let (hrp, address) = Address::try_from_bech32(Address::from(Ed25519Address::new(bytes)).to_bech32("atoi")).unwrap();
     let ed = match address {
         Address::Ed25519(ed) => ed,
         _ => unreachable!(),
