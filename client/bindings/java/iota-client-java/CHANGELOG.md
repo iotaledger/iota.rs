@@ -19,11 +19,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security -->
 
-## 1.0.0-rc.2 - 2022-10-17
+## 1.0.0-rc.2 - 2022-11-01
 
 ### Added
 
 - Allow integers values in QueryParams;
+- Added following methods to the `MiscellaneousApi`:
+  - `getTokenSupply()`;
+  - `getProtocolParameters()`;
 
 ### Changed
 

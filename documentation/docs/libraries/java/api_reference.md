@@ -525,3 +525,15 @@ Automatically builds a block containing the given block payload and broadcasts i
 
 * **Parameters:** `payload` — The payload to be posted.
 * **Returns:** A map entry of the posted block id and the block.
+
+## `public String getTokenSupply() throws ClientException`
+
+Returns the token supply
+
+* **Returns:** The token supply.
+
+## `public String getProtocolParameters() throws ClientException`
+
+Returns the protocol parameters.
+
+* **Returns:** The protocol parameters.
