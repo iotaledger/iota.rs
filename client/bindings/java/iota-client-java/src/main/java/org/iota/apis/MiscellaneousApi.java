@@ -193,6 +193,5 @@ public class MiscellaneousApi extends BaseApi {
         return new ProtocolParametersResponse(responsePayload);
     }
 
-
 }
 
