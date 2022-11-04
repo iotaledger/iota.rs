@@ -38,6 +38,11 @@ impl<'a> ClientBlockBuilder<'a> {
                 .await?,
         );
 
+        #[cfg(all(target_arch = "wasm32", not(target_os = "wasi")))]
+        let now = instant::SystemTime::now().duration_since(instant::SystemTime::UNIX_EPOCH);
+        #[cfg(not(all(target_arch = "wasm32", not(target_os = "wasi"))))]
+        let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH);
+
         // Second request to get all basic outputs that can be unlocked by the address through the expiration condition.
         output_ids.extend(
             self.client
@@ -46,12 +51,7 @@ impl<'a> ClientBlockBuilder<'a> {
                     QueryParameter::HasExpiration(true),
                     QueryParameter::HasStorageDepositReturn(false),
                     // Ignore outputs that aren't expired yet
-                    QueryParameter::ExpiresBefore(
-                        std::time::SystemTime::now()
-                            .duration_since(std::time::UNIX_EPOCH)
-                            .expect("time went backwards")
-                            .as_secs() as u32,
-                    ),
+                    QueryParameter::ExpiresBefore(now.expect("time went backwards").as_secs() as u32),
                 ])
                 .await?,
         );
