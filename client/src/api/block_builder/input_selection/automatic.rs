@@ -47,8 +47,8 @@ impl<'a> ClientBlockBuilder<'a> {
                     QueryParameter::HasStorageDepositReturn(false),
                     // Ignore outputs that aren't expired yet
                     QueryParameter::ExpiresBefore(
-                        std::time::SystemTime::now()
-                            .duration_since(std::time::UNIX_EPOCH)
+                        instant::SystemTime::now()
+                            .duration_since(instant::SystemTime::UNIX_EPOCH)
                             .expect("time went backwards")
                             .as_secs() as u32,
                     ),
