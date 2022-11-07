@@ -5,7 +5,7 @@ mod builder;
 mod burn;
 mod requirement;
 
-use std::collections::{HashSet, VecDeque};
+use std::collections::HashSet;
 
 use burn::Burn;
 use requirement::Requirements;
@@ -100,33 +100,34 @@ impl InputSelection {
         //     }
         // }
 
-        // requirements.extend_front(requirements_from_outputs(self.outputs));
+        requirements.extend(Requirements::from(self.outputs.as_slice()));
 
         // if let Some(burn) = self.burn {
         //     requirements.extend(requirements_from_burn(self.burn));
         // }
         // requirements.push_back(Requirement::BaseCoinAmount);
 
-        // while let Some(requirement) = requirements.pop() {
-        //     let inputs = fulfill_requirement(requirement, &available_inputs, &selected_inputs, &mut self.outputs)?;
-        //     if !inputs.is_empty() && requirements.is_empty(){
-        //         requirements.push(Requirement::BaseCoinAmount);
-        //     }
-        //     selected_inputs.extend(inputs);
-        //     for input in inputs{
-        //         let (output, requirement) = process_input(input, &outputs, &self.burn);
+        // Process all the requirements until there are no more.
+        while let Some(requirement) = requirements.pop() {
+            //     let inputs = fulfill_requirement(requirement, &available_inputs, &selected_inputs, &mut self.outputs)?;
+            //     if !inputs.is_empty() && requirements.is_empty(){
+            //         requirements.push(Requirement::BaseCoinAmount);
+            //     }
+            //     selected_inputs.extend(inputs);
+            //     for input in inputs{
+            //         let (output, requirement) = process_input(input, &outputs, &self.burn);
 
-        //         if let Some(output) = output {
-        //             self.outputs.push(output);
-        //             let new_requirements = requirements_from_outputs(vec![output]);
-        //             requirements.push_front(new_requirements);
-        //         }
+            //         if let Some(output) = output {
+            //             self.outputs.push(output);
+            //             let new_requirements = requirements_from_outputs(vec![output]);
+            //             requirements.push_front(new_requirements);
+            //         }
 
-        //         if let Some(requirement) = requirement {
-        //             requirements.push(requirement);
-        //         }
-        //     }
-        // }
+            //         if let Some(requirement) = requirement {
+            //             requirements.push(requirement);
+            //         }
+            //     }
+        }
 
         // self.output.extend(create_storage_deposit_return_outputs(selected_input, self.outputs));
 

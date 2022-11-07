@@ -63,6 +63,12 @@ impl Requirement {
 
 pub(crate) struct Requirements(VecDeque<Requirement>);
 
+impl From<&[Output]> for Requirements {
+    fn from(outputs: &[Output]) -> Self {
+        Requirements::new()
+    }
+}
+
 impl Requirements {
     pub(crate) fn new() -> Self {
         Self(VecDeque::new())
@@ -74,5 +80,11 @@ impl Requirements {
 
     pub(crate) fn pop(&mut self) -> Option<Requirement> {
         self.0.pop_front()
+    }
+
+    pub(crate) fn extend(&mut self, mut requirements: Requirements) {
+        while let Some(requirement) = requirements.pop() {
+            self.push(requirement);
+        }
     }
 }
