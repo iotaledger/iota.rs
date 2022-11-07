@@ -8,5 +8,5 @@ pub(crate) fn fulfill_native_tokens_requirement(
     selected_inputs: &[Output],
     outputs: &[Output],
 ) -> Vec<Output> {
-    vec![]
+    todo!()
 }

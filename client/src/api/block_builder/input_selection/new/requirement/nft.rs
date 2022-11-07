@@ -9,5 +9,5 @@ pub(crate) fn fulfill_nft_requirement(
     selected_inputs: &[Output],
     outputs: &[Output],
 ) -> Vec<Output> {
-    vec![]
+    todo!()
 }

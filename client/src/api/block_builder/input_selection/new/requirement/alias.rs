@@ -9,5 +9,5 @@ pub(crate) fn fulfill_alias_requirement(
     selected_inputs: &[Output],
     outputs: &[Output],
 ) -> Vec<Output> {
-    vec![]
+    todo!()
 }
