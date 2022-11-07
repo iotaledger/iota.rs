@@ -10,6 +10,8 @@ mod nft;
 mod remainder;
 mod sender;
 
+use std::collections::VecDeque;
+
 use alias::fulfill_alias_requirement;
 use base_token::fulfill_base_coin_requirement;
 use foundry::fulfill_foundry_requirement;
@@ -24,7 +26,7 @@ use crate::block::{
     output::{AliasId, FoundryId, NftId, Output},
 };
 
-enum Requirement {
+pub(crate) enum Requirement {
     Sender(Address),
     Issuer(Address),
     Foundry(FoundryId),
@@ -56,5 +58,21 @@ impl Requirement {
             Requirement::BaseToken => fulfill_base_coin_requirement(available_inputs, selected_inputs, outputs),
             Requirement::Remainder => fulfill_remainder_requirement(available_inputs, selected_inputs, outputs),
         }
+    }
+}
+
+pub(crate) struct Requirements(VecDeque<Requirement>);
+
+impl Requirements {
+    pub(crate) fn new() -> Self {
+        Self(VecDeque::new())
+    }
+
+    pub(crate) fn push(&mut self, requirement: Requirement) {
+        self.0.push_front(requirement)
+    }
+
+    pub(crate) fn pop(&mut self) -> Option<Requirement> {
+        self.0.pop_front()
     }
 }

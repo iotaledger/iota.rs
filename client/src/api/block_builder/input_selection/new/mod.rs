@@ -5,9 +5,10 @@ mod builder;
 mod burn;
 mod requirement;
 
-use std::collections::HashSet;
+use std::collections::{HashSet, VecDeque};
 
 use burn::Burn;
+use requirement::Requirements;
 
 use crate::{
     block::{
@@ -85,7 +86,7 @@ impl InputSelection {
         //     }
         // }
 
-        // let mut requirements = Vec::new();
+        let mut requirements = Requirements::new();
 
         // for selected_input in selected_inputs.iter() {
         //     let (output, requirement) = process_input(selected_input, &outputs, &self.burn);
