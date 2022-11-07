@@ -10,7 +10,7 @@ use crate::{
 pub(crate) fn fulfill_sender_requirement(
     address: &Address,
     available_inputs: &mut Vec<InputSigningData>,
-    selected_inputs: &[Output],
+    selected_inputs: &[InputSigningData],
     outputs: &[Output],
 ) -> Result<Vec<InputSigningData>> {
     todo!()

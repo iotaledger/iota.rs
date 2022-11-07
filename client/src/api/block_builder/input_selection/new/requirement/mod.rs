@@ -46,7 +46,7 @@ impl Requirement {
     fn fulfill(
         &self,
         available_inputs: &mut Vec<InputSigningData>,
-        selected_inputs: &[Output],
+        selected_inputs: &[InputSigningData],
         outputs: &[Output],
     ) -> Result<Vec<InputSigningData>> {
         // TODO check if selected_inputs already solves the requirement

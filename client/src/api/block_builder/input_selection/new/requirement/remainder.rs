@@ -9,7 +9,7 @@ use crate::{
 
 pub(crate) fn fulfill_remainder_requirement(
     available_inputs: &mut Vec<InputSigningData>,
-    selected_inputs: &[Output],
+    selected_inputs: &[InputSigningData],
     outputs: &[Output],
 ) -> Result<Vec<InputSigningData>> {
     todo!()

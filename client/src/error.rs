@@ -214,9 +214,9 @@ pub enum Error {
     /// Required forbidden input.
     #[error("input {0} is both required and forbidden")]
     RequiredAndForbiddenInput(OutputId),
-    /// Unfulfilled requirement.
-    #[error("unfulfilled requirement {0:?}")]
-    UnfulfilledRequirement(Requirement),
+    /// Unfulfillable requirement.
+    #[error("unfulfillable requirement {0:?}")]
+    UnfulfillableRequirement(Requirement),
 
     //////////////////////////////////////////////////////////////////////
     // Ledger Nano
