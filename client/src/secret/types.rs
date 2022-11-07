@@ -166,6 +166,30 @@ pub struct OutputMetadata {
 }
 
 impl OutputMetadata {
+    pub fn new(
+        block_id: BlockId,
+        output_id: OutputId,
+        is_spent: bool,
+        milestone_index_spent: Option<u32>,
+        milestone_timestamp_spent: Option<u32>,
+        transaction_id_spent: Option<TransactionId>,
+        milestone_index_booked: u32,
+        milestone_timestamp_booked: u32,
+        ledger_index: u32,
+    ) -> Self {
+        Self {
+            block_id,
+            output_id,
+            is_spent,
+            milestone_index_spent,
+            milestone_timestamp_spent,
+            transaction_id_spent,
+            milestone_index_booked,
+            milestone_timestamp_booked,
+            ledger_index,
+        }
+    }
+
     pub fn block_id(&self) -> &BlockId {
         &self.block_id
     }

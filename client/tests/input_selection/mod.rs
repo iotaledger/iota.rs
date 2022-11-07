@@ -7,7 +7,7 @@ use iota_client::{
         output::{
             unlock_condition::{AddressUnlockCondition, ImmutableAliasAddressUnlockCondition, UnlockCondition},
             AliasId, AliasOutputBuilder, BasicOutputBuilder, FoundryOutputBuilder, NativeToken, NftId,
-            NftOutputBuilder, Output,
+            NftOutputBuilder, Output, OutputId,
         },
         rand::{block::rand_block_id, transaction::rand_transaction_id},
     },
@@ -82,18 +82,17 @@ fn build_input_signing_data_most_basic_outputs(outputs: Vec<(&str, u64)>) -> Vec
         .into_iter()
         .map(|(bech32_address, amount)| InputSigningData {
             output: build_most_basic_output(bech32_address, amount),
-            output_metadata: OutputMetadata {
-                block_id: rand_block_id(),
-                transaction_id: rand_transaction_id(),
-                output_index: 0,
-                is_spent: false,
-                milestone_index_spent: None,
-                milestone_timestamp_spent: None,
-                transaction_id_spent: None,
-                milestone_index_booked: 0,
-                milestone_timestamp_booked: 0,
-                ledger_index: 0,
-            },
+            output_metadata: OutputMetadata::new(
+                rand_block_id(),
+                OutputId::new(rand_transaction_id(), 0).unwrap(),
+                false,
+                None,
+                None,
+                None,
+                0,
+                0,
+                0,
+            ),
             chain: None,
             bech32_address: bech32_address.to_string(),
         })
@@ -105,18 +104,17 @@ fn build_input_signing_data_nft_outputs(outputs: Vec<(NftId, &str, u64)>) -> Vec
         .into_iter()
         .map(|(nft_id, bech32_address, amount)| InputSigningData {
             output: build_nft_output(nft_id, bech32_address, amount),
-            output_metadata: OutputMetadata {
-                block_id: rand_block_id(),
-                transaction_id: rand_transaction_id(),
-                output_index: 0,
-                is_spent: false,
-                milestone_index_spent: None,
-                milestone_timestamp_spent: None,
-                transaction_id_spent: None,
-                milestone_index_booked: 0,
-                milestone_timestamp_booked: 0,
-                ledger_index: 0,
-            },
+            output_metadata: OutputMetadata::new(
+                rand_block_id(),
+                OutputId::new(rand_transaction_id(), 0).unwrap(),
+                false,
+                None,
+                None,
+                None,
+                0,
+                0,
+                0,
+            ),
             chain: None,
             bech32_address: bech32_address.to_string(),
         })
@@ -128,18 +126,17 @@ fn build_input_signing_data_alias_outputs(outputs: Vec<(AliasId, &str, u64)>) ->
         .into_iter()
         .map(|(alias_id, bech32_address, amount)| InputSigningData {
             output: build_alias_output(alias_id, bech32_address, amount),
-            output_metadata: OutputMetadata {
-                block_id: rand_block_id(),
-                transaction_id: rand_transaction_id(),
-                output_index: 0,
-                is_spent: false,
-                milestone_index_spent: None,
-                milestone_timestamp_spent: None,
-                transaction_id_spent: None,
-                milestone_index_booked: 0,
-                milestone_timestamp_booked: 0,
-                ledger_index: 0,
-            },
+            output_metadata: OutputMetadata::new(
+                rand_block_id(),
+                OutputId::new(rand_transaction_id(), 0).unwrap(),
+                false,
+                None,
+                None,
+                None,
+                0,
+                0,
+                0,
+            ),
             chain: None,
             bech32_address: bech32_address.to_string(),
         })
@@ -154,18 +151,17 @@ fn build_input_signing_data_foundry_outputs(
         .map(
             |(alias_id, amount, simple_token_scheme, native_token)| InputSigningData {
                 output: build_foundry_output(alias_id, amount, simple_token_scheme, native_token),
-                output_metadata: OutputMetadata {
-                    block_id: rand_block_id(),
-                    transaction_id: rand_transaction_id(),
-                    output_index: 0,
-                    is_spent: false,
-                    milestone_index_spent: None,
-                    milestone_timestamp_spent: None,
-                    transaction_id_spent: None,
-                    milestone_index_booked: 0,
-                    milestone_timestamp_booked: 0,
-                    ledger_index: 0,
-                },
+                output_metadata: OutputMetadata::new(
+                    rand_block_id(),
+                    OutputId::new(rand_transaction_id(), 0).unwrap(),
+                    false,
+                    None,
+                    None,
+                    None,
+                    0,
+                    0,
+                    0,
+                ),
                 chain: None,
                 bech32_address: Address::Alias(AliasAddress::new(alias_id)).to_bech32(SHIMMER_TESTNET_BECH32_HRP),
             },
