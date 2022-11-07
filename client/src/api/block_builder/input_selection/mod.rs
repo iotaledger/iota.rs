@@ -72,11 +72,8 @@ pub fn try_select_inputs(
     // Always have the mandatory inputs already selected.
     let mut selected_inputs: Vec<InputSigningData> = mandatory_inputs.clone();
     // Keep track of which inputs we selected in a HashSet, so we don't need to iterate over the inputs every time.
-    let mut selected_inputs_output_ids: HashSet<OutputId> = selected_inputs
-        .iter()
-        // PANIC: unwrapping is fine, since we validated that the data is valid before.
-        .map(|input| input.output_id().unwrap())
-        .collect();
+    let mut selected_inputs_output_ids: HashSet<OutputId> =
+        selected_inputs.iter().map(|input| *input.output_id()).collect();
     let all_inputs = mandatory_inputs.iter().chain(additional_inputs.iter());
     let input_outputs = all_inputs.clone().map(|i| &i.output);
 
@@ -148,7 +145,7 @@ pub fn try_select_inputs(
     let mut index = 0;
     while index < basic_outputs.len() {
         // Remove already added inputs
-        if selected_inputs_output_ids.contains(&basic_outputs[index].output_id()?) {
+        if selected_inputs_output_ids.contains(&basic_outputs[index].output_id()) {
             basic_outputs.remove(index);
             // Continue without increasing the index because we removed one element
             continue;
@@ -352,30 +349,51 @@ pub fn try_select_inputs(
 // Dedup inputs by output id, because other data could be different, even if it's the same output
 fn dedup_inputs(mandatory_inputs: &mut Vec<InputSigningData>, additional_inputs: &mut Vec<InputSigningData>) {
     // Sorting inputs by OutputId so duplicates can be safely removed.
-    mandatory_inputs.sort_by_key(|input| (input.output_metadata.transaction_id, input.output_metadata.output_index));
-    mandatory_inputs.dedup_by_key(|input| (input.output_metadata.transaction_id, input.output_metadata.output_index));
-    additional_inputs.sort_by_key(|input| (input.output_metadata.transaction_id, input.output_metadata.output_index));
-    additional_inputs.dedup_by_key(|input| (input.output_metadata.transaction_id, input.output_metadata.output_index));
+    mandatory_inputs.sort_by_key(|input| {
+        (
+            *input.output_metadata.transaction_id(),
+            input.output_metadata.output_index(),
+        )
+    });
+    mandatory_inputs.dedup_by_key(|input| {
+        (
+            *input.output_metadata.transaction_id(),
+            input.output_metadata.output_index(),
+        )
+    });
+    additional_inputs.sort_by_key(|input| {
+        (
+            *input.output_metadata.transaction_id(),
+            input.output_metadata.output_index(),
+        )
+    });
+    additional_inputs.dedup_by_key(|input| {
+        (
+            *input.output_metadata.transaction_id(),
+            input.output_metadata.output_index(),
+        )
+    });
 
     // Remove additional inputs that are already mandatory.
     // TODO: could be done more efficiently with itertools unique?
     additional_inputs.retain(|input| {
         !mandatory_inputs.iter().any(|mandatory_input| {
-            input.output_metadata.transaction_id == mandatory_input.output_metadata.transaction_id
-                && input.output_metadata.output_index == mandatory_input.output_metadata.output_index
+            input.output_metadata.transaction_id() == mandatory_input.output_metadata.transaction_id()
+                && input.output_metadata.output_index() == mandatory_input.output_metadata.output_index()
         })
     });
 }
 
+// TODO is this still required?
 fn validate_input_output_ids(
     mandatory_inputs: &[InputSigningData],
     additional_inputs: &[InputSigningData],
 ) -> crate::Result<()> {
     for input in mandatory_inputs {
-        let _ = input.output_id()?;
+        let _ = input.output_id();
     }
     for input in additional_inputs {
-        let _ = input.output_id()?;
+        let _ = input.output_id();
     }
     Ok(())
 }

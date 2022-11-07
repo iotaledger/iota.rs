@@ -138,34 +138,77 @@ impl LedgerNanoStatus {
 pub struct OutputMetadata {
     /// The identifier of the block in which the output was included.
     #[serde(rename = "blockId")]
-    pub block_id: BlockId,
-    /// The identifier of the transaction in which the output was included.
+    block_id: BlockId,
+    /// The identifier of the output.
     #[serde(rename = "transactionId")]
-    pub transaction_id: TransactionId,
-    /// The index of the output in the transaction.
-    #[serde(rename = "outputIndex")]
-    pub output_index: u16,
+    output_id: OutputId,
     /// Whether the output is spent or not.
     #[serde(rename = "isSpent")]
-    pub is_spent: bool,
+    is_spent: bool,
     /// If spent, the index of the milestone in which the output was spent.
     #[serde(rename = "milestoneIndexSpent", skip_serializing_if = "Option::is_none")]
-    pub milestone_index_spent: Option<u32>,
+    milestone_index_spent: Option<u32>,
     /// If spent, the timestamp of the milestone in which the output was spent.
     #[serde(rename = "milestoneTimestampSpent", skip_serializing_if = "Option::is_none")]
-    pub milestone_timestamp_spent: Option<u32>,
+    milestone_timestamp_spent: Option<u32>,
     /// If spent, the identifier of the transaction that spent the output.
     #[serde(rename = "transactionIdSpent", skip_serializing_if = "Option::is_none")]
-    pub transaction_id_spent: Option<TransactionId>,
+    transaction_id_spent: Option<TransactionId>,
     /// The index of the milestone that booked the output.
     #[serde(rename = "milestoneIndexBooked")]
-    pub milestone_index_booked: u32,
+    milestone_index_booked: u32,
     /// The timestamp of the milestone that booked the output.
     #[serde(rename = "milestoneTimestampBooked")]
-    pub milestone_timestamp_booked: u32,
+    milestone_timestamp_booked: u32,
     /// The index of ledger when the output was fetched.
     #[serde(rename = "ledgerIndex", default)]
-    pub ledger_index: u32,
+    ledger_index: u32,
+}
+
+impl OutputMetadata {
+    pub fn block_id(&self) -> &BlockId {
+        &self.block_id
+    }
+
+    pub fn output_id(&self) -> &OutputId {
+        &self.output_id
+    }
+
+    pub fn transaction_id(&self) -> &TransactionId {
+        &self.output_id.transaction_id()
+    }
+
+    pub fn output_index(&self) -> u16 {
+        self.output_id.index()
+    }
+
+    pub fn is_spent(&self) -> bool {
+        self.is_spent
+    }
+
+    pub fn milestone_index_spent(&self) -> Option<u32> {
+        self.milestone_index_spent
+    }
+
+    pub fn milestone_timestamp_spent(&self) -> Option<u32> {
+        self.milestone_timestamp_spent
+    }
+
+    pub fn transaction_id_spent(&self) -> Option<&TransactionId> {
+        self.transaction_id_spent.as_ref()
+    }
+
+    pub fn milestone_index_booked(&self) -> u32 {
+        self.milestone_index_booked
+    }
+
+    pub fn milestone_timestamp_booked(&self) -> u32 {
+        self.milestone_timestamp_booked
+    }
+
+    pub fn ledger_index(&self) -> u32 {
+        self.ledger_index
+    }
 }
 
 impl TryFrom<&OutputMetadataResponse> for OutputMetadata {
@@ -174,8 +217,10 @@ impl TryFrom<&OutputMetadataResponse> for OutputMetadata {
     fn try_from(response: &OutputMetadataResponse) -> Result<Self> {
         Ok(OutputMetadata {
             block_id: BlockId::from_str(&response.block_id)?,
-            transaction_id: TransactionId::from_str(&response.transaction_id)?,
-            output_index: response.output_index,
+            output_id: OutputId::new(
+                TransactionId::from_str(&response.transaction_id)?,
+                response.output_index,
+            )?,
             is_spent: response.is_spent,
             milestone_index_spent: response.milestone_index_spent,
             milestone_timestamp_spent: response.milestone_timestamp_spent,
@@ -209,11 +254,8 @@ pub struct InputSigningData {
 
 impl InputSigningData {
     /// Return the [OutputId]
-    pub fn output_id(&self) -> Result<OutputId> {
-        Ok(OutputId::new(
-            self.output_metadata.transaction_id,
-            self.output_metadata.output_index,
-        )?)
+    pub fn output_id(&self) -> &OutputId {
+        &self.output_metadata.output_id
     }
 }
 

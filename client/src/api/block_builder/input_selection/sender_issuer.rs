@@ -235,7 +235,7 @@ pub(crate) fn select_inputs_for_sender_and_issuer<'a>(
             let alias_state_transition = alias_state_transition(input_signing_data, outputs)?.unwrap_or(true);
             let (required_unlock_address, unlocked_alias_or_nft_address) = input_signing_data
                 .output
-                .required_and_unlocked_address(current_time, input_signing_data.output_id()?, alias_state_transition)?;
+                .required_and_unlocked_address(current_time, *input_signing_data.output_id(), alias_state_transition)?;
 
             if required_unlock_address == required_address {
                 continue 'addresses_loop;
@@ -250,8 +250,8 @@ pub(crate) fn select_inputs_for_sender_and_issuer<'a>(
         // if not found, check currently not selected outputs
         for input_signing_data in inputs.clone() {
             // Skip already added inputs
-            let output_id = input_signing_data.output_id()?;
-            if selected_inputs_output_ids.contains(&output_id) {
+            let output_id = input_signing_data.output_id();
+            if selected_inputs_output_ids.contains(output_id) {
                 continue;
             }
 
@@ -259,17 +259,17 @@ pub(crate) fn select_inputs_for_sender_and_issuer<'a>(
             let alias_state_transition = alias_state_transition(input_signing_data, outputs)?.unwrap_or(true);
             let (required_unlock_address, unlocked_alias_or_nft_address) = input_signing_data
                 .output
-                .required_and_unlocked_address(current_time, output_id, alias_state_transition)?;
+                .required_and_unlocked_address(current_time, *output_id, alias_state_transition)?;
 
             if required_unlock_address == required_address {
                 selected_inputs.push(input_signing_data.clone());
-                selected_inputs_output_ids.insert(output_id);
+                selected_inputs_output_ids.insert(*output_id);
                 continue 'addresses_loop;
             }
             if let Some(unlocked_alias_or_nft_address) = unlocked_alias_or_nft_address {
                 if unlocked_alias_or_nft_address == required_address {
                     selected_inputs.push(input_signing_data.clone());
-                    selected_inputs_output_ids.insert(output_id);
+                    selected_inputs_output_ids.insert(*output_id);
                     continue 'addresses_loop;
                 }
             }
@@ -298,7 +298,7 @@ fn get_required_addresses_for_sender_and_issuer(
         let (required_unlock_address, unlocked_alias_or_nft_address) =
             input_signing_data.output.required_and_unlocked_address(
                 current_time,
-                input_signing_data.output_id()?,
+                *input_signing_data.output_id(),
                 alias_state_transition.unwrap_or(false),
             )?;
         unlocked_addresses.insert(required_unlock_address);
@@ -348,7 +348,7 @@ pub(crate) fn alias_state_transition(
     Ok(if let Output::Alias(alias_input) = &input_signing_data.output {
         let alias_id = alias_input
             .alias_id()
-            .or_from_output_id(input_signing_data.output_id()?);
+            .or_from_output_id(*input_signing_data.output_id());
         // Check if alias exists in the outputs and get the required transition type
         outputs
             .iter()
