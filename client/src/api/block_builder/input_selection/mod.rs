@@ -145,7 +145,7 @@ pub fn try_select_inputs(
     let mut index = 0;
     while index < basic_outputs.len() {
         // Remove already added inputs
-        if selected_inputs_output_ids.contains(&basic_outputs[index].output_id()) {
+        if selected_inputs_output_ids.contains(basic_outputs[index].output_id()) {
             basic_outputs.remove(index);
             // Continue without increasing the index because we removed one element
             continue;

@@ -138,10 +138,7 @@ pub fn verify_semantic(
 ) -> crate::Result<ConflictReason> {
     let transaction_id = transaction.id();
     let TransactionEssence::Regular(essence) = transaction.essence();
-    let output_ids = input_signing_data
-        .iter()
-        .map(|input| *input.output_id())
-        .collect::<Vec<OutputId>>();
+    let output_ids = input_signing_data.iter().map(|input| *input.output_id());
     let outputs = input_signing_data
         .iter()
         .map(|i| i.output.clone())

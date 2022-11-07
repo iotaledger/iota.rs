@@ -167,6 +167,7 @@ pub struct OutputMetadata {
 
 impl OutputMetadata {
     /// Creates a new [`OutputMetadata`].
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         block_id: BlockId,
         output_id: OutputId,
@@ -203,7 +204,7 @@ impl OutputMetadata {
 
     /// Returns the transaction id of the [`OutputMetadata`].
     pub fn transaction_id(&self) -> &TransactionId {
-        &self.output_id.transaction_id()
+        self.output_id.transaction_id()
     }
 
     /// Returns the output index of the [`OutputMetadata`].
