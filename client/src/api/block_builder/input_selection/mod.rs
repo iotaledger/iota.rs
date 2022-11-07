@@ -62,11 +62,6 @@ pub fn try_select_inputs(
         return Err(crate::Error::NoInputs);
     }
 
-    // Check that the data contains valid values to create output ids, because we can't properly return the error in all
-    // used places.
-    // TODO: validate data earlier, maybe on `InputSigningData` creation?
-    validate_input_output_ids(&mandatory_inputs, &additional_inputs)?;
-
     dedup_inputs(&mut mandatory_inputs, &mut additional_inputs);
 
     // Always have the mandatory inputs already selected.
@@ -349,51 +344,16 @@ pub fn try_select_inputs(
 // Dedup inputs by output id, because other data could be different, even if it's the same output
 fn dedup_inputs(mandatory_inputs: &mut Vec<InputSigningData>, additional_inputs: &mut Vec<InputSigningData>) {
     // Sorting inputs by OutputId so duplicates can be safely removed.
-    mandatory_inputs.sort_by_key(|input| {
-        (
-            *input.output_metadata.transaction_id(),
-            input.output_metadata.output_index(),
-        )
-    });
-    mandatory_inputs.dedup_by_key(|input| {
-        (
-            *input.output_metadata.transaction_id(),
-            input.output_metadata.output_index(),
-        )
-    });
-    additional_inputs.sort_by_key(|input| {
-        (
-            *input.output_metadata.transaction_id(),
-            input.output_metadata.output_index(),
-        )
-    });
-    additional_inputs.dedup_by_key(|input| {
-        (
-            *input.output_metadata.transaction_id(),
-            input.output_metadata.output_index(),
-        )
-    });
+    mandatory_inputs.sort_by_key(|input| *input.output_metadata.output_id());
+    mandatory_inputs.dedup_by_key(|input| *input.output_metadata.output_id());
+    additional_inputs.sort_by_key(|input| *input.output_metadata.output_id());
+    additional_inputs.dedup_by_key(|input| *input.output_metadata.output_id());
 
     // Remove additional inputs that are already mandatory.
     // TODO: could be done more efficiently with itertools unique?
     additional_inputs.retain(|input| {
-        !mandatory_inputs.iter().any(|mandatory_input| {
-            input.output_metadata.transaction_id() == mandatory_input.output_metadata.transaction_id()
-                && input.output_metadata.output_index() == mandatory_input.output_metadata.output_index()
-        })
+        !mandatory_inputs
+            .iter()
+            .any(|mandatory_input| input.output_metadata.output_id() == mandatory_input.output_metadata.output_id())
     });
-}
-
-// TODO is this still required?
-fn validate_input_output_ids(
-    mandatory_inputs: &[InputSigningData],
-    additional_inputs: &[InputSigningData],
-) -> crate::Result<()> {
-    for input in mandatory_inputs {
-        let _ = input.output_id();
-    }
-    for input in additional_inputs {
-        let _ = input.output_id();
-    }
-    Ok(())
 }
