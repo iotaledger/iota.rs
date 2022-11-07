@@ -77,8 +77,8 @@ impl<'a> ClientBlockBuilder<'a> {
             .iter()
             .map(|i| {
                 Ok(Input::Utxo(UtxoInput::new(
-                    i.output_metadata.transaction_id,
-                    i.output_metadata.output_index,
+                    *i.output_metadata.transaction_id(),
+                    i.output_metadata.output_index(),
                 )?))
             })
             .collect::<Result<Vec<Input>>>()?;
@@ -138,10 +138,7 @@ pub fn verify_semantic(
 ) -> crate::Result<ConflictReason> {
     let transaction_id = transaction.id();
     let TransactionEssence::Regular(essence) = transaction.essence();
-    let output_ids = input_signing_data
-        .iter()
-        .map(InputSigningData::output_id)
-        .collect::<Result<Vec<OutputId>>>()?;
+    let output_ids = input_signing_data.iter().map(|input| *input.output_id());
     let outputs = input_signing_data
         .iter()
         .map(|i| i.output.clone())
