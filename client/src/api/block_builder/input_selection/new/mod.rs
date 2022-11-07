@@ -100,7 +100,11 @@ impl InputSelection {
         //     }
         // }
 
-        requirements.extend(Requirements::from(self.outputs.as_slice()));
+        // TODO do we actually need extend?
+        requirements.extend(Requirements::from_inputs_outputs(
+            selected_inputs.as_slice(),
+            self.outputs.as_slice(),
+        ));
 
         // if let Some(burn) = self.burn {
         //     requirements.extend(requirements_from_burn(self.burn));

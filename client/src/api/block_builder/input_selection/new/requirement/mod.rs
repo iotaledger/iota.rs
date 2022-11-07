@@ -21,9 +21,12 @@ use nft::fulfill_nft_requirement;
 use remainder::fulfill_remainder_requirement;
 use sender::fulfill_sender_requirement;
 
-use crate::block::{
-    address::Address,
-    output::{AliasId, FoundryId, NftId, Output},
+use crate::{
+    block::{
+        address::Address,
+        output::{AliasId, FoundryId, NftId, Output},
+    },
+    secret::types::InputSigningData,
 };
 
 pub(crate) enum Requirement {
@@ -63,12 +66,6 @@ impl Requirement {
 
 pub(crate) struct Requirements(VecDeque<Requirement>);
 
-impl From<&[Output]> for Requirements {
-    fn from(outputs: &[Output]) -> Self {
-        Requirements::new()
-    }
-}
-
 impl Requirements {
     pub(crate) fn new() -> Self {
         Self(VecDeque::new())
@@ -86,5 +83,75 @@ impl Requirements {
         while let Some(requirement) = requirements.pop() {
             self.push(requirement);
         }
+    }
+
+    pub(crate) fn from_inputs_outputs(inputs: &[InputSigningData], outputs: &[Output]) -> Self {
+        // TODO take duplicate into account
+        let mut requirements = Requirements::new();
+
+        for output in outputs {
+            let is_new: bool = match output {
+                // Add an alias requirement if the alias output is transitioning, thus required in the inputs.
+                Output::Alias(alias_output) => {
+                    let is_new = alias_output.alias_id().is_null();
+
+                    if !is_new {
+                        requirements.push(Requirement::Alias(*alias_output.alias_id()));
+                    }
+
+                    !is_new
+                }
+                // Add an nft requirement if the nft output is transitioning, thus required in the inputs.
+                Output::Nft(nft_output) => {
+                    let is_new = nft_output.nft_id().is_null();
+
+                    if !is_new {
+                        requirements.push(Requirement::Nft(*nft_output.nft_id()));
+                    }
+
+                    !is_new
+                }
+                // Add a foundry requirement if the foundry output is transitioning, thus required in the inputs.
+                // Also add an alias requirement since the associated alias output needs to be transitioned.
+                Output::Foundry(foundry_output) => {
+                    let is_new = inputs
+                        .iter()
+                        .find(|input| {
+                            if let Output::Foundry(output) = &input.output {
+                                output.id() == foundry_output.id()
+                            } else {
+                                false
+                            }
+                        })
+                        .is_none();
+
+                    if !is_new {
+                        requirements.push(Requirement::Foundry(foundry_output.id()));
+                        // TODO take care of minted and melted tokens somewhere
+                    }
+
+                    requirements.push(Requirement::Alias(*foundry_output.alias_address().alias_id()));
+
+                    !is_new
+                }
+                _ => false,
+            };
+
+            if let Some(features) = output.features() {
+                // Add a sender requirement if the feature is present.
+                if let Some(sender) = features.sender() {
+                    requirements.push(Requirement::Sender(*sender.address()));
+                }
+
+                // Add an issuer requirement if the feature is present and new.
+                if let Some(issuer) = features.issuer() {
+                    if is_new {
+                        requirements.push(Requirement::Issuer(*issuer.address()));
+                    }
+                }
+            }
+        }
+
+        requirements
     }
 }
