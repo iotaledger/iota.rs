@@ -42,12 +42,11 @@ impl InputSelection {
             // TODO meh
             .copied()
             .chain(self.available_inputs.iter().filter_map(|input| match &input.output {
-                // TODO unwrap ?
                 Output::Alias(output) => Some(Address::Alias(AliasAddress::from(
-                    output.alias_id().or_from_output_id(input.output_id().unwrap()),
+                    output.alias_id().or_from_output_id(*input.output_id()),
                 ))),
                 Output::Nft(output) => Some(Address::Nft(NftAddress::from(
-                    output.nft_id().or_from_output_id(input.output_id().unwrap()),
+                    output.nft_id().or_from_output_id(*input.output_id()),
                 ))),
                 _ => None,
             }));
@@ -66,10 +65,9 @@ impl InputSelection {
         }
 
         // TODO could be part of filter?
-        // TODO unwrap
         // Remove forbidden inputs from available inputs.
         self.available_inputs
-            .retain(|input| !self.forbidden_inputs.contains(&input.output_id().unwrap()));
+            .retain(|input| !self.forbidden_inputs.contains(input.output_id()));
 
         // // TODO dumb check that all required are actually available
 
@@ -78,8 +76,7 @@ impl InputSelection {
         // let (mut selected_inputs, self.available_inputs) = self.available_inputs.into_iter().partition(|input| !self.required_inputs.contains(input.output_id()));
 
         // for available_input in self.available_inputs {
-        //     // TODO unwrap.
-        //     let output_id = available_input.output_id().unwrap();
+        //     let output_id = available_input.output_id();
         //     if self.required_inputs.contains(&output_id) {
         //         selected_inputs.push(available_input);
         //         self.required_inputs.remove(&output_id);
