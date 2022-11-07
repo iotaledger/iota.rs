@@ -7,7 +7,7 @@ use primitive_types::U256;
 
 use crate::block::output::{AliasId, FoundryId, NftId, TokenId};
 
-pub(crate) struct Burn {
+pub struct Burn {
     /// Aliases to burn.
     pub(crate) aliases: HashSet<AliasId>,
     /// NFTs to burn.
