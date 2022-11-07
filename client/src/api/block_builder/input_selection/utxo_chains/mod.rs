@@ -57,7 +57,7 @@ pub(crate) fn select_utxo_chain_inputs(
         if !allow_burning {
             add_output_for_input(input_signing_data, rent_structure, outputs, token_supply)?;
         }
-        added_output_for_input_signing_data.insert(input_signing_data.output_id()?);
+        added_output_for_input_signing_data.insert(*input_signing_data.output_id());
         let address = Address::try_from_bech32(&input_signing_data.bech32_address)?.1;
         if address.is_alias() || address.is_nft() {
             required_alias_nft_addresses.insert(address);
@@ -68,7 +68,7 @@ pub(crate) fn select_utxo_chain_inputs(
         let outputs_len_beginning = outputs.len();
 
         for input_signing_data in utxo_chain_inputs.iter_mut() {
-            let output_id = input_signing_data.output_id()?;
+            let output_id = *input_signing_data.output_id();
 
             // Skip inputs where we already added the required output.
             if added_output_for_input_signing_data.contains(&output_id) {
@@ -386,7 +386,7 @@ fn add_output_for_input(
     outputs: &mut Vec<Output>,
     token_supply: u64,
 ) -> crate::Result<()> {
-    let output_id = input_signing_data.output_id()?;
+    let output_id = *input_signing_data.output_id();
     let minimum_required_storage_deposit = input_signing_data.output.rent_cost(rent_structure);
 
     match &input_signing_data.output {
