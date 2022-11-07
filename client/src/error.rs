@@ -5,7 +5,10 @@
 
 use std::fmt::{Debug, Display};
 
-use iota_types::block::{output::NativeTokens, semantic::ConflictReason};
+use iota_types::block::{
+    output::{NativeTokens, OutputId},
+    semantic::ConflictReason,
+};
 use packable::error::UnexpectedEOF;
 use serde::{ser::Serializer, Serialize};
 
@@ -204,6 +207,13 @@ pub enum Error {
     /// URL validation error
     #[error("{0}")]
     UrlValidationError(String),
+
+    //////////////////////////////////////////////////////////////////////
+    // Input Selection
+    //////////////////////////////////////////////////////////////////////
+    /// Required forbidden input.
+    #[error("input {0} is both required and forbidden")]
+    RequiredAndForbiddenInput(OutputId),
 
     //////////////////////////////////////////////////////////////////////
     // Ledger Nano

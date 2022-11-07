@@ -1,6 +1,8 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+use std::collections::HashSet;
+
 use super::{burn::Burn, InputSelection};
 use crate::{
     block::{
@@ -17,8 +19,8 @@ pub struct InputSelectionBuilder {
     available_inputs: Vec<InputSigningData>,
     protocol_parameters: ProtocolParameters,
     timestamp: Option<u32>,
-    required_inputs: Vec<OutputId>,
-    forbidden_inputs: Vec<OutputId>,
+    required_inputs: HashSet<OutputId>,
+    forbidden_inputs: HashSet<OutputId>,
     remainder_address: Option<Address>,
     burn: Option<Burn>,
     // TODO: decide if we want to add the addresses here to check if we can unlock an output or not:
@@ -37,8 +39,8 @@ impl InputSelectionBuilder {
             available_inputs,
             protocol_parameters,
             timestamp: None,
-            required_inputs: Vec::new(),
-            forbidden_inputs: Vec::new(),
+            required_inputs: HashSet::new(),
+            forbidden_inputs: HashSet::new(),
             remainder_address: None,
             burn: None,
         }
@@ -49,12 +51,12 @@ impl InputSelectionBuilder {
         self
     }
 
-    pub fn required_inputs(mut self, inputs: Vec<OutputId>) -> Self {
+    pub fn required_inputs(mut self, inputs: HashSet<OutputId>) -> Self {
         self.required_inputs = inputs;
         self
     }
 
-    pub fn forbidden_inputs(mut self, inputs: Vec<OutputId>) -> Self {
+    pub fn forbidden_inputs(mut self, inputs: HashSet<OutputId>) -> Self {
         self.forbidden_inputs = inputs;
         self
     }

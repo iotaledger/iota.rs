@@ -5,6 +5,8 @@ mod builder;
 mod burn;
 mod requirement;
 
+use std::collections::HashSet;
+
 use burn::Burn;
 
 use crate::{
@@ -13,6 +15,7 @@ use crate::{
         output::{Output, OutputId},
         protocol::ProtocolParameters,
     },
+    error::{Error, Result},
     secret::types::InputSigningData,
 };
 
@@ -22,8 +25,8 @@ pub struct InputSelection {
     available_inputs: Vec<InputSigningData>,
     protocol_parameters: ProtocolParameters,
     timestamp: u32,
-    required_inputs: Vec<OutputId>,
-    forbidden_inputs: Vec<OutputId>,
+    required_inputs: HashSet<OutputId>,
+    forbidden_inputs: HashSet<OutputId>,
     remainder_address: Option<Address>,
     burn: Option<Burn>,
     // TODO: decide if we want to add the addresses here to check if we can unlock an output or not:
@@ -51,5 +54,86 @@ impl InputSelection {
         // self.available_inputs.retain(|input| input.can_be_unlocked_now(input, addresses, ???, self.time))
 
         self
+    }
+
+    pub fn select(mut self) -> Result<(Vec<InputSigningData>, Vec<Output>)> {
+        // Check that no required input is also forbidden.
+        for required_input in self.required_inputs.iter() {
+            if self.forbidden_inputs.contains(&required_input) {
+                return Err(Error::RequiredAndForbiddenInput(*required_input));
+            }
+        }
+
+        // TODO could be part of filter?
+        // TODO unwrap
+        // Remove forbidden inputs from available inputs.
+        self.available_inputs
+            .retain(|input| !self.forbidden_inputs.contains(&input.output_id().unwrap()));
+
+        // // TODO dumb check that all required are actually available
+
+        let mut selected_inputs = Vec::new();
+
+        // let (mut selected_inputs, self.available_inputs) = self.available_inputs.into_iter().partition(|input| !self.required_inputs.contains(input.output_id()));
+
+        // for available_input in self.available_inputs {
+        //     // TODO unwrap.
+        //     let output_id = available_input.output_id().unwrap();
+        //     if self.required_inputs.contains(&output_id) {
+        //         selected_inputs.push(available_input);
+        //         self.required_inputs.remove(&output_id);
+        //     }
+        // }
+
+        // let mut requirements = Vec::new();
+
+        // for selected_input in selected_inputs.iter() {
+        //     let (output, requirement) = process_input(selected_input, &outputs, &self.burn);
+
+        //     if let Some(output) = output {
+        //         self.outputs.push(output);
+        //     }
+
+        //     if let Some(requirement) = requirement {
+        //         requirements.push(requirement);
+        //     }
+        // }
+
+        // requirements.extend_front(requirements_from_outputs(self.outputs));
+
+        // if let Some(burn) = self.burn {
+        //     requirements.extend(requirements_from_burn(self.burn));
+        // }
+        // requirements.push_back(Requirement::BaseCoinAmount);
+
+        // while let Some(requirement) = requirements.pop() {
+        //     let inputs = fulfill_requirement(requirement, &available_inputs, &selected_inputs, &mut self.outputs)?;
+        //     if !inputs.is_empty() && requirements.is_empty(){
+        //         requirements.push(Requirement::BaseCoinAmount);
+        //     }
+        //     selected_inputs.extend(inputs);
+        //     for input in inputs{
+        //         let (output, requirement) = process_input(input, &outputs, &self.burn);
+
+        //         if let Some(output) = output {
+        //             self.outputs.push(output);
+        //             let new_requirements = requirements_from_outputs(vec![output]);
+        //             requirements.push_front(new_requirements);
+        //         }
+
+        //         if let Some(requirement) = requirement {
+        //             requirements.push(requirement);
+        //         }
+        //     }
+        // }
+
+        // self.output.extend(create_storage_deposit_return_outputs(selected_input, self.outputs));
+
+        // // Potentially do native tokens + base coin + storage deposit here
+        // if let Some(remainder) = create_remainder_output(selected_inputs, self.outputs, self.remainder_address) {
+        //     self.outputs.push(remainder)
+        // }
+
+        Ok((selected_inputs, self.outputs))
     }
 }
