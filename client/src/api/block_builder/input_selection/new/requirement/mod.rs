@@ -26,10 +26,12 @@ use crate::{
         address::Address,
         output::{AliasId, FoundryId, NftId, Output},
     },
+    error::Result,
     secret::types::InputSigningData,
 };
 
-pub(crate) enum Requirement {
+#[derive(Debug, serde::Serialize)]
+pub enum Requirement {
     Sender(Address),
     Issuer(Address),
     Foundry(FoundryId),
@@ -41,7 +43,12 @@ pub(crate) enum Requirement {
 }
 
 impl Requirement {
-    fn fulfill(&self, available_inputs: &[Output], selected_inputs: &[Output], outputs: &[Output]) -> Vec<Output> {
+    fn fulfill(
+        &self,
+        available_inputs: &mut Vec<InputSigningData>,
+        selected_inputs: &[Output],
+        outputs: &[Output],
+    ) -> Result<Vec<InputSigningData>> {
         // TODO check if selected_inputs already solves the requirement
         match self {
             Requirement::Sender(address) => {

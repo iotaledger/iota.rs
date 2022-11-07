@@ -7,7 +7,7 @@ mod automatic;
 mod helpers;
 mod manual;
 mod native_token_helpers;
-mod new;
+pub mod new;
 mod remainder;
 mod sender_issuer;
 pub mod types;

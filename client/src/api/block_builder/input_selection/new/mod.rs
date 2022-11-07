@@ -1,9 +1,9 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-mod builder;
-mod burn;
-mod requirement;
+pub(crate) mod builder;
+pub(crate) mod burn;
+pub(crate) mod requirement;
 
 use std::collections::HashSet;
 
@@ -118,6 +118,7 @@ impl InputSelection {
             //         requirements.push(Requirement::BaseCoinAmount);
             //     }
             //     selected_inputs.extend(inputs);
+            // TODO remove from available ?
             //     for input in inputs{
             //         let (output, requirement) = process_input(input, &outputs, &self.burn);
 

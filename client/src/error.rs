@@ -12,7 +12,7 @@ use iota_types::block::{
 use packable::error::UnexpectedEOF;
 use serde::{ser::Serializer, Serialize};
 
-use crate::node_api::indexer::QueryParameter;
+use crate::{api::input_selection::new::requirement::Requirement, node_api::indexer::QueryParameter};
 
 /// Type alias of `Result` in iota-client
 pub type Result<T> = std::result::Result<T, Error>;
@@ -214,6 +214,9 @@ pub enum Error {
     /// Required forbidden input.
     #[error("input {0} is both required and forbidden")]
     RequiredAndForbiddenInput(OutputId),
+    /// Unfulfilled requirement.
+    #[error("unfulfilled requirement {0:?}")]
+    UnfulfilledRequirement(Requirement),
 
     //////////////////////////////////////////////////////////////////////
     // Ledger Nano
