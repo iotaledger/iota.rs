@@ -189,7 +189,7 @@ impl Output {
     pub fn required_and_unlocked_address(
         &self,
         current_time: u32,
-        output_id: OutputId,
+        output_id: &OutputId,
         alias_state_transition: bool,
     ) -> Result<(Address, Option<Address>), Error> {
         match self {

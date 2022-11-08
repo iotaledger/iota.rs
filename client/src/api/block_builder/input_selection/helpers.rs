@@ -103,7 +103,7 @@ pub(crate) fn sort_input_signing_data(inputs: Vec<InputSigningData>) -> crate::R
                         *unlock_address.alias_id()
                             == alias_output
                                 .alias_id()
-                                .or_from_output_id(*input_signing_data.output_id())
+                                .or_from_output_id(input_signing_data.output_id())
                     } else {
                         false
                     }
@@ -111,7 +111,7 @@ pub(crate) fn sort_input_signing_data(inputs: Vec<InputSigningData>) -> crate::R
                 Address::Nft(unlock_address) => {
                     if let Output::Nft(nft_output) = &input_signing_data.output {
                         *unlock_address.nft_id()
-                            == nft_output.nft_id().or_from_output_id(*input_signing_data.output_id())
+                            == nft_output.nft_id().or_from_output_id(input_signing_data.output_id())
                     } else {
                         false
                     }
@@ -128,10 +128,10 @@ pub(crate) fn sort_input_signing_data(inputs: Vec<InputSigningData>) -> crate::R
                 // insert before address
                 let alias_or_nft_address = match &input.output {
                     Output::Alias(alias_output) => Some(Address::Alias(AliasAddress::new(
-                        alias_output.alias_id().or_from_output_id(*input.output_id()),
+                        alias_output.alias_id().or_from_output_id(input.output_id()),
                     ))),
                     Output::Nft(nft_output) => Some(Address::Nft(NftAddress::new(
-                        nft_output.nft_id().or_from_output_id(*input.output_id()),
+                        nft_output.nft_id().or_from_output_id(input.output_id()),
                     ))),
                     _ => None,
                 };

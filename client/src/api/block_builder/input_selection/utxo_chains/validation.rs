@@ -23,7 +23,7 @@ pub(crate) fn check_utxo_chain_inputs(
 
                 if !selected_inputs.iter().any(|data| {
                     if let Output::Alias(input_alias_output) = &data.output {
-                        input_alias_output.alias_id().or_from_output_id(*data.output_id()) == *alias_id
+                        input_alias_output.alias_id().or_from_output_id(data.output_id()) == *alias_id
                     } else {
                         false
                     }
@@ -37,7 +37,7 @@ pub(crate) fn check_utxo_chain_inputs(
                 let required_alias = foundry_output.alias_address().alias_id();
                 if !selected_inputs.iter().any(|data| {
                     if let Output::Alias(input_alias_output) = &data.output {
-                        input_alias_output.alias_id().or_from_output_id(*data.output_id()) == *required_alias
+                        input_alias_output.alias_id().or_from_output_id(data.output_id()) == *required_alias
                     } else {
                         false
                     }
@@ -57,7 +57,7 @@ pub(crate) fn check_utxo_chain_inputs(
 
                 if !selected_inputs.iter().any(|data| {
                     if let Output::Nft(input_nft_output) = &data.output {
-                        input_nft_output.nft_id().or_from_output_id(*data.output_id()) == *nft_id
+                        input_nft_output.nft_id().or_from_output_id(data.output_id()) == *nft_id
                     } else {
                         false
                     }

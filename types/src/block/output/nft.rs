@@ -351,7 +351,7 @@ impl NftOutput {
     }
 
     /// Returns the nft address for this output.
-    pub fn nft_address(&self, output_id: OutputId) -> NftAddress {
+    pub fn nft_address(&self, output_id: &OutputId) -> NftAddress {
         NftAddress::new(self.nft_id().or_from_output_id(output_id))
     }
 
@@ -368,7 +368,7 @@ impl NftOutput {
             .unlock(unlock, inputs, context)?;
 
         let nft_id = if self.nft_id().is_null() {
-            NftId::from(*output_id)
+            NftId::from(output_id)
         } else {
             *self.nft_id()
         };

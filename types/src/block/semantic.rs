@@ -158,7 +158,7 @@ impl<'a> ValidationContext<'a> {
                 .filter_map(|(output_id, input)| {
                     input
                         .chain_id()
-                        .map(|chain_id| (chain_id.or_from_output_id(*output_id), input))
+                        .map(|chain_id| (chain_id.or_from_output_id(output_id), input))
                 })
                 .collect(),
             output_amount: 0,
@@ -170,7 +170,7 @@ impl<'a> ValidationContext<'a> {
                 .filter_map(|(index, output)| {
                     output.chain_id().map(|chain_id| {
                         (
-                            chain_id.or_from_output_id(OutputId::new(*transaction_id, index as u16).unwrap()),
+                            chain_id.or_from_output_id(&OutputId::new(*transaction_id, index as u16).unwrap()),
                             output,
                         )
                     })

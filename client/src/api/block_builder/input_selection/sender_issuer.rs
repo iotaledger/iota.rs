@@ -58,7 +58,7 @@ impl<'a> ClientBlockBuilder<'a> {
                         let (required_unlock_address, _unlocked_alias_or_nft_address) = output
                             .required_and_unlocked_address(
                                 current_time,
-                                output_response.metadata.output_id()?,
+                                &output_response.metadata.output_id()?,
                                 false,
                             )?;
 
@@ -235,7 +235,7 @@ pub(crate) fn select_inputs_for_sender_and_issuer<'a>(
             let alias_state_transition = alias_state_transition(input_signing_data, outputs)?.unwrap_or(true);
             let (required_unlock_address, unlocked_alias_or_nft_address) = input_signing_data
                 .output
-                .required_and_unlocked_address(current_time, *input_signing_data.output_id(), alias_state_transition)?;
+                .required_and_unlocked_address(current_time, input_signing_data.output_id(), alias_state_transition)?;
 
             if required_unlock_address == required_address {
                 continue 'addresses_loop;
@@ -259,7 +259,7 @@ pub(crate) fn select_inputs_for_sender_and_issuer<'a>(
             let alias_state_transition = alias_state_transition(input_signing_data, outputs)?.unwrap_or(true);
             let (required_unlock_address, unlocked_alias_or_nft_address) = input_signing_data
                 .output
-                .required_and_unlocked_address(current_time, *output_id, alias_state_transition)?;
+                .required_and_unlocked_address(current_time, output_id, alias_state_transition)?;
 
             if required_unlock_address == required_address {
                 selected_inputs.push(input_signing_data.clone());
@@ -298,7 +298,7 @@ fn get_required_addresses_for_sender_and_issuer(
         let (required_unlock_address, unlocked_alias_or_nft_address) =
             input_signing_data.output.required_and_unlocked_address(
                 current_time,
-                *input_signing_data.output_id(),
+                input_signing_data.output_id(),
                 alias_state_transition.unwrap_or(false),
             )?;
         unlocked_addresses.insert(required_unlock_address);
@@ -346,9 +346,7 @@ pub(crate) fn alias_state_transition(
     outputs: &[Output],
 ) -> Result<Option<bool>> {
     Ok(if let Output::Alias(alias_input) = &input_signing_data.output {
-        let alias_id = alias_input
-            .alias_id()
-            .or_from_output_id(*input_signing_data.output_id());
+        let alias_id = alias_input.alias_id().or_from_output_id(input_signing_data.output_id());
         // Check if alias exists in the outputs and get the required transition type
         outputs
             .iter()

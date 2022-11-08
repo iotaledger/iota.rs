@@ -80,7 +80,7 @@ async fn main() -> Result<()> {
     // create second transaction with the actual AliasId (BLAKE2b-160 hash of the Output ID that created the alias)
     //////////////////////////////////
     let alias_output_id = get_alias_output_id(block.payload().unwrap())?;
-    let alias_id = AliasId::from(alias_output_id);
+    let alias_id = AliasId::from(&alias_output_id);
     let outputs = vec![
         alias_output_builder
             .with_alias_id(alias_id)

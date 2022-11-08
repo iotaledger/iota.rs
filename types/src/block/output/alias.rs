@@ -433,7 +433,7 @@ impl AliasOutput {
     }
 
     /// Returns the alias address for this output.
-    pub fn alias_address(&self, output_id: OutputId) -> AliasAddress {
+    pub fn alias_address(&self, output_id: &OutputId) -> AliasAddress {
         AliasAddress::new(self.alias_id().or_from_output_id(output_id))
     }
 
@@ -446,7 +446,7 @@ impl AliasOutput {
         context: &mut ValidationContext,
     ) -> Result<(), ConflictReason> {
         let alias_id = if self.alias_id().is_null() {
-            AliasId::from(*output_id)
+            AliasId::from(output_id)
         } else {
             *self.alias_id()
         };
