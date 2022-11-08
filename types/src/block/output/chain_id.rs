@@ -27,7 +27,7 @@ impl ChainId {
     }
 
     ///
-    pub fn or_from_output_id(self, output_id: OutputId) -> Self {
+    pub fn or_from_output_id(self, output_id: &OutputId) -> Self {
         if !self.is_null() {
             return self;
         }

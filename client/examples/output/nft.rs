@@ -77,7 +77,7 @@ async fn main() -> Result<()> {
     //////////////////////////////////
 
     let nft_output_id = get_nft_output_id(block.payload().unwrap())?;
-    let nft_id = NftId::from(nft_output_id);
+    let nft_id = NftId::from(&nft_output_id);
 
     let nft_address = NftAddress::new(nft_id);
     let bech32_nft_address = Address::Nft(nft_address).to_bech32(client.get_bech32_hrp().await?);

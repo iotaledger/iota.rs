@@ -99,12 +99,12 @@ async fn main() -> Result<()> {
     // create foundry output, native tokens and nft
     //////////////////////////////////
     let alias_output_id_1 = get_alias_output_id(block.payload().unwrap())?;
-    let alias_id = AliasId::from(alias_output_id_1);
+    let alias_id = AliasId::from(&alias_output_id_1);
     let nft_output_id = get_nft_output_id(block.payload().unwrap())?;
-    let nft_id = NftId::from(nft_output_id);
+    let nft_id = NftId::from(&nft_output_id);
     let token_scheme = TokenScheme::Simple(SimpleTokenScheme::new(U256::from(50), U256::from(0), U256::from(100))?);
     let foundry_id = FoundryId::build(
-        &AliasAddress::from(AliasId::from(alias_output_id_1)),
+        &AliasAddress::from(AliasId::from(&alias_output_id_1)),
         1,
         token_scheme.kind(),
     );

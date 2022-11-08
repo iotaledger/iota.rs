@@ -144,7 +144,7 @@ impl<'a> ClientBlockBuilder<'a> {
                         let (required_unlock_address, _unlocked_alias_or_nft_address) = output
                             .required_and_unlocked_address(
                                 current_time,
-                                output_response.metadata.output_id()?,
+                                &output_response.metadata.output_id()?,
                                 false,
                             )?;
                         if required_unlock_address == address {

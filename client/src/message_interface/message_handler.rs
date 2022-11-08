@@ -573,8 +573,8 @@ impl ClientMessageHandler {
                 let payload = TransactionPayload::try_from_dto_unverified(&payload)?;
                 Ok(Response::TransactionId(payload.id()))
             }
-            Message::ComputeAliasId { output_id } => Ok(Response::AliasId(AliasId::from(output_id))),
-            Message::ComputeNftId { output_id } => Ok(Response::NftId(NftId::from(output_id))),
+            Message::ComputeAliasId { output_id } => Ok(Response::AliasId(AliasId::from(&output_id))),
+            Message::ComputeNftId { output_id } => Ok(Response::NftId(NftId::from(&output_id))),
             Message::ComputeFoundryId {
                 alias_address,
                 serial_number,
