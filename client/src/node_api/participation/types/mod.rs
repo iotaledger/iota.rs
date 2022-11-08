@@ -78,12 +78,12 @@ pub struct StakingEventPayload {
 pub struct VotingEventPayload {
     #[serde(rename = "type")]
     kind: u32,
-    questions: Vec<Questions>,
+    questions: Vec<Question>,
 }
 
 /// Question for a voting event
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Questions {
+pub struct Question {
     text: String,
     answers: Vec<Answer>,
     #[serde(rename = "additionalInfo")]

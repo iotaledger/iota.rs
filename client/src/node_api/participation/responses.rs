@@ -20,18 +20,16 @@ pub struct EventsResponse {
 
 /// TrackedParticipation holds the information for each tracked participation.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct TrackedParticipation {
     /// Block_id is the ID of the block that included the transaction that created the output the participation was
     /// made.
-    #[serde(rename = "blockId")]
     pub block_id: BlockId,
     /// Amount is the amount of tokens that were included in the output the participation was made.
     pub amount: u64,
     /// StartMilestoneIndex is the milestone index the participation started.
-    #[serde(rename = "startMilestoneIndex")]
     pub start_milestone_index: u32,
     /// EndMilestoneIndex is the milestone index the participation ended. 0 if the participation is still active.
-    #[serde(rename = "endMilestoneIndex")]
     pub end_milestone_index: u32,
 }
 
