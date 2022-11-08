@@ -49,7 +49,6 @@ impl Requirement {
         selected_inputs: &[InputSigningData],
         outputs: &[Output],
     ) -> Result<Vec<InputSigningData>> {
-        // TODO check if selected_inputs already solves the requirement
         match self {
             Requirement::Sender(address) => {
                 fulfill_sender_requirement(address, available_inputs, selected_inputs, outputs)
@@ -108,7 +107,7 @@ impl Requirements {
 
                     !is_new
                 }
-                // Add an nft requirement if the nft output is transitioning, thus required in the inputs.
+                // Add a nft requirement if the nft output is transitioning, thus required in the inputs.
                 Output::Nft(nft_output) => {
                     let is_new = nft_output.nft_id().is_null();
 
