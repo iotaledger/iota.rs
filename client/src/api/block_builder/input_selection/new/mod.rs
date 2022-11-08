@@ -103,9 +103,10 @@ impl InputSelection {
             self.outputs.as_slice(),
         ));
 
-        // if let Some(burn) = self.burn {
-        //     requirements.extend(requirements_from_burn(self.burn));
-        // }
+        if let Some(burn) = self.burn {
+            requirements.extend(Requirements::from_burn(burn));
+        }
+
         // requirements.push_back(Requirement::BaseCoinAmount);
 
         // Process all the requirements until there are no more.

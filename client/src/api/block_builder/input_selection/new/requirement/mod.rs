@@ -21,6 +21,7 @@ use nft::fulfill_nft_requirement;
 use remainder::fulfill_remainder_requirement;
 use sender::fulfill_sender_requirement;
 
+use super::Burn;
 use crate::{
     block::{
         address::Address,
@@ -157,6 +158,26 @@ impl Requirements {
                 }
             }
         }
+
+        requirements
+    }
+
+    pub(crate) fn from_burn(burn: Burn) -> Self {
+        let mut requirements = Requirements::new();
+
+        for alias_id in burn.aliases {
+            requirements.push(Requirement::Alias(alias_id));
+        }
+
+        for nft_id in burn.nfts {
+            requirements.push(Requirement::Nft(nft_id));
+        }
+
+        for foundry_id in burn.foundries {
+            requirements.push(Requirement::Foundry(foundry_id));
+        }
+
+        // TODO add native tokens
 
         requirements
     }
