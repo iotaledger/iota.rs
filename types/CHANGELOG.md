@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `OutputResponse` enum with `Json` and `Raw` variants;
+- `AliasOutput::alias_id_non_null` and `NftOutput::nft_id_non_null` methods;
 
 ### Changed
 

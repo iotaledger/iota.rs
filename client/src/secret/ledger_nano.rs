@@ -437,15 +437,11 @@ fn merge_unlocks(
         // that have the corresponding alias or nft address in their unlock condition
         match &input.output {
             Output::Alias(alias_output) => block_indexes.insert(
-                Address::Alias(AliasAddress::new(
-                    alias_output.alias_id().or_from_output_id(input.output_id()),
-                )),
+                Address::Alias(AliasAddress::new(alias_output.alias_id_non_null(input.output_id()))),
                 current_block_index,
             ),
             Output::Nft(nft_output) => block_indexes.insert(
-                Address::Nft(NftAddress::new(
-                    nft_output.nft_id().or_from_output_id(input.output_id()),
-                )),
+                Address::Nft(NftAddress::new(nft_output.nft_id_non_null(input.output_id()))),
                 current_block_index,
             ),
             _ => None,

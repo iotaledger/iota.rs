@@ -346,7 +346,7 @@ pub(crate) fn alias_state_transition(
     outputs: &[Output],
 ) -> Result<Option<bool>> {
     Ok(if let Output::Alias(alias_input) = &input_signing_data.output {
-        let alias_id = alias_input.alias_id().or_from_output_id(input_signing_data.output_id());
+        let alias_id = alias_input.alias_id_non_null(input_signing_data.output_id());
         // Check if alias exists in the outputs and get the required transition type
         outputs
             .iter()

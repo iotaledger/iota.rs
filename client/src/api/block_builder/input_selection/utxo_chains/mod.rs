@@ -82,7 +82,7 @@ pub(crate) fn select_utxo_chain_inputs(
 
             match &input_signing_data.output {
                 Output::Nft(nft_input) => {
-                    let nft_id = nft_input.nft_id().or_from_output_id(&output_id);
+                    let nft_id = nft_input.nft_id_non_null(&output_id);
                     // or if an output contains an nft output with the same nft id
                     let is_required_for_output = outputs.iter().any(|output| {
                         if let Output::Nft(nft_output) = output {
@@ -135,7 +135,7 @@ pub(crate) fn select_utxo_chain_inputs(
                             .filter(|feature| feature.kind() != SenderFeature::KIND);
                         // else add output to outputs with minimum_required_storage_deposit
                         let new_output = NftOutputBuilder::from(nft_input)
-                            .with_nft_id(nft_input.nft_id().or_from_output_id(&output_id))
+                            .with_nft_id(nft_input.nft_id_non_null(&output_id))
                             .with_amount(minimum_required_storage_deposit)?
                             // replace with filtered features
                             .with_features(filtered_features)
@@ -145,7 +145,7 @@ pub(crate) fn select_utxo_chain_inputs(
                     }
                 }
                 Output::Alias(alias_input) => {
-                    let alias_id = alias_input.alias_id().or_from_output_id(&output_id);
+                    let alias_id = alias_input.alias_id_non_null(&output_id);
                     // Don't add if output has not the same AliasId, so we don't burn it
                     let alias_in_outputs = outputs
                         .iter()
@@ -217,7 +217,7 @@ pub(crate) fn select_utxo_chain_inputs(
                             .filter(|feature| feature.kind() != SenderFeature::KIND);
                         // else add output to outputs with minimum_required_storage_deposit
                         let new_output = AliasOutputBuilder::from(alias_input)
-                            .with_alias_id(alias_input.alias_id().or_from_output_id(&output_id))
+                            .with_alias_id(alias_input.alias_id_non_null(&output_id))
                             .with_state_index(alias_input.state_index() + 1)
                             .with_amount(minimum_required_storage_deposit)?
                             // replace with filtered features
@@ -391,7 +391,7 @@ fn add_output_for_input(
 
     match &input_signing_data.output {
         Output::Nft(nft_input) => {
-            let nft_id = nft_input.nft_id().or_from_output_id(output_id);
+            let nft_id = nft_input.nft_id_non_null(output_id);
             // Don't add if nft output is already present in the outputs.
             if !outputs.iter().any(|output| {
                 if let Output::Nft(nft_output) = output {
@@ -408,7 +408,7 @@ fn add_output_for_input(
                     .filter(|feature| feature.kind() != SenderFeature::KIND);
                 // add output to outputs with minimum_required_storage_deposit
                 let new_output = NftOutputBuilder::from(nft_input)
-                    .with_nft_id(nft_input.nft_id().or_from_output_id(output_id))
+                    .with_nft_id(nft_input.nft_id_non_null(output_id))
                     .with_amount(minimum_required_storage_deposit)?
                     // replace with filtered features
                     .with_features(filtered_features)
@@ -417,7 +417,7 @@ fn add_output_for_input(
             }
         }
         Output::Alias(alias_input) => {
-            let alias_id = alias_input.alias_id().or_from_output_id(output_id);
+            let alias_id = alias_input.alias_id_non_null(output_id);
             // Don't add if alias output is already present in the outputs.
             if !outputs.iter().any(|output| {
                 if let Output::Alias(alias_output) = output {
@@ -434,7 +434,7 @@ fn add_output_for_input(
                     .filter(|feature| feature.kind() != SenderFeature::KIND);
                 // else add output to outputs with minimum_required_storage_deposit
                 let new_output = AliasOutputBuilder::from(alias_input)
-                    .with_alias_id(alias_input.alias_id().or_from_output_id(output_id))
+                    .with_alias_id(alias_input.alias_id_non_null(output_id))
                     .with_state_index(alias_input.state_index() + 1)
                     .with_amount(minimum_required_storage_deposit)?
                     // replace with filtered features
