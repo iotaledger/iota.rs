@@ -16,7 +16,7 @@ pub(crate) fn fulfill_alias_requirement(
 ) -> Result<Vec<InputSigningData>> {
     fn predicate(input: &InputSigningData, alias_id: &AliasId) -> bool {
         if let Output::Alias(alias_output) = &input.output {
-            &alias_output.alias_id().or_from_output_id(*input.output_id()) == alias_id
+            &alias_output.alias_id_non_null(input.output_id()) == alias_id
         } else {
             false
         }

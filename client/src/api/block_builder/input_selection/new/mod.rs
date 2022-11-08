@@ -43,10 +43,10 @@ impl InputSelection {
             .copied()
             .chain(self.available_inputs.iter().filter_map(|input| match &input.output {
                 Output::Alias(output) => Some(Address::Alias(AliasAddress::from(
-                    output.alias_id().or_from_output_id(*input.output_id()),
+                    output.alias_id_non_null(input.output_id()),
                 ))),
                 Output::Nft(output) => Some(Address::Nft(NftAddress::from(
-                    output.nft_id().or_from_output_id(*input.output_id()),
+                    output.nft_id_non_null(input.output_id()),
                 ))),
                 _ => None,
             }));
