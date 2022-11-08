@@ -8,6 +8,14 @@ use crate::{
     secret::types::InputSigningData,
 };
 
+pub(crate) fn is_foundry_id(input: &InputSigningData, foundry_id: &FoundryId) -> bool {
+    if let Output::Foundry(foundry_output) = &input.output {
+        &foundry_output.id() == foundry_id
+    } else {
+        false
+    }
+}
+
 /// Tries to fulfill a foundry requirement by selecting the appropriate foundry output from the available inputs.
 pub(crate) fn fulfill_foundry_requirement(
     foundry_id: FoundryId,
@@ -15,18 +23,10 @@ pub(crate) fn fulfill_foundry_requirement(
     selected_inputs: &[InputSigningData],
     _outputs: &[Output],
 ) -> Result<Vec<InputSigningData>> {
-    fn predicate(input: &InputSigningData, foundry_id: &FoundryId) -> bool {
-        if let Output::Foundry(foundry_output) = &input.output {
-            &foundry_output.id() == foundry_id
-        } else {
-            false
-        }
-    }
-
     // Checks if the requirement is already fulfilled.
     if selected_inputs
         .iter()
-        .find(|input| predicate(input, &foundry_id))
+        .find(|input| is_foundry_id(input, &foundry_id))
         .is_some()
     {
         return Ok(Vec::new());
@@ -34,7 +34,9 @@ pub(crate) fn fulfill_foundry_requirement(
 
     // Checks if the requirement can be fulfilled.
     {
-        let index = available_inputs.iter().position(|input| predicate(input, &foundry_id));
+        let index = available_inputs
+            .iter()
+            .position(|input| is_foundry_id(input, &foundry_id));
 
         match index {
             Some(index) => Ok(vec![available_inputs.swap_remove(index)]),

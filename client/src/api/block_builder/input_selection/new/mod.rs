@@ -8,7 +8,7 @@ pub(crate) mod requirement;
 use std::collections::HashSet;
 
 use burn::Burn;
-use requirement::Requirements;
+use requirement::{Requirement, Requirements};
 
 use crate::{
     block::{
@@ -36,6 +36,64 @@ pub struct InputSelection {
 }
 
 impl InputSelection {
+    // fn transition_input(&self, input: InputSigningData, outputs: &[Output], burn: Option<Burn>) -> Option<Output> {
+    //     match input {
+    //         Output::Alias(alias_output) => {
+    //             if burn.aliases.contains(alias_id) {
+    //                 return None;
+    //             }
+    //             Some(
+    //                     // TODO create output from input
+    //                 )
+    //         }
+    //         Output::Nft(nft_input) => {
+    //             if burn.should_be_burned(nft_id) {
+    //                 return None;
+    //             }
+    //             Some(
+    //                     // TODO create output from input
+    //                 )
+    //         }
+    //         Output::Foundry(foundry_output) => {
+    //             if burn.should_be_burned(foundry_id) {
+    //                 return None;
+    //             }
+    //             Some(
+    //                     // TODO create output from input
+    //                 )
+    //         }
+    //         _ => None,
+    //     }
+    // }
+
+    // fn unlock_conditions_input(
+    //     &self,
+    //     input: InputSigningData,
+    //     outputs: &[Output],
+    //     burn: Option<Burn>,
+    // ) -> Result<Option<Requirement>> {
+    //     let alias_state_transition = alias_state_transition(input, outputs);
+    //     let required_address = input.required_and_unlock_address(time, alias_state_transition).0;
+
+    //     match required_address {
+    //         Address::Alias(alias_address) => Ok(Some(Requirement::Alias(*alias_address.alias_id()))),
+    //         Address::Nft(nft_address) => Ok(Some(Requirement::Nft(*nft_address.nft_id()))),
+    //         _ => Ok(None),
+    //     }
+    // }
+
+    // fn process_input(
+    //     &self,
+    //     input: InputSigningData,
+    //     outputs: &[Output],
+    //     burn: Option<Burn>,
+    // ) -> (Option<Output>, Option<Requirement>) {
+    //     let output = self.transition_input(input, outputs, burn);
+    //     let requirement = self.unlock_conditions_input(input, outputs, burn);
+
+    //     (output, requirement)
+    // }
+
     pub fn filter(mut self, addresses: &[Address]) -> Self {
         let addresses = addresses
             .iter()

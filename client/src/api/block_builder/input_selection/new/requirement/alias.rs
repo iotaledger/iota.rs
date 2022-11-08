@@ -8,6 +8,14 @@ use crate::{
     secret::types::InputSigningData,
 };
 
+pub(crate) fn is_alias_id(input: &InputSigningData, alias_id: &AliasId) -> bool {
+    if let Output::Alias(alias_output) = &input.output {
+        &alias_output.alias_id_non_null(input.output_id()) == alias_id
+    } else {
+        false
+    }
+}
+
 /// Tries to fulfill an alias requirement by selecting the appropriate alias output from the available inputs.
 pub(crate) fn fulfill_alias_requirement(
     alias_id: AliasId,
@@ -15,18 +23,10 @@ pub(crate) fn fulfill_alias_requirement(
     selected_inputs: &[InputSigningData],
     _outputs: &[Output],
 ) -> Result<Vec<InputSigningData>> {
-    fn predicate(input: &InputSigningData, alias_id: &AliasId) -> bool {
-        if let Output::Alias(alias_output) = &input.output {
-            &alias_output.alias_id_non_null(input.output_id()) == alias_id
-        } else {
-            false
-        }
-    }
-
     // Checks if the requirement is already fulfilled.
     if selected_inputs
         .iter()
-        .find(|input| predicate(input, &alias_id))
+        .find(|input| is_alias_id(input, &alias_id))
         .is_some()
     {
         return Ok(Vec::new());
@@ -34,7 +34,7 @@ pub(crate) fn fulfill_alias_requirement(
 
     // Checks if the requirement can be fulfilled.
     {
-        let index = available_inputs.iter().position(|input| predicate(input, &alias_id));
+        let index = available_inputs.iter().position(|input| is_alias_id(input, &alias_id));
 
         match index {
             Some(index) => Ok(vec![available_inputs.swap_remove(index)]),
