@@ -94,6 +94,29 @@ impl InputSelection {
     //     (output, requirement)
     // }
 
+    // fn create_remainder_output(selected_inputs: &[Input], outputs: &[Output], remainder_address: Option<Address>) -> Option<Output> {
+    //     let input_native_tokens = gather_nts(selected_inputs);
+    //     let output_native_tokens = gather_nts(outputs);
+    //     let (minted_native_tokens, melted_native_tokens) = get_minted_and_melted_nts(selected_inputs, outputs)?;
+    //     let native_tokens_diffs = (input_native_tokens + minted) - (output + melted + burn);
+
+    //     let base_coin_diff = get_base_coin_diff(selected_inputs, output);
+
+    //     let remainder_address = remainder_address.unwrap_or_else(|| {
+    //         selected_inputs.find(|input|input.has(ed25519))
+    //     });
+
+    //     if !native_tokens_diffs.is_empty() || base_coin_diff != 0 {
+    //         let mut remainder = OutputBuilder::new(base_coin_diff).with_unlock_condition(remainder_address);
+    //         if !native_tokens_diffs.is_empty(){
+    //             remainder = remainder.with_native_tokens(native_tokens_diffs);
+    //         }
+    //         Some(remainder.finish())
+    //     }else{
+    //         None
+    //     }
+    // }
+
     pub fn filter(mut self, addresses: &[Address]) -> Self {
         let addresses = addresses
             .iter()
