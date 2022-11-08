@@ -370,6 +370,12 @@ impl AliasOutput {
         &self.alias_id
     }
 
+    /// Returns the alias ID if not null, or creates it from the output ID.
+    #[inline(always)]
+    pub fn alias_id_non_null(&self, output_id: &OutputId) -> AliasId {
+        self.alias_id.or_from_output_id(output_id)
+    }
+
     ///
     #[inline(always)]
     pub fn state_index(&self) -> u32 {
@@ -433,8 +439,8 @@ impl AliasOutput {
     }
 
     /// Returns the alias address for this output.
-    pub fn alias_address(&self, output_id: OutputId) -> AliasAddress {
-        AliasAddress::new(self.alias_id().or_from_output_id(output_id))
+    pub fn alias_address(&self, output_id: &OutputId) -> AliasAddress {
+        AliasAddress::new(self.alias_id_non_null(output_id))
     }
 
     ///
@@ -446,7 +452,7 @@ impl AliasOutput {
         context: &mut ValidationContext,
     ) -> Result<(), ConflictReason> {
         let alias_id = if self.alias_id().is_null() {
-            AliasId::from(*output_id)
+            AliasId::from(output_id)
         } else {
             *self.alias_id()
         };

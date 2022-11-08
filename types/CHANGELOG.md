@@ -24,10 +24,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `OutputResponse` enum with `Json` and `Raw` variants;
+- `AliasOutput::alias_id_non_null` and `NftOutput::nft_id_non_null` methods;
 
 ### Changed
 
 - Renamed `OutputResponse` to `OutputWithMetadataResponse`;
+- `OutputId::hash` now takes a `&self`;
+- `impl From<OutputId> for {AliasId, NftId}` now takes an `&OutputId`;
+- `{AliasId, NftId, ChainId}::or_from_output_id` now takes an `&OutputId`;
+- `AliasOutput::alias_address` now takes an `&OutputId`;
+- `NftOutput::nft_address` now takes an `&OutputId`;
 
 ## 1.0.0-rc.1 - 2022-10-25
 

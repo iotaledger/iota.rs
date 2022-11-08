@@ -316,6 +316,12 @@ impl NftOutput {
         &self.nft_id
     }
 
+    /// Returns the nft ID if not null, or creates it from the output ID.
+    #[inline(always)]
+    pub fn nft_id_non_null(&self, output_id: &OutputId) -> NftId {
+        self.nft_id.or_from_output_id(output_id)
+    }
+
     ///
     #[inline(always)]
     pub fn unlock_conditions(&self) -> &UnlockConditions {
@@ -351,8 +357,8 @@ impl NftOutput {
     }
 
     /// Returns the nft address for this output.
-    pub fn nft_address(&self, output_id: OutputId) -> NftAddress {
-        NftAddress::new(self.nft_id().or_from_output_id(output_id))
+    pub fn nft_address(&self, output_id: &OutputId) -> NftAddress {
+        NftAddress::new(self.nft_id_non_null(output_id))
     }
 
     ///
@@ -368,7 +374,7 @@ impl NftOutput {
             .unlock(unlock, inputs, context)?;
 
         let nft_id = if self.nft_id().is_null() {
-            NftId::from(*output_id)
+            NftId::from(output_id)
         } else {
             *self.nft_id()
         };

@@ -339,11 +339,11 @@ impl SecretManager {
             // that have the corresponding alias or nft address in their unlock condition
             match &input.output {
                 Output::Alias(alias_output) => block_indexes.insert(
-                    Address::Alias(alias_output.alias_address(*input.output_id())),
+                    Address::Alias(alias_output.alias_address(input.output_id())),
                     current_block_index,
                 ),
                 Output::Nft(nft_output) => block_indexes.insert(
-                    Address::Nft(nft_output.nft_address(*input.output_id())),
+                    Address::Nft(nft_output.nft_address(input.output_id())),
                     current_block_index,
                 ),
                 _ => None,

@@ -91,9 +91,9 @@ async fn main() -> Result<()> {
     // make both alias outputs controlled by the first one
     //////////////////////////////////
     let alias_output_ids = get_new_alias_output_ids(block_1.payload().unwrap())?;
-    let alias_id_0 = AliasId::from(alias_output_ids[0]);
-    let alias_id_1 = AliasId::from(alias_output_ids[1]);
-    let alias_id_2 = AliasId::from(alias_output_ids[2]);
+    let alias_id_0 = AliasId::from(&alias_output_ids[0]);
+    let alias_id_1 = AliasId::from(&alias_output_ids[1]);
+    let alias_id_2 = AliasId::from(&alias_output_ids[2]);
 
     let alias_0_address = Address::Alias(AliasAddress::new(alias_id_0));
     let alias_1_address = Address::Alias(AliasAddress::new(alias_id_1));
