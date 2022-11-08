@@ -43,8 +43,8 @@ pub enum Requirement {
 }
 
 impl Requirement {
-    fn fulfill(
-        &self,
+    pub(crate) fn fulfill(
+        self,
         available_inputs: &mut Vec<InputSigningData>,
         selected_inputs: &[InputSigningData],
         outputs: &[Output],

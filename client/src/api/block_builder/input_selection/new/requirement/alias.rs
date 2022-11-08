@@ -10,7 +10,7 @@ use crate::{
 
 /// Tries to fulfill an alias requirement by selecting the appropriate alias output from the available inputs.
 pub(crate) fn fulfill_alias_requirement(
-    alias_id: &AliasId,
+    alias_id: AliasId,
     available_inputs: &mut Vec<InputSigningData>,
     selected_inputs: &[InputSigningData],
     _outputs: &[Output],
@@ -26,7 +26,7 @@ pub(crate) fn fulfill_alias_requirement(
     // Checks if the requirement is already fulfilled.
     if selected_inputs
         .iter()
-        .find(|input| predicate(input, alias_id))
+        .find(|input| predicate(input, &alias_id))
         .is_some()
     {
         return Ok(Vec::new());
@@ -34,11 +34,11 @@ pub(crate) fn fulfill_alias_requirement(
 
     // Checks if the requirement can be fulfilled.
     {
-        let index = available_inputs.iter().position(|input| predicate(input, alias_id));
+        let index = available_inputs.iter().position(|input| predicate(input, &alias_id));
 
         match index {
             Some(index) => Ok(vec![available_inputs.swap_remove(index)]),
-            None => Err(Error::UnfulfillableRequirement(Requirement::Alias(*alias_id))),
+            None => Err(Error::UnfulfillableRequirement(Requirement::Alias(alias_id))),
         }
     }
 }

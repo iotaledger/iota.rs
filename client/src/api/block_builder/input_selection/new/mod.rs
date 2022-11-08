@@ -110,12 +110,11 @@ impl InputSelection {
 
         // Process all the requirements until there are no more.
         while let Some(requirement) = requirements.pop() {
-            //     let inputs = fulfill_requirement(requirement, &available_inputs, &selected_inputs, &mut self.outputs)?;
+            let inputs = requirement.fulfill(&mut self.available_inputs, &selected_inputs, &self.outputs)?;
             //     if !inputs.is_empty() && requirements.is_empty(){
             //         requirements.push(Requirement::BaseCoinAmount);
             //     }
             //     selected_inputs.extend(inputs);
-            // TODO remove from available ?
             //     for input in inputs{
             //         let (output, requirement) = process_input(input, &outputs, &self.burn);
 

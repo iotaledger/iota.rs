@@ -10,7 +10,7 @@ use crate::{
 
 /// Tries to fulfill a foundry requirement by selecting the appropriate foundry output from the available inputs.
 pub(crate) fn fulfill_foundry_requirement(
-    foundry_id: &FoundryId,
+    foundry_id: FoundryId,
     available_inputs: &mut Vec<InputSigningData>,
     selected_inputs: &[InputSigningData],
     _outputs: &[Output],
@@ -26,7 +26,7 @@ pub(crate) fn fulfill_foundry_requirement(
     // Checks if the requirement is already fulfilled.
     if selected_inputs
         .iter()
-        .find(|input| predicate(input, foundry_id))
+        .find(|input| predicate(input, &foundry_id))
         .is_some()
     {
         return Ok(Vec::new());
@@ -34,11 +34,11 @@ pub(crate) fn fulfill_foundry_requirement(
 
     // Checks if the requirement can be fulfilled.
     {
-        let index = available_inputs.iter().position(|input| predicate(input, foundry_id));
+        let index = available_inputs.iter().position(|input| predicate(input, &foundry_id));
 
         match index {
             Some(index) => Ok(vec![available_inputs.swap_remove(index)]),
-            None => Err(Error::UnfulfillableRequirement(Requirement::Foundry(*foundry_id))),
+            None => Err(Error::UnfulfillableRequirement(Requirement::Foundry(foundry_id))),
         }
     }
 }

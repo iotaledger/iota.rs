@@ -10,7 +10,7 @@ use crate::{
 
 /// Tries to fulfill a nft requirement by selecting the appropriate nft output from the available inputs.
 pub(crate) fn fulfill_nft_requirement(
-    nft_id: &NftId,
+    nft_id: NftId,
     available_inputs: &mut Vec<InputSigningData>,
     selected_inputs: &[InputSigningData],
     _outputs: &[Output],
@@ -24,17 +24,17 @@ pub(crate) fn fulfill_nft_requirement(
     }
 
     // Checks if the requirement is already fulfilled.
-    if selected_inputs.iter().find(|input| predicate(input, nft_id)).is_some() {
+    if selected_inputs.iter().find(|input| predicate(input, &nft_id)).is_some() {
         return Ok(Vec::new());
     }
 
     // Checks if the requirement can be fulfilled.
     {
-        let index = available_inputs.iter().position(|input| predicate(input, nft_id));
+        let index = available_inputs.iter().position(|input| predicate(input, &nft_id));
 
         match index {
             Some(index) => Ok(vec![available_inputs.swap_remove(index)]),
-            None => Err(Error::UnfulfillableRequirement(Requirement::Nft(*nft_id))),
+            None => Err(Error::UnfulfillableRequirement(Requirement::Nft(nft_id))),
         }
     }
 }

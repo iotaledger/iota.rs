@@ -8,7 +8,7 @@ use crate::{
 };
 
 pub(crate) fn fulfill_issuer_requirement(
-    address: &Address,
+    address: Address,
     available_inputs: &mut Vec<InputSigningData>,
     selected_inputs: &[InputSigningData],
     outputs: &[Output],
