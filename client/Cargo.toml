@@ -307,3 +307,7 @@ path = "examples/output/native_tokens.rs"
 [[example]]
 name = "nft"
 path = "examples/output/nft.rs"
+
+[[example]]
+name = "participation"
+required-features = [ "participation" ]

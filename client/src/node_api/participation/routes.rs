@@ -6,7 +6,7 @@
 use iota_types::block::output::OutputId;
 
 use super::{
-    responses::{AddressOutputsResponse, EventsResponse, TrackedParticipation},
+    responses::{AddressOutputsResponse, EventsResponse, OutputStatusResponse},
     types::{AddressStakingStatus, Event, EventStatus, ParticipationEventType},
 };
 use crate::{Client, Result};
@@ -36,7 +36,7 @@ impl Client {
 
     /// RouteParticipationEvent is the route to access a single participation by its ID.
     pub async fn event(&self, event_id: String) -> Result<Event> {
-        let route = format!("api/participation/v1/events/:{event_id}");
+        let route = format!("api/participation/v1/events/{event_id}");
 
         self.node_manager
             .get_request(&route, None, self.get_timeout(), false, false)
@@ -45,7 +45,7 @@ impl Client {
 
     /// RouteParticipationEvent is the route to access a single participation by its ID.
     pub async fn event_status(&self, event_id: String, milestone_index: Option<u32>) -> Result<EventStatus> {
-        let route = format!("api/participation/v1/events/:{event_id}/status");
+        let route = format!("api/participation/v1/events/{event_id}/status");
 
         self.node_manager
             .get_request(
@@ -59,8 +59,8 @@ impl Client {
     }
 
     /// RouteOutputStatus is the route to get the vote status for a given outputID.
-    pub async fn output_status(&self, output_id: OutputId) -> Result<TrackedParticipation> {
-        let route = format!("api/participation/v1/outputs/:{output_id}");
+    pub async fn output_status(&self, output_id: OutputId) -> Result<OutputStatusResponse> {
+        let route = format!("api/participation/v1/outputs/{output_id}");
 
         self.node_manager
             .get_request(&route, None, self.get_timeout(), false, false)
@@ -69,7 +69,7 @@ impl Client {
 
     /// RouteAddressBech32Status is the route to get the staking rewards for the given bech32 address.
     pub async fn address_status(&self, bech32_address: String) -> Result<AddressStakingStatus> {
-        let route = format!("api/participation/v1/addresses/:{bech32_address}");
+        let route = format!("api/participation/v1/addresses/{bech32_address}");
 
         self.node_manager
             .get_request(&route, None, self.get_timeout(), false, false)
@@ -78,7 +78,7 @@ impl Client {
 
     /// RouteAddressBech32Outputs is the route to get the outputs for the given bech32 address.
     pub async fn address_output_ids(&self, bech32_address: String) -> Result<AddressOutputsResponse> {
-        let route = format!("api/participation/v1/addresses/:{bech32_address}/outputs");
+        let route = format!("api/participation/v1/addresses/{bech32_address}/outputs");
 
         self.node_manager
             .get_request(&route, None, self.get_timeout(), false, false)

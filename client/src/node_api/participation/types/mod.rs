@@ -7,6 +7,7 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
+/// Participation data
 pub mod participation;
 
 /// Participation tag
@@ -127,6 +128,9 @@ pub struct AnswerStatus {
 pub struct AddressStakingStatus {
     /// Rewards for staking events
     pub rewards: HashMap<String, StakingStatus>,
+    /// MilestoneIndex is the milestone index the rewards were calculated for.
+    #[serde(rename = "milestoneIndex")]
+    pub milestone_index: u32,
 }
 
 /// Staking rewards for an address
