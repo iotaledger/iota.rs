@@ -1,7 +1,7 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! IOTA node participation routes
+//! IOTA node public participation routes
 
 use iota_types::block::output::OutputId;
 
@@ -15,10 +15,6 @@ use crate::{Client, Result};
 // https://github.com/iotaledger/inx-participation/blob/develop/core/participation/routes.go
 
 impl Client {
-    ////////////////////////////////////////////////////////////////
-    //// Public routes
-    //// ////////////////////////////////////////////////////////////
-
     /// RouteParticipationEvents is the route to list all events, returning their ID, the event name and status.
     pub async fn events(&self, event_type: Option<ParticipationEventType>) -> Result<EventsResponse> {
         let route = "api/participation/v1/events";

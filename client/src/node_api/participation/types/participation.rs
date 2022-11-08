@@ -1,8 +1,6 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! Participation types
-
 use std::{convert::TryInto, io::Read};
 
 use serde::{Deserialize, Serialize};
