@@ -7,33 +7,33 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
-/// Participation data
+/// Participation data.
 pub mod participation;
 
-/// Participation tag
+/// Participation tag.
 pub const PARTICIPATION_TAG: &str = "PARTICIPATE";
 
-/// Possible participation event types
+/// Possible participation event types.
 pub enum ParticipationEventType {
-    /// Voting event
+    /// Voting event.
     Voting,
-    /// Staking event
+    /// Staking event.
     Staking,
 }
 
-/// All information about an event
+/// All information about an event.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EventData {
-    /// The event id
+    /// The event id.
     #[serde(rename = "eventId")]
     pub event_id: String,
-    /// Information about a voting or staking event
+    /// Information about a voting or staking event.
     pub information: Event,
-    /// Event status, with the information if it started and the total staked funds
+    /// Event status, with the information if it started and the total staked funds.
     pub status: EventStatus,
 }
 
-/// Information about a voting or staking event
+/// Information about a voting or staking event.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Event {
     name: String,
@@ -48,17 +48,17 @@ pub struct Event {
     additional_info: String,
 }
 
-/// Event payload types
+/// Event payload types.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum EventPayload {
-    /// Voting payload
+    /// Voting payload.
     VotingEventPayload(VotingEventPayload),
-    /// Staking payload
+    /// Staking payload.
     StakingEventPayload(StakingEventPayload),
 }
 
-/// Payload for a staking event
+/// Payload for a staking event.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct StakingEventPayload {
     #[serde(rename = "type")]
@@ -73,7 +73,7 @@ pub struct StakingEventPayload {
     additional_info: String,
 }
 
-/// Payload for a voting event
+/// Payload for a voting event.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct VotingEventPayload {
     #[serde(rename = "type")]
@@ -81,7 +81,7 @@ pub struct VotingEventPayload {
     questions: Vec<Question>,
 }
 
-/// Question for a voting event
+/// Question for a voting event.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Question {
     text: String,
@@ -90,7 +90,7 @@ pub struct Question {
     additional_info: String,
 }
 
-/// Answer in a voting event
+/// Answer in a voting event.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Answer {
     value: u8,
@@ -99,7 +99,7 @@ pub struct Answer {
     additional_info: String,
 }
 
-/// Event status
+/// Event status.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EventStatus {
     #[serde(rename = "milestoneIndex")]
@@ -109,13 +109,13 @@ pub struct EventStatus {
     checksum: String,
 }
 
-/// Answers
+/// Answers.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Answers {
     answers: Vec<AnswerStatus>,
 }
 
-/// Answer status
+/// Answer status.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AnswerStatus {
     value: u8,
@@ -123,24 +123,24 @@ pub struct AnswerStatus {
     accumulated: u64,
 }
 
-/// Staking rewards for an address
+/// Staking rewards for an address.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AddressStakingStatus {
-    /// Rewards for staking events
+    /// Rewards for staking events.
     pub rewards: HashMap<String, StakingStatus>,
     /// MilestoneIndex is the milestone index the rewards were calculated for.
     #[serde(rename = "milestoneIndex")]
     pub milestone_index: u32,
 }
 
-/// Staking rewards for an address
+/// Staking rewards for an address.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct StakingStatus {
-    /// Staked amount
+    /// Staked amount.
     pub amount: u64,
-    /// Currency symbol
+    /// Currency symbol.
     pub symbol: String,
-    /// If the required minimum staking reward is reached
+    /// If the required minimum staking reward is reached.
     #[serde(rename = "minimumReached")]
     pub minimum_reached: bool,
 }

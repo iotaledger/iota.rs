@@ -8,23 +8,23 @@ use serde::{Deserialize, Serialize};
 /// Participation information.
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 pub struct Participation {
-    /// A staking or voting event id, hex encoded [u8; 32]
+    /// A staking or voting event id, hex encoded [u8; 32].
     #[serde(rename = "eventId")]
     pub event_id: String,
-    /// Answers for a voting event, can be empty
+    /// Answers for a voting event, can be empty.
     pub answers: Vec<u8>,
 }
 
 /// Participation information.
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 pub struct Participations {
-    /// Multiple participations that happen at the same time
+    /// Multiple participations that happen at the same time.
     pub participations: Vec<Participation>,
 }
 
 impl Participations {
     // https://github.com/alexsporn/treasury/blob/main/specifications/chrysalis-referendum-rfc.md#structure-of-the-participation
-    /// Serialize to bytes
+    /// Serialize to bytes.
     pub fn to_bytes(&self) -> crate::Result<Vec<u8>> {
         let mut bytes: Vec<u8> = vec![
             self.participations
@@ -49,7 +49,7 @@ impl Participations {
         }
         Ok(bytes)
     }
-    /// Deserialize from bytes
+    /// Deserialize from bytes.
     pub fn from_bytes<R: Read + ?Sized>(bytes: &mut R) -> crate::Result<Participations> {
         let mut participations = Vec::new();
         let mut participations_len = [0u8; 1];
