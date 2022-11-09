@@ -35,6 +35,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `AliasOutput::alias_address` now takes an `&OutputId`;
 - `NftOutput::nft_address` now takes an `&OutputId`;
 
+### Fixed
+
+- Packing order of `v_byte_factor_data` and `v_byte_factor_key`;
+
 ## 1.0.0-rc.1 - 2022-10-25
 
 First release based on `bee-api-types` and `bee-block`.
