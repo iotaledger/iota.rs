@@ -14,7 +14,7 @@ use serde::{Deserialize, Serialize};
 use url::Url;
 
 use crate::{
-    constants::{DEFAULT_MIN_QUORUM_SIZE, DEFAULT_QUORUM_THRESHOLD, NODE_SYNC_INTERVAL},
+    constants::{DEFAULT_MIN_QUORUM_SIZE, DEFAULT_QUORUM_THRESHOLD, NODE_SYNC_INTERVAL, DEFAULT_USER_AGENT},
     error::{Error, Result},
     node_manager::{
         http_client::HttpClient,
@@ -53,8 +53,15 @@ pub struct NodeManagerBuilder {
     /// % of nodes that have to return the same response so it gets accepted
     #[serde(rename = "quorumThreshold", default = "default_quorum_threshold")]
     pub quorum_threshold: usize,
+    /// % of nodes that have to return the same response so it gets accepted
+    #[serde(rename = "userAgent", default = "default_user_agent")]
+    pub user_agent: String,
 }
 
+
+fn default_user_agent() -> String {
+    DEFAULT_USER_AGENT.to_string()
+}
 fn default_node_sync_enabled() -> bool {
     true
 }
@@ -208,6 +215,11 @@ impl NodeManagerBuilder {
         self
     }
 
+    pub(crate) fn with_user_agent(mut self, user_agent: String) -> Self {
+        self.user_agent = user_agent;
+        self
+    }
+
     pub(crate) fn build(self, healthy_nodes: Arc<RwLock<HashMap<Node, InfoResponse>>>) -> NodeManager {
         NodeManager {
             primary_node: self.primary_node.map(|node| node.into()),
@@ -222,7 +234,7 @@ impl NodeManagerBuilder {
             quorum: self.quorum,
             min_quorum_size: self.min_quorum_size,
             quorum_threshold: self.quorum_threshold,
-            http_client: HttpClient::new(),
+            http_client: HttpClient::new(self.user_agent),
         }
     }
 }
@@ -239,6 +251,7 @@ impl Default for NodeManagerBuilder {
             quorum: false,
             min_quorum_size: DEFAULT_MIN_QUORUM_SIZE,
             quorum_threshold: DEFAULT_QUORUM_THRESHOLD,
+            user_agent: DEFAULT_USER_AGENT.to_string(),
         }
     }
 }

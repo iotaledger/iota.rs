@@ -17,6 +17,7 @@ pub(crate) const DEFAULT_TIPS_INTERVAL: u64 = 5;
 pub(crate) const NODE_SYNC_INTERVAL: Duration = Duration::from_secs(60);
 pub(crate) const DEFAULT_MIN_QUORUM_SIZE: usize = 3;
 pub(crate) const DEFAULT_QUORUM_THRESHOLD: usize = 66;
+pub(crate) const DEFAULT_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"));
 #[cfg(not(target_family = "wasm"))]
 pub(crate) const MAX_PARALLEL_API_REQUESTS: usize = 100;
 /// Max allowed difference between the local time and latest milestone time, 5 minutes in seconds

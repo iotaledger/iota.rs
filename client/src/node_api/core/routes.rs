@@ -27,7 +27,7 @@ use packable::PackableExt;
 use url::Url;
 
 use crate::{
-    constants::DEFAULT_API_TIMEOUT,
+    constants::{DEFAULT_API_TIMEOUT, DEFAULT_USER_AGENT},
     node_manager::node::{Node, NodeAuth},
     Client, Error, Result,
 };
@@ -52,7 +52,7 @@ impl Client {
 
         let mut url = Url::parse(url)?;
         url.set_path(path);
-        let status = crate::node_manager::http_client::HttpClient::new()
+        let status = crate::node_manager::http_client::HttpClient::new(DEFAULT_USER_AGENT.to_string())
             .get(
                 Node {
                     url,
@@ -104,7 +104,7 @@ impl Client {
         let path = "api/core/v2/info";
         url.set_path(path);
 
-        let resp: InfoResponse = crate::node_manager::http_client::HttpClient::new()
+        let resp: InfoResponse = crate::node_manager::http_client::HttpClient::new(DEFAULT_USER_AGENT.to_string())
             .get(
                 Node {
                     url,
