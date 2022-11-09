@@ -3,14 +3,17 @@
 
 use std::{convert::TryInto, io::Read};
 
+use packable::PackableExt;
 use serde::{Deserialize, Serialize};
+
+use crate::node_api::participation::types::EventId;
 
 /// Participation information.
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 pub struct Participation {
     /// A staking or voting event id, hex encoded [u8; 32].
     #[serde(rename = "eventId")]
-    pub event_id: String,
+    pub event_id: EventId,
     /// Answers for a voting event, can be empty.
     pub answers: Vec<u8>,
 }
@@ -34,7 +37,7 @@ impl Participations {
         ];
 
         for participation in &self.participations {
-            let event_id: Vec<u8> = prefix_hex::decode(&participation.event_id)?;
+            let event_id: Vec<u8> = participation.event_id.pack_to_vec();
             bytes.extend(event_id);
             bytes.push(
                 participation
@@ -70,7 +73,7 @@ impl Participations {
             }
 
             participations.push(Participation {
-                event_id: prefix_hex::encode(event_id),
+                event_id: EventId::new(event_id),
                 answers,
             });
         }

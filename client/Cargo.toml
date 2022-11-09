@@ -14,6 +14,7 @@ categories = [ "cryptography::cryptocurrencies" ]
 [dependencies]
 async-trait = { version = "0.1.58", default-features = false }
 derive_builder = { version = "0.11.2", default-features = false, features = [ "std" ]}
+derive_more = { version = "0.99.17", default-features = false, features = [ "from", "as_ref", "deref", "deref_mut" ] }
 futures = { version = "0.3.25", default-features = false, features = [ "thread-pool" ] }
 instant = { version = "0.1.12", default-features = false, features = [ "wasm-bindgen" ] }
 iota-crypto = { version = "0.15.2", default-features = false, features = [ "std", "chacha", "blake2b", "ed25519", "random", "slip10", "bip39", "bip39-en", "ternary_encoding" ] }

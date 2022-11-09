@@ -5,6 +5,8 @@
 
 use std::collections::HashMap;
 
+extern crate alloc;
+use iota_types::{impl_id, string_serde_impl};
 use serde::{Deserialize, Serialize};
 
 /// Participation data.
@@ -26,7 +28,7 @@ pub enum ParticipationEventType {
 pub struct EventData {
     /// The event id.
     #[serde(rename = "eventId")]
-    pub event_id: String,
+    pub event_id: EventId,
     /// Information about a voting or staking event.
     pub information: Event,
     /// Event status, with the information if it started and the total staked funds.
@@ -144,3 +146,6 @@ pub struct StakingStatus {
     #[serde(rename = "minimumReached")]
     pub minimum_reached: bool,
 }
+
+impl_id!(pub EventId, 32, "A participation event id.");
+string_serde_impl!(EventId);

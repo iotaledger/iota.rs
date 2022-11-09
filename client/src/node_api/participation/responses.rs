@@ -9,12 +9,14 @@ use std::collections::HashMap;
 use iota_types::block::{output::OutputId, BlockId};
 use serde::{Deserialize, Serialize};
 
+use crate::node_api::participation::types::EventId;
+
 /// EventsResponse defines the response of a GET RouteParticipationEvents REST API call.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EventsResponse {
     /// The hex encoded ID of the created participation event.
     #[serde(rename = "eventIds")]
-    pub event_ids: Vec<String>,
+    pub event_ids: Vec<EventId>,
 }
 
 /// TrackedParticipation holds the information for each tracked participation.
