@@ -118,15 +118,17 @@ impl InputSelection {
     // }
 
     fn select_input(selected_inputs: &mut Vec<InputSigningData>, input: InputSigningData, requirements: &Requirements) {
-        //     let (output, requirement) = process_input(selected_input, &outputs, &self.burn);
+        // let (output, requirement) = process_input(input, &outputs, &self.burn);
 
-        //     if let Some(output) = output {
-        //         self.outputs.push(output);
-        //     }
+        // if let Some(output) = output {
+        //     self.outputs.push(output);
+        //     let new_requirements = requirements_from_outputs(vec![output]);
+        //     requirements.push_front(new_requirements);
+        // }
 
-        //     if let Some(requirement) = requirement {
-        //         requirements.push(requirement);
-        //     }
+        // if let Some(requirement) = requirement {
+        //     requirements.push(requirement);
+        // }
 
         selected_inputs.push(input)
     }
@@ -200,20 +202,10 @@ impl InputSelection {
             //     if !inputs.is_empty() && requirements.is_empty(){
             //         requirements.push(Requirement::BaseCoinAmount);
             //     }
-            //     selected_inputs.extend(inputs);
-            //     for input in inputs{
-            //         let (output, requirement) = process_input(input, &outputs, &self.burn);
 
-            //         if let Some(output) = output {
-            //             self.outputs.push(output);
-            //             let new_requirements = requirements_from_outputs(vec![output]);
-            //             requirements.push_front(new_requirements);
-            //         }
-
-            //         if let Some(requirement) = requirement {
-            //             requirements.push(requirement);
-            //         }
-            //     }
+            for input in inputs {
+                Self::select_input(&mut selected_inputs, input, &requirements);
+            }
         }
 
         // self.output.extend(create_storage_deposit_return_outputs(selected_input, self.outputs));
