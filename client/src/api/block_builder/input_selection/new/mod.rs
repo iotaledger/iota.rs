@@ -82,17 +82,22 @@ impl InputSelection {
     //     }
     // }
 
-    // fn process_input(
-    //     &self,
-    //     input: InputSigningData,
-    //     outputs: &[Output],
-    //     burn: Option<Burn>,
-    // ) -> (Option<Output>, Option<Requirement>) {
-    //     let output = self.transition_input(input, outputs, burn);
-    //     let requirement = self.unlock_conditions_input(input, outputs, burn);
+    fn select_input(selected_inputs: &mut Vec<InputSigningData>, input: InputSigningData, requirements: &Requirements) {
+        //     let output = self.transition_input(input, outputs, burn);
+        //     let requirement = self.unlock_conditions_input(input, outputs, burn);
 
-    //     (output, requirement)
-    // }
+        // if let Some(output) = output {
+        //     self.outputs.push(output);
+        //     let new_requirements = requirements_from_outputs(vec![output]);
+        //     requirements.push_front(new_requirements);
+        // }
+
+        // if let Some(requirement) = requirement {
+        //     requirements.push(requirement);
+        // }
+
+        selected_inputs.push(input)
+    }
 
     // fn create_remainder_output(selected_inputs: &[Input], outputs: &[Output], remainder_address: Option<Address>) -> Option<Output> {
     //     let input_native_tokens = gather_nts(selected_inputs);
@@ -116,22 +121,6 @@ impl InputSelection {
     //         None
     //     }
     // }
-
-    fn select_input(selected_inputs: &mut Vec<InputSigningData>, input: InputSigningData, requirements: &Requirements) {
-        // let (output, requirement) = process_input(input, &outputs, &self.burn);
-
-        // if let Some(output) = output {
-        //     self.outputs.push(output);
-        //     let new_requirements = requirements_from_outputs(vec![output]);
-        //     requirements.push_front(new_requirements);
-        // }
-
-        // if let Some(requirement) = requirement {
-        //     requirements.push(requirement);
-        // }
-
-        selected_inputs.push(input)
-    }
 
     pub fn filter(mut self, addresses: &[Address]) -> Self {
         let addresses = addresses
