@@ -1172,6 +1172,7 @@ dependencies = [
  "async-trait",
  "backtrace",
  "derive_builder",
+ "derive_more",
  "dotenv",
  "fern-logger",
  "futures",
