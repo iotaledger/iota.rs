@@ -107,8 +107,8 @@ impl Packable for RentStructure {
 
     fn pack<P: Packer>(&self, packer: &mut P) -> Result<(), P::Error> {
         self.v_byte_cost.pack(packer)?;
-        self.v_byte_factor_key.pack(packer)?;
         self.v_byte_factor_data.pack(packer)?;
+        self.v_byte_factor_key.pack(packer)?;
 
         Ok(())
     }
@@ -118,8 +118,8 @@ impl Packable for RentStructure {
         visitor: &Self::UnpackVisitor,
     ) -> Result<Self, UnpackError<Self::UnpackError, U::Error>> {
         let v_byte_cost = u32::unpack::<_, VERIFY>(unpacker, visitor).coerce()?;
-        let v_byte_factor_key = u8::unpack::<_, VERIFY>(unpacker, visitor).coerce()?;
         let v_byte_factor_data = u8::unpack::<_, VERIFY>(unpacker, visitor).coerce()?;
+        let v_byte_factor_key = u8::unpack::<_, VERIFY>(unpacker, visitor).coerce()?;
         let v_byte_offset = v_byte_offset(v_byte_factor_key, v_byte_factor_data);
 
         Ok(Self {
