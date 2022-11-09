@@ -208,8 +208,8 @@ pub enum Error {
     //////////////////////////////////////////////////////////////////////
     // Participation
     //////////////////////////////////////////////////////////////////////
-    #[cfg(feature = "participation")]
     /// Invalid participations error
+    #[cfg(feature = "participation")]
     #[error("invalid participations")]
     InvalidParticipations,
     /// IO error

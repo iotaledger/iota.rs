@@ -84,18 +84,23 @@ impl Participations {
 
 #[cfg(test)]
 mod tests {
+    use std::str::FromStr;
+
     use super::{Participation, Participations};
+    use crate::node_api::participation::types::EventId;
 
     #[test]
     fn serialize_deserialize() {
         let participations = Participations {
             participations: vec![
                 Participation {
-                    event_id: "0x09c2338f3acd51e626cc074d1abcb12d747076ddfccd5215d8f2f21af1aac111".to_string(),
+                    event_id: EventId::from_str("0x09c2338f3acd51e626cc074d1abcb12d747076ddfccd5215d8f2f21af1aac111")
+                        .unwrap(),
                     answers: vec![0, 1],
                 },
                 Participation {
-                    event_id: "0x0207c34ae298b90d85455eee718037ad84a46bd784cbe5fdd8c534cc955efa1f".to_string(),
+                    event_id: EventId::from_str("0x0207c34ae298b90d85455eee718037ad84a46bd784cbe5fdd8c534cc955efa1f")
+                        .unwrap(),
                     answers: vec![],
                 },
             ],

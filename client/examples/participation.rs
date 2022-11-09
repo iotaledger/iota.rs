@@ -51,25 +51,23 @@ async fn main() -> Result<()> {
     )?);
     let address = client.get_addresses(&secret_manager).with_range(0..1).get_raw().await?[0];
 
-    let address_participation = client
-        .address_status(address.to_bech32(client.get_bech32_hrp().await?))
-        .await?;
+    let bech32_address = address.to_bech32(client.get_bech32_hrp().await?);
+
+    let address_participation = client.address_staking_status(&bech32_address).await?;
     println!("{address_participation:#?}");
 
-    let address_output_ids = client
-        .address_output_ids(address.to_bech32(client.get_bech32_hrp().await?))
-        .await?;
+    let address_output_ids = client.address_participation_output_ids(&bech32_address).await?;
     println!("{address_output_ids:#?}");
 
     for (output_id, _) in address_output_ids.outputs.into_iter() {
-        let output_status = client.output_status(output_id).await?;
+        let output_status = client.output_status(&output_id).await?;
         println!("{output_status:#?}");
     }
 
     // Get outputs for address and request if they're participating
     let basic_output_ids = client
         .basic_output_ids(vec![
-            QueryParameter::Address(address.to_bech32(client.get_bech32_hrp().await?)),
+            QueryParameter::Address(bech32_address),
             QueryParameter::HasExpiration(false),
             QueryParameter::HasTimelock(false),
             QueryParameter::HasStorageDepositReturn(false),
@@ -77,7 +75,7 @@ async fn main() -> Result<()> {
         .await?;
 
     for output_id in basic_output_ids {
-        if let Ok(output_status) = client.output_status(output_id).await {
+        if let Ok(output_status) = client.output_status(&output_id).await {
             println!("{output_status:#?}");
         }
     }
