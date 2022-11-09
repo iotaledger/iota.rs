@@ -40,7 +40,7 @@ async fn main() -> Result<()> {
     println!("{events:#?}");
 
     for event_id in &events.event_ids {
-        let event_info = client.event(&event_id).await?;
+        let event_info = client.event(event_id).await?;
         println!("{event_info:#?}");
         let event_status = client.event_status(event_id, None).await?;
         println!("{event_status:#?}");

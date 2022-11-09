@@ -14,7 +14,7 @@ use crate::node_api::participation::types::EventId;
 /// EventsResponse defines the response of a GET RouteParticipationEvents REST API call.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EventsResponse {
-    /// The hex encoded ID of the created participation event.
+    /// The hex encoded ID of the created participation events.
     #[serde(rename = "eventIds")]
     pub event_ids: Vec<EventId>,
 }
@@ -38,7 +38,7 @@ pub struct TrackedParticipation {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct OutputStatusResponse {
     /// Participations holds the participations that were created in the output.
-    pub participations: HashMap<String, TrackedParticipation>,
+    pub participations: HashMap<EventId, TrackedParticipation>,
 }
 
 /// AddressOutputsResponse defines the response of a GET RouteAddressBech32Outputs REST API call.
