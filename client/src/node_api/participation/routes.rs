@@ -57,7 +57,7 @@ impl Client {
             .await
     }
 
-    /// RouteOutputStatus is the route to get the vote status for a given outputID.
+    /// RouteOutputStatus is the route to get the vote status for a given output ID.
     pub async fn output_status(&self, output_id: &OutputId) -> Result<OutputStatusResponse> {
         let route = format!("api/participation/v1/outputs/{output_id}");
 
