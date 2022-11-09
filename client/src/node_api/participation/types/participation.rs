@@ -52,6 +52,7 @@ impl Participations {
         }
         Ok(bytes)
     }
+
     /// Deserialize from bytes.
     pub fn from_bytes<R: Read + ?Sized>(bytes: &mut R) -> crate::Result<Participations> {
         let mut participations = Vec::new();
