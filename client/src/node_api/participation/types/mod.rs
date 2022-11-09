@@ -1,7 +1,7 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! Participation types
+//! Participation types.
 
 use std::collections::HashMap;
 
