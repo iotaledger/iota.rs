@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! IOTA node public participation routes
+//! https://github.com/iota-community/treasury/blob/main/specifications/hornet-participation-plugin.md#public-node-endpoints
+//! https://github.com/iotaledger/inx-participation/blob/develop/core/participation/routes.go
 
 use iota_types::block::output::OutputId;
 
@@ -10,9 +12,6 @@ use super::{
     types::{AddressStakingStatus, Event, EventStatus, ParticipationEventType},
 };
 use crate::{Client, Result};
-
-// https://github.com/iota-community/treasury/blob/main/specifications/hornet-participation-plugin.md#public-node-endpoints
-// https://github.com/iotaledger/inx-participation/blob/develop/core/participation/routes.go
 
 impl Client {
     /// RouteParticipationEvents is the route to list all events, returning their ID, the event name and status.

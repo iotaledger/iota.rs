@@ -2,9 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! Response types for the public participation endpoints
-
-// Types from https://github.com/iotaledger/inx-participation/blob/d3b994f74a8bb948b18a89b04ed6c9bb271c7166/core/participation/types.go
-
+/// Types from https://github.com/iotaledger/inx-participation/blob/d3b994f74a8bb948b18a89b04ed6c9bb271c7166/core/participation/types.go
 use std::collections::HashMap;
 
 use iota_types::block::{output::OutputId, BlockId};
