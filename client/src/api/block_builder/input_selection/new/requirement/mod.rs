@@ -162,19 +162,19 @@ impl Requirements {
         requirements
     }
 
-    pub(crate) fn from_burn(burn: Burn) -> Self {
+    pub(crate) fn from_burn(burn: &Burn) -> Self {
         let mut requirements = Requirements::new();
 
-        for alias_id in burn.aliases {
-            requirements.push(Requirement::Alias(alias_id));
+        for alias_id in &burn.aliases {
+            requirements.push(Requirement::Alias(*alias_id));
         }
 
-        for nft_id in burn.nfts {
-            requirements.push(Requirement::Nft(nft_id));
+        for nft_id in &burn.nfts {
+            requirements.push(Requirement::Nft(*nft_id));
         }
 
-        for foundry_id in burn.foundries {
-            requirements.push(Requirement::Foundry(foundry_id));
+        for foundry_id in &burn.foundries {
+            requirements.push(Requirement::Foundry(*foundry_id));
         }
 
         // TODO add native tokens

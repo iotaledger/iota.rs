@@ -36,65 +36,70 @@ pub struct InputSelection {
 }
 
 impl InputSelection {
-    // fn transition_input(&self, input: InputSigningData, outputs: &[Output], burn: Option<Burn>) -> Option<Output> {
-    //     match input {
-    //         Output::Alias(alias_output) => {
-    //             if burn.aliases.contains(alias_id) {
-    //                 return None;
-    //             }
-    //             Some(
-    //                     // TODO create output from input
-    //                 )
-    //         }
-    //         Output::Nft(nft_input) => {
-    //             if burn.should_be_burned(nft_id) {
-    //                 return None;
-    //             }
-    //             Some(
-    //                     // TODO create output from input
-    //                 )
-    //         }
-    //         Output::Foundry(foundry_output) => {
-    //             if burn.should_be_burned(foundry_id) {
-    //                 return None;
-    //             }
-    //             Some(
-    //                     // TODO create output from input
-    //                 )
-    //         }
-    //         _ => None,
-    //     }
-    // }
+    fn transition_input(input: &InputSigningData, outputs: &[Output], burn: Option<&Burn>) -> Option<Output> {
+        //     match input {
+        //         Output::Alias(alias_output) => {
+        //             if burn.aliases.contains(alias_id) {
+        //                 return None;
+        //             }
+        //             Some(
+        //                     // TODO create output from input
+        //                 )
+        //         }
+        //         Output::Nft(nft_input) => {
+        //             if burn.should_be_burned(nft_id) {
+        //                 return None;
+        //             }
+        //             Some(
+        //                     // TODO create output from input
+        //                 )
+        //         }
+        //         Output::Foundry(foundry_output) => {
+        //             if burn.should_be_burned(foundry_id) {
+        //                 return None;
+        //             }
+        //             Some(
+        //                     // TODO create output from input
+        //                 )
+        //         }
+        //         _ => None,
+        //     }
 
-    // fn unlock_conditions_input(
-    //     &self,
-    //     input: InputSigningData,
-    //     outputs: &[Output],
-    //     burn: Option<Burn>,
-    // ) -> Result<Option<Requirement>> {
-    //     let alias_state_transition = alias_state_transition(input, outputs);
-    //     let required_address = input.required_and_unlock_address(time, alias_state_transition).0;
+        None
+    }
 
-    //     match required_address {
-    //         Address::Alias(alias_address) => Ok(Some(Requirement::Alias(*alias_address.alias_id()))),
-    //         Address::Nft(nft_address) => Ok(Some(Requirement::Nft(*nft_address.nft_id()))),
-    //         _ => Ok(None),
-    //     }
-    // }
+    fn unlock_conditions_input(
+        input: &InputSigningData,
+        outputs: &[Output],
+        burn: Option<&Burn>,
+    ) -> Option<Requirement> {
+        //     let alias_state_transition = alias_state_transition(input, outputs);
+        //     let required_address = input.required_and_unlock_address(time, alias_state_transition).0;
 
-    fn select_input(selected_inputs: &mut Vec<InputSigningData>, input: InputSigningData, requirements: &Requirements) {
-        //     let output = self.transition_input(input, outputs, burn);
-        //     let requirement = self.unlock_conditions_input(input, outputs, burn);
+        //     match required_address {
+        //         Address::Alias(alias_address) => Ok(Some(Requirement::Alias(*alias_address.alias_id()))),
+        //         Address::Nft(nft_address) => Ok(Some(Requirement::Nft(*nft_address.nft_id()))),
+        //         _ => Ok(None),
+        //     }
 
-        // if let Some(output) = output {
-        //     self.outputs.push(output);
-        //     let new_requirements = requirements_from_outputs(vec![output]);
-        //     requirements.push_front(new_requirements);
-        // }
+        None
+    }
 
-        // if let Some(requirement) = requirement {
-        //     requirements.push(requirement);
-        // }
+    fn select_input(
+        selected_inputs: &mut Vec<InputSigningData>,
+        input: InputSigningData,
+        outputs: &mut Vec<Output>,
+        requirements: &mut Requirements,
+        burn: Option<&Burn>,
+    ) {
+        if let Some(output) = Self::transition_input(&input, outputs, burn) {
+            requirements.extend(Requirements::from_inputs_outputs(selected_inputs, &[output]));
+            // outputs.push(output);
+        }
+
+        if let Some(requirement) = Self::unlock_conditions_input(&input, outputs, burn) {
+            requirements.push(requirement);
+        }
 
         selected_inputs.push(input)
     }
@@ -167,7 +172,9 @@ impl InputSelection {
                 Some(index) => Self::select_input(
                     &mut selected_inputs,
                     self.available_inputs.swap_remove(index),
-                    &requirements,
+                    &mut self.outputs,
+                    &mut requirements,
+                    self.burn.as_ref(),
                 ),
                 None => return Err(Error::RequiredInputIsNotAvailable(*required_input)),
             }
@@ -179,7 +186,7 @@ impl InputSelection {
             self.outputs.as_slice(),
         ));
 
-        if let Some(burn) = self.burn {
+        if let Some(burn) = &self.burn {
             requirements.extend(Requirements::from_burn(burn));
         }
 
@@ -193,7 +200,13 @@ impl InputSelection {
             //     }
 
             for input in inputs {
-                Self::select_input(&mut selected_inputs, input, &requirements);
+                Self::select_input(
+                    &mut selected_inputs,
+                    input,
+                    &mut self.outputs,
+                    &mut requirements,
+                    self.burn.as_ref(),
+                );
             }
         }
 
