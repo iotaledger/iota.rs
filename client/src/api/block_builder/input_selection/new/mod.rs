@@ -117,6 +117,20 @@ impl InputSelection {
     //     }
     // }
 
+    fn select_input(selected_inputs: &mut Vec<InputSigningData>, input: InputSigningData, requirements: &Requirements) {
+        //     let (output, requirement) = process_input(selected_input, &outputs, &self.burn);
+
+        //     if let Some(output) = output {
+        //         self.outputs.push(output);
+        //     }
+
+        //     if let Some(requirement) = requirement {
+        //         requirements.push(requirement);
+        //     }
+
+        selected_inputs.push(input)
+    }
+
     pub fn filter(mut self, addresses: &[Address]) -> Self {
         let addresses = addresses
             .iter()
@@ -153,28 +167,20 @@ impl InputSelection {
                 return Err(Error::RequiredInputIsForbidden(*required_input));
             }
 
-            // Check that required inputs are available.
+            // Check that required inputs are available and select them.
             match self
                 .available_inputs
                 .iter()
                 .position(|input| input.output_id() == required_input)
             {
-                Some(index) => selected_inputs.push(self.available_inputs.swap_remove(index)),
+                Some(index) => Self::select_input(
+                    &mut selected_inputs,
+                    self.available_inputs.swap_remove(index),
+                    &requirements,
+                ),
                 None => return Err(Error::RequiredInputIsNotAvailable(*required_input)),
             }
         }
-
-        // for selected_input in selected_inputs.iter() {
-        //     let (output, requirement) = process_input(selected_input, &outputs, &self.burn);
-
-        //     if let Some(output) = output {
-        //         self.outputs.push(output);
-        //     }
-
-        //     if let Some(requirement) = requirement {
-        //         requirements.push(requirement);
-        //     }
-        // }
 
         // TODO do we actually need extend?
         requirements.extend(Requirements::from_inputs_outputs(
