@@ -137,34 +137,32 @@ impl InputSelection {
         self
     }
 
+    /// Selects inputs that meet the requirements of the outputs to satisfy the semantic validation of the overall transaction.
+    /// Also creates outputs if transitions are required.
     pub fn select(mut self) -> Result<(Vec<InputSigningData>, Vec<Output>)> {
-        // Check that no required input is also forbidden.
-        for required_input in self.required_inputs.iter() {
-            if self.forbidden_inputs.contains(&required_input) {
-                return Err(Error::RequiredAndForbiddenInput(*required_input));
-            }
-        }
+        let mut selected_inputs = Vec::new();
+        let mut requirements = Requirements::new();
 
-        // TODO could be part of filter?
         // Remove forbidden inputs from available inputs.
         self.available_inputs
             .retain(|input| !self.forbidden_inputs.contains(input.output_id()));
 
-        // // TODO dumb check that all required are actually available
+        for required_input in self.required_inputs.iter() {
+            // Check that required inputs are not forbidden.
+            if self.forbidden_inputs.contains(&required_input) {
+                return Err(Error::RequiredInputIsForbidden(*required_input));
+            }
 
-        let mut selected_inputs = Vec::new();
-
-        // let (mut selected_inputs, self.available_inputs) = self.available_inputs.into_iter().partition(|input| !self.required_inputs.contains(input.output_id()));
-
-        // for available_input in self.available_inputs {
-        //     let output_id = available_input.output_id();
-        //     if self.required_inputs.contains(&output_id) {
-        //         selected_inputs.push(available_input);
-        //         self.required_inputs.remove(&output_id);
-        //     }
-        // }
-
-        let mut requirements = Requirements::new();
+            // Check that required inputs are available.
+            match self
+                .available_inputs
+                .iter()
+                .position(|input| input.output_id() == required_input)
+            {
+                Some(index) => selected_inputs.push(self.available_inputs.swap_remove(index)),
+                None => return Err(Error::RequiredInputIsNotAvailable(*required_input)),
+            }
+        }
 
         // for selected_input in selected_inputs.iter() {
         //     let (output, requirement) = process_input(selected_input, &outputs, &self.burn);

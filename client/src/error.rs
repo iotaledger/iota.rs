@@ -211,9 +211,12 @@ pub enum Error {
     //////////////////////////////////////////////////////////////////////
     // Input Selection
     //////////////////////////////////////////////////////////////////////
-    /// Required forbidden input.
-    #[error("input {0} is both required and forbidden")]
-    RequiredAndForbiddenInput(OutputId),
+    /// Required input is forbidden.
+    #[error("required input {0} is forbidden")]
+    RequiredInputIsForbidden(OutputId),
+    /// Required input is not available.
+    #[error("required input {0} is not available")]
+    RequiredInputIsNotAvailable(OutputId),
     /// Unfulfillable requirement.
     #[error("unfulfillable requirement {0:?}")]
     UnfulfillableRequirement(Requirement),
