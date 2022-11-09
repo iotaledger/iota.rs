@@ -18,7 +18,7 @@ pub struct Participation {
     pub answers: Vec<u8>,
 }
 
-/// Participation information.
+/// Participations information.
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 pub struct Participations {
     /// Multiple participations that happen at the same time.
