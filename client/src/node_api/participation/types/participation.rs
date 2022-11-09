@@ -10,9 +10,9 @@ use crate::node_api::participation::types::EventId;
 
 /// Participation information.
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
+#[serde(rename_all = "camelCase")]
 pub struct Participation {
     /// A staking or voting event id, hex encoded [u8; 32].
-    #[serde(rename = "eventId")]
     pub event_id: EventId,
     /// Answers for a voting event, can be empty.
     pub answers: Vec<u8>,

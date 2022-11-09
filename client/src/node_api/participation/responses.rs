@@ -13,9 +13,9 @@ use crate::node_api::participation::types::EventId;
 
 /// EventsResponse defines the response of a GET RouteParticipationEvents REST API call.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct EventsResponse {
     /// The hex encoded ID of the created participation events.
-    #[serde(rename = "eventIds")]
     pub event_ids: Vec<EventId>,
 }
 

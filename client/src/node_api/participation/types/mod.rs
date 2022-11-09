@@ -25,9 +25,9 @@ pub enum ParticipationEventType {
 
 /// All information about an event.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct EventData {
     /// The event id.
-    #[serde(rename = "eventId")]
     pub event_id: EventId,
     /// Information about a voting or staking event.
     pub information: Event,
@@ -37,16 +37,13 @@ pub struct EventData {
 
 /// Information about a voting or staking event.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Event {
     name: String,
-    #[serde(rename = "milestoneIndexCommence")]
     milestone_index_commence: u32,
-    #[serde(rename = "milestoneIndexStart")]
     milestone_index_start: u32,
-    #[serde(rename = "milestoneIndexEnd")]
     milestone_index_end: u32,
     payload: EventPayload,
-    #[serde(rename = "additionalInfo")]
     additional_info: String,
 }
 
@@ -62,38 +59,37 @@ pub enum EventPayload {
 
 /// Payload for a staking event.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct StakingEventPayload {
-    #[serde(rename = "type")]
     kind: u32,
     text: String,
     symbol: String,
     numerator: u64,
     denominator: u64,
-    #[serde(rename = "requiredMinimumRewards")]
     required_minimum_rewards: u64,
-    #[serde(rename = "additionalInfo")]
     additional_info: String,
 }
 
 /// Payload for a voting event.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct VotingEventPayload {
-    #[serde(rename = "type")]
     kind: u32,
     questions: Vec<Question>,
 }
 
 /// Question for a voting event.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Question {
     text: String,
     answers: Vec<Answer>,
-    #[serde(rename = "additionalInfo")]
     additional_info: String,
 }
 
 /// Answer in a voting event.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Answer {
     value: u8,
     text: String,
@@ -103,8 +99,8 @@ pub struct Answer {
 
 /// Event status.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct EventStatus {
-    #[serde(rename = "milestoneIndex")]
     milestone_index: u32,
     status: String,
     questions: Option<Vec<Answers>>,
@@ -127,23 +123,23 @@ pub struct AnswerStatus {
 
 /// Staking rewards for an address.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct AddressStakingStatus {
     /// Rewards for staking events.
     pub rewards: HashMap<String, StakingStatus>,
     /// MilestoneIndex is the milestone index the rewards were calculated for.
-    #[serde(rename = "milestoneIndex")]
     pub milestone_index: u32,
 }
 
 /// Staking rewards for an address.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct StakingStatus {
     /// Staked amount.
     pub amount: u64,
     /// Currency symbol.
     pub symbol: String,
     /// If the required minimum staking reward is reached.
-    #[serde(rename = "minimumReached")]
     pub minimum_reached: bool,
 }
 
