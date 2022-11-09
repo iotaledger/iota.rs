@@ -18,7 +18,7 @@ futures = { version = "0.3.25", default-features = false, features = [ "thread-p
 instant = { version = "0.1.12", default-features = false, features = [ "wasm-bindgen" ] }
 iota-crypto = { version = "0.15.2", default-features = false, features = [ "std", "chacha", "blake2b", "ed25519", "random", "slip10", "bip39", "bip39-en", "ternary_encoding" ] }
 iota-pow = { version = "1.0.0-rc.1", path = "../pow", default-features = false }
-iota-types = { version = "1.0.0-rc.1", path = "../types", default-features = false, features = [ "api", "block", "serde", "dto", "std" ] }
+iota-types = { version = "1.0.0-rc.2", path = "../types", default-features = false, features = [ "api", "block", "serde", "dto", "std" ] }
 log = { version = "0.4.17", default-features = false }
 num_cpus = { version = "1.13.1", default-features = false }
 packable = { version = "0.7.0", default-features = false, features = [ "serde", "primitive-types", "std" ] }
