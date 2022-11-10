@@ -93,7 +93,7 @@ impl InputSelection {
         burn: Option<&Burn>,
     ) {
         if let Some(output) = Self::transition_input(&input, outputs, burn) {
-            requirements.extend(Requirements::from_inputs_outputs(
+            requirements.extend(Requirements::from_outputs(
                 selected_inputs.iter(),
                 std::iter::once(&output),
             ));
@@ -166,12 +166,13 @@ impl InputSelection {
                 return Err(Error::RequiredInputIsForbidden(*required_input));
             }
 
-            // Check that required inputs are available and select them.
+            // Check that required inputs are available.
             match self
                 .available_inputs
                 .iter()
                 .position(|input| input.output_id() == required_input)
             {
+                // Select required inputs.
                 Some(index) => Self::select_input(
                     &mut selected_inputs,
                     self.available_inputs.swap_remove(index),
@@ -183,10 +184,9 @@ impl InputSelection {
             }
         }
 
-        requirements.extend(Requirements::from_inputs_outputs(
-            selected_inputs.iter(),
-            self.outputs.iter(),
-        ));
+        // Gets requirements from outputs.
+        // TODO this may re-evaluate outputs added by inputs
+        requirements.extend(Requirements::from_outputs(selected_inputs.iter(), self.outputs.iter()));
 
         if let Some(burn) = &self.burn {
             requirements.extend(Requirements::from_burn(burn));
