@@ -197,11 +197,15 @@ impl InputSelection {
 
         // Gets requirements from outputs.
         // TODO this may re-evaluate outputs added by inputs
-        requirements.extend(Requirements::from_outputs(selected_inputs.iter(), self.outputs.iter()));
+        let new_requirements = Requirements::from_outputs(selected_inputs.iter(), self.outputs.iter());
+        println!("new requirements from outputs: {:?}", new_requirements);
+        requirements.extend(new_requirements);
 
         // Gets requirements from burn.
         if let Some(burn) = &self.burn {
-            requirements.extend(Requirements::from_burn(burn));
+            let new_requirements = Requirements::from_burn(burn);
+            println!("new requirements from burn: {:?}", new_requirements);
+            requirements.extend(new_requirements);
         }
 
         // Adds an initial base token requirement.

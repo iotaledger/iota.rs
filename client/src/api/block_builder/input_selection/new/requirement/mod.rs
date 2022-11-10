@@ -71,6 +71,7 @@ impl Requirement {
     }
 }
 
+#[derive(Debug)]
 pub(crate) struct Requirements(VecDeque<Requirement>);
 
 impl Requirements {
