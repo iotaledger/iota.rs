@@ -53,15 +53,15 @@ pub struct NodeManagerBuilder {
     /// % of nodes that have to return the same response so it gets accepted
     #[serde(rename = "quorumThreshold", default = "default_quorum_threshold")]
     pub quorum_threshold: usize,
-    /// % of nodes that have to return the same response so it gets accepted
+    /// The User-Agent header for requests
     #[serde(rename = "userAgent", default = "default_user_agent")]
     pub user_agent: String,
 }
 
-
 fn default_user_agent() -> String {
     DEFAULT_USER_AGENT.to_string()
 }
+
 fn default_node_sync_enabled() -> bool {
     true
 }
