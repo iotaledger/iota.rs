@@ -57,7 +57,7 @@ runs:
 
     - name: Set Up Cache for Cargo Home
       if: ${{ inputs.cache == 'true' }}
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: |
           ~/.cargo/bin/
@@ -73,7 +73,7 @@ runs:
 
     - name: Set Up Cache for Cargo Target
       if: ${{ inputs.cache == 'true' }}
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: |
           ${{ inputs.cache-root }}/target/

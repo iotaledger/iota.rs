@@ -7,3 +7,5 @@ pub mod core;
 pub mod indexer;
 #[cfg(feature = "mqtt")]
 pub mod mqtt;
+#[cfg(feature = "participation")]
+pub mod participation;

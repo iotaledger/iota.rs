@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security -->
 
-## 1.0.0-rc.2 - 20XX-XX-XX
+## 1.0.0-rc.2 - 2022-11-09
 
 ### Added
 
@@ -34,6 +34,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `{AliasId, NftId, ChainId}::or_from_output_id` now takes an `&OutputId`;
 - `AliasOutput::alias_address` now takes an `&OutputId`;
 - `NftOutput::nft_address` now takes an `&OutputId`;
+
+### Fixed
+
+- Packing order of `v_byte_factor_data` and `v_byte_factor_key`;
 
 ## 1.0.0-rc.1 - 2022-10-25
 

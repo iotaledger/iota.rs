@@ -1172,6 +1172,7 @@ dependencies = [
  "async-trait",
  "backtrace",
  "derive_builder",
+ "derive_more",
  "dotenv",
  "fern-logger",
  "futures",
@@ -1257,7 +1258,7 @@ dependencies = [
 
 [[package]]
 name = "iota-types"
-version = "1.0.0-rc.1"
+version = "1.0.0-rc.2"
 dependencies = [
  "bech32 0.9.1",
  "bitflags",

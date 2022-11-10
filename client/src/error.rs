@@ -222,6 +222,19 @@ pub enum Error {
     UnfulfillableRequirement(Requirement),
 
     //////////////////////////////////////////////////////////////////////
+    // Participation
+    //////////////////////////////////////////////////////////////////////
+    /// Invalid participations error
+    #[cfg(feature = "participation")]
+    #[error("invalid participations")]
+    InvalidParticipations,
+    /// IO error
+    #[cfg(feature = "participation")]
+    #[error("`{0}`")]
+    #[serde(serialize_with = "display_string")]
+    IoError(#[from] std::io::Error),
+
+    //////////////////////////////////////////////////////////////////////
     // Ledger Nano
     //////////////////////////////////////////////////////////////////////
     /// Denied by User
