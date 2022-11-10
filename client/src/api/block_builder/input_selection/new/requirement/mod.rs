@@ -92,7 +92,10 @@ impl Requirements {
         }
     }
 
-    pub(crate) fn from_inputs_outputs(inputs: &[InputSigningData], outputs: &[Output]) -> Self {
+    pub(crate) fn from_inputs_outputs<'a>(
+        mut inputs: impl Iterator<Item = &'a InputSigningData>,
+        outputs: impl Iterator<Item = &'a Output>,
+    ) -> Self {
         // TODO take duplicate into account
         let mut requirements = Requirements::new();
 
@@ -122,7 +125,6 @@ impl Requirements {
                 // Also add an alias requirement since the associated alias output needs to be transitioned.
                 Output::Foundry(foundry_output) => {
                     let is_new = inputs
-                        .iter()
                         .find(|input| {
                             if let Output::Foundry(output) = &input.output {
                                 output.id() == foundry_output.id()

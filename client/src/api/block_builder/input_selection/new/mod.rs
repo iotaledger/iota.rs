@@ -93,8 +93,11 @@ impl InputSelection {
         burn: Option<&Burn>,
     ) {
         if let Some(output) = Self::transition_input(&input, outputs, burn) {
-            requirements.extend(Requirements::from_inputs_outputs(selected_inputs, &[output]));
-            // outputs.push(output);
+            requirements.extend(Requirements::from_inputs_outputs(
+                selected_inputs.iter(),
+                std::iter::once(&output),
+            ));
+            outputs.push(output);
         }
 
         if let Some(requirement) = Self::unlock_conditions_input(&input, outputs, burn) {
@@ -180,10 +183,9 @@ impl InputSelection {
             }
         }
 
-        // TODO do we actually need extend?
         requirements.extend(Requirements::from_inputs_outputs(
-            selected_inputs.as_slice(),
-            self.outputs.as_slice(),
+            selected_inputs.iter(),
+            self.outputs.iter(),
         ));
 
         if let Some(burn) = &self.burn {
