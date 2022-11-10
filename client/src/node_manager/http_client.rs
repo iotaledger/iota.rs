@@ -36,14 +36,14 @@ impl Response {
 #[derive(Clone)]
 pub(crate) struct HttpClient {
     client: reqwest::Client,
-    user_agent: String
+    user_agent: String,
 }
 
 impl HttpClient {
     pub(crate) fn new(user_agent: String) -> Self {
         Self {
             client: reqwest::Client::new(),
-            user_agent: user_agent,
+            user_agent,
         }
     }
 
