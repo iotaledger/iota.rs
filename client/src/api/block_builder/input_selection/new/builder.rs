@@ -13,6 +13,7 @@ use crate::{
     secret::types::InputSigningData,
 };
 
+/// A builder for an [`InputSelection`].
 pub struct InputSelectionBuilder {
     outputs: Vec<Output>,
     // TODO impl Iter ?
@@ -29,6 +30,7 @@ pub struct InputSelectionBuilder {
 }
 
 impl InputSelectionBuilder {
+    /// Creates an [`InputSelectionBuilder`].
     pub fn new(
         outputs: Vec<Output>,
         available_inputs: Vec<InputSigningData>,
@@ -46,32 +48,38 @@ impl InputSelectionBuilder {
         }
     }
 
-    pub fn time(mut self, time: u32) -> Self {
+    /// Sets the timestamp of an [`InputSelectionBuilder`].
+    pub fn timestamp(mut self, time: u32) -> Self {
         self.timestamp.replace(time);
         self
     }
 
+    /// Sets the required inputs of an [`InputSelectionBuilder`].
     pub fn required_inputs(mut self, inputs: HashSet<OutputId>) -> Self {
         self.required_inputs = inputs;
         self
     }
 
+    /// Sets the forbidden inputs of an [`InputSelectionBuilder`].
     pub fn forbidden_inputs(mut self, inputs: HashSet<OutputId>) -> Self {
         self.forbidden_inputs = inputs;
         self
     }
 
+    /// Sets the remainder address of an [`InputSelectionBuilder`].
     pub fn remainder_address(mut self, address: Address) -> Self {
         self.remainder_address.replace(address);
         self
     }
 
+    /// Sets the burn of an [`InputSelectionBuilder`].
     pub fn burn(mut self, burn: Burn) -> Self {
         self.burn.replace(burn);
         self
     }
 
-    pub fn build(self) -> InputSelection {
+    /// Finishes an [`InputSelectionBuilder`] into an [`InputSelection`].
+    pub fn finish(self) -> InputSelection {
         InputSelection {
             outputs: self.outputs,
             available_inputs: self.available_inputs,

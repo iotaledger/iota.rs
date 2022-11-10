@@ -7,7 +7,8 @@ pub(crate) mod requirement;
 
 use std::collections::HashSet;
 
-use burn::Burn;
+pub use builder::InputSelectionBuilder;
+pub use burn::Burn;
 use requirement::{Requirement, Requirements};
 
 use crate::{
@@ -129,6 +130,15 @@ impl InputSelection {
     //         None
     //     }
     // }
+
+    /// Creates an [`InputSelectionBuilder`].
+    pub fn build(
+        outputs: Vec<Output>,
+        available_inputs: Vec<InputSigningData>,
+        protocol_parameters: ProtocolParameters,
+    ) -> InputSelectionBuilder {
+        InputSelectionBuilder::new(outputs, available_inputs, protocol_parameters)
+    }
 
     // TODO should we somehow enforce using filter so we don't have to use can_be_unlocked_now later everywhere ?
     pub fn filter(mut self, addresses: &[Address]) -> Self {
