@@ -19,6 +19,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security -->
 
+## 1.0.0-rc.3 - 20XX-XX-XX
+
+### Added
+
+- `NftAddress::into_nft_id` method;
+- `AliasAddress::into_alias_id` method;
+
 ## 1.0.0-rc.2 - 2022-11-09
 
 ### Added

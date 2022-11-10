@@ -30,6 +30,12 @@ impl AliasAddress {
     pub fn alias_id(&self) -> &AliasId {
         &self.0
     }
+
+    /// Consumes an [`AliasAddress`] and returns its [`AliasId`].
+    #[inline(always)]
+    pub fn into_alias_id(self) -> AliasId {
+        self.0
+    }
 }
 
 #[cfg(feature = "serde")]
