@@ -188,11 +188,13 @@ impl InputSelection {
         // TODO this may re-evaluate outputs added by inputs
         requirements.extend(Requirements::from_outputs(selected_inputs.iter(), self.outputs.iter()));
 
+        // Gets requirements from burn.
         if let Some(burn) = &self.burn {
             requirements.extend(Requirements::from_burn(burn));
         }
 
-        // requirements.push_back(Requirement::BaseCoinAmount);
+        // Adds an initial base token requirement.
+        requirements.push(Requirement::BaseToken);
 
         // Process all the requirements until there are no more.
         while let Some(requirement) = requirements.pop() {
