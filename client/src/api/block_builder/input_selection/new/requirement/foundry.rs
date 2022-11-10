@@ -24,11 +24,7 @@ pub(crate) fn fulfill_foundry_requirement(
     _outputs: &[Output],
 ) -> Result<Vec<InputSigningData>> {
     // Checks if the requirement is already fulfilled.
-    if selected_inputs
-        .iter()
-        .find(|input| is_foundry_id(input, &foundry_id))
-        .is_some()
-    {
+    if selected_inputs.iter().any(|input| is_foundry_id(input, &foundry_id)) {
         return Ok(Vec::new());
     }
 

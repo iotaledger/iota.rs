@@ -198,11 +198,14 @@ impl InputSelection {
 
         // Process all the requirements until there are no more.
         while let Some(requirement) = requirements.pop() {
+            // Fulfill the requirement.
             let inputs = requirement.fulfill(&mut self.available_inputs, &selected_inputs, &self.outputs)?;
+
             //     if !inputs.is_empty() && requirements.is_empty(){
             //         requirements.push(Requirement::BaseCoinAmount);
             //     }
 
+            // Select suggested inputs.
             for input in inputs {
                 Self::select_input(
                     &mut selected_inputs,

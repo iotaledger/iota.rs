@@ -24,11 +24,7 @@ pub(crate) fn fulfill_alias_requirement(
     _outputs: &[Output],
 ) -> Result<Vec<InputSigningData>> {
     // Checks if the requirement is already fulfilled.
-    if selected_inputs
-        .iter()
-        .find(|input| is_alias_id(input, &alias_id))
-        .is_some()
-    {
+    if selected_inputs.iter().any(|input| is_alias_id(input, &alias_id)) {
         return Ok(Vec::new());
     }
 

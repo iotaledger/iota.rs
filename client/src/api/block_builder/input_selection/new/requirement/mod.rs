@@ -124,16 +124,13 @@ impl Requirements {
                 // Add a foundry requirement if the foundry output is transitioning, thus required in the inputs.
                 // Also add an alias requirement since the associated alias output needs to be transitioned.
                 Output::Foundry(foundry_output) => {
-                    let is_new = inputs
-                        .clone()
-                        .find(|input| {
-                            if let Output::Foundry(output) = &input.output {
-                                output.id() == foundry_output.id()
-                            } else {
-                                false
-                            }
-                        })
-                        .is_none();
+                    let is_new = !inputs.clone().any(|input| {
+                        if let Output::Foundry(output) = &input.output {
+                            output.id() == foundry_output.id()
+                        } else {
+                            false
+                        }
+                    });
 
                     if !is_new {
                         requirements.push(Requirement::Foundry(foundry_output.id()));
