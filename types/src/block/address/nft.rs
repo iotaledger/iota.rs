@@ -25,13 +25,13 @@ impl NftAddress {
         Self::from(id)
     }
 
-    /// Returns the [`NftId`] of a [`NftAddress`].
+    /// Returns the [`NftId`] of an [`NftAddress`].
     #[inline(always)]
     pub fn nft_id(&self) -> &NftId {
         &self.0
     }
 
-    /// Consumes a [`NftAddress`] and returns its [`NftId`].
+    /// Consumes an [`NftAddress`] and returns its [`NftId`].
     #[inline(always)]
     pub fn into_nft_id(self) -> NftId {
         self.0
