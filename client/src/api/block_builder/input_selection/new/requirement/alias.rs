@@ -8,7 +8,7 @@ use crate::{
     secret::types::InputSigningData,
 };
 
-pub(crate) fn is_alias_id(input: &InputSigningData, alias_id: &AliasId) -> bool {
+fn is_alias_id(input: &InputSigningData, alias_id: &AliasId) -> bool {
     if let Output::Alias(alias_output) = &input.output {
         &alias_output.alias_id_non_null(input.output_id()) == alias_id
     } else {

@@ -10,24 +10,31 @@ use crate::{
     secret::types::InputSigningData,
 };
 
+fn is_ed25519_address(input: &InputSigningData, address: &Address) -> bool {
+    if let Some([UnlockCondition::Address(unlock)]) = input.output.unlock_conditions().map(|u| u.as_ref()) {
+        unlock.address() == address
+    } else {
+        false
+    }
+}
+
 fn fulfill_ed25519_address_requirement(
     address: Address,
     available_inputs: &mut Vec<InputSigningData>,
     selected_inputs: &[InputSigningData],
     _outputs: &[Output],
 ) -> Result<Vec<InputSigningData>> {
-    // TODO Checks if the requirement is already fulfilled.
+    // Checks if the requirement is already fulfilled.
+    if selected_inputs.iter().any(|input| is_ed25519_address(input, &address)) {
+        return Ok(Vec::new());
+    }
 
     // Checks if the requirement can be fulfilled.
     {
         // TODO bit dumb atm, need to add more possible strategies.
-        let index = available_inputs.iter().position(|input| {
-            if let Some([UnlockCondition::Address(unlock)]) = input.output.unlock_conditions().map(|u| u.as_ref()) {
-                unlock.address() == &address
-            } else {
-                false
-            }
-        });
+        let index = available_inputs
+            .iter()
+            .position(|input| is_ed25519_address(input, &address));
 
         match index {
             Some(index) => Ok(vec![available_inputs.swap_remove(index)]),

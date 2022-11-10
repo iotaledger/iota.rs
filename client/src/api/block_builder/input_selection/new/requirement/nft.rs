@@ -8,7 +8,7 @@ use crate::{
     secret::types::InputSigningData,
 };
 
-pub(crate) fn is_nft_id(input: &InputSigningData, nft_id: &NftId) -> bool {
+fn is_nft_id(input: &InputSigningData, nft_id: &NftId) -> bool {
     if let Output::Nft(nft_output) = &input.output {
         &nft_output.nft_id_non_null(input.output_id()) == nft_id
     } else {

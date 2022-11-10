@@ -8,7 +8,7 @@ use crate::{
     secret::types::InputSigningData,
 };
 
-pub(crate) fn is_foundry_id(input: &InputSigningData, foundry_id: &FoundryId) -> bool {
+fn is_foundry_id(input: &InputSigningData, foundry_id: &FoundryId) -> bool {
     if let Output::Foundry(foundry_output) = &input.output {
         &foundry_output.id() == foundry_id
     } else {
