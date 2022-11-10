@@ -51,11 +51,14 @@ pub(crate) fn fulfill_sender_requirement(
 ) -> Result<Vec<InputSigningData>> {
     match address {
         Address::Ed25519(_) => fulfill_ed25519_address_requirement(address, available_inputs, selected_inputs, outputs),
-        Address::Alias(alias_address) => {
-            fulfill_alias_requirement(*alias_address.alias_id(), available_inputs, selected_inputs, outputs)
-        }
+        Address::Alias(alias_address) => fulfill_alias_requirement(
+            alias_address.into_alias_id(),
+            available_inputs,
+            selected_inputs,
+            outputs,
+        ),
         Address::Nft(nft_address) => {
-            fulfill_nft_requirement(*nft_address.nft_id(), available_inputs, selected_inputs, outputs)
+            fulfill_nft_requirement(nft_address.into_nft_id(), available_inputs, selected_inputs, outputs)
         }
     }
 }
