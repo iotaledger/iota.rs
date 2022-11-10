@@ -30,6 +30,12 @@ impl NftAddress {
     pub fn nft_id(&self) -> &NftId {
         &self.0
     }
+
+    /// Consumes an [`NftAddress`] and returns its [`NftId`].
+    #[inline(always)]
+    pub fn into_nft_id(self) -> NftId {
+        self.0
+    }
 }
 
 #[cfg(feature = "serde")]
