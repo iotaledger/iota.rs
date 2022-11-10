@@ -21,6 +21,8 @@ pub(crate) fn fulfill_sender_requirement(
         Address::Alias(alias_address) => {
             fulfill_alias_requirement(*alias_address.alias_id(), available_inputs, selected_inputs, outputs)
         }
-        Address::Nft(nft_address) => fulfill_nft_requirement(*nft_address, available_inputs, selected_inputs, outputs),
+        Address::Nft(nft_address) => {
+            fulfill_nft_requirement(*nft_address.nft_id(), available_inputs, selected_inputs, outputs)
+        }
     }
 }
