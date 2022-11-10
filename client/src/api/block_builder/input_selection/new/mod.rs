@@ -130,6 +130,7 @@ impl InputSelection {
     //     }
     // }
 
+    // TODO should we somehow enforce using filter so we don't have to use can_be_unlocked_now later everywhere ?
     pub fn filter(mut self, addresses: &[Address]) -> Self {
         let addresses = addresses
             .iter()
