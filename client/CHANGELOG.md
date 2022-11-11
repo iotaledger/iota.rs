@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `OutputMetadata::new()` and all field getters;
 - `participation` feature with routes, responses and types;
+- `Http client` allow setting User-Agent header for requests;
 
 ### Changed
 
