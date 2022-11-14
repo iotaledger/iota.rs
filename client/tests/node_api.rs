@@ -20,12 +20,12 @@ const DEFAULT_DEVNET_FAUCET_URL: &str = "http://localhost:14265";
 // THIS SEED SERVES FOR TESTING PURPOSES! DON'T USE THIS SEED IN PRODUCTION!
 const DEFAULT_DEVELOPMENT_SEED: &str = "256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2";
 
-// Sets up a Client with node synchronization disabled.
+// Sets up a Client with node health ignored.
 fn setup_client_with_sync_disabled() -> Client {
     Client::builder()
         .with_node(DEFAULT_DEVNET_NODE_URL)
         .unwrap()
-        .with_node_sync_disabled()
+        .with_ignore_node_health()
         .finish()
         .unwrap()
 }

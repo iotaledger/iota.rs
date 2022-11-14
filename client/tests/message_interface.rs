@@ -52,7 +52,7 @@ async fn build_and_post_block() {
     // This test uses dotenv, which is not safe for use in production
     dotenv().ok();
 
-    // Create a client message handler with node sync disabled
+    // Create a client message handler with node health ignored
     let client_config = r#"{
             "nodes":[
                 {
@@ -61,7 +61,7 @@ async fn build_and_post_block() {
                     "disabled": false
                 }
             ],
-            "nodeSyncEnabled": false,
+            "ignoreNodeHealth": true,
             "localPow":true,
             "fallbackToLocalPow": true
         }"#

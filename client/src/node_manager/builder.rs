@@ -37,9 +37,9 @@ pub struct NodeManagerBuilder {
     pub nodes: HashSet<NodeDto>,
     /// Permanodes
     pub permanodes: Option<HashSet<NodeDto>>,
-    /// If node syncing is enabled
-    #[serde(rename = "nodeSyncEnabled", default = "default_node_sync_enabled")]
-    pub node_sync_enabled: bool,
+    /// If the node health should be ignored
+    #[serde(rename = "ignoreNodeHealth", default)]
+    pub ignore_node_health: bool,
     /// Interval in which nodes will be checked for their sync status and the [NetworkInfo] gets updated
     #[serde(rename = "nodeSyncInterval", default = "default_node_sync_interval")]
     pub node_sync_interval: Duration,
@@ -53,10 +53,6 @@ pub struct NodeManagerBuilder {
     /// % of nodes that have to return the same response so it gets accepted
     #[serde(rename = "quorumThreshold", default = "default_quorum_threshold")]
     pub quorum_threshold: usize,
-}
-
-fn default_node_sync_enabled() -> bool {
-    true
 }
 
 fn default_node_sync_interval() -> Duration {
@@ -153,8 +149,8 @@ impl NodeManagerBuilder {
         Ok(self)
     }
 
-    pub(crate) fn with_node_sync_disabled(mut self) -> Self {
-        self.node_sync_enabled = false;
+    pub(crate) fn with_ignore_node_health(mut self) -> Self {
+        self.ignore_node_health = true;
         self
     }
 
@@ -216,7 +212,7 @@ impl NodeManagerBuilder {
             permanodes: self
                 .permanodes
                 .map(|nodes| nodes.into_iter().map(|node| node.into()).collect()),
-            node_sync_enabled: self.node_sync_enabled,
+            ignore_node_health: self.ignore_node_health,
             node_sync_interval: self.node_sync_interval,
             healthy_nodes,
             quorum: self.quorum,
@@ -234,7 +230,7 @@ impl Default for NodeManagerBuilder {
             primary_pow_node: None,
             nodes: HashSet::new(),
             permanodes: None,
-            node_sync_enabled: true,
+            ignore_node_health: false,
             node_sync_interval: NODE_SYNC_INTERVAL,
             quorum: false,
             min_quorum_size: DEFAULT_MIN_QUORUM_SIZE,

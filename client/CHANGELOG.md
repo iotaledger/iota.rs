@@ -34,6 +34,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Client::{get_network_info, get_protocol_parameters, get_protocol_version, get_network_name, get_network_id, get_bech32_hrp, get_min_pow_score, get_below_max_depth, get_rent_structure, get_token_supply}` made async;
 - All fields of `OutputMetadata` are now private;
 - `InputSigningData::output_id()` is not fallible anymore;
+- Replace `with_node_sync_disabled()` by `with_ignore_node_health()`;
+- Replace `node_sync_enabled` by `ignore_node_health`;
 
 ### Removed
 

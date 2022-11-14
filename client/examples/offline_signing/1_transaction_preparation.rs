@@ -33,7 +33,6 @@ async fn main() -> Result<()> {
     let online_client = Client::builder()
         // Insert your node URL in the .env.
         .with_node(&node_url)?
-        .with_node_sync_disabled()
         .finish()?;
 
     // Recovers addresses from example `0_address_generation`.
