@@ -36,7 +36,7 @@ impl<'a> ClientBlockBuilder<'a> {
         log::debug!("[get_custom_inputs]");
 
         let mut inputs_data = Vec::new();
-        let current_time = self.client.get_time_checked()?;
+        let current_time = self.client.get_time_checked().await?;
         let token_supply = self.client.get_token_supply().await?;
 
         if let Some(inputs) = &self.inputs {

@@ -298,7 +298,7 @@ pub(crate) async fn get_alias_and_nft_outputs_recursively(
     utxo_chains: &mut Vec<(Address, OutputWithMetadataResponse)>,
 ) -> Result<()> {
     log::debug!("[get_alias_and_nft_outputs_recursively]");
-    let current_time = client.get_time_checked()?;
+    let current_time = client.get_time_checked().await?;
     let token_supply = client.get_token_supply().await?;
 
     let mut processed_alias_nft_addresses = std::collections::HashSet::new();

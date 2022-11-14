@@ -205,7 +205,7 @@ impl Client {
         }
 
         let mut basic_outputs = Vec::new();
-        let current_time = self.get_time_checked()?;
+        let current_time = self.get_time_checked().await?;
         let token_supply = self.get_token_supply().await?;
 
         for output_resp in available_outputs {
@@ -339,13 +339,13 @@ impl Client {
 
     /// Returns the local time checked with the timestamp of the latest milestone, if the difference is larger than 5
     /// minutes an error is returned to prevent locking outputs by accident for a wrong time.
-    pub fn get_time_checked(&self) -> Result<u32> {
+    pub async fn get_time_checked(&self) -> Result<u32> {
         let current_time = instant::SystemTime::now()
             .duration_since(instant::SystemTime::UNIX_EPOCH)
             .expect("time went backwards")
             .as_secs() as u32;
 
-        let network_info = self.network_info.read().map_err(|_| crate::Error::PoisonError)?;
+        let network_info = self.get_network_info().await?;
 
         if let Some(latest_ms_timestamp) = network_info.latest_milestone_timestamp {
             // Check the local time is in the range of +-5 minutes of the node to prevent locking funds by accident
