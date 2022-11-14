@@ -8,7 +8,7 @@ Options for the client builder
 
 - [primaryNode](IClientOptions.md#primarynode)
 - [primaryPowNode](IClientOptions.md#primarypownode)
-- [ignoreNodeHealth](IClientOptions.md#nodesyncenabled)
+- [ignoreNodeHealth](IClientOptions.md#ignorenodehealth)
 - [nodeSyncInterval](IClientOptions.md#nodesyncinterval)
 - [quorum](IClientOptions.md#quorum)
 - [minQuorumSize](IClientOptions.md#minquorumsize)
@@ -42,7 +42,7 @@ ___
 
 • `Optional` **ignoreNodeHealth**: `boolean`
 
-If node syncing is enabled
+If the node health status should be ignored
 
 ___
 

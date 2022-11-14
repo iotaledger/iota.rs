@@ -13,6 +13,13 @@
 - [LedgerDeviceType](enums/LedgerDeviceType.md)
 - [Network](enums/Network.md)
 
+### Functions
+
+- [initLogger](api_ref.md#initlogger)
+- [utf8ToBytes](api_ref.md#utf8tobytes)
+- [hexToUtf8](api_ref.md#hextoutf8)
+- [utf8ToHex](api_ref.md#utf8tohex)
+
 ### Type Aliases
 
 - [BlockId](api_ref.md#blockid)
@@ -47,6 +54,78 @@
 - [LedgerNanoSecretManager](interfaces/LedgerNanoSecretManager.md)
 - [MnemonicSecretManager](interfaces/MnemonicSecretManager.md)
 - [StrongholdSecretManager](interfaces/StrongholdSecretManager.md)
+
+## Functions
+
+### initLogger
+
+▸ **initLogger**(`config?`): `any`
+
+Initialize logger, if no arguments are provided a default config will be used.
+
+#### Parameters
+
+| Name | Type | Default value |
+| :------ | :------ | :------ |
+| `config` | `ILoggerConfig` | `defaultLoggerConfig` |
+
+#### Returns
+
+`any`
+
+___
+
+### utf8ToBytes
+
+▸ **utf8ToBytes**(`utf8`): `number`[]
+
+Convert UTF8 string to an array of bytes
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `utf8` | `string` |
+
+#### Returns
+
+`number`[]
+
+___
+
+### hexToUtf8
+
+▸ **hexToUtf8**(`hex`): `string`
+
+Convert hex encoded string to UTF8 string
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `hex` | `string` |
+
+#### Returns
+
+`string`
+
+___
+
+### utf8ToHex
+
+▸ **utf8ToHex**(`utf8`): `string`
+
+Convert UTF8 string to hex encoded string
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `utf8` | `string` |
+
+#### Returns
+
+`string`
 
 ## Type Aliases
 
