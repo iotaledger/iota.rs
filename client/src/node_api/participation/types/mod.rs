@@ -59,6 +59,7 @@ pub enum EventPayload {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct StakingEventPayload {
+    #[serde(rename = "type")]
     kind: u32,
     text: String,
     symbol: String,
@@ -72,6 +73,7 @@ pub struct StakingEventPayload {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct VotingEventPayload {
+    #[serde(rename = "type")]
     kind: u32,
     questions: Vec<Question>,
 }

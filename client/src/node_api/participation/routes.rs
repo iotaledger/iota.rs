@@ -9,7 +9,7 @@ use iota_types::block::output::OutputId;
 
 use super::{
     responses::{AddressOutputsResponse, EventsResponse, OutputStatusResponse},
-    types::{AddressStakingStatus, Event, EventId, EventStatus, ParticipationEventType},
+    types::{AddressStakingStatus, EventData, EventId, EventStatus, ParticipationEventType},
 };
 use crate::{Client, Result};
 
@@ -34,7 +34,7 @@ impl Client {
     }
 
     /// RouteParticipationEvent is the route to access a single participation by its ID.
-    pub async fn event(&self, event_id: &EventId) -> Result<Event> {
+    pub async fn event(&self, event_id: &EventId) -> Result<EventData> {
         let route = format!("api/participation/v1/events/{event_id}");
 
         self.node_manager
