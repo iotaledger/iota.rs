@@ -17,7 +17,7 @@ all-features = true
 rustdoc-args = [ "--cfg", "doc_cfg" ]
 
 [dependencies]
-iota-crypto = { version = "0.15.2", default-features = false, features = [ "blake2b", "digest", "curl-p", "ternary_encoding" ] }
+iota-crypto = { version = "0.15.3", default-features = false, features = [ "blake2b", "digest", "curl-p", "ternary_encoding" ] }
 thiserror = { version = "1.0.37", default-features = false }
 
 [dev-dependencies]
