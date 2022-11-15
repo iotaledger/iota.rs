@@ -19,10 +19,7 @@ async fn main() -> Result<()> {
     });
 
     // Create a client with that node.
-    let client = Client::builder()
-        .with_node(&node_url)?
-        .with_node_sync_disabled()
-        .finish()?;
+    let client = Client::builder().with_node(&node_url)?.finish()?;
 
     // Take the output ID from command line argument or use a default one.
     let output_id =

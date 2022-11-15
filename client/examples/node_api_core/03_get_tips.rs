@@ -17,10 +17,7 @@ async fn main() -> Result<()> {
     });
 
     // Create a client with that node.
-    let client = Client::builder()
-        .with_node(&node_url)?
-        .with_node_sync_disabled()
-        .finish()?;
+    let client = Client::builder().with_node(&node_url)?.finish()?;
 
     // Get tips.
     let tips = client.get_tips().await?;

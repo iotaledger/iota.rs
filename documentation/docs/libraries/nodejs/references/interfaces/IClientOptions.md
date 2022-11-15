@@ -8,7 +8,7 @@ Options for the client builder
 
 - [primaryNode](IClientOptions.md#primarynode)
 - [primaryPowNode](IClientOptions.md#primarypownode)
-- [nodeSyncEnabled](IClientOptions.md#nodesyncenabled)
+- [ignoreNodeHealth](IClientOptions.md#ignorenodehealth)
 - [nodeSyncInterval](IClientOptions.md#nodesyncinterval)
 - [quorum](IClientOptions.md#quorum)
 - [minQuorumSize](IClientOptions.md#minquorumsize)
@@ -38,11 +38,11 @@ Node which will be tried first when using remote PoW, even before the primary_no
 
 ___
 
-### nodeSyncEnabled
+### ignoreNodeHealth
 
-• `Optional` **nodeSyncEnabled**: `boolean`
+• `Optional` **ignoreNodeHealth**: `boolean`
 
-If node syncing is enabled
+If the node health status should be ignored
 
 ___
 

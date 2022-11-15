@@ -19,10 +19,7 @@ async fn main() -> Result<()> {
     });
 
     // Create a client with that node.
-    let client = Client::builder()
-        .with_node(&node_url)?
-        .with_node_sync_disabled()
-        .finish()?;
+    let client = Client::builder().with_node(&node_url)?.finish()?;
 
     // Fetch the latest milestone ID from the node.
     let info = client.get_info().await?;

@@ -13,7 +13,6 @@ async fn main() -> Result<()> {
     // Create a client instance
     let mut client = Client::builder()
         .with_node("https://api.testnet.shimmer.network")?
-        .with_node_sync_disabled()
         // .with_mqtt_broker_options(BrokerOptions::new().use_ws(false))
         .finish()?;
 

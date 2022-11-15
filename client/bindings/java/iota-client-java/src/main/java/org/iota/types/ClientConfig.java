@@ -11,7 +11,7 @@ public class ClientConfig {
     private String primaryPowNode;
     private String[] nodes;
     private String[] permanodes;
-    private Boolean nodeSyncEnabled;
+    private Boolean ignoreNodeHealth;
     private NodeSyncInterval nodeSyncInterval;
     private Boolean quorum;
     private Integer minQuorumSize;
@@ -64,12 +64,12 @@ public class ClientConfig {
         return this;
     }
 
-    public boolean isNodeSyncEnabled() {
-        return nodeSyncEnabled;
+    public boolean isIgnoreNodeHealth() {
+        return ignoreNodeHealth;
     }
 
-    public ClientConfig withNodeSyncEnabled(boolean nodeSyncEnabled) {
-        this.nodeSyncEnabled = nodeSyncEnabled;
+    public ClientConfig withIgnoreNodeHealth(boolean ignoreNodeHealth) {
+        this.ignoreNodeHealth = ignoreNodeHealth;
         return this;
     }
 
@@ -286,8 +286,8 @@ public class ClientConfig {
             o.add("nodes", JsonUtils.toJson(nodes));
         if (permanodes != null)
             o.add("permanodes", JsonUtils.toJson(permanodes));
-        if (nodeSyncEnabled != null)
-            o.addProperty("nodeSyncEnabled", nodeSyncEnabled);
+        if (ignoreNodeHealth != null)
+            o.addProperty("ignoreNodeHealth", ignoreNodeHealth);
         if (nodeSyncInterval != null)
             o.add("nodeSyncInterval", nodeSyncInterval.getJson());
         if (quorum != null)
