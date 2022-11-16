@@ -11,6 +11,7 @@ use crate::{
 };
 
 fn is_ed25519_address(input: &InputSigningData, address: &Address) -> bool {
+    // TODO could also be in state/governor?
     if let Some([UnlockCondition::Address(unlock)]) = input.output.unlock_conditions().map(|u| u.as_ref()) {
         unlock.address() == address
     } else {
@@ -32,10 +33,26 @@ fn fulfill_ed25519_address_requirement(
     // Checks if the requirement can be fulfilled.
     {
         // TODO bit dumb atm, need to add more possible strategies.
-        // TODO basic outputs first
-        let index = available_inputs
+
+        // TODO check that the enumeration index is kept original and not filtered.
+        // Tries to find a basic output first.
+        let index = if let Some((index, _)) = selected_inputs
             .iter()
-            .position(|input| is_ed25519_address(input, &address));
+            .enumerate()
+            .find(|(_, input)| input.output.is_basic() && is_ed25519_address(input, &address))
+        {
+            Some(index)
+        } else {
+            // TODO any preference between alias and NFT?
+            // If no basic output has been found, tries the other kinds of output.
+            available_inputs.iter().enumerate().find_map(|(index, input)| {
+                if !input.output.is_basic() && is_ed25519_address(input, &address) {
+                    Some(index)
+                } else {
+                    None
+                }
+            })
+        };
 
         match index {
             Some(index) => Ok(vec![available_inputs.swap_remove(index)]),
