@@ -34,6 +34,8 @@ fn input_selection_alias() -> Result<()> {
         .finish()
         .select()?;
 
+    println!("TEST A");
+
     assert_eq!(selected_transaction_data.0, inputs);
 
     // output amount > input amount
@@ -58,6 +60,8 @@ fn input_selection_alias() -> Result<()> {
         .finish()
         .select()?;
 
+    println!("TEST B");
+
     // basic output + alias remainder
     assert_eq!(selected_transaction_data.1.len(), 2);
 
@@ -67,6 +71,8 @@ fn input_selection_alias() -> Result<()> {
     let selected_transaction_data = InputSelection::build(outputs, inputs.clone(), protocol_parameters.clone())
         .finish()
         .select()?;
+
+    println!("TEST C");
 
     // One output should be added for the remainder
     assert_eq!(selected_transaction_data.1.len(), 2);
@@ -85,6 +91,8 @@ fn input_selection_alias() -> Result<()> {
     let selected_transaction_data = InputSelection::build(outputs, inputs.clone(), protocol_parameters.clone())
         .finish()
         .select()?;
+
+    println!("TEST D");
 
     // No remainder
     assert_eq!(selected_transaction_data.1.len(), 1);
@@ -108,6 +116,9 @@ fn input_selection_alias() -> Result<()> {
     // missing input for output alias
     let inputs = build_input_signing_data_most_basic_outputs(vec![(bech32_address, 1_000_000)]);
     let outputs = vec![build_alias_output(alias_id_1, bech32_address, 1_000_000)];
+
+    println!("TEST E");
+
     match InputSelection::build(outputs, inputs, protocol_parameters.clone())
         .finish()
         .select()
@@ -133,6 +144,9 @@ fn input_selection_alias() -> Result<()> {
         SimpleTokenScheme::new(U256::from(0), U256::from(0), U256::from(10)).unwrap(),
         None,
     )];
+
+    println!("TEST F");
+
     match InputSelection::build(outputs, inputs, protocol_parameters.clone())
         .finish()
         .select()
@@ -158,6 +172,8 @@ fn input_selection_alias() -> Result<()> {
         .finish()
         .select()?;
 
+    println!("TEST G");
+
     // Alias next state + foundry
     assert_eq!(selected_transaction_data.1.len(), 2);
     // Alias state index is increased
@@ -179,6 +195,8 @@ fn input_selection_alias() -> Result<()> {
     let selected_transaction_data = InputSelection::build(outputs, inputs.clone(), protocol_parameters.clone())
         .finish()
         .select()?;
+
+    println!("TEST H");
 
     // Alias next state + foundry + basic output with native tokens
     assert_eq!(selected_transaction_data.1.len(), 3);
@@ -220,6 +238,8 @@ fn input_selection_alias() -> Result<()> {
         .finish()
         .select()?;
 
+    println!("TEST I");
+
     // Alias next state + foundry + basic output with native tokens
     assert_eq!(selected_transaction_data.1.len(), 3);
     // Alias state index is increased
@@ -247,6 +267,8 @@ fn input_selection_alias() -> Result<()> {
     let selected_transaction_data = InputSelection::build(outputs, inputs.clone(), protocol_parameters.clone())
         .finish()
         .select()?;
+
+    println!("TEST J");
 
     // Alias next state
     assert_eq!(selected_transaction_data.1.len(), 1);

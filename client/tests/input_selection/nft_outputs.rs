@@ -4,8 +4,11 @@
 use std::str::FromStr;
 
 use iota_client::{
-    api::input_selection::try_select_inputs,
-    block::output::{NftId, Output, RentStructure},
+    api::input_selection::new::InputSelection,
+    block::{
+        output::{NftId, Output},
+        protocol::protocol_parameters,
+    },
     Error, Result,
 };
 
@@ -14,15 +17,9 @@ use crate::input_selection::{
     build_nft_output,
 };
 
-const TOKEN_SUPPLY: u64 = 1_813_620_509_061_365;
-
 #[test]
 fn input_selection_nfts() -> Result<()> {
-    let rent_structure = RentStructure::build()
-        .byte_cost(500)
-        .key_factor(10)
-        .data_factor(1)
-        .finish();
+    let protocol_parameters = protocol_parameters();
 
     let nft_id_0 = NftId::from_str("0x0000000000000000000000000000000000000000000000000000000000000000").unwrap();
     let nft_id_1 = NftId::from_str("0x1111111111111111111111111111111111111111111111111111111111111111").unwrap();
@@ -31,31 +28,20 @@ fn input_selection_nfts() -> Result<()> {
     // input nft == output nft
     let inputs = build_input_signing_data_nft_outputs(vec![(nft_id_1, bech32_address, 1_000_000)]);
     let outputs = vec![build_nft_output(nft_id_1, bech32_address, 1_000_000)];
-    let selected_transaction_data = try_select_inputs(
-        Vec::new(),
-        inputs.clone(),
-        outputs,
-        None,
-        &rent_structure,
-        false,
-        0,
-        TOKEN_SUPPLY,
-    )?;
-    assert_eq!(selected_transaction_data.inputs, inputs);
+    let selected_transaction_data = InputSelection::build(outputs, inputs.clone(), protocol_parameters.clone())
+        .finish()
+        .select()?;
+
+    assert_eq!(selected_transaction_data.0, inputs);
 
     // output amount > input amount
     let inputs = build_input_signing_data_nft_outputs(vec![(nft_id_1, bech32_address, 1_000_000)]);
     let outputs = vec![build_most_basic_output(bech32_address, 2_000_000)];
-    match try_select_inputs(
-        Vec::new(),
-        inputs,
-        outputs,
-        None,
-        &rent_structure,
-        false,
-        0,
-        TOKEN_SUPPLY,
-    ) {
+
+    match InputSelection::build(outputs, inputs, protocol_parameters.clone())
+        .finish()
+        .select()
+    {
         Err(Error::NotEnoughBalance {
             found: 1_000_000,
             // Amount we want to send + storage deposit for nft remainder
@@ -67,36 +53,24 @@ fn input_selection_nfts() -> Result<()> {
     // basic output with nft as input
     let inputs = build_input_signing_data_nft_outputs(vec![(nft_id_1, bech32_address, 2_229_500)]);
     let outputs = vec![build_most_basic_output(bech32_address, 2_000_000)];
-    let selected_transaction_data = try_select_inputs(
-        Vec::new(),
-        inputs,
-        outputs,
-        None,
-        &rent_structure,
-        false,
-        0,
-        TOKEN_SUPPLY,
-    )?;
+    let selected_transaction_data = InputSelection::build(outputs, inputs.clone(), protocol_parameters.clone())
+        .finish()
+        .select()?;
+
     // basic output + nft remainder
-    assert_eq!(selected_transaction_data.outputs.len(), 2);
+    assert_eq!(selected_transaction_data.1.len(), 2);
 
     // mint nft
     let inputs = build_input_signing_data_most_basic_outputs(vec![(bech32_address, 2_000_000)]);
     let outputs = vec![build_nft_output(nft_id_0, bech32_address, 1_000_000)];
-    let selected_transaction_data = try_select_inputs(
-        Vec::new(),
-        inputs,
-        outputs,
-        None,
-        &rent_structure,
-        false,
-        0,
-        TOKEN_SUPPLY,
-    )?;
+    let selected_transaction_data = InputSelection::build(outputs, inputs.clone(), protocol_parameters.clone())
+        .finish()
+        .select()?;
+
     // One output should be added for the remainder
-    assert_eq!(selected_transaction_data.outputs.len(), 2);
+    assert_eq!(selected_transaction_data.1.len(), 2);
     // Output contains the new minted nft id
-    assert!(selected_transaction_data.outputs.iter().any(|output| {
+    assert!(selected_transaction_data.1.iter().any(|output| {
         if let Output::Nft(nft_output) = output {
             *nft_output.nft_id() == nft_id_0
         } else {
@@ -107,34 +81,23 @@ fn input_selection_nfts() -> Result<()> {
     // burn nft
     let inputs = build_input_signing_data_nft_outputs(vec![(nft_id_1, bech32_address, 2_000_000)]);
     let outputs = vec![build_most_basic_output(bech32_address, 2_000_000)];
-    let selected_transaction_data = try_select_inputs(
-        Vec::new(),
-        inputs,
-        outputs,
-        None,
-        &rent_structure,
-        true,
-        0,
-        TOKEN_SUPPLY,
-    )?;
+    let selected_transaction_data = InputSelection::build(outputs, inputs.clone(), protocol_parameters.clone())
+        .finish()
+        .select()?;
+
     // No remainder
-    assert_eq!(selected_transaction_data.outputs.len(), 1);
+    assert_eq!(selected_transaction_data.1.len(), 1);
     // Output is a basic output
-    assert!(matches!(selected_transaction_data.outputs[0], Output::Basic(_)));
+    assert!(matches!(selected_transaction_data.1[0], Output::Basic(_)));
 
     // not enough storage deposit for remainder
     let inputs = build_input_signing_data_nft_outputs(vec![(nft_id_1, bech32_address, 1_000_001)]);
     let outputs = vec![build_nft_output(nft_id_1, bech32_address, 1_000_000)];
-    match try_select_inputs(
-        Vec::new(),
-        inputs,
-        outputs,
-        None,
-        &rent_structure,
-        false,
-        0,
-        TOKEN_SUPPLY,
-    ) {
+
+    match InputSelection::build(outputs, inputs, protocol_parameters.clone())
+        .finish()
+        .select()
+    {
         Err(Error::BlockError(iota_types::block::Error::InsufficientStorageDepositAmount {
             amount: 1,
             required: 213000,
@@ -145,16 +108,11 @@ fn input_selection_nfts() -> Result<()> {
     // missing input for output nft
     let inputs = build_input_signing_data_most_basic_outputs(vec![(bech32_address, 1_000_000)]);
     let outputs = vec![build_nft_output(nft_id_1, bech32_address, 1_000_000)];
-    match try_select_inputs(
-        Vec::new(),
-        inputs,
-        outputs,
-        None,
-        &rent_structure,
-        false,
-        0,
-        TOKEN_SUPPLY,
-    ) {
+
+    match InputSelection::build(outputs, inputs, protocol_parameters.clone())
+        .finish()
+        .select()
+    {
         Err(Error::MissingInput(err_msg)) => {
             assert_eq!(
                 &err_msg,
