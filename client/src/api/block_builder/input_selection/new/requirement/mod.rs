@@ -32,7 +32,7 @@ use crate::{
     secret::types::InputSigningData,
 };
 
-#[derive(Debug, serde::Serialize)]
+#[derive(Debug, serde::Serialize, Eq, PartialEq)]
 pub enum Requirement {
     Sender(Address),
     Issuer(Address),

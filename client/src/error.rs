@@ -219,6 +219,7 @@ pub enum Error {
     RequiredInputIsNotAvailable(OutputId),
     /// Unfulfillable requirement.
     #[error("unfulfillable requirement {0:?}")]
+    // TODO better name?
     UnfulfillableRequirement(Requirement),
 
     //////////////////////////////////////////////////////////////////////

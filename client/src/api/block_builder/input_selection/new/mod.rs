@@ -11,7 +11,8 @@ use std::collections::HashSet;
 pub use builder::InputSelectionBuilder;
 pub use burn::Burn;
 use remainder::remainder_output;
-use requirement::{Requirement, Requirements};
+pub use requirement::Requirement;
+use requirement::Requirements;
 
 use crate::{
     block::{
@@ -22,6 +23,8 @@ use crate::{
     error::{Error, Result},
     secret::types::InputSigningData,
 };
+
+// TODO should have its own error type?
 
 pub struct InputSelection {
     outputs: Vec<Output>,

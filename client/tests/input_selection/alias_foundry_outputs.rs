@@ -4,7 +4,7 @@
 use std::str::FromStr;
 
 use iota_client::{
-    api::input_selection::new::InputSelection,
+    api::input_selection::new::{InputSelection, Requirement},
     block::{
         output::{AliasId, Output},
         protocol::protocol_parameters,
@@ -118,17 +118,12 @@ fn input_selection_alias() -> Result<()> {
     let inputs = build_input_signing_data_most_basic_outputs(vec![(bech32_address, 1_000_000)]);
     let outputs = vec![build_alias_output(alias_id_1, bech32_address, 1_000_000)];
 
-    println!("TEST E");
-
     match InputSelection::build(outputs, inputs, protocol_parameters.clone())
         .finish()
         .select()
     {
-        Err(Error::MissingInput(err_msg)) => {
-            assert_eq!(
-                &err_msg,
-                "missing alias input for 0x1111111111111111111111111111111111111111111111111111111111111111"
-            );
+        Err(Error::UnfulfillableRequirement(req)) => {
+            assert_eq!(req, Requirement::Alias(alias_id_1));
         }
         _ => panic!("Should return missing alias input"),
     }
@@ -146,17 +141,12 @@ fn input_selection_alias() -> Result<()> {
         None,
     )];
 
-    println!("TEST F");
-
     match InputSelection::build(outputs, inputs, protocol_parameters.clone())
         .finish()
         .select()
     {
-        Err(Error::MissingInput(err_msg)) => {
-            assert_eq!(
-                &err_msg,
-                "missing alias input 0x1111111111111111111111111111111111111111111111111111111111111111 for foundry 0x0811111111111111111111111111111111111111111111111111111111111111110000000000"
-            );
+        Err(Error::UnfulfillableRequirement(req)) => {
+            assert_eq!(req, Requirement::Alias(alias_id_1));
         }
         _ => panic!("Should return missing alias input"),
     }
@@ -172,8 +162,6 @@ fn input_selection_alias() -> Result<()> {
     let selected_transaction_data = InputSelection::build(outputs, inputs.clone(), protocol_parameters.clone())
         .finish()
         .select()?;
-
-    println!("TEST G");
 
     // Alias next state + foundry
     assert_eq!(selected_transaction_data.1.len(), 2);
