@@ -28,7 +28,7 @@ async fn main() -> Result<()> {
 
     let signed_transaction_payload = read_signed_transaction_from_file(SIGNED_TRANSACTION_FILE_NAME)?;
 
-    let current_time = online_client.get_time_checked()?;
+    let current_time = online_client.get_time_checked().await?;
 
     let conflict = verify_semantic(
         &signed_transaction_payload.inputs_data,
