@@ -11,17 +11,12 @@ use std::collections::HashSet;
 pub use builder::InputSelectionBuilder;
 pub use burn::Burn;
 use remainder::remainder_output;
-use requirement::{base_token::base_token_sums, Requirement, Requirements};
-
-use iota_types::block::{protocol, rand::output::unlock_condition, unlock};
+use requirement::{Requirement, Requirements};
 
 use crate::{
     block::{
         address::{Address, AliasAddress, NftAddress},
-        output::{
-            unlock_condition::{AddressUnlockCondition, UnlockCondition},
-            BasicOutputBuilder, Output, OutputId,
-        },
+        output::{Output, OutputId},
         protocol::ProtocolParameters,
     },
     error::{Error, Result},
