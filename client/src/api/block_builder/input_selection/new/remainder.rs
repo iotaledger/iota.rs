@@ -15,6 +15,43 @@ use crate::{
     secret::types::InputSigningData,
 };
 
+// Gets the remainder address from configuration of finds one from the inputs.
+// TODO should this also look for non-ed25519 addresses?
+// TODO should this also check available inputs ? not only selected.
+fn get_remainder_address(selected_inputs: &[InputSigningData], remainder_address: Option<Address>) -> Option<Address> {
+    if remainder_address.is_some() {
+        return remainder_address;
+    }
+
+    // TODO need to check timelock/expiration?
+
+    for input in selected_inputs {
+        if let Some(unlock_conditions) = input.output.unlock_conditions() {
+            if let Some(address_unlock_condition) = unlock_conditions.address() {
+                if address_unlock_condition.address().is_ed25519() {
+                    return Some(*address_unlock_condition.address());
+                }
+            }
+
+            // TODO check transition type
+
+            if let Some(governor_address_unlock_condition) = unlock_conditions.governor_address() {
+                if governor_address_unlock_condition.address().is_ed25519() {
+                    return Some(*governor_address_unlock_condition.address());
+                }
+            }
+
+            if let Some(state_controller_address_unlock_condition) = unlock_conditions.state_controller_address() {
+                if state_controller_address_unlock_condition.address().is_ed25519() {
+                    return Some(*state_controller_address_unlock_condition.address());
+                }
+            }
+        }
+    }
+
+    None
+}
+
 pub(crate) fn remainder_output(
     selected_inputs: &[InputSigningData],
     outputs: &[Output],
@@ -30,26 +67,8 @@ pub(crate) fn remainder_output(
 
     if inputs_sum > outputs_sum {
         let diff = inputs_sum - outputs_sum;
-        // Gets the remainder address from configuration of finds one from the inputs.
-        let remainder_address = remainder_address.or_else(|| {
-            selected_inputs.iter().find_map(|input| {
-                if let Some(address) = input
-                    .output
-                    .unlock_conditions()
-                    .and_then(|unlock_conditions| unlock_conditions.address())
-                {
-                    if address.address().is_ed25519() {
-                        Some(*address.address())
-                    } else {
-                        None
-                    }
-                } else {
-                    None
-                }
-            })
-        });
 
-        let Some(remainder_address) = remainder_address else {
+        let Some(remainder_address) = get_remainder_address(selected_inputs,remainder_address) else {
             return Err(Error::MissingInputWithEd25519Address);
         };
 

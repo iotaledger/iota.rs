@@ -66,8 +66,6 @@ fn input_selection_alias() -> Result<()> {
         .finish()
         .select()?;
 
-    println!("TEST B");
-
     // basic output + alias remainder
     assert_eq!(selected_transaction_data.1.len(), 2);
 
@@ -77,8 +75,6 @@ fn input_selection_alias() -> Result<()> {
     let selected_transaction_data = InputSelection::build(outputs, inputs.clone(), protocol_parameters.clone())
         .finish()
         .select()?;
-
-    println!("TEST C");
 
     // One output should be added for the remainder
     assert_eq!(selected_transaction_data.1.len(), 2);
@@ -98,14 +94,10 @@ fn input_selection_alias() -> Result<()> {
         .finish()
         .select()?;
 
-    println!("TEST D");
-
     // No remainder
     assert_eq!(selected_transaction_data.1.len(), 1);
     // Output is a basic output
     assert!(matches!(selected_transaction_data.1[0], Output::Basic(_)));
-
-    println!("TEST D2");
 
     // not enough storage deposit for remainder
     let inputs = build_input_signing_data_alias_outputs(vec![(alias_id_1, bech32_address, 1_000_001)]);
