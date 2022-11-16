@@ -10,8 +10,8 @@ export interface IClientOptions {
     primaryPowNode?: string | INode;
     nodes?: Array<string | INode>;
     permanodes?: Array<string | INode>;
-    /** If node syncing is enabled */
-    nodeSyncEnabled?: boolean;
+    /** If the node health status should be ignored */
+    ignoreNodeHealth?: boolean;
     /** Interval in which nodes will be checked for their sync status and the NetworkInfo gets updated */
     nodeSyncInterval?: IDuration;
     /** If node quorum is enabled. Will compare the responses from multiple nodes and only returns the

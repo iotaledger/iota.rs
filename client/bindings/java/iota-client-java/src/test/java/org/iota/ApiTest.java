@@ -21,7 +21,7 @@ public abstract class ApiTest {
     protected static final String DEFAULT_DEVELOPMENT_MNEMONIC = "hidden enroll proud copper decide negative orient asset speed work dolphin atom unhappy game cannon scheme glow kid ring core name still twist actor";
 
     protected Client client;
-    protected ClientConfig config = new ClientConfig().withNodes(new String[] { DEFAULT_TESTNET_NODE_URL }).withNodeSyncEnabled(false);
+    protected ClientConfig config = new ClientConfig().withNodes(new String[] { DEFAULT_TESTNET_NODE_URL }).withIgnoreNodeHealth(false);
 
     @BeforeEach
     protected void setUp() {

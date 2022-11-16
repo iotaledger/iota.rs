@@ -32,7 +32,7 @@ pub(crate) struct NodeManager {
     primary_pow_node: Option<Node>,
     pub(crate) nodes: HashSet<Node>,
     permanodes: Option<HashSet<Node>>,
-    pub(crate) node_sync_enabled: bool,
+    pub(crate) ignore_node_health: bool,
     node_sync_interval: Duration,
     pub(crate) healthy_nodes: Arc<RwLock<HashMap<Node, InfoResponse>>>,
     quorum: bool,
@@ -48,7 +48,7 @@ impl std::fmt::Debug for NodeManager {
         d.field("primary_pow_node", &self.primary_pow_node);
         d.field("nodes", &self.nodes);
         d.field("permanodes", &self.permanodes);
-        d.field("node_sync_enabled", &self.node_sync_enabled);
+        d.field("ignore_node_health", &self.ignore_node_health);
         d.field("node_sync_interval", &self.node_sync_interval);
         d.field("healthy_nodes", &self.healthy_nodes);
         d.field("quorum", &self.quorum);
@@ -96,7 +96,7 @@ impl NodeManager {
         }
 
         // Add other nodes in random order, so they are not always used in the same order
-        let nodes_random_order = if self.node_sync_enabled {
+        let nodes_random_order = if self.ignore_node_health {
             #[cfg(not(target_family = "wasm"))]
             {
                 self.healthy_nodes

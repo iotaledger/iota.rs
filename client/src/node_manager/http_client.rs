@@ -5,6 +5,7 @@
 
 use std::time::Duration;
 
+use reqwest::RequestBuilder;
 use serde::de::DeserializeOwned;
 use serde_json::Value;
 
@@ -12,7 +13,6 @@ use crate::{
     error::{Error, Result},
     node_manager::node::Node,
 };
-
 pub(crate) struct Response(reqwest::Response);
 
 impl Response {
@@ -36,12 +36,14 @@ impl Response {
 #[derive(Clone)]
 pub(crate) struct HttpClient {
     client: reqwest::Client,
+    user_agent: String,
 }
 
 impl HttpClient {
-    pub(crate) fn new() -> Self {
+    pub(crate) fn new(user_agent: String) -> Self {
         Self {
             client: reqwest::Client::new(),
+            user_agent,
         }
     }
 
@@ -58,10 +60,11 @@ impl HttpClient {
         }
     }
 
-    pub(crate) async fn get(&self, node: Node, _timeout: Duration) -> Result<Response> {
-        let mut request_builder = self.client.get(node.url.clone());
-        if let Some(node_auth) = node.auth {
-            if let Some(jwt) = node_auth.jwt {
+    fn build_request(&self, request_builder: RequestBuilder, node: &Node, _timeout: Duration) -> RequestBuilder {
+        let mut request_builder = request_builder.header(reqwest::header::USER_AGENT, &self.user_agent);
+
+        if let Some(node_auth) = &node.auth {
+            if let Some(jwt) = &node_auth.jwt {
                 request_builder = request_builder.bearer_auth(jwt);
             }
         }
@@ -69,6 +72,12 @@ impl HttpClient {
         {
             request_builder = request_builder.timeout(_timeout);
         }
+        request_builder
+    }
+
+    pub(crate) async fn get(&self, node: Node, timeout: Duration) -> Result<Response> {
+        let mut request_builder = self.client.get(node.url.clone());
+        request_builder = self.build_request(request_builder, &node, timeout);
         #[cfg(target_family = "wasm")]
         let start_time = instant::Instant::now();
         #[cfg(not(target_family = "wasm"))]
@@ -84,47 +93,23 @@ impl HttpClient {
     }
 
     // Get with header: "accept", "application/vnd.iota.serializer-v1"
-    pub(crate) async fn get_bytes(&self, node: Node, _timeout: Duration) -> Result<Response> {
+    pub(crate) async fn get_bytes(&self, node: Node, timeout: Duration) -> Result<Response> {
         let mut request_builder = self.client.get(node.url.clone());
-        if let Some(node_auth) = node.auth {
-            if let Some(jwt) = node_auth.jwt {
-                request_builder = request_builder.bearer_auth(jwt);
-            }
-        }
-        #[cfg(not(target_family = "wasm"))]
-        {
-            request_builder = request_builder.timeout(_timeout);
-        }
+        request_builder = self.build_request(request_builder, &node, timeout);
         request_builder = request_builder.header("accept", "application/vnd.iota.serializer-v1");
         let resp = request_builder.send().await?;
         Self::parse_response(resp, &node.url).await
     }
 
-    pub(crate) async fn post_json(&self, node: Node, _timeout: Duration, json: Value) -> Result<Response> {
+    pub(crate) async fn post_json(&self, node: Node, timeout: Duration, json: Value) -> Result<Response> {
         let mut request_builder = self.client.post(node.url.clone());
-        if let Some(node_auth) = node.auth {
-            if let Some(jwt) = node_auth.jwt {
-                request_builder = request_builder.bearer_auth(jwt);
-            }
-        }
-        #[cfg(not(target_family = "wasm"))]
-        {
-            request_builder = request_builder.timeout(_timeout);
-        }
+        request_builder = self.build_request(request_builder, &node, timeout);
         Self::parse_response(request_builder.json(&json).send().await?, &node.url).await
     }
 
-    pub(crate) async fn post_bytes(&self, node: Node, _timeout: Duration, body: &[u8]) -> Result<Response> {
+    pub(crate) async fn post_bytes(&self, node: Node, timeout: Duration, body: &[u8]) -> Result<Response> {
         let mut request_builder = self.client.post(node.url.clone());
-        if let Some(node_auth) = node.auth {
-            if let Some(jwt) = node_auth.jwt {
-                request_builder = request_builder.bearer_auth(jwt);
-            }
-        }
-        #[cfg(not(target_family = "wasm"))]
-        {
-            request_builder = request_builder.timeout(_timeout);
-        }
+        request_builder = self.build_request(request_builder, &node, timeout);
         request_builder = request_builder.header("Content-Type", "application/vnd.iota.serializer-v1");
         Self::parse_response(request_builder.body(body.to_vec()).send().await?, &node.url).await
     }

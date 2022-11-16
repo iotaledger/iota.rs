@@ -22,7 +22,6 @@ async fn main() -> Result<()> {
     // Create a client instance
     let client = Client::builder()
         .with_node(&node_url)? // Insert your node URL here
-        .with_node_sync_disabled()
         .finish()?;
 
     // First address from the seed below is atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r

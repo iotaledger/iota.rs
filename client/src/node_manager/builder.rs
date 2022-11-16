@@ -14,7 +14,7 @@ use serde::{Deserialize, Serialize};
 use url::Url;
 
 use crate::{
-    constants::{DEFAULT_MIN_QUORUM_SIZE, DEFAULT_QUORUM_THRESHOLD, NODE_SYNC_INTERVAL},
+    constants::{DEFAULT_MIN_QUORUM_SIZE, DEFAULT_QUORUM_THRESHOLD, DEFAULT_USER_AGENT, NODE_SYNC_INTERVAL},
     error::{Error, Result},
     node_manager::{
         http_client::HttpClient,
@@ -37,9 +37,9 @@ pub struct NodeManagerBuilder {
     pub nodes: HashSet<NodeDto>,
     /// Permanodes
     pub permanodes: Option<HashSet<NodeDto>>,
-    /// If node syncing is enabled
-    #[serde(rename = "nodeSyncEnabled", default = "default_node_sync_enabled")]
-    pub node_sync_enabled: bool,
+    /// If the node health should be ignored
+    #[serde(rename = "ignoreNodeHealth", default)]
+    pub ignore_node_health: bool,
     /// Interval in which nodes will be checked for their sync status and the [NetworkInfo] gets updated
     #[serde(rename = "nodeSyncInterval", default = "default_node_sync_interval")]
     pub node_sync_interval: Duration,
@@ -53,10 +53,13 @@ pub struct NodeManagerBuilder {
     /// % of nodes that have to return the same response so it gets accepted
     #[serde(rename = "quorumThreshold", default = "default_quorum_threshold")]
     pub quorum_threshold: usize,
+    /// The User-Agent header for requests
+    #[serde(rename = "userAgent", default = "default_user_agent")]
+    pub user_agent: String,
 }
 
-fn default_node_sync_enabled() -> bool {
-    true
+fn default_user_agent() -> String {
+    DEFAULT_USER_AGENT.to_string()
 }
 
 fn default_node_sync_interval() -> Duration {
@@ -153,8 +156,8 @@ impl NodeManagerBuilder {
         Ok(self)
     }
 
-    pub(crate) fn with_node_sync_disabled(mut self) -> Self {
-        self.node_sync_enabled = false;
+    pub(crate) fn with_ignore_node_health(mut self) -> Self {
+        self.ignore_node_health = true;
         self
     }
 
@@ -208,6 +211,11 @@ impl NodeManagerBuilder {
         self
     }
 
+    pub(crate) fn with_user_agent(mut self, user_agent: String) -> Self {
+        self.user_agent = user_agent;
+        self
+    }
+
     pub(crate) fn build(self, healthy_nodes: Arc<RwLock<HashMap<Node, InfoResponse>>>) -> NodeManager {
         NodeManager {
             primary_node: self.primary_node.map(|node| node.into()),
@@ -216,13 +224,13 @@ impl NodeManagerBuilder {
             permanodes: self
                 .permanodes
                 .map(|nodes| nodes.into_iter().map(|node| node.into()).collect()),
-            node_sync_enabled: self.node_sync_enabled,
+            ignore_node_health: self.ignore_node_health,
             node_sync_interval: self.node_sync_interval,
             healthy_nodes,
             quorum: self.quorum,
             min_quorum_size: self.min_quorum_size,
             quorum_threshold: self.quorum_threshold,
-            http_client: HttpClient::new(),
+            http_client: HttpClient::new(self.user_agent),
         }
     }
 }
@@ -234,11 +242,12 @@ impl Default for NodeManagerBuilder {
             primary_pow_node: None,
             nodes: HashSet::new(),
             permanodes: None,
-            node_sync_enabled: true,
+            ignore_node_health: false,
             node_sync_interval: NODE_SYNC_INTERVAL,
             quorum: false,
             min_quorum_size: DEFAULT_MIN_QUORUM_SIZE,
             quorum_threshold: DEFAULT_QUORUM_THRESHOLD,
+            user_agent: DEFAULT_USER_AGENT.to_string(),
         }
     }
 }

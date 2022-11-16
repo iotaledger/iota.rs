@@ -248,10 +248,10 @@ impl ClientBuilder {
         self
     }
 
-    /// Disables the node syncing process.
+    /// Ignores the node health status.
     /// Every node will be considered healthy and ready to use.
-    pub fn with_node_sync_disabled(mut self) -> Self {
-        self.node_manager_builder = self.node_manager_builder.with_node_sync_disabled();
+    pub fn with_ignore_node_health(mut self) -> Self {
+        self.node_manager_builder = self.node_manager_builder.with_ignore_node_health();
         self
     }
 
@@ -314,6 +314,13 @@ impl ClientBuilder {
     /// Sets the request timeout for API usage.
     pub fn with_remote_pow_timeout(mut self, timeout: Duration) -> Self {
         self.remote_pow_timeout = timeout;
+        self
+    }
+
+    /// Set User-Agent header for requests
+    /// Default is "iota-client/[version]"
+    pub fn with_user_agent(mut self, user_agent: String) -> Self {
+        self.node_manager_builder = self.node_manager_builder.with_user_agent(user_agent);
         self
     }
 

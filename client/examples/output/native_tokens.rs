@@ -33,10 +33,7 @@ async fn main() -> Result<()> {
     let faucet_url = std::env::var("FAUCET_URL").unwrap();
 
     // Create a client instance.
-    let client = Client::builder()
-        .with_node(&node_url)?
-        .with_node_sync_disabled()
-        .finish()?;
+    let client = Client::builder().with_node(&node_url)?.finish()?;
 
     let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
         &std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),

@@ -23,22 +23,20 @@ pub enum ParticipationEventType {
     Staking,
 }
 
-/// All information about an event.
+/// Wrapper interface containing a participation event ID and the corresponding event data.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct EventData {
+pub struct Event {
     /// The event id.
-    pub event_id: EventId,
+    pub id: EventId,
     /// Information about a voting or staking event.
-    pub information: Event,
-    /// Event status, with the information if it started and the total staked funds.
-    pub status: EventStatus,
+    pub data: EventData,
 }
 
 /// Information about a voting or staking event.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Event {
+pub struct EventData {
     name: String,
     milestone_index_commence: u32,
     milestone_index_start: u32,
@@ -61,6 +59,7 @@ pub enum EventPayload {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct StakingEventPayload {
+    #[serde(rename = "type")]
     kind: u32,
     text: String,
     symbol: String,
@@ -74,6 +73,7 @@ pub struct StakingEventPayload {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct VotingEventPayload {
+    #[serde(rename = "type")]
     kind: u32,
     questions: Vec<Question>,
 }
