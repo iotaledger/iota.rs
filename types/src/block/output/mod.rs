@@ -184,6 +184,31 @@ impl Output {
         }
     }
 
+    /// Checks whether the output is a [`TreasuryOutput`].
+    pub fn is_treasury(&self) -> bool {
+        matches!(self, Self::Treasury(_))
+    }
+
+    /// Checks whether the output is a [`BasicOutput`].
+    pub fn is_basic(&self) -> bool {
+        matches!(self, Self::Basic(_))
+    }
+
+    /// Checks whether the output is an [`AliasOutput`].
+    pub fn is_alias(&self) -> bool {
+        matches!(self, Self::Alias(_))
+    }
+
+    /// Checks whether the output is a [`FoundryOutput`].
+    pub fn is_foundry(&self) -> bool {
+        matches!(self, Self::Foundry(_))
+    }
+
+    /// Checks whether the output is an [`NftOutput`].
+    pub fn is_nft(&self) -> bool {
+        matches!(self, Self::Nft(_))
+    }
+
     /// Returns the address that is required to unlock this [`Output`] and the alias or nft address that gets
     /// unlocked by it, if it's an alias or nft.
     pub fn required_and_unlocked_address(

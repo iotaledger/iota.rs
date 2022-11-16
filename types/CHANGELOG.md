@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `NftAddress::into_nft_id` method;
 - `AliasAddress::into_alias_id` method;
+- `Output::{is_treasury, is_basic, is_alias, is_foundry, is_nft}` methods;
 
 ## 1.0.0-rc.2 - 2022-11-09
 
