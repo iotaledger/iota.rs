@@ -171,6 +171,8 @@ impl InputSelection {
         self.available_inputs
             .retain(|input| !self.forbidden_inputs.contains(input.output_id()));
 
+        println!("{:?}", self.available_inputs);
+
         for required_input in self.required_inputs.iter() {
             // Check that required inputs are not forbidden.
             if self.forbidden_inputs.contains(&required_input) {

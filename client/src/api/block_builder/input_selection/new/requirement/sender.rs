@@ -32,6 +32,7 @@ fn fulfill_ed25519_address_requirement(
     // Checks if the requirement can be fulfilled.
     {
         // TODO bit dumb atm, need to add more possible strategies.
+        // TODO basic outputs first
         let index = available_inputs
             .iter()
             .position(|input| is_ed25519_address(input, &address));
