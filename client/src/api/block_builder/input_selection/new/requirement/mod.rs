@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 mod alias;
-mod base_token;
 mod foundry;
 mod issuer;
 mod native_tokens;
@@ -10,10 +9,12 @@ mod nft;
 mod remainder;
 mod sender;
 
+pub(crate) mod base_token;
+
 use std::collections::VecDeque;
 
 use alias::fulfill_alias_requirement;
-use base_token::fulfill_base_coin_requirement;
+use base_token::fulfill_base_token_requirement;
 use foundry::fulfill_foundry_requirement;
 use issuer::fulfill_issuer_requirement;
 use native_tokens::fulfill_native_tokens_requirement;
@@ -65,7 +66,7 @@ impl Requirement {
             }
             Requirement::Nft(nft_id) => fulfill_nft_requirement(nft_id, available_inputs, selected_inputs, outputs),
             Requirement::NativeTokens => fulfill_native_tokens_requirement(available_inputs, selected_inputs, outputs),
-            Requirement::BaseToken => fulfill_base_coin_requirement(available_inputs, selected_inputs, outputs),
+            Requirement::BaseToken => fulfill_base_token_requirement(available_inputs, selected_inputs, outputs),
             Requirement::Remainder => fulfill_remainder_requirement(available_inputs, selected_inputs, outputs),
         }
     }

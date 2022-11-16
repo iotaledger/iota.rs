@@ -7,20 +7,26 @@ use crate::{
     secret::types::InputSigningData,
 };
 
+pub(crate) fn base_token_sums(selected_inputs: &[InputSigningData], outputs: &[Output]) -> (u64, u64) {
+    let inputs_sum = selected_inputs.iter().map(|input| input.output.amount()).sum::<u64>();
+    let outputs_sum = outputs.iter().map(|output| output.amount()).sum::<u64>();
+
+    (inputs_sum, outputs_sum)
+}
+
 // TODO very dumb first draft.
-pub(crate) fn fulfill_base_coin_requirement(
+pub(crate) fn fulfill_base_token_requirement(
     available_inputs: &mut Vec<InputSigningData>,
     selected_inputs: &[InputSigningData],
     outputs: &[Output],
 ) -> Result<Vec<InputSigningData>> {
-    let input_sum = selected_inputs.iter().map(|input| input.output.amount()).sum::<u64>();
-    let output_sum = outputs.iter().map(|output| output.amount()).sum::<u64>();
+    let (inputs_sum, outputs_sum) = base_token_sums(selected_inputs, outputs);
 
-    if input_sum >= output_sum {
+    if inputs_sum >= outputs_sum {
         // Enough amount in the inputs to cover the outputs amount.
         Ok(Vec::new())
     } else {
-        let diff = output_sum - input_sum;
+        let diff = outputs_sum - inputs_sum;
         let mut newly_covered = 0;
         let mut newly_selected_inputs = Vec::new();
 
