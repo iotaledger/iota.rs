@@ -19,8 +19,6 @@ use crate::input_selection::{
     build_input_signing_data_foundry_outputs, build_input_signing_data_most_basic_outputs, build_most_basic_output,
 };
 
-const TOKEN_SUPPLY: u64 = 1_813_620_509_061_365;
-
 #[test]
 fn input_selection_alias() -> Result<()> {
     let protocol_parameters = protocol_parameters();
