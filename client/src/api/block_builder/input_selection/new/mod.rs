@@ -38,33 +38,36 @@ pub struct InputSelection {
 
 impl InputSelection {
     fn transition_input(input: &InputSigningData, outputs: &[Output], burn: Option<&Burn>) -> Option<Output> {
-        //     match input {
-        //         Output::Alias(alias_output) => {
-        //             if burn.aliases.contains(alias_id) {
-        //                 return None;
-        //             }
-        //             Some(
+        // match input {
+        //     Output::Alias(alias_output) => {
+        //         if burn.aliases.contains(alias_id) {
+        //             return None;
+        //         }
+
+        //         Some(
         //                     // TODO create output from input
         //                 )
-        //         }
-        //         Output::Nft(nft_input) => {
-        //             if burn.should_be_burned(nft_id) {
-        //                 return None;
-        //             }
-        //             Some(
-        //                     // TODO create output from input
-        //                 )
-        //         }
-        //         Output::Foundry(foundry_output) => {
-        //             if burn.should_be_burned(foundry_id) {
-        //                 return None;
-        //             }
-        //             Some(
-        //                     // TODO create output from input
-        //                 )
-        //         }
-        //         _ => None,
         //     }
+        //     Output::Nft(nft_input) => {
+        //         if burn.nfts.contains(nft_id) {
+        //             return None;
+        //         }
+
+        //         Some(
+        //                     // TODO create output from input
+        //                 )
+        //     }
+        //     Output::Foundry(foundry_output) => {
+        //         if burn.foundries.contains(foundry_id) {
+        //             return None;
+        //         }
+
+        //         Some(
+        //                     // TODO create output from input
+        //                 )
+        //     }
+        //     _ => None,
+        // }
 
         None
     }
@@ -74,14 +77,14 @@ impl InputSelection {
         outputs: &[Output],
         burn: Option<&Burn>,
     ) -> Option<Requirement> {
-        //     let alias_state_transition = alias_state_transition(input, outputs);
-        //     let required_address = input.required_and_unlock_address(time, alias_state_transition).0;
+        // let alias_state_transition = alias_state_transition(input, outputs);
+        // let required_address = input.required_and_unlock_address(time, alias_state_transition).0;
 
-        //     match required_address {
-        //         Address::Alias(alias_address) => Ok(Some(Requirement::Alias(*alias_address.alias_id()))),
-        //         Address::Nft(nft_address) => Ok(Some(Requirement::Nft(*nft_address.nft_id()))),
-        //         _ => Ok(None),
-        //     }
+        // match required_address {
+        //     Address::Alias(alias_address) => Ok(Some(Requirement::Alias(*alias_address.alias_id()))),
+        //     Address::Nft(nft_address) => Ok(Some(Requirement::Nft(*nft_address.nft_id()))),
+        //     _ => Ok(None),
+        // }
 
         None
     }

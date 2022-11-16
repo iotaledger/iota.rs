@@ -28,11 +28,18 @@ pub(crate) fn fulfill_base_coin_requirement(
         available_inputs.sort_by(|left, right| left.output.amount().cmp(&right.output.amount()));
 
         // TODO this would be lowest amount of input strategy.
-        while diff > newly_covered {
-            // TODO avoid remove
+        while diff > newly_covered && !available_inputs.is_empty() {
+            // TODO avoid remove because it shifts the order.
             let input = available_inputs.remove(0);
             newly_covered += input.output.amount();
             newly_selected_inputs.push(input);
+        }
+
+        if diff > newly_covered {
+            return Err(Error::NotEnoughBalance {
+                found: newly_covered,
+                required: diff,
+            });
         }
 
         println!("{diff}");
