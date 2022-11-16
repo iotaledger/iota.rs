@@ -9,6 +9,7 @@ pub mod participation;
 extern crate alloc;
 use std::collections::HashMap;
 
+use getset::Getters;
 use iota_types::{impl_id, string_serde_impl};
 use serde::{Deserialize, Serialize};
 
@@ -34,7 +35,7 @@ pub struct Event {
 }
 
 /// Information about a voting or staking event.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Getters)]
 #[serde(rename_all = "camelCase")]
 pub struct EventData {
     name: String,
@@ -56,7 +57,7 @@ pub enum EventPayload {
 }
 
 /// Payload for a staking event.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Getters)]
 #[serde(rename_all = "camelCase")]
 pub struct StakingEventPayload {
     #[serde(rename = "type")]
@@ -70,7 +71,7 @@ pub struct StakingEventPayload {
 }
 
 /// Payload for a voting event.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Getters)]
 #[serde(rename_all = "camelCase")]
 pub struct VotingEventPayload {
     #[serde(rename = "type")]
@@ -79,7 +80,7 @@ pub struct VotingEventPayload {
 }
 
 /// Question for a voting event.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Getters)]
 #[serde(rename_all = "camelCase")]
 pub struct Question {
     text: String,
@@ -88,7 +89,7 @@ pub struct Question {
 }
 
 /// Answer in a voting event.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Getters)]
 #[serde(rename_all = "camelCase")]
 pub struct Answer {
     value: u8,
@@ -98,7 +99,7 @@ pub struct Answer {
 }
 
 /// Event status.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Getters)]
 #[serde(rename_all = "camelCase")]
 pub struct EventStatus {
     milestone_index: u32,
@@ -108,13 +109,13 @@ pub struct EventStatus {
 }
 
 /// Answers.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Getters)]
 pub struct Answers {
     answers: Vec<AnswerStatus>,
 }
 
 /// Answer status.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Getters)]
 pub struct AnswerStatus {
     value: u8,
     current: u64,
