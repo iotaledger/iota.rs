@@ -17,8 +17,8 @@ pub(crate) fn fulfill_remainder_requirement(
     //     let (minted_native_tokens, melted_native_tokens) = get_minted_and_melted_nts(selected_inputs, outputs)?;
     //     let native_tokens_diffs = (input_native_tokens + minted) - (output + melted + burn);
 
-    //     // TODO: add required amount for storage deposit return unlock conditions of inputs to the require output amount
-    //     let base_coin_diff = get_base_coin_diff(selected_inputs, output);
+    //     // TODO: add required amount for storage deposit return unlock conditions of inputs to the require output
+    // amount     let base_coin_diff = get_base_coin_diff(selected_inputs, output);
 
     //     // if !native_tokens_diffs.is_empty() || base_coin_diff != 0
     //     let remainder = OutputBuilder::new(base_coin_diff).with_native_tokens(native_tokens_diffs);

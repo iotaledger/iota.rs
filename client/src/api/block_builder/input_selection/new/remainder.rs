@@ -11,7 +11,7 @@ use crate::{
         },
         protocol::ProtocolParameters,
     },
-    error::Result,
+    error::{Error, Result},
     secret::types::InputSigningData,
 };
 
@@ -50,9 +50,8 @@ pub(crate) fn remainder_output(
         });
 
         let Some(remainder_address) = remainder_address else {
-                // TODO return actual error
-                panic!("");
-            };
+            return Err(Error::MissingInputWithEd25519Address);
+        };
 
         println!("{diff} {remainder_address:?}");
 

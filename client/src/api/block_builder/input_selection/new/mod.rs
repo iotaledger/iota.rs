@@ -143,8 +143,8 @@ impl InputSelection {
         self
     }
 
-    /// Selects inputs that meet the requirements of the outputs to satisfy the semantic validation of the overall transaction.
-    /// Also creates outputs if transitions are required.
+    /// Selects inputs that meet the requirements of the outputs to satisfy the semantic validation of the overall
+    /// transaction. Also creates outputs if transitions are required.
     pub fn select(mut self) -> Result<(Vec<InputSigningData>, Vec<Output>)> {
         let mut selected_inputs = Vec::new();
         let mut requirements = Requirements::new();

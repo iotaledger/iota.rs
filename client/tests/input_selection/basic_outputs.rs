@@ -58,8 +58,6 @@ fn input_selection_basic_outputs() -> Result<()> {
     // One output should be added for the remainder.
     assert_eq!(selected_transaction_data.1.len(), 2);
 
-    println!("TEST 5");
-
     // Not enough storage deposit for remainder.
     let inputs = build_input_signing_data_most_basic_outputs(vec![(bech32_address, 1_000_001)]);
     let outputs = vec![build_most_basic_output(bech32_address, 1_000_000)];
