@@ -57,8 +57,14 @@ pub(crate) fn remainder_output(
         println!("{diff} {remainder_address:?}");
 
         let output = BasicOutputBuilder::new_with_amount(diff)?
-            .add_unlock_condition(UnlockCondition::from(AddressUnlockCondition::new(remainder_address)))
+            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(remainder_address)))
             .finish_output(protocol_parameters.token_supply())?;
+
+        // TODO should we always try to select enough inputs so the diff covers the deposit?
+        output.verify_storage_deposit(
+            protocol_parameters.rent_structure().clone(),
+            protocol_parameters.token_supply(),
+        )?;
 
         return Ok(Some(output));
     }

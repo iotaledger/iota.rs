@@ -38,9 +38,12 @@ fn input_selection_alias() -> Result<()> {
 
     assert_eq!(selected_transaction_data.0, inputs);
 
+    println!("TEST A2");
+
     // output amount > input amount
     let inputs = build_input_signing_data_alias_outputs(vec![(alias_id_1, bech32_address, 1_000_000)]);
     let outputs = vec![build_most_basic_output(bech32_address, 2_000_000)];
+
     match InputSelection::build(outputs, inputs, protocol_parameters.clone())
         .finish()
         .select()
@@ -50,7 +53,10 @@ fn input_selection_alias() -> Result<()> {
             // Amount we want to send + storage deposit for alias remainder
             required: 2_251_500,
         }) => {}
-        _ => panic!("Should return NotEnoughBalance"),
+        e => {
+            println!("{e:?}");
+            panic!("Should return NotEnoughBalance")
+        }
     }
 
     // basic output with alias as input
@@ -99,9 +105,12 @@ fn input_selection_alias() -> Result<()> {
     // Output is a basic output
     assert!(matches!(selected_transaction_data.1[0], Output::Basic(_)));
 
+    println!("TEST D2");
+
     // not enough storage deposit for remainder
     let inputs = build_input_signing_data_alias_outputs(vec![(alias_id_1, bech32_address, 1_000_001)]);
     let outputs = vec![build_alias_output(alias_id_1, bech32_address, 1_000_000)];
+
     match InputSelection::build(outputs, inputs, protocol_parameters.clone())
         .finish()
         .select()
