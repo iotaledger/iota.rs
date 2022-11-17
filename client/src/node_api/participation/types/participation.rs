@@ -130,4 +130,64 @@ mod tests {
 
         assert_eq!(participations, deserialized_participations);
     }
+
+    #[test]
+    fn mutate() {
+        let mut participations = Participations {
+            participations: vec![
+                Participation {
+                    event_id: EventId::from_str("0x09c2338f3acd51e626cc074d1abcb12d747076ddfccd5215d8f2f21af1aac111")
+                        .unwrap(),
+                    answers: vec![0, 1],
+                },
+                Participation {
+                    event_id: EventId::from_str("0x09c2338f3acd51e626cc074d1abcb12d747076ddfccd5215d8f2f21af1aac111")
+                        .unwrap(),
+                    answers: vec![0, 1],
+                },
+                Participation {
+                    event_id: EventId::from_str("0x0207c34ae298b90d85455eee718037ad84a46bd784cbe5fdd8c534cc955efa1f")
+                        .unwrap(),
+                    answers: vec![],
+                },
+            ],
+        };
+
+        participations
+            .remove(&EventId::from_str("0x09c2338f3acd51e626cc074d1abcb12d747076ddfccd5215d8f2f21af1aac111").unwrap());
+
+        // mutate
+        participations.mutate_or_add(Participation {
+            event_id: EventId::from_str("0x0207c34ae298b90d85455eee718037ad84a46bd784cbe5fdd8c534cc955efa1f").unwrap(),
+            answers: vec![1],
+        });
+
+        // add
+        participations.mutate_or_add(Participation {
+            event_id: EventId::from_str("0x80f57f6368933b61af9b3d8e1b152cf5d23bf4537f6362778b0a7302a7000d48").unwrap(),
+            answers: vec![1, 2],
+        });
+
+        assert_eq!(
+            participations,
+            Participations {
+                participations: vec![
+                    Participation {
+                        event_id: EventId::from_str(
+                            "0x0207c34ae298b90d85455eee718037ad84a46bd784cbe5fdd8c534cc955efa1f"
+                        )
+                        .unwrap(),
+                        answers: vec![1],
+                    },
+                    Participation {
+                        event_id: EventId::from_str(
+                            "0x80f57f6368933b61af9b3d8e1b152cf5d23bf4537f6362778b0a7302a7000d48"
+                        )
+                        .unwrap(),
+                        answers: vec![1, 2],
+                    }
+                ],
+            }
+        );
+    }
 }
