@@ -8,9 +8,9 @@ use std::{
     time::Duration,
 };
 
-use iota_types::{
-    api::response::{ProtocolResponse, RentStructureResponse},
-    block::protocol::ProtocolParameters,
+use iota_types::block::{
+    output::dto::RentStructureDto,
+    protocol::{dto::ProtocolParametersDto, ProtocolParameters},
 };
 #[cfg(not(target_family = "wasm"))]
 use tokio::{runtime::Runtime, sync::broadcast::channel};
@@ -53,7 +53,7 @@ pub struct NetworkInfo {
 pub struct NetworkInfoDto {
     /// Protocol parameters.
     #[serde(rename = "protocolParameters")]
-    protocol_parameters: ProtocolResponse,
+    protocol_parameters: ProtocolParametersDto,
     /// Local proof of work.
     #[serde(rename = "localPow")]
     local_pow: bool,
@@ -68,13 +68,13 @@ pub struct NetworkInfoDto {
 impl From<NetworkInfo> for NetworkInfoDto {
     fn from(info: NetworkInfo) -> Self {
         NetworkInfoDto {
-            protocol_parameters: ProtocolResponse {
-                version: info.protocol_parameters.protocol_version(),
+            protocol_parameters: ProtocolParametersDto {
+                protocol_version: info.protocol_parameters.protocol_version(),
                 network_name: info.protocol_parameters.network_name().to_string(),
                 bech32_hrp: info.protocol_parameters.bech32_hrp().to_string(),
                 min_pow_score: info.protocol_parameters.min_pow_score(),
                 below_max_depth: info.protocol_parameters.below_max_depth(),
-                rent_structure: RentStructureResponse {
+                rent_structure: RentStructureDto {
                     v_byte_cost: info.protocol_parameters.rent_structure().v_byte_cost,
                     v_byte_factor_key: info.protocol_parameters.rent_structure().v_byte_factor_key,
                     v_byte_factor_data: info.protocol_parameters.rent_structure().v_byte_factor_data,

@@ -9,7 +9,7 @@ use iota_types::{
         dto::{PeerDto, ReceiptDto},
         response::{
             BlockMetadataResponse, InfoResponse as NodeInfo, OutputMetadataResponse, OutputWithMetadataResponse,
-            ProtocolResponse, TreasuryResponse, UtxoChangesResponse as MilestoneUTXOChanges,
+            TreasuryResponse, UtxoChangesResponse as MilestoneUTXOChanges,
         },
     },
     block::{
@@ -20,6 +20,7 @@ use iota_types::{
             dto::{MilestonePayloadDto, PayloadDto},
             transaction::TransactionId,
         },
+        protocol::dto::ProtocolParametersDto,
         BlockDto, BlockId,
     },
 };
@@ -62,7 +63,7 @@ pub enum Response {
     TipsInterval(u64),
     /// Response for:
     /// - [`GetProtocolParameters`](crate::message_interface::Message::GetProtocolParameters)
-    ProtocolParameters(ProtocolResponse),
+    ProtocolParameters(ProtocolParametersDto),
     /// Response for:
     /// - [`GetLocalPow`](crate::message_interface::Message::GetLocalPow)
     LocalPow(bool),

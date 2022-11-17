@@ -5,21 +5,19 @@ use std::{any::Any, panic::AssertUnwindSafe};
 
 use backtrace::Backtrace;
 use futures::{Future, FutureExt};
-use iota_types::{
-    api::response::{ProtocolResponse, RentStructureResponse},
-    block::{
-        address::dto::AddressDto,
-        input::dto::UtxoInputDto,
-        output::{
-            dto::{OutputBuilderAmountDto, OutputDto},
-            AliasId, AliasOutput, BasicOutput, FoundryId, FoundryOutput, NftId, NftOutput, Output,
-        },
-        payload::{
-            dto::{MilestonePayloadDto, PayloadDto},
-            Payload, TransactionPayload,
-        },
-        Block, BlockDto,
+use iota_types::block::{
+    address::dto::AddressDto,
+    input::dto::UtxoInputDto,
+    output::{
+        dto::{OutputBuilderAmountDto, OutputDto, RentStructureDto},
+        AliasId, AliasOutput, BasicOutput, FoundryId, FoundryOutput, NftId, NftOutput, Output,
     },
+    payload::{
+        dto::{MilestonePayloadDto, PayloadDto},
+        Payload, TransactionPayload,
+    },
+    protocol::dto::ProtocolParametersDto,
+    Block, BlockDto,
 };
 use tokio::sync::mpsc::UnboundedSender;
 use zeroize::Zeroize;
@@ -296,13 +294,13 @@ impl ClientMessageHandler {
             Message::GetTipsInterval => Ok(Response::TipsInterval(self.client.get_tips_interval())),
             Message::GetProtocolParameters => {
                 let params = self.client.get_protocol_parameters().await?;
-                let protocol_response = ProtocolResponse {
-                    version: params.protocol_version(),
+                let protocol_response = ProtocolParametersDto {
+                    protocol_version: params.protocol_version(),
                     network_name: params.network_name().to_string(),
                     bech32_hrp: params.bech32_hrp().to_string(),
                     min_pow_score: params.min_pow_score(),
                     below_max_depth: params.below_max_depth(),
-                    rent_structure: RentStructureResponse {
+                    rent_structure: RentStructureDto {
                         v_byte_cost: params.rent_structure().v_byte_cost,
                         v_byte_factor_key: params.rent_structure().v_byte_factor_key,
                         v_byte_factor_data: params.rent_structure().v_byte_factor_data,

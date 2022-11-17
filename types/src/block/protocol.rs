@@ -147,7 +147,7 @@ pub mod dto {
     use super::*;
     use crate::block::{error::dto::DtoError, output::dto::RentStructureDto};
 
-    #[derive(Clone, Debug, PartialEq)]
+    #[derive(Clone, Debug, Eq, PartialEq)]
     #[cfg_attr(
         feature = "serde",
         derive(serde::Serialize, serde::Deserialize),
