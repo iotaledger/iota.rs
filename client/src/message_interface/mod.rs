@@ -21,19 +21,8 @@ pub fn create_message_handler(client_config: Option<String>) -> Result<ClientMes
 
 /// Send message to message handler
 pub async fn send_message(handle: &ClientMessageHandler, message: Message) -> Response {
-    #[cfg(not(target_family = "wasm"))]
     let (message_tx, mut message_rx) = tokio::sync::mpsc::unbounded_channel();
-    #[cfg(target_family = "wasm")]
-    let (message_tx, message_rx) = std::sync::mpsc::channel();
 
     handle.handle(message, message_tx).await;
-
-    #[cfg(not(target_family = "wasm"))]
-    {
-        message_rx.recv().await.unwrap()
-    }
-    #[cfg(target_family = "wasm")]
-    {
-        message_rx.recv().unwrap()
-    }
+    message_rx.recv().await.unwrap()
 }

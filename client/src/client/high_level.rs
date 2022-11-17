@@ -15,8 +15,6 @@ use iota_types::{
         Block, BlockId,
     },
 };
-#[cfg(not(target_family = "wasm"))]
-use {std::time::Duration, tokio::time::sleep};
 
 use super::Client;
 use crate::{
@@ -119,19 +117,19 @@ impl Client {
         let mut blocks_with_id = Vec::new();
         for _ in 0..max_attempts.unwrap_or(DEFAULT_RETRY_UNTIL_INCLUDED_MAX_AMOUNT) {
             #[cfg(target_family = "wasm")]
-            {
-                gloo_timers::future::TimeoutFuture::new(
-                    (interval.unwrap_or(DEFAULT_RETRY_UNTIL_INCLUDED_INTERVAL) * 1000)
-                        .try_into()
-                        .unwrap(),
-                )
-                .await;
-            }
+            gloo_timers::future::TimeoutFuture::new(
+                (interval.unwrap_or(DEFAULT_RETRY_UNTIL_INCLUDED_INTERVAL) * 1000)
+                    .try_into()
+                    .unwrap(),
+            )
+            .await;
+
             #[cfg(not(target_family = "wasm"))]
-            sleep(Duration::from_secs(
+            tokio::time::sleep(std::time::Duration::from_secs(
                 interval.unwrap_or(DEFAULT_RETRY_UNTIL_INCLUDED_INTERVAL),
             ))
             .await;
+
             // Check inclusion state for each attachment
             let block_ids_len = block_ids.len();
             let mut conflicting = false;
