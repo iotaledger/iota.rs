@@ -44,13 +44,13 @@ impl RentStructureBuilder {
     }
 
     /// Sets the virtual byte weight for the key fields.
-    pub fn key_factor(mut self, weight: u8) -> Self {
+    pub fn byte_factor_key(mut self, weight: u8) -> Self {
         self.v_byte_factor_key.replace(weight);
         self
     }
 
     /// Sets the virtual byte weight for the data fields.
-    pub fn data_factor(mut self, weight: u8) -> Self {
+    pub fn byte_factor_data(mut self, weight: u8) -> Self {
         self.v_byte_factor_data.replace(weight);
         self
     }
@@ -95,7 +95,16 @@ impl Default for RentStructure {
 }
 
 impl RentStructure {
-    /// Returns a builder for this config.
+    /// Creates a new [`RentStructure`].
+    pub fn new(byte_cost: u32, byte_factor_key: u8, byte_factor_data: u8) -> RentStructure {
+        Self::build()
+            .byte_cost(byte_cost)
+            .byte_factor_key(byte_factor_key)
+            .byte_factor_data(byte_factor_data)
+            .finish()
+    }
+
+    /// Returns a builder for a [`RentStructure`].
     pub fn build() -> RentStructureBuilder {
         RentStructureBuilder::new()
     }
@@ -195,11 +204,7 @@ pub mod dto {
 
     impl From<RentStructureDto> for RentStructure {
         fn from(value: RentStructureDto) -> Self {
-            Self::build()
-                .byte_cost(value.v_byte_cost)
-                .key_factor(value.v_byte_factor_key)
-                .data_factor(value.v_byte_factor_data)
-                .finish()
+            Self::new(value.v_byte_cost, value.v_byte_factor_key, value.v_byte_factor_data)
         }
     }
 }

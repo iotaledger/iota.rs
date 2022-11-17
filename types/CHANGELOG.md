@@ -26,13 +26,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `NftAddress::into_nft_id` method;
 - `AliasAddress::into_alias_id` method;
 - `Output::{is_treasury, is_basic, is_alias, is_foundry, is_nft}` methods;
-- `RentStructure` fields getters;
+- `RentStructure::new` and getters;
 
 ### Changed
 
 - Replaced `RentStructureResponse` with `RentStructureDto`;
 - Replaced `ProtocolResponse` with `ProtocolParametersDto`;
 - `RentStructure` fields have been made private;
+- Renamed `RentStructure::key_factor` to `RentStructure::byte_factor_key`;
+- Renamed `RentStructure::data_factor` to `RentStructure::byte_factor_data`;
 
 ## 1.0.0-rc.2 - 2022-11-09
 

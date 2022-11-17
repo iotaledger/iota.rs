@@ -18,11 +18,7 @@ const TOKEN_SUPPLY: u64 = 1_813_620_509_061_365;
 
 #[test]
 fn input_selection_nfts() -> Result<()> {
-    let rent_structure = RentStructure::build()
-        .byte_cost(500)
-        .key_factor(10)
-        .data_factor(1)
-        .finish();
+    let rent_structure = RentStructure::new(500, 10, 1);
 
     let nft_id_0 = NftId::from_str("0x0000000000000000000000000000000000000000000000000000000000000000").unwrap();
     let nft_id_1 = NftId::from_str("0x1111111111111111111111111111111111111111111111111111111111111111").unwrap();

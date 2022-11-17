@@ -130,11 +130,7 @@ pub fn protocol_parameters() -> ProtocolParameters {
         String::from("rms"),
         1500,
         15,
-        crate::block::output::RentStructure::build()
-            .byte_cost(500)
-            .key_factor(10)
-            .data_factor(1)
-            .finish(),
+        crate::block::output::RentStructure::new(500, 10, 1),
         1_813_620_509_061_365,
     )
     .unwrap()
