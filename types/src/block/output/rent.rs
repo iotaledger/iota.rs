@@ -154,3 +154,32 @@ fn v_byte_offset(v_byte_factor_key: u8, v_byte_factor_data: u8) -> u32 {
         + size_of::<MilestoneIndex>() as u32 * v_byte_factor_data as u32
         + size_of::<ConfirmationUnixTimestamp>() as u32 * v_byte_factor_data as u32
 }
+
+#[cfg(feature = "dto")]
+#[allow(missing_docs)]
+pub mod dto {
+
+    use super::*;
+
+    #[derive(Clone, Debug, PartialEq, Eq)]
+    #[cfg_attr(
+        feature = "serde",
+        derive(serde::Serialize, serde::Deserialize),
+        serde(rename_all = "camelCase")
+    )]
+    pub struct RentStructureDto {
+        pub v_byte_cost: u32,
+        pub v_byte_factor_key: u8,
+        pub v_byte_factor_data: u8,
+    }
+
+    impl From<RentStructureDto> for RentStructure {
+        fn from(value: RentStructureDto) -> Self {
+            Self::build()
+                .byte_cost(value.v_byte_cost)
+                .key_factor(value.v_byte_factor_key)
+                .data_factor(value.v_byte_factor_data)
+                .finish()
+        }
+    }
+}
