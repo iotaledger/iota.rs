@@ -75,9 +75,9 @@ impl From<NetworkInfo> for NetworkInfoDto {
                 min_pow_score: info.protocol_parameters.min_pow_score(),
                 below_max_depth: info.protocol_parameters.below_max_depth(),
                 rent_structure: RentStructureDto {
-                    v_byte_cost: info.protocol_parameters.rent_structure().v_byte_cost,
-                    v_byte_factor_key: info.protocol_parameters.rent_structure().v_byte_factor_key,
-                    v_byte_factor_data: info.protocol_parameters.rent_structure().v_byte_factor_data,
+                    v_byte_cost: info.protocol_parameters.rent_structure().byte_cost(),
+                    v_byte_factor_key: info.protocol_parameters.rent_structure().byte_factor_key(),
+                    v_byte_factor_data: info.protocol_parameters.rent_structure().byte_factor_data(),
                 },
                 token_supply: info.protocol_parameters.token_supply().to_string(),
             },

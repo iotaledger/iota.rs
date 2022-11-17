@@ -301,9 +301,9 @@ impl ClientMessageHandler {
                     min_pow_score: params.min_pow_score(),
                     below_max_depth: params.below_max_depth(),
                     rent_structure: RentStructureDto {
-                        v_byte_cost: params.rent_structure().v_byte_cost,
-                        v_byte_factor_key: params.rent_structure().v_byte_factor_key,
-                        v_byte_factor_data: params.rent_structure().v_byte_factor_data,
+                        v_byte_cost: params.rent_structure().byte_cost(),
+                        v_byte_factor_key: params.rent_structure().byte_factor_key(),
+                        v_byte_factor_data: params.rent_structure().byte_factor_data(),
                     },
                     token_supply: params.token_supply().to_string(),
                 };

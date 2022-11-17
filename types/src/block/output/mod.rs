@@ -370,7 +370,7 @@ impl Packable for Output {
 
 impl Rent for Output {
     fn weighted_bytes(&self, rent_structure: &RentStructure) -> u64 {
-        self.packed_len() as u64 * rent_structure.v_byte_factor_data as u64
+        self.packed_len() as u64 * rent_structure.byte_factor_data() as u64
     }
 }
 

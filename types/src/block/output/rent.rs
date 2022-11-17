@@ -79,11 +79,11 @@ impl RentStructureBuilder {
 )]
 pub struct RentStructure {
     /// Cost in tokens per virtual byte.
-    pub v_byte_cost: u32,
+    v_byte_cost: u32,
     /// The weight factor used for key fields in the outputs.
-    pub v_byte_factor_key: u8,
+    v_byte_factor_key: u8,
     /// The weight factor used for data fields in the outputs.
-    pub v_byte_factor_data: u8,
+    v_byte_factor_data: u8,
     /// The offset in addition to the other fields.
     v_byte_offset: u32,
 }
@@ -98,6 +98,26 @@ impl RentStructure {
     /// Returns a builder for this config.
     pub fn build() -> RentStructureBuilder {
         RentStructureBuilder::new()
+    }
+
+    /// Returns the byte cost of the [`RentStructure`].
+    pub fn byte_cost(&self) -> u32 {
+        self.v_byte_cost
+    }
+
+    /// Returns the byte factor key of the [`RentStructure`].
+    pub fn byte_factor_key(&self) -> u8 {
+        self.v_byte_factor_key
+    }
+
+    /// Returns the byte factor data of the [`RentStructure`].
+    pub fn byte_factor_data(&self) -> u8 {
+        self.v_byte_factor_data
+    }
+
+    /// Returns the byte offset of the [`RentStructure`].
+    pub fn byte_offset(&self) -> u32 {
+        self.v_byte_offset
     }
 }
 
