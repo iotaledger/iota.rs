@@ -431,9 +431,7 @@ impl<'a> ClientBlockBuilder<'a> {
                 #[cfg(not(target_family = "wasm"))]
                 tokio::time::sleep(std::time::Duration::from_millis(time * 50)).await;
                 #[cfg(target_family = "wasm")]
-                {
-                    gloo_timers::future::TimeoutFuture::new((time * 50).try_into().unwrap()).await;
-                }
+                gloo_timers::future::TimeoutFuture::new((time * 50).try_into().unwrap()).await;
             }
             self.client.get_block(&block_id).await
         }
