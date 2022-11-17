@@ -12,7 +12,10 @@ use iota_types::block::{
 };
 
 use crate::{
-    api::{address::search_address, ClientBlockBuilder},
+    api::{
+        address::search_address, block_builder::input_selection::new::helper::is_alias_state_transition,
+        ClientBlockBuilder,
+    },
     constants::HD_WALLET_TYPE,
     secret::types::{InputSigningData, OutputMetadata},
     Error, Result,
@@ -232,7 +235,7 @@ pub(crate) fn select_inputs_for_sender_and_issuer<'a>(
         // first check already selected outputs
         for input_signing_data in selected_inputs.iter() {
             // Default to `true`, since it will be a state transition if we add it here
-            let alias_state_transition = alias_state_transition(input_signing_data, outputs)?.unwrap_or(true);
+            let alias_state_transition = is_alias_state_transition(input_signing_data, outputs)?.unwrap_or(true);
             let (required_unlock_address, unlocked_alias_or_nft_address) = input_signing_data
                 .output
                 .required_and_unlocked_address(current_time, input_signing_data.output_id(), alias_state_transition)?;
@@ -256,7 +259,7 @@ pub(crate) fn select_inputs_for_sender_and_issuer<'a>(
             }
 
             // Default to `true`, since it will be a state transition if we add it here
-            let alias_state_transition = alias_state_transition(input_signing_data, outputs)?.unwrap_or(true);
+            let alias_state_transition = is_alias_state_transition(input_signing_data, outputs)?.unwrap_or(true);
             let (required_unlock_address, unlocked_alias_or_nft_address) = input_signing_data
                 .output
                 .required_and_unlocked_address(current_time, output_id, alias_state_transition)?;
@@ -294,7 +297,7 @@ fn get_required_addresses_for_sender_and_issuer(
     // Addresses in the inputs that will be unlocked in the transaction
     let mut unlocked_addresses = HashSet::new();
     for input_signing_data in selected_inputs {
-        let alias_state_transition = alias_state_transition(input_signing_data, outputs)?;
+        let alias_state_transition = is_alias_state_transition(input_signing_data, outputs)?;
         let (required_unlock_address, unlocked_alias_or_nft_address) =
             input_signing_data.output.required_and_unlocked_address(
                 current_time,
@@ -338,36 +341,4 @@ fn get_required_addresses_for_sender_and_issuer(
     }
 
     Ok(required_sender_or_issuer_addresses)
-}
-
-// Returns if alias transition is a state transition with the provided outputs for a given input.
-pub(crate) fn alias_state_transition(
-    input_signing_data: &InputSigningData,
-    outputs: &[Output],
-) -> Result<Option<bool>> {
-    Ok(if let Output::Alias(alias_input) = &input_signing_data.output {
-        let alias_id = alias_input.alias_id_non_null(input_signing_data.output_id());
-        // Check if alias exists in the outputs and get the required transition type
-        outputs
-            .iter()
-            .find_map(|o| {
-                if let Output::Alias(alias_output) = o {
-                    if *alias_output.alias_id() == alias_id {
-                        if alias_output.state_index() == alias_input.state_index() {
-                            Some(Some(false))
-                        } else {
-                            Some(Some(true))
-                        }
-                    } else {
-                        None
-                    }
-                } else {
-                    None
-                }
-                // if not find in the outputs, the alias gets burned which is a governance transaction
-            })
-            .unwrap_or(None)
-    } else {
-        None
-    })
 }

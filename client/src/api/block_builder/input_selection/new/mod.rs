@@ -3,6 +3,7 @@
 
 pub(crate) mod builder;
 pub(crate) mod burn;
+pub(crate) mod helper;
 pub(crate) mod remainder;
 pub(crate) mod requirement;
 

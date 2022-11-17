@@ -32,11 +32,15 @@ fn input_selection_nfts() -> Result<()> {
         .finish()
         .select()?;
 
+    println!("TEST 1");
+
     assert_eq!(selected_transaction_data.0, inputs);
 
     // output amount > input amount
     let inputs = build_input_signing_data_nft_outputs(vec![(nft_id_1, bech32_address, 1_000_000)]);
     let outputs = vec![build_most_basic_output(bech32_address, 2_000_000)];
+
+    println!("TEST 2");
 
     match InputSelection::build(outputs, inputs, protocol_parameters.clone())
         .finish()
@@ -47,7 +51,7 @@ fn input_selection_nfts() -> Result<()> {
             // Amount we want to send + storage deposit for nft remainder
             required: 2_229_500,
         }) => {}
-        _ => panic!("Should return NotEnoughBalance"),
+        e => panic!("Should return NotEnoughBalance {e:?}"),
     }
 
     // basic output with nft as input
@@ -56,6 +60,8 @@ fn input_selection_nfts() -> Result<()> {
     let selected_transaction_data = InputSelection::build(outputs, inputs.clone(), protocol_parameters.clone())
         .finish()
         .select()?;
+
+    println!("TEST 3");
 
     // basic output + nft remainder
     assert_eq!(selected_transaction_data.1.len(), 2);
@@ -66,6 +72,8 @@ fn input_selection_nfts() -> Result<()> {
     let selected_transaction_data = InputSelection::build(outputs, inputs.clone(), protocol_parameters.clone())
         .finish()
         .select()?;
+
+    println!("TEST 4");
 
     // One output should be added for the remainder
     assert_eq!(selected_transaction_data.1.len(), 2);
@@ -85,6 +93,8 @@ fn input_selection_nfts() -> Result<()> {
         .finish()
         .select()?;
 
+    println!("TEST 5");
+
     // No remainder
     assert_eq!(selected_transaction_data.1.len(), 1);
     // Output is a basic output
@@ -93,6 +103,8 @@ fn input_selection_nfts() -> Result<()> {
     // not enough storage deposit for remainder
     let inputs = build_input_signing_data_nft_outputs(vec![(nft_id_1, bech32_address, 1_000_001)]);
     let outputs = vec![build_nft_output(nft_id_1, bech32_address, 1_000_000)];
+
+    println!("TEST 6");
 
     match InputSelection::build(outputs, inputs, protocol_parameters.clone())
         .finish()
@@ -108,6 +120,8 @@ fn input_selection_nfts() -> Result<()> {
     // missing input for output nft
     let inputs = build_input_signing_data_most_basic_outputs(vec![(bech32_address, 1_000_000)]);
     let outputs = vec![build_nft_output(nft_id_1, bech32_address, 1_000_000)];
+
+    println!("TEST 7");
 
     match InputSelection::build(outputs, inputs, protocol_parameters.clone())
         .finish()
