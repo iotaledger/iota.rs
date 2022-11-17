@@ -37,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `InputSigningData::output_id()` is not fallible anymore;
 - Replace `ClientBuilder::with_node_sync_disabled()` by `ClientBuilder::with_ignore_node_health()`;
 - Replace `NodeManagerBuilder.node_sync_enabled` by `NodeManagerBuilder.ignore_node_health`;
+- Update Stronghold dependency to v1.0.5;
 
 ### Removed
 
