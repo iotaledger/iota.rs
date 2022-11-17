@@ -23,6 +23,6 @@
     "nth-check": "^2.0.1",
     "trim": "^0.0.3",
     "got": "^11.8.5",
-    "loader-utils": "^2.0.3"
+    "loader-utils": "^2.0.4"
   }
 }
