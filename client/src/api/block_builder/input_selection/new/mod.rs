@@ -11,6 +11,7 @@ use std::collections::HashSet;
 
 pub use builder::InputSelectionBuilder;
 pub use burn::Burn;
+use helper::is_alias_state_transition;
 use remainder::remainder_output;
 pub use requirement::Requirement;
 use requirement::Requirements;
@@ -26,6 +27,7 @@ use crate::{
 };
 
 // TODO should have its own error type?
+// TODO make methods actually take self
 
 pub struct InputSelection {
     outputs: Vec<Output>,
@@ -82,17 +84,20 @@ impl InputSelection {
         input: &InputSigningData,
         outputs: &[Output],
         burn: Option<&Burn>,
-    ) -> Option<Requirement> {
-        // let alias_state_transition = alias_state_transition(input, outputs);
-        // let required_address = input.required_and_unlock_address(time, alias_state_transition).0;
+        timestamp: u32,
+    ) -> Result<Option<Requirement>> {
+        // TODO is burn required?
+        let is_alias_state_transition = is_alias_state_transition(input, outputs)?.unwrap_or(false);
+        let (required_address, _) =
+            input
+                .output
+                .required_and_unlocked_address(timestamp, input.output_id(), is_alias_state_transition)?;
 
-        // match required_address {
-        //     Address::Alias(alias_address) => Ok(Some(Requirement::Alias(*alias_address.alias_id()))),
-        //     Address::Nft(nft_address) => Ok(Some(Requirement::Nft(*nft_address.nft_id()))),
-        //     _ => Ok(None),
-        // }
-
-        None
+        match required_address {
+            Address::Alias(alias_address) => Ok(Some(Requirement::Alias(*alias_address.alias_id()))),
+            Address::Nft(nft_address) => Ok(Some(Requirement::Nft(*nft_address.nft_id()))),
+            _ => Ok(None),
+        }
     }
 
     fn select_input(
@@ -101,7 +106,8 @@ impl InputSelection {
         outputs: &mut Vec<Output>,
         requirements: &mut Requirements,
         burn: Option<&Burn>,
-    ) {
+        timestamp: u32,
+    ) -> Result<()> {
         if let Some(output) = Self::transition_input(&input, outputs, burn) {
             requirements.extend(Requirements::from_outputs(
                 selected_inputs.iter(),
@@ -110,11 +116,13 @@ impl InputSelection {
             outputs.push(output);
         }
 
-        if let Some(requirement) = Self::unlock_conditions_input(&input, outputs, burn) {
+        if let Some(requirement) = Self::unlock_conditions_input(&input, outputs, burn, timestamp)? {
             requirements.push(requirement);
         }
 
-        selected_inputs.push(input)
+        selected_inputs.push(input);
+
+        Ok(())
     }
 
     /// Creates an [`InputSelectionBuilder`].
@@ -178,7 +186,8 @@ impl InputSelection {
                     &mut self.outputs,
                     &mut requirements,
                     self.burn.as_ref(),
-                ),
+                    self.timestamp,
+                )?,
                 None => return Err(Error::RequiredInputIsNotAvailable(*required_input)),
             }
         }
@@ -216,7 +225,8 @@ impl InputSelection {
                     &mut self.outputs,
                     &mut requirements,
                     self.burn.as_ref(),
-                );
+                    self.timestamp,
+                )?;
             }
         }
 
