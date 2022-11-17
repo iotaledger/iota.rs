@@ -223,6 +223,7 @@ pub(crate) fn select_inputs_for_sender_and_issuer<'a>(
     selected_inputs_output_ids: &mut HashSet<OutputId>,
     outputs: &mut Vec<Output>,
     current_time: u32,
+    allow_burning: bool,
 ) -> Result<()> {
     log::debug!("[select_inputs_for_sender_and_issuer]");
 
@@ -231,8 +232,9 @@ pub(crate) fn select_inputs_for_sender_and_issuer<'a>(
     'addresses_loop: for required_address in required_sender_or_issuer_addresses {
         // first check already selected outputs
         for input_signing_data in selected_inputs.iter() {
-            // Default to `true`, since it will be a state transition if we add it here
-            let alias_state_transition = alias_state_transition(input_signing_data, outputs)?.unwrap_or(true);
+            // Default to `!allow_burning`, since it will be a state transition if we add it and if we burn it, it's a
+            // governance state transition.
+            let alias_state_transition = alias_state_transition(input_signing_data, outputs)?.unwrap_or(!allow_burning);
             let (required_unlock_address, unlocked_alias_or_nft_address) = input_signing_data
                 .output
                 .required_and_unlocked_address(current_time, input_signing_data.output_id(), alias_state_transition)?;
@@ -255,8 +257,9 @@ pub(crate) fn select_inputs_for_sender_and_issuer<'a>(
                 continue;
             }
 
-            // Default to `true`, since it will be a state transition if we add it here
-            let alias_state_transition = alias_state_transition(input_signing_data, outputs)?.unwrap_or(true);
+            // Default to `!allow_burning`, since it will be a state transition if we add it and if we burn it, it's a
+            // governance state transition.
+            let alias_state_transition = alias_state_transition(input_signing_data, outputs)?.unwrap_or(!allow_burning);
             let (required_unlock_address, unlocked_alias_or_nft_address) = input_signing_data
                 .output
                 .required_and_unlocked_address(current_time, output_id, alias_state_transition)?;
@@ -341,6 +344,8 @@ fn get_required_addresses_for_sender_and_issuer(
 }
 
 // Returns if alias transition is a state transition with the provided outputs for a given input.
+// If not found in the outputs, the alias gets burned which is a governance transition. This function still returns
+// `None` in this case, since we maybe add the output with a state transition.
 pub(crate) fn alias_state_transition(
     input_signing_data: &InputSigningData,
     outputs: &[Output],
@@ -364,7 +369,6 @@ pub(crate) fn alias_state_transition(
                 } else {
                     None
                 }
-                // if not find in the outputs, the alias gets burned which is a governance transaction
             })
             .unwrap_or(None)
     } else {

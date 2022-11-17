@@ -80,6 +80,7 @@ pub fn try_select_inputs(
         &mut selected_inputs_output_ids,
         &mut outputs,
         current_time,
+        allow_burning,
     )?;
 
     let mut required = get_accumulated_output_amounts(&input_outputs, outputs.iter())?;
