@@ -19,6 +19,7 @@ pub struct Participation {
 }
 
 /// Participations information.
+/// https://github.com/iota-community/treasury/blob/main/specifications/hornet-participation-plugin.md#structure-of-the-participation
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 pub struct Participations {
     /// Multiple participations that happen at the same time.
@@ -26,7 +27,24 @@ pub struct Participations {
 }
 
 impl Participations {
-    // https://github.com/alexsporn/treasury/blob/main/specifications/chrysalis-referendum-rfc.md#structure-of-the-participation
+    /// Replace the answers if there is already a participation with the same event id or add the participation.
+    pub fn mutate_or_add(&mut self, participation: Participation) {
+        if let Some(existing) = self
+            .participations
+            .iter_mut()
+            .find(|p| p.event_id == participation.event_id)
+        {
+            existing.answers = participation.answers;
+        } else {
+            self.participations.push(participation);
+        }
+    }
+
+    /// Remove participations with the provided event id.
+    pub fn remove(&mut self, event_id: &EventId) {
+        self.participations.retain(|p| &p.event_id != event_id);
+    }
+
     /// Serialize to bytes.
     pub fn to_bytes(&self) -> crate::Result<Vec<u8>> {
         let mut bytes: Vec<u8> = vec![
