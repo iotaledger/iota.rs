@@ -3,12 +3,15 @@
 
 //! Participation types.
 
+#![allow(missing_docs)]
+
 /// Participation data.
 pub mod participation;
 
 extern crate alloc;
 use std::collections::HashMap;
 
+use getset::Getters;
 use iota_types::{impl_id, string_serde_impl};
 use serde::{Deserialize, Serialize};
 
@@ -34,8 +37,9 @@ pub struct Event {
 }
 
 /// Information about a voting or staking event.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Getters)]
 #[serde(rename_all = "camelCase")]
+#[getset(get = "pub")]
 pub struct EventData {
     name: String,
     milestone_index_commence: u32,
@@ -56,8 +60,9 @@ pub enum EventPayload {
 }
 
 /// Payload for a staking event.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Getters)]
 #[serde(rename_all = "camelCase")]
+#[getset(get = "pub")]
 pub struct StakingEventPayload {
     #[serde(rename = "type")]
     kind: u32,
@@ -70,8 +75,9 @@ pub struct StakingEventPayload {
 }
 
 /// Payload for a voting event.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Getters)]
 #[serde(rename_all = "camelCase")]
+#[getset(get = "pub")]
 pub struct VotingEventPayload {
     #[serde(rename = "type")]
     kind: u32,
@@ -79,8 +85,9 @@ pub struct VotingEventPayload {
 }
 
 /// Question for a voting event.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Getters)]
 #[serde(rename_all = "camelCase")]
+#[getset(get = "pub")]
 pub struct Question {
     text: String,
     answers: Vec<Answer>,
@@ -88,8 +95,9 @@ pub struct Question {
 }
 
 /// Answer in a voting event.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Getters)]
 #[serde(rename_all = "camelCase")]
+#[getset(get = "pub")]
 pub struct Answer {
     value: u8,
     text: String,
@@ -98,8 +106,9 @@ pub struct Answer {
 }
 
 /// Event status.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Getters)]
 #[serde(rename_all = "camelCase")]
+#[getset(get = "pub")]
 pub struct EventStatus {
     milestone_index: u32,
     status: String,
@@ -108,13 +117,15 @@ pub struct EventStatus {
 }
 
 /// Answers.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Getters)]
+#[getset(get = "pub")]
 pub struct Answers {
     answers: Vec<AnswerStatus>,
 }
 
 /// Answer status.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Getters)]
+#[getset(get = "pub")]
 pub struct AnswerStatus {
     value: u8,
     current: u64,

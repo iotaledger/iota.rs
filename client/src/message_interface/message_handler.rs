@@ -1,8 +1,6 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-#[cfg(target_family = "wasm")]
-use std::sync::mpsc::Sender;
 use std::{any::Any, panic::AssertUnwindSafe};
 
 use backtrace::Backtrace;
@@ -23,7 +21,6 @@ use iota_types::{
         Block, BlockDto,
     },
 };
-#[cfg(not(target_family = "wasm"))]
 use tokio::sync::mpsc::UnboundedSender;
 use zeroize::Zeroize;
 
@@ -80,12 +77,7 @@ impl ClientMessageHandler {
     }
 
     /// Handle messages
-    pub async fn handle(
-        &self,
-        message: Message,
-        #[cfg(target_family = "wasm")] response_tx: Sender<Response>,
-        #[cfg(not(target_family = "wasm"))] response_tx: UnboundedSender<Response>,
-    ) {
+    pub async fn handle(&self, message: Message, response_tx: UnboundedSender<Response>) {
         match &message {
             // Don't log secrets
             Message::GenerateAddresses {
