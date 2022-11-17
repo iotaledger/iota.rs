@@ -28,7 +28,7 @@ pub struct Participations {
 
 impl Participations {
     /// Replace the answers if there is already a participation with the same event id or add the participation.
-    pub fn mutate_or_add(&mut self, participation: Participation) {
+    pub fn add_or_replace(&mut self, participation: Participation) {
         if let Some(existing) = self
             .participations
             .iter_mut()
@@ -156,14 +156,14 @@ mod tests {
         participations
             .remove(&EventId::from_str("0x09c2338f3acd51e626cc074d1abcb12d747076ddfccd5215d8f2f21af1aac111").unwrap());
 
-        // mutate
-        participations.mutate_or_add(Participation {
+        // replace
+        participations.add_or_replace(Participation {
             event_id: EventId::from_str("0x0207c34ae298b90d85455eee718037ad84a46bd784cbe5fdd8c534cc955efa1f").unwrap(),
             answers: vec![1],
         });
 
         // add
-        participations.mutate_or_add(Participation {
+        participations.add_or_replace(Participation {
             event_id: EventId::from_str("0x80f57f6368933b61af9b3d8e1b152cf5d23bf4537f6362778b0a7302a7000d48").unwrap(),
             answers: vec![1, 2],
         });
