@@ -109,7 +109,6 @@ fn default_tips_interval() -> u64 {
 
 /// Builder to construct client instance with sensible default values
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(deny_unknown_fields)]
 #[must_use]
 pub struct ClientBuilder {
     /// Node manager builder
