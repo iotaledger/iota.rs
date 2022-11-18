@@ -123,9 +123,7 @@ impl InputSelection {
         self
     }
 
-    /// Selects inputs that meet the requirements of the outputs to satisfy the semantic validation of the overall
-    /// transaction. Also creates outputs if transitions are required.
-    pub fn select(mut self) -> Result<(Vec<InputSigningData>, Vec<Output>)> {
+    fn init(&mut self) -> Result<(Vec<InputSigningData>, Requirements)> {
         let mut selected_inputs = Vec::new();
         let mut requirements = Requirements::new();
 
@@ -176,6 +174,14 @@ impl InputSelection {
 
         // Adds an initial base token requirement.
         requirements.push(Requirement::BaseToken);
+
+        Ok((selected_inputs, requirements))
+    }
+
+    /// Selects inputs that meet the requirements of the outputs to satisfy the semantic validation of the overall
+    /// transaction. Also creates outputs if transitions are required.
+    pub fn select(mut self) -> Result<(Vec<InputSigningData>, Vec<Output>)> {
+        let (mut selected_inputs, mut requirements) = self.init()?;
 
         // Process all the requirements until there are no more.
         while let Some(requirement) = requirements.pop() {
