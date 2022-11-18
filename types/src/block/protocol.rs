@@ -18,20 +18,27 @@ use crate::block::{helper::network_name_to_id, output::RentStructure, Error, PRO
 #[packable(unpack_error = Error)]
 pub struct ProtocolParameters {
     // The version of the protocol running.
+    #[serde(alias = "protocol_version")]
     protocol_version: u8,
     // The human friendly name of the network.
     #[packable(unpack_error_with = |err| Error::InvalidNetworkName(err.into_item_err()))]
+    #[serde(alias = "network_name")]
     network_name: StringPrefix<u8>,
     // The HRP prefix used for Bech32 addresses in the network.
     #[packable(unpack_error_with = |err| Error::InvalidBech32Hrp(err.into_item_err()))]
+    #[serde(alias = "bech32_hrp")]
     bech32_hrp: StringPrefix<u8>,
     // The minimum pow score of the network.
+    #[serde(alias = "min_pow_score")]
     min_pow_score: u32,
     // The below max depth parameter of the network.
+    #[serde(alias = "below_max_depth")]
     below_max_depth: u8,
     // The rent structure used by given node/network.
+    #[serde(alias = "rent_structure")]
     rent_structure: RentStructure,
     // TokenSupply defines the current token supply on the network.
+    #[serde(alias = "token_supply")]
     token_supply: u64,
 }
 
