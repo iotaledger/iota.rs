@@ -44,13 +44,13 @@ impl RentStructureBuilder {
     }
 
     /// Sets the virtual byte weight for the key fields.
-    pub fn key_factor(mut self, weight: u8) -> Self {
+    pub fn byte_factor_key(mut self, weight: u8) -> Self {
         self.v_byte_factor_key.replace(weight);
         self
     }
 
     /// Sets the virtual byte weight for the data fields.
-    pub fn data_factor(mut self, weight: u8) -> Self {
+    pub fn byte_factor_data(mut self, weight: u8) -> Self {
         self.v_byte_factor_data.replace(weight);
         self
     }
@@ -79,11 +79,11 @@ impl RentStructureBuilder {
 )]
 pub struct RentStructure {
     /// Cost in tokens per virtual byte.
-    pub v_byte_cost: u32,
+    v_byte_cost: u32,
     /// The weight factor used for key fields in the outputs.
-    pub v_byte_factor_key: u8,
+    v_byte_factor_key: u8,
     /// The weight factor used for data fields in the outputs.
-    pub v_byte_factor_data: u8,
+    v_byte_factor_data: u8,
     /// The offset in addition to the other fields.
     v_byte_offset: u32,
 }
@@ -95,9 +95,38 @@ impl Default for RentStructure {
 }
 
 impl RentStructure {
-    /// Returns a builder for this config.
+    /// Creates a new [`RentStructure`].
+    pub fn new(byte_cost: u32, byte_factor_key: u8, byte_factor_data: u8) -> RentStructure {
+        Self::build()
+            .byte_cost(byte_cost)
+            .byte_factor_key(byte_factor_key)
+            .byte_factor_data(byte_factor_data)
+            .finish()
+    }
+
+    /// Returns a builder for a [`RentStructure`].
     pub fn build() -> RentStructureBuilder {
         RentStructureBuilder::new()
+    }
+
+    /// Returns the byte cost of the [`RentStructure`].
+    pub fn byte_cost(&self) -> u32 {
+        self.v_byte_cost
+    }
+
+    /// Returns the byte factor key of the [`RentStructure`].
+    pub fn byte_factor_key(&self) -> u8 {
+        self.v_byte_factor_key
+    }
+
+    /// Returns the byte factor data of the [`RentStructure`].
+    pub fn byte_factor_data(&self) -> u8 {
+        self.v_byte_factor_data
+    }
+
+    /// Returns the byte offset of the [`RentStructure`].
+    pub fn byte_offset(&self) -> u32 {
+        self.v_byte_offset
     }
 }
 
@@ -153,4 +182,29 @@ fn v_byte_offset(v_byte_factor_key: u8, v_byte_factor_data: u8) -> u32 {
         + size_of::<BlockId>() as u32 * v_byte_factor_data as u32
         + size_of::<MilestoneIndex>() as u32 * v_byte_factor_data as u32
         + size_of::<ConfirmationUnixTimestamp>() as u32 * v_byte_factor_data as u32
+}
+
+#[cfg(feature = "dto")]
+#[allow(missing_docs)]
+pub mod dto {
+
+    use super::*;
+
+    #[derive(Clone, Debug, PartialEq, Eq)]
+    #[cfg_attr(
+        feature = "serde",
+        derive(serde::Serialize, serde::Deserialize),
+        serde(rename_all = "camelCase")
+    )]
+    pub struct RentStructureDto {
+        pub v_byte_cost: u32,
+        pub v_byte_factor_key: u8,
+        pub v_byte_factor_data: u8,
+    }
+
+    impl From<RentStructureDto> for RentStructure {
+        fn from(value: RentStructureDto) -> Self {
+            Self::new(value.v_byte_cost, value.v_byte_factor_key, value.v_byte_factor_data)
+        }
+    }
 }
