@@ -3,45 +3,88 @@
 
 use super::Burn;
 use crate::{
-    block::output::{AliasOutput, FoundryOutput, NftOutput, Output, OutputId},
+    block::{
+        output::{
+            AliasOutput, AliasOutputBuilder, FoundryOutput, FoundryOutputBuilder, NftOutput, NftOutputBuilder, Output,
+            OutputId,
+        },
+        protocol::ProtocolParameters,
+    },
+    error::Result,
     secret::types::InputSigningData,
 };
 
-fn transition_alias_input(input: &AliasOutput, output_id: &OutputId, burn: Option<&Burn>) -> Option<Output> {
-    if burn
-        .map(|burn| burn.aliases.contains(&input.alias_id_non_null(output_id)))
-        .unwrap_or(false)
-    {
-        return None;
+fn transition_alias_input(
+    input: &AliasOutput,
+    output_id: &OutputId,
+    burn: Option<&Burn>,
+    protocol_parameters: &ProtocolParameters,
+) -> Result<Option<Output>> {
+    let alias_id = input.alias_id_non_null(output_id);
+
+    if burn.map(|burn| burn.aliases.contains(&alias_id)).unwrap_or(false) {
+        return Ok(None);
     }
 
-    None
+    // TODO remove sender feature ?
+    // TODO minimum amount ?
+
+    let output = AliasOutputBuilder::from(input)
+        .with_alias_id(alias_id)
+        .with_state_index(input.state_index() + 1)
+        .finish_output(protocol_parameters.token_supply())?;
+
+    Ok(Some(output))
 }
 
-fn transition_nft_input(input: &NftOutput, output_id: &OutputId, burn: Option<&Burn>) -> Option<Output> {
-    if burn
-        .map(|burn| burn.nfts.contains(&input.nft_id_non_null(output_id)))
-        .unwrap_or(false)
-    {
-        return None;
+fn transition_nft_input(
+    input: &NftOutput,
+    output_id: &OutputId,
+    burn: Option<&Burn>,
+    protocol_parameters: &ProtocolParameters,
+) -> Result<Option<Output>> {
+    let nft_id = input.nft_id_non_null(output_id);
+
+    if burn.map(|burn| burn.nfts.contains(&nft_id)).unwrap_or(false) {
+        return Ok(None);
     }
 
-    None
+    // TODO remove sender feature ?
+    // TODO minimum amount ?
+
+    let output = NftOutputBuilder::from(input)
+        .with_nft_id(nft_id)
+        .finish_output(protocol_parameters.token_supply())?;
+
+    Ok(Some(output))
 }
 
-fn transition_foundry_input(input: &FoundryOutput, burn: Option<&Burn>) -> Option<Output> {
+fn transition_foundry_input(
+    input: &FoundryOutput,
+    burn: Option<&Burn>,
+    protocol_parameters: &ProtocolParameters,
+) -> Result<Option<Output>> {
     if burn.map(|burn| burn.foundries.contains(&input.id())).unwrap_or(false) {
-        return None;
+        return Ok(None);
     }
 
-    None
+    // TODO minimum amount ?
+
+    let output = FoundryOutputBuilder::from(input).finish_output(protocol_parameters.token_supply())?;
+
+    Ok(Some(output))
 }
 
-pub(crate) fn transition_input(input: &InputSigningData, outputs: &[Output], burn: Option<&Burn>) -> Option<Output> {
+pub(crate) fn transition_input(
+    input: &InputSigningData,
+    outputs: &[Output],
+    burn: Option<&Burn>,
+    protocol_parameters: &ProtocolParameters,
+) -> Result<Option<Output>> {
     match &input.output {
-        Output::Alias(alias_input) => transition_alias_input(alias_input, input.output_id(), burn),
-        Output::Nft(nft_input) => transition_nft_input(nft_input, input.output_id(), burn),
-        Output::Foundry(foundry_input) => transition_foundry_input(foundry_input, burn),
-        _ => None,
+        Output::Alias(alias_input) => transition_alias_input(alias_input, input.output_id(), burn, protocol_parameters),
+        Output::Nft(nft_input) => transition_nft_input(nft_input, input.output_id(), burn, protocol_parameters),
+        Output::Foundry(foundry_input) => transition_foundry_input(foundry_input, burn, protocol_parameters),
+        _ => Ok(None),
     }
 }

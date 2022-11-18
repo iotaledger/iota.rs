@@ -74,8 +74,9 @@ impl InputSelection {
         requirements: &mut Requirements,
         burn: Option<&Burn>,
         timestamp: u32,
+        protocol_parameters: &ProtocolParameters,
     ) -> Result<()> {
-        if let Some(output) = transition_input(&input, outputs, burn) {
+        if let Some(output) = transition_input(&input, outputs, burn, protocol_parameters)? {
             requirements.extend(Requirements::from_outputs(
                 selected_inputs.iter(),
                 std::iter::once(&output),
@@ -154,6 +155,7 @@ impl InputSelection {
                     &mut requirements,
                     self.burn.as_ref(),
                     self.timestamp,
+                    &self.protocol_parameters,
                 )?,
                 None => return Err(Error::RequiredInputIsNotAvailable(*required_input)),
             }
@@ -193,6 +195,7 @@ impl InputSelection {
                     &mut requirements,
                     self.burn.as_ref(),
                     self.timestamp,
+                    &self.protocol_parameters,
                 )?;
             }
         }
