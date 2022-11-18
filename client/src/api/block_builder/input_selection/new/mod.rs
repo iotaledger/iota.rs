@@ -6,6 +6,7 @@ pub(crate) mod burn;
 pub(crate) mod helper;
 pub(crate) mod remainder;
 pub(crate) mod requirement;
+pub(crate) mod transition;
 
 use std::collections::HashSet;
 
@@ -15,6 +16,7 @@ use helper::is_alias_state_transition;
 use remainder::remainder_output;
 pub use requirement::Requirement;
 use requirement::Requirements;
+use transition::transition_input;
 
 use crate::{
     block::{
@@ -45,41 +47,6 @@ pub struct InputSelection {
 }
 
 impl InputSelection {
-    fn transition_input(input: &InputSigningData, outputs: &[Output], burn: Option<&Burn>) -> Option<Output> {
-        // match input {
-        //     Output::Alias(alias_output) => {
-        //         if burn.aliases.contains(alias_id) {
-        //             return None;
-        //         }
-
-        //         Some(
-        //                     // TODO create output from input
-        //                 )
-        //     }
-        //     Output::Nft(nft_input) => {
-        //         if burn.nfts.contains(nft_id) {
-        //             return None;
-        //         }
-
-        //         Some(
-        //                     // TODO create output from input
-        //                 )
-        //     }
-        //     Output::Foundry(foundry_output) => {
-        //         if burn.foundries.contains(foundry_id) {
-        //             return None;
-        //         }
-
-        //         Some(
-        //                     // TODO create output from input
-        //                 )
-        //     }
-        //     _ => None,
-        // }
-
-        None
-    }
-
     fn unlock_conditions_input(
         input: &InputSigningData,
         outputs: &[Output],
@@ -108,7 +75,7 @@ impl InputSelection {
         burn: Option<&Burn>,
         timestamp: u32,
     ) -> Result<()> {
-        if let Some(output) = Self::transition_input(&input, outputs, burn) {
+        if let Some(output) = transition_input(&input, outputs, burn) {
             requirements.extend(Requirements::from_outputs(
                 selected_inputs.iter(),
                 std::iter::once(&output),
