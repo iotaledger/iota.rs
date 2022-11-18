@@ -66,7 +66,7 @@ async fn get_mqtt_client(client: &mut Client) -> Result<&mut MqttClient> {
     match client.mqtt_client {
         Some(ref mut c) => Ok(c),
         None => {
-            let nodes = if client.node_manager.ignore_node_health {
+            let nodes = if !client.node_manager.ignore_node_health {
                 #[cfg(not(target_family = "wasm"))]
                 {
                     client
