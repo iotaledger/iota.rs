@@ -370,7 +370,7 @@ impl Packable for Output {
 
 impl Rent for Output {
     fn weighted_bytes(&self, rent_structure: &RentStructure) -> u64 {
-        self.packed_len() as u64 * rent_structure.v_byte_factor_data as u64
+        self.packed_len() as u64 * rent_structure.byte_factor_data() as u64
     }
 }
 
@@ -418,6 +418,7 @@ pub mod dto {
         native_token::dto::NativeTokenDto,
         nft::dto::NftOutputDto,
         nft_id::dto::NftIdDto,
+        rent::dto::RentStructureDto,
         token_id::dto::TokenIdDto,
         token_scheme::dto::{SimpleTokenSchemeDto, TokenSchemeDto},
         treasury::dto::TreasuryOutputDto,

@@ -4,14 +4,11 @@
 use core::str::FromStr;
 
 use crate::{
-    api::{
-        dto::{LedgerInclusionStateDto, PeerDto, ReceiptDto},
-        error::Error,
-    },
+    api::dto::{LedgerInclusionStateDto, PeerDto, ReceiptDto},
     block::{
-        output::{dto::OutputDto, OutputId, RentStructure, RentStructureBuilder},
+        output::{dto::OutputDto, OutputId},
         payload::{dto::MilestonePayloadDto, transaction::TransactionId},
-        protocol::ProtocolParameters,
+        protocol::dto::ProtocolParametersDto,
         BlockDto,
     },
 };
@@ -29,7 +26,7 @@ pub struct InfoResponse {
     pub version: String,
     pub status: StatusResponse,
     pub supported_protocol_versions: Vec<u8>,
-    pub protocol: ProtocolResponse,
+    pub protocol: ProtocolParametersDto,
     pub pending_protocol_parameters: Vec<PendingProtocolParameter>,
     pub base_token: BaseTokenResponse,
     pub metrics: MetricsResponse,
@@ -84,43 +81,6 @@ pub struct ConfirmedMilestoneResponse {
 }
 
 /// Returned in [`InfoResponse`].
-/// Protocol information about the node.
-#[derive(Clone, Debug, PartialEq, Eq)]
-#[cfg_attr(
-    feature = "serde",
-    derive(serde::Serialize, serde::Deserialize),
-    serde(rename_all = "camelCase")
-)]
-pub struct ProtocolResponse {
-    pub version: u8,
-    pub network_name: String,
-    pub bech32_hrp: String,
-    pub min_pow_score: u32,
-    pub below_max_depth: u8,
-    pub rent_structure: RentStructureResponse,
-    pub token_supply: String,
-}
-
-impl TryFrom<ProtocolResponse> for ProtocolParameters {
-    type Error = Error;
-
-    fn try_from(response: ProtocolResponse) -> Result<Self, Self::Error> {
-        Ok(ProtocolParameters::new(
-            response.version,
-            response.network_name,
-            response.bech32_hrp,
-            response.min_pow_score,
-            response.below_max_depth,
-            response.rent_structure.into(),
-            response
-                .token_supply
-                .parse()
-                .map_err(|_| Error::InvalidField("token_supply"))?,
-        )?)
-    }
-}
-
-/// Returned in [`InfoResponse`].
 /// Pending protocol parameters.
 #[derive(Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(
@@ -152,30 +112,6 @@ pub struct BaseTokenResponse {
     pub subunit: Option<String>,
     pub decimals: u8,
     pub use_metric_prefix: bool,
-}
-
-/// Returned in [`InfoResponse`].
-/// Rent information about the node.
-#[derive(Clone, Debug, Eq, PartialEq)]
-#[cfg_attr(
-    feature = "serde",
-    derive(serde::Serialize, serde::Deserialize),
-    serde(rename_all = "camelCase")
-)]
-pub struct RentStructureResponse {
-    pub v_byte_cost: u32,
-    pub v_byte_factor_key: u8,
-    pub v_byte_factor_data: u8,
-}
-
-impl From<RentStructureResponse> for RentStructure {
-    fn from(response: RentStructureResponse) -> Self {
-        RentStructureBuilder::new()
-            .byte_cost(response.v_byte_cost)
-            .key_factor(response.v_byte_factor_key)
-            .data_factor(response.v_byte_factor_data)
-            .finish()
-    }
 }
 
 /// Returned in [`InfoResponse`].
