@@ -93,6 +93,64 @@ impl InputSelection {
         Ok(())
     }
 
+    fn init(&mut self) -> Result<(Vec<InputSigningData>, Requirements)> {
+        let mut selected_inputs = Vec::new();
+        let mut requirements = Requirements::new();
+
+        // Removes forbidden inputs from available inputs.
+        self.available_inputs
+            .retain(|input| !self.forbidden_inputs.contains(input.output_id()));
+
+        for required_input in self.required_inputs.iter() {
+            // Checks that required input is not forbidden.
+            if self.forbidden_inputs.contains(&required_input) {
+                return Err(Error::RequiredInputIsForbidden(*required_input));
+            }
+
+            // Checks that required input is available.
+            match self
+                .available_inputs
+                .iter()
+                .position(|input| input.output_id() == required_input)
+            {
+                Some(index) => {
+                    // Removes required input from available inputs.
+                    let input = self.available_inputs.swap_remove(index);
+
+                    // Selects required input.
+                    Self::select_input(
+                        &mut selected_inputs,
+                        input,
+                        &mut self.outputs,
+                        &mut requirements,
+                        self.burn.as_ref(),
+                        self.timestamp,
+                        &self.protocol_parameters,
+                    )?
+                }
+                None => return Err(Error::RequiredInputIsNotAvailable(*required_input)),
+            }
+        }
+
+        // Gets requirements from outputs.
+        // TODO this may re-evaluate outputs added by inputs
+        let new_requirements = Requirements::from_outputs(selected_inputs.iter(), self.outputs.iter());
+        println!("new requirements from outputs: {:?}", new_requirements);
+        requirements.extend(new_requirements);
+
+        // Gets requirements from burn.
+        if let Some(burn) = &self.burn {
+            let new_requirements = Requirements::from_burn(burn);
+            println!("new requirements from burn: {:?}", new_requirements);
+            requirements.extend(new_requirements);
+        }
+
+        // Adds an initial base token requirement.
+        requirements.push(Requirement::BaseToken);
+
+        Ok((selected_inputs, requirements))
+    }
+
     /// Creates an [`InputSelectionBuilder`].
     pub fn build(
         outputs: Vec<Output>,
@@ -123,64 +181,10 @@ impl InputSelection {
         self
     }
 
-    fn init(&mut self) -> Result<(Vec<InputSigningData>, Requirements)> {
-        let mut selected_inputs = Vec::new();
-        let mut requirements = Requirements::new();
-
-        // Remove forbidden inputs from available inputs.
-        self.available_inputs
-            .retain(|input| !self.forbidden_inputs.contains(input.output_id()));
-
-        println!("{:?}", self.available_inputs);
-
-        for required_input in self.required_inputs.iter() {
-            // Check that required inputs are not forbidden.
-            if self.forbidden_inputs.contains(&required_input) {
-                return Err(Error::RequiredInputIsForbidden(*required_input));
-            }
-
-            // Check that required inputs are available.
-            match self
-                .available_inputs
-                .iter()
-                .position(|input| input.output_id() == required_input)
-            {
-                // Select required inputs.
-                Some(index) => Self::select_input(
-                    &mut selected_inputs,
-                    self.available_inputs.swap_remove(index),
-                    &mut self.outputs,
-                    &mut requirements,
-                    self.burn.as_ref(),
-                    self.timestamp,
-                    &self.protocol_parameters,
-                )?,
-                None => return Err(Error::RequiredInputIsNotAvailable(*required_input)),
-            }
-        }
-
-        // Gets requirements from outputs.
-        // TODO this may re-evaluate outputs added by inputs
-        let new_requirements = Requirements::from_outputs(selected_inputs.iter(), self.outputs.iter());
-        println!("new requirements from outputs: {:?}", new_requirements);
-        requirements.extend(new_requirements);
-
-        // Gets requirements from burn.
-        if let Some(burn) = &self.burn {
-            let new_requirements = Requirements::from_burn(burn);
-            println!("new requirements from burn: {:?}", new_requirements);
-            requirements.extend(new_requirements);
-        }
-
-        // Adds an initial base token requirement.
-        requirements.push(Requirement::BaseToken);
-
-        Ok((selected_inputs, requirements))
-    }
-
     /// Selects inputs that meet the requirements of the outputs to satisfy the semantic validation of the overall
     /// transaction. Also creates outputs if transitions are required.
     pub fn select(mut self) -> Result<(Vec<InputSigningData>, Vec<Output>)> {
+        // Creates the initial state, selected inputs and requirements, based on the provided outputs.
         let (mut selected_inputs, mut requirements) = self.init()?;
 
         // Process all the requirements until there are no more.
