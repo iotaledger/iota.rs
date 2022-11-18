@@ -47,13 +47,14 @@ pub struct InputSelection {
 }
 
 impl InputSelection {
-    fn unlock_conditions_input(
+    fn required_address(
         input: &InputSigningData,
         outputs: &[Output],
         burn: Option<&Burn>,
         timestamp: u32,
     ) -> Result<Option<Requirement>> {
         // TODO is burn required?
+        // TODO unwrap or false?
         let is_alias_state_transition = is_alias_state_transition(input, outputs)?.unwrap_or(false);
         let (required_address, _) =
             input
@@ -77,6 +78,8 @@ impl InputSelection {
         protocol_parameters: &ProtocolParameters,
     ) -> Result<()> {
         if let Some(output) = transition_input(&input, outputs, burn, protocol_parameters)? {
+            // TODO is this really necessary?
+            // TODO should input be pushed before ? probably
             requirements.extend(Requirements::from_outputs(
                 selected_inputs.iter(),
                 std::iter::once(&output),
@@ -84,7 +87,7 @@ impl InputSelection {
             outputs.push(output);
         }
 
-        if let Some(requirement) = Self::unlock_conditions_input(&input, outputs, burn, timestamp)? {
+        if let Some(requirement) = Self::required_address(&input, outputs, burn, timestamp)? {
             requirements.push(requirement);
         }
 
