@@ -4,7 +4,7 @@
 use std::str::FromStr;
 
 use iota_client::{
-    api::input_selection::new::{InputSelection, Requirement},
+    api::input_selection::new::{Burn, InputSelection, Requirement},
     block::{
         output::{AliasId, Output},
         protocol::protocol_parameters,
@@ -91,6 +91,7 @@ fn input_selection_alias() -> Result<()> {
     let inputs = build_input_signing_data_alias_outputs(vec![(alias_id_1, bech32_address, 2_000_000)]);
     let outputs = vec![build_most_basic_output(bech32_address, 2_000_000)];
     let selected_transaction_data = InputSelection::build(outputs, inputs.clone(), protocol_parameters.clone())
+        .burn(Burn::new().add_alias(alias_id_1))
         .finish()
         .select()?;
 
