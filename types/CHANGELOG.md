@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `AliasAddress::into_alias_id` method;
 - `Output::{is_treasury, is_basic, is_alias, is_foundry, is_nft}` methods;
 - `RentStructure::new` and getters;
+- serde aliases to `ProtocolParameters` fields for backwards compatibility;
 
 ### Changed
 
