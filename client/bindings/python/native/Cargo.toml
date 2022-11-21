@@ -22,7 +22,7 @@ iota-client = { path = "../../../", default-features = false, features = [ "ledg
 
 fern-logger = { version = "0.5.0", default-features = false }
 futures = { version = "0.3.25", default-features = false }
-once_cell = { version = "1.15.0", default-features = false, features = [ "std" ] }
+once_cell = { version = "1.16.0", default-features = false, features = [ "std" ] }
 pyo3 = { version = "0.16.6", default-features = false, features = [ "macros", "extension-module" ] }
 serde_json = { version = "1.0.87", default-features = false }
-tokio = { version = "1.21.2", default-features = false, features = [ "macros" ] }
+tokio = { version = "1.22.0", default-features = false, features = [ "macros" ] }
