@@ -8,14 +8,16 @@
 
 /// The client library of python binding.
 pub mod types;
+
 use std::sync::Mutex;
 
+use ::iota_client::message_interface::Message;
 use fern_logger::{logger_init, LoggerConfig, LoggerOutputConfigBuilder};
-use iota_client::message_interface::Message;
 use once_cell::sync::OnceCell;
 use pyo3::{prelude::*, wrap_pyfunction};
 use tokio::runtime::Runtime;
-use types::*;
+
+use self::types::*;
 
 pub(crate) fn block_on<C: futures::Future>(cb: C) -> C::Output {
     static INSTANCE: OnceCell<Mutex<Runtime>> = OnceCell::new();
@@ -28,14 +30,16 @@ pub(crate) fn block_on<C: futures::Future>(cb: C) -> C::Output {
 pub fn init_logger(config: String) -> PyResult<()> {
     let output_config: LoggerOutputConfigBuilder = serde_json::from_str(&config).expect("invalid logger config");
     let config = LoggerConfig::build().with_output(output_config).finish();
+
     logger_init(config).expect("failed to init logger");
+
     Ok(())
 }
 
 #[pyfunction]
 /// Create message handler for python-side usage.
 pub fn create_message_handler(options: Option<String>) -> Result<ClientMessageHandler> {
-    let message_handler = iota_client::message_interface::create_message_handler(options)?;
+    let message_handler = ::iota_client::message_interface::create_message_handler(options)?;
 
     Ok(ClientMessageHandler {
         client_message_handler: message_handler,
@@ -52,8 +56,9 @@ pub fn send_message(handle: &ClientMessageHandler, message: String) -> Result<St
         }
     };
     let response = crate::block_on(async {
-        iota_client::message_interface::send_message(&handle.client_message_handler, message).await
+        ::iota_client::message_interface::send_message(&handle.client_message_handler, message).await
     });
+
     Ok(serde_json::to_string(&response)?)
 }
 
@@ -63,5 +68,6 @@ fn iota_client(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(init_logger, m)?).unwrap();
     m.add_function(wrap_pyfunction!(create_message_handler, m)?).unwrap();
     m.add_function(wrap_pyfunction!(send_message, m)?).unwrap();
+
     Ok(())
 }
