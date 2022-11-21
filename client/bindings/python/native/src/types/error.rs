@@ -1,8 +1,7 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use core::convert::Infallible;
-use std::convert::From;
+use core::convert::{From, Infallible};
 
 use pyo3::{exceptions, prelude::*};
 
