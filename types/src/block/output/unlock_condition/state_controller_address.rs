@@ -12,7 +12,8 @@ use crate::block::address::Address;
 pub struct StateControllerAddressUnlockCondition(Address);
 
 impl StateControllerAddressUnlockCondition {
-    /// The [`UnlockCondition`](crate::output::UnlockCondition) kind of an [`StateControllerAddressUnlockCondition`].
+    /// The [`UnlockCondition`](crate::block::output::UnlockCondition) kind of an
+    /// [`StateControllerAddressUnlockCondition`].
     pub const KIND: u8 = 4;
 
     /// Creates a new [`StateControllerAddressUnlockCondition`].

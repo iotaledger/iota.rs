@@ -12,7 +12,7 @@ use crate::block::address::Address;
 pub struct GovernorAddressUnlockCondition(Address);
 
 impl GovernorAddressUnlockCondition {
-    /// The [`UnlockCondition`](crate::output::UnlockCondition) kind of an [ GovernorAddressUnlockCondition`].
+    /// The [`UnlockCondition`](crate::block::output::UnlockCondition) kind of an [ GovernorAddressUnlockCondition`].
     pub const KIND: u8 = 5;
 
     /// Creates a new [ GovernorAddressUnlockCondition`].

@@ -18,7 +18,8 @@ pub struct StorageDepositReturnUnlockCondition {
 }
 
 impl StorageDepositReturnUnlockCondition {
-    /// The [`UnlockCondition`](crate::output::UnlockCondition) kind of a [`StorageDepositReturnUnlockCondition`].
+    /// The [`UnlockCondition`](crate::block::output::UnlockCondition) kind of a
+    /// [`StorageDepositReturnUnlockCondition`].
     pub const KIND: u8 = 1;
 
     /// Creates a new [`StorageDepositReturnUnlockCondition`].

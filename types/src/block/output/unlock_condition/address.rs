@@ -11,7 +11,7 @@ use crate::block::address::Address;
 pub struct AddressUnlockCondition(Address);
 
 impl AddressUnlockCondition {
-    /// The [`UnlockCondition`](crate::output::UnlockCondition) kind of an [`AddressUnlockCondition`].
+    /// The [`UnlockCondition`](crate::block::output::UnlockCondition) kind of an [`AddressUnlockCondition`].
     pub const KIND: u8 = 0;
 
     /// Creates a new [`AddressUnlockCondition`].

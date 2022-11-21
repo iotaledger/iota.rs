@@ -317,7 +317,7 @@ impl ClientBuilder {
     }
 
     /// Set User-Agent header for requests
-    /// Default is "iota-client/[version]"
+    /// Default is "iota-client/{version}"
     pub fn with_user_agent(mut self, user_agent: String) -> Self {
         self.node_manager_builder = self.node_manager_builder.with_user_agent(user_agent);
         self

@@ -201,7 +201,7 @@ pub struct BasicOutput {
 }
 
 impl BasicOutput {
-    /// The [`Output`](crate::output::Output) kind of an [`BasicOutput`].
+    /// The [`Output`](crate::block::output::Output) kind of an [`BasicOutput`].
     pub const KIND: u8 = 3;
 
     /// The set of allowed [`UnlockCondition`]s for an [`BasicOutput`].

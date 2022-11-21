@@ -14,7 +14,7 @@ use crate::block::Error;
 pub struct Ed25519Address([u8; Self::LENGTH]);
 
 impl Ed25519Address {
-    /// The [`Address`](crate::address::Address) kind of an [`Ed25519Address`].
+    /// The [`Address`](crate::block::address::Address) kind of an [`Ed25519Address`].
     pub const KIND: u8 = 0;
     /// The length of an [`Ed25519Address`].
     pub const LENGTH: usize = PUBLIC_KEY_LENGTH;

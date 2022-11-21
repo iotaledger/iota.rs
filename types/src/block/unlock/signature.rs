@@ -5,14 +5,14 @@ use derive_more::{Deref, From};
 
 use crate::block::signature::Signature;
 
-/// An [`Unlock`](crate::unlock::Unlock) which is used to unlock a signature locked
-/// [`Input`](crate::input::Input).
+/// An [`Unlock`](crate::block::unlock::Unlock) which is used to unlock a signature locked
+/// [`Input`](crate::block::input::Input).
 #[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, From, Deref, packable::Packable)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct SignatureUnlock(Signature);
 
 impl SignatureUnlock {
-    /// The [`Unlock`](crate::unlock::Unlock) kind of a [`SignatureUnlock`].
+    /// The [`Unlock`](crate::block::unlock::Unlock) kind of a [`SignatureUnlock`].
     pub const KIND: u8 = 0;
 
     /// Creates a new [`SignatureUnlock`].
