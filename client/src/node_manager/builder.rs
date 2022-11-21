@@ -40,7 +40,8 @@ pub struct NodeManagerBuilder {
     /// If the node health should be ignored
     #[serde(rename = "ignoreNodeHealth", default)]
     pub ignore_node_health: bool,
-    /// Interval in which nodes will be checked for their sync status and the [NetworkInfo] gets updated
+    /// Interval in which nodes will be checked for their sync status and the [NetworkInfo](crate::client::NetworkInfo)
+    /// gets updated
     #[serde(rename = "nodeSyncInterval", default = "default_node_sync_interval")]
     pub node_sync_interval: Duration,
     /// If node quorum is enabled. Will compare the responses from multiple nodes and only returns the response if

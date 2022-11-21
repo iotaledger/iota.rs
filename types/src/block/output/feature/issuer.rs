@@ -11,7 +11,7 @@ use crate::block::address::Address;
 pub struct IssuerFeature(Address);
 
 impl IssuerFeature {
-    /// The [`Feature`](crate::output::Feature) kind of an [`IssuerFeature`].
+    /// The [`Feature`](crate::block::output::Feature) kind of an [`IssuerFeature`].
     pub const KIND: u8 = 1;
 
     /// Creates a new [`IssuerFeature`].

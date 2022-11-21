@@ -8,7 +8,7 @@ use crate::block::{unlock::UnlockIndex, Error};
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[packable(unpack_error = Error, with = Error::InvalidAliasIndex)]
 pub struct AliasUnlock(
-    /// Index of input and unlock corresponding to an [`AliasOutput`](crate::output::AliasOutput).
+    /// Index of input and unlock corresponding to an [`AliasOutput`](crate::block::output::AliasOutput).
     UnlockIndex,
 );
 
@@ -21,7 +21,7 @@ impl TryFrom<u16> for AliasUnlock {
 }
 
 impl AliasUnlock {
-    /// The [`Unlock`](crate::unlock::Unlock) kind of an [`AliasUnlock`].
+    /// The [`Unlock`](crate::block::unlock::Unlock) kind of an [`AliasUnlock`].
     pub const KIND: u8 = 2;
 
     /// Creates a new [`AliasUnlock`].

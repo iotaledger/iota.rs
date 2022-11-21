@@ -8,7 +8,7 @@ use derive_more::{Deref, From};
 use crate::block::{payload::milestone::MilestoneId, Error};
 
 /// [`TreasuryInput`] is an input which references a milestone which generated a
-/// [`TreasuryOutput`](crate::output::TreasuryOutput).
+/// [`TreasuryOutput`](crate::block::output::TreasuryOutput).
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Ord, PartialOrd, From, Deref, packable::Packable)]
 pub struct TreasuryInput(MilestoneId);
 

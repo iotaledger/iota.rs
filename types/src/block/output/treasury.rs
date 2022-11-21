@@ -14,7 +14,7 @@ pub struct TreasuryOutput {
 }
 
 impl TreasuryOutput {
-    /// The [`Output`](crate::output::Output) kind of a [`TreasuryOutput`].
+    /// The [`Output`](crate::block::output::Output) kind of a [`TreasuryOutput`].
     pub const KIND: u8 = 2;
 
     /// Creates a new [`TreasuryOutput`].
