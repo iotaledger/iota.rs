@@ -17,7 +17,7 @@ use once_cell::sync::OnceCell;
 use pyo3::{prelude::*, wrap_pyfunction};
 use tokio::runtime::Runtime;
 
-use types::*;
+use self::types::*;
 
 pub(crate) fn block_on<C: futures::Future>(cb: C) -> C::Output {
     static INSTANCE: OnceCell<Mutex<Runtime>> = OnceCell::new();
