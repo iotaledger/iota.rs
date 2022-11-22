@@ -197,16 +197,7 @@ jobs:
           command: audit
           # The ignored security advisories:
           #
-          # - RUSTSEC-2020-0026: linked-hash-map creates uninitialized NonNull pointer.
-          #   - A transitive dependency of riker. A new version of Stronghold should fix this.
-          # - RUSTSEC-2020-0159: Potential segfault in `localtime_r` invocations.
-          #   - From chrono, depended bt riker, depended by iota_stronghold. A new version of Stronghold should fix this.
-          # - RUSTSEC-2020-0071: Potential segfault in the time crate.
-          #   - A dependency of chrono; related to RUSTSEC-2020-0159. A new version of Stronghold should fix this.
-          # - RUSTSEC-2021-0119: Out-of-bounds write in nix::unistd::getgrouplist.
-          #   - A dependency of iota-ledger; it should be updated.
-          #   - We don't call this API, so we should be fine.
           # - RUSTSEC-2021-0141: `dotenv` is Unmaintained.
           #   - `dotenv` is only used in examples.
 
-          args: --file Cargo.lock --deny warnings --ignore RUSTSEC-2020-0026 --ignore RUSTSEC-2020-0159 --ignore RUSTSEC-2020-0071 --ignore RUSTSEC-2021-0119 --ignore RUSTSEC-2021-0141
+          args: --file Cargo.lock --deny warnings --ignore RUSTSEC-2021-0141
