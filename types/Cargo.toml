@@ -1,6 +1,6 @@
 [package]
 name = "iota-types"
-version = "1.0.0-rc.2"
+version = "1.0.0-rc.3"
 authors = [ "IOTA Stiftung" ]
 edition = "2021"
 description = "Common types required by nodes and clients APIs like blocks, responses and DTOs."
