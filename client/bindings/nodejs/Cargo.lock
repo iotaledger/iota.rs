@@ -1074,7 +1074,7 @@ dependencies = [
 
 [[package]]
 name = "iota-client"
-version = "2.0.1-rc.3"
+version = "2.0.1-rc.4"
 dependencies = [
  "async-trait",
  "backtrace",
@@ -1163,7 +1163,7 @@ dependencies = [
 
 [[package]]
 name = "iota-types"
-version = "1.0.0-rc.2"
+version = "1.0.0-rc.3"
 dependencies = [
  "bech32 0.9.1",
  "bitflags",
