@@ -72,19 +72,19 @@ impl RentStructureBuilder {
 
 /// Specifies the current parameters for the byte cost computation.
 #[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
-#[cfg_attr(
-    feature = "serde",
-    derive(serde::Serialize, serde::Deserialize),
-    serde(rename_all = "camelCase")
-)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct RentStructure {
     /// Cost in tokens per virtual byte.
+    #[cfg_attr(feature = "serde", serde(alias = "vByteCost"))]
     v_byte_cost: u32,
     /// The weight factor used for key fields in the outputs.
+    #[cfg_attr(feature = "serde", serde(alias = "vByteFactorKey"))]
     v_byte_factor_key: u8,
     /// The weight factor used for data fields in the outputs.
+    #[cfg_attr(feature = "serde", serde(alias = "vByteFactorData"))]
     v_byte_factor_data: u8,
     /// The offset in addition to the other fields.
+    #[cfg_attr(feature = "serde", serde(alias = "vByteOffset"))]
     v_byte_offset: u32,
 }
 
