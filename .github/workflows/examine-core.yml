@@ -199,5 +199,7 @@ jobs:
           #
           # - RUSTSEC-2021-0141: `dotenv` is Unmaintained.
           #   - `dotenv` is only used in examples.
+          # - RUSTSEC-2021-0145: `atty` potential unaligned read.
+          #   - Waiting for https://github.com/mackwic/colored/pull/122 to be merged.
 
-          args: --file Cargo.lock --deny warnings --ignore RUSTSEC-2021-0141
+          args: --file Cargo.lock --deny warnings --ignore RUSTSEC-2021-0141 --ignore RUSTSEC-2021-0145
