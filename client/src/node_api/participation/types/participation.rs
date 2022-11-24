@@ -50,11 +50,12 @@ impl Participations {
 
     /// Serializes to bytes.
     pub fn to_bytes(&self) -> crate::Result<Vec<u8>> {
-        let mut bytes: Vec<u8> = vec![self
-            .participations
-            .len()
-            .try_into()
-            .map_err(|_| crate::Error::InvalidParticipations)?];
+        let mut bytes: Vec<u8> = vec![
+            self.participations
+                .len()
+                .try_into()
+                .map_err(|_| crate::Error::InvalidParticipations)?,
+        ];
 
         for participation in &self.participations {
             let event_id: Vec<u8> = participation.event_id.pack_to_vec();
