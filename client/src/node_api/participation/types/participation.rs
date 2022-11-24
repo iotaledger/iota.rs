@@ -27,7 +27,7 @@ pub struct Participations {
 }
 
 impl Participations {
-    /// Replace the answers if there is already a participation with the same event id or add the participation.
+    /// Replaces the answers if there is already a participation with the same event id or add the participation.
     pub fn add_or_replace(&mut self, participation: Participation) {
         if let Some(existing) = self
             .participations
@@ -40,19 +40,21 @@ impl Participations {
         }
     }
 
-    /// Remove participations with the provided event id.
-    pub fn remove(&mut self, event_id: &EventId) {
-        self.participations.retain(|p| &p.event_id != event_id);
+    /// Removes participation with the provided event id.
+    pub fn remove(&mut self, event_id: &EventId) -> Option<Participation> {
+        match self.participations.iter().position(|p| &p.event_id == event_id) {
+            Some(index) => Some(self.participations.remove(index)),
+            None => None,
+        }
     }
 
-    /// Serialize to bytes.
+    /// Serializes to bytes.
     pub fn to_bytes(&self) -> crate::Result<Vec<u8>> {
-        let mut bytes: Vec<u8> = vec![
-            self.participations
-                .len()
-                .try_into()
-                .map_err(|_| crate::Error::InvalidParticipations)?,
-        ];
+        let mut bytes: Vec<u8> = vec![self
+            .participations
+            .len()
+            .try_into()
+            .map_err(|_| crate::Error::InvalidParticipations)?];
 
         for participation in &self.participations {
             let event_id: Vec<u8> = participation.event_id.pack_to_vec();
@@ -71,7 +73,7 @@ impl Participations {
         Ok(bytes)
     }
 
-    /// Deserialize from bytes.
+    /// Deserializes from bytes.
     pub fn from_bytes<R: Read + ?Sized>(bytes: &mut R) -> crate::Result<Participations> {
         let mut participations = Vec::new();
         let mut participations_len = [0u8; 1];
