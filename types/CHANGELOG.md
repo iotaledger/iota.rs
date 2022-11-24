@@ -19,6 +19,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security -->
 
+## 1.0.0-rc.4 - 20XX-XX-XX
+
+### Added
+
+- `Output::{as_treasury, as_basic, as_alias, as_foundry, as_nft}` methods;
+- `Address::{as_ed25519, as_alias, as_nft}` methods;
+
 ## 1.0.0-rc.3 - 2022-11-22
 
 ### Added

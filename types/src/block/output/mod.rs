@@ -189,9 +189,29 @@ impl Output {
         matches!(self, Self::Treasury(_))
     }
 
+    /// Gets the output as an actual [`TreasuryOutput`].
+    /// PANIC: do not call on a non-treasury output.
+    pub fn as_treasury(&self) -> &TreasuryOutput {
+        if let Output::Treasury(output) = self {
+            output
+        } else {
+            panic!("as_treasury called on a non-treasury output");
+        }
+    }
+
     /// Checks whether the output is a [`BasicOutput`].
     pub fn is_basic(&self) -> bool {
         matches!(self, Self::Basic(_))
+    }
+
+    /// Gets the output as an actual [`BasicOutput`].
+    /// PANIC: do not call on a non-basic output.
+    pub fn as_basic(&self) -> &BasicOutput {
+        if let Output::Basic(output) = self {
+            output
+        } else {
+            panic!("as_basic called on a non-basic output");
+        }
     }
 
     /// Checks whether the output is an [`AliasOutput`].
@@ -199,14 +219,44 @@ impl Output {
         matches!(self, Self::Alias(_))
     }
 
+    /// Gets the output as an actual [`AliasOutput`].
+    /// PANIC: do not call on a non-alias output.
+    pub fn as_alias(&self) -> &AliasOutput {
+        if let Output::Alias(output) = self {
+            output
+        } else {
+            panic!("as_alias called on a non-alias output");
+        }
+    }
+
     /// Checks whether the output is a [`FoundryOutput`].
     pub fn is_foundry(&self) -> bool {
         matches!(self, Self::Foundry(_))
     }
 
+    /// Gets the output as an actual [`FoundryOutput`].
+    /// PANIC: do not call on a non-foundry output.
+    pub fn as_foundry(&self) -> &FoundryOutput {
+        if let Output::Foundry(output) = self {
+            output
+        } else {
+            panic!("as_foundry called on a non-foundry output");
+        }
+    }
+
     /// Checks whether the output is an [`NftOutput`].
     pub fn is_nft(&self) -> bool {
         matches!(self, Self::Nft(_))
+    }
+
+    /// Gets the output as an actual [`NftOutput`].
+    /// PANIC: do not call on a non-nft output.
+    pub fn as_nft(&self) -> &NftOutput {
+        if let Output::Nft(output) = self {
+            output
+        } else {
+            panic!("as_nft called on a non-nft output");
+        }
     }
 
     /// Returns the address that is required to unlock this [`Output`] and the alias or nft address that gets
