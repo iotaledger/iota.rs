@@ -45,12 +45,8 @@ impl TreasuryTransactionPayload {
 
     /// Returns the output of a [`TreasuryTransactionPayload`].
     pub fn output(&self) -> &TreasuryOutput {
-        if let Output::Treasury(ref output) = self.output {
-            output
-        } else {
-            // It has already been validated at construction that `output` is a `TreasuryOutput`.
-            unreachable!()
-        }
+        // It has already been validated at construction that `output` is a `TreasuryOutput`.
+        self.output.as_treasury()
     }
 }
 
