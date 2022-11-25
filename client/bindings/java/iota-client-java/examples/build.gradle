@@ -1,0 +1,17 @@
+plugins {
+    id 'application'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(':lib')
+}
+
+application {
+    mainClassName = project.findProperty("main").toString()
+}
+
+sourceSets.main.java.srcDirs = ['src']

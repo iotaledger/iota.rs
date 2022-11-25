@@ -11,7 +11,9 @@ keywords:
 ---
 import WarningPasswordStorage from '../_admonitions/_password_storage.md';
 
-# Getting Started with Java
+# IOTA Client Java Library
+
+Get started with the official IOTA Client Java Library.
 
 ## Security
 
@@ -19,54 +21,15 @@ import WarningPasswordStorage from '../_admonitions/_password_storage.md';
 
 ## Requirements
 
-* The latest [Java Development Kit (JDK)](https://www.oracle.com/java/technologies/downloads/).
-* [Rust and Cargo](https://doc.rust-lang.org/cargo/getting-started/installation.html) to compile the binding.
-* (for Linux only) `libudev`. You can install it with `apt install libudev-dev`.
-* pkg-config is needed (for Linux `apt install pkg-config`)
+* Make sure you have the latest [Java Development Kit (JDK)](https://www.oracle.com/java/technologies/downloads/) installed.
 
-## Build the JAR for Your Operating System (Linux, macOS, Windows)
+## Install the Library with Maven
 
-To use the IOTA Java Client Library in your Java project, you must first build the library JAR for your operating
-system.
-
-### Clone the Repository
-
-You can clone the [iota.rs client library](https://github.com/iotaledger/iota.rs) by running the following command:
-
-```bash
-git clone git@github.com:iotaledger/iota.rs.git
-```
-
-### Change to the Java Binding Directory
-
-After you have cloned the repository, you should change directory to `iota.rs/bindings/java/iota-client-java`. You can do so by
-running the following command:
-
-```bash
-cd iota.rs/bindings/java/iota-client-java
-```
-
-### Make `gradlew` Executable
-
-If needed, you can make the `gradlew` file executable by running the following command:
-
-```bash
-chmod +x gradlew
-```
-
-### Build Your JAR
-
-You can now build your JAR file by running the following command:
-
-```bash
-./gradlew jar
-```
-
-This will produce a `JAR` file in `build/libs/` which you can add to your Java project.
+// Add when available on Maven
 
 ## Use the Library
 
-After you linked the library, you can create a Client instance and interface with it as shown in the following snippet:
+In order to use the library, you need to create a _Client_:
 
 ```java
 import org.iota.Client;
@@ -91,9 +54,8 @@ public class HelloWorld {
 }
 ```
 
-## Keep Learning
+## What's Next?
 
 Now that you are up and running, you can get acquainted with the library using
 its [how-to guides](../how_tos/00_run_how_tos.mdx) and the
-repository's [code example project ](https://github.com/iotaledger/iota.rs/tree/develop/bindings/java/iota-client-java/examples/ExampleProject/src).
-
+repository's [code examples](https://github.com/iotaledger/iota.rs/tree/develop/client/bindings/java/iota-client-java/examples/src).
