@@ -78,7 +78,7 @@ jobs:
         working-directory: client/bindings/java/iota-client-java/
         run: |
           chmod +x gradlew
-          ./gradlew test
+          ./gradlew test -i
 
   lint:
     name: Lint
