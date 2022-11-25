@@ -49,7 +49,7 @@ pub extern "system" fn Java_org_iota_apis_BaseApi_callNativeLibrary(
         .expect("Couldn't create java string!");
 
     // Finally, extract the raw pointer to return.
-    output.into_inner()
+    output.into_raw()
 }
 
 pub(crate) fn block_on<C: futures::Future>(cb: C) -> C::Output {
