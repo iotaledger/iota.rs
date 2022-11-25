@@ -125,7 +125,7 @@ jobs:
         shell: bash
         working-directory: client/bindings/java/iota-client-java/
         run: |
-          ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository
+          ./gradlew publishToSonatype
           if [ "$RUNNER_OS" == "macOS" ];
           then ./gradlew publishToSonatype -PbuildTarget=aarch64-apple-darwin
           fi
