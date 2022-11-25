@@ -46,7 +46,7 @@ task buildRustRelease(type:Exec){
 }
 
 archivesBaseName = 'iota-client-java'
-version = '1.0.0-rc.3'
+version = '1.0.0-rc.2'
 
 jar {
     dependsOn 'buildRustRelease'

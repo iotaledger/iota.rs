@@ -3,7 +3,6 @@
 
 package org.iota;
 
-import org.iota.apis.NodeIndexerApi;
 import org.iota.types.Block;
 import org.iota.types.ClientException;
 import org.iota.types.UtxoInput;
@@ -12,7 +11,6 @@ import org.iota.types.ids.OutputId;
 import org.iota.types.secret.*;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
