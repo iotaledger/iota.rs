@@ -27,4 +27,4 @@ tokio = { version = "1.22.0", default-features = false, features = [ "macros" ] 
 lazy_static = { version = "1.4.0", default-features = false }
 
 [features]
-ledger_nano = [ "iota-wallet/ledger_nano" ]
+ledger_nano = [ "iota-client/ledger_nano" ]
