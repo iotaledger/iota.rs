@@ -19,7 +19,49 @@ Get started with the official IOTA Client Java Library.
 
 ## Install the Library with Maven
 
-// Add when available on Maven
+#### linux-x86_64
+```xml
+<dependency>
+    <groupId>org.iota</groupId>
+    <artifactId>iota-client</artifactId>
+    <version>1.0.0-rc.0</version>
+    <type>jar</type>
+    <classifier>linux-x86_64</classifier>
+</dependency>
+```
+
+#### windows-x86_64
+```xml
+<dependency>
+    <groupId>org.iota</groupId>
+    <artifactId>iota-client</artifactId>
+    <version>1.0.0-rc.0</version>
+    <type>jar</type>
+    <classifier>windows-x86_64</classifier>
+</dependency>
+```
+
+#### aarch64-apple-darwin
+```xml
+<dependency>
+    <groupId>org.iota</groupId>
+    <artifactId>iota-client</artifactId>
+    <version>1.0.0-rc.0</version>
+    <type>jar</type>
+    <classifier>aarch64-apple-darwin</classifier>
+</dependency>
+```
+
+#### osx-x86_64
+```xml
+<dependency>
+    <groupId>org.iota</groupId>
+    <artifactId>iota-client</artifactId>
+    <version>1.0.0-rc.0</version>
+    <type>jar</type>
+    <classifier>osx-x86_64</classifier>
+</dependency>
+```
 
 ## Use the Library
 
@@ -51,5 +93,5 @@ public class HelloWorld {
 ## What's Next?
 
 Now that you are up and running, you can get acquainted with the library using
-its [how-to guides](../../how_tos/run_how_tos.mdx) and the
+its [how-to guides](../../../../documentation/docs/how_tos/00_run_how_tos.mdx) and the
 repository's [code examples](https://github.com/iotaledger/iota.rs/tree/develop/client/bindings/java/iota-client-java/examples/src).
