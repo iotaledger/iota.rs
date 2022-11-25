@@ -34,7 +34,7 @@ public abstract class ApiTest {
         if(outputIds.length == 0) {
             new UtilsApi(config).requestFundsFromFaucet(DEFAULT_TESTNET_FAUCET_URL, address);
             try {
-                Thread.sleep(1000 * 25);
+                Thread.sleep(1000 * 15);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

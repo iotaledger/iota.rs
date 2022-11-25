@@ -55,12 +55,14 @@ public class HighLevelApiTest extends ApiTest {
     }
 
     @Test
-    public void testRetryUntilIncludedBlock() throws ClientException {
+    public void testRetryUntilIncludedBlock() throws ClientException, InterruptedException {
         SecretManager secretManager = new MnemonicSecretManager(DEFAULT_DEVELOPMENT_MNEMONIC);
         String[] addresses = client.generateAddresses(secretManager, new GenerateAddressesOptions().withRange(new Range(0, 2)));
         requestFundsFromFaucet(addresses[0]);
         BuildBlockOptions.ClientBlockBuilderOutputAddress output = new BuildBlockOptions.ClientBlockBuilderOutputAddress(addresses[1], Integer.toString(1000000));
         Map.Entry<BlockId, Block> entry = client.buildAndPostBlock(secretManager, new BuildBlockOptions().withOutput(output));
+        // Wait the network delay to make sure all nodes received the block. Else the following retryUntilIncluded() call will fail for nodes that didn't receive the block yet.
+        Thread.sleep(4 * 1000);
         LinkedHashMap<BlockId, Block> ret = client.retryUntilIncluded(entry.getKey(), 15, 5);
         for(BlockId i : ret.keySet())
             System.out.println(i);
