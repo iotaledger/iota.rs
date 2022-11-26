@@ -15,10 +15,13 @@ import org.iota.types.ids.OutputId;
 import org.iota.types.secret.BuildBlockOptions;
 import org.iota.types.secret.MnemonicSecretManager;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@TestMethodOrder(MethodOrderer.MethodName.class)
 public class IndexerApiTest extends ApiTest {
 
     @Test

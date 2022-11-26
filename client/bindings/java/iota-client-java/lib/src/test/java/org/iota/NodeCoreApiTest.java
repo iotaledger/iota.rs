@@ -13,10 +13,13 @@ import org.iota.types.responses.NodeInfoResponse;
 import org.iota.types.responses.TreasuryResponse;
 import org.iota.types.responses.UtxoChangesResponse;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 
 import java.util.Map;
 
+@TestMethodOrder(MethodOrderer.MethodName.class)
 public class NodeCoreApiTest extends ApiTest {
 
     @Test

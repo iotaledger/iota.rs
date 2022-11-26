@@ -11,12 +11,15 @@ import org.iota.types.ids.BlockId;
 import org.iota.types.ids.OutputId;
 import org.iota.types.secret.*;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.TestMethodOrder;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+@TestMethodOrder(MethodOrderer.MethodName.class)
 public class HighLevelApiTest extends ApiTest {
 
     @Test
@@ -59,19 +62,10 @@ public class HighLevelApiTest extends ApiTest {
     public void testRetryUntilIncludedBlock() throws ClientException, InterruptedException, InitializeClientException {
         SecretManager secretManager = new MnemonicSecretManager(DEFAULT_DEVELOPMENT_MNEMONIC);
         String[] addresses = client.generateAddresses(secretManager, new GenerateAddressesOptions().withRange(new Range(0, 2)));
-
-        System.out.println(addresses[0]);
-        System.out.println(addresses[1]);
         requestFundsFromFaucet(addresses[0]);
-
         BuildBlockOptions.ClientBlockBuilderOutputAddress output = new BuildBlockOptions.ClientBlockBuilderOutputAddress(addresses[1], Integer.toString(1000000));
         Map.Entry<BlockId, Block> entry = client.buildAndPostBlock(secretManager, new BuildBlockOptions().withOutput(output));
-
-        System.out.println(entry.getKey());
-        // Wait the network delay to make sure all nodes received the block. Else the following retryUntilIncluded() could fail with a node load balancer.
-        Thread.sleep(4 * 1000);
-        LinkedHashMap<BlockId, Block> ret = client.retryUntilIncluded(entry.getKey(), 15, 5);
-
+        LinkedHashMap<BlockId, Block> ret = client.retryUntilIncluded(entry.getKey(), 2, 15);
         for(BlockId i : ret.keySet())
             System.out.println(i);
     }
