@@ -3,16 +3,15 @@
 
 use std::sync::Mutex;
 
-use iota_client::message_interface::{Message, ClientMessageHandler};
+use iota_client::message_interface::{ClientMessageHandler, Message};
 use jni::{
     objects::{JClass, JString},
     sys::jstring,
     JNIEnv,
 };
+use lazy_static::lazy_static;
 use once_cell::sync::OnceCell;
 use tokio::{runtime::Runtime, sync::mpsc::unbounded_channel};
-
-use lazy_static::lazy_static;
 
 lazy_static! {
     static ref MESSAGE_HANDLER: Mutex<Option<ClientMessageHandler>> = Mutex::new(None);
@@ -29,7 +28,7 @@ pub extern "system" fn Java_org_iota_apis_BaseApi_createMessageHandler(
     config: JString,
 ) {
     let config: String = match env.get_string(config) {
-        Ok(s) => s.into(),
+        Ok(jstring) => jstring.into(),
         Err(err) => {
             env.throw_new("java/lang/Exception", err.to_string()).unwrap();
             return;
@@ -40,11 +39,11 @@ pub extern "system" fn Java_org_iota_apis_BaseApi_createMessageHandler(
         Ok(mut message_handler_store) => match iota_client::message_interface::create_message_handler(Some(config)) {
             Ok(message_handler) => {
                 message_handler_store.replace(message_handler);
-            },
+            }
             Err(err) => {
                 env.throw_new("java/lang/Exception", err.to_string()).unwrap();
             }
-        }
+        },
         Err(err) => {
             env.throw_new("java/lang/Exception", err.to_string()).unwrap();
         }
@@ -66,10 +65,7 @@ pub extern "system" fn Java_org_iota_apis_BaseApi_sendCommand(
         return std::ptr::null_mut();
     }
 
-    let command: String = env
-        .get_string(command)
-        .expect("Couldn't get java string!")
-        .into();
+    let command: String = env.get_string(command).expect("Couldn't get java string!").into();
 
     let message = serde_json::from_str::<Message>(&command).unwrap();
 
