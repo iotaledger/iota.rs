@@ -36,16 +36,27 @@ pub extern "system" fn Java_org_iota_apis_BaseApi_createMessageHandler(
     };
 
     match MESSAGE_HANDLER.lock() {
-        Ok(mut message_handler_store) => match iota_client::message_interface::create_message_handler(Some(config)) {
-            Ok(message_handler) => {
-                message_handler_store.replace(message_handler);
+        Ok(mut message_handler_store) => {
+            // throw an exception if a message handler already exists
+            if message_handler_store.is_some() {
+                env.throw_new("java/lang/Exception", "message handler already created")
+                    .unwrap();
+                return;
             }
-            Err(err) => {
-                env.throw_new("java/lang/Exception", err.to_string()).unwrap();
+
+            match iota_client::message_interface::create_message_handler(Some(config)) {
+                Ok(message_handler) => {
+                    message_handler_store.replace(message_handler);
+                }
+                Err(err) => {
+                    env.throw_new("java/lang/Exception", err.to_string()).unwrap();
+                    // no return needed because no code has to be executed after
+                }
             }
-        },
+        }
         Err(err) => {
             env.throw_new("java/lang/Exception", err.to_string()).unwrap();
+            // no return needed because no code has to be executed after
         }
     }
 }
