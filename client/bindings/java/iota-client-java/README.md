@@ -24,7 +24,7 @@ Get started with the official IOTA Client Java Library.
 <dependency>
     <groupId>org.iota</groupId>
     <artifactId>iota-client</artifactId>
-    <version>1.0.0-rc.0</version>
+    <version>1.0.0-rc.1</version>
     <type>jar</type>
     <classifier>linux-x86_64</classifier>
 </dependency>
@@ -35,7 +35,7 @@ Get started with the official IOTA Client Java Library.
 <dependency>
     <groupId>org.iota</groupId>
     <artifactId>iota-client</artifactId>
-    <version>1.0.0-rc.0</version>
+    <version>1.0.0-rc.1</version>
     <type>jar</type>
     <classifier>windows-x86_64</classifier>
 </dependency>
@@ -46,7 +46,7 @@ Get started with the official IOTA Client Java Library.
 <dependency>
     <groupId>org.iota</groupId>
     <artifactId>iota-client</artifactId>
-    <version>1.0.0-rc.0</version>
+    <version>1.0.0-rc.1</version>
     <type>jar</type>
     <classifier>aarch64-apple-darwin</classifier>
 </dependency>
@@ -57,7 +57,7 @@ Get started with the official IOTA Client Java Library.
 <dependency>
     <groupId>org.iota</groupId>
     <artifactId>iota-client</artifactId>
-    <version>1.0.0-rc.0</version>
+    <version>1.0.0-rc.1</version>
     <type>jar</type>
     <classifier>osx-x86_64</classifier>
 </dependency>

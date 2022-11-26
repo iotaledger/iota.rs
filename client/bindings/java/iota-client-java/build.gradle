@@ -3,6 +3,7 @@ plugins {
 }
 
 group 'org.iota'
+version = '1.0.0-rc.1'
 
 nexusPublishing {
     repositories {

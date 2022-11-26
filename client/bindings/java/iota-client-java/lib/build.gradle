@@ -45,8 +45,7 @@ task buildRustRelease(type:Exec){
     }
 }
 
-archivesBaseName = 'iota-client-java'
-version = '1.0.0-rc.2'
+archivesBaseName = 'iota-client'
 
 jar {
     dependsOn 'buildRustRelease'
@@ -90,19 +89,20 @@ test {
     useJUnitPlatform()
 }
 
+version =  project.getRootProject().properties.version
+
 publishing {
     publications {
         allJars (MavenPublication) {
             groupId = 'org.iota'
-            artifactId = 'iota-client-java'
-            version = project.version
+            artifactId = 'iota-client'
 
             artifact jarWithoutNativeLibs
 
             from components.java
 
             pom {
-                name = 'iota-client-java'
+                name = 'iota-client'
                 description = 'Java binding to the iota.rs library.'
                 url = 'https://github.com/iotaledger/iota.rs'
                 inceptionYear = '2022'
