@@ -3,11 +3,12 @@ package output_builder;
 import org.iota.Client;
 import org.iota.types.*;
 import org.iota.types.expections.ClientException;
+import org.iota.types.expections.InitializeClientException;
 import org.iota.types.ids.AliasId;
 import org.iota.types.output_builder.FoundryOutputBuilderParams;
 
 public class BuildFoundryOutput {
-    public static void main(String[] args) throws ClientException {
+    public static void main(String[] args) throws ClientException, InitializeClientException {
         // Build the client.
         Client client = new Client(new ClientConfig().withNodes(new String[]{"https://api.testnet.shimmer.network"}));
 

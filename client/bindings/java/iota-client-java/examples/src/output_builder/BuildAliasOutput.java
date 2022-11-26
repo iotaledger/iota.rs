@@ -5,6 +5,7 @@ import org.iota.types.ClientConfig;
 import org.iota.types.expections.ClientException;
 import org.iota.types.Output;
 import org.iota.types.UnlockCondition;
+import org.iota.types.expections.InitializeClientException;
 import org.iota.types.ids.AliasId;
 import org.iota.types.output_builder.AliasOutputBuilderParams;
 import org.iota.types.secret.GenerateAddressesOptions;
@@ -12,7 +13,7 @@ import org.iota.types.secret.MnemonicSecretManager;
 import org.iota.types.secret.Range;
 
 public class BuildAliasOutput {
-    public static void main(String[] args) throws ClientException {
+    public static void main(String[] args) throws ClientException, InitializeClientException {
         // Build the client.
         Client client = new Client(new ClientConfig().withNodes(new String[]{"https://api.testnet.shimmer.network"}));
 
