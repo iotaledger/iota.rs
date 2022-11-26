@@ -57,9 +57,11 @@ public class HighLevelApiTest extends ApiTest {
 
     @Test
     public void testRetryUntilIncludedBlock() throws ClientException, InterruptedException, InitializeClientException {
-        SecretManager secretManager = new MnemonicSecretManager(client.generateMnemonic());
+        SecretManager secretManager = new MnemonicSecretManager(DEFAULT_DEVELOPMENT_MNEMONIC);
         String[] addresses = client.generateAddresses(secretManager, new GenerateAddressesOptions().withRange(new Range(0, 2)));
 
+        System.out.println(addresses[0]);
+        System.out.println(addresses[1]);
         requestFundsFromFaucet(addresses[0]);
 
         BuildBlockOptions.ClientBlockBuilderOutputAddress output = new BuildBlockOptions.ClientBlockBuilderOutputAddress(addresses[1], Integer.toString(1000000));

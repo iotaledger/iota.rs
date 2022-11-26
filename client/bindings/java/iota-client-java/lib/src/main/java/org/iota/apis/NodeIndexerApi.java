@@ -25,7 +25,7 @@ public class NodeIndexerApi {
         JsonObject o = new JsonObject();
         o.add("queryParameters", params.queryParams);
 
-        JsonArray responsePayload = (JsonArray) nativeApi.callBaseApi(new ClientCommand("basicOutputIds", o));
+        JsonArray responsePayload = (JsonArray) nativeApi.sendCommand(new ClientCommand("basicOutputIds", o));
 
         OutputId[] outputIds = new OutputId[responsePayload.size()];
         for (int i = 0; i < responsePayload.size(); i++) {
@@ -39,7 +39,7 @@ public class NodeIndexerApi {
         JsonObject o = new JsonObject();
         o.add("queryParameters", params.queryParams);
 
-        JsonArray responsePayload = (JsonArray) nativeApi.callBaseApi(new ClientCommand("aliasOutputIds", o));
+        JsonArray responsePayload = (JsonArray) nativeApi.sendCommand(new ClientCommand("aliasOutputIds", o));
 
         OutputId[] outputIds = new OutputId[responsePayload.size()];
         for (int i = 0; i < responsePayload.size(); i++) {
@@ -53,7 +53,7 @@ public class NodeIndexerApi {
         JsonObject o = new JsonObject();
         o.add("queryParameters", params.queryParams);
 
-        JsonArray responsePayload = (JsonArray) nativeApi.callBaseApi(new ClientCommand("nftOutputIds", o));
+        JsonArray responsePayload = (JsonArray) nativeApi.sendCommand(new ClientCommand("nftOutputIds", o));
 
         OutputId[] outputIds = new OutputId[responsePayload.size()];
         for (int i = 0; i < responsePayload.size(); i++) {
@@ -67,7 +67,7 @@ public class NodeIndexerApi {
         JsonObject o = new JsonObject();
         o.add("queryParameters", params.queryParams);
 
-        JsonArray responsePayload = (JsonArray) nativeApi.callBaseApi(new ClientCommand("foundryOutputIds", o));
+        JsonArray responsePayload = (JsonArray) nativeApi.sendCommand(new ClientCommand("foundryOutputIds", o));
 
         OutputId[] outputIds = new OutputId[responsePayload.size()];
         for (int i = 0; i < responsePayload.size(); i++) {
@@ -81,7 +81,7 @@ public class NodeIndexerApi {
         JsonObject o = new JsonObject();
         o.addProperty("aliasId", aliasId.toString());
 
-        String responsePayload = nativeApi.callBaseApi(new ClientCommand("aliasOutputId", o)).getAsString();
+        String responsePayload = nativeApi.sendCommand(new ClientCommand("aliasOutputId", o)).getAsString();
 
         return new OutputId(responsePayload);
     }
@@ -90,7 +90,7 @@ public class NodeIndexerApi {
         JsonObject o = new JsonObject();
         o.addProperty("nftId", nftId.toString());
 
-        String responsePayload = nativeApi.callBaseApi(new ClientCommand("nftOutputId", o)).getAsString();
+        String responsePayload = nativeApi.sendCommand(new ClientCommand("nftOutputId", o)).getAsString();
 
         return new OutputId(responsePayload);
     }
@@ -99,7 +99,7 @@ public class NodeIndexerApi {
         JsonObject o = new JsonObject();
         o.addProperty("foundryId", foundryId.toString());
 
-        String responsePayload = nativeApi.callBaseApi(new ClientCommand("foundryOutputId", o)).getAsString();
+        String responsePayload = nativeApi.sendCommand(new ClientCommand("foundryOutputId", o)).getAsString();
 
         return new OutputId(responsePayload);
     }

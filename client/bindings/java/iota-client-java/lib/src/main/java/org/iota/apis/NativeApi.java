@@ -71,7 +71,7 @@ public abstract class NativeApi {
 
     protected native void destroyHandle();
 
-    protected JsonElement callBaseApi(ClientCommand command) throws ClientException {
+    protected JsonElement sendCommand(ClientCommand command) throws ClientException {
         String jsonResponse = sendCommand(command.toString());
         ClientResponse response = new Gson().fromJson(jsonResponse, ClientResponse.class);
 
