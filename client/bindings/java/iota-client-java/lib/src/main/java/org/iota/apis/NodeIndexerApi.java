@@ -5,7 +5,6 @@ package org.iota.apis;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import org.iota.types.ClientConfig;
 import org.iota.types.expections.ClientException;
 import org.iota.types.expections.InitializeClientException;
 import org.iota.types.ids.AliasId;
@@ -14,17 +13,19 @@ import org.iota.types.ids.NftId;
 import org.iota.types.ids.OutputId;
 
 
-public class NodeIndexerApi extends BaseApi {
+public class NodeIndexerApi {
 
-    public NodeIndexerApi(ClientConfig clientConfig) throws InitializeClientException {
-        super(clientConfig);
+    private NativeApi nativeApi;
+
+    public NodeIndexerApi(NativeApi nativeApi) throws InitializeClientException {
+        this.nativeApi = nativeApi;
     }
 
     public OutputId[] getBasicOutputIds(QueryParams params) throws ClientException {
         JsonObject o = new JsonObject();
         o.add("queryParameters", params.queryParams);
 
-        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand("basicOutputIds", o));
+        JsonArray responsePayload = (JsonArray) nativeApi.callBaseApi(new ClientCommand("basicOutputIds", o));
 
         OutputId[] outputIds = new OutputId[responsePayload.size()];
         for (int i = 0; i < responsePayload.size(); i++) {
@@ -38,7 +39,7 @@ public class NodeIndexerApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.add("queryParameters", params.queryParams);
 
-        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand("aliasOutputIds", o));
+        JsonArray responsePayload = (JsonArray) nativeApi.callBaseApi(new ClientCommand("aliasOutputIds", o));
 
         OutputId[] outputIds = new OutputId[responsePayload.size()];
         for (int i = 0; i < responsePayload.size(); i++) {
@@ -52,7 +53,7 @@ public class NodeIndexerApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.add("queryParameters", params.queryParams);
 
-        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand("nftOutputIds", o));
+        JsonArray responsePayload = (JsonArray) nativeApi.callBaseApi(new ClientCommand("nftOutputIds", o));
 
         OutputId[] outputIds = new OutputId[responsePayload.size()];
         for (int i = 0; i < responsePayload.size(); i++) {
@@ -66,7 +67,7 @@ public class NodeIndexerApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.add("queryParameters", params.queryParams);
 
-        JsonArray responsePayload = (JsonArray) callBaseApi(new ClientCommand("foundryOutputIds", o));
+        JsonArray responsePayload = (JsonArray) nativeApi.callBaseApi(new ClientCommand("foundryOutputIds", o));
 
         OutputId[] outputIds = new OutputId[responsePayload.size()];
         for (int i = 0; i < responsePayload.size(); i++) {
@@ -80,7 +81,7 @@ public class NodeIndexerApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.addProperty("aliasId", aliasId.toString());
 
-        String responsePayload = callBaseApi(new ClientCommand("aliasOutputId", o)).getAsString();
+        String responsePayload = nativeApi.callBaseApi(new ClientCommand("aliasOutputId", o)).getAsString();
 
         return new OutputId(responsePayload);
     }
@@ -89,7 +90,7 @@ public class NodeIndexerApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.addProperty("nftId", nftId.toString());
 
-        String responsePayload = callBaseApi(new ClientCommand("nftOutputId", o)).getAsString();
+        String responsePayload = nativeApi.callBaseApi(new ClientCommand("nftOutputId", o)).getAsString();
 
         return new OutputId(responsePayload);
     }
@@ -98,7 +99,7 @@ public class NodeIndexerApi extends BaseApi {
         JsonObject o = new JsonObject();
         o.addProperty("foundryId", foundryId.toString());
 
-        String responsePayload = callBaseApi(new ClientCommand("foundryOutputId", o)).getAsString();
+        String responsePayload = nativeApi.callBaseApi(new ClientCommand("foundryOutputId", o)).getAsString();
 
         return new OutputId(responsePayload);
     }

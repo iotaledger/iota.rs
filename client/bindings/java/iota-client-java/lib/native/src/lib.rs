@@ -18,7 +18,7 @@ lazy_static! {
 }
 
 #[no_mangle]
-pub extern "system" fn Java_org_iota_apis_BaseApi_createMessageHandler(
+pub extern "system" fn Java_org_iota_apis_NativeApi_createMessageHandler(
     env: JNIEnv,
     // this is the class that owns our
     // static method. Not going to be
@@ -39,7 +39,7 @@ pub extern "system" fn Java_org_iota_apis_BaseApi_createMessageHandler(
         Ok(mut message_handler_store) => {
             // throw an exception if a message handler already exists
             if message_handler_store.is_some() {
-                env.throw_new("java/lang/Exception", "message handler already created")
+                env.throw_new("java/lang/Exception", "a wallet instance was already created")
                     .unwrap();
                 return;
             }
@@ -63,7 +63,7 @@ pub extern "system" fn Java_org_iota_apis_BaseApi_createMessageHandler(
 
 // This keeps rust from "mangling" the name and making it unique for this crate.
 #[no_mangle]
-pub extern "system" fn Java_org_iota_apis_BaseApi_sendCommand(
+pub extern "system" fn Java_org_iota_apis_NativeApi_sendCommand(
     env: JNIEnv,
     // this is the class that owns our
     // static method. Not going to be
@@ -92,6 +92,12 @@ pub extern "system" fn Java_org_iota_apis_BaseApi_sendCommand(
         .expect("Couldn't create java string!");
 
     output.into_raw()
+}
+
+// Destroy the required parts for messaging. Needs to call createMessageHandler again before resuming
+#[no_mangle]
+pub extern "system" fn Java_org_iota_apis_NativeApi_destroyHandle(_env: JNIEnv, _class: JClass) {
+    (*MESSAGE_HANDLER.lock().unwrap()) = None;
 }
 
 pub(crate) fn block_on<C: futures::Future>(cb: C) -> C::Output {

@@ -14,6 +14,7 @@ import org.iota.types.secret.GenerateAddressesOptions;
 import org.iota.types.secret.MnemonicSecretManager;
 import org.iota.types.secret.Range;
 import org.iota.types.secret.SecretManager;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
 public abstract class ApiTest {
@@ -30,11 +31,16 @@ public abstract class ApiTest {
         client = new Client(config);
     }
 
+    @AfterEach
+    protected void tearDown() {
+        client.destroyHandle();
+    }
+
     protected void requestFundsFromFaucet(String address) throws ClientException, InitializeClientException {
         OutputId[] outputIds = client.getBasicOutputIds(new NodeIndexerApi.QueryParams().withParam("address", address));
 
         if(outputIds.length == 0) {
-            new UtilsApi(config).requestFundsFromFaucet(DEFAULT_TESTNET_FAUCET_URL, address);
+            new UtilsApi(client).requestFundsFromFaucet(DEFAULT_TESTNET_FAUCET_URL, address);
             try {
                 Thread.sleep(1000 * 15);
             } catch (InterruptedException e) {

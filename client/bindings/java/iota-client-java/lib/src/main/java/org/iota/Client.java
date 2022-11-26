@@ -25,7 +25,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Client {
+public class Client extends NativeApi {
 
     private NodeCoreApi nodeCoreApi;
     private NodeIndexerApi nodeIndexerApi;
@@ -35,11 +35,20 @@ public class Client {
 
     // Creating a new client object with the given configuration.
     public Client(ClientConfig config) throws InitializeClientException {
-        nodeCoreApi = new NodeCoreApi(config);
-        nodeIndexerApi = new NodeIndexerApi(config);
-        highLevelApi = new HighLevelApi(config);
-        utilsApi = new UtilsApi(config);
-        miscellaneousApi = new MiscellaneousApi(config);
+        super(config);
+        nodeCoreApi = new NodeCoreApi(this);
+        nodeIndexerApi = new NodeIndexerApi(this);
+        highLevelApi = new HighLevelApi(this);
+        utilsApi = new UtilsApi(this);
+        miscellaneousApi = new MiscellaneousApi(this);
+    }
+
+    /**
+     * Destroys this client instance and drops its database connection.
+     * This client instance can no longer be used after.
+     */
+    public void destroyHandle() {
+        super.destroyHandle();
     }
 
     // Node Core APIs
