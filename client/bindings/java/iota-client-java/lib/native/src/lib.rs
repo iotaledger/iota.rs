@@ -38,17 +38,17 @@ pub extern "system" fn Java_org_iota_apis_BaseApi_createMessageHandler(
 
     match MESSAGE_HANDLER.lock() {
         Ok(mut message_handler_store) => match iota_client::message_interface::create_message_handler(Some(config)) {
-            Ok(message_handler) => message_handler_store.replace(message_handler),
+            Ok(message_handler) => {
+                message_handler_store.replace(message_handler);
+            },
             Err(err) => {
                 env.throw_new("java/lang/Exception", err.to_string()).unwrap();
-                return;
             }
-        },
+        }
         Err(err) => {
             env.throw_new("java/lang/Exception", err.to_string()).unwrap();
-            return;
         }
-    };
+    }
 }
 
 // This keeps rust from "mangling" the name and making it unique for this crate.
@@ -76,9 +76,9 @@ pub extern "system" fn Java_org_iota_apis_BaseApi_sendCommand(
     let (sender, mut receiver) = unbounded_channel();
 
     let guard = MESSAGE_HANDLER.lock().unwrap();
-    crate::block_on(guard.as_ref().unwrap().handle(message, sender));
+    block_on(guard.as_ref().unwrap().handle(message, sender));
 
-    let response = crate::block_on(receiver.recv()).unwrap();
+    let response = block_on(receiver.recv()).unwrap();
 
     let output = env
         .new_string(serde_json::to_string(&response).unwrap())
