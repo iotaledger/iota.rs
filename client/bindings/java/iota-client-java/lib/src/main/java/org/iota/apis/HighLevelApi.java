@@ -7,10 +7,11 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.iota.types.*;
+import org.iota.types.expections.ClientException;
+import org.iota.types.expections.InitializeClientException;
 import org.iota.types.ids.BlockId;
 import org.iota.types.ids.OutputId;
 import org.iota.types.secret.GenerateAddressesOptions;
-import org.iota.types.secret.Range;
 import org.iota.types.secret.SecretManager;
 
 import java.util.AbstractMap.SimpleEntry;
@@ -21,7 +22,7 @@ import java.util.Map;
 
 public class HighLevelApi extends BaseApi {
 
-    public HighLevelApi(ClientConfig clientConfig) {
+    public HighLevelApi(ClientConfig clientConfig) throws InitializeClientException {
         super(clientConfig);
     }
 

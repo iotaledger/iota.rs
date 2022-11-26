@@ -6,6 +6,8 @@ package org.iota;
 import com.google.gson.JsonObject;
 import org.iota.apis.*;
 import org.iota.types.*;
+import org.iota.types.expections.ClientException;
+import org.iota.types.expections.InitializeClientException;
 import org.iota.types.ids.*;
 import org.iota.types.output_builder.AliasOutputBuilderParams;
 import org.iota.types.output_builder.BasicOutputBuilderParams;
@@ -32,7 +34,7 @@ public class Client {
     private MiscellaneousApi miscellaneousApi;
 
     // Creating a new client object with the given configuration.
-    public Client(ClientConfig config) {
+    public Client(ClientConfig config) throws InitializeClientException {
         nodeCoreApi = new NodeCoreApi(config);
         nodeIndexerApi = new NodeIndexerApi(config);
         highLevelApi = new HighLevelApi(config);

@@ -3,7 +3,7 @@
 
 use std::sync::Mutex;
 
-use iota_client::message_interface::Message;
+use iota_client::message_interface::{Message, ClientMessageHandler};
 use jni::{
     objects::{JClass, JString},
     sys::jstring,
@@ -12,43 +12,78 @@ use jni::{
 use once_cell::sync::OnceCell;
 use tokio::{runtime::Runtime, sync::mpsc::unbounded_channel};
 
-// This keeps rust from "mangling" the name and making it unique for this crate.
+use lazy_static::lazy_static;
+
+lazy_static! {
+    static ref MESSAGE_HANDLER: Mutex<Option<ClientMessageHandler>> = Mutex::new(None);
+}
+
 #[no_mangle]
-pub extern "system" fn Java_org_iota_apis_BaseApi_callNativeLibrary(
+pub extern "system" fn Java_org_iota_apis_BaseApi_createMessageHandler(
     env: JNIEnv,
     // this is the class that owns our
     // static method. Not going to be
     // used, but still needs to have
     // an argument slot
     _class: JClass,
-    client_config: JString,
-    client_command: JString,
-) -> jstring {
-    // First, we have to get the string out of java. Check out the `strings`
-    // module for more info on how this works.
-    let client_config: String = env.get_string(client_config).expect("Couldn't get java string!").into();
+    config: JString,
+) {
+    let config: String = match env.get_string(config) {
+        Ok(s) => s.into(),
+        Err(err) => {
+            env.throw_new("java/lang/Exception", err.to_string()).unwrap();
+            return;
+        }
+    };
 
-    let client_command: String = env
-        .get_string(client_command)
+    match MESSAGE_HANDLER.lock() {
+        Ok(mut message_handler_store) => match iota_client::message_interface::create_message_handler(Some(config)) {
+            Ok(message_handler) => message_handler_store.replace(message_handler),
+            Err(err) => {
+                env.throw_new("java/lang/Exception", err.to_string()).unwrap();
+                return;
+            }
+        },
+        Err(err) => {
+            env.throw_new("java/lang/Exception", err.to_string()).unwrap();
+            return;
+        }
+    };
+}
+
+// This keeps rust from "mangling" the name and making it unique for this crate.
+#[no_mangle]
+pub extern "system" fn Java_org_iota_apis_BaseApi_sendCommand(
+    env: JNIEnv,
+    // this is the class that owns our
+    // static method. Not going to be
+    // used, but still needs to have
+    // an argument slot
+    _class: JClass,
+    command: JString,
+) -> jstring {
+    if env.exception_check().unwrap() {
+        return std::ptr::null_mut();
+    }
+
+    let command: String = env
+        .get_string(command)
         .expect("Couldn't get java string!")
         .into();
 
-    let message_handler = crate::block_on(async {
-        iota_client::message_interface::create_message_handler(Some(client_config.to_string()))
-    })
-    .unwrap();
-
-    let message = serde_json::from_str::<Message>(&client_command).unwrap();
+    let message = serde_json::from_str::<Message>(&command).unwrap();
 
     let (sender, mut receiver) = unbounded_channel();
-    crate::block_on(message_handler.handle(message, sender));
+
+    let guard = MESSAGE_HANDLER.lock().unwrap();
+    crate::block_on(guard.as_ref().unwrap().handle(message, sender));
+
     let response = crate::block_on(receiver.recv()).unwrap();
 
     let output = env
         .new_string(serde_json::to_string(&response).unwrap())
         .expect("Couldn't create java string!");
 
-    // Finally, extract the raw pointer to return.
     output.into_raw()
 }
 

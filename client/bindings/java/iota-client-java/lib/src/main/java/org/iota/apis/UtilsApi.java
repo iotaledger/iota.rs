@@ -4,15 +4,14 @@
 package org.iota.apis;
 
 import com.google.gson.JsonObject;
-import org.iota.types.Block;
-import org.iota.types.ClientConfig;
-import org.iota.types.ClientException;
-import org.iota.types.TransactionPayload;
+import org.iota.types.*;
+import org.iota.types.expections.ClientException;
+import org.iota.types.expections.InitializeClientException;
 import org.iota.types.ids.*;
 
 public class UtilsApi extends BaseApi {
 
-    public UtilsApi(ClientConfig clientConfig) {
+    public UtilsApi(ClientConfig clientConfig) throws InitializeClientException {
         super(clientConfig);
     }
 

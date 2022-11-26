@@ -1,6 +1,7 @@
 package org.iota;
 
-import org.iota.types.ClientException;
+import org.iota.types.expections.ClientException;
+import org.iota.types.expections.InitializeClientException;
 import org.iota.types.secret.GenerateAddressesOptions;
 import org.iota.types.secret.Range;
 import org.iota.types.secret.SeedSecretManager;
@@ -9,7 +10,7 @@ import org.junit.jupiter.api.Test;
 public class AddressDerivation extends ApiTest {
 
     @Test
-    public void testAddressDerivation() throws ClientException {
+    public void testAddressDerivation() throws ClientException, InitializeClientException {
         // Build the client.
         Client client = new Client(config);
 

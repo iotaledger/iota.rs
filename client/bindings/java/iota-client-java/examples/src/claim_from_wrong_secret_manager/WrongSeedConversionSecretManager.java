@@ -4,6 +4,8 @@ import com.google.gson.JsonObject;
 import org.iota.Client;
 import org.iota.apis.NodeIndexerApi;
 import org.iota.types.*;
+import org.iota.types.expections.ClientException;
+import org.iota.types.expections.InitializeClientException;
 import org.iota.types.ids.BlockId;
 import org.iota.types.ids.OutputId;
 import org.iota.types.secret.GenerateAddressesOptions;
@@ -21,7 +23,7 @@ This example shows how to access and migrate the funds located on the incorrectl
 This example will try to migrate funds from the first 50 addresses of the seed.
  */
 public class WrongSeedConversionSecretManager {
-    public static void main(String[] args) throws ClientException {
+    public static void main(String[] args) throws ClientException, InitializeClientException {
         // Build the client.
         Client client = new Client(new ClientConfig().withNodes(new String[]{"https://api.testnet.shimmer.network"}));
 

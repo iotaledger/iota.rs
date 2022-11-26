@@ -6,7 +6,8 @@ package org.iota.apis;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.iota.types.ClientConfig;
-import org.iota.types.ClientException;
+import org.iota.types.expections.ClientException;
+import org.iota.types.expections.InitializeClientException;
 import org.iota.types.ids.AliasId;
 import org.iota.types.ids.FoundryId;
 import org.iota.types.ids.NftId;
@@ -15,7 +16,7 @@ import org.iota.types.ids.OutputId;
 
 public class NodeIndexerApi extends BaseApi {
 
-    public NodeIndexerApi(ClientConfig clientConfig) {
+    public NodeIndexerApi(ClientConfig clientConfig) throws InitializeClientException {
         super(clientConfig);
     }
 

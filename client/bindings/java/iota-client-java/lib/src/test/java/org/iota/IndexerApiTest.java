@@ -6,7 +6,7 @@ package org.iota;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import org.iota.apis.NodeIndexerApi;
-import org.iota.types.ClientException;
+import org.iota.types.expections.ClientException;
 import org.iota.types.Output;
 import org.iota.types.ids.AliasId;
 import org.iota.types.ids.FoundryId;

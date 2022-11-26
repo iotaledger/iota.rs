@@ -3,7 +3,7 @@ package node_api_core;
 import org.iota.Client;
 import org.iota.apis.NodeIndexerApi;
 import org.iota.types.Block;
-import org.iota.types.ClientException;
+import org.iota.types.expections.ClientException;
 import org.iota.types.ids.BlockId;
 import org.iota.types.ids.MilestoneId;
 import org.iota.types.ids.OutputId;

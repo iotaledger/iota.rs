@@ -2,7 +2,7 @@ package output_builder;
 
 import org.iota.Client;
 import org.iota.types.ClientConfig;
-import org.iota.types.ClientException;
+import org.iota.types.expections.ClientException;
 import org.iota.types.Output;
 import org.iota.types.UnlockCondition;
 import org.iota.types.ids.AliasId;

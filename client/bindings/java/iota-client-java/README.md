@@ -70,11 +70,12 @@ In order to use the library, you need to create a _Client_:
 ```java
 import org.iota.Client;
 import org.iota.types.ClientConfig;
-import org.iota.types.ClientException;
+import org.iota.types.expections.InitializeClientException;
+import org.iota.types.expections.ClientException;
 import org.iota.types.responses.NodeInfoResponse;
 
 public class HelloWorld {
-    public static void main(String[] args) throws ClientException {
+    public static void main(String[] args) throws InitializeClientException, ClientException {
         // Build the client.
         Client client = new Client(new ClientConfig().withNodes(new String[]{"https://api.testnet.shimmer.network"}));
 

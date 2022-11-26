@@ -6,6 +6,8 @@ package org.iota.apis;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.iota.types.*;
+import org.iota.types.expections.ClientException;
+import org.iota.types.expections.InitializeClientException;
 import org.iota.types.ids.BlockId;
 import org.iota.types.ids.MilestoneId;
 import org.iota.types.ids.OutputId;
@@ -18,7 +20,7 @@ import java.util.Map;
 
 public class NodeCoreApi extends BaseApi {
 
-    public NodeCoreApi(ClientConfig clientConfig) {
+    public NodeCoreApi(ClientConfig clientConfig) throws InitializeClientException {
         super(clientConfig);
     }
 

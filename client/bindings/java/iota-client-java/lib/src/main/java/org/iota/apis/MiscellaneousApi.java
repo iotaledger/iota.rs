@@ -6,6 +6,8 @@ package org.iota.apis;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.iota.types.*;
+import org.iota.types.expections.ClientException;
+import org.iota.types.expections.InitializeClientException;
 import org.iota.types.ids.BlockId;
 import org.iota.types.output_builder.AliasOutputBuilderParams;
 import org.iota.types.output_builder.BasicOutputBuilderParams;
@@ -21,7 +23,7 @@ import java.util.Map;
 
 public class MiscellaneousApi extends BaseApi {
 
-    public MiscellaneousApi(ClientConfig clientConfig) {
+    public MiscellaneousApi(ClientConfig clientConfig) throws InitializeClientException {
         super(clientConfig);
     }
 

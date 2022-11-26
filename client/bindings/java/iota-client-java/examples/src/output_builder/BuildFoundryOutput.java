@@ -2,11 +2,9 @@ package output_builder;
 
 import org.iota.Client;
 import org.iota.types.*;
+import org.iota.types.expections.ClientException;
 import org.iota.types.ids.AliasId;
 import org.iota.types.output_builder.FoundryOutputBuilderParams;
-import org.iota.types.secret.GenerateAddressesOptions;
-import org.iota.types.secret.MnemonicSecretManager;
-import org.iota.types.secret.Range;
 
 public class BuildFoundryOutput {
     public static void main(String[] args) throws ClientException {

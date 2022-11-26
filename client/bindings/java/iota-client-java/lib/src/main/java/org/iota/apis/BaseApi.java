@@ -8,20 +8,23 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.apache.commons.lang3.SystemUtils;
 import org.iota.types.ClientConfig;
-import org.iota.types.ClientException;
+import org.iota.types.expections.ClientException;
+import org.iota.types.expections.InitializeClientException;
 
 import java.io.IOException;
 
 public class BaseApi {
 
-    protected ClientConfig clientConfig;
-
-    protected BaseApi(ClientConfig clientConfig) {
-        this.clientConfig = clientConfig;
+    protected BaseApi(ClientConfig clientConfig) throws InitializeClientException {
+        try {
+            createMessageHandler(new Gson().toJsonTree(clientConfig).toString());
+        } catch (Exception e) {
+            throw new InitializeClientException(e.getMessage());
+        }
     }
 
     static {
-        String libraryName = null;
+        String libraryName;
 
         if (SystemUtils.IS_OS_LINUX)
             libraryName = "libiota_client.so";
@@ -40,10 +43,11 @@ public class BaseApi {
 
     }
 
-    private static native String callNativeLibrary(String clientConfig, String clientCommand);
+    private static native void createMessageHandler(String config) throws Exception;
+    private static native String sendCommand(String clientCommand);
 
     protected JsonElement callBaseApi(ClientCommand command) throws ClientException {
-        String jsonResponse = callNativeLibrary(clientConfig.getJson().toString(), command.toString());
+        String jsonResponse = sendCommand(command.toString());
         ClientResponse response = new Gson().fromJson(jsonResponse, ClientResponse.class);
 
         switch (response.type) {

@@ -3,11 +3,12 @@ package node_api_core;
 import org.iota.Client;
 import org.iota.types.Block;
 import org.iota.types.ClientConfig;
-import org.iota.types.ClientException;
+import org.iota.types.expections.ClientException;
+import org.iota.types.expections.InitializeClientException;
 import org.iota.types.ids.BlockId;
 
 public class PostBlock {
-    public static void main(String[] args) throws ClientException {
+    public static void main(String[] args) throws ClientException, InitializeClientException {
         // Build the client.
         Client client = new Client(new ClientConfig().withNodes(new String[]{"https://api.testnet.shimmer.network"}));
 
