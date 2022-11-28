@@ -33,7 +33,12 @@ public class Client extends NativeApi {
     private UtilsApi utilsApi;
     private MiscellaneousApi miscellaneousApi;
 
-    // Creating a new client object with the given configuration.
+    /**
+     * Creates a new client instance with the given configuration.
+     *
+     * @param config The configuration for the client.
+     * @throws InitializeClientException in case of initialization failure
+     */
     public Client(ClientConfig config) throws InitializeClientException {
         super(config);
         nodeCoreApi = new NodeCoreApi(this);
@@ -58,6 +63,7 @@ public class Client extends NativeApi {
      *
      * @param nodeUrl The URL of the node to check.
      * @return True if the node is healthy, false otherwise.
+     * @throws ClientException on error.
      */
     public boolean getHealth(String nodeUrl) throws ClientException {
         return nodeCoreApi.getHealth(nodeUrl);
@@ -67,6 +73,7 @@ public class Client extends NativeApi {
      * Get the node information of the given node.
      *
      * @return The node information of the given node.
+     * @throws ClientException on error.
      */
     public NodeInfoResponse getNodeInfo() throws ClientException {
         return nodeCoreApi.getNodeInfo();
@@ -76,6 +83,7 @@ public class Client extends NativeApi {
      * Get the tips of the Tangle.
      *
      * @return The tips of the Tangle.
+     * @throws ClientException on error.
      */
     public BlockId[] getTips() throws ClientException {
         return nodeCoreApi.getTips();
@@ -86,6 +94,7 @@ public class Client extends NativeApi {
      *
      * @param block The block to be posted.
      * @return The block id of the block that was posted.
+     * @throws ClientException on error.
      */
     public BlockId postBlock(Block block) throws ClientException {
         return nodeCoreApi.postBlock(block);
@@ -96,6 +105,7 @@ public class Client extends NativeApi {
      *
      * @param blockBytes The raw bytes of the block to be posted.
      * @return The block id of the block that was just posted.
+     * @throws ClientException on error.
      */
     public BlockId postBlockRaw(byte[] blockBytes) throws ClientException {
         return nodeCoreApi.postBlockRaw(blockBytes);
@@ -106,6 +116,7 @@ public class Client extends NativeApi {
      *
      * @param blockId The block ID of the block you want to retrieve.
      * @return A block object.
+     * @throws ClientException on error.
      */
     public Block getBlock(BlockId blockId) throws ClientException {
         return nodeCoreApi.getBlock(blockId);
@@ -116,6 +127,7 @@ public class Client extends NativeApi {
      *
      * @param blockId The block ID of the block you want to get.
      * @return The raw bytes of the block.
+     * @throws ClientException on error.
      */
     public byte[] getBlockRaw(BlockId blockId) throws ClientException {
         return nodeCoreApi.getBlockRaw(blockId);
@@ -126,6 +138,7 @@ public class Client extends NativeApi {
      *
      * @param blockId The id of the block to get metadata for.
      * @return BlockMetadata
+     * @throws ClientException on error.
      */
     public BlockMetadata getBlockMetadata(BlockId blockId) throws ClientException {
         return nodeCoreApi.getBlockMetadata(blockId);
@@ -136,6 +149,7 @@ public class Client extends NativeApi {
      *
      * @param outputId The id of the output you want to get.
      * @return A map entry with the output and its metadata.
+     * @throws ClientException on error.
      */
     public Map.Entry<Output, OutputMetadata> getOutput(OutputId outputId) throws ClientException {
         return nodeCoreApi.getOutput(outputId);
@@ -146,6 +160,7 @@ public class Client extends NativeApi {
      *
      * @param outputId The output ID of the output you want to get metadata for.
      * @return OutputMetadata
+     * @throws ClientException on error.
      */
     public OutputMetadata getOutputMetadata(OutputId outputId) throws ClientException {
         return nodeCoreApi.getOutputMetadata(outputId);
@@ -156,6 +171,7 @@ public class Client extends NativeApi {
      *
      * @param milestoneIndex The index of the milestone to get the receipts for.
      * @return Receipts
+     * @throws ClientException on error.
      */
     public Receipt[] getReceiptsMigratedAt(int milestoneIndex) throws ClientException {
         return nodeCoreApi.getReceiptsMigratedAt(milestoneIndex);
@@ -165,6 +181,7 @@ public class Client extends NativeApi {
      * Get all the receipts.
      *
      * @return An array of Receipt objects.
+     * @throws ClientException on error.
      */
     public Receipt[] getReceipts() throws ClientException {
         return nodeCoreApi.getReceipts();
@@ -174,6 +191,7 @@ public class Client extends NativeApi {
      * Get the treasury balance
      *
      * @return TreasuryResponse
+     * @throws ClientException on error.
      */
     public TreasuryResponse getTreasury() throws ClientException {
         return nodeCoreApi.getTreasury();
@@ -184,6 +202,7 @@ public class Client extends NativeApi {
      *
      * @param transactionId The transaction that was included in the ledger.
      * @return A block that contains the transaction.
+     * @throws ClientException on error.
      */
     public Block getIncludedBlock(TransactionId transactionId) throws ClientException {
         return nodeCoreApi.getIncludedBlock(transactionId);
@@ -194,6 +213,7 @@ public class Client extends NativeApi {
      *
      * @param milestoneId The milestone ID of the milestone you want to get.
      * @return A MilestonePayload object.
+     * @throws ClientException on error.
      */
     public MilestonePayload getMilestoneById(MilestoneId milestoneId) throws ClientException {
         return nodeCoreApi.getMilestoneById(milestoneId);
@@ -204,6 +224,7 @@ public class Client extends NativeApi {
      *
      * @param milestoneIndex The index of the milestone you want to retrieve.
      * @return A MilestonePayload object.
+     * @throws ClientException on error.
      */
     public MilestonePayload getMilestoneByIndex(int milestoneIndex) throws ClientException {
         return nodeCoreApi.getMilestoneByIndex(milestoneIndex);
@@ -214,6 +235,7 @@ public class Client extends NativeApi {
      *
      * @param milestoneId The milestone ID to get the raw data for.
      * @return A byte array of the milestone data.
+     * @throws ClientException on error.
      */
     public byte[] getMilestoneByIdRaw(MilestoneId milestoneId) throws ClientException {
         return nodeCoreApi.getMilestoneByIdRaw(milestoneId);
@@ -224,6 +246,7 @@ public class Client extends NativeApi {
      *
      * @param milestoneIndex The index of the milestone you want to retrieve.
      * @return The raw bytes of the milestone at the given index.
+     * @throws ClientException on error.
      */
     public byte[] getMilestoneByIndexRaw(int milestoneIndex) throws ClientException {
         return nodeCoreApi.getMilestoneByIndexRaw(milestoneIndex);
@@ -234,6 +257,7 @@ public class Client extends NativeApi {
      *
      * @param milestoneId The milestone id of the milestone to get the UTXO changes for.
      * @return The UTXO changes for the given milestone index.
+     * @throws ClientException on error.
      */
     public UtxoChangesResponse getUtxoChangesById(MilestoneId milestoneId) throws ClientException {
         return nodeCoreApi.getUtxoChangesById(milestoneId);
@@ -244,6 +268,7 @@ public class Client extends NativeApi {
      *
      * @param milestoneIndex The index of the milestone to get the UTXO changes for.
      * @return The UTXO changes for the given milestone index.
+     * @throws ClientException on error.
      */
     public UtxoChangesResponse getUtxoChangesByIndex(int milestoneIndex) throws ClientException {
         return nodeCoreApi.getUtxoChangesByIndex(milestoneIndex);
@@ -253,6 +278,7 @@ public class Client extends NativeApi {
      * Get the list of peers connected to the node
      *
      * @return An array of Peer objects.
+     * @throws ClientException on error.
      */
     public Peer[] getPeers() throws ClientException {
         return nodeCoreApi.getPeers();
@@ -265,6 +291,7 @@ public class Client extends NativeApi {
      *
      * @param params a QueryParams object that contains the following fields:
      * @return An array of OutputIds.
+     * @throws ClientException on error.
      */
     public OutputId[] getBasicOutputIds(NodeIndexerApi.QueryParams params) throws ClientException {
         return nodeIndexerApi.getBasicOutputIds(params);
@@ -275,6 +302,7 @@ public class Client extends NativeApi {
      *
      * @param params a QueryParams object that contains the following fields:
      * @return An array of OutputIds.
+     * @throws ClientException on error.
      */
     public OutputId[] getAliasOutputIds(NodeIndexerApi.QueryParams params) throws ClientException {
         return nodeIndexerApi.getAliasOutputIds(params);
@@ -285,6 +313,7 @@ public class Client extends NativeApi {
      *
      * @param params a QueryParams object that contains the following fields:
      * @return An array of OutputIds.
+     * @throws ClientException on error.
      */
     public OutputId[] getNftOutputIds(NodeIndexerApi.QueryParams params) throws ClientException {
         return nodeIndexerApi.getNftOutputIds(params);
@@ -295,6 +324,7 @@ public class Client extends NativeApi {
      *
      * @param params a QueryParams object that contains the following fields:
      * @return An array of OutputIds.
+     * @throws ClientException on error.
      */
     public OutputId[] getFoundryOutputIds(NodeIndexerApi.QueryParams params) throws ClientException {
         return nodeIndexerApi.getFoundryOutputIds(params);
@@ -305,6 +335,7 @@ public class Client extends NativeApi {
      *
      * @param aliasId The aliasId of the alias you want to get the outputId for.
      * @return OutputId
+     * @throws ClientException on error.
      */
     public OutputId getAliasOutputIdByAliasId(AliasId aliasId) throws ClientException {
         return nodeIndexerApi.getAliasOutputIdByAliasId(aliasId);
@@ -315,6 +346,7 @@ public class Client extends NativeApi {
      *
      * @param nftId The NFT Id of the NFT you want to get the outputId for.
      * @return OutputId
+     * @throws ClientException on error.
      */
     public OutputId getNftOutputIdByNftId(NftId nftId) throws ClientException {
         return nodeIndexerApi.getNftOutputIdByNftId(nftId);
@@ -325,6 +357,7 @@ public class Client extends NativeApi {
      *
      * @param foundryId The id of the foundry you want to get the output id for.
      * @return The output id of the foundry.
+     * @throws ClientException on error.
      */
     public OutputId getFoundryOutputIdByFoundryId(FoundryId foundryId) throws ClientException {
         return nodeIndexerApi.getFoundryOutputIdByFoundryId(foundryId);
@@ -337,6 +370,7 @@ public class Client extends NativeApi {
      *
      * @param outputIds An array of OutputId objects.
      * @return A list of entries, where each entry is a pair of an Output and its OutputMetadata.
+     * @throws ClientException on error.
      */
     public List<Map.Entry<Output, OutputMetadata>> getOutputs(OutputId[] outputIds) throws ClientException {
         return highLevelApi.getOutputs(outputIds);
@@ -347,6 +381,7 @@ public class Client extends NativeApi {
      *
      * @param outputIds An array of OutputId objects.
      * @return A list of entries, where each entry is a pair of an output and its metadata.
+     * @throws ClientException on error.
      */
     public List<Map.Entry<Output, OutputMetadata>> tryGetOutputs(OutputId[] outputIds) throws ClientException {
         return highLevelApi.tryGetOutputs(outputIds);
@@ -357,6 +392,7 @@ public class Client extends NativeApi {
      *
      * @param blockIds An array of BlockId objects.
      * @return An array of blocks.
+     * @throws ClientException on error.
      */
     public Block[] findBlocks(BlockId[] blockIds) throws ClientException {
         return highLevelApi.findBlocks(blockIds);
@@ -367,6 +403,7 @@ public class Client extends NativeApi {
      *
      * @param blockId The id of the block to retry.
      * @return A map entry with the block id and the block.
+     * @throws ClientException on error.
      */
     public Map.Entry<BlockId, Block> retry(BlockId blockId) throws ClientException {
         return highLevelApi.retry(blockId);
@@ -379,6 +416,7 @@ public class Client extends NativeApi {
      * @param interval The interval in seconds between each attempt to retrieve the block.
      * @param maxAttempts The maximum number of attempts to make before giving up.
      * @return A LinkedHashMap of BlockId and Block.
+     * @throws ClientException on error.
      */
     public LinkedHashMap<BlockId, Block> retryUntilIncluded(BlockId blockId, int interval, int maxAttempts) throws ClientException {
         return highLevelApi.retryUntilIncluded(blockId, interval, maxAttempts);
@@ -390,6 +428,7 @@ public class Client extends NativeApi {
      * @param secretManager The secret manager that holds the secret for the account you want to consolidate funds for.
      * @param generateAddressesOptions This is an object that contains the following parameters:
      * @return A String containing the transaction hash.
+     * @throws ClientException on error.
      */
     public String consolidateFunds(SecretManager secretManager, GenerateAddressesOptions generateAddressesOptions) throws ClientException {
         return highLevelApi.consolidateFunds(secretManager, generateAddressesOptions);
@@ -401,6 +440,7 @@ public class Client extends NativeApi {
      * @param addresses An array of addresses to search for inputs.
      * @param amount The amount you want to spend.
      * @return An array of UtxoInput objects.
+     * @throws ClientException on error.
      */
     public UtxoInput[] findInputs(String[] addresses, int amount) throws ClientException {
         return highLevelApi.findInputs(addresses, amount);
@@ -412,6 +452,7 @@ public class Client extends NativeApi {
      * @param outputIds An array of OutputId objects.
      * @param addresses The addresses to search for outputs.
      * @return A list of outputs and their metadata.
+     * @throws ClientException on error.
      */
     public List<Map.Entry<Output, OutputMetadata>> findOutputs(OutputId[] outputIds, String[] addresses) throws ClientException {
         return highLevelApi.findOutputs(outputIds, addresses);
@@ -422,6 +463,7 @@ public class Client extends NativeApi {
      *
      * @param blockId The id of the block to reattach.
      * @return A map entry with the block id and the block.
+     * @throws ClientException on error.
      */
     public Map.Entry<BlockId, Block> reattach(BlockId blockId) throws ClientException {
         return highLevelApi.reattach(blockId);
@@ -432,6 +474,7 @@ public class Client extends NativeApi {
      *
      * @param blockId The block id of the block to reattach.
      * @return A map entry with the block id and the block.
+     * @throws ClientException on error.
      */
     public Map.Entry<BlockId, Block> reattachUnchecked(BlockId blockId) throws ClientException {
         return highLevelApi.reattachUnchecked(blockId);
@@ -442,6 +485,7 @@ public class Client extends NativeApi {
      *
      * @param blockId The id of the block to promote.
      * @return A map entry with the block id and the block.
+     * @throws ClientException on error.
      */
     public Map.Entry<BlockId, Block> promote(BlockId blockId) throws ClientException {
         return highLevelApi.promote(blockId);
@@ -452,6 +496,7 @@ public class Client extends NativeApi {
      *
      * @param blockId The id of the block to promote.
      * @return A map entry with the block id and the block.
+     * @throws ClientException on error.
      */
     public Map.Entry<BlockId, Block> promoteUnchecked(BlockId blockId) throws ClientException {
         return highLevelApi.promoteUnchecked(blockId);
@@ -464,6 +509,7 @@ public class Client extends NativeApi {
      *
      * @param bech32 bech32 address
      * @return A hex string.
+     * @throws ClientException on error.
      */
     public String bech32ToHex(String bech32) throws ClientException {
         return utilsApi.bech32ToHex(bech32);
@@ -475,6 +521,7 @@ public class Client extends NativeApi {
      * @param hex The hexadecimal string to be converted.
      * @param bech32 The bech32 to use.
      * @return The bech32 address.
+     * @throws ClientException on error.
      */
     public String hexToBech32(String hex, String bech32) throws ClientException {
         return utilsApi.hexToBech32(hex, bech32);
@@ -486,6 +533,7 @@ public class Client extends NativeApi {
      * @param hex The public key in hexadecimal format.
      * @param bech32 The bech32 prefix
      * @return The bech32 address.
+     * @throws ClientException on error.
      */
     public String hexPublicKeyToBech32Address(String hex, String bech32) throws ClientException {
         return utilsApi.hexPublicKeyToBech32Address(hex, bech32);
@@ -496,6 +544,7 @@ public class Client extends NativeApi {
      *
      * @param address The address to be parsed.
      * @return The address in hex format.
+     * @throws ClientException on error.
      */
     public String parseBech32Address(String address) throws ClientException {
         return utilsApi.parseBech32Address(address);
@@ -506,6 +555,7 @@ public class Client extends NativeApi {
      *
      * @param address The address to validate.
      * @return A boolean value.
+     * @throws ClientException on error.
      */
     public boolean isAddressValid(String address) throws ClientException {
         return utilsApi.isAddressValid(address);
@@ -515,6 +565,7 @@ public class Client extends NativeApi {
      * Generate a mnemonic
      *
      * @return The mnemonic string.
+     * @throws ClientException on error.
      */
     public String generateMnemonic() throws ClientException {
         return utilsApi.generateMnemonic();
@@ -525,6 +576,7 @@ public class Client extends NativeApi {
      *
      * @param mnemonic The mnemonic to convert to a hex seed.
      * @return A hex seed.
+     * @throws ClientException on error.
      */
     public String mnemonicToHexSeed(String mnemonic) throws ClientException {
         return utilsApi.mnemonicToHexSeed(mnemonic);
@@ -535,6 +587,7 @@ public class Client extends NativeApi {
      *
      * @param block The block to compute the block id from.
      * @return The block id of the block.
+     * @throws ClientException on error.
      */
     public BlockId getBlockId(Block block) throws ClientException {
         return utilsApi.computeBlockId(block);
@@ -545,6 +598,7 @@ public class Client extends NativeApi {
      *
      * @param payload The payload of the transaction.
      * @return A TransactionId object.
+     * @throws ClientException on error.
      */
     public TransactionId getTransactionId(TransactionPayload payload) throws ClientException {
         return utilsApi.getTransactionId(payload);
@@ -555,6 +609,7 @@ public class Client extends NativeApi {
      *
      * @param aliasOutputId The output ID of the alias.
      * @return The alias id of the output id.
+     * @throws ClientException on error.
      */
     public AliasId computeAliasId(OutputId aliasOutputId) throws ClientException {
         return utilsApi.computeAliasId(aliasOutputId);
@@ -565,6 +620,7 @@ public class Client extends NativeApi {
      *
      * @param nftOutputId The output id of the NFT.
      * @return The NFT ID of the NFT output.
+     * @throws ClientException on error.
      */
     public NftId computeNftId(OutputId nftOutputId) throws ClientException {
         return utilsApi.computeNftId(nftOutputId);
@@ -577,6 +633,7 @@ public class Client extends NativeApi {
      * @param serialNumber The serial number of the token.
      * @param tokenScheme The token scheme to use.  This is a value from the TokenScheme enum.
      * @return A FoundryId object.
+     * @throws ClientException on error.
      */
     public FoundryId computeFoundryId(String aliasAddress, int serialNumber, int tokenScheme) throws ClientException {
         return utilsApi.computeFoundryId(aliasAddress, serialNumber, tokenScheme);
@@ -589,6 +646,7 @@ public class Client extends NativeApi {
      *
      * @param params AliasOutputBuilderParams
      * @return An output object.
+     * @throws ClientException on error.
      */
     public Output buildAliasOutput(
             AliasOutputBuilderParams params
@@ -601,6 +659,7 @@ public class Client extends NativeApi {
      *
      * @param params The parameters for the request.
      * @return An output object.
+     * @throws ClientException on error.
      */
     public Output buildBasicOutput(
             BasicOutputBuilderParams params
@@ -613,6 +672,7 @@ public class Client extends NativeApi {
      *
      * @param params FoundryOutputBuilderParams
      * @return An output object.
+     * @throws ClientException on error.
      */
     public Output buildFoundryOutput(
             FoundryOutputBuilderParams params
@@ -625,6 +685,7 @@ public class Client extends NativeApi {
      *
      * @param params NftOutputBuilderParams
      * @return Output
+     * @throws ClientException on error.
      */
     public Output buildNftOutput(
             NftOutputBuilderParams params
@@ -638,6 +699,7 @@ public class Client extends NativeApi {
      * @param secretManager The secret manager to use for generating the addresses.
      * @param generateAddressesOptions The options for generating addresses.
      * @return A list of addresses
+     * @throws ClientException on error.
      */
     public String[] generateAddresses(SecretManager secretManager, GenerateAddressesOptions generateAddressesOptions) throws ClientException {
         return miscellaneousApi.generateAddresses(secretManager, generateAddressesOptions);
@@ -649,6 +711,7 @@ public class Client extends NativeApi {
      * @param secretManager The secret manager to use for signing the block.
      * @param options The options for building the block.
      * @return A map entry with the block id and the block itself.
+     * @throws ClientException on error.
      */
     public Map.Entry<BlockId, Block> buildAndPostBlock(SecretManager secretManager, BuildBlockOptions options) throws ClientException {
         return miscellaneousApi.buildAndPostBlock(secretManager, options);
@@ -658,6 +721,7 @@ public class Client extends NativeApi {
      * Get a node
      *
      * @return The node object.
+     * @throws ClientException on error.
      */
     public Node getNode() throws ClientException {
         return miscellaneousApi.getNode();
@@ -667,6 +731,7 @@ public class Client extends NativeApi {
      * Get network information
      *
      * @return A JsonObject
+     * @throws ClientException on error.
      */
     public JsonObject getNetworkInfo() throws ClientException {
         return miscellaneousApi.getNetworkInfo();
@@ -676,6 +741,7 @@ public class Client extends NativeApi {
      * Get the network ID of the current network
      *
      * @return The network ID of the current network.
+     * @throws ClientException on error.
      */
     public int getNetworkId() throws ClientException {
         return miscellaneousApi.getNetworkId();
@@ -685,6 +751,7 @@ public class Client extends NativeApi {
      * Get the Bech32 HRP for the current network
      *
      * @return The Bech32 Human Readable Part (HRP) for addresses.
+     * @throws ClientException on error.
      */
     public String getBech32Hrp() throws ClientException {
         return miscellaneousApi.getBech32Hrp();
@@ -694,6 +761,7 @@ public class Client extends NativeApi {
      * Get the minimum PoW score required for a transaction to be accepted
      *
      * @return The minimum PoW score.
+     * @throws ClientException on error.
      */
     public float getMinPowScore() throws ClientException {
         return miscellaneousApi.getMinPowScore();
@@ -703,6 +771,7 @@ public class Client extends NativeApi {
      * Get the tips interval in seconds
      *
      * @return The interval in seconds.
+     * @throws ClientException on error.
      */
     public int getTipsInterval() throws ClientException {
         return miscellaneousApi.getTipsInterval();
@@ -712,6 +781,7 @@ public class Client extends NativeApi {
      * Returns true if the local PoW is enabled, otherwise false.
      *
      * @return true if the local PoW is enabled, otherwise false.
+     * @throws ClientException on error.
      */
     public boolean getLocalPow() throws ClientException {
         return miscellaneousApi.getLocalPow();
@@ -722,6 +792,7 @@ public class Client extends NativeApi {
      * unavailable
      *
      * @return true if the client is configured to fallback to local proof of work, else returns false.
+     * @throws ClientException on error.
      */
     public boolean getFallbackToLocalPow() throws ClientException {
         return miscellaneousApi.isFallbackToLocalPow();
@@ -731,6 +802,7 @@ public class Client extends NativeApi {
      * Get the list of nodes that are not healthy
      *
      * @return The array of nodes that are not healthy.
+     * @throws ClientException on error.
      */
     public Node[] getUnhealthyNodes() throws ClientException {
         return miscellaneousApi.getUnhealthyNodes();
@@ -741,6 +813,7 @@ public class Client extends NativeApi {
      *
      * @param isSimulator true if you want to use the simulator, false if you want to use the real device.
      * @return LedgerNanoStatus
+     * @throws ClientException on error.
      */
     public LedgerNanoStatus getLedgerNanoStatus(boolean isSimulator) throws ClientException {
         return miscellaneousApi.getLedgerNanoStatus(isSimulator);
@@ -752,6 +825,7 @@ public class Client extends NativeApi {
      * @param secretManager The secret manager that holds the secret for the account.
      * @param buildBlockOptions This is the object that contains the transaction details.
      * @return The prepared transaction.
+     * @throws ClientException on error.
      */
     public PreparedTransactionData prepareTransaction(SecretManager secretManager, BuildBlockOptions buildBlockOptions) throws ClientException {
         return miscellaneousApi.prepareTransaction(secretManager, buildBlockOptions);
@@ -763,6 +837,7 @@ public class Client extends NativeApi {
      * @param secretManager The secret manager that holds the secret key for the account that will sign the transaction.
      * @param preparedTransactionData The transaction data that was prepared by the prepareTransaction method.
      * @return The signed transaction.
+     * @throws ClientException on error.
      */
     public TransactionPayload signTransaction(SecretManager secretManager, PreparedTransactionData preparedTransactionData) throws ClientException {
         return miscellaneousApi.signTransaction(secretManager, preparedTransactionData);
@@ -773,6 +848,7 @@ public class Client extends NativeApi {
      *
      * @param secretManager The secret manager to use.
      * @param mnemonic The mnemonic to store.
+     * @throws ClientException on error.
      */
     public void storeMnemonic(SecretManager secretManager, String mnemonic) throws ClientException {
         miscellaneousApi.storeMnemonic(secretManager, mnemonic);
@@ -783,6 +859,7 @@ public class Client extends NativeApi {
      *
      * @param payload The payload to be posted.
      * @return A map entry of the posted block id and the block.
+     * @throws ClientException on error.
      */
     public Map.Entry<BlockId, Block> postBlockPayload(BlockPayload payload) throws ClientException {
         return miscellaneousApi.postBlockPayload(payload);
@@ -792,6 +869,7 @@ public class Client extends NativeApi {
      * Returns the token supply.
      *
      * @return The token supply.
+     * @throws ClientException on error.
      */
     public String getTokenSupply() throws ClientException {
         return getProtocolParameters().getTokenSupply();
@@ -801,6 +879,7 @@ public class Client extends NativeApi {
      * Returns the protocol parameters.
      *
      * @return The protocol parameters.
+     * @throws ClientException on error.
      */
     public ProtocolParametersResponse getProtocolParameters() throws ClientException {
         return miscellaneousApi.getProtocolParameters();

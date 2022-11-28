@@ -59,8 +59,8 @@ public class HighLevelApiTest extends ApiTest {
     }
 
     @Test
-    public void testRetryUntilIncludedBlock() throws ClientException, InterruptedException, InitializeClientException {
-        SecretManager secretManager = new MnemonicSecretManager(DEFAULT_DEVELOPMENT_MNEMONIC);
+    public void testRetryUntilIncludedBlock() throws ClientException, InitializeClientException {
+        SecretManager secretManager = new MnemonicSecretManager(client.generateMnemonic());
         String[] addresses = client.generateAddresses(secretManager, new GenerateAddressesOptions().withRange(new Range(0, 2)));
         requestFundsFromFaucet(addresses[0]);
         BuildBlockOptions.ClientBlockBuilderOutputAddress output = new BuildBlockOptions.ClientBlockBuilderOutputAddress(addresses[1], Integer.toString(1000000));
@@ -72,7 +72,7 @@ public class HighLevelApiTest extends ApiTest {
 
     @Test
     public void testConsolidateFunds() throws ClientException, InitializeClientException {
-        SecretManager secretManager = new MnemonicSecretManager(DEFAULT_DEVELOPMENT_MNEMONIC);
+        SecretManager secretManager = new MnemonicSecretManager(client.generateMnemonic());
         String address = client.generateAddresses(secretManager, new GenerateAddressesOptions().withRange(new Range(0, 1)))[0];
         requestFundsFromFaucet(address);
         String consolidatedAddress = client.consolidateFunds(secretManager, new GenerateAddressesOptions().withRange(new Range(0, 1)));
