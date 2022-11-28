@@ -21,7 +21,7 @@ public abstract class ApiTest {
 
     protected static final String DEFAULT_TESTNET_NODE_URL = "https://api.testnet.shimmer.network";
     protected static final String DEFAULT_TESTNET_FAUCET_URL = "https://faucet.testnet.shimmer.network/api/enqueue";
-    // This mnemonic should be only used in a read-only fashion by the tests. Tests that need to consume outputs should generate their own random mnemonic.
+    // Tests should use this mnemonic only in a read-only fashion. Tests that consume outputs must generate their own random mnemonic.
     protected static final String DEFAULT_DEVELOPMENT_MNEMONIC = "hidden enroll proud copper decide negative orient asset speed work dolphin atom unhappy game cannon scheme glow kid ring core name still twist actor";
 
     protected Client client;
