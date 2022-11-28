@@ -21,7 +21,6 @@ import org.junit.jupiter.api.TestMethodOrder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@TestMethodOrder(MethodOrderer.MethodName.class)
 public class IndexerApiTest extends ApiTest {
 
     @Test

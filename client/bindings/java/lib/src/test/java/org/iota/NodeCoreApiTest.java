@@ -19,7 +19,6 @@ import org.junit.jupiter.api.TestMethodOrder;
 
 import java.util.Map;
 
-@TestMethodOrder(MethodOrderer.MethodName.class)
 public class NodeCoreApiTest extends ApiTest {
 
     @Test

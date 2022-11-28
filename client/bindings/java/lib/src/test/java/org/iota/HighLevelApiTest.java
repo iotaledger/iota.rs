@@ -19,7 +19,6 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@TestMethodOrder(MethodOrderer.MethodName.class)
 public class HighLevelApiTest extends ApiTest {
 
     @Test
