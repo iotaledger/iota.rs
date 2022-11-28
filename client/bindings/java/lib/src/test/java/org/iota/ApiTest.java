@@ -5,7 +5,10 @@ package org.iota;
 
 import org.iota.apis.NodeIndexerApi;
 import org.iota.apis.UtilsApi;
-import org.iota.types.*;
+import org.iota.types.Block;
+import org.iota.types.ClientConfig;
+import org.iota.types.OutputMetadata;
+import org.iota.types.TaggedDataPayload;
 import org.iota.types.expections.ClientException;
 import org.iota.types.expections.InitializeClientException;
 import org.iota.types.ids.OutputId;
@@ -67,7 +70,7 @@ public abstract class ApiTest {
     }
 
     protected String generateAddress(String mnemonic) throws ClientException {
-        SecretManager secretManager = new MnemonicSecretManager(DEFAULT_DEVELOPMENT_MNEMONIC);
+        SecretManager secretManager = new MnemonicSecretManager(mnemonic);
         String[] addresses = client.generateAddresses(secretManager, new GenerateAddressesOptions().withRange(new Range(0, 1)));
         return addresses[0];
     }

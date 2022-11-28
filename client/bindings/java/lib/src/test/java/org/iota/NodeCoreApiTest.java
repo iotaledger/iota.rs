@@ -13,10 +13,9 @@ import org.iota.types.responses.NodeInfoResponse;
 import org.iota.types.responses.TreasuryResponse;
 import org.iota.types.responses.UtxoChangesResponse;
 import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
 
+import java.util.Base64;
 import java.util.Map;
 
 public class NodeCoreApiTest extends ApiTest {
@@ -54,6 +53,7 @@ public class NodeCoreApiTest extends ApiTest {
     @Test
     public void testGetBlockRaw() throws ClientException {
         byte[] blockBytes = client.getBlockRaw(client.postBlock(setUpTaggedDataBlock()));
+        System.out.println(Base64.getEncoder().encodeToString(blockBytes));
     }
 
     @Test
@@ -116,11 +116,13 @@ public class NodeCoreApiTest extends ApiTest {
     public void testGetMilestoneByIdRaw() throws ClientException {
         MilestoneId milestoneId = new MilestoneId(client.getNodeInfo().getNodeInfo().get("status").getAsJsonObject().get("latestMilestone").getAsJsonObject().get("milestoneId").getAsString());
         byte[] milestoneBytes = client.getMilestoneByIdRaw(milestoneId);
+        System.out.println(Base64.getEncoder().encodeToString(milestoneBytes));
     }
 
     @Test
     public void testGetMilestoneByIndexRaw() throws ClientException {
         byte[] milestoneBytes = client.getMilestoneByIndexRaw(client.getNodeInfo().getNodeInfo().get("status").getAsJsonObject().get("latestMilestone").getAsJsonObject().get("index").getAsInt());
+        System.out.println(Base64.getEncoder().encodeToString(milestoneBytes));
     }
 
     @Test
