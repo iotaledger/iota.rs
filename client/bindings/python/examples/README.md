@@ -2,7 +2,7 @@
 
 ## Build the wheel file
 
-- Go to `iota.rs/bindings/python/native`
+- Go to `iota.rs/bindings/python`
 - `python3 setup.py bdist_wheel`
 
 ## Create a virtual environment and use it (optional)
