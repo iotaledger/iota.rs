@@ -38,6 +38,7 @@ jobs:
     if: ${{ ! github.event.schedule }}
     runs-on: ${{ matrix.os }}
     strategy:
+      max-parallel: 1
       fail-fast: false
       matrix:
         os: [windows-latest, macos-latest, ubuntu-latest]
