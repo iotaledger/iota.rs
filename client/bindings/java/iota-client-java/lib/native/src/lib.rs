@@ -39,7 +39,7 @@ pub extern "system" fn Java_org_iota_apis_NativeApi_createMessageHandler(
         Ok(mut message_handler_store) => {
             // throw an exception if a message handler already exists
             if message_handler_store.is_some() {
-                env.throw_new("java/lang/Exception", "a wallet instance was already created")
+                env.throw_new("java/lang/Exception", "a client instance was already created")
                     .unwrap();
                 return;
             }
