@@ -13,11 +13,15 @@ keywords:
 
 Get started with the official IOTA Client Java Library.
 
+## Requirements
+
+Minimum Java version: Java 8
+
 ## Use in your Android project (Android Studio)
 
 1. Add following dependency to your `build.gradle` file:
 ```
-implementation 'org.iota:iota-client:1.0.0-rc.2'
+implementation 'org.iota:iota-client:1.0.0-rc.1'
 ```
 
 2. Download the `org.iota:iota-client:1.0.0-rc.1-jni-libs.zip` file from the Github release and unzip it.
