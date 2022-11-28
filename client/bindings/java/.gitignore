@@ -1,2 +1,7 @@
-lib/native/target/debug/build/libsodium-sys-e9dbf8b6c66bff87/out/source/libsodium/builds/msvc/build
 .gradle
+gradle.properties
+lib/build
+lib/bin
+src/native/target
+examples/build/
+examples/bin/
