@@ -19,6 +19,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security -->
 
+1.0.0-rc.1 - YYYY-MM-DD
+
+### Added
+
+- `org.iota.types.exception` package;
+
+### Changed
+
+- Execute tests in a sequential manner;
+- Rename `BaseApi` to `NativeApi`;
+- Move out `WalletCommand` from `NativeApi`;
+- Disable indexer tests that require a full query until a way to optimize them is found;
+- Enable loading of the native library from the Java class path;
+
+<!--
 ## 1.0.0-rc.2 - 2022-11-01
 
 ### Added
@@ -75,3 +90,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - All glue code;
+-->
