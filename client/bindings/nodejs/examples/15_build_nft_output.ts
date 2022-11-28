@@ -1,13 +1,13 @@
-// Copyright 2021-2022 IOTA Stiftung
+// Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
 import { Client, initLogger } from '@iota/client';
 require('dotenv').config({ path: '../.env' });
 
 // Run with command:
-// node ./dist/11_build_output.js
+// node ./dist/15_build_nft_output.js
 
-// Build a basic output
+// Build an nft output
 async function run() {
     initLogger();
     if (!process.env.NODE_URL) {
@@ -35,9 +35,17 @@ async function run() {
 
         const hexAddress = await client.bech32ToHex(addresses[0]);
 
-        // most simple basic output
-        const basicOutput = await client.buildBasicOutput({
+        const nftOutput = await client.buildNftOutput({
+            nftId: '0x0000000000000000000000000000000000000000000000000000000000000000',
             amount: '1000000',
+            immutableFeatures: [
+                {
+                    // MetadataFeature
+                    type: 2,
+                    // `hello` hex encoded
+                    data: '0x68656c6c6f',
+                },
+            ],
             unlockConditions: [
                 {
                     type: 0,
@@ -49,7 +57,7 @@ async function run() {
             ],
         });
 
-        console.log(basicOutput);
+        console.log(nftOutput);
     } catch (error) {
         console.error('Error: ', error);
     }

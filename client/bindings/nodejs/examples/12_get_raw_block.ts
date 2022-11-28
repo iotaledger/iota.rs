@@ -1,13 +1,13 @@
-// Copyright 2021-2022 IOTA Stiftung
+// Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
 import { Client, initLogger } from '@iota/client';
 require('dotenv').config({ path: '../.env' });
 
 // Run with command:
-// node ./dist/04_get_output.js
+// node ./dist/12_get_raw_block.js
 
-// In this example we will get output from a known outputId
+// In this example we will get the raw bytes of a block.
 async function run() {
     initLogger();
     if (!process.env.NODE_URL) {
@@ -17,14 +17,14 @@ async function run() {
     const client = new Client({
         // Insert your node URL in the .env.
         nodes: [process.env.NODE_URL],
-        localPow: true,
     });
 
     try {
-        const output = await client.getOutput(
-            '0xa0b9ad3f5aa2bfcaed30cde6e1d572e93b7e8bb5a417f5a7ef3502889b5dbcb40000',
-        );
-        console.log('Output: ', output);
+        // Get a random block ID.
+        const blockId = (await client.getTips())[0];
+
+        const rawBytes = await client.getBlockRaw(blockId);
+        console.log('Block bytes: ', rawBytes);
     } catch (error) {
         console.error('Error: ', error);
     }

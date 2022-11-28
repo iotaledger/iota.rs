@@ -1,13 +1,13 @@
-// Copyright 2021-2022 IOTA Stiftung
+// Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
 import { Client, initLogger } from '@iota/client';
 require('dotenv').config({ path: '../.env' });
 
 // Run with command:
-// node ./dist/11_build_output.js
+// node ./dist/14_build_foundry_output.js
 
-// Build a basic output
+// Build a foundry output
 async function run() {
     initLogger();
     if (!process.env.NODE_URL) {
@@ -22,34 +22,34 @@ async function run() {
         if (!process.env.NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1) {
             throw new Error('.env mnemonic is undefined, see .env.example');
         }
-        const secretManager = {
-            mnemonic: process.env.NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1,
-        };
 
-        const addresses = await client.generateAddresses(secretManager, {
-            range: {
-                start: 0,
-                end: 1,
+        const aliasId =
+            '0xff311f59790ccb85343a36fbac2f06d233734794404142b308c13f2c616935b5';
+
+        const foundryOutput = await client.buildFoundryOutput({
+            serialNumber: 0,
+            tokenScheme: {
+                type: 0,
+                // 10 hex encoded
+                mintedTokens: '0xa',
+                meltedTokens: '0x0',
+                maximumSupply: '0xa',
             },
-        });
-
-        const hexAddress = await client.bech32ToHex(addresses[0]);
-
-        // most simple basic output
-        const basicOutput = await client.buildBasicOutput({
             amount: '1000000',
             unlockConditions: [
                 {
-                    type: 0,
+                    // ImmutableAliasAddressUnlockCondition
+                    type: 6,
                     address: {
-                        type: 0,
-                        pubKeyHash: hexAddress,
+                        // AliasAddress
+                        type: 8,
+                        aliasId,
                     },
                 },
             ],
         });
 
-        console.log(basicOutput);
+        console.log(foundryOutput);
     } catch (error) {
         console.error('Error: ', error);
     }

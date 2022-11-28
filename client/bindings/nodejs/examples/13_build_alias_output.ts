@@ -1,11 +1,11 @@
-// Copyright 2021-2022 IOTA Stiftung
+// Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
 import { Client, initLogger } from '@iota/client';
 require('dotenv').config({ path: '../.env' });
 
 // Run with command:
-// node ./dist/11_build_output.js
+// node ./dist/13_build_alias_output.js
 
 // Build a basic output
 async function run() {
@@ -35,12 +35,22 @@ async function run() {
 
         const hexAddress = await client.bech32ToHex(addresses[0]);
 
-        // most simple basic output
-        const basicOutput = await client.buildBasicOutput({
+        const aliasOutput = await client.buildAliasOutput({
+            aliasId:
+                '0x0000000000000000000000000000000000000000000000000000000000000000',
             amount: '1000000',
             unlockConditions: [
                 {
-                    type: 0,
+                    // StateControllerAddressUnlockCondition
+                    type: 4,
+                    address: {
+                        type: 0,
+                        pubKeyHash: hexAddress,
+                    },
+                },
+                {
+                    // GovernorAddressUnlockCondition
+                    type: 5,
                     address: {
                         type: 0,
                         pubKeyHash: hexAddress,
@@ -49,7 +59,7 @@ async function run() {
             ],
         });
 
-        console.log(basicOutput);
+        console.log(aliasOutput);
     } catch (error) {
         console.error('Error: ', error);
     }
