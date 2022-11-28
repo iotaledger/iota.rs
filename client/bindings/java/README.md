@@ -15,57 +15,65 @@ Get started with the official IOTA Client Java Library.
 
 ## Requirements
 
-* Make sure you have the latest [Java Development Kit (JDK)](https://www.oracle.com/java/technologies/downloads/) installed.
+Minimum Java version: Java 8
 
-## Install the Library with Maven
+## Use in your Android project (Android Studio)
+
+1. Add following dependency to your `build.gradle` file:
+```
+implementation 'org.iota:iota-client:1.0.0-rc.1'
+```
+
+2. Download the `iota-client-1.0.0-rc.1-android-jni.zip` file from the GitHub release and unzip it.
+3. Add the `jniLibs` folder with its contents to your Android Studio project as shown below:
+
+```
+project/
+├──libs/
+|  └── *.jar <-- if your library has jar files, they go here
+├──src/
+   └── main/
+       ├── AndroidManifest.xml
+       ├── java/
+       └── jniLibs/ 
+           ├── arm64-v8a/           <-- ARM 64bit
+           │   └── libiota-client.so
+           │   └── libc++_shared.so
+           ├── armeabi-v7a/         <-- ARM 32bit
+           │   └── libiota-client.so
+           │   └── libc++_shared.so
+           └── x86/                 <-- Intel 32bit
+              └── libiota-client.so
+              └── libc++_shared.so
+```
+
+## Use in your Java project (Linux, macOS, Windows)
+
+Depending on your operating system, add one of the following dependencies to your `build.gradle` file:
 
 #### linux-x86_64
-```xml
-<dependency>
-    <groupId>org.iota</groupId>
-    <artifactId>iota-client</artifactId>
-    <version>1.0.0-rc.1</version>
-    <type>jar</type>
-    <classifier>linux-x86_64</classifier>
-</dependency>
+```
+implementation 'org.iota:iota-client:1.0.0-rc.1:linux-x86_64'
 ```
 
 #### windows-x86_64
-```xml
-<dependency>
-    <groupId>org.iota</groupId>
-    <artifactId>iota-client</artifactId>
-    <version>1.0.0-rc.1</version>
-    <type>jar</type>
-    <classifier>windows-x86_64</classifier>
-</dependency>
+```
+implementation 'org.iota:iota-client:1.0.0-rc.1:windows-x86_64'
 ```
 
 #### aarch64-apple-darwin
-```xml
-<dependency>
-    <groupId>org.iota</groupId>
-    <artifactId>iota-client</artifactId>
-    <version>1.0.0-rc.1</version>
-    <type>jar</type>
-    <classifier>aarch64-apple-darwin</classifier>
-</dependency>
+```
+implementation 'org.iota:iota-client:1.0.0-rc.1:aarch64-apple-darwin'
 ```
 
 #### osx-x86_64
-```xml
-<dependency>
-    <groupId>org.iota</groupId>
-    <artifactId>iota-client</artifactId>
-    <version>1.0.0-rc.1</version>
-    <type>jar</type>
-    <classifier>osx-x86_64</classifier>
-</dependency>
+```
+implementation 'org.iota:iota-client:1.0.0-rc.1:osx-x86_64'
 ```
 
-## Use the Library
+## Try the library
 
-In order to use the library, you need to create a _Client_:
+In order to try with the library, create a `Client` instance:
 
 ```java
 import org.iota.Client;
@@ -95,4 +103,4 @@ public class HelloWorld {
 
 Now that you are up and running, you can get acquainted with the library using
 its [how-to guides](../../../documentation/docs/how_tos/00_run_how_tos.mdx) and the
-repository's [code examples](https://github.com/iotaledger/iota.rs/tree/develop/client/bindings/java/iota-client-java/examples/src).
+repository's [code examples](https://github.com/iotaledger/iota.rs/tree/develop/client/bindings/java/examples/src).
