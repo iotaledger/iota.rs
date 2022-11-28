@@ -18,7 +18,7 @@ name = "iota_client"
 crate-type = [ "cdylib" ]
 
 [dependencies]
-iota-client = { path = "../../../", default-features = false, features = [ "ledger_nano", "message_interface", "stronghold", "tls" ] }
+iota-client = { path = "../../", default-features = false, features = [ "ledger_nano", "message_interface", "stronghold", "tls" ] }
 
 fern-logger = { version = "0.5.0", default-features = false }
 futures = { version = "0.3.25", default-features = false }
