@@ -43,14 +43,18 @@ public abstract class ApiTest {
     protected void requestFundsFromFaucet(String address) throws ClientException, InitializeClientException {
         OutputId[] outputIds = client.getBasicOutputIds(new NodeIndexerApi.QueryParams().withParam("address", address));
 
-        if(outputIds.length == 0) {
-            new UtilsApi(client).requestFundsFromFaucet(DEFAULT_TESTNET_FAUCET_URL, address);
-            try {
-                Thread.sleep(1000 * 15);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+        for(int i = 0; i < 5; i++) {
+            if(outputIds.length == 0) {
+                new UtilsApi(client).requestFundsFromFaucet(DEFAULT_TESTNET_FAUCET_URL, address);
+                try {
+                    Thread.sleep(1000 * 25);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            } else
+                break;
         }
+
     }
 
     protected Block setUpTaggedDataBlock() throws ClientException {
@@ -60,7 +64,6 @@ public abstract class ApiTest {
     protected TransactionId setUpTransactionId(String address) throws ClientException, InitializeClientException {
         OutputMetadata metadata = client.getOutputMetadata(setupOutputId(address));
         TransactionId ret = new TransactionId(metadata.toJson().get("transactionId").getAsString());
-        client.getIncludedBlock(ret);
         return ret;
     }
 
