@@ -76,7 +76,7 @@ jobs:
 
       - name: Build JAR for default target
         shell: bash
-        working-directory: client/bindings/java/iota-client-java/
+        working-directory: client/bindings/java/
         run: |
           chmod +x gradlew
           ./gradlew build
@@ -84,7 +84,7 @@ jobs:
       - name: Build JAR for aarch64-apple-darwin target
         if: matrix.os == 'macos-latest'
         shell: bash
-        working-directory: client/bindings/java/iota-client-java/
+        working-directory: client/bindings/java/
         run: |
           rustup target add aarch64-apple-darwin
           ./gradlew build -PbuildTarget=aarch64-apple-darwin
@@ -92,7 +92,7 @@ jobs:
       - name: Get filename for tag construction
         shell: bash
         id: filename
-        working-directory: client/bindings/java/iota-client-java/
+        working-directory: client/bindings/java/
         run: |
           cd lib/build/libs/
           fileName="$(ls | grep -m 1 jar)"
@@ -111,7 +111,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           files: |
-            client/bindings/java/iota-client-java/lib/build/libs/*.jar
+            client/bindings/java/lib/build/libs/*.jar
           tag_name: ${{ steps.tag.outputs.match }}
           append_body: true
           prerelease: true
@@ -123,7 +123,7 @@ jobs:
           ORG_GRADLE_PROJECT_base64EncodedAsciiArmoredSigningKey: ${{ secrets.ORG_GRADLE_PROJECT_BASE64_ENCODED_ASCII_ARMORED_SIGNING_KEY }}
           ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.ORG_GRADLE_PROJECT_SIGNING_PASSWORD }}
         shell: bash
-        working-directory: client/bindings/java/iota-client-java/
+        working-directory: client/bindings/java/
         run: |
           ./gradlew publishToSonatype
           if [ "$RUNNER_OS" == "macOS" ];
