@@ -100,10 +100,10 @@ jobs:
 
       - name: Construct tag
         uses: actions-ecosystem/action-regex-match@v2
-        id: tag
+        id: prepare-tag
         with:
           text: ${{ steps.filename.outputs.FILE_NAME }}
-          regex: '.*\d.\d.\d(-rc.\d)?'
+          regex: '(.*)(\d.\d.\d(-rc.\d)?)'
           flags: m
 
       - name: Upload JAR to Github
@@ -112,7 +112,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           files: |
             client/bindings/java/lib/build/libs/*.jar
-          tag_name: ${{ steps.tag.outputs.match }}
+          tag_name: ${{ steps.prepare-tag.outputs.group1 }}java-${{ steps.prepare-tag.outputs.group2 }}
           append_body: true
           prerelease: true
 
