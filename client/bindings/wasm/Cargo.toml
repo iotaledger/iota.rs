@@ -1,0 +1,33 @@
+[workspace]
+
+[package]
+name = "client_wasm"
+version = "0.1.0"
+authors = ["IOTA Stiftung"]
+edition = "2021"
+description = "WebAssembly bindings for the IOTA client library"
+documentation = "https://wiki.iota.org/iota.rs/welcome"
+homepage = "https://www.iota.org/"
+repository = "https://github.com/iotaledger/iota.rs"
+license = "Apache-2.0"
+keywords = ["iota", "tangle", "client", "wasm"]
+categories = ["cryptography::cryptocurrencies"]
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+iota-client = { path = "../../", default-features = false, features = ["message_interface", "tls"] }
+
+console_error_panic_hook = { version = "0.1.7", default-features = false }
+serde_json = { version = "1.0.82", default-features = false }
+js-sys = { version = "0.3.59", default-features = false, features = [] }
+wasm-bindgen = { version = "0.2.83", default-features = false, features = ["spans", "std", "serde-serialize"] }
+wasm-bindgen-futures = { version = "0.4.32", default-features = false }
+
+tokio = { version = "1.22.0", default-features = false, features = [ "sync" ] }
+
+[target.'cfg(all(target_arch = "wasm32", not(target_os = "wasi")))'.dependencies]
+getrandom = { version = "0.2", default-features = false, features = ["js"] }
+instant = { version = "0.1", default-features = false, features = ["wasm-bindgen"] }
