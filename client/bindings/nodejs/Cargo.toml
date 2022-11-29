@@ -15,6 +15,7 @@ license = "Apache-2.0"
 keywords = [ "iota", "tangle", "client", "nodejs" ]
 categories = [ "cryptography::cryptocurrencies" ]
 exclude = [ "artifacts.json", "index.node" ]
+publish = false
 
 [lib]
 crate-type = [ "cdylib" ]

@@ -12,6 +12,7 @@ repository = "https://github.com/iotaledger/iota.rs"
 license = "Apache-2.0"
 keywords = [ "iota", "tangle", "client", "python" ]
 categories = [ "cryptography::cryptocurrencies" ]
+publish = false
 
 [lib]
 name = "iota_client"
