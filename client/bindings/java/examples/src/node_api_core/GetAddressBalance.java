@@ -49,11 +49,15 @@ public class GetAddressBalance {
                     NativeToken nativeToken = new NativeToken(elem.getAsJsonObject());
                     String tokenId = nativeToken.toJson().get("id").getAsString();
                     String amount = nativeToken.toJson().get("amount").getAsString().replace("0x", "");
-                    nativeTokens.put(tokenId, Integer.parseInt(amount, 16));
+
+                    if(nativeTokens.containsKey(tokenId))
+                        nativeTokens.put(tokenId, nativeTokens.get(tokenId) + Integer.parseInt(amount, 16));
+                    else
+                        nativeTokens.put(tokenId, Integer.parseInt(amount, 16));
                 }
             }
 
-            total = o.toJson().get("amount").getAsInt();
+            total += o.toJson().get("amount").getAsInt();
         }
 
         System.out.println("total balance: " + total);
