@@ -8,13 +8,13 @@ The `iota.rs` client library also offers dedicated [Node.js bindings](../nodejs)
 
 |               |   Wasm bindings   |   Node.js bindings    |
 |:--------------|:-----------------:|:---------------------:|
-| Environment   | Node.js, browsers |     Node.js       |
+| Environment   | Node.js, browsers |        Node.js        |
 | Installation  |         -         | Rust, Cargo required* |
-| Performance   |        ✔️         |         ✔️✔️          |
+| Performance   |        ✔️          |          ✔️✔️           |
 | Proof-of-work |  Single-threaded  |    Multi-threaded     |
-| MQTT          |         ❌         |          ✔️           |
-| Stronghold    |         ❌         |          ✔️           |
-| Ledger Nano   |         ❌         |          ✔️           |
+| MQTT          |         ❌        |          ✔️            |
+| Stronghold    |         ❌        |          ✔️            |
+| Ledger Nano   |         ❌        |          ✔️            |
 
 *Node.js bindings only need to be compiled during `npm install` if a pre-compiled binary is not available for your platform.
 
@@ -22,7 +22,8 @@ The `iota.rs` client library also offers dedicated [Node.js bindings](../nodejs)
 
 ## Requirements
 
-One of the following Node.js versions: '16.x', '18.x'
+- One of the following Node.js versions: '16.x', '18.x';
+- `wasm-bindgen` (`cargo install wasm-bindgen-cli`);
 
 ## Installation
 
