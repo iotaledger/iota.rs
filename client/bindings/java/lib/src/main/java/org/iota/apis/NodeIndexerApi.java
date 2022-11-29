@@ -5,6 +5,7 @@ package org.iota.apis;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import org.iota.types.expections.ClientException;
 import org.iota.types.expections.InitializeClientException;
 import org.iota.types.ids.AliasId;
@@ -109,20 +110,31 @@ public class NodeIndexerApi {
 
         private JsonArray queryParams = new JsonArray();
 
+        public QueryParams withParam(String name, Boolean value) {
+            withParam(name, new JsonPrimitive(value));
+            return this;
+        }
+
+        public QueryParams withParam(String name, Number value) {
+            withParam(name, new JsonPrimitive(value));
+            return this;
+        }
+
         public QueryParams withParam(String name, String value) {
-            JsonObject o = new JsonObject();
-            o.addProperty(name, value);
-            queryParams.add(o);
+            withParam(name, new JsonPrimitive(value));
             return this;
         }
 
-        public QueryParams withParam(String name, int value) {
-            JsonObject o = new JsonObject();
-            o.addProperty(name, value);
-            queryParams.add(o);
+        public QueryParams withParam(String name, Character value) {
+            withParam(name, new JsonPrimitive(value));
             return this;
         }
 
+        private void withParam(String name, JsonPrimitive value) {
+            JsonObject o = new JsonObject();
+            o.add(name, value);
+            queryParams.add(o);
+        }
 
         public JsonArray getJson() {
             return queryParams;
