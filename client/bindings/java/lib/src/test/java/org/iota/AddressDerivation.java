@@ -5,11 +5,8 @@ import org.iota.types.expections.InitializeClientException;
 import org.iota.types.secret.GenerateAddressesOptions;
 import org.iota.types.secret.Range;
 import org.iota.types.secret.SeedSecretManager;
-import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
 
-@TestMethodOrder(MethodOrderer.MethodName.class)
 public class AddressDerivation extends ApiTest {
 
     @Test
