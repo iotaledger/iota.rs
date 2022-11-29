@@ -1,6 +1,7 @@
 package claim_from_wrong_secret_manager;
 
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import org.iota.Client;
 import org.iota.apis.NodeIndexerApi;
 import org.iota.types.*;
