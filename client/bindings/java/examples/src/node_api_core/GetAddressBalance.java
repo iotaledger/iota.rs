@@ -58,7 +58,5 @@ public class GetAddressBalance {
 
         System.out.println("total balance: " + total);
         System.out.println("native tokens: " + nativeTokens);
-
-        System.out.println(addresses[0]);
     }
 }
