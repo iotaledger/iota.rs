@@ -5,7 +5,10 @@ package org.iota;
 
 import org.iota.apis.NodeIndexerApi;
 import org.iota.apis.UtilsApi;
-import org.iota.types.*;
+import org.iota.types.Block;
+import org.iota.types.ClientConfig;
+import org.iota.types.OutputMetadata;
+import org.iota.types.TaggedDataPayload;
 import org.iota.types.expections.ClientException;
 import org.iota.types.expections.InitializeClientException;
 import org.iota.types.ids.OutputId;
@@ -21,6 +24,7 @@ public abstract class ApiTest {
 
     protected static final String DEFAULT_TESTNET_NODE_URL = "https://api.testnet.shimmer.network";
     protected static final String DEFAULT_TESTNET_FAUCET_URL = "https://faucet.testnet.shimmer.network/api/enqueue";
+    // Tests should use this mnemonic only in a read-only fashion. Tests that consume outputs must generate their own random mnemonic.
     protected static final String DEFAULT_DEVELOPMENT_MNEMONIC = "hidden enroll proud copper decide negative orient asset speed work dolphin atom unhappy game cannon scheme glow kid ring core name still twist actor";
 
     protected Client client;
@@ -39,14 +43,18 @@ public abstract class ApiTest {
     protected void requestFundsFromFaucet(String address) throws ClientException, InitializeClientException {
         OutputId[] outputIds = client.getBasicOutputIds(new NodeIndexerApi.QueryParams().withParam("address", address));
 
-        if(outputIds.length == 0) {
-            new UtilsApi(client).requestFundsFromFaucet(DEFAULT_TESTNET_FAUCET_URL, address);
-            try {
-                Thread.sleep(1000 * 15);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+        for(int i = 0; i < 5; i++) {
+            if(outputIds.length == 0) {
+                new UtilsApi(client).requestFundsFromFaucet(DEFAULT_TESTNET_FAUCET_URL, address);
+                try {
+                    Thread.sleep(1000 * 25);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            } else
+                break;
         }
+
     }
 
     protected Block setUpTaggedDataBlock() throws ClientException {
@@ -56,7 +64,6 @@ public abstract class ApiTest {
     protected TransactionId setUpTransactionId(String address) throws ClientException, InitializeClientException {
         OutputMetadata metadata = client.getOutputMetadata(setupOutputId(address));
         TransactionId ret = new TransactionId(metadata.toJson().get("transactionId").getAsString());
-        client.getIncludedBlock(ret);
         return ret;
     }
 
@@ -66,7 +73,7 @@ public abstract class ApiTest {
     }
 
     protected String generateAddress(String mnemonic) throws ClientException {
-        SecretManager secretManager = new MnemonicSecretManager(DEFAULT_DEVELOPMENT_MNEMONIC);
+        SecretManager secretManager = new MnemonicSecretManager(mnemonic);
         String[] addresses = client.generateAddresses(secretManager, new GenerateAddressesOptions().withRange(new Range(0, 1)));
         return addresses[0];
     }
