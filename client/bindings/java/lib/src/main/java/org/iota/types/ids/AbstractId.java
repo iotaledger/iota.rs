@@ -5,7 +5,6 @@ package org.iota.types.ids;
 
 import java.util.Objects;
 
-
 public class AbstractId {
 
     private String id;
