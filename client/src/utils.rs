@@ -11,12 +11,11 @@ use crypto::{
     utils,
 };
 use iota_types::block::{
-    address::{Address, Ed25519Address},
+    address::{Address, AliasAddress, Ed25519Address},
+    output::AliasId,
     payload::TaggedDataPayload,
 };
 use zeroize::Zeroize;
-use iota_types::block::address::AliasAddress;
-use iota_types::block::output::AliasId;
 
 use super::Client;
 use crate::error::{Error, Result};
