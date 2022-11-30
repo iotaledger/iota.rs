@@ -14,7 +14,7 @@ use std::{
 use iota_pow::providers::{NonceProvider, NonceProviderBuilder};
 use iota_types::block::{output::RentStructure, protocol::ProtocolParameters};
 #[cfg(not(target_family = "wasm"))]
-use tokio::{runtime::Runtime, sync::broadcast::Sender};
+use tokio::runtime::Runtime;
 #[cfg(feature = "mqtt")]
 use {
     crate::node_api::mqtt::{BrokerOptions, MqttEvent, TopicHandlerMap},
@@ -35,7 +35,7 @@ pub struct Client {
     pub(crate) node_manager: crate::node_manager::NodeManager,
     /// Flag to stop the node syncing
     #[cfg(not(target_family = "wasm"))]
-    pub(crate) sync_kill_sender: Option<Arc<Sender<()>>>,
+    pub(crate) sync_handle: Option<Arc<tokio::task::JoinHandle<()>>>,
     /// A MQTT client to subscribe/unsubscribe to topics.
     #[cfg(feature = "mqtt")]
     pub(crate) mqtt_client: Option<MqttClient>,
@@ -69,8 +69,12 @@ impl Drop for Client {
     /// Gracefully shutdown the `Client`
     fn drop(&mut self) {
         #[cfg(not(target_family = "wasm"))]
-        if let Some(sender) = self.sync_kill_sender.take() {
-            sender.send(()).expect("failed to stop syncing process");
+        if let Some(sync_handle) = self.sync_handle.take() {
+            // Since there are clones of the client, we need to make sure there is only one strong reference to the sync
+            // handle to abort it otherwise any clone could kill the task for all clients.
+            if let Ok(sync_handle) = Arc::try_unwrap(sync_handle) {
+                sync_handle.abort();
+            }
         }
 
         #[cfg(not(target_family = "wasm"))]

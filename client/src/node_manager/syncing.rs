@@ -11,7 +11,7 @@ use {
         sync::{Arc, RwLock},
         time::Duration,
     },
-    tokio::{runtime::Runtime, sync::broadcast::Receiver, time::sleep},
+    tokio::{runtime::Runtime, time::sleep},
 };
 
 use super::Node;
@@ -52,23 +52,17 @@ impl Client {
         nodes: HashSet<Node>,
         node_sync_interval: Duration,
         network_info: Arc<RwLock<NetworkInfo>>,
-        mut kill: Receiver<()>,
-    ) {
+    ) -> tokio::task::JoinHandle<()> {
         runtime.spawn(async move {
             loop {
-                tokio::select! {
-                    _ = async {
-                        // delay first since the first `sync_nodes` call is made by the builder
-                        // to ensure the node list is filled before the client is used
-                        sleep(node_sync_interval).await;
-                        if let Err(e) = Client::sync_nodes(&sync, &nodes, &network_info).await {
-                            log::warn!("Syncing nodes failed: {e}");
-                        }
-                    } => {}
-                    _ = kill.recv() => {}
+                // Delay first since the first `sync_nodes` call is made by the builder to ensure the node list is
+                // filled before the client is used.
+                sleep(node_sync_interval).await;
+                if let Err(e) = Client::sync_nodes(&sync, &nodes, &network_info).await {
+                    log::warn!("Syncing nodes failed: {e}");
                 }
             }
-        });
+        })
     }
 
     #[cfg(not(target_family = "wasm"))]
