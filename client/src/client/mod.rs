@@ -35,7 +35,7 @@ pub struct Client {
     pub(crate) node_manager: crate::node_manager::NodeManager,
     /// Flag to stop the node syncing
     #[cfg(not(target_family = "wasm"))]
-    pub(crate) sync_kill_sender: Option<Arc<Sender<()>>>,
+    pub(crate) sync_handle: Option<Arc<tokio::task::JoinHandle<()>>>,
     /// A MQTT client to subscribe/unsubscribe to topics.
     #[cfg(feature = "mqtt")]
     pub(crate) mqtt_client: Option<MqttClient>,
@@ -69,8 +69,10 @@ impl Drop for Client {
     /// Gracefully shutdown the `Client`
     fn drop(&mut self) {
         #[cfg(not(target_family = "wasm"))]
-        if let Some(sender) = self.sync_kill_sender.take() {
-            sender.send(()).expect("failed to stop syncing process");
+        if let Some(sync_handle) = self.sync_handle.take() {
+            if let Ok(sync_handle) = Arc::try_unwrap(sync_handle) {
+                sync_handle.abort();
+            }
         }
 
         #[cfg(not(target_family = "wasm"))]
