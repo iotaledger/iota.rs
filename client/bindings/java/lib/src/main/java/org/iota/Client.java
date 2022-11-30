@@ -539,7 +539,7 @@ public class Client extends NativeApi {
      * @throws ClientException on error.
      */
     public String aliasIdToBech32(AliasId aliasId, String bech32Hrp) throws ClientException {
-        return utilsApi.aliasIdToBech32(aliasId, bech32);
+        return utilsApi.aliasIdToBech32(aliasId, bech32Hrp);
     }
 
     /**
