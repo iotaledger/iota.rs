@@ -70,6 +70,8 @@ impl Drop for Client {
     fn drop(&mut self) {
         #[cfg(not(target_family = "wasm"))]
         if let Some(sync_handle) = self.sync_handle.take() {
+            // Since there are clones of the client, we need to make sure there is only one strong reference to the sync
+            // handle to abort it otherwise any clone could kill the task for all clients.
             if let Ok(sync_handle) = Arc::try_unwrap(sync_handle) {
                 sync_handle.abort();
             }
