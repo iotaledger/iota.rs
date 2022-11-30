@@ -446,6 +446,15 @@ pub enum Message {
         #[serde(rename = "bech32Hrp")]
         bech32_hrp: Option<String>,
     },
+    /// Transforms an alias id to a bech32 encoded address
+    AliasIdToBech32 {
+        /// Alias ID
+        #[serde(rename = "aliasId")]
+        alias_id: AliasId,
+        /// Human readable part
+        #[serde(rename = "bech32Hrp")]
+        bech32_hrp: Option<String>,
+    },
     /// Transforms a hex encoded public key to a bech32 encoded address
     HexPublicKeyToBech32Address {
         /// Hex encoded public key

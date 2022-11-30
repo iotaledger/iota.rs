@@ -23,9 +23,6 @@ import org.junit.jupiter.api.BeforeEach;
 public abstract class ApiTest {
 
     protected static final String DEFAULT_TESTNET_NODE_URL = "https://api.testnet.shimmer.network";
-    // Tests should use this mnemonic only in a read-only fashion. Tests that consume outputs must generate their own random mnemonic.
-    protected static final String DEFAULT_DEVELOPMENT_MNEMONIC = "hidden enroll proud copper decide negative orient asset speed work dolphin atom unhappy game cannon scheme glow kid ring core name still twist actor";
-
     protected Client client;
     protected ClientConfig config = new ClientConfig().withNodes(new String[] { DEFAULT_TESTNET_NODE_URL }).withIgnoreNodeHealth(false);
 
@@ -44,12 +41,12 @@ public abstract class ApiTest {
     }
 
     protected TransactionId setUpTransactionId(String address) throws ClientException, InitializeClientException, NoFundsReceivedFromFaucetException {
-        OutputMetadata metadata = client.getOutputMetadata(setupOutputId(address));
+        OutputMetadata metadata = client.getOutputMetadata(setupBasicOutput(address));
         TransactionId ret = new TransactionId(metadata.toJson().get("transactionId").getAsString());
         return ret;
     }
 
-    protected OutputId setupOutputId(String address) throws ClientException, InitializeClientException, NoFundsReceivedFromFaucetException {
+    protected OutputId setupBasicOutput(String address) throws ClientException, InitializeClientException, NoFundsReceivedFromFaucetException {
         client.requestTestFundsFromFaucet(address);
         return client.getBasicOutputIds(new NodeIndexerApi.QueryParams().withParam("address", address))[0];
     }

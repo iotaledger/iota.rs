@@ -531,6 +531,18 @@ public class Client extends NativeApi {
     }
 
     /**
+     * Converts an alias id to a bech32 address.
+     *
+     * @param aliasId The alias id to be converted.
+     * @param bech32 The bech32 to use.
+     * @return The bech32 address.
+     * @throws ClientException on error.
+     */
+    public String aliasIdToBech32(AliasId aliasId, String bech32) throws ClientException {
+        return utilsApi.aliasIdToBech32(aliasId, bech32);
+    }
+
+    /**
      * Converts a hex public key to a bech32 address
      *
      * @param hex The public key in hexadecimal format.

@@ -15,6 +15,8 @@ use iota_types::block::{
     payload::TaggedDataPayload,
 };
 use zeroize::Zeroize;
+use iota_types::block::address::AliasAddress;
+use iota_types::block::output::AliasId;
 
 use super::Client;
 use crate::error::{Error, Result};
@@ -34,6 +36,11 @@ pub fn bech32_to_hex(bech32: &str) -> Result<String> {
 pub fn hex_to_bech32(hex: &str, bech32_hrp: &str) -> Result<String> {
     let address: Ed25519Address = hex.parse::<Ed25519Address>()?;
     Ok(Address::Ed25519(address).to_bech32(bech32_hrp))
+}
+
+/// Transforms an alias id to a bech32 encoded address
+pub fn alias_id_to_bech32(alias_id: AliasId, bech32_hrp: &str) -> Result<String> {
+    Ok(Address::Alias(AliasAddress::new(alias_id)).to_bech32(bech32_hrp))
 }
 
 /// Transforms a prefix hex encoded public key to a bech32 encoded address
@@ -114,6 +121,15 @@ impl Client {
             None => self.get_bech32_hrp().await?,
         };
         hex_to_bech32(hex, &bech32_hrp)
+    }
+
+    /// Transforms an alias id to a bech32 encoded address
+    pub async fn alias_id_to_bech32(&self, alias_id: AliasId, bech32_hrp: Option<&str>) -> crate::Result<String> {
+        let bech32_hrp = match bech32_hrp {
+            Some(hrp) => hrp.into(),
+            None => self.get_bech32_hrp().await?,
+        };
+        alias_id_to_bech32(alias_id, &bech32_hrp)
     }
 
     /// Transforms a hex encoded public key to a bech32 encoded address

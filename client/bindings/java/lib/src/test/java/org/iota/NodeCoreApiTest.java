@@ -64,14 +64,14 @@ public class NodeCoreApiTest extends ApiTest {
 
     @Test
     public void testGetOutput() throws ClientException, InitializeClientException, NoFundsReceivedFromFaucetException {
-        Map.Entry<Output, OutputMetadata> r = client.getOutput(setupOutputId(generateAddress(DEFAULT_DEVELOPMENT_MNEMONIC)));
+        Map.Entry<Output, OutputMetadata> r = client.getOutput(setupBasicOutput(generateAddress(client.generateMnemonic())));
         System.out.println(r.getKey());
         System.out.println(r.getValue());
     }
 
     @Test
     public void testGetOutputMetadata() throws ClientException, InitializeClientException, NoFundsReceivedFromFaucetException {
-        OutputMetadata r = client.getOutputMetadata(setupOutputId(generateAddress(DEFAULT_DEVELOPMENT_MNEMONIC)));
+        OutputMetadata r = client.getOutputMetadata(setupBasicOutput(generateAddress(client.generateMnemonic())));
         System.out.println(r);
     }
 
