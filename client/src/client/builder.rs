@@ -13,7 +13,7 @@ use iota_types::block::{
     protocol::{dto::ProtocolParametersDto, ProtocolParameters},
 };
 #[cfg(not(target_family = "wasm"))]
-use tokio::{runtime::Runtime, sync::broadcast::channel};
+use tokio::runtime::Runtime;
 
 #[cfg(feature = "mqtt")]
 use crate::node_api::mqtt::{BrokerOptions, MqttEvent};
