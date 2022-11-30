@@ -343,7 +343,12 @@ impl ClientBuilder {
 
             let (runtime, sync_handle) = std::thread::spawn(move || {
                 let runtime = Runtime::new().expect("failed to create Tokio runtime");
-                if let Err(e) = runtime.block_on(Client::sync_nodes(&healthy_nodes_, &nodes, &network_info_)) {
+                if let Err(e) = runtime.block_on(Client::sync_nodes(
+                    &healthy_nodes_,
+                    &nodes,
+                    &network_info_,
+                    self.node_manager_builder.ignore_node_health,
+                )) {
                     panic!("failed to sync nodes: {:?}", e);
                 }
                 let sync_handle = Client::start_sync_process(
@@ -352,6 +357,7 @@ impl ClientBuilder {
                     nodes,
                     self.node_manager_builder.node_sync_interval,
                     network_info_,
+                    self.node_manager_builder.ignore_node_health,
                 );
                 (runtime, sync_handle)
             })
