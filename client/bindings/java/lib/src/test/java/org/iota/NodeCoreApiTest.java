@@ -97,7 +97,7 @@ public class NodeCoreApiTest extends ApiTest {
 
     @Test
     public void testGetIncludedBlock() throws ClientException, InitializeClientException, NoFundsFromFaucetReceivedException {
-        System.out.println(client.getIncludedBlock(setUpTransactionId(generateAddress(DEFAULT_DEVELOPMENT_MNEMONIC))));
+        System.out.println(client.getIncludedBlock(setUpTransactionId(generateAddress(client.generateMnemonic()))));
     }
 
     @Test
