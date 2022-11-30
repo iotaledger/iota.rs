@@ -79,7 +79,7 @@ jobs:
         working-directory: client/bindings/java/
         run: |
           chmod +x gradlew
-          ./gradlew build
+          ./gradlew build jarWithoutNativeLibs
 
       - name: Build JAR for aarch64-apple-darwin target
         if: matrix.os == 'macos-latest'
