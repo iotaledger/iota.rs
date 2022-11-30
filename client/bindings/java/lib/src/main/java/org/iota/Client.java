@@ -7,6 +7,7 @@ import com.google.gson.JsonObject;
 import org.iota.apis.*;
 import org.iota.types.*;
 import org.iota.types.expections.ClientException;
+import org.iota.types.expections.NoFundsFromFaucetReceivedException;
 import org.iota.types.expections.InitializeClientException;
 import org.iota.types.ids.*;
 import org.iota.types.output_builder.AliasOutputBuilderParams;
@@ -26,6 +27,8 @@ import java.util.List;
 import java.util.Map;
 
 public class Client extends NativeApi {
+
+    private static final String TESTNET_FAUCET_URL = "https://faucet.testnet.shimmer.network/api/enqueue";
 
     private NodeCoreApi nodeCoreApi;
     private NodeIndexerApi nodeIndexerApi;
@@ -883,6 +886,29 @@ public class Client extends NativeApi {
      */
     public ProtocolParametersResponse getProtocolParameters() throws ClientException {
         return miscellaneousApi.getProtocolParameters();
+    }
+
+    /**
+     * Asks the faucet for the testnet funds.
+     *
+     * @throws NoFundsFromFaucetReceivedException when the faucet didn't fund the address.
+     */
+    public void requestTestFundsFromFaucet(String address) throws ClientException, NoFundsFromFaucetReceivedException {
+        int maxAttempts = 5;
+        for(int i = 0; i < maxAttempts; i++) {
+            if(getBasicOutputIds(new NodeIndexerApi.QueryParams().withParam("address", address)).length == 0) {
+                utilsApi.requestFundsFromFaucet(TESTNET_FAUCET_URL, address);
+                try {
+                    Thread.sleep(1000 * 25);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            } else
+                return;
+        }
+
+        if(getBasicOutputIds(new NodeIndexerApi.QueryParams().withParam("address", address)).length == 0)
+            throw new NoFundsFromFaucetReceivedException();
     }
 
 }
