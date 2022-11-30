@@ -87,7 +87,7 @@ jobs:
         working-directory: client/bindings/java/
         run: |
           rustup target add aarch64-apple-darwin
-          ./gradlew build -PbuildTarget=aarch64-apple-darwin jarWithoutNativeLibs
+          ./gradlew build -PbuildTarget=aarch64-apple-darwin
 
       - name: Get filename for tag construction
         shell: bash
