@@ -52,13 +52,14 @@ impl Client {
         nodes: HashSet<Node>,
         node_sync_interval: Duration,
         network_info: Arc<RwLock<NetworkInfo>>,
+        ignore_node_health: bool,
     ) -> tokio::task::JoinHandle<()> {
         runtime.spawn(async move {
             loop {
                 // Delay first since the first `sync_nodes` call is made by the builder to ensure the node list is
                 // filled before the client is used.
                 sleep(node_sync_interval).await;
-                if let Err(e) = Client::sync_nodes(&sync, &nodes, &network_info).await {
+                if let Err(e) = Client::sync_nodes(&sync, &nodes, &network_info, ignore_node_health).await {
                     log::warn!("Syncing nodes failed: {e}");
                 }
             }
@@ -70,6 +71,7 @@ impl Client {
         sync: &Arc<RwLock<HashMap<Node, InfoResponse>>>,
         nodes: &HashSet<Node>,
         network_info: &Arc<RwLock<NetworkInfo>>,
+        ignore_node_health: bool,
     ) -> Result<()> {
         log::debug!("sync_nodes");
         let mut healthy_nodes = HashMap::new();
@@ -78,7 +80,7 @@ impl Client {
         for node in nodes {
             // Put the healthy node url into the network_nodes
             if let Ok(info) = Client::get_node_info(node.url.as_ref(), None).await {
-                if info.status.is_healthy {
+                if info.status.is_healthy || ignore_node_health {
                     match network_nodes.get_mut(&info.protocol.network_name) {
                         Some(network_node_entry) => {
                             network_node_entry.push((info, node.clone()));
