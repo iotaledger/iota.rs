@@ -5,6 +5,7 @@ package org.iota;
 
 import org.iota.types.*;
 import org.iota.types.expections.ClientException;
+import org.iota.types.expections.NoFundsReceivedFromFaucetException;
 import org.iota.types.expections.InitializeClientException;
 import org.iota.types.ids.BlockId;
 import org.iota.types.ids.MilestoneId;
@@ -22,7 +23,7 @@ public class NodeCoreApiTest extends ApiTest {
 
     @Test
     public void testGetHealth() throws ClientException {
-        boolean health = client.getHealth(DEFAULT_TESTNET_FAUCET_URL);
+        boolean health = client.getHealth(DEFAULT_TESTNET_NODE_URL);
         System.out.println(health);
     }
 
@@ -62,14 +63,14 @@ public class NodeCoreApiTest extends ApiTest {
     }
 
     @Test
-    public void testGetOutput() throws ClientException, InitializeClientException {
+    public void testGetOutput() throws ClientException, InitializeClientException, NoFundsReceivedFromFaucetException {
         Map.Entry<Output, OutputMetadata> r = client.getOutput(setupOutputId(generateAddress(DEFAULT_DEVELOPMENT_MNEMONIC)));
         System.out.println(r.getKey());
         System.out.println(r.getValue());
     }
 
     @Test
-    public void testGetOutputMetadata() throws ClientException, InitializeClientException {
+    public void testGetOutputMetadata() throws ClientException, InitializeClientException, NoFundsReceivedFromFaucetException {
         OutputMetadata r = client.getOutputMetadata(setupOutputId(generateAddress(DEFAULT_DEVELOPMENT_MNEMONIC)));
         System.out.println(r);
     }
@@ -95,8 +96,8 @@ public class NodeCoreApiTest extends ApiTest {
     }
 
     @Test
-    public void testGetIncludedBlock() throws ClientException, InitializeClientException {
-        System.out.println(client.getIncludedBlock(setUpTransactionId(generateAddress(DEFAULT_DEVELOPMENT_MNEMONIC))));
+    public void testGetIncludedBlock() throws ClientException, InitializeClientException, NoFundsReceivedFromFaucetException {
+        System.out.println(client.getIncludedBlock(setUpTransactionId(generateAddress(client.generateMnemonic()))));
     }
 
     @Test

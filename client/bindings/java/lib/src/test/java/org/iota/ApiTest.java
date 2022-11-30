@@ -4,12 +4,12 @@
 package org.iota;
 
 import org.iota.apis.NodeIndexerApi;
-import org.iota.apis.UtilsApi;
 import org.iota.types.Block;
 import org.iota.types.ClientConfig;
 import org.iota.types.OutputMetadata;
 import org.iota.types.TaggedDataPayload;
 import org.iota.types.expections.ClientException;
+import org.iota.types.expections.NoFundsReceivedFromFaucetException;
 import org.iota.types.expections.InitializeClientException;
 import org.iota.types.ids.OutputId;
 import org.iota.types.ids.TransactionId;
@@ -23,7 +23,6 @@ import org.junit.jupiter.api.BeforeEach;
 public abstract class ApiTest {
 
     protected static final String DEFAULT_TESTNET_NODE_URL = "https://api.testnet.shimmer.network";
-    protected static final String DEFAULT_TESTNET_FAUCET_URL = "https://faucet.testnet.shimmer.network/api/enqueue";
     // Tests should use this mnemonic only in a read-only fashion. Tests that consume outputs must generate their own random mnemonic.
     protected static final String DEFAULT_DEVELOPMENT_MNEMONIC = "hidden enroll proud copper decide negative orient asset speed work dolphin atom unhappy game cannon scheme glow kid ring core name still twist actor";
 
@@ -40,35 +39,18 @@ public abstract class ApiTest {
         client.destroyHandle();
     }
 
-    protected void requestFundsFromFaucet(String address) throws ClientException, InitializeClientException {
-        OutputId[] outputIds = client.getBasicOutputIds(new NodeIndexerApi.QueryParams().withParam("address", address));
-
-        for(int i = 0; i < 5; i++) {
-            if(outputIds.length == 0) {
-                new UtilsApi(client).requestFundsFromFaucet(DEFAULT_TESTNET_FAUCET_URL, address);
-                try {
-                    Thread.sleep(1000 * 25);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            } else
-                break;
-        }
-
-    }
-
     protected Block setUpTaggedDataBlock() throws ClientException {
         return client.postBlockPayload(new TaggedDataPayload("{ \"type\": 5, \"tag\": \"0x68656c6c6f20776f726c64\", \"data\": \"0x5370616d6d696e6720646174612e0a436f756e743a203037323935320a54696d657374616d703a20323032312d30322d31315431303a32333a34392b30313a30300a54697073656c656374696f6e3a203934c2b573\" }")).getValue();
     }
 
-    protected TransactionId setUpTransactionId(String address) throws ClientException, InitializeClientException {
+    protected TransactionId setUpTransactionId(String address) throws ClientException, InitializeClientException, NoFundsReceivedFromFaucetException {
         OutputMetadata metadata = client.getOutputMetadata(setupOutputId(address));
         TransactionId ret = new TransactionId(metadata.toJson().get("transactionId").getAsString());
         return ret;
     }
 
-    protected OutputId setupOutputId(String address) throws ClientException, InitializeClientException {
-        requestFundsFromFaucet(address);
+    protected OutputId setupOutputId(String address) throws ClientException, InitializeClientException, NoFundsReceivedFromFaucetException {
+        client.requestTestFundsFromFaucet(address);
         return client.getBasicOutputIds(new NodeIndexerApi.QueryParams().withParam("address", address))[0];
     }
 
