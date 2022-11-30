@@ -3,9 +3,9 @@
 
 package org.iota.types.expections;
 
-public class NoFundsFromFaucetReceivedException extends Exception {
+public class NoFundsReceivedFromFaucetException extends Exception {
 
-    public NoFundsFromFaucetReceivedException() {
+    public NoFundsReceivedFromFaucetException() {
         super();
     }
 

@@ -7,7 +7,7 @@ import com.google.gson.JsonObject;
 import org.iota.apis.*;
 import org.iota.types.*;
 import org.iota.types.expections.ClientException;
-import org.iota.types.expections.NoFundsFromFaucetReceivedException;
+import org.iota.types.expections.NoFundsReceivedFromFaucetException;
 import org.iota.types.expections.InitializeClientException;
 import org.iota.types.ids.*;
 import org.iota.types.output_builder.AliasOutputBuilderParams;
@@ -891,9 +891,9 @@ public class Client extends NativeApi {
     /**
      * Asks the faucet for the testnet funds.
      *
-     * @throws NoFundsFromFaucetReceivedException when the faucet didn't fund the address.
+     * @throws NoFundsReceivedFromFaucetException when the faucet didn't fund the address.
      */
-    public void requestTestFundsFromFaucet(String address) throws ClientException, NoFundsFromFaucetReceivedException {
+    public void requestTestFundsFromFaucet(String address) throws ClientException, NoFundsReceivedFromFaucetException {
         int maxAttempts = 5;
         for(int i = 0; i < maxAttempts; i++) {
             if(getBasicOutputIds(new NodeIndexerApi.QueryParams().withParam("address", address)).length == 0) {
@@ -908,7 +908,7 @@ public class Client extends NativeApi {
         }
 
         if(getBasicOutputIds(new NodeIndexerApi.QueryParams().withParam("address", address)).length == 0)
-            throw new NoFundsFromFaucetReceivedException();
+            throw new NoFundsReceivedFromFaucetException();
     }
 
 }

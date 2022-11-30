@@ -6,7 +6,7 @@ package org.iota;
 import org.iota.types.Block;
 import org.iota.types.UtxoInput;
 import org.iota.types.expections.ClientException;
-import org.iota.types.expections.NoFundsFromFaucetReceivedException;
+import org.iota.types.expections.NoFundsReceivedFromFaucetException;
 import org.iota.types.expections.InitializeClientException;
 import org.iota.types.ids.BlockId;
 import org.iota.types.ids.OutputId;
@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class HighLevelApiTest extends ApiTest {
 
     @Test
-    public void testGetOutputs() throws ClientException, InitializeClientException, NoFundsFromFaucetReceivedException {
+    public void testGetOutputs() throws ClientException, InitializeClientException, NoFundsReceivedFromFaucetException {
         OutputId[] outputs = new OutputId[] { setupOutputId(generateAddress(DEFAULT_DEVELOPMENT_MNEMONIC)) };
         for (Map.Entry e : client.getOutputs(outputs)) {
             System.out.println(e.getKey());
@@ -29,7 +29,7 @@ public class HighLevelApiTest extends ApiTest {
     }
 
     @Test
-    public void testTryGetOutputs() throws ClientException, InitializeClientException, NoFundsFromFaucetReceivedException {
+    public void testTryGetOutputs() throws ClientException, InitializeClientException, NoFundsReceivedFromFaucetException {
         OutputId[] outputs = new OutputId[] { setupOutputId(generateAddress(DEFAULT_DEVELOPMENT_MNEMONIC)) };
         for (Map.Entry e : client.tryGetOutputs(outputs)) {
             System.out.println(e.getKey());
@@ -57,7 +57,7 @@ public class HighLevelApiTest extends ApiTest {
     }
 
     @Test
-    public void testRetryUntilIncludedBlock() throws ClientException, InitializeClientException, NoFundsFromFaucetReceivedException {
+    public void testRetryUntilIncludedBlock() throws ClientException, InitializeClientException, NoFundsReceivedFromFaucetException {
         SecretManager secretManager = new MnemonicSecretManager(client.generateMnemonic());
         String[] addresses = client.generateAddresses(secretManager, new GenerateAddressesOptions().withRange(new Range(0, 2)));
         client.requestTestFundsFromFaucet(addresses[0]);
@@ -69,7 +69,7 @@ public class HighLevelApiTest extends ApiTest {
     }
 
     @Test
-    public void testConsolidateFunds() throws ClientException, InitializeClientException, NoFundsFromFaucetReceivedException {
+    public void testConsolidateFunds() throws ClientException, InitializeClientException, NoFundsReceivedFromFaucetException {
         SecretManager secretManager = new MnemonicSecretManager(client.generateMnemonic());
         String address = client.generateAddresses(secretManager, new GenerateAddressesOptions().withRange(new Range(0, 1)))[0];
         client.requestTestFundsFromFaucet(address);
@@ -78,7 +78,7 @@ public class HighLevelApiTest extends ApiTest {
     }
 
     @Test
-    public void testFindInputs() throws ClientException, InitializeClientException, NoFundsFromFaucetReceivedException {
+    public void testFindInputs() throws ClientException, InitializeClientException, NoFundsReceivedFromFaucetException {
         SecretManager secretManager = new MnemonicSecretManager(DEFAULT_DEVELOPMENT_MNEMONIC);
         String[] addresses = client.generateAddresses(secretManager, new GenerateAddressesOptions().withRange(new Range(0, 5)));
         client.requestTestFundsFromFaucet(addresses[0]);
@@ -88,7 +88,7 @@ public class HighLevelApiTest extends ApiTest {
     }
 
     @Test
-    public void testFindOutputs() throws ClientException, InitializeClientException, NoFundsFromFaucetReceivedException {
+    public void testFindOutputs() throws ClientException, InitializeClientException, NoFundsReceivedFromFaucetException {
         SecretManager secretManager = new MnemonicSecretManager(DEFAULT_DEVELOPMENT_MNEMONIC);
         String[] addresses = client.generateAddresses(secretManager, new GenerateAddressesOptions().withRange(new Range(0, 5)));
         client.requestTestFundsFromFaucet(addresses[0]);
