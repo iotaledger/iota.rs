@@ -6,7 +6,7 @@ package org.iota.types.expections;
 public class NoFundsFromFaucetReceivedException extends Exception {
 
     public NoFundsFromFaucetReceivedException() {
-        super("faucet is not ready");
+        super();
     }
 
 }
