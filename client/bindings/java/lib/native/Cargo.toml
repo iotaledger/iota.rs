@@ -11,6 +11,7 @@ homepage = "https://www.iota.org/"
 repository = "https://github.com/iotaledger/iota.rs"
 license = "Apache-2.0"
 keywords = [ "iota", "tangle", "client", "java" ]
+publish = false
 
 [lib]
 name = "iota_client"
