@@ -129,7 +129,7 @@ public class IndexerApiTest extends ApiTest {
 
         Thread.sleep(1000 * 25);
 
-        for (OutputId outputId : client.getFoundryOutputIds(new NodeIndexerApi.QueryParams().withParam("aliasAddress", client.aliasIdToBech32(aliasId, "rms"))))
+        for (OutputId outputId : client.getFoundryOutputIds(new NodeIndexerApi.QueryParams().withParam("aliasAddress", client.aliasIdToBech32(aliasId, client.getBech32Hrp()))))
             System.out.println(outputId);
     }
 
