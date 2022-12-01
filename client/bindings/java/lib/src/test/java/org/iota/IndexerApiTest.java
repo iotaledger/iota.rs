@@ -3,53 +3,133 @@
 
 package org.iota;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import org.iota.apis.NodeIndexerApi;
-import org.iota.types.Output;
+import org.iota.types.*;
 import org.iota.types.expections.ClientException;
-import org.iota.types.ids.AliasId;
-import org.iota.types.ids.FoundryId;
-import org.iota.types.ids.NftId;
-import org.iota.types.ids.OutputId;
-import org.iota.types.secret.BuildBlockOptions;
-import org.iota.types.secret.MnemonicSecretManager;
+import org.iota.types.expections.NoFundsReceivedFromFaucetException;
+import org.iota.types.ids.*;
+import org.iota.types.output_builder.AliasOutputBuilderParams;
+import org.iota.types.output_builder.FoundryOutputBuilderParams;
+import org.iota.types.output_builder.NftOutputBuilderParams;
+import org.iota.types.secret.*;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class IndexerApiTest extends ApiTest {
 
     @Test
-    public void testGetBasicOutputIds() throws ClientException {
-        for (OutputId outputId : client.getBasicOutputIds(new NodeIndexerApi.QueryParams().withParam("address", generateAddress(DEFAULT_DEVELOPMENT_MNEMONIC))))
+    public void testGetBasicOutputIds() throws ClientException, NoFundsReceivedFromFaucetException {
+        String address = generateAddress(client.generateMnemonic());
+        client.requestTestFundsFromFaucet(address);
+        for (OutputId outputId : client.getBasicOutputIds(new NodeIndexerApi.QueryParams().withParam("address", address)))
             System.out.println(outputId);
     }
 
     @Test
-    public void testGetAliasOutputIds() throws ClientException {
-        for (OutputId outputId : client.getAliasOutputIds(new NodeIndexerApi.QueryParams().withParam("issuer", generateAddress(DEFAULT_DEVELOPMENT_MNEMONIC))))
+    public void testGetAliasOutputIds() throws ClientException, InterruptedException, NoFundsReceivedFromFaucetException {
+        SecretManager s = new MnemonicSecretManager(client.generateMnemonic());
+        String address = client.generateAddresses(s, new GenerateAddressesOptions().withRange(new Range(0, 1)))[0];
+        client.requestTestFundsFromFaucet(address);
+        String hexAddress = client.bech32ToHex(address);
+
+        AliasId aliasId = new AliasId("0x0000000000000000000000000000000000000000000000000000000000000000");
+        UnlockCondition[] unlockConditions = new UnlockCondition[]{
+                new UnlockCondition("{ type: 4, address: { type: 0, pubKeyHash: \"" + hexAddress + "\" } }"),
+                new UnlockCondition("{ type: 5, address: { type: 0, pubKeyHash: \"" + hexAddress + "\" } }")
+        };
+        AliasOutputBuilderParams params = new AliasOutputBuilderParams()
+                .withAliasId(aliasId)
+                .withUnlockConditions(unlockConditions);
+
+        Output aliasOutput = client.buildAliasOutput(params);
+
+        client.buildAndPostBlock(s, new BuildBlockOptions().withOutputs(new Output[] { aliasOutput }));
+        Thread.sleep(1000 * 25);
+
+        for (OutputId outputId : client.getAliasOutputIds(new NodeIndexerApi.QueryParams().withParam("governor", address)))
             System.out.println(outputId);
     }
 
     @Test
-    public void testGetNftOutputIds() throws ClientException {
-        for (OutputId outputId : client.getNftOutputIds(new NodeIndexerApi.QueryParams().withParam("address", generateAddress(DEFAULT_DEVELOPMENT_MNEMONIC))))
+    public void testGetNftOutputIds() throws ClientException, NoFundsReceivedFromFaucetException, InterruptedException {
+        SecretManager s = new MnemonicSecretManager(client.generateMnemonic());
+        String address = client.generateAddresses(s, new GenerateAddressesOptions().withRange(new Range(0, 1)))[0];
+        client.requestTestFundsFromFaucet(address);
+        String hexAddress = client.bech32ToHex(address);
+
+        NftId nftId = new NftId("0x0000000000000000000000000000000000000000000000000000000000000000");
+        UnlockCondition[] unlockConditions = new UnlockCondition[]{
+                new UnlockCondition("{ type: 0, address: { type: 0, pubKeyHash: \"" + hexAddress + "\" } }"),
+        };
+        NftOutputBuilderParams params = new NftOutputBuilderParams()
+                .withNftId(nftId)
+                .withUnlockConditions(unlockConditions);
+
+        Output aliasOutput = client.buildNftOutput(params);
+
+        client.buildAndPostBlock(s, new BuildBlockOptions().withOutputs(new Output[] { aliasOutput }));
+        Thread.sleep(1000 * 25);
+
+        for (OutputId outputId : client.getNftOutputIds(new NodeIndexerApi.QueryParams().withParam("address", address)))
             System.out.println(outputId);
     }
 
     @Test
-    public void testGetFoundryOutputIds() throws ClientException {
-        JsonObject json = new Gson().fromJson(
-                "{\"type\":4,\"amount\":\"1000000\",\"aliasId\":\"0x0000000000000000000000000000000000000000000000000000000000000000\",\"stateIndex\":0,\"foundryCounter\":0,\"unlockConditions\":[{\"type\":4,\"address\":{\"type\":0,\"pubKeyHash\":\"0x4cfde0600797ae07d19d67d78910e70950bfdaf716f0035e9a30b97828aaf6a2\"}},{\"type\":5,\"address\":{\"type\":0,\"pubKeyHash\":\"0x4cfde0600797ae07d19d67d78910e70950bfdaf716f0035e9a30b97828aaf6a2\"}}],\"features\":[{\"type\":0,\"address\":{\"type\":0,\"pubKeyHash\":\"0x4cfde0600797ae07d19d67d78910e70950bfdaf716f0035e9a30b97828aaf6a2\"}},{\"type\":2,\"data\":\"0x010203\"}],\"immutableFeatures\":[{\"type\":1,\"address\":{\"type\":0,\"pubKeyHash\":\"0x4cfde0600797ae07d19d67d78910e70950bfdaf716f0035e9a30b97828aaf6a2\"}}]}",
-                JsonObject.class
+    public void testGetFoundryOutputIds() throws ClientException, NoFundsReceivedFromFaucetException, InterruptedException {
+        SecretManager s = new MnemonicSecretManager(client.generateMnemonic());
+        String address = client.generateAddresses(s, new GenerateAddressesOptions().withRange(new Range(0, 1)))[0];
+        client.requestTestFundsFromFaucet(address);
+        String hexAddress = client.bech32ToHex(address);
+
+        // Build an Alias Output
+        AliasOutputBuilderParams p = new AliasOutputBuilderParams()
+                .withAliasId(new AliasId("0x0000000000000000000000000000000000000000000000000000000000000000"))
+                .withUnlockConditions(new UnlockCondition[]{
+                        new UnlockCondition("{ type: 4, address: { type: 0, pubKeyHash: \"" + hexAddress + "\" } }"),
+                        new UnlockCondition("{ type: 5, address: { type: 0, pubKeyHash: \"" + hexAddress + "\" } }")
+                });
+
+        Map.Entry<BlockId, Block> response = client.buildAndPostBlock(s, new BuildBlockOptions().withOutputs(new Output[] { client.buildAliasOutput(p) }));
+        Thread.sleep(1000 * 25);
+        TransactionId transactionId = client.getTransactionId(new TransactionPayload(response.getValue().toJson().get("payload").getAsJsonObject()));
+
+        // Build the Foundry Output
+        client.requestTestFundsFromFaucet(address);
+        AliasId aliasId = client.computeAliasId(new OutputId(transactionId + "0000" ));
+        int serialNumber = 1;
+        TokenScheme tokenScheme = new TokenScheme("{ type: 0, meltedTokens: '0x0', mintedTokens: '0x32', maximumSupply: '0x64' }");
+        UnlockCondition[] unlockConditions = new UnlockCondition[]{new UnlockCondition("{ type: 6, address: { type: 8, aliasId: " + aliasId + "  } }")};
+        FoundryOutputBuilderParams params = new FoundryOutputBuilderParams()
+                .withSerialNumber(serialNumber)
+                .withTokenScheme(tokenScheme)
+                .withUnlockConditions(unlockConditions);
+        Output foundryOutput = client.buildFoundryOutput(params);
+
+        // Build the new foundry output
+        Output newAliasOutput = client.buildAliasOutput(new AliasOutputBuilderParams()
+                .withAliasId(aliasId)
+                .withFoundryCounter(1)
+                .withStateIndex(1)
+                .withUnlockConditions(new UnlockCondition[]{
+                        new UnlockCondition("{ type: 4, address: { type: 0, pubKeyHash: \"" + hexAddress + "\" } }"),
+                        new UnlockCondition("{ type: 5, address: { type: 0, pubKeyHash: \"" + hexAddress + "\" } }")
+                }));
+
+        // Create the transaction and use the outputs
+        client.buildAndPostBlock(s, new BuildBlockOptions()
+                .withOutputs(new Output[] {
+                        foundryOutput,
+                        newAliasOutput
+                })
         );
-        Output o = new Output(json);
 
-        client.buildAndPostBlock(new MnemonicSecretManager(DEFAULT_DEVELOPMENT_MNEMONIC), new BuildBlockOptions().withOutputs(new Output[] { o }));
+        Thread.sleep(1000 * 25);
 
-        for (OutputId outputId : client.getFoundryOutputIds(new NodeIndexerApi.QueryParams().withParam("aliasAddress", "rms1pz022kd0zjmu4dms8whgnfus3ph347cmr8th3kk5g2qn7sl5xzfcj33gfu4")))
+        for (OutputId outputId : client.getFoundryOutputIds(new NodeIndexerApi.QueryParams().withParam("aliasAddress", client.aliasIdToBech32(aliasId, client.getBech32Hrp()))))
             System.out.println(outputId);
     }
 

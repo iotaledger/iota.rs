@@ -183,6 +183,9 @@ pub enum Response {
     /// - [`HexPublicKeyToBech32Address`](crate::message_interface::Message::HexPublicKeyToBech32Address)
     HexToBech32(String),
     /// Response for:
+    /// - [`AliasIdToBech32`](crate::message_interface::Message::AliasIdToBech32)
+    AliasIdToBech32(String),
+    /// Response for:
     /// - [`ParseBech32Address`](crate::message_interface::Message::ParseBech32Address)
     ParsedBech32Address(AddressDto),
     /// Response for:

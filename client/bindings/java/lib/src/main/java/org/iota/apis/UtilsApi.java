@@ -36,6 +36,16 @@ public class UtilsApi {
         return responsePayload;
     }
 
+    public String aliasIdToBech32(AliasId aliasId, String bech32) throws ClientException {
+        JsonObject o = new JsonObject();
+        o.addProperty("aliasId", aliasId.toString());
+        o.addProperty("bech32Hrp", bech32);
+
+        String responsePayload = nativeApi.sendCommand(new ClientCommand("aliasIdToBech32", o)).getAsString();
+
+        return responsePayload;
+    }
+
     public String hexPublicKeyToBech32Address(String hex, String bech32) throws ClientException {
         JsonObject o = new JsonObject();
         o.addProperty("hex", hex);

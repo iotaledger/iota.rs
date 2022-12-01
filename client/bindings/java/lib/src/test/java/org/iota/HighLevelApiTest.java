@@ -22,7 +22,7 @@ public class HighLevelApiTest extends ApiTest {
 
     @Test
     public void testGetOutputs() throws ClientException, InitializeClientException, NoFundsReceivedFromFaucetException {
-        OutputId[] outputs = new OutputId[] { setupOutputId(generateAddress(DEFAULT_DEVELOPMENT_MNEMONIC)) };
+        OutputId[] outputs = new OutputId[] { setupBasicOutput(generateAddress(client.generateMnemonic())) };
         for (Map.Entry e : client.getOutputs(outputs)) {
             System.out.println(e.getKey());
         }
@@ -30,7 +30,7 @@ public class HighLevelApiTest extends ApiTest {
 
     @Test
     public void testTryGetOutputs() throws ClientException, InitializeClientException, NoFundsReceivedFromFaucetException {
-        OutputId[] outputs = new OutputId[] { setupOutputId(generateAddress(DEFAULT_DEVELOPMENT_MNEMONIC)) };
+        OutputId[] outputs = new OutputId[] { setupBasicOutput(generateAddress(client.generateMnemonic())) };
         for (Map.Entry e : client.tryGetOutputs(outputs)) {
             System.out.println(e.getKey());
         }
@@ -78,8 +78,8 @@ public class HighLevelApiTest extends ApiTest {
     }
 
     @Test
-    public void testFindInputs() throws ClientException, InitializeClientException, NoFundsReceivedFromFaucetException {
-        SecretManager secretManager = new MnemonicSecretManager(DEFAULT_DEVELOPMENT_MNEMONIC);
+    public void testFindInputs() throws ClientException, NoFundsReceivedFromFaucetException {
+        SecretManager secretManager = new MnemonicSecretManager(client.generateMnemonic());
         String[] addresses = client.generateAddresses(secretManager, new GenerateAddressesOptions().withRange(new Range(0, 5)));
         client.requestTestFundsFromFaucet(addresses[0]);
         UtxoInput[] inputs = client.findInputs(addresses, 1000);
@@ -88,8 +88,8 @@ public class HighLevelApiTest extends ApiTest {
     }
 
     @Test
-    public void testFindOutputs() throws ClientException, InitializeClientException, NoFundsReceivedFromFaucetException {
-        SecretManager secretManager = new MnemonicSecretManager(DEFAULT_DEVELOPMENT_MNEMONIC);
+    public void testFindOutputs() throws ClientException, NoFundsReceivedFromFaucetException {
+        SecretManager secretManager = new MnemonicSecretManager(client.generateMnemonic());
         String[] addresses = client.generateAddresses(secretManager, new GenerateAddressesOptions().withRange(new Range(0, 5)));
         client.requestTestFundsFromFaucet(addresses[0]);
         for (Map.Entry e : client.findOutputs(new OutputId[]{}, addresses)) {
