@@ -1,4 +1,4 @@
-// Copyright 2021-2022 IOTA Stiftung
+// Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
 // This file overwrites the `bindings.ts` file from `bindings/nodejs/lib`, to link the Wasm `MessageHandler` interface.
