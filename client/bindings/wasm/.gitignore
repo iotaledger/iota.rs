@@ -10,4 +10,4 @@ stronghold
 package-lock.json
 web/
 node/
-lib-wasm/bindings.js
+lib/bindings.js

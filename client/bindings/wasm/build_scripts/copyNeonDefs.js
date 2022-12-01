@@ -12,6 +12,6 @@ for (const folder of folders) {
 }
 
 // Overwrite the Node.js Neon `bindings.ts` file with one which links to Wasm functions instead.
-const bindingsSrc = path.join(__dirname, '..', 'lib-wasm', 'bindings.ts');
+const bindingsSrc = path.join(__dirname, '..', 'lib', 'bindings.ts');
 const bindingsDest = path.join(__dirname, '..', 'out', 'lib', 'bindings.ts');
 fse.copySync(bindingsSrc, bindingsDest, { 'overwrite': true });
