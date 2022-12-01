@@ -115,29 +115,26 @@ impl Client {
 
     /// Transforms a hex encoded address to a bech32 encoded address
     pub async fn hex_to_bech32(&self, hex: &str, bech32_hrp: Option<&str>) -> crate::Result<String> {
-        let bech32_hrp = match bech32_hrp {
-            Some(hrp) => hrp.into(),
-            None => self.get_bech32_hrp().await?,
-        };
-        hex_to_bech32(hex, &bech32_hrp)
+        match bech32_hrp {
+            Some(hrp) => Ok(hex_to_bech32(hex, hrp)?),
+            None => Ok(hex_to_bech32(hex, &self.get_bech32_hrp().await?)?),
+        }
     }
 
     /// Transforms an alias id to a bech32 encoded address
     pub async fn alias_id_to_bech32(&self, alias_id: AliasId, bech32_hrp: Option<&str>) -> crate::Result<String> {
-        let bech32_hrp = match bech32_hrp {
-            Some(hrp) => hrp.into(),
-            None => self.get_bech32_hrp().await?,
-        };
-        Ok(alias_id_to_bech32(alias_id, &bech32_hrp))
+        match bech32_hrp {
+            Some(hrp) => Ok(alias_id_to_bech32(alias_id, hrp)),
+            None => Ok(alias_id_to_bech32(alias_id, &self.get_bech32_hrp().await?)),
+        }
     }
 
     /// Transforms a hex encoded public key to a bech32 encoded address
     pub async fn hex_public_key_to_bech32_address(&self, hex: &str, bech32_hrp: Option<&str>) -> crate::Result<String> {
-        let bech32_hrp = match bech32_hrp {
-            Some(hrp) => hrp.into(),
-            None => self.get_bech32_hrp().await?,
-        };
-        hex_public_key_to_bech32_address(hex, &bech32_hrp)
+        match bech32_hrp {
+            Some(hrp) => Ok(hex_public_key_to_bech32_address(hex, hrp)?),
+            None => Ok(hex_public_key_to_bech32_address(hex, &self.get_bech32_hrp().await?)?),
+        }
     }
 
     /// Returns a valid Address parsed from a String.

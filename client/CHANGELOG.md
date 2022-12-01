@@ -21,6 +21,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 2.0.1-rc.5 - 20XX-XX-XX
 
+### Added
+
+- `alias_id_to_bech32()` to client utils;
+
 ### Changed
 
 - Abort the sync nodes task through its handle instead of a oneshot channel;
