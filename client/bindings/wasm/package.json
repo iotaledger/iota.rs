@@ -1,6 +1,6 @@
 {
-  "name": "@iota/iota-client-wasm",
-  "version": "0.5.0-alpha.6",
+  "name": "@iota/client-wasm",
+  "version": "1.0.0-alpha.1",
   "description": "WebAssembly bindings for the IOTA client library",
   "repository": {
     "type": "git",
