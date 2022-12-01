@@ -3,8 +3,6 @@ const typescriptEslintRules = {
         'error',
         { 'ts-ignore': 'allow-with-description' },
     ],
-    // '@typescript-eslint/no-empty-interface': 'off',
-    // '@typescript-eslint/no-var-requires': 'off', // cleanest way to set dotenv path
 };
 
 module.exports = {
