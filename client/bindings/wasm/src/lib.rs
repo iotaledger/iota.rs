@@ -3,9 +3,9 @@
 
 #![forbid(unsafe_code)]
 
-use wasm_bindgen::prelude::*;
-
 pub mod message_handler;
+
+use wasm_bindgen::{prelude::wasm_bindgen, JsValue};
 
 /// Initializes the console error panic hook for better panic messages.
 #[wasm_bindgen(start)]
@@ -16,8 +16,7 @@ pub fn start() -> Result<(), JsValue> {
 
 /// The Wasm bindings do not support internal logging yet.
 ///
-/// Calling this is a no-op, only included for compatibility
-/// with the Neon Node.js bindings TypeScript definitions.
+/// Calling this is a no-op, only included for compatibility with the Neon Node.js bindings TypeScript definitions.
 #[wasm_bindgen(js_name = initLogger)]
 pub fn init_logger(_config: JsValue) {
     // TODO
