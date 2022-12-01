@@ -5,7 +5,7 @@ use std::rc::Rc;
 
 use iota_client::message_interface::{create_message_handler, ClientMessageHandler, Message, Response};
 use tokio::sync::mpsc::unbounded_channel;
-use wasm_bindgen::{prelude::*, JsCast};
+use wasm_bindgen::{prelude::wasm_bindgen, JsCast, JsValue};
 use wasm_bindgen_futures::future_to_promise;
 
 /// The Client message handler.
@@ -28,7 +28,7 @@ pub fn message_handler_new(clientOptions: Option<String>) -> Result<WasmMessageH
 
 /// Handles a message, returns the response as a JSON-encoded string.
 ///
-/// Returns an error if the reponse itself is an error or panic.
+/// Returns an error if the response itself is an error or panic.
 #[wasm_bindgen(js_name = sendMessageAsync)]
 #[allow(non_snake_case)]
 pub fn send_message_async(message: String, messageHandler: &WasmMessageHandler) -> Result<PromiseString, JsValue> {
@@ -45,6 +45,7 @@ pub fn send_message_async(message: String, messageHandler: &WasmMessageHandler) 
             _ => Ok(ser),
         }
     });
+
     // WARNING: this does not validate the return type. Check carefully.
     Ok(promise.unchecked_into())
 }
@@ -74,6 +75,7 @@ async fn send_message_inner(handler: &ClientMessageHandler, serialized_message: 
 #[wasm_bindgen]
 pub fn listen(_topics: ArrayString, _callback: &js_sys::Function) -> Result<(), JsValue> {
     let js_error = js_sys::Error::new("Client MQTT not supported for WebAssembly");
+
     Err(JsValue::from(js_error))
 }
 
