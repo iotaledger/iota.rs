@@ -534,12 +534,12 @@ public class Client extends NativeApi {
      * Converts an alias id to a bech32 address.
      *
      * @param aliasId The alias id to be converted.
-     * @param bech32 The bech32 to use.
+     * @param bech32Hrp The bech 32 human readable part to use.
      * @return The bech32 address.
      * @throws ClientException on error.
      */
-    public String aliasIdToBech32(AliasId aliasId, String bech32) throws ClientException {
-        return utilsApi.aliasIdToBech32(aliasId, bech32);
+    public String aliasIdToBech32(AliasId aliasId, String bech32Hrp) throws ClientException {
+        return utilsApi.aliasIdToBech32(aliasId, bech32Hrp);
     }
 
     /**
