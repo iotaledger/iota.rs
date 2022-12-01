@@ -38,8 +38,8 @@ pub fn hex_to_bech32(hex: &str, bech32_hrp: &str) -> Result<String> {
 }
 
 /// Transforms an alias id to a bech32 encoded address
-pub fn alias_id_to_bech32(alias_id: AliasId, bech32_hrp: &str) -> Result<String> {
-    Ok(Address::Alias(AliasAddress::new(alias_id)).to_bech32(bech32_hrp))
+pub fn alias_id_to_bech32(alias_id: AliasId, bech32_hrp: &str) -> String {
+    Address::Alias(AliasAddress::new(alias_id)).to_bech32(bech32_hrp)
 }
 
 /// Transforms a prefix hex encoded public key to a bech32 encoded address
@@ -128,7 +128,7 @@ impl Client {
             Some(hrp) => hrp.into(),
             None => self.get_bech32_hrp().await?,
         };
-        alias_id_to_bech32(alias_id, &bech32_hrp)
+        Ok(alias_id_to_bech32(alias_id, &bech32_hrp))
     }
 
     /// Transforms a hex encoded public key to a bech32 encoded address
