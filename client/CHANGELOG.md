@@ -23,7 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `alias_id_to_bech32()` to client utils;
+- `alias_id_to_bech32()` to utils;
 
 ### Changed
 
