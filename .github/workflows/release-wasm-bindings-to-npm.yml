@@ -6,7 +6,7 @@ jobs:
   publish-wasm:
     runs-on: ubuntu-latest
     env:
-      working_directory: client/bindings/wasm
+      working-directory: client/bindings/wasm
     steps:
       - name: Checkout
         uses: actions/checkout@v2
