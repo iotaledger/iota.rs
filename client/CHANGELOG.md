@@ -19,7 +19,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security -->
 
-## 2.0.1-rc.4 - 20XX-XX-XX
+## 2.0.1-rc.5 - 20XX-XX-XX
+
+### Added
+
+- `alias_id_to_bech32()` to utils;
+
+### Changed
+
+- Abort the sync nodes task through its handle instead of a oneshot channel;
+- Update network info also from unhealty nodes if ignore_node_health is set to true;
+
+### Removed
+
+- Sync nodes `select!`;
+
+## 2.0.1-rc.4 - 2022-11-22
 
 ### Added
 
@@ -38,6 +53,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Replace `ClientBuilder::with_node_sync_disabled()` by `ClientBuilder::with_ignore_node_health()`;
 - Replace `NodeManagerBuilder.node_sync_enabled` by `NodeManagerBuilder.ignore_node_health`;
 - Use new `RentStructureDto` and `ProtocolParametersDto` types;
+- ClientBuilder no longer has `#[serde(deny_unknown_fields)]` for backwards compatibility;
 
 ### Removed
 

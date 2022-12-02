@@ -1,0 +1,3 @@
+rootProject.name = 'iota-client'
+include('lib')
+include('examples')

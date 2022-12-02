@@ -538,6 +538,9 @@ impl ClientMessageHandler {
             Message::HexToBech32 { hex, bech32_hrp } => Ok(Response::HexToBech32(
                 self.client.hex_to_bech32(&hex, bech32_hrp.as_deref()).await?,
             )),
+            Message::AliasIdToBech32 { alias_id, bech32_hrp } => Ok(Response::AliasIdToBech32(
+                self.client.alias_id_to_bech32(alias_id, bech32_hrp.as_deref()).await?,
+            )),
             Message::HexPublicKeyToBech32Address { hex, bech32_hrp } => Ok(Response::HexToBech32(
                 self.client
                     .hex_public_key_to_bech32_address(&hex, bech32_hrp.as_deref())

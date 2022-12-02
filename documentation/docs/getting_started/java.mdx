@@ -4,78 +4,92 @@ image: /img/logo/iota_mark_light.png
 keywords:
 
 - Java
-- Rust
 - jar
+- Maven
 - Gradle
 
 ---
 import WarningPasswordStorage from '../_admonitions/_password_storage.md';
 
-# Getting Started with Java
-
 ## Security
 
 <WarningPasswordStorage/>
 
+# IOTA Client Java Library
+
+Get started with the official IOTA Client Java Library.
+
 ## Requirements
 
-* The latest [Java Development Kit (JDK)](https://www.oracle.com/java/technologies/downloads/).
-* [Rust and Cargo](https://doc.rust-lang.org/cargo/getting-started/installation.html) to compile the binding.
-* (for Linux only) `libudev`. You can install it with `apt install libudev-dev`.
-* pkg-config is needed (for Linux `apt install pkg-config`)
+Minimum Java version: Java 8
 
-## Build the JAR for Your Operating System (Linux, macOS, Windows)
+## Use in your Android project (Android Studio)
 
-To use the IOTA Java Client Library in your Java project, you must first build the library JAR for your operating
-system.
-
-### Clone the Repository
-
-You can clone the [iota.rs client library](https://github.com/iotaledger/iota.rs) by running the following command:
-
-```bash
-git clone git@github.com:iotaledger/iota.rs.git
+1. Add following dependency to your `build.gradle` file:
+```
+implementation 'org.iota:iota-client:1.0.0-rc.1'
 ```
 
-### Change to the Java Binding Directory
+2. Download the `iota-client-1.0.0-rc.1-android-jni.zip` file from the GitHub release and unzip it.
+3. Add the `jniLibs` folder with its contents to your Android Studio project as shown below:
 
-After you have cloned the repository, you should change directory to `iota.rs/bindings/java/iota-client-java`. You can do so by
-running the following command:
-
-```bash
-cd iota.rs/bindings/java/iota-client-java
+```
+project/
+├──libs/
+|  └── *.jar <-- if your library has jar files, they go here
+├──src/
+   └── main/
+       ├── AndroidManifest.xml
+       ├── java/
+       └── jniLibs/
+           ├── arm64-v8a/           <-- ARM 64bit
+           │   └── libiota-client.so
+           │   └── libc++_shared.so
+           ├── armeabi-v7a/         <-- ARM 32bit
+           │   └── libiota-client.so
+           │   └── libc++_shared.so
+           └── x86/                 <-- Intel 32bit
+              └── libiota-client.so
+              └── libc++_shared.so
 ```
 
-### Make `gradlew` Executable
+## Use in your Java project (Linux, macOS, Windows)
 
-If needed, you can make the `gradlew` file executable by running the following command:
+Depending on your operating system, add one of the following dependencies to your `build.gradle` file:
 
-```bash
-chmod +x gradlew
+#### linux-x86_64
+```
+implementation 'org.iota:iota-client:1.0.0-rc.1:linux-x86_64'
 ```
 
-### Build Your JAR
-
-You can now build your JAR file by running the following command:
-
-```bash
-./gradlew jar
+#### windows-x86_64
+```
+implementation 'org.iota:iota-client:1.0.0-rc.1:windows-x86_64'
 ```
 
-This will produce a `JAR` file in `build/libs/` which you can add to your Java project.
+#### aarch64-apple-darwin
+```
+implementation 'org.iota:iota-client:1.0.0-rc.1:aarch64-apple-darwin'
+```
 
-## Use the Library
+#### osx-x86_64
+```
+implementation 'org.iota:iota-client:1.0.0-rc.1:osx-x86_64'
+```
 
-After you linked the library, you can create a Client instance and interface with it as shown in the following snippet:
+## Try the library
+
+In order to try with the library, create a `Client` instance:
 
 ```java
 import org.iota.Client;
 import org.iota.types.ClientConfig;
-import org.iota.types.ClientException;
+import org.iota.types.expections.InitializeClientException;
+import org.iota.types.expections.ClientException;
 import org.iota.types.responses.NodeInfoResponse;
 
 public class HelloWorld {
-    public static void main(String[] args) throws ClientException {
+    public static void main(String[] args) throws InitializeClientException, ClientException {
         // Build the client.
         Client client = new Client(new ClientConfig().withNodes(new String[]{"https://api.testnet.shimmer.network"}));
 
@@ -91,9 +105,8 @@ public class HelloWorld {
 }
 ```
 
-## Keep Learning
+## What's Next?
 
 Now that you are up and running, you can get acquainted with the library using
 its [how-to guides](../how_tos/00_run_how_tos.mdx) and the
-repository's [code example project ](https://github.com/iotaledger/iota.rs/tree/develop/bindings/java/iota-client-java/examples/ExampleProject/src).
-
+repository's [code examples](https://github.com/iotaledger/iota.rs/tree/develop/client/bindings/java/examples/src).

@@ -3,7 +3,7 @@
 
 use crate::block::{unlock::UnlockIndex, Error};
 
-/// An [`Unlock`](crate::unlock::Unlock) that refers to another unlock.
+/// An [`Unlock`](crate::block::unlock::Unlock) that refers to another unlock.
 #[derive(Clone, Debug, Eq, PartialEq, Hash, packable::Packable)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[packable(unpack_error = Error, with = Error::InvalidReferenceIndex)]
@@ -18,7 +18,7 @@ impl TryFrom<u16> for ReferenceUnlock {
 }
 
 impl ReferenceUnlock {
-    /// The [`Unlock`](crate::unlock::Unlock) kind of a [`ReferenceUnlock`].
+    /// The [`Unlock`](crate::block::unlock::Unlock) kind of a [`ReferenceUnlock`].
     pub const KIND: u8 = 1;
 
     /// Creates a new [`ReferenceUnlock`].

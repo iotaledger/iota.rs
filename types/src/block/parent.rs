@@ -14,7 +14,7 @@ use crate::block::{BlockId, Error};
 
 pub(crate) type ParentCount = BoundedU8<{ *Parents::COUNT_RANGE.start() }, { *Parents::COUNT_RANGE.end() }>;
 
-/// A [`Block`](crate::Block)'s [`Parents`] are the [`BlockId`]s of the blocks it directly approves.
+/// A [`Block`](crate::block::Block)'s [`Parents`] are the [`BlockId`]s of the blocks it directly approves.
 ///
 /// Parents must be:
 /// * in the `Parents::COUNT_RANGE` range;

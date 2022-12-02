@@ -11,7 +11,7 @@ use crate::block::address::Address;
 pub struct SenderFeature(Address);
 
 impl SenderFeature {
-    /// The [`Feature`](crate::output::Feature) kind of a [`SenderFeature`].
+    /// The [`Feature`](crate::block::output::Feature) kind of a [`SenderFeature`].
     pub const KIND: u8 = 0;
 
     /// Creates a new [`SenderFeature`].

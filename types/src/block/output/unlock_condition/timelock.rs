@@ -12,7 +12,7 @@ use crate::block::Error;
 pub struct TimelockUnlockCondition(#[packable(verify_with = verify_timestamp)] u32);
 
 impl TimelockUnlockCondition {
-    /// The [`UnlockCondition`](crate::output::UnlockCondition) kind of a [`TimelockUnlockCondition`].
+    /// The [`UnlockCondition`](crate::block::output::UnlockCondition) kind of a [`TimelockUnlockCondition`].
     pub const KIND: u8 = 2;
 
     /// Creates a new [`TimelockUnlockCondition`].

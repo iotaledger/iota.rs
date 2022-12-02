@@ -1,0 +1,16 @@
+{
+    "compilerOptions": {
+        "lib": ["ES2020", "DOM"],
+        "declaration": true,
+        "sourceMap": true,
+        "strict": true,
+        "moduleResolution": "node",
+        "importsNotUsedAsValues": "error",
+        "noImplicitAny": true,
+        "preserveConstEnums": true,
+        "resolveJsonModule": true,
+        "forceConsistentCasingInFileNames": true,
+    },
+    "include": ["out/**/*"],
+    "exclude": ["node_modules", "out/test/*"]
+}

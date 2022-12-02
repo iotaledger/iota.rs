@@ -1,0 +1,19 @@
+plugins {
+    id 'application'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(':lib')
+    implementation group: 'commons-codec', name: 'commons-codec', version: '1.15'
+    implementation 'com.google.code.gson:gson:2.10'
+}
+
+application {
+    mainClassName = project.findProperty("main").toString()
+}
+
+sourceSets.main.java.srcDirs = ['src']

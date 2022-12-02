@@ -1,0 +1,29 @@
+[workspace]
+
+[package]
+name = "iota-client-python"
+version = "0.2.0-alpha.3"
+authors = [ "IOTA Stiftung" ]
+edition = "2021"
+description = "Python bindings for the IOTA client library"
+documentation = "https://wiki.iota.org/iota.rs/welcome"
+homepage = "https://www.iota.org/"
+repository = "https://github.com/iotaledger/iota.rs"
+license = "Apache-2.0"
+keywords = [ "iota", "tangle", "client", "python" ]
+categories = [ "cryptography::cryptocurrencies" ]
+publish = false
+
+[lib]
+name = "iota_client"
+crate-type = [ "cdylib" ]
+
+[dependencies]
+iota-client = { path = "../../", default-features = false, features = [ "ledger_nano", "message_interface", "stronghold", "tls" ] }
+
+fern-logger = { version = "0.5.0", default-features = false }
+futures = { version = "0.3.25", default-features = false }
+once_cell = { version = "1.16.0", default-features = false, features = [ "std" ] }
+pyo3 = { version = "0.17.3", default-features = false, features = [ "macros", "extension-module" ] }
+serde_json = { version = "1.0.87", default-features = false }
+tokio = { version = "1.22.0", default-features = false, features = [ "macros" ] }

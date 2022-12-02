@@ -8,7 +8,7 @@ use crate::block::{unlock::UnlockIndex, Error};
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[packable(unpack_error = Error, with = Error::InvalidNftIndex)]
 pub struct NftUnlock(
-    /// Index of input and unlock corresponding to an [`NftOutput`](crate::output::NftOutput).
+    /// Index of input and unlock corresponding to an [`NftOutput`](crate::block::output::NftOutput).
     UnlockIndex,
 );
 
@@ -21,7 +21,7 @@ impl TryFrom<u16> for NftUnlock {
 }
 
 impl NftUnlock {
-    /// The [`Unlock`](crate::unlock::Unlock) kind of a [`NftUnlock`].
+    /// The [`Unlock`](crate::block::unlock::Unlock) kind of a [`NftUnlock`].
     pub const KIND: u8 = 3;
 
     /// Creates a new [`NftUnlock`].

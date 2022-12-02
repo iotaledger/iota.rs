@@ -14,7 +14,8 @@ use crate::block::{
 pub struct ImmutableAliasAddressUnlockCondition(#[packable(verify_with = verify_alias_address)] Address);
 
 impl ImmutableAliasAddressUnlockCondition {
-    /// The [`UnlockCondition`](crate::output::UnlockCondition) kind of an [`ImmutableAliasAddressUnlockCondition`].
+    /// The [`UnlockCondition`](crate::block::output::UnlockCondition) kind of an
+    /// [`ImmutableAliasAddressUnlockCondition`].
     pub const KIND: u8 = 6;
 
     /// Creates a new [`ImmutableAliasAddressUnlockCondition`].
@@ -34,13 +35,8 @@ impl ImmutableAliasAddressUnlockCondition {
 
     /// Returns the alias address of an [`ImmutableAliasAddressUnlockCondition`].
     pub fn alias_address(&self) -> &AliasAddress {
-        // An ImmutableAliasAddressUnlockCondition must have an AliasAddress.
-        if let Address::Alias(alias_address) = &self.0 {
-            alias_address
-        } else {
-            // It has already been validated at construction that the address is an `AliasAddress`.
-            unreachable!();
-        }
+        // It has already been validated at construction that the address is an `AliasAddress`.
+        self.0.as_alias()
     }
 }
 

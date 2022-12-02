@@ -52,7 +52,7 @@ jobs:
         with:
           toolchain: nightly
           cache: true
-          cache-root: client/bindings/java/iota-client-java/native/
+          cache-root: client/bindings/java/lib/native/
           cache-job-id: ${{ github.workflow }}-${{ github.job }}-${{ matrix.os }}-${{ matrix.java }}
           cache-hash: ${{ hashFiles('.github/workflows/examine-java-bindings.yml') }}
 
@@ -75,10 +75,10 @@ jobs:
       - name: Validate Gradle wrapper
         uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b
       - name: Run Gradle Test
-        working-directory: client/bindings/java/iota-client-java/
+        working-directory: client/bindings/java/
         run: |
           chmod +x gradlew
-          ./gradlew test
+          ./gradlew test -i
 
   lint:
     name: Lint
@@ -95,7 +95,7 @@ jobs:
           toolchain: beta
           components: clippy
           cache: true
-          cache-root: client/bindings/java/iota-client-java/native/
+          cache-root: client/bindings/java/lib/native/
           cache-job-id: ${{ github.workflow }}-${{ github.job }}
           cache-hash: ${{ hashFiles('.github/workflows/examine-java-bindings.yml') }}
 
@@ -108,7 +108,7 @@ jobs:
         uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          args: --manifest-path client/bindings/java/iota-client-java/native/Cargo.toml --all-features --all-targets -- --deny warnings
+          args: --manifest-path client/bindings/java/lib/native/Cargo.toml --all-features --all-targets -- --deny warnings
           name: Clippy Results for the Java Bindings
 
       # TODO: Lint the Java code too
@@ -128,7 +128,7 @@ jobs:
           toolchain: nightly
           cache: true
           install: cargo-udeps
-          cache-root: client/bindings/java/iota-client-java/iota-client-java/native/
+          cache-root: client/bindings/java/lib/native/
           cache-job-id: ${{ github.workflow }}-${{ github.job }}
           cache-hash: ${{ hashFiles('.github/workflows/examine-java-bindings.yml') }}
 
@@ -141,7 +141,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: udeps
-          args: --manifest-path client/bindings/java/iota-client-java/native/Cargo.toml --all-targets --all-features
+          args: --manifest-path client/bindings/java/lib/native/Cargo.toml --all-targets --all-features
 
       # TODO: Check Java code too
 
@@ -171,7 +171,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: fmt
-          args: --manifest-path client/bindings/java/iota-client-java/native/Cargo.toml --all -- --check
+          args: --manifest-path client/bindings/java/lib/native/Cargo.toml --all -- --check
 
       - name: Run cargo-license-template
         uses: actions-rs/cargo@v1
@@ -202,7 +202,10 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: audit
-          # NOTE: Workspace
-          args: --file client/bindings/java/iota-client-java/native/Cargo.lock --deny warnings
+          # The ignored security advisories:
+          #
+          # - RUSTSEC-2021-0145: `atty` potential unaligned read.
+          #   - Waiting for https://github.com/mackwic/colored/pull/122 to be merged.
+          args: --file client/bindings/java/lib/native/Cargo.lock --deny warnings --ignore RUSTSEC-2021-0145
 
       # TODO: Check the Java code too

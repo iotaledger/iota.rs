@@ -10,7 +10,7 @@ use crate::block::{output::OUTPUT_INDEX_RANGE, payload::transaction::Transaction
 
 pub(crate) type OutputIndex = BoundedU16<{ *OUTPUT_INDEX_RANGE.start() }, { *OUTPUT_INDEX_RANGE.end() }>;
 
-/// The identifier of an [`Output`](crate::output::Output).
+/// The identifier of an [`Output`](crate::block::output::Output).
 #[derive(Clone, Copy, Eq, PartialEq, Hash, Ord, PartialOrd, packable::Packable)]
 #[packable(unpack_error = Error)]
 pub struct OutputId {

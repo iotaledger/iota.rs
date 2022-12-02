@@ -13,7 +13,7 @@ use iota_types::block::{
     protocol::{dto::ProtocolParametersDto, ProtocolParameters},
 };
 #[cfg(not(target_family = "wasm"))]
-use tokio::{runtime::Runtime, sync::broadcast::channel};
+use tokio::runtime::Runtime;
 
 #[cfg(feature = "mqtt")]
 use crate::node_api::mqtt::{BrokerOptions, MqttEvent};
@@ -109,7 +109,6 @@ fn default_tips_interval() -> u64 {
 
 /// Builder to construct client instance with sensible default values
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(deny_unknown_fields)]
 #[must_use]
 pub struct ClientBuilder {
     /// Node manager builder
@@ -318,7 +317,7 @@ impl ClientBuilder {
     }
 
     /// Set User-Agent header for requests
-    /// Default is "iota-client/[version]"
+    /// Default is "iota-client/{version}"
     pub fn with_user_agent(mut self, user_agent: String) -> Self {
         self.node_manager_builder = self.node_manager_builder.with_user_agent(user_agent);
         self
@@ -330,7 +329,7 @@ impl ClientBuilder {
         let healthy_nodes = Arc::new(RwLock::new(HashMap::new()));
 
         #[cfg(not(target_family = "wasm"))]
-        let (runtime, sync_kill_sender) = {
+        let (runtime, sync_handle) = {
             let nodes = self
                 .node_manager_builder
                 .primary_node
@@ -341,26 +340,30 @@ impl ClientBuilder {
 
             let healthy_nodes_ = healthy_nodes.clone();
             let network_info_ = network_info.clone();
-            let (sync_kill_sender, sync_kill_receiver) = channel(1);
 
-            let runtime = std::thread::spawn(move || {
+            let (runtime, sync_handle) = std::thread::spawn(move || {
                 let runtime = Runtime::new().expect("failed to create Tokio runtime");
-                if let Err(e) = runtime.block_on(Client::sync_nodes(&healthy_nodes_, &nodes, &network_info_)) {
+                if let Err(e) = runtime.block_on(Client::sync_nodes(
+                    &healthy_nodes_,
+                    &nodes,
+                    &network_info_,
+                    self.node_manager_builder.ignore_node_health,
+                )) {
                     panic!("failed to sync nodes: {:?}", e);
                 }
-                Client::start_sync_process(
+                let sync_handle = Client::start_sync_process(
                     &runtime,
                     healthy_nodes_,
                     nodes,
                     self.node_manager_builder.node_sync_interval,
                     network_info_,
-                    sync_kill_receiver,
+                    self.node_manager_builder.ignore_node_health,
                 );
-                runtime
+                (runtime, sync_handle)
             })
             .join()
             .expect("failed to init node syncing process");
-            (Some(Arc::new(runtime)), Some(sync_kill_sender))
+            (Some(Arc::new(runtime)), Some(sync_handle))
         };
 
         #[cfg(feature = "mqtt")]
@@ -370,7 +373,7 @@ impl ClientBuilder {
             #[cfg(not(target_family = "wasm"))]
             runtime,
             #[cfg(not(target_family = "wasm"))]
-            sync_kill_sender: sync_kill_sender.map(Arc::new),
+            sync_handle: sync_handle.map(Arc::new),
             #[cfg(feature = "mqtt")]
             mqtt_client: None,
             #[cfg(feature = "mqtt")]

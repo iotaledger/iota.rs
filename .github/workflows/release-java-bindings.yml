@@ -1,0 +1,131 @@
+name: Create Java release
+
+on: workflow_dispatch
+
+jobs:
+  release-java:
+    name: Create Java release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+        java: ["11"]
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      - name: Install LLVM and Clang (Windows) # required for bindgen to work, see https://github.com/rust-lang/rust-bindgen/issues/1797
+        uses: KyleMayes/install-llvm-action@32c4866ebb71e0949e8833eb49beeebed48532bd
+        if: matrix.os == 'windows-2019'
+        with:
+          version: "11.0"
+          directory: ${{ runner.temp }}/llvm
+
+      - name: Set LIBCLANG_PATH (Windows)
+        run: echo "LIBCLANG_PATH=$((gcm clang).source -replace "clang.exe")" >> $env:GITHUB_ENV
+        if: matrix.os == 'windows-2019'
+
+      - name: Get current date
+        run: echo "CURRENT_DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+        if: matrix.os == 'macos-latest' || ${{ startsWith(matrix.os, 'ubuntu') }}
+
+      - name: Get current date
+        if: matrix.os == 'windows-2019'
+        run: echo "CURRENT_DATE=$(Get-Date -Format "yyyy-MM-dd")" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Install required packages (Ubuntu)
+        if: ${{ startsWith(matrix.os, 'ubuntu') }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install libudev-dev libusb-1.0-0-dev
+
+      - name: Cache cargo registry
+        uses: actions/cache@v3
+        with:
+          path: ~/.cargo/registry
+          # Add date to the cache to keep it up to date
+          key: ${{ matrix.os }}-stable-cargo-registry-${{ hashFiles('**/Cargo.lock') }}-${{ env.CURRENT_DATE }}
+          # Restore from outdated cache for speed
+          restore-keys: |
+            ${{ matrix.os }}-stable-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+            ${{ matrix.os }}-stable-cargo-registry-
+
+      - name: Cache cargo index
+        uses: actions/cache@v3
+        with:
+          path: ~/.cargo/git
+          # Add date to the cache to keep it up to date
+          key: ${{ matrix.os }}-stable-cargo-index-${{ hashFiles('**/Cargo.lock') }}-${{ env.CURRENT_DATE }}
+          # Restore from outdated cache for speed
+          restore-keys: |
+            ${{ matrix.os }}-stable-cargo-index-${{ hashFiles('**/Cargo.lock') }}
+            ${{ matrix.os }}-stable-cargo-index-
+
+      - name: Set Up Java ${{ matrix.java }}
+        uses: actions/setup-java@v3
+        with:
+          java-version: ${{ matrix.java }}
+          distribution: 'temurin'
+
+      - name: Build JAR for default target
+        shell: bash
+        working-directory: client/bindings/java/
+        run: |
+          chmod +x gradlew
+          ./gradlew build jarWithoutNativeLibs
+
+      - name: Build JAR for aarch64-apple-darwin target
+        if: matrix.os == 'macos-latest'
+        shell: bash
+        working-directory: client/bindings/java/
+        run: |
+          rustup target add aarch64-apple-darwin
+          ./gradlew build -PbuildTarget=aarch64-apple-darwin
+
+      - name: Get filename for tag construction
+        shell: bash
+        id: filename
+        working-directory: client/bindings/java/
+        run: |
+          cd lib/build/libs/
+          fileName="$(ls | grep -m 1 jar)"
+          echo "FILE_NAME=$fileName" >> $GITHUB_OUTPUT
+
+      - name: Construct tag
+        uses: actions-ecosystem/action-regex-match@v2
+        id: prepare-tag
+        with:
+          text: ${{ steps.filename.outputs.FILE_NAME }}
+          regex: '(.*)(\d.\d.\d(-rc.\d)?)'
+          flags: m
+
+      - name: Upload JAR to Github
+        uses: softprops/action-gh-release@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          files: |
+            client/bindings/java/lib/build/libs/*.jar
+          tag_name: ${{ steps.prepare-tag.outputs.group1 }}java-${{ steps.prepare-tag.outputs.group2 }}
+          append_body: true
+          prerelease: true
+
+      - name: Publish JAR to Maven Central
+        env:
+          ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.ORG_GRADLE_PROJECT_SONATYPE_USERNAME }}
+          ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.ORG_GRADLE_PROJECT_SONATYPE_PASSWORD }}
+          ORG_GRADLE_PROJECT_base64EncodedAsciiArmoredSigningKey: ${{ secrets.ORG_GRADLE_PROJECT_BASE64_ENCODED_ASCII_ARMORED_SIGNING_KEY }}
+          ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.ORG_GRADLE_PROJECT_SIGNING_PASSWORD }}
+        shell: bash
+        working-directory: client/bindings/java/
+        run: |
+          ./gradlew publishToSonatype
+          if [ "$RUNNER_OS" == "macOS" ];
+          then ./gradlew publishToSonatype -PbuildTarget=aarch64-apple-darwin
+          fi

@@ -96,7 +96,7 @@ impl NodeManager {
         }
 
         // Add other nodes in random order, so they are not always used in the same order
-        let nodes_random_order = if self.ignore_node_health {
+        let nodes_random_order = if !self.ignore_node_health {
             #[cfg(not(target_family = "wasm"))]
             {
                 self.healthy_nodes

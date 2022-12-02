@@ -307,7 +307,7 @@ pub struct AliasOutput {
 }
 
 impl AliasOutput {
-    /// The [`Output`](crate::output::Output) kind of an [`AliasOutput`].
+    /// The [`Output`](crate::block::output::Output) kind of an [`AliasOutput`].
     pub const KIND: u8 = 4;
     /// Maximum possible length in bytes of the state metadata.
     pub const STATE_METADATA_LENGTH_MAX: u16 = 8192;
