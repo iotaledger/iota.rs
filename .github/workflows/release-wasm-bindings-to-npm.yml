@@ -5,13 +5,13 @@ on: workflow_dispatch
 jobs:
   publish-wasm:
     runs-on: ubuntu-latest
-    env:
-      working-directory: client/bindings/wasm
+
+    defaults:
+      run:
+        working-directory: client/bindings/wasm
+
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          ref: ${{ github.event.inputs.branch }}
+      - uses: actions/checkout@v3
 
       - name: Install stable toolchain
         uses: actions-rs/toolchain@v1
@@ -34,19 +34,15 @@ jobs:
 
       - name: Install Yarn
         run: npm i -g yarn
-        working-directory: ${{ env.working-directory }}
 
       - name: Install JS dependencies
         run: yarn
-        working-directory: ${{ env.working-directory }}
 
       - name: Build project
         run: yarn build
-        working-directory: ${{ env.working-directory }}
 
       - name: Publish WASM bindings to NPM
         shell: sh
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm publish --access public
-        working-directory: ${{ env.working-directory }}
