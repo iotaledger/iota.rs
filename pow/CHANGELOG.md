@@ -19,6 +19,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security -->
 
+## 1.0.0-rc.2 - 202x-xx-xx
+
+### Added
+
+- `SingleThreadedMinerBuilder, SingleThreadedMiner` for `target_family = "wasm"`;
+
+### Changed
+
+- `MinerBuilder` and `Miner` don't implement `NonceProvider, NonceProviderBuilder` traits anymore;
+
+### Removed
+
+- `NonceProvider, NonceProviderBuilder` traits;
+
 ## 1.0.0-rc.1 - 2022-10-25
 
 First release based on `bee-pow`.

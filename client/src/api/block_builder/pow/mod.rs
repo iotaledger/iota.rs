@@ -3,53 +3,70 @@
 
 //! PoW functions
 
-#[cfg(target_family = "wasm")]
-pub mod wasm_miner;
-
-pub mod miner;
-
-use iota_pow::providers::{NonceProvider, NonceProviderBuilder};
-use iota_types::block::{parent::Parents, payload::Payload, Block, BlockBuilder, BlockId};
-use packable::PackableExt;
-#[cfg(target_family = "wasm")]
-use wasm_miner::SingleThreadedMiner;
 #[cfg(not(target_family = "wasm"))]
-use {crate::api::miner::ClientMiner, iota_pow::providers::miner::MinerCancel};
+use iota_pow::providers::miner::{Miner, MinerBuilder, MinerCancel};
+#[cfg(target_family = "wasm")]
+use iota_pow::providers::wasm_miner::{SingleThreadedMiner, SingleThreadedMinerBuilder};
+use iota_types::block::{parent::Parents, payload::Payload, Block, BlockBuilder};
 
 use crate::{Client, Error, Result};
 
 /// Performs proof-of-work to construct a [`Block`].
-pub fn do_pow<P: NonceProvider>(
-    miner: P,
+pub(crate) fn do_pow(
+    #[cfg(not(target_family = "wasm"))] miner: Miner,
+    #[cfg(target_family = "wasm")] miner: SingleThreadedMiner,
     min_pow_score: u32,
     payload: Option<Payload>,
-    parent_blocks: Vec<BlockId>,
+    parents: Parents,
 ) -> Result<Block> {
-    let mut block = BlockBuilder::new(Parents::new(parent_blocks)?);
+    let mut block = BlockBuilder::new(parents);
     if let Some(p) = payload {
         block = block.with_payload(p);
     }
     block
-        .finish_nonce_provider(|bytes| miner.nonce(bytes, min_pow_score).unwrap())
+        .finish_nonce_provider(|bytes| miner.nonce(bytes, min_pow_score))
         .map_err(Error::BlockError)
 }
 
+impl Client {
+    /// Finishes the block with local PoW if needed.
+    pub async fn finish_block_builder(&self, parents: Option<Parents>, payload: Option<Payload>) -> Result<Block> {
+        if self.get_local_pow() {
+            finish_pow(self, parents, payload).await
+        } else {
+            // Finish block without doing PoW
+            let parents = match parents {
+                Some(parents) => parents,
+                None => Parents::new(self.get_tips().await?)?,
+            };
+            let mut block_builder = BlockBuilder::new(parents);
+            if let Some(p) = payload {
+                block_builder = block_builder.with_payload(p);
+            }
+            Ok(block_builder.finish()?)
+        }
+    }
+}
+
 /// Calls the appropriate PoW function depending whether the compilation is for wasm or not.
-pub async fn finish_pow(client: &Client, payload: Option<Payload>) -> Result<Block> {
+async fn finish_pow(client: &Client, parents: Option<Parents>, payload: Option<Payload>) -> Result<Block> {
     #[cfg(not(target_family = "wasm"))]
-    let block = crate::api::pow::finish_multi_threaded_pow(client, payload).await?;
+    let block = crate::api::pow::finish_multi_threaded_pow(client, parents, payload).await?;
     #[cfg(target_family = "wasm")]
-    let block = crate::api::pow::finish_single_threaded_pow(client, payload).await?;
+    let block = crate::api::pow::finish_single_threaded_pow(client, parents, payload).await?;
 
     Ok(block)
 }
 
 /// Performs multi-threaded proof-of-work.
 ///
-/// Always fetches new tips after each tips interval elapses.
+/// Always fetches new tips after each tips interval elapses if no parents are provided.
 #[cfg(not(target_family = "wasm"))]
-async fn finish_multi_threaded_pow(client: &Client, payload: Option<Payload>) -> Result<Block> {
-    let local_pow = client.get_local_pow();
+async fn finish_multi_threaded_pow(
+    client: &Client,
+    parents: Option<Parents>,
+    payload: Option<Payload>,
+) -> Result<Block> {
     let pow_worker_count = client.pow_worker_count;
     let min_pow_score = client.get_min_pow_score().await?;
     let tips_interval = client.get_tips_interval();
@@ -57,24 +74,24 @@ async fn finish_multi_threaded_pow(client: &Client, payload: Option<Payload>) ->
         let cancel = MinerCancel::new();
         let cancel_2 = cancel.clone();
         let payload_ = payload.clone();
-        let mut parent_blocks = client.get_tips().await?;
-        parent_blocks.sort_unstable_by_key(PackableExt::pack_to_vec);
-        parent_blocks.dedup();
+        let parents = match &parents {
+            Some(parents) => parents.clone(),
+            None => Parents::new(client.get_tips().await?)?,
+        };
         let time_thread = std::thread::spawn(move || Ok(pow_timeout(tips_interval, cancel)));
         let pow_thread = std::thread::spawn(move || {
-            let mut client_miner = ClientMiner::builder().with_local_pow(local_pow).with_cancel(cancel_2);
+            let mut client_miner = MinerBuilder::new().with_cancel(cancel_2);
             if let Some(worker_count) = pow_worker_count {
-                client_miner = client_miner.with_worker_count(worker_count);
+                client_miner = client_miner.with_num_workers(worker_count);
             }
-            do_pow(client_miner.finish(), min_pow_score, payload_, parent_blocks)
-                .map(|block| (block.nonce(), Some(block)))
+            do_pow(client_miner.finish(), min_pow_score, payload_, parents).map(|block| (block.nonce(), Some(block)))
         });
 
         let threads = vec![pow_thread, time_thread];
         for t in threads {
             match t.join().expect("failed to join threads.") {
                 Ok(res) => {
-                    if res.0 != 0 || !local_pow {
+                    if res.0 != 0 {
                         if let Some(block) = res.1 {
                             return Ok(block);
                         }
@@ -99,33 +116,30 @@ fn pow_timeout(after_seconds: u64, cancel: MinerCancel) -> (u64, Option<Block>) 
 /// Single threaded proof-of-work for Wasm, which cannot generally spawn the native threads used
 /// by the `ClientMiner`.
 ///
-/// Always fetches new tips after each tips interval elapses.
+/// Fetches new tips after each tips interval elapses if no parents are provided.
 #[cfg(target_family = "wasm")]
-async fn finish_single_threaded_pow(client: &Client, payload: Option<Payload>) -> Result<Block> {
+async fn finish_single_threaded_pow(
+    client: &Client,
+    parents: Option<Parents>,
+    payload: Option<Payload>,
+) -> Result<Block> {
     let min_pow_score: u32 = client.get_min_pow_score().await?;
     let tips_interval: u64 = client.get_tips_interval();
     let local_pow: bool = client.get_local_pow();
-    let mut parent_blocks = client.get_tips().await?;
     loop {
-        parent_blocks.sort_unstable_by_key(PackableExt::pack_to_vec);
-        parent_blocks.dedup();
+        let parents = match &parents {
+            Some(parents) => parents.clone(),
+            None => Parents::new(client.get_tips().await?)?,
+        };
 
-        let single_threaded_miner = SingleThreadedMiner::builder()
-            .tips_interval_secs(tips_interval)
-            .local_pow(local_pow)
+        let single_threaded_miner = SingleThreadedMinerBuilder::new()
+            .timeout_in_seconds(tips_interval)
             .finish();
-        let block: Block = do_pow(
-            single_threaded_miner,
-            min_pow_score,
-            payload.clone(),
-            parent_blocks.clone(),
-        )?;
+        let block: Block = do_pow(single_threaded_miner, min_pow_score, payload.clone(), parents)?;
 
         // The nonce defaults to 0 on errors (from the tips interval elapsing),
         // we need to re-run proof-of-work with new parents.
-        if block.nonce() == 0 && min_pow_score != 0 && local_pow {
-            parent_blocks = client.get_tips().await?;
-        } else {
+        if block.nonce() != 0 || min_pow_score == 0 || local_pow {
             return Ok(block);
         }
     }

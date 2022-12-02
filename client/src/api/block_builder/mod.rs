@@ -15,16 +15,14 @@ use iota_types::block::{
         unlock_condition::{AddressUnlockCondition, UnlockCondition},
         AliasId, BasicOutputBuilder, Output, OUTPUT_COUNT_RANGE,
     },
+    parent::Parents,
     payload::{Payload, TaggedDataPayload},
     Block, BlockId,
 };
-use packable::{
-    bounded::{TryIntoBoundedU16Error, TryIntoBoundedU8Error},
-    PackableExt,
-};
+use packable::bounded::TryIntoBoundedU16Error;
 
 pub use self::transaction::verify_semantic;
-use crate::{api::do_pow, constants::SHIMMER_COIN_TYPE, secret::SecretManager, Client, Error, Result};
+use crate::{constants::SHIMMER_COIN_TYPE, secret::SecretManager, Client, Error, Result};
 
 /// Builder of the block API
 #[must_use]
@@ -40,7 +38,7 @@ pub struct ClientBlockBuilder<'a> {
     custom_remainder_address: Option<Address>,
     tag: Option<Vec<u8>>,
     data: Option<Vec<u8>>,
-    parents: Option<Vec<BlockId>>,
+    parents: Option<Parents>,
     allow_burning: bool,
 }
 
@@ -223,12 +221,7 @@ impl<'a> ClientBlockBuilder<'a> {
 
     /// Set 1-8 custom parent block ids
     pub fn with_parents(mut self, parent_ids: Vec<BlockId>) -> Result<Self> {
-        if !(1..=8).contains(&parent_ids.len()) {
-            return Err(crate::Error::BlockError(iota_types::block::Error::InvalidParentCount(
-                TryIntoBoundedU8Error::Truncated(parent_ids.len()),
-            )));
-        }
-        self.parents.replace(parent_ids);
+        self.parents.replace(Parents::new(parent_ids)?);
         Ok(self)
     }
 
@@ -405,17 +398,7 @@ impl<'a> ClientBlockBuilder<'a> {
     pub async fn finish_block(self, payload: Option<Payload>) -> Result<Block> {
         // Do not replace parents with the latest tips if they are set explicitly,
         // necessary for block promotion.
-        let final_block = match self.parents {
-            Some(mut parents) => {
-                parents.sort_unstable_by_key(PackableExt::pack_to_vec);
-                parents.dedup();
-
-                let miner = self.client.get_pow_provider();
-                let min_pow_score = self.client.get_min_pow_score().await?;
-                do_pow(miner, min_pow_score, payload, parents)?
-            }
-            None => crate::api::pow::finish_pow(self.client, payload).await?,
-        };
+        let final_block = self.client.finish_block_builder(self.parents, payload).await?;
 
         let block_id = self.client.post_block_raw(&final_block).await?;
         // Get block if we use remote PoW, because the node will change parents and nonce

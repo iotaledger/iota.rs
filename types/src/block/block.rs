@@ -4,6 +4,7 @@
 use core::ops::Deref;
 
 use crypto::hashes::{blake2b::Blake2b256, Digest};
+use iota_pow::providers::Error as PoWError;
 use packable::{
     error::{UnexpectedEOF, UnpackError, UnpackErrorExt},
     packer::Packer,
@@ -17,7 +18,6 @@ use crate::block::{
     protocol::ProtocolParameters,
     BlockId, Error, PROTOCOL_VERSION,
 };
-
 /// A builder to build a [`Block`].
 #[derive(Clone)]
 #[must_use]
@@ -64,7 +64,10 @@ impl BlockBuilder {
     }
 
     /// Finishes the [`BlockBuilder`] into a [`Block`].
-    pub fn finish_nonce_provider<F: Fn(&[u8]) -> u64>(self, nonce_provider: F) -> Result<Block, Error> {
+    pub fn finish_nonce_provider<F: Fn(&[u8]) -> Result<u64, PoWError>>(
+        self,
+        nonce_provider: F,
+    ) -> Result<Block, Error> {
         verify_payload(self.payload.as_ref())?;
 
         let mut block = Block {
@@ -80,7 +83,7 @@ impl BlockBuilder {
             return Err(Error::InvalidBlockLength(block_bytes.len()));
         }
 
-        block.nonce = nonce_provider(&block_bytes[..block_bytes.len() - core::mem::size_of::<u64>()]);
+        block.nonce = nonce_provider(&block_bytes[..block_bytes.len() - core::mem::size_of::<u64>()])?;
 
         Ok(block)
     }

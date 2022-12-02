@@ -176,7 +176,7 @@ impl Client {
                             // switch to local PoW
                             client_network_info.local_pow = true;
                         }
-                        let block_res = crate::api::finish_pow(self, block.payload().cloned()).await;
+                        let block_res = self.finish_block_builder(None, block.payload().cloned()).await;
                         let block_with_local_pow = match block_res {
                             Ok(block) => {
                                 // reset local PoW state
@@ -245,7 +245,7 @@ impl Client {
                             // switch to local PoW
                             client_network_info.local_pow = true;
                         }
-                        let block_res = crate::api::finish_pow(self, block.payload().cloned()).await;
+                        let block_res = self.finish_block_builder(None, block.payload().cloned()).await;
                         let block_with_local_pow = match block_res {
                             Ok(block) => {
                                 // reset local PoW state

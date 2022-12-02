@@ -4,34 +4,22 @@
 //! Contains nonce providers for Proof of Work.
 
 pub mod miner;
-pub mod u64;
+#[cfg(target_family = "wasm")]
+pub mod wasm_miner;
 
-/// A trait to build nonce providers.
-pub trait NonceProviderBuilder: Default + Sized {
-    /// The type of the built nonce provider.
-    type Provider: NonceProvider<Builder = Self>;
+use thiserror::Error;
 
-    /// Creates a new nonce provider builder.
-    fn new() -> Self {
-        Self::default()
-    }
+// Precomputed natural logarithm of 3 for performance reasons.
+// See https://oeis.org/A002391.
+const LN_3: f64 = 1.098_612_288_668_109;
 
-    /// Constructs the nonce provider from the builder.
-    fn finish(self) -> Self::Provider;
-}
-
-/// A trait describing how a nonce is provided.
-pub trait NonceProvider: Sized {
-    /// The type of the nonce provider builder.
-    type Builder: NonceProviderBuilder<Provider = Self>;
-    /// Type of errors occurring when providing nonces.
-    type Error: std::error::Error;
-
-    /// Returns a builder for this nonce provider.
-    fn builder() -> Self::Builder {
-        Self::Builder::default()
-    }
-
-    /// Provides a nonce given bytes and a target score.
-    fn nonce(&self, bytes: &[u8], target_score: u32) -> Result<u64, Self::Error>;
+/// Errors occurring when computing nonces with the `Miner` nonce provider.
+#[derive(Error, Debug, Eq, PartialEq)]
+pub enum Error {
+    /// The worker has been cancelled.
+    #[error("the worker has been cancelled")]
+    Cancelled,
+    /// Invalid proof of work score.
+    #[error("invalid proof of work score {0}, requiring {1} trailing zeros")]
+    InvalidPowScore(u32, usize),
 }

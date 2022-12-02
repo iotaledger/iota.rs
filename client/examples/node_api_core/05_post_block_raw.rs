@@ -7,6 +7,7 @@
 
 use iota_client::{
     block::{parent::Parents, Block},
+    pow::providers::miner::MinerBuilder,
     Client, Result,
 };
 
@@ -27,7 +28,11 @@ async fn main() -> Result<()> {
     // Get parents for the block.
     let parents = Parents::new(client.get_tips().await?)?;
     // Create the block.
-    let block = Block::build(parents).finish(min_pow_score)?;
+    let block = Block::build(parents).finish_nonce_provider(|bytes| {
+        let miner = MinerBuilder::new().with_num_workers(num_cpus::get()).finish();
+
+        miner.nonce(bytes, min_pow_score)
+    })?;
     // Post the block as raw bytes.
     let block_id = client.post_block_raw(&block).await?;
 

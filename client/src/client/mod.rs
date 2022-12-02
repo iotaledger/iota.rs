@@ -11,7 +11,6 @@ use std::{
     time::Duration,
 };
 
-use iota_pow::providers::{NonceProvider, NonceProviderBuilder};
 use iota_types::block::{output::RentStructure, protocol::ProtocolParameters};
 #[cfg(not(target_family = "wasm"))]
 use tokio::runtime::Runtime;
@@ -103,24 +102,25 @@ impl Client {
         ClientBuilder::new()
     }
 
-    /// Gets the miner to use based on the Pow setting
-    pub fn get_pow_provider(&self) -> impl NonceProvider {
-        let local_pow: bool = self.get_local_pow();
-        #[cfg(target_family = "wasm")]
-        let miner = crate::api::wasm_miner::SingleThreadedMiner::builder()
-            .local_pow(local_pow)
-            .finish();
-        #[cfg(not(target_family = "wasm"))]
-        let miner = {
-            let mut miner = crate::api::miner::ClientMiner::builder().with_local_pow(local_pow);
-            if let Some(worker_count) = self.pow_worker_count {
-                miner = miner.with_worker_count(worker_count)
-            }
-            miner.finish()
-        };
+    // / Gets the miner to use based on the Pow setting
+    // pub fn get_pow_provider(&self) -> Miner {
+    //     // todo: is this needed in the miner?
+    //     let local_pow: bool = self.get_local_pow();
+    //     #[cfg(target_family = "wasm")]
+    //     let miner = crate::api::wasm_miner::SingleThreadedMiner::builder()
+    //         .local_pow(local_pow)
+    //         .finish();
+    //     #[cfg(not(target_family = "wasm"))]
+    //     let miner = {
+    //         let mut miner = MinerBuilder::new();
+    //         if let Some(worker_count) = self.pow_worker_count {
+    //             miner = miner.with_num_workers(worker_count)
+    //         }
+    //         miner.finish()
+    //     };
 
-        miner
-    }
+    //     miner
+    // }
 
     /// Gets the network related information such as network_id and min_pow_score
     /// and if it's the default one, sync it first and set the NetworkInfo.

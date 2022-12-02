@@ -1275,6 +1275,7 @@ dependencies = [
 name = "iota-pow"
 version = "1.0.0-rc.1"
 dependencies = [
+ "instant",
  "iota-crypto",
  "iota-types",
  "thiserror",

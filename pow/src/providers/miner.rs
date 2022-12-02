@@ -22,25 +22,10 @@ use crypto::{
         Digest,
     },
 };
-use thiserror::Error;
 
-use crate::providers::{NonceProvider, NonceProviderBuilder};
+use super::{Error, LN_3};
 
 const DEFAULT_NUM_WORKERS: usize = 1;
-// Precomputed natural logarithm of 3 for performance reasons.
-// See https://oeis.org/A002391.
-const LN_3: f64 = 1.098_612_288_668_109;
-
-/// Errors occurring when computing nonces with the `Miner` nonce provider.
-#[derive(Error, Debug)]
-pub enum Error {
-    /// The worker has been cancelled.
-    #[error("the worker has been cancelled")]
-    Cancelled,
-    /// Invalid proof of work score.
-    #[error("invalid proof of work score {0}, requiring {1} trailing zeros")]
-    InvalidPowScore(u32, usize),
-}
 
 /// A type to cancel the `Miner` nonce provider to abort operations.
 #[derive(Default, Clone)]
@@ -77,6 +62,11 @@ pub struct MinerBuilder {
 }
 
 impl MinerBuilder {
+    /// Create a new `MinerBuilder.
+    pub fn new() -> Self {
+        Self { ..Default::default() }
+    }
+
     /// Sets the desired number of workers for the `Miner` nonce provider.
     pub fn with_num_workers(mut self, num_workers: usize) -> Self {
         self.num_workers.replace(num_workers);
@@ -88,12 +78,9 @@ impl MinerBuilder {
         self.cancel.replace(cancel);
         self
     }
-}
 
-impl NonceProviderBuilder for MinerBuilder {
-    type Provider = Miner;
-
-    fn finish(self) -> Miner {
+    /// Build the [`Miner`].
+    pub fn finish(self) -> Miner {
         Miner {
             num_workers: self.num_workers.unwrap_or(DEFAULT_NUM_WORKERS),
             cancel: self.cancel.unwrap_or_else(MinerCancel::new),
@@ -145,13 +132,9 @@ impl Miner {
 
         Err(Error::Cancelled)
     }
-}
 
-impl NonceProvider for Miner {
-    type Builder = MinerBuilder;
-    type Error = Error;
-
-    fn nonce(&self, bytes: &[u8], target_score: u32) -> Result<u64, Self::Error> {
+    /// Mine a nonce for provided bytes.
+    pub fn nonce(&self, bytes: &[u8], target_score: u32) -> Result<u64, Error> {
         self.cancel.reset();
 
         let mut nonce = 0;
@@ -160,7 +143,7 @@ impl NonceProvider for Miner {
             (((bytes.len() + std::mem::size_of::<u64>()) as f64 * target_score as f64).ln() / LN_3).ceil() as usize;
 
         if target_zeros > HASH_LENGTH {
-            return Err(Self::Error::InvalidPowScore(target_score, target_zeros));
+            return Err(Error::InvalidPowScore(target_score, target_zeros));
         }
 
         let worker_width = u64::MAX / self.num_workers as u64;

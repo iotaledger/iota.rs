@@ -14,11 +14,8 @@ use crypto::{
         Digest,
     },
 };
-use iota_pow::providers::{NonceProvider, NonceProviderBuilder};
 
-// Precomputed natural logarithm of 3 for performance reasons.
-// See https://oeis.org/A002391.
-const LN_3: f64 = 1.098_612_288_668_109;
+use super::{Error, LN_3};
 
 // Should take around one second to reach on an average CPU,
 // so shouldn't cause a noticeable delay on tips_interval.
@@ -26,61 +23,45 @@ const POW_ROUNDS_BEFORE_INTERVAL_CHECK: usize = 3000;
 
 /// Single-threaded proof-of-work for Wasm.
 pub struct SingleThreadedMiner {
-    local_pow: bool,
-    tips_interval_secs: Option<u64>,
+    timeout_in_seconds: Option<u64>,
 }
 
 /// Builder for [`SingleThreadedMiner`].
 #[derive(Default)]
 #[must_use]
 pub struct SingleThreadedMinerBuilder {
-    local_pow: bool,
-    tips_interval_secs: Option<u64>,
+    timeout_in_seconds: Option<u64>,
 }
 
 impl SingleThreadedMinerBuilder {
-    /// Immediately return a default 0 nonce if false (remote proof-of-work).
-    pub fn local_pow(mut self, local_pow: bool) -> Self {
-        self.local_pow = local_pow;
-        self
+    /// Create a new `SingleThreadedMinerBuilder.
+    pub fn new() -> Self {
+        Self { ..Default::default() }
     }
 
     /// Aborts and returns a "cancelled" error after the interval elapses, if set.
     /// New parents (tips) should be fetched and proof-of-work re-run afterwards.
-    pub fn tips_interval_secs(mut self, tips_interval_secs: u64) -> Self {
-        self.tips_interval_secs = Some(tips_interval_secs);
+    pub fn timeout_in_seconds(mut self, timeout_in_seconds: u64) -> Self {
+        self.timeout_in_seconds = Some(timeout_in_seconds);
         self
     }
-}
 
-impl NonceProviderBuilder for SingleThreadedMinerBuilder {
-    type Provider = SingleThreadedMiner;
-
-    fn finish(self) -> Self::Provider {
+    /// Build the SingleThreadedMiner.
+    pub fn finish(self) -> SingleThreadedMiner {
         SingleThreadedMiner {
-            local_pow: self.local_pow,
-            tips_interval_secs: self.tips_interval_secs,
+            timeout_in_seconds: self.timeout_in_seconds,
         }
     }
 }
 
-impl NonceProvider for SingleThreadedMiner {
-    type Builder = SingleThreadedMinerBuilder;
-    type Error = crate::Error;
-
-    fn nonce(&self, bytes: &[u8], target_score: u32) -> Result<u64, Self::Error> {
-        // Remote proof-of-work will compute the block nonce.
-        if !self.local_pow {
-            return Ok(0);
-        }
-
+impl SingleThreadedMiner {
+    /// Mine a nonce for provided bytes.
+    pub fn nonce(&self, bytes: &[u8], target_score: u32) -> Result<u64, Error> {
         let mut pow_digest = TritBuf::<T1B1Buf>::new();
         let target_zeros =
             (((bytes.len() + std::mem::size_of::<u64>()) as f64 * target_score as f64).ln() / LN_3).ceil() as usize;
         if target_zeros > HASH_LENGTH {
-            return Err(crate::Error::Pow(
-                iota_pow::providers::miner::Error::InvalidPowScore(target_score, target_zeros).to_string(),
-            ));
+            return Err(Error::InvalidPowScore(target_score, target_zeros));
         }
 
         let hash = Blake2b256::digest(bytes);
@@ -99,7 +80,7 @@ impl NonceProvider for SingleThreadedMiner {
         let mut counter = 0;
         let mining_start = instant::Instant::now();
         loop {
-            if let Some(tips_interval) = self.tips_interval_secs {
+            if let Some(tips_interval) = self.timeout_in_seconds {
                 if counter % POW_ROUNDS_BEFORE_INTERVAL_CHECK == 0
                     && mining_start.elapsed() > instant::Duration::from_secs(tips_interval)
                 {
@@ -123,8 +104,6 @@ impl NonceProvider for SingleThreadedMiner {
             counter += 1;
         }
 
-        Err(crate::Error::Pow(
-            iota_pow::providers::miner::Error::Cancelled.to_string(),
-        ))
+        Err(Error::Cancelled)
     }
 }
