@@ -17,6 +17,13 @@ use iota_types::block::{
 use packable::{error::UnpackError, PackableExt};
 
 #[test]
+fn default_finish_zero_nonce() {
+    let block = BlockBuilder::new(rand_parents()).finish().unwrap();
+
+    assert!(block.nonce() == 0);
+}
+
+#[test]
 fn pow_provider() {
     let min_pow_score = protocol_parameters().min_pow_score();
     let block = BlockBuilder::new(rand_parents())
