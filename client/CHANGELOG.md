@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `alias_id_to_bech32()` to utils;
 - `nft_id_to_bech32()` to utils;
 - `Response::Bech32Address()` to message interface;
+- `Message::{AliasIdToBech32(), NftIdToBech32()}` to message interface;
 
 ### Changed
 
