@@ -11,25 +11,8 @@ use iota_types::block::{parent::Parents, payload::Payload, Block, BlockBuilder};
 
 use crate::{Client, Error, Result};
 
-/// Performs proof-of-work to construct a [`Block`].
-pub(crate) fn do_pow(
-    #[cfg(not(target_family = "wasm"))] miner: Miner,
-    #[cfg(target_family = "wasm")] miner: SingleThreadedMiner,
-    min_pow_score: u32,
-    payload: Option<Payload>,
-    parents: Parents,
-) -> Result<Block> {
-    let mut block = BlockBuilder::new(parents);
-    if let Some(p) = payload {
-        block = block.with_payload(p);
-    }
-    block
-        .finish_nonce_provider(|bytes| miner.nonce(bytes, min_pow_score))
-        .map_err(Error::BlockError)
-}
-
 impl Client {
-    /// Finishes the block with local PoW if needed.
+    /// Finishes the block with local PoW if needed. Without local PoW, it will finish the block with a 0 nonce.
     pub async fn finish_block_builder(&self, parents: Option<Parents>, payload: Option<Payload>) -> Result<Block> {
         if self.get_local_pow() {
             finish_pow(self, parents, payload).await
@@ -49,13 +32,30 @@ impl Client {
 }
 
 /// Calls the appropriate PoW function depending whether the compilation is for wasm or not.
-async fn finish_pow(client: &Client, parents: Option<Parents>, payload: Option<Payload>) -> Result<Block> {
+pub async fn finish_pow(client: &Client, parents: Option<Parents>, payload: Option<Payload>) -> Result<Block> {
     #[cfg(not(target_family = "wasm"))]
     let block = crate::api::pow::finish_multi_threaded_pow(client, parents, payload).await?;
     #[cfg(target_family = "wasm")]
     let block = crate::api::pow::finish_single_threaded_pow(client, parents, payload).await?;
 
     Ok(block)
+}
+
+/// Performs proof-of-work to construct a [`Block`].
+pub fn do_pow(
+    #[cfg(not(target_family = "wasm"))] miner: Miner,
+    #[cfg(target_family = "wasm")] miner: SingleThreadedMiner,
+    min_pow_score: u32,
+    payload: Option<Payload>,
+    parents: Parents,
+) -> Result<Block> {
+    let mut block = BlockBuilder::new(parents);
+    if let Some(p) = payload {
+        block = block.with_payload(p);
+    }
+    block
+        .finish_nonce_provider(|bytes| miner.nonce(bytes, min_pow_score))
+        .map_err(Error::BlockError)
 }
 
 /// Performs multi-threaded proof-of-work.
@@ -133,7 +133,7 @@ async fn finish_single_threaded_pow(
         };
 
         let single_threaded_miner = SingleThreadedMinerBuilder::new()
-            .timeout_in_seconds(tips_interval)
+            .with_timeout_in_seconds(tips_interval)
             .finish();
         let block: Block = do_pow(single_threaded_miner, min_pow_score, payload.clone(), parents)?;
 

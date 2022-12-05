@@ -18,7 +18,7 @@ use crypto::{
 use super::{Error, LN_3};
 
 // Should take around one second to reach on an average CPU,
-// so shouldn't cause a noticeable delay on tips_interval.
+// so shouldn't cause a noticeable delay on timeout_in_seconds.
 const POW_ROUNDS_BEFORE_INTERVAL_CHECK: usize = 3000;
 
 /// Single-threaded proof-of-work for Wasm.
@@ -41,7 +41,7 @@ impl SingleThreadedMinerBuilder {
 
     /// Aborts and returns a "cancelled" error after the interval elapses, if set.
     /// New parents (tips) should be fetched and proof-of-work re-run afterwards.
-    pub fn timeout_in_seconds(mut self, timeout_in_seconds: u64) -> Self {
+    pub fn with_timeout_in_seconds(mut self, timeout_in_seconds: u64) -> Self {
         self.timeout_in_seconds = Some(timeout_in_seconds);
         self
     }

@@ -27,11 +27,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `nft_id_to_bech32()` to utils;
 - `Response::Bech32Address()` to message interface;
 - `Message::{AliasIdToBech32(), NftIdToBech32()}` to message interface;
+- `Client::finish_block_builder()`;
 
 ### Changed
 
 - Abort the sync nodes task through its handle instead of a oneshot channel;
 - Update network info also from unhealty nodes if ignore_node_health is set to true;
+- `finish_pow()` and `do_pow()` no accept optional parents;
 
 ### Removed
 
