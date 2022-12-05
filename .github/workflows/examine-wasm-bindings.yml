@@ -51,6 +51,7 @@ jobs:
         uses: ./.github/actions/setup-rust
         with:
           toolchain: nightly
+          target: wasm32-unknown-unknown
           cache: true
           cache-root: client/bindings/wasm/
           cache-job-id: ${{ github.workflow }}-${{ github.job }}-${{ matrix.os }}-${{ matrix.node }}
@@ -94,6 +95,7 @@ jobs:
         uses: ./.github/actions/setup-rust
         with:
           toolchain: beta
+          target: wasm32-unknown-unknown
           components: clippy
           cache: true
           cache-root: client/bindings/wasm/
@@ -135,6 +137,7 @@ jobs:
         uses: ./.github/actions/setup-rust
         with:
           toolchain: nightly
+          target: wasm32-unknown-unknown
           cache: true
           install: cargo-udeps
           cache-root: client/bindings/wasm/
@@ -162,6 +165,7 @@ jobs:
         uses: ./.github/actions/setup-rust
         with:
           toolchain: nightly
+          target: wasm32-unknown-unknown
           components: rustfmt
           cache: false
 
@@ -210,6 +214,7 @@ jobs:
         uses: ./.github/actions/setup-rust
         with:
           toolchain: nightly
+          target: wasm32-unknown-unknown
           install: cargo-audit
           cache: true
           cache-job-id: ${{ github.workflow }}-${{ github.job }}
