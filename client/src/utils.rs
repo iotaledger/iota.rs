@@ -11,8 +11,8 @@ use crypto::{
     utils,
 };
 use iota_types::block::{
-    address::{Address, AliasAddress, Ed25519Address},
-    output::AliasId,
+    address::{Address, AliasAddress, Ed25519Address, NftAddress},
+    output::{AliasId, NftId},
     payload::TaggedDataPayload,
 };
 use zeroize::Zeroize;
@@ -40,6 +40,11 @@ pub fn hex_to_bech32(hex: &str, bech32_hrp: &str) -> Result<String> {
 /// Transforms an alias id to a bech32 encoded address
 pub fn alias_id_to_bech32(alias_id: AliasId, bech32_hrp: &str) -> String {
     Address::Alias(AliasAddress::new(alias_id)).to_bech32(bech32_hrp)
+}
+
+/// Transforms an nft id to a bech32 encoded address
+pub fn nft_id_to_bech32(nft_id: NftId, bech32_hrp: &str) -> String {
+    Address::Nft(NftAddress::new(nft_id)).to_bech32(bech32_hrp)
 }
 
 /// Transforms a prefix hex encoded public key to a bech32 encoded address
@@ -126,6 +131,14 @@ impl Client {
         match bech32_hrp {
             Some(hrp) => Ok(alias_id_to_bech32(alias_id, hrp)),
             None => Ok(alias_id_to_bech32(alias_id, &self.get_bech32_hrp().await?)),
+        }
+    }
+
+    /// Transforms an nft id to a bech32 encoded address
+    pub async fn nft_id_to_bech32(&self, nft_id: NftId, bech32_hrp: Option<&str>) -> crate::Result<String> {
+        match bech32_hrp {
+            Some(hrp) => Ok(nft_id_to_bech32(nft_id, hrp)),
+            None => Ok(nft_id_to_bech32(nft_id, &self.get_bech32_hrp().await?)),
         }
     }
 

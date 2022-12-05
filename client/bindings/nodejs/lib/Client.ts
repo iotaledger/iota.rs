@@ -689,6 +689,21 @@ export class Client {
     }
 
     /**
+     * Transforms an nft id to a bech32 encoded address.
+     */
+    async nftIdToBech32(nftId: string, bech32Hrp?: string): Promise<string> {
+        const response = await this.messageHandler.sendMessage({
+            name: 'nftIdToBech32',
+            data: {
+                nftId,
+                bech32Hrp,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
      * Transforms a hex encoded public key to a bech32 encoded address.
      */
     async hexPublicKeyToBech32Address(

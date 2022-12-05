@@ -24,6 +24,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `alias_id_to_bech32()` to utils;
+- `nft_id_to_bech32()` to utils;
+- `Response::Bech32Address()` to message interface;
+- `Message::{AliasIdToBech32(), NftIdToBech32()}` to message interface;
 
 ### Changed
 
@@ -33,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - Sync nodes `select!`;
+- `Response::{HexToBech32(), AliasIdToBech32()}` from message interface;
 
 ## 2.0.1-rc.4 - 2022-11-22
 
