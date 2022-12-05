@@ -19,7 +19,7 @@ class Utils(BaseAPI):
         })
 
     def alias_id_to_bech32(self, alias_id, bech32_hrp):
-        """Transforms a hex encoded address to a bech32 encoded address.
+        """Transforms an alias id to a bech32 encoded address.
         """
         return self.send_message('aliasIdToBech32', {
             'aliasId': alias_id,
