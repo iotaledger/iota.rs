@@ -32,12 +32,29 @@ pub(crate) fn fulfill_base_token_requirement(
     selected_inputs: &[InputSigningData],
     outputs: &[Output],
 ) -> Result<Vec<InputSigningData>> {
-    let (inputs_sum, outputs_sum) = base_token_sums(selected_inputs, outputs);
+    let (mut inputs_sum, outputs_sum) = base_token_sums(selected_inputs, outputs);
     let mut newly_selected_inputs = Vec::new();
 
-    if inputs_sum < outputs_sum {
+    // TODO if consolidate strategy: sum all the lowest amount until diff is covered.
+    available_inputs.sort_by(|left, right| left.output.amount().cmp(&right.output.amount()));
+
+    while inputs_sum < outputs_sum {
         let diff = outputs_sum - inputs_sum;
-        let mut newly_covered = 0;
+
+        if available_inputs.is_empty() {
+            return Err(Error::NotEnoughBalance {
+                found: inputs_sum,
+                required: outputs_sum,
+            });
+        }
+
+        // TODO this would be lowest amount of input strategy.
+        // TODO avoid remove because it shifts the order.
+        let input = available_inputs.remove(0);
+        inputs_sum += input.output.amount();
+        newly_selected_inputs.push(input);
+
+        // TODO don't pick burned things
 
         // // 1. Basic with ED25519 address and nothing else
         // // 2. Basic with ED25519 address and other things
@@ -58,24 +75,6 @@ pub(crate) fn fulfill_base_token_requirement(
         //         break;
         //     }
         // }
-
-        // TODO if consolidate strategy: sum all the lowest amount until diff is covered.
-        available_inputs.sort_by(|left, right| left.output.amount().cmp(&right.output.amount()));
-
-        // TODO this would be lowest amount of input strategy.
-        while diff > newly_covered && !available_inputs.is_empty() {
-            // TODO avoid remove because it shifts the order.
-            let input = available_inputs.remove(0);
-            newly_covered += input.output.amount();
-            newly_selected_inputs.push(input);
-        }
-
-        if diff > newly_covered {
-            return Err(Error::NotEnoughBalance {
-                found: newly_covered,
-                required: diff,
-            });
-        }
 
         // println!("{diff}");
     }
