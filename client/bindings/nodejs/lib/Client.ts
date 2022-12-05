@@ -691,10 +691,7 @@ export class Client {
     /**
      * Transforms an nft id to a bech32 encoded address.
      */
-    async nftIdToBech32(
-        nftId: string,
-        bech32Hrp?: string,
-    ): Promise<string> {
+    async nftIdToBech32(nftId: string, bech32Hrp?: string): Promise<string> {
         const response = await this.messageHandler.sendMessage({
             name: 'nftIdToBech32',
             data: {
