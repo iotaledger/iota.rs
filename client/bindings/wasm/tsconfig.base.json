@@ -9,7 +9,7 @@
         "noImplicitAny": true,
         "preserveConstEnums": true,
         "resolveJsonModule": true,
-        "forceConsistentCasingInFileNames": true,
+        "forceConsistentCasingInFileNames": true
     },
     "include": ["out/**/*"],
     "exclude": ["node_modules", "out/test/*"]
