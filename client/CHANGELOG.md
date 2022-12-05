@@ -33,7 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Abort the sync nodes task through its handle instead of a oneshot channel;
 - Update network info also from unhealty nodes if ignore_node_health is set to true;
-- `finish_pow()` and `do_pow()` no accept optional parents;
+- `finish_pow()` and `do_pow()` now accept optional parents and always do PoW, independent of the local PoW setting in Client;
 
 ### Removed
 
