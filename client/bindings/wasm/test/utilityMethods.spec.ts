@@ -1,6 +1,4 @@
-import { Client } from '../../lib';
-import '../customMatchers';
-import 'dotenv/config';
+import { Client } from '../lib';
 
 const offlineClient = new Client({});
 
@@ -38,7 +36,7 @@ describe('Client utility methods', () => {
             'rms',
         );
 
-        expect(address).toBeValidAddress();
+        expect(address).toBe('rms1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx4aaacx');
     });
 
     it('validates address', async () => {
