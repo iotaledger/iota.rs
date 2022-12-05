@@ -1,15 +1,13 @@
-import { Client } from '../lib';
+import { Client } from '../node/lib';
 
 const offlineClient = new Client({});
 
 describe('Client utility methods', () => {
-    it.skip('generates and validates mnemonic', async () => {
+    it('generates and validates mnemonic', async () => {
         const mnemonic = await offlineClient.generateMnemonic();
 
         // A mnemonic has 24 words
-        await expect(
-            mnemonic.split(' '),
-        ).resolves.toBe(24);
+        await expect(mnemonic.split(' ').length).toEqual(24);
     });
 
     it('converts address to hex and bech32', async () => {
@@ -36,7 +34,9 @@ describe('Client utility methods', () => {
             'rms',
         );
 
-        expect(address).toBe('rms1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx4aaacx');
+        expect(address).toBe(
+            'rms1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx4aaacx',
+        );
     });
 
     it('validates address', async () => {
