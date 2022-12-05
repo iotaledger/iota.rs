@@ -1,0 +1,218 @@
+name: Examine the Wasm Bindings
+on:
+  push:
+    branches:
+      - develop
+      - production
+    paths:
+      - ".github/workflows/examine-wasm-bindings.yml"
+      - ".github/actions/**"
+      - "client/bindings/wasm/**"
+      # Watch the Rust core too
+      - "client/src/**"
+      - "client/Cargo.toml"
+      - "client/Cargo.lock"
+  pull_request:
+    branches:
+      - develop
+      - production
+    paths:
+      - ".github/workflows/examine-wasm-bindings.yml"
+      - ".github/actions/**"
+      - "client/bindings/wasm/**"
+      # Watch the Rust core too
+      - "client/src/**"
+      - "client/Cargo.toml"
+      - "client/Cargo.lock"
+  schedule:
+    - cron: "0 1 * * *"
+  workflow_dispatch:
+
+concurrency: 
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Test
+    if: ${{ ! github.event.schedule }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+        node: ["16"]
+
+    steps:
+      - name: Checkout the Source Code
+        uses: actions/checkout@v3
+
+      - name: Set Up Nightly Rust
+        uses: ./.github/actions/setup-rust
+        with:
+          toolchain: nightly
+          cache: true
+          cache-root: client/bindings/wasm/
+          cache-job-id: ${{ github.workflow }}-${{ github.job }}-${{ matrix.os }}-${{ matrix.node }}
+          cache-hash: ${{ hashFiles('.github/workflows/examine-wasm-bindings.yml') }}
+
+      - name: Set Up Node.js ${{ matrix.node }} and Yarn Cache
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node }}
+          cache: yarn
+          cache-dependency-path: client/bindings/wasm/yarn.lock
+
+      - name: Run Yarn Install
+        working-directory: client/bindings/wasm/
+        run: yarn install
+
+      - name: Run Yarn Test
+        working-directory: client/bindings/wasm/
+        run: yarn test
+
+  lint:
+    name: Lint
+    if: ${{ ! github.event.schedule }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the Source Code
+        uses: actions/checkout@v3
+
+      - name: Set Up Beta Clippy
+        uses: ./.github/actions/setup-rust
+        with:
+          toolchain: beta
+          components: clippy
+          cache: true
+          cache-root: client/bindings/wasm/
+          cache-job-id: ${{ github.workflow }}-${{ github.job }}
+          cache-hash: ${{ hashFiles('.github/workflows/examine-wasm-bindings.yml') }}
+
+      - name: Run Clippy
+        uses: actions-rs/clippy-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          args: --manifest-path client/bindings/wasm/Cargo.toml --all-features --all-targets -- --deny warnings
+          name: Clippy Results for the Wasm Bindings
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          cache: yarn
+          cache-dependency-path: client/bindings/wasm/yarn.lock
+          node-version: 16.x
+
+      - name: Install Dependencies
+        working-directory: client/bindings/wasm/
+        run: yarn
+
+      - name: Lint
+        working-directory: client/bindings/wasm/
+        run: yarn lint
+
+  check-unused-deps:
+    name: Check Unused Dependencies
+    if: ${{ ! github.event.schedule }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the Source Code
+        uses: actions/checkout@v3
+
+      - name: Install Cargo-udeps with Nightly Rust
+        uses: ./.github/actions/setup-rust
+        with:
+          toolchain: nightly
+          cache: true
+          install: cargo-udeps
+          cache-root: client/bindings/wasm/
+          cache-job-id: ${{ github.workflow }}-${{ github.job }}
+          cache-hash: ${{ hashFiles('.github/workflows/examine-wasm-bindings.yml') }}
+
+      - name: Run Cargo Udeps
+        uses: actions-rs/cargo@v1
+        with:
+          command: udeps
+          args: --manifest-path client/bindings/wasm/Cargo.toml --all-targets --all-features
+
+      # TODO: Check yarn too
+
+  check-format:
+    name: Check Format
+    if: ${{ ! github.event.schedule }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the Source Code
+        uses: actions/checkout@v3
+
+      - name: Set Up Nightly Rustfmt
+        uses: ./.github/actions/setup-rust
+        with:
+          toolchain: nightly
+          components: rustfmt
+          cache: false
+
+      - name: Install cargo-license-template
+        uses: actions-rs/cargo@v1
+        with:
+          command: install
+          args: --force cargo-license-template
+
+      - name: Run Cargo Fmt
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --manifest-path client/bindings/wasm/Cargo.toml --all -- --check
+
+      - name: Run cargo-license-template
+        uses: actions-rs/cargo@v1
+        with:
+          command: license-template
+          args: --template .license_template
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          cache: yarn
+          cache-dependency-path: client/bindings/wasm/yarn.lock
+          node-version: 16.x
+
+      - name: Install Dependencies
+        working-directory: client/bindings/wasm/
+        run: yarn
+
+      - name: Format
+        working-directory: client/bindings/wasm/
+        run: yarn format-check
+
+  audit:
+    name: Perform Security Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the Source Code
+        uses: actions/checkout@v3
+
+      - name: Install Cargo-audit with Nightly Rust
+        uses: ./.github/actions/setup-rust
+        with:
+          toolchain: nightly
+          install: cargo-audit
+          cache: true
+          cache-job-id: ${{ github.workflow }}-${{ github.job }}
+          cache-hash: ${{ hashFiles('.github/workflows/examine-wasm-bindings.yml') }}
+
+      - name: Run Cargo Audit
+        uses: actions-rs/cargo@v1
+        with:
+          command: audit
+          # The ignored security advisories:
+          #
+          # - RUSTSEC-2021-0145: `atty` potential unaligned read.
+          #   - Waiting for https://github.com/mackwic/colored/pull/122 to be merged.
+          args: --file client/bindings/wasm/Cargo.lock --deny warnings --ignore RUSTSEC-2021-0145
+
+      # TODO: Check the JavaScript code too
