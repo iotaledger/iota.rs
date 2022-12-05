@@ -4,6 +4,8 @@
 use super::fulfill_sender_requirement;
 use crate::{block::address::Address, error::Result, secret::types::InputSigningData};
 
+/// Fulfills an issuer requirement by fulfilling the equivalent sender requirement.
+/// This is kept in case fulfilling sender and issuer requirements diverges at some point.
 pub(crate) fn fulfill_issuer_requirement(
     address: Address,
     available_inputs: &mut Vec<InputSigningData>,

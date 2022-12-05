@@ -60,6 +60,7 @@ fn fulfill_ed25519_address_requirement(
     }
 }
 
+/// Fulfills a sender requirement.
 pub(crate) fn fulfill_sender_requirement(
     address: Address,
     available_inputs: &mut Vec<InputSigningData>,
