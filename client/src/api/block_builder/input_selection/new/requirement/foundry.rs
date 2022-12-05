@@ -8,8 +8,8 @@ use crate::{
     secret::types::InputSigningData,
 };
 
-fn is_foundry_id(input: &InputSigningData, foundry_id: &FoundryId) -> bool {
-    if let Output::Foundry(foundry_output) = &input.output {
+pub(crate) fn is_foundry_id(output: &Output, foundry_id: &FoundryId) -> bool {
+    if let Output::Foundry(foundry_output) = output {
         &foundry_output.id() == foundry_id
     } else {
         false
@@ -24,7 +24,10 @@ pub(crate) fn fulfill_foundry_requirement(
     _outputs: &[Output],
 ) -> Result<Vec<InputSigningData>> {
     // Checks if the requirement is already fulfilled.
-    if selected_inputs.iter().any(|input| is_foundry_id(input, &foundry_id)) {
+    if selected_inputs
+        .iter()
+        .any(|input| is_foundry_id(&input.output, &foundry_id))
+    {
         return Ok(Vec::new());
     }
 
@@ -32,7 +35,7 @@ pub(crate) fn fulfill_foundry_requirement(
     {
         let index = available_inputs
             .iter()
-            .position(|input| is_foundry_id(input, &foundry_id));
+            .position(|input| is_foundry_id(&input.output, &foundry_id));
 
         match index {
             Some(index) => Ok(vec![available_inputs.swap_remove(index)]),

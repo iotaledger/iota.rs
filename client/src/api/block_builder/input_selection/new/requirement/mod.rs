@@ -1,11 +1,11 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-mod alias;
-mod foundry;
+pub(crate) mod alias;
+pub(crate) mod foundry;
 mod issuer;
 mod native_tokens;
-mod nft;
+pub(crate) mod nft;
 mod remainder;
 mod sender;
 

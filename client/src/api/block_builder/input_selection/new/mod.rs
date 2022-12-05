@@ -28,12 +28,12 @@ use crate::{
     secret::types::InputSigningData,
 };
 
-// TODO should have its own error type?
-// TODO make methods actually take self
+// TODO should ISA have its own error type? At least review errors.
+// TODO make methods actually take self? There was a mut issue.
 
 pub struct InputSelection {
     outputs: Vec<Output>,
-    // TODO impl Iter ?
+    // TODO impl Iter instead?
     available_inputs: Vec<InputSigningData>,
     protocol_parameters: ProtocolParameters,
     timestamp: u32,
@@ -96,6 +96,7 @@ impl InputSelection {
         Ok(())
     }
 
+    // TODO rename
     fn init(&mut self) -> Result<(Vec<InputSigningData>, Requirements)> {
         let mut selected_inputs = Vec::new();
         let mut requirements = Requirements::new();

@@ -1,11 +1,7 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{
-    block::output::Output,
-    error::{Error, Result},
-    secret::types::InputSigningData,
-};
+use crate::{block::output::Output, error::Result, secret::types::InputSigningData};
 
 pub(crate) fn fulfill_native_tokens_requirement(
     available_inputs: &mut Vec<InputSigningData>,

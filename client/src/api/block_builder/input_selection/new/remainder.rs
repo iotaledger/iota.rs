@@ -65,6 +65,10 @@ pub(crate) fn remainder_output(
 
     let (inputs_sum, outputs_sum) = base_token_sums(selected_inputs, outputs);
 
+    println!("remainder: input {inputs_sum} output {outputs_sum}");
+
+    println!("{selected_inputs:?}\n{outputs:?}");
+
     if inputs_sum > outputs_sum {
         let diff = inputs_sum - outputs_sum;
 
