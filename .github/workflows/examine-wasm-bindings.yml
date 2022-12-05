@@ -56,6 +56,12 @@ jobs:
           cache-job-id: ${{ github.workflow }}-${{ github.job }}-${{ matrix.os }}-${{ matrix.node }}
           cache-hash: ${{ hashFiles('.github/workflows/examine-wasm-bindings.yml') }}
 
+      # Download a pre-compiled wasm-bindgen binary.
+      - name: Install wasm-bindgen-cli
+        uses: jetli/wasm-bindgen-action@24ba6f9fff570246106ac3f80f35185600c3f6c9
+        with:
+          version: '0.2.83'
+
       - name: Set Up Node.js ${{ matrix.node }} and Yarn Cache
         uses: actions/setup-node@v2
         with:
@@ -66,6 +72,10 @@ jobs:
       - name: Run Yarn Install
         working-directory: client/bindings/wasm/
         run: yarn install
+
+      - name: Run Yarn Build
+        working-directory: client/bindings/wasm/
+        run: yarn build
 
       - name: Run Yarn Test
         working-directory: client/bindings/wasm/
