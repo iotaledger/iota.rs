@@ -4,7 +4,7 @@
 use std::str::FromStr;
 
 use iota_client::{
-    api::input_selection::new::{Burn, InputSelection},
+    api::input_selection::new::{Burn, InputSelection, Requirement},
     block::{
         output::{NftId, Output},
         protocol::protocol_parameters,
@@ -31,8 +31,6 @@ fn input_selection_nfts() -> Result<()> {
     let selected_transaction_data = InputSelection::build(outputs, inputs.clone(), protocol_parameters.clone())
         .finish()
         .select()?;
-
-    println!("TEST 1");
 
     assert_eq!(selected_transaction_data.0, inputs);
 
@@ -61,8 +59,6 @@ fn input_selection_nfts() -> Result<()> {
         .finish()
         .select()?;
 
-    println!("TEST 3");
-
     // basic output + nft remainder
     assert_eq!(selected_transaction_data.1.len(), 2);
 
@@ -72,8 +68,6 @@ fn input_selection_nfts() -> Result<()> {
     let selected_transaction_data = InputSelection::build(outputs, inputs.clone(), protocol_parameters.clone())
         .finish()
         .select()?;
-
-    println!("TEST 4");
 
     // One output should be added for the remainder
     assert_eq!(selected_transaction_data.1.len(), 2);
@@ -94,8 +88,6 @@ fn input_selection_nfts() -> Result<()> {
         .finish()
         .select()?;
 
-    println!("TEST 5");
-
     // No remainder
     assert_eq!(selected_transaction_data.1.len(), 1);
     // Output is a basic output
@@ -104,8 +96,6 @@ fn input_selection_nfts() -> Result<()> {
     // not enough storage deposit for remainder
     let inputs = build_input_signing_data_nft_outputs(vec![(nft_id_1, bech32_address, 1_000_001)]);
     let outputs = vec![build_nft_output(nft_id_1, bech32_address, 1_000_000)];
-
-    println!("TEST 6");
 
     match InputSelection::build(outputs, inputs, protocol_parameters.clone())
         .finish()
@@ -122,17 +112,12 @@ fn input_selection_nfts() -> Result<()> {
     let inputs = build_input_signing_data_most_basic_outputs(vec![(bech32_address, 1_000_000)]);
     let outputs = vec![build_nft_output(nft_id_1, bech32_address, 1_000_000)];
 
-    println!("TEST 7");
-
     match InputSelection::build(outputs, inputs, protocol_parameters.clone())
         .finish()
         .select()
     {
-        Err(Error::MissingInput(err_msg)) => {
-            assert_eq!(
-                &err_msg,
-                "missing nft input for 0x1111111111111111111111111111111111111111111111111111111111111111"
-            );
+        Err(Error::UnfulfillableRequirement(req)) => {
+            assert_eq!(req, Requirement::Nft(nft_id_1));
         }
         _ => panic!("Should return missing nft input"),
     }
