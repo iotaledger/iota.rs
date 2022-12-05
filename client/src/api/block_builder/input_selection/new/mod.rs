@@ -107,7 +107,7 @@ impl InputSelection {
 
         for required_input in self.required_inputs.iter() {
             // Checks that required input is not forbidden.
-            if self.forbidden_inputs.contains(&required_input) {
+            if self.forbidden_inputs.contains(required_input) {
                 return Err(Error::RequiredInputIsForbidden(*required_input));
             }
 

@@ -4,7 +4,7 @@
 use crate::{block::output::Output, error::Result, secret::types::InputSigningData};
 
 pub(crate) fn fulfill_remainder_requirement(
-    available_inputs: &mut Vec<InputSigningData>,
+    available_inputs: &mut [InputSigningData],
     selected_inputs: &[InputSigningData],
     outputs: &[Output],
 ) -> Result<Vec<InputSigningData>> {

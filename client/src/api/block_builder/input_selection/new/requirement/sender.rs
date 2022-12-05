@@ -5,7 +5,7 @@ use iota_types::block::output::UnlockCondition;
 
 use super::{fulfill_alias_requirement, fulfill_nft_requirement, Requirement};
 use crate::{
-    block::{address::Address, output::Output},
+    block::address::Address,
     error::{Error, Result},
     secret::types::InputSigningData,
 };
@@ -23,7 +23,6 @@ fn fulfill_ed25519_address_requirement(
     address: Address,
     available_inputs: &mut Vec<InputSigningData>,
     selected_inputs: &[InputSigningData],
-    _outputs: &[Output],
 ) -> Result<Vec<InputSigningData>> {
     // Checks if the requirement is already fulfilled.
     if selected_inputs.iter().any(|input| is_ed25519_address(input, &address)) {
@@ -65,18 +64,14 @@ pub(crate) fn fulfill_sender_requirement(
     address: Address,
     available_inputs: &mut Vec<InputSigningData>,
     selected_inputs: &[InputSigningData],
-    outputs: &[Output],
 ) -> Result<Vec<InputSigningData>> {
     match address {
-        Address::Ed25519(_) => fulfill_ed25519_address_requirement(address, available_inputs, selected_inputs, outputs),
-        Address::Alias(alias_address) => fulfill_alias_requirement(
-            alias_address.into_alias_id(),
-            available_inputs,
-            selected_inputs,
-            outputs,
-        ),
+        Address::Ed25519(_) => fulfill_ed25519_address_requirement(address, available_inputs, selected_inputs),
+        Address::Alias(alias_address) => {
+            fulfill_alias_requirement(alias_address.into_alias_id(), available_inputs, selected_inputs)
+        }
         Address::Nft(nft_address) => {
-            fulfill_nft_requirement(nft_address.into_nft_id(), available_inputs, selected_inputs, outputs)
+            fulfill_nft_requirement(nft_address.into_nft_id(), available_inputs, selected_inputs)
         }
     }
 }

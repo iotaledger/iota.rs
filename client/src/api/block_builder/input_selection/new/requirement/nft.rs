@@ -8,25 +8,25 @@ use crate::{
     secret::types::InputSigningData,
 };
 
-pub(crate) fn is_nft_id(output: &Output, output_id: &OutputId, nft_id: &NftId) -> bool {
-    if let Output::Nft(nft_output) = output {
-        &nft_output.nft_id_non_null(output_id) == nft_id
+/// Checks if an output is an nft with output ID that matches the given nft ID.
+pub(crate) fn is_nft_with_id(output: &Output, output_id: &OutputId, nft_id: &NftId) -> bool {
+    if let Output::Nft(nft) = output {
+        &nft.nft_id_non_null(output_id) == nft_id
     } else {
         false
     }
 }
 
-/// Tries to fulfill a nft requirement by selecting the appropriate nft output from the available inputs.
+/// Fulfills a nft requirement by selecting the appropriate nft from the available inputs.
 pub(crate) fn fulfill_nft_requirement(
     nft_id: NftId,
     available_inputs: &mut Vec<InputSigningData>,
     selected_inputs: &[InputSigningData],
-    _outputs: &[Output],
 ) -> Result<Vec<InputSigningData>> {
     // Checks if the requirement is already fulfilled.
     if selected_inputs
         .iter()
-        .any(|input| is_nft_id(&input.output, input.output_id(), &nft_id))
+        .any(|input| is_nft_with_id(&input.output, input.output_id(), &nft_id))
     {
         return Ok(Vec::new());
     }
@@ -35,9 +35,10 @@ pub(crate) fn fulfill_nft_requirement(
     {
         let index = available_inputs
             .iter()
-            .position(|input| is_nft_id(&input.output, input.output_id(), &nft_id));
+            .position(|input| is_nft_with_id(&input.output, input.output_id(), &nft_id));
 
         match index {
+            // Removes the output from the available inputs and returns it, swaps to make it O(1).
             Some(index) => Ok(vec![available_inputs.swap_remove(index)]),
             None => Err(Error::UnfulfillableRequirement(Requirement::Nft(nft_id))),
         }

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use super::{
-    requirement::{alias::is_alias_id, foundry::is_foundry_id, nft::is_nft_id},
+    requirement::{alias::is_alias_with_id, foundry::is_foundry_with_id, nft::is_nft_with_id},
     Burn,
 };
 use crate::{
@@ -32,7 +32,10 @@ fn transition_alias_input(
     }
 
     // Don't create an alias output if it already exists.
-    if outputs.iter().any(|output| is_alias_id(output, output_id, &alias_id)) {
+    if outputs
+        .iter()
+        .any(|output| is_alias_with_id(output, output_id, &alias_id))
+    {
         return Ok(None);
     }
 
@@ -62,7 +65,7 @@ fn transition_nft_input(
     }
 
     // Don't create an nft output if it already exists.
-    if outputs.iter().any(|output| is_nft_id(output, output_id, &nft_id)) {
+    if outputs.iter().any(|output| is_nft_with_id(output, output_id, &nft_id)) {
         return Ok(None);
     }
 
@@ -90,7 +93,7 @@ fn transition_foundry_input(
     }
 
     // Don't create a foundry output if it already exists.
-    if outputs.iter().any(|output| is_foundry_id(output, &foundry_id)) {
+    if outputs.iter().any(|output| is_foundry_with_id(output, &foundry_id)) {
         return Ok(None);
     }
 

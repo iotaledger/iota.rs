@@ -50,21 +50,16 @@ impl Requirement {
         available_inputs: &mut Vec<InputSigningData>,
         selected_inputs: &[InputSigningData],
         outputs: &[Output],
+        // TODO can it actually return more than one output?
     ) -> Result<Vec<InputSigningData>> {
         match self {
-            Requirement::Sender(address) => {
-                fulfill_sender_requirement(address, available_inputs, selected_inputs, outputs)
-            }
-            Requirement::Issuer(address) => {
-                fulfill_issuer_requirement(address, available_inputs, selected_inputs, outputs)
-            }
+            Requirement::Sender(address) => fulfill_sender_requirement(address, available_inputs, selected_inputs),
+            Requirement::Issuer(address) => fulfill_issuer_requirement(address, available_inputs, selected_inputs),
             Requirement::Foundry(foundry_id) => {
-                fulfill_foundry_requirement(foundry_id, available_inputs, selected_inputs, outputs)
+                fulfill_foundry_requirement(foundry_id, available_inputs, selected_inputs)
             }
-            Requirement::Alias(alias_id) => {
-                fulfill_alias_requirement(alias_id, available_inputs, selected_inputs, outputs)
-            }
-            Requirement::Nft(nft_id) => fulfill_nft_requirement(nft_id, available_inputs, selected_inputs, outputs),
+            Requirement::Alias(alias_id) => fulfill_alias_requirement(alias_id, available_inputs, selected_inputs),
+            Requirement::Nft(nft_id) => fulfill_nft_requirement(nft_id, available_inputs, selected_inputs),
             Requirement::NativeTokens => fulfill_native_tokens_requirement(available_inputs, selected_inputs, outputs),
             Requirement::BaseToken => fulfill_base_token_requirement(available_inputs, selected_inputs, outputs),
             Requirement::Remainder => fulfill_remainder_requirement(available_inputs, selected_inputs, outputs),
