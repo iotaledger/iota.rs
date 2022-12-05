@@ -302,6 +302,14 @@ export interface __AliasIdToBech32Message__ {
     };
 }
 
+export interface __NftIdToBech32Message__ {
+    name: 'nftIdToBech32';
+    data: {
+        nftId: string;
+        bech32Hrp?: string;
+    };
+}
+
 export interface __HexPublicKeyToBech32AddressMessage__ {
     name: 'hexPublicKeyToBech32Address';
     data: {

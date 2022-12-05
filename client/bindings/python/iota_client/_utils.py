@@ -26,6 +26,14 @@ class Utils(BaseAPI):
             'bech32Hrp': bech32_hrp
         })
 
+    def nft_id_to_bech32(self, nft_id, bech32_hrp):
+        """Transforms an nft id to a bech32 encoded address.
+        """
+        return self.send_message('nftIdToBech32', {
+            'nftId': nft_id,
+            'bech32Hrp': bech32_hrp
+        })
+
     def hex_public_key_to_bech32_address(self, hex, bech32_hrp=None):
         """Transforms a hex encoded public key to a bech32 encoded address.
         """

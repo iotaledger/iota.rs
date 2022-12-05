@@ -53,6 +53,7 @@ The Client to interact with nodes.
 - [bech32ToHex](Client.md#bech32tohex)
 - [hexToBech32](Client.md#hextobech32)
 - [aliasIdToBech32](Client.md#aliasidtobech32)
+- [nftIdToBech32](Client.md#nftidtobech32)
 - [hexPublicKeyToBech32Address](Client.md#hexpublickeytobech32address)
 - [isAddressValid](Client.md#isaddressvalid)
 - [aliasOutputIds](Client.md#aliasoutputids)
@@ -834,6 +835,25 @@ Transforms an alias id to a bech32 encoded address.
 | Name | Type |
 | :------ | :------ |
 | `aliasId` | `string` |
+| `bech32Hrp?` | `string` |
+
+#### Returns
+
+`Promise`<`string`\>
+
+___
+
+### nftIdToBech32
+
+▸ **nftIdToBech32**(`nftId`, `bech32Hrp?`): `Promise`<`string`\>
+
+Transforms an nft id to a bech32 encoded address.
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `nftId` | `string` |
 | `bech32Hrp?` | `string` |
 
 #### Returns

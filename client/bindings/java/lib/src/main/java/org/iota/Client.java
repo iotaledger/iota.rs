@@ -543,6 +543,18 @@ public class Client extends NativeApi {
     }
 
     /**
+     * Converts an nft id to a bech32 address.
+     *
+     * @param nftId The nft id to be converted.
+     * @param bech32Hrp The bech 32 human readable part to use.
+     * @return The bech32 address.
+     * @throws ClientException on error.
+     */
+    public String nftIdToBech32(NftId nftId, String bech32Hrp) throws ClientException {
+        return utilsApi.nftIdToBech32(nftId, bech32Hrp);
+    }
+
+    /**
      * Converts a hex public key to a bech32 address
      *
      * @param hex The public key in hexadecimal format.

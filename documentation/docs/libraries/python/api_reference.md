@@ -44,6 +44,16 @@ def alias_id_to_bech32(alias_id, bech32_hrp)
 
 Transforms an alias id to a bech32 encoded address.
 
+<a id="iota_client._utils.Utils.nft_id_to_bech32"></a>
+
+#### nft\_id\_to\_bech32
+
+```python
+def nft_id_to_bech32(nft_id, bech32_hrp)
+```
+
+Transforms an nft id to a bech32 encoded address.
+
 <a id="iota_client._utils.Utils.hex_public_key_to_bech32_address"></a>
 
 #### hex\_public\_key\_to\_bech32\_address
