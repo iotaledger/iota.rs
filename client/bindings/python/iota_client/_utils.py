@@ -18,7 +18,15 @@ class Utils(BaseAPI):
             'bech32Hrp': bech32_hrp
         })
 
-    def hex_public_key_to_beh32_address(self, hex, bech32_hrp=None):
+    def alias_id_to_bech32(self, alias_id, bech32_hrp):
+        """Transforms a hex encoded address to a bech32 encoded address.
+        """
+        return self.send_message('aliasIdToBech32', {
+            'aliasId': alias_id,
+            'bech32Hrp': bech32_hrp
+        })
+
+    def hex_public_key_to_bech32_address(self, hex, bech32_hrp=None):
         """Transforms a hex encoded public key to a bech32 encoded address.
         """
         return self.send_message('hexPublicKeyToBech32Address', {
