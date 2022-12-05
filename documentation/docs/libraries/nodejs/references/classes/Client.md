@@ -52,6 +52,7 @@ The Client to interact with nodes.
 - [getIncludedBlock](Client.md#getincludedblock)
 - [bech32ToHex](Client.md#bech32tohex)
 - [hexToBech32](Client.md#hextobech32)
+- [aliasIdToBech32](Client.md#aliasidtobech32)
 - [hexPublicKeyToBech32Address](Client.md#hexpublickeytobech32address)
 - [isAddressValid](Client.md#isaddressvalid)
 - [aliasOutputIds](Client.md#aliasoutputids)
@@ -814,6 +815,25 @@ Transforms a hex encoded address to a bech32 encoded address.
 | Name | Type |
 | :------ | :------ |
 | `hex` | `string` |
+| `bech32Hrp?` | `string` |
+
+#### Returns
+
+`Promise`<`string`\>
+
+___
+
+### aliasIdToBech32
+
+▸ **aliasIdToBech32**(`aliasId`, `bech32Hrp?`): `Promise`<`string`\>
+
+Transforms an alias id to a bech32 encoded address.
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `aliasId` | `string` |
 | `bech32Hrp?` | `string` |
 
 #### Returns

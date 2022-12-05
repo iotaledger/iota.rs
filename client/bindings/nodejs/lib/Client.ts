@@ -671,6 +671,24 @@ export class Client {
     }
 
     /**
+     * Transforms an alias id to a bech32 encoded address.
+     */
+    async aliasIdToBech32(
+        aliasId: string,
+        bech32Hrp?: string,
+    ): Promise<string> {
+        const response = await this.messageHandler.sendMessage({
+            name: 'aliasIdToBech32',
+            data: {
+                aliasId,
+                bech32Hrp,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
      * Transforms a hex encoded public key to a bech32 encoded address.
      */
     async hexPublicKeyToBech32Address(

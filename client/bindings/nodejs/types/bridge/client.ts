@@ -294,6 +294,14 @@ export interface __HexToBech32Message__ {
     };
 }
 
+export interface __AliasIdToBech32Message__ {
+    name: 'aliasIdToBech32';
+    data: {
+        aliasId: string;
+        bech32Hrp?: string;
+    };
+}
+
 export interface __HexPublicKeyToBech32AddressMessage__ {
     name: 'hexPublicKeyToBech32Address';
     data: {

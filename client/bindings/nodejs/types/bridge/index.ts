@@ -39,6 +39,7 @@ import type {
     __GetIncludedBlockMessage__,
     __Bech32ToHexMessage__,
     __HexToBech32Message__,
+    __AliasIdToBech32Message__,
     __HexPublicKeyToBech32AddressMessage__,
     __IsAddressValidMessage__,
     __AliasOutputIdsMessage__,
@@ -114,6 +115,7 @@ export type __ClientMessages__ =
     | __GetIncludedBlockMessage__
     | __Bech32ToHexMessage__
     | __HexToBech32Message__
+    | __AliasIdToBech32Message__
     | __HexPublicKeyToBech32AddressMessage__
     | __IsAddressValidMessage__
     | __AliasOutputIdsMessage__
