@@ -22,13 +22,13 @@ pub(crate) fn fulfill_alias_requirement(
     alias_id: AliasId,
     available_inputs: &mut Vec<InputSigningData>,
     selected_inputs: &[InputSigningData],
-) -> Result<Vec<InputSigningData>> {
+) -> Result<(Vec<InputSigningData>, Option<Requirement>)> {
     // Checks if the requirement is already fulfilled.
     if selected_inputs
         .iter()
         .any(|input| is_alias_with_id(&input.output, input.output_id(), &alias_id))
     {
-        return Ok(Vec::new());
+        return Ok((Vec::new(), None));
     }
 
     // Checks if the requirement can be fulfilled.
@@ -39,7 +39,7 @@ pub(crate) fn fulfill_alias_requirement(
 
         match index {
             // Removes the output from the available inputs and returns it, swaps to make it O(1).
-            Some(index) => Ok(vec![available_inputs.swap_remove(index)]),
+            Some(index) => Ok((vec![available_inputs.swap_remove(index)], None)),
             None => Err(Error::UnfulfillableRequirement(Requirement::Alias(alias_id))),
         }
     }

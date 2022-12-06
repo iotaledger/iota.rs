@@ -3,6 +3,7 @@
 
 use std::collections::HashSet;
 
+use super::Requirement;
 use crate::{
     block::output::{unlock_condition::UnlockCondition, Output},
     error::{Error, Result},
@@ -16,32 +17,17 @@ pub(crate) fn base_token_sums(selected_inputs: &[InputSigningData], outputs: &[O
     (inputs_sum, outputs_sum)
 }
 
-// fn evaluate(inputs: impl Iterator<Item = InputSigningData>, diff: u64, newly_covered: &mut u64) {
-//     let current_selection = HashSet::new();
-
-//     while let Some(input) = inputs {
-//         newly_covered += input.output.amount();
-//         current_selection.insert(input.output_id());
-//         if diff <= newly_covered {
-//             break
-//         }
-//     }
-// }
-
-// TODO very dumb first draft.
 pub(crate) fn fulfill_base_token_requirement(
     available_inputs: &mut Vec<InputSigningData>,
     selected_inputs: &[InputSigningData],
     outputs: &[Output],
-) -> Result<Vec<InputSigningData>> {
+) -> Result<(Vec<InputSigningData>, Option<Requirement>)> {
     let (mut inputs_sum, outputs_sum) = base_token_sums(selected_inputs, outputs);
     let mut newly_selected_inputs = Vec::new();
     let mut newly_selected_ids = HashSet::new();
 
-    let diff = outputs_sum - inputs_sum;
-
     if inputs_sum >= outputs_sum {
-        return Ok(newly_selected_inputs);
+        return Ok((newly_selected_inputs, None));
     }
 
     println!("{available_inputs:?}\n{selected_inputs:?}\n{outputs:?}");
@@ -76,17 +62,6 @@ pub(crate) fn fulfill_base_token_requirement(
                     break 'overall;
                 }
             }
-
-            // while inputs_sum < outputs_sum {
-            //     let diff = outputs_sum - inputs_sum;
-
-            //     // if available_inputs.is_empty() {
-            //     //     return Err(Error::NotEnoughBalance {
-            //     //         found: inputs_sum,
-            //     //         required: outputs_sum,
-            //     //     });
-            //     // }
-            // }
         }
 
         // 2. Basic with ED25519 address and other things ????
@@ -124,5 +99,5 @@ pub(crate) fn fulfill_base_token_requirement(
 
     available_inputs.retain(|input| !newly_selected_ids.contains(input.output_id()));
 
-    Ok(newly_selected_inputs)
+    Ok((newly_selected_inputs, None))
 }

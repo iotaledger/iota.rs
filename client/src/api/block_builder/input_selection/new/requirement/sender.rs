@@ -23,10 +23,10 @@ fn fulfill_ed25519_address_requirement(
     address: Address,
     available_inputs: &mut Vec<InputSigningData>,
     selected_inputs: &[InputSigningData],
-) -> Result<Vec<InputSigningData>> {
+) -> Result<(Vec<InputSigningData>, Option<Requirement>)> {
     // Checks if the requirement is already fulfilled.
     if selected_inputs.iter().any(|input| is_ed25519_address(input, &address)) {
-        return Ok(Vec::new());
+        return Ok((Vec::new(), None));
     }
 
     // Checks if the requirement can be fulfilled.
@@ -54,7 +54,7 @@ fn fulfill_ed25519_address_requirement(
         };
 
         match index {
-            Some(index) => Ok(vec![available_inputs.swap_remove(index)]),
+            Some(index) => Ok((vec![available_inputs.swap_remove(index)], None)),
             None => Err(Error::UnfulfillableRequirement(Requirement::Sender(address))),
         }
     }
@@ -65,7 +65,7 @@ pub(crate) fn fulfill_sender_requirement(
     address: Address,
     available_inputs: &mut Vec<InputSigningData>,
     selected_inputs: &[InputSigningData],
-) -> Result<Vec<InputSigningData>> {
+) -> Result<(Vec<InputSigningData>, Option<Requirement>)> {
     match address {
         Address::Ed25519(_) => fulfill_ed25519_address_requirement(address, available_inputs, selected_inputs),
         Address::Alias(alias_address) => {

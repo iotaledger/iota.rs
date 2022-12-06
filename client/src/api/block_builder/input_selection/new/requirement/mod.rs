@@ -51,7 +51,7 @@ impl Requirement {
         selected_inputs: &[InputSigningData],
         outputs: &[Output],
         // TODO can it actually return more than one output?
-    ) -> Result<Vec<InputSigningData>> {
+    ) -> Result<(Vec<InputSigningData>, Option<Requirement>)> {
         match self {
             Requirement::Sender(address) => fulfill_sender_requirement(address, available_inputs, selected_inputs),
             Requirement::Issuer(address) => fulfill_issuer_requirement(address, available_inputs, selected_inputs),
