@@ -30,7 +30,7 @@ pub(crate) fn fulfill_base_token_requirement(
         return Ok((newly_selected_inputs, None));
     }
 
-    println!("{available_inputs:?}\n{selected_inputs:?}\n{outputs:?}");
+    println!("BASE TOKEN {available_inputs:?}\n{selected_inputs:?}\n{outputs:?}");
 
     // TODO don't pick burned things
 
@@ -58,6 +58,8 @@ pub(crate) fn fulfill_base_token_requirement(
                 newly_selected_inputs.push(input.clone());
                 newly_selected_ids.insert(*input.output_id());
 
+                println!("SELECTED {:?}", input.output);
+
                 if inputs_sum >= outputs_sum {
                     break 'overall;
                 }
@@ -75,22 +77,34 @@ pub(crate) fn fulfill_base_token_requirement(
 
         // 5. Other kinds of outputs
         {
-            let inputs = available_inputs.iter().filter(|input| !input.output.is_basic());
+            let mut inputs = available_inputs
+                .iter()
+                .filter(|input| !input.output.is_basic())
+                .peekable();
 
-            for input in inputs {
-                inputs_sum += input.output.amount();
-                newly_selected_inputs.push(input.clone());
-                newly_selected_ids.insert(*input.output_id());
+            if inputs.peek().is_some() {
+                for input in inputs {
+                    inputs_sum += input.output.amount();
+                    newly_selected_inputs.push(input.clone());
+                    newly_selected_ids.insert(*input.output_id());
 
-                if inputs_sum >= outputs_sum {
-                    break 'overall;
+                    println!("SELECTED {:?}", input.output);
+
+                    if inputs_sum >= outputs_sum {
+                        break;
+                    }
                 }
+
+                available_inputs.retain(|input| !newly_selected_ids.contains(input.output_id()));
+
+                return Ok((newly_selected_inputs, Some(Requirement::BaseToken)));
             }
         }
     }
 
     if inputs_sum < outputs_sum {
         // Moving funds of already transitioned other outputs ?
+        println!("NOT ENOUGH, OUTPUTS: {:?}", outputs);
         return Err(Error::NotEnoughBalance {
             found: inputs_sum,
             required: outputs_sum,
