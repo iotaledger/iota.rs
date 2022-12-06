@@ -27,6 +27,7 @@ use crate::{
     block::{
         address::Address,
         output::{AliasId, FoundryId, NftId, Output},
+        protocol::ProtocolParameters,
     },
     error::Result,
     secret::types::InputSigningData,
@@ -50,7 +51,7 @@ impl Requirement {
         available_inputs: &mut Vec<InputSigningData>,
         selected_inputs: &[InputSigningData],
         outputs: &[Output],
-        // TODO can it actually return more than one output?
+        protocol_parameters: &ProtocolParameters, // TODO can it actually return more than one output?
     ) -> Result<(Vec<InputSigningData>, Option<Requirement>)> {
         match self {
             Requirement::Sender(address) => fulfill_sender_requirement(address, available_inputs, selected_inputs),
@@ -61,7 +62,9 @@ impl Requirement {
             Requirement::Alias(alias_id) => fulfill_alias_requirement(alias_id, available_inputs, selected_inputs),
             Requirement::Nft(nft_id) => fulfill_nft_requirement(nft_id, available_inputs, selected_inputs),
             Requirement::NativeTokens => fulfill_native_tokens_requirement(available_inputs, selected_inputs, outputs),
-            Requirement::BaseToken => fulfill_base_token_requirement(available_inputs, selected_inputs, outputs),
+            Requirement::BaseToken => {
+                fulfill_base_token_requirement(available_inputs, selected_inputs, outputs, protocol_parameters)
+            }
             Requirement::Remainder => fulfill_remainder_requirement(available_inputs, selected_inputs, outputs),
         }
     }

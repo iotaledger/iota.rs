@@ -194,8 +194,12 @@ impl InputSelection {
         // Process all the requirements until there are no more.
         while let Some(requirement) = requirements.pop() {
             // Fulfill the requirement.
-            let (inputs, new_requirement) =
-                requirement.fulfill(&mut self.available_inputs, &selected_inputs, &self.outputs)?;
+            let (inputs, new_requirement) = requirement.fulfill(
+                &mut self.available_inputs,
+                &selected_inputs,
+                &self.outputs,
+                &self.protocol_parameters,
+            )?;
 
             if let Some(new_requirement) = new_requirement {
                 println!("NEW REQUIREMENT");
