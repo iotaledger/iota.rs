@@ -124,6 +124,16 @@ def compute_nft_id(output_id)
 
 Computes the NFT id for the given NFT output id.
 
+<a id="iota_client._utils.Utils.compute_foundry_id"></a>
+
+#### compute\_foundry\_id
+
+```python
+def compute_foundry_id(alias_address, serial_number, token_scheme_kind)
+```
+
+Computes the foundry id.
+
 <a id="iota_client._utils.Utils.block_id"></a>
 
 #### block\_id

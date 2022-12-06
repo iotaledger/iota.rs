@@ -7,6 +7,7 @@ import type {
     __MnemonicToHexSeedMessage__,
     __ComputeAliasIdMessage__,
     __ComputeNftIdMessage__,
+    __ComputeFoundryIdMessage__,
     __GenerateAddressesMessage__,
     __PostBlockMessage__,
     __BuildAndPostBlockMessage__,
@@ -81,6 +82,7 @@ export type __ClientMessages__ =
     | __MnemonicToHexSeedMessage__
     | __ComputeAliasIdMessage__
     | __ComputeNftIdMessage__
+    | __ComputeFoundryIdMessage__
     | __GenerateAddressesMessage__
     | __PostBlockMessage__
     | __BuildAndPostBlockMessage__

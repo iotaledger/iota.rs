@@ -15,6 +15,7 @@ The Client to interact with nodes.
 - [mnemonicToHexSeed](Client.md#mnemonictohexseed)
 - [computeAliasId](Client.md#computealiasid)
 - [computeNftId](Client.md#computenftid)
+- [computeFoundryId](Client.md#computefoundryid)
 - [generateAddresses](Client.md#generateaddresses)
 - [buildAndPostBlock](Client.md#buildandpostblock)
 - [getTips](Client.md#gettips)
@@ -220,6 +221,26 @@ Computes the NFT id for the given NFT output id.
 | Name | Type |
 | :------ | :------ |
 | `outputId` | `string` |
+
+#### Returns
+
+`Promise`<`string`\>
+
+___
+
+### computeFoundryId
+
+▸ **computeFoundryId**(`aliasAddress`, `serialNumber`, `tokenSchemeKind`): `Promise`<`string`\>
+
+Computes the foundry id.
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `aliasAddress` | `string` |
+| `serialNumber` | `number` |
+| `tokenSchemeKind` | `number` |
 
 #### Returns
 
