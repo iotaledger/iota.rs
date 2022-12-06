@@ -66,6 +66,15 @@ export interface __ComputeNftIdMessage__ {
     };
 }
 
+export interface __ComputeFoundryIdMessage__ {
+    name: 'computeFoundryId';
+    data: {
+        aliasAddress: string;
+        serialNumber: number;
+        tokenSchemeKind: number;
+    };
+}
+
 export interface __GenerateAddressesMessage__ {
     name: 'generateAddresses';
     data: {

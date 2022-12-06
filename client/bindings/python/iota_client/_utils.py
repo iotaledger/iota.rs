@@ -82,6 +82,15 @@ class Utils(BaseAPI):
             'outputId': output_id
         })
 
+    def compute_foundry_id(self, alias_address, serial_number, token_scheme_kind):
+        """Computes the foundry id.
+        """
+        return self.send_message('computeNftId', {
+            'aliasAddress': alias_address,
+            'serialNumber': serial_number,
+            'tokenSchemeKind': token_scheme_kind
+        })
+
     def block_id(self, block):
         """ Returns a block ID (Blake2b256 hash of block bytes) from a block.
         """

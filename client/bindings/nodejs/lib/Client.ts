@@ -162,6 +162,26 @@ export class Client {
         return JSON.parse(response).payload;
     }
 
+    /**
+     * Computes the foundry id.
+     */
+    async computeFoundryId(
+        aliasAddress: string,
+        serialNumber: number,
+        tokenSchemeKind: number,
+    ): Promise<string> {
+        const response = await this.messageHandler.sendMessage({
+            name: 'computeFoundryId',
+            data: {
+                aliasAddress,
+                serialNumber,
+                tokenSchemeKind,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
     /** Generate addresses */
     async generateAddresses(
         secretManager: SecretManager,
