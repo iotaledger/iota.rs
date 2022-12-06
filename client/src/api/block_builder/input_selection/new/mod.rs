@@ -197,7 +197,7 @@ impl InputSelection {
             let (inputs, new_requirement) = requirement.fulfill(
                 &mut self.available_inputs,
                 &selected_inputs,
-                &self.outputs,
+                &mut self.outputs,
                 &self.protocol_parameters,
             )?;
 

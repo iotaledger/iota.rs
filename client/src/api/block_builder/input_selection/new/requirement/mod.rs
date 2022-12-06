@@ -50,7 +50,7 @@ impl Requirement {
         self,
         available_inputs: &mut Vec<InputSigningData>,
         selected_inputs: &[InputSigningData],
-        outputs: &[Output],
+        outputs: &mut [Output],
         protocol_parameters: &ProtocolParameters, // TODO can it actually return more than one output?
     ) -> Result<(Vec<InputSigningData>, Option<Requirement>)> {
         match self {

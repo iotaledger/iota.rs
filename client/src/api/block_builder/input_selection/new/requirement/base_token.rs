@@ -25,7 +25,7 @@ pub(crate) fn base_token_sums(selected_inputs: &[InputSigningData], outputs: &[O
 pub(crate) fn fulfill_base_token_requirement(
     available_inputs: &mut Vec<InputSigningData>,
     selected_inputs: &[InputSigningData],
-    outputs: &[Output],
+    outputs: &mut [Output],
     protocol_parameters: &ProtocolParameters,
 ) -> Result<(Vec<InputSigningData>, Option<Requirement>)> {
     let (mut inputs_sum, mut outputs_sum) = base_token_sums(selected_inputs, outputs);
@@ -109,23 +109,25 @@ pub(crate) fn fulfill_base_token_requirement(
         }
     }
 
+    println!("BEFORE {inputs_sum} {outputs_sum}");
+
     if inputs_sum < outputs_sum {
         // Moving funds of already transitioned other outputs ?
         println!("NOT ENOUGH, OUTPUTS: {:?}", outputs);
         // TODO only consider automatically transitioned outputs
-        let mut outputs = outputs.iter().filter(|output| !output.is_basic());
+        let mut outputs = outputs.iter_mut().filter(|output| !output.is_basic());
 
         for output in outputs {
             let amount = output.amount();
             // TODO try to reduce to perfect amount and not always minimum ? Could avoid a remainder
             let new_output = match output {
-                Output::Alias(output) => AliasOutputBuilder::from(output)
+                Output::Alias(output) => AliasOutputBuilder::from(&*output)
                     .with_minimum_storage_deposit(protocol_parameters.rent_structure().clone())
                     .finish_output(protocol_parameters.token_supply())?,
-                Output::Nft(output) => NftOutputBuilder::from(output)
+                Output::Nft(output) => NftOutputBuilder::from(&*output)
                     .with_minimum_storage_deposit(protocol_parameters.rent_structure().clone())
                     .finish_output(protocol_parameters.token_supply())?,
-                Output::Foundry(output) => FoundryOutputBuilder::from(output)
+                Output::Foundry(output) => FoundryOutputBuilder::from(&*output)
                     .with_minimum_storage_deposit(protocol_parameters.rent_structure().clone())
                     .finish_output(protocol_parameters.token_supply())?,
                 _ => panic!("TODO"),
@@ -140,6 +142,8 @@ pub(crate) fn fulfill_base_token_requirement(
                 output,
                 new_output.amount()
             );
+
+            *output = new_output;
         }
 
         return Err(Error::NotEnoughBalance {
