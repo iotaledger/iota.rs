@@ -104,6 +104,26 @@ def mnemonic_to_hex_seed(mnemonic)
 
 Returns a hex encoded seed for a mnemonic.
 
+<a id="iota_client._utils.Utils.compute_alias_id"></a>
+
+#### compute\_alias\_id
+
+```python
+def compute_alias_id(output_id)
+```
+
+Computes the alias id for the given alias output id.
+
+<a id="iota_client._utils.Utils.compute_nft_id"></a>
+
+#### compute\_nft\_id
+
+```python
+def compute_nft_id(output_id)
+```
+
+Computes the NFT id for the given NFT output id.
+
 <a id="iota_client._utils.Utils.block_id"></a>
 
 #### block\_id

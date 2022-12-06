@@ -5,6 +5,8 @@ import type {
     __GetOutputsMessage__,
     __GenerateMnemonicMessage__,
     __MnemonicToHexSeedMessage__,
+    __ComputeAliasIdMessage__,
+    __ComputeNftIdMessage__,
     __GenerateAddressesMessage__,
     __PostBlockMessage__,
     __BuildAndPostBlockMessage__,
@@ -77,6 +79,8 @@ export type __ClientMessages__ =
     | __GetOutputsMessage__
     | __GenerateMnemonicMessage__
     | __MnemonicToHexSeedMessage__
+    | __ComputeAliasIdMessage__
+    | __ComputeNftIdMessage__
     | __GenerateAddressesMessage__
     | __PostBlockMessage__
     | __BuildAndPostBlockMessage__
