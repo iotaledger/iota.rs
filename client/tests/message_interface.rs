@@ -3,11 +3,12 @@
 
 #![cfg(feature = "message_interface")]
 
-use std::env;
+use std::{env, str::FromStr};
 
 use dotenv::dotenv;
 use iota_client::{
     api::GetAddressesBuilderOptions as GenerateAddressesOptions,
+    block::{block::dto::BlockDto, BlockId},
     message_interface::{self, Message, Response},
     secret::SecretManagerDto,
 };
