@@ -134,6 +134,34 @@ export class Client {
         return JSON.parse(response).payload;
     }
 
+    /**
+     * Computes the alias id for the given alias output id.
+     */
+    async computeAliasId(outputId: string): Promise<string> {
+        const response = await this.messageHandler.sendMessage({
+            name: 'computeAliasId',
+            data: {
+                outputId,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Computes the NFT id for the given NFT output id.
+     */
+    async computeNftId(outputId: string): Promise<string> {
+        const response = await this.messageHandler.sendMessage({
+            name: 'computeNftId',
+            data: {
+                outputId,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
     /** Generate addresses */
     async generateAddresses(
         secretManager: SecretManager,

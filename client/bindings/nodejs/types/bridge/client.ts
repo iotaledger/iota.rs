@@ -52,6 +52,20 @@ export interface __MnemonicToHexSeedMessage__ {
     };
 }
 
+export interface __ComputeAliasIdMessage__ {
+    name: 'computeAliasId';
+    data: {
+        outputId: string;
+    };
+}
+
+export interface __ComputeNftIdMessage__ {
+    name: 'computeNftId';
+    data: {
+        outputId: string;
+    };
+}
+
 export interface __GenerateAddressesMessage__ {
     name: 'generateAddresses';
     data: {

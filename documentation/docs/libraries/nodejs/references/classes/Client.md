@@ -13,6 +13,8 @@ The Client to interact with nodes.
 - [getOutputs](Client.md#getoutputs)
 - [generateMnemonic](Client.md#generatemnemonic)
 - [mnemonicToHexSeed](Client.md#mnemonictohexseed)
+- [computeAliasId](Client.md#computealiasid)
+- [computeNftId](Client.md#computenftid)
 - [generateAddresses](Client.md#generateaddresses)
 - [buildAndPostBlock](Client.md#buildandpostblock)
 - [getTips](Client.md#gettips)
@@ -182,6 +184,42 @@ Returns a hex encoded seed for a mnemonic.
 | Name | Type |
 | :------ | :------ |
 | `mnemonic` | `string` |
+
+#### Returns
+
+`Promise`<`string`\>
+
+___
+
+### computeAliasId
+
+▸ **computeAliasId**(`outputId`): `Promise`<`string`\>
+
+Computes the alias id for the given alias output id.
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `outputId` | `string` |
+
+#### Returns
+
+`Promise`<`string`\>
+
+___
+
+### computeNftId
+
+▸ **computeNftId**(`outputId`): `Promise`<`string`\>
+
+Computes the NFT id for the given NFT output id.
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `outputId` | `string` |
 
 #### Returns
 

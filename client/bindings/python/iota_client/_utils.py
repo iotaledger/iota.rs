@@ -68,6 +68,20 @@ class Utils(BaseAPI):
             'mnemonic': mnemonic
         })
 
+    def compute_alias_id(self, output_id):
+        """Computes the alias id for the given alias output id.
+        """
+        return self.send_message('computeAliasId', {
+            'outputId': output_id
+        })
+
+    def compute_nft_id(self, output_id):
+        """Computes the NFT id for the given NFT output id.
+        """
+        return self.send_message('computeNftId', {
+            'outputId': output_id
+        })
+
     def block_id(self, block):
         """ Returns a block ID (Blake2b256 hash of block bytes) from a block.
         """
