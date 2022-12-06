@@ -34,8 +34,6 @@ fn input_selection_nfts() -> Result<()> {
 
     assert_eq!(selected_transaction_data.0, inputs);
 
-    println!("START");
-
     // output amount > input amount
     let inputs = build_input_signing_data_nft_outputs(vec![(nft_id_1, bech32_address, 1_000_000)]);
     let outputs = vec![build_most_basic_output(bech32_address, 2_000_000)];
@@ -52,8 +50,6 @@ fn input_selection_nfts() -> Result<()> {
         e => panic!("Should return NotEnoughBalance {e:?}"),
     }
 
-    println!("TEST1");
-
     // basic output with nft as input
     let inputs = build_input_signing_data_nft_outputs(vec![(nft_id_1, bech32_address, 2_229_500)]);
     let outputs = vec![build_most_basic_output(bech32_address, 2_000_000)];
@@ -63,8 +59,6 @@ fn input_selection_nfts() -> Result<()> {
 
     // basic output + nft remainder
     assert_eq!(selected_transaction_data.1.len(), 2);
-
-    println!("TEST1.1");
 
     // mint nft
     let inputs = build_input_signing_data_most_basic_outputs(vec![(bech32_address, 2_000_000)]);
@@ -83,8 +77,6 @@ fn input_selection_nfts() -> Result<()> {
             false
         }
     }));
-
-    println!("TEST2");
 
     // burn nft
     let inputs = build_input_signing_data_nft_outputs(vec![(nft_id_1, bech32_address, 2_000_000)]);
@@ -113,8 +105,6 @@ fn input_selection_nfts() -> Result<()> {
         })) => {}
         _ => panic!("Should return InsufficientStorageDepositAmount"),
     }
-
-    println!("TEST3");
 
     // missing input for output nft
     let inputs = build_input_signing_data_most_basic_outputs(vec![(bech32_address, 1_000_000)]);

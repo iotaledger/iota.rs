@@ -111,45 +111,51 @@ pub(crate) fn fulfill_base_token_requirement(
 
     println!("BEFORE {inputs_sum} {outputs_sum}");
 
-    if inputs_sum < outputs_sum {
-        // Moving funds of already transitioned other outputs ?
-        println!("NOT ENOUGH, OUTPUTS: {:?}", outputs);
-        // TODO only consider automatically transitioned outputs
-        let mut outputs = outputs.iter_mut().filter(|output| !output.is_basic());
+    'ici: {
+        if inputs_sum < outputs_sum {
+            // Moving funds of already transitioned other outputs ?
+            println!("NOT ENOUGH, OUTPUTS: {:?}", outputs);
+            // TODO only consider automatically transitioned outputs
+            let mut outputs = outputs.iter_mut().filter(|output| !output.is_basic());
 
-        for output in outputs {
-            let amount = output.amount();
-            // TODO try to reduce to perfect amount and not always minimum ? Could avoid a remainder
-            let new_output = match output {
-                Output::Alias(output) => AliasOutputBuilder::from(&*output)
-                    .with_minimum_storage_deposit(protocol_parameters.rent_structure().clone())
-                    .finish_output(protocol_parameters.token_supply())?,
-                Output::Nft(output) => NftOutputBuilder::from(&*output)
-                    .with_minimum_storage_deposit(protocol_parameters.rent_structure().clone())
-                    .finish_output(protocol_parameters.token_supply())?,
-                Output::Foundry(output) => FoundryOutputBuilder::from(&*output)
-                    .with_minimum_storage_deposit(protocol_parameters.rent_structure().clone())
-                    .finish_output(protocol_parameters.token_supply())?,
-                _ => panic!("TODO"),
-            };
+            for output in outputs {
+                let amount = output.amount();
+                // TODO try to reduce to perfect amount and not always minimum ? Could avoid a remainder
+                let new_output = match output {
+                    Output::Alias(output) => AliasOutputBuilder::from(&*output)
+                        .with_minimum_storage_deposit(protocol_parameters.rent_structure().clone())
+                        .finish_output(protocol_parameters.token_supply())?,
+                    Output::Nft(output) => NftOutputBuilder::from(&*output)
+                        .with_minimum_storage_deposit(protocol_parameters.rent_structure().clone())
+                        .finish_output(protocol_parameters.token_supply())?,
+                    Output::Foundry(output) => FoundryOutputBuilder::from(&*output)
+                        .with_minimum_storage_deposit(protocol_parameters.rent_structure().clone())
+                        .finish_output(protocol_parameters.token_supply())?,
+                    _ => panic!("TODO"),
+                };
 
-            // TODO checked operations
-            let diff = amount - new_output.amount();
-            outputs_sum -= diff;
+                // TODO checked operations
+                let diff = amount - new_output.amount();
+                outputs_sum -= diff;
 
-            println!(
+                println!(
                 "REDUCE {:?} input sum {inputs_sum} outputs sum {outputs_sum} previous amount {amount} new amount {}",
                 output,
                 new_output.amount()
             );
 
-            *output = new_output;
-        }
+                *output = new_output;
 
-        return Err(Error::NotEnoughBalance {
-            found: inputs_sum,
-            required: outputs_sum,
-        });
+                if inputs_sum >= outputs_sum {
+                    break 'ici;
+                }
+            }
+
+            return Err(Error::NotEnoughBalance {
+                found: inputs_sum,
+                required: outputs_sum,
+            });
+        }
     }
 
     available_inputs.retain(|input| !newly_selected_ids.contains(input.output_id()));
