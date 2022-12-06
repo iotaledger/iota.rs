@@ -65,9 +65,9 @@ pub(crate) fn remainder_output(
 
     let (inputs_sum, outputs_sum) = base_token_sums(selected_inputs, outputs);
 
-    println!("remainder: input {inputs_sum} output {outputs_sum}");
+    // println!("remainder: input {inputs_sum} output {outputs_sum}");
 
-    println!("{selected_inputs:?}\n{outputs:?}");
+    // println!("{selected_inputs:?}\n{outputs:?}");
 
     if inputs_sum > outputs_sum {
         let diff = inputs_sum - outputs_sum;
@@ -76,7 +76,7 @@ pub(crate) fn remainder_output(
             return Err(Error::MissingInputWithEd25519Address);
         };
 
-        println!("{diff} {remainder_address:?}");
+        // println!("{diff} {remainder_address:?}");
 
         let output = BasicOutputBuilder::new_with_amount(diff)?
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(remainder_address)))
