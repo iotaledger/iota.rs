@@ -115,7 +115,6 @@ pub(crate) fn fulfill_base_token_requirement(
         if inputs_sum < outputs_sum {
             // Moving funds of already transitioned other outputs ?
             println!("NOT ENOUGH, OUTPUTS: {:?}", outputs);
-            // TODO only consider automatically transitioned outputs
             let mut outputs = outputs
                 .iter_mut()
                 .filter(|output| !output.output.is_basic() && !output.provided);

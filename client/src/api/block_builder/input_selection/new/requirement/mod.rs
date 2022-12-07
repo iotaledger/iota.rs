@@ -6,7 +6,6 @@ pub(crate) mod foundry;
 mod issuer;
 mod native_tokens;
 pub(crate) mod nft;
-mod remainder;
 mod sender;
 
 pub(crate) mod base_token;
@@ -19,7 +18,6 @@ use foundry::fulfill_foundry_requirement;
 use issuer::fulfill_issuer_requirement;
 use native_tokens::fulfill_native_tokens_requirement;
 use nft::fulfill_nft_requirement;
-use remainder::fulfill_remainder_requirement;
 use sender::fulfill_sender_requirement;
 
 use super::{Burn, OutputInfo};
@@ -42,7 +40,6 @@ pub enum Requirement {
     Nft(NftId),
     NativeTokens,
     BaseToken,
-    Remainder,
 }
 
 impl Requirement {
@@ -65,7 +62,6 @@ impl Requirement {
             Requirement::BaseToken => {
                 fulfill_base_token_requirement(available_inputs, selected_inputs, outputs, protocol_parameters)
             }
-            Requirement::Remainder => fulfill_remainder_requirement(available_inputs, selected_inputs, outputs),
         }
     }
 }
