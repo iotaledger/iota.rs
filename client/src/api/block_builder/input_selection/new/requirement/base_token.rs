@@ -142,8 +142,8 @@ impl InputSelection {
                     outputs_sum -= diff;
 
                     // println!(
-                    //     "REDUCE {:?} input sum {inputs_sum} outputs sum {outputs_sum} diff {diff} previous amount {amount} new amount {} rent {}",
-                    //     output,
+                    //     "REDUCE {:?} input sum {inputs_sum} outputs sum {outputs_sum} diff {diff} previous amount
+                    // {amount} new amount {} rent {}",     output,
                     //     new_output.amount(),
                     //     rent
                     // );

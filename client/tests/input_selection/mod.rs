@@ -19,8 +19,9 @@ use iota_types::block::output::{
     SimpleTokenScheme, TokenScheme,
 };
 
-mod alias_foundry_outputs;
+mod alias_outputs;
 mod basic_outputs;
+mod foundry_outputs;
 mod nft_outputs;
 
 const TOKEN_SUPPLY: u64 = 1_813_620_509_061_365;
