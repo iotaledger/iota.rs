@@ -3,7 +3,7 @@
 
 use std::collections::HashSet;
 
-use super::{burn::Burn, InputSelection};
+use super::{burn::Burn, InputSelection, OutputInfo};
 use crate::{
     block::{
         address::Address,
@@ -81,7 +81,11 @@ impl InputSelectionBuilder {
     /// Finishes an [`InputSelectionBuilder`] into an [`InputSelection`].
     pub fn finish(self) -> InputSelection {
         InputSelection {
-            outputs: self.outputs,
+            outputs: self
+                .outputs
+                .into_iter()
+                .map(|output| OutputInfo { output, provided: true })
+                .collect(),
             available_inputs: self.available_inputs,
             protocol_parameters: self.protocol_parameters,
             timestamp: self.timestamp.unwrap_or_else(|| {

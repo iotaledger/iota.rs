@@ -1,13 +1,13 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use super::Requirement;
-use crate::{block::output::Output, error::Result, secret::types::InputSigningData};
+use super::{OutputInfo, Requirement};
+use crate::{error::Result, secret::types::InputSigningData};
 
 pub(crate) fn fulfill_native_tokens_requirement(
     available_inputs: &mut [InputSigningData],
     selected_inputs: &[InputSigningData],
-    outputs: &[Output],
+    outputs: &[OutputInfo],
 ) -> Result<(Vec<InputSigningData>, Option<Requirement>)> {
     // let input_native_tokens = gather_nts(selected_inputs);
     // let output_native_tokens = gather_nts(outputs);

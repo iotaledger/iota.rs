@@ -3,11 +3,11 @@
 
 use std::collections::HashSet;
 
-use super::Requirement;
+use super::{OutputInfo, Requirement};
 use crate::{
     block::{
         output::{
-            unlock_condition::UnlockCondition, AliasOutputBuilder, FoundryOutputBuilder, NftOutputBuilder, Output,
+            unlock_condition::UnlockCondition, AliasOutputBuilder, FoundryOutputBuilder, NftOutputBuilder, Output, Rent,
         },
         protocol::ProtocolParameters,
     },
@@ -15,9 +15,9 @@ use crate::{
     secret::types::InputSigningData,
 };
 
-pub(crate) fn base_token_sums(selected_inputs: &[InputSigningData], outputs: &[Output]) -> (u64, u64) {
+pub(crate) fn base_token_sums(selected_inputs: &[InputSigningData], outputs: &[OutputInfo]) -> (u64, u64) {
     let inputs_sum = selected_inputs.iter().map(|input| input.output.amount()).sum::<u64>();
-    let outputs_sum = outputs.iter().map(|output| output.amount()).sum::<u64>();
+    let outputs_sum = outputs.iter().map(|output| output.output.amount()).sum::<u64>();
 
     (inputs_sum, outputs_sum)
 }
@@ -25,7 +25,7 @@ pub(crate) fn base_token_sums(selected_inputs: &[InputSigningData], outputs: &[O
 pub(crate) fn fulfill_base_token_requirement(
     available_inputs: &mut Vec<InputSigningData>,
     selected_inputs: &[InputSigningData],
-    outputs: &mut [Output],
+    outputs: &mut [OutputInfo],
     protocol_parameters: &ProtocolParameters,
 ) -> Result<(Vec<InputSigningData>, Option<Requirement>)> {
     let (mut inputs_sum, mut outputs_sum) = base_token_sums(selected_inputs, outputs);
@@ -116,19 +116,21 @@ pub(crate) fn fulfill_base_token_requirement(
             // Moving funds of already transitioned other outputs ?
             println!("NOT ENOUGH, OUTPUTS: {:?}", outputs);
             // TODO only consider automatically transitioned outputs
-            let mut outputs = outputs.iter_mut().filter(|output| !output.is_basic());
+            let mut outputs = outputs.iter_mut().filter(|output| !output.output.is_basic());
 
             for output in outputs {
-                let amount = output.amount();
+                let diff = outputs_sum - inputs_sum;
+                let amount = output.output.amount();
+                let rent = output.output.rent_cost(protocol_parameters.rent_structure());
                 // TODO try to reduce to perfect amount and not always minimum ? Could avoid a remainder
-                let new_output = match output {
-                    Output::Alias(output) => AliasOutputBuilder::from(&*output)
+                let new_output = match &output.output {
+                    Output::Alias(output) => AliasOutputBuilder::from(output)
                         .with_minimum_storage_deposit(protocol_parameters.rent_structure().clone())
                         .finish_output(protocol_parameters.token_supply())?,
-                    Output::Nft(output) => NftOutputBuilder::from(&*output)
+                    Output::Nft(output) => NftOutputBuilder::from(output)
                         .with_minimum_storage_deposit(protocol_parameters.rent_structure().clone())
                         .finish_output(protocol_parameters.token_supply())?,
-                    Output::Foundry(output) => FoundryOutputBuilder::from(&*output)
+                    Output::Foundry(output) => FoundryOutputBuilder::from(output)
                         .with_minimum_storage_deposit(protocol_parameters.rent_structure().clone())
                         .finish_output(protocol_parameters.token_supply())?,
                     _ => panic!("TODO"),
@@ -139,12 +141,13 @@ pub(crate) fn fulfill_base_token_requirement(
                 outputs_sum -= diff;
 
                 println!(
-                "REDUCE {:?} input sum {inputs_sum} outputs sum {outputs_sum} previous amount {amount} new amount {}",
-                output,
-                new_output.amount()
-            );
+                    "REDUCE {:?} input sum {inputs_sum} outputs sum {outputs_sum} diff {diff} previous amount {amount} new amount {} rent {}",
+                    output,
+                    new_output.amount(),
+                    rent
+                );
 
-                *output = new_output;
+                output.output = new_output;
 
                 if inputs_sum >= outputs_sum {
                     break 'ici;

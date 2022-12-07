@@ -1,7 +1,7 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use super::requirement::base_token::base_token_sums;
+use super::{requirement::base_token::base_token_sums, OutputInfo};
 use crate::{
     block::{
         address::Address,
@@ -54,7 +54,7 @@ fn get_remainder_address(selected_inputs: &[InputSigningData], remainder_address
 
 pub(crate) fn remainder_output(
     selected_inputs: &[InputSigningData],
-    outputs: &[Output],
+    outputs: &[OutputInfo],
     remainder_address: Option<Address>,
     protocol_parameters: &ProtocolParameters,
 ) -> Result<Option<Output>> {

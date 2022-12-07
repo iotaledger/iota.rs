@@ -31,8 +31,14 @@ use crate::{
 // TODO should ISA have its own error type? At least review errors.
 // TODO make methods actually take self? There was a mut issue.
 
+#[derive(Debug)]
+pub(crate) struct OutputInfo {
+    pub(crate) output: Output,
+    pub(crate) provided: bool,
+}
+
 pub struct InputSelection {
-    outputs: Vec<Output>,
+    outputs: Vec<OutputInfo>,
     // TODO impl Iter instead?
     available_inputs: Vec<InputSigningData>,
     protocol_parameters: ProtocolParameters,
@@ -49,13 +55,15 @@ pub struct InputSelection {
 impl InputSelection {
     fn required_address(
         input: &InputSigningData,
-        outputs: &[Output],
+        outputs: &[OutputInfo],
         burn: Option<&Burn>,
         timestamp: u32,
     ) -> Result<Option<Requirement>> {
         // TODO is burn required?
         // TODO unwrap or false?
-        let is_alias_state_transition = is_alias_state_transition(input, outputs)?.unwrap_or(false);
+        // TODO this is only temporary to accommodate the current ISA.
+        let outputs = outputs.iter().map(|output| output.output.clone()).collect::<Vec<_>>();
+        let is_alias_state_transition = is_alias_state_transition(input, &outputs)?.unwrap_or(false);
         let (required_address, _) =
             input
                 .output
@@ -71,20 +79,24 @@ impl InputSelection {
     fn select_input(
         selected_inputs: &mut Vec<InputSigningData>,
         input: InputSigningData,
-        outputs: &mut Vec<Output>,
+        outputs: &mut Vec<OutputInfo>,
         requirements: &mut Requirements,
         burn: Option<&Burn>,
         timestamp: u32,
         protocol_parameters: &ProtocolParameters,
     ) -> Result<()> {
         if let Some(output) = transition_input(&input, outputs, burn, protocol_parameters)? {
+            let output_info = OutputInfo {
+                output,
+                provided: false,
+            };
             // TODO is this really necessary?
             // TODO should input be pushed before ? probably
             requirements.extend(Requirements::from_outputs(
                 selected_inputs.iter(),
-                std::iter::once(&output),
+                std::iter::once(&output_info),
             ));
-            outputs.push(output);
+            outputs.push(output_info);
         }
 
         if let Some(requirement) = Self::required_address(&input, outputs, burn, timestamp)? {
@@ -233,9 +245,15 @@ impl InputSelection {
             self.remainder_address,
             &self.protocol_parameters,
         )? {
-            self.outputs.push(output)
+            self.outputs.push(OutputInfo {
+                output,
+                provided: false,
+            })
         }
 
-        Ok((selected_inputs, self.outputs))
+        Ok((
+            selected_inputs,
+            self.outputs.into_iter().map(|output| output.output).collect(),
+        ))
     }
 }

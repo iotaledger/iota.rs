@@ -3,7 +3,7 @@
 
 use super::{
     requirement::{alias::is_alias_with_id, foundry::is_foundry_with_id, nft::is_nft_with_id},
-    Burn,
+    Burn, OutputInfo,
 };
 use crate::{
     block::{
@@ -20,7 +20,7 @@ use crate::{
 fn transition_alias_input(
     input: &AliasOutput,
     output_id: &OutputId,
-    outputs: &[Output],
+    outputs: &[OutputInfo],
     burn: Option<&Burn>,
     protocol_parameters: &ProtocolParameters,
 ) -> Result<Option<Output>> {
@@ -34,7 +34,7 @@ fn transition_alias_input(
     // Don't create an alias output if it already exists.
     if outputs
         .iter()
-        .any(|output| is_alias_with_id(output, output_id, &alias_id))
+        .any(|output| is_alias_with_id(&output.output, output_id, &alias_id))
     {
         return Ok(None);
     }
@@ -53,7 +53,7 @@ fn transition_alias_input(
 fn transition_nft_input(
     input: &NftOutput,
     output_id: &OutputId,
-    outputs: &[Output],
+    outputs: &[OutputInfo],
     burn: Option<&Burn>,
     protocol_parameters: &ProtocolParameters,
 ) -> Result<Option<Output>> {
@@ -65,7 +65,10 @@ fn transition_nft_input(
     }
 
     // Don't create an nft output if it already exists.
-    if outputs.iter().any(|output| is_nft_with_id(output, output_id, &nft_id)) {
+    if outputs
+        .iter()
+        .any(|output| is_nft_with_id(&output.output, output_id, &nft_id))
+    {
         return Ok(None);
     }
 
@@ -81,7 +84,7 @@ fn transition_nft_input(
 
 fn transition_foundry_input(
     input: &FoundryOutput,
-    outputs: &[Output],
+    outputs: &[OutputInfo],
     burn: Option<&Burn>,
     protocol_parameters: &ProtocolParameters,
 ) -> Result<Option<Output>> {
@@ -93,7 +96,10 @@ fn transition_foundry_input(
     }
 
     // Don't create a foundry output if it already exists.
-    if outputs.iter().any(|output| is_foundry_with_id(output, &foundry_id)) {
+    if outputs
+        .iter()
+        .any(|output| is_foundry_with_id(&output.output, &foundry_id))
+    {
         return Ok(None);
     }
 
@@ -106,7 +112,7 @@ fn transition_foundry_input(
 
 pub(crate) fn transition_input(
     input: &InputSigningData,
-    outputs: &[Output],
+    outputs: &[OutputInfo],
     burn: Option<&Burn>,
     protocol_parameters: &ProtocolParameters,
 ) -> Result<Option<Output>> {

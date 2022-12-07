@@ -22,7 +22,7 @@ use nft::fulfill_nft_requirement;
 use remainder::fulfill_remainder_requirement;
 use sender::fulfill_sender_requirement;
 
-use super::Burn;
+use super::{Burn, OutputInfo};
 use crate::{
     block::{
         address::Address,
@@ -50,7 +50,7 @@ impl Requirement {
         self,
         available_inputs: &mut Vec<InputSigningData>,
         selected_inputs: &[InputSigningData],
-        outputs: &mut [Output],
+        outputs: &mut [OutputInfo],
         protocol_parameters: &ProtocolParameters, // TODO can it actually return more than one output?
     ) -> Result<(Vec<InputSigningData>, Option<Requirement>)> {
         match self {
@@ -94,13 +94,13 @@ impl Requirements {
 
     pub(crate) fn from_outputs<'a>(
         inputs: impl Iterator<Item = &'a InputSigningData> + Clone,
-        outputs: impl Iterator<Item = &'a Output>,
+        outputs: impl Iterator<Item = &'a OutputInfo>,
     ) -> Self {
         // TODO take duplicate into account
         let mut requirements = Requirements::new();
 
         for output in outputs {
-            let is_new: bool = match output {
+            let is_new: bool = match &output.output {
                 // Add an alias requirement if the alias output is transitioning, thus required in the inputs.
                 Output::Alias(alias_output) => {
                     let is_new = alias_output.alias_id().is_null();
@@ -144,7 +144,7 @@ impl Requirements {
                 _ => false,
             };
 
-            if let Some(features) = output.features() {
+            if let Some(features) = output.output.features() {
                 // Add a sender requirement if the feature is present.
                 if let Some(sender) = features.sender() {
                     requirements.push(Requirement::Sender(*sender.address()));

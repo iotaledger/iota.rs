@@ -152,6 +152,8 @@ fn input_selection_alias() -> Result<()> {
         _ => panic!("Should return missing alias input"),
     }
 
+    println!("START");
+
     // existing input alias for foundry alias
     let inputs = build_input_signing_data_alias_outputs(vec![(alias_id_1, bech32_address, 1251500)]);
     let outputs = vec![build_foundry_output(
@@ -165,6 +167,7 @@ fn input_selection_alias() -> Result<()> {
         .select()?;
 
     // Alias next state + foundry
+    println!("{:?}", selected_transaction_data.1);
     assert_eq!(selected_transaction_data.1.len(), 2);
     // Alias state index is increased
     selected_transaction_data.1.iter().for_each(|output| {
