@@ -168,6 +168,8 @@ fn input_selection_alias() -> Result<()> {
         }
     });
 
+    println!("TEST H");
+
     // minted native tokens in new remainder
     let inputs = build_input_signing_data_alias_outputs(vec![(alias_id_1, bech32_address, 2251500)]);
     let outputs = vec![build_foundry_output(
@@ -180,63 +182,61 @@ fn input_selection_alias() -> Result<()> {
         .finish()
         .select()?;
 
-    // println!("TEST H");
+    // Alias next state + foundry + basic output with native tokens
+    assert_eq!(selected_transaction_data.1.len(), 3);
+    // Alias state index is increased
+    selected_transaction_data.1.iter().for_each(|output| {
+        if let Output::Alias(alias_output) = &output {
+            // Input alias has index 0, output should have index 1
+            assert_eq!(alias_output.state_index(), 1);
+        }
+        if let Output::Basic(basic_output) = &output {
+            // Basic output remainder has the minted native tokens
+            assert_eq!(basic_output.native_tokens().first().unwrap().amount(), U256::from(10));
+        }
+    });
 
-    // // Alias next state + foundry + basic output with native tokens
-    // assert_eq!(selected_transaction_data.1.len(), 3);
-    // // Alias state index is increased
-    // selected_transaction_data.1.iter().for_each(|output| {
-    //     if let Output::Alias(alias_output) = &output {
-    //         // Input alias has index 0, output should have index 1
-    //         assert_eq!(alias_output.state_index(), 1);
-    //     }
-    //     if let Output::Basic(basic_output) = &output {
-    //         // Basic output remainder has the minted native tokens
-    //         assert_eq!(basic_output.native_tokens().first().unwrap().amount(), U256::from(10));
-    //     }
-    // });
+    // melting native tokens
+    let mut inputs = build_input_signing_data_alias_outputs(vec![(alias_id_1, bech32_address, 1_000_000)]);
+    inputs.extend(build_input_signing_data_foundry_outputs(vec![(
+        alias_id_1,
+        1_000_000,
+        SimpleTokenScheme::new(U256::from(10), U256::from(0), U256::from(10)).unwrap(),
+        Some(
+            NativeToken::new(
+                TokenId::from_str("0x0811111111111111111111111111111111111111111111111111111111111111110000000000")
+                    .unwrap(),
+                U256::from(10),
+            )
+            .unwrap(),
+        ),
+    )]));
+    let outputs = vec![build_foundry_output(
+        alias_id_1,
+        1_000_000,
+        // Melt 5 native tokens
+        SimpleTokenScheme::new(U256::from(10), U256::from(5), U256::from(10)).unwrap(),
+        None,
+    )];
+    let selected_transaction_data = InputSelection::build(outputs, inputs.clone(), protocol_parameters.clone())
+        .finish()
+        .select()?;
 
-    // // melting native tokens
-    // let mut inputs = build_input_signing_data_alias_outputs(vec![(alias_id_1, bech32_address, 1_000_000)]);
-    // inputs.extend(build_input_signing_data_foundry_outputs(vec![(
-    //     alias_id_1,
-    //     1_000_000,
-    //     SimpleTokenScheme::new(U256::from(10), U256::from(0), U256::from(10)).unwrap(),
-    //     Some(
-    //         NativeToken::new(
-    //             TokenId::from_str("0x0811111111111111111111111111111111111111111111111111111111111111110000000000")
-    //                 .unwrap(),
-    //             U256::from(10),
-    //         )
-    //         .unwrap(),
-    //     ),
-    // )]));
-    // let outputs = vec![build_foundry_output(
-    //     alias_id_1,
-    //     1_000_000,
-    //     // Melt 5 native tokens
-    //     SimpleTokenScheme::new(U256::from(10), U256::from(5), U256::from(10)).unwrap(),
-    //     None,
-    // )];
-    // let selected_transaction_data = InputSelection::build(outputs, inputs.clone(), protocol_parameters.clone())
-    //     .finish()
-    //     .select()?;
+    println!("TEST I");
 
-    // println!("TEST I");
-
-    // // Alias next state + foundry + basic output with native tokens
-    // assert_eq!(selected_transaction_data.1.len(), 3);
-    // // Alias state index is increased
-    // selected_transaction_data.1.iter().for_each(|output| {
-    //     if let Output::Alias(alias_output) = &output {
-    //         // Input alias has index 0, output should have index 1
-    //         assert_eq!(alias_output.state_index(), 1);
-    //     }
-    //     if let Output::Basic(basic_output) = &output {
-    //         // Basic output remainder has the remaining native tokens
-    //         assert_eq!(basic_output.native_tokens().first().unwrap().amount(), U256::from(5));
-    //     }
-    // });
+    // Alias next state + foundry + basic output with native tokens
+    assert_eq!(selected_transaction_data.1.len(), 3);
+    // Alias state index is increased
+    selected_transaction_data.1.iter().for_each(|output| {
+        if let Output::Alias(alias_output) = &output {
+            // Input alias has index 0, output should have index 1
+            assert_eq!(alias_output.state_index(), 1);
+        }
+        if let Output::Basic(basic_output) = &output {
+            // Basic output remainder has the remaining native tokens
+            assert_eq!(basic_output.native_tokens().first().unwrap().amount(), U256::from(5));
+        }
+    });
 
     // Destroy foundry
     let mut inputs = build_input_signing_data_alias_outputs(vec![(alias_id_1, bech32_address, 50300)]);

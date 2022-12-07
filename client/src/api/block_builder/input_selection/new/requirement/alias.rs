@@ -1,7 +1,7 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use super::Requirement;
+use super::{InputSelection, Requirement};
 use crate::{
     block::output::{AliasId, Output, OutputId},
     error::{Error, Result},
@@ -17,30 +17,33 @@ pub(crate) fn is_alias_with_id(output: &Output, output_id: &OutputId, alias_id: 
     }
 }
 
-/// Fulfills an alias requirement by selecting the appropriate alias from the available inputs.
-pub(crate) fn fulfill_alias_requirement(
-    alias_id: AliasId,
-    available_inputs: &mut Vec<InputSigningData>,
-    selected_inputs: &[InputSigningData],
-) -> Result<(Vec<InputSigningData>, Option<Requirement>)> {
-    // Checks if the requirement is already fulfilled.
-    if selected_inputs
-        .iter()
-        .any(|input| is_alias_with_id(&input.output, input.output_id(), &alias_id))
-    {
-        return Ok((Vec::new(), None));
-    }
-
-    // Checks if the requirement can be fulfilled.
-    {
-        let index = available_inputs
+impl InputSelection {
+    /// Fulfills an alias requirement by selecting the appropriate alias from the available inputs.
+    pub(crate) fn fulfill_alias_requirement(
+        &mut self,
+        alias_id: AliasId,
+        selected_inputs: &[InputSigningData],
+    ) -> Result<(Vec<InputSigningData>, Option<Requirement>)> {
+        // Checks if the requirement is already fulfilled.
+        if selected_inputs
             .iter()
-            .position(|input| is_alias_with_id(&input.output, input.output_id(), &alias_id));
+            .any(|input| is_alias_with_id(&input.output, input.output_id(), &alias_id))
+        {
+            return Ok((Vec::new(), None));
+        }
 
-        match index {
-            // Removes the output from the available inputs and returns it, swaps to make it O(1).
-            Some(index) => Ok((vec![available_inputs.swap_remove(index)], None)),
-            None => Err(Error::UnfulfillableRequirement(Requirement::Alias(alias_id))),
+        // Checks if the requirement can be fulfilled.
+        {
+            let index = self
+                .available_inputs
+                .iter()
+                .position(|input| is_alias_with_id(&input.output, input.output_id(), &alias_id));
+
+            match index {
+                // Removes the output from the available inputs and returns it, swaps to make it O(1).
+                Some(index) => Ok((vec![self.available_inputs.swap_remove(index)], None)),
+                None => Err(Error::UnfulfillableRequirement(Requirement::Alias(alias_id))),
+            }
         }
     }
 }

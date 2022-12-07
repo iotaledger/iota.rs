@@ -161,6 +161,8 @@ impl InputSelection {
             requirements.extend(new_requirements);
         }
 
+        // Adds an initial native tokens requirement.
+        requirements.push(Requirement::NativeTokens);
         // Adds an initial base token requirement.
         requirements.push(Requirement::BaseToken);
 
@@ -206,12 +208,7 @@ impl InputSelection {
         // Process all the requirements until there are no more.
         while let Some(requirement) = requirements.pop() {
             // Fulfill the requirement.
-            let (inputs, new_requirement) = requirement.fulfill(
-                &mut self.available_inputs,
-                &selected_inputs,
-                &mut self.outputs,
-                &self.protocol_parameters,
-            )?;
+            let (inputs, new_requirement) = self.fulfill_requirement(requirement, &selected_inputs)?;
 
             if let Some(new_requirement) = new_requirement {
                 println!("NEW REQUIREMENT");

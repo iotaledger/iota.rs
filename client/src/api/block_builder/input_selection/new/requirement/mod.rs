@@ -12,20 +12,11 @@ pub(crate) mod base_token;
 
 use std::collections::VecDeque;
 
-use alias::fulfill_alias_requirement;
-use base_token::fulfill_base_token_requirement;
-use foundry::fulfill_foundry_requirement;
-use issuer::fulfill_issuer_requirement;
-use native_tokens::fulfill_native_tokens_requirement;
-use nft::fulfill_nft_requirement;
-use sender::fulfill_sender_requirement;
-
-use super::{Burn, OutputInfo};
+use super::{Burn, InputSelection, OutputInfo};
 use crate::{
     block::{
         address::Address,
         output::{AliasId, FoundryId, NftId, Output},
-        protocol::ProtocolParameters,
     },
     error::Result,
     secret::types::InputSigningData,
@@ -42,26 +33,21 @@ pub enum Requirement {
     BaseToken,
 }
 
-impl Requirement {
-    pub(crate) fn fulfill(
-        self,
-        available_inputs: &mut Vec<InputSigningData>,
+impl InputSelection {
+    pub(crate) fn fulfill_requirement(
+        &mut self,
+        requirement: Requirement,
         selected_inputs: &[InputSigningData],
-        outputs: &mut [OutputInfo],
-        protocol_parameters: &ProtocolParameters, // TODO can it actually return more than one output?
+        // TODO can it actually return more than one output?
     ) -> Result<(Vec<InputSigningData>, Option<Requirement>)> {
-        match self {
-            Requirement::Sender(address) => fulfill_sender_requirement(address, available_inputs, selected_inputs),
-            Requirement::Issuer(address) => fulfill_issuer_requirement(address, available_inputs, selected_inputs),
-            Requirement::Foundry(foundry_id) => {
-                fulfill_foundry_requirement(foundry_id, available_inputs, selected_inputs)
-            }
-            Requirement::Alias(alias_id) => fulfill_alias_requirement(alias_id, available_inputs, selected_inputs),
-            Requirement::Nft(nft_id) => fulfill_nft_requirement(nft_id, available_inputs, selected_inputs),
-            Requirement::NativeTokens => fulfill_native_tokens_requirement(available_inputs, selected_inputs, outputs),
-            Requirement::BaseToken => {
-                fulfill_base_token_requirement(available_inputs, selected_inputs, outputs, protocol_parameters)
-            }
+        match requirement {
+            Requirement::Sender(address) => self.fulfill_sender_requirement(address, selected_inputs),
+            Requirement::Issuer(address) => self.fulfill_issuer_requirement(address, selected_inputs),
+            Requirement::Foundry(foundry_id) => self.fulfill_foundry_requirement(foundry_id, selected_inputs),
+            Requirement::Alias(alias_id) => self.fulfill_alias_requirement(alias_id, selected_inputs),
+            Requirement::Nft(nft_id) => self.fulfill_nft_requirement(nft_id, selected_inputs),
+            Requirement::NativeTokens => self.fulfill_native_tokens_requirement(selected_inputs),
+            Requirement::BaseToken => self.fulfill_base_token_requirement(selected_inputs),
         }
     }
 }
