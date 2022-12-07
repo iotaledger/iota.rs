@@ -47,7 +47,7 @@ fn input_selection_nfts() -> Result<()> {
             // Amount we want to send + storage deposit for nft remainder
             required: 2_229_500,
         }) => {}
-        e => panic!("Should return NotEnoughBalance {e:?}"),
+        _ => panic!("Should return NotEnoughBalance"),
     }
 
     // basic output with nft as input

@@ -34,30 +34,23 @@ fn input_selection_alias() -> Result<()> {
         .finish()
         .select()?;
 
-    println!("TEST A");
-
     assert_eq!(selected_transaction_data.0, inputs);
 
-    // println!("TEST A2");
+    // output amount > input amount
+    let inputs = build_input_signing_data_alias_outputs(vec![(alias_id_1, bech32_address, 1_000_000)]);
+    let outputs = vec![build_most_basic_output(bech32_address, 2_000_000)];
 
-    // // output amount > input amount
-    // let inputs = build_input_signing_data_alias_outputs(vec![(alias_id_1, bech32_address, 1_000_000)]);
-    // let outputs = vec![build_most_basic_output(bech32_address, 2_000_000)];
-
-    // match InputSelection::build(outputs, inputs, protocol_parameters.clone())
-    //     .finish()
-    //     .select()
-    // {
-    //     Err(Error::NotEnoughBalance {
-    //         found: 1_000_000,
-    //         // Amount we want to send + storage deposit for alias remainder
-    //         required: 2_251_500,
-    //     }) => {}
-    //     e => {
-    //         println!("{e:?}");
-    //         panic!("Should return NotEnoughBalance")
-    //     }
-    // }
+    match InputSelection::build(outputs, inputs, protocol_parameters.clone())
+        .finish()
+        .select()
+    {
+        Err(Error::NotEnoughBalance {
+            found: 1_000_000,
+            // Amount we want to send + storage deposit for alias remainder
+            required: 2_251_500,
+        }) => {}
+        _ => panic!("Should return NotEnoughBalance"),
+    }
 
     // basic output with alias as input
     let inputs = build_input_signing_data_alias_outputs(vec![(alias_id_1, bech32_address, 2_251_500)]);
@@ -151,8 +144,6 @@ fn input_selection_alias() -> Result<()> {
         }
         _ => panic!("Should return missing alias input"),
     }
-
-    println!("START");
 
     // existing input alias for foundry alias
     let inputs = build_input_signing_data_alias_outputs(vec![(alias_id_1, bech32_address, 1251500)]);
