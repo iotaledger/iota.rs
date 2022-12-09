@@ -1,23 +1,17 @@
-package node_api_core;
-
 import org.iota.Client;
-import org.iota.types.Block;
 import org.iota.types.ClientConfig;
 import org.iota.types.expections.ClientException;
 import org.iota.types.expections.InitializeClientException;
-import org.iota.types.ids.BlockId;
 
-import java.util.Map;
-
-public class CreateBlock {
+public class GetHealth {
     public static void main(String[] args) throws ClientException, InitializeClientException {
         // Build the client.
         Client client = new Client(new ClientConfig().withNodes(new String[]{"https://api.testnet.shimmer.network"}));
 
-        // Create the most simple block.
-        Map.Entry<BlockId, Block> b = client.buildAndPostBlock(null, null);
+        // Get the health of the given node.
+        boolean health = client.getHealth("https://api.testnet.shimmer.network");
 
-        // Print the block.
-        System.out.println(b);
+        // Print the response.
+        System.out.println(health);
     }
 }

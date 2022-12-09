@@ -1,5 +1,3 @@
-package output_builder;
-
 import org.iota.Client;
 import org.iota.types.*;
 import org.iota.types.expections.ClientException;

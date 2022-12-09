@@ -1,5 +1,3 @@
-package node_api_core;
-
 import com.google.gson.JsonElement;
 import org.iota.Client;
 import org.iota.apis.NodeIndexerApi;

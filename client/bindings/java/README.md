@@ -19,13 +19,8 @@ Minimum Java version: Java 8
 
 ## Use in your Android project (Android Studio)
 
-1. Add following dependency to your `build.gradle` file:
-```
-implementation 'org.iota:iota-client:1.0.0-rc.1'
-```
-
-2. Download the `iota-client-1.0.0-rc.1-android-jni.zip` file from the GitHub release and unzip it.
-3. Add the `jniLibs` folder with its contents to your Android Studio project as shown below:
+1. Download the `iota-client-1.0.0-rc.1.jar` file from the [GitHub release](https://github.com/iotaledger/iota.rs/releases/tag/iota-client-java-1.0.0-rc.1) and add it as a library to your project.
+2. Download the `iota-client-1.0.0-rc.1-android.zip` file from the [GitHub release](https://github.com/iotaledger/iota.rs/releases/tag/iota-client-java-1.0.0-rc.1), unzip it and add the `jniLibs` folder with its contents to your Android Studio project as shown below:
 
 ```
 project/
@@ -42,7 +37,10 @@ project/
            ├── armeabi-v7a/         <-- ARM 32bit
            │   └── libiota-client.so
            │   └── libc++_shared.so
-           └── x86/                 <-- Intel 32bit
+           │── x86/                 <-- Intel 32bit
+           │  └── libiota-client.so
+           │  └── libc++_shared.so
+           └── x86_64/              <-- Intel 64bit
               └── libiota-client.so
               └── libc++_shared.so
 ```
@@ -71,9 +69,9 @@ implementation 'org.iota:iota-client:1.0.0-rc.1:aarch64-apple-darwin'
 implementation 'org.iota:iota-client:1.0.0-rc.1:osx-x86_64'
 ```
 
-## Try the library
+## Use the Library
 
-In order to try with the library, create a `Client` instance:
+In order to use the library, you need to create a `Client` instance as illustrated below:
 
 ```java
 import org.iota.Client;
