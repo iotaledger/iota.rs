@@ -1,23 +1,22 @@
-package node_api_core;
-
 import org.iota.Client;
+import org.iota.types.Block;
 import org.iota.types.ClientConfig;
 import org.iota.types.expections.ClientException;
 import org.iota.types.expections.InitializeClientException;
-import org.iota.types.responses.TreasuryResponse;
+import org.iota.types.ids.BlockId;
 
-public class GetTreasury {
+public class PostBlock {
     public static void main(String[] args) throws ClientException, InitializeClientException {
         // Build the client.
         Client client = new Client(new ClientConfig().withNodes(new String[]{"https://api.testnet.shimmer.network"}));
 
-        // Get the treasury.
-        TreasuryResponse response = client.getTreasury();
+        // Set up a block for this example.
+        Block b = ExampleUtils.setUpBlock(client);
 
-        // Print the amount.
-        System.out.println(response.getAmount());
+        // Post the block.
+        BlockId id = client.postBlock(b);
 
-        // Print the milestone ID.
-        System.out.println(response.getMilestoneId());
+        // Print the id of the created block.
+        System.out.println(id);
     }
 }

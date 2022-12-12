@@ -13,7 +13,7 @@ dependencies {
 }
 
 application {
-    mainClassName = project.findProperty("main").toString()
+    mainClassName = project.findProperty("example").toString()
 }
 
 sourceSets.main.java.srcDirs = ['src']

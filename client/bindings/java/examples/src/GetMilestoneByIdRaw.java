@@ -1,13 +1,11 @@
-package node_api_core;
-
+import org.apache.commons.codec.binary.Hex;
 import org.iota.Client;
 import org.iota.types.ClientConfig;
 import org.iota.types.expections.ClientException;
-import org.iota.types.MilestonePayload;
 import org.iota.types.expections.InitializeClientException;
 import org.iota.types.ids.MilestoneId;
 
-public class GetMilestoneById {
+public class GetMilestoneByIdRaw {
     public static void main(String[] args) throws ClientException, InitializeClientException {
         // Build the client.
         Client client = new Client(new ClientConfig().withNodes(new String[]{"https://api.testnet.shimmer.network"}));
@@ -15,10 +13,10 @@ public class GetMilestoneById {
         // Set up a milestone ID for this example.
         MilestoneId milestoneId = ExampleUtils.setUpMilestoneId(client);
 
-        // Get the milestone.
-        MilestonePayload milestone = client.getMilestoneById(milestoneId);
+        // Get the milestone bytes.
+        byte[] milestoneBytes = client.getMilestoneByIdRaw(milestoneId);
 
-        // Print the milestone.
-        System.out.println(milestone);
+        // Print the milestone bytes.
+        System.out.println(Hex.encodeHex(milestoneBytes));
     }
 }

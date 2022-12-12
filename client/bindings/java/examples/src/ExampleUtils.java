@@ -1,5 +1,3 @@
-package node_api_core;
-
 import org.iota.Client;
 import org.iota.apis.NodeIndexerApi;
 import org.iota.types.Block;
