@@ -29,13 +29,11 @@ https://api.testnet.shimmer.network
 
 ## Explore the Network
 
-You can use the [Shimmer Tangle Explorer](https://explorer.shimmer.network/testnet) to view transactions and data stored in
-the Tangle.
+You can use the [Shimmer Tangle Explorer](https://explorer.shimmer.network/testnet) to view transactions and data stored in the Tangle.
 
 ## Get Test Tokens
 
 If you plan on managing funds in your application, take a look at
 our [wallet.rs library](https://wiki.iota.org/wallet.rs/welcome) instead.
 
-In any case, to properly test value-based transactions on testnet network, you are going to need some tokens. You can get
-some testnet tokens through the [Shimmer Faucet](https://faucet.testnet.shimmer.network).
+In any case, to properly test value-based transactions on testnet network, you are going to need some tokens. You can get some testnet tokens through the [Shimmer Faucet](https://faucet.testnet.shimmer.network).
