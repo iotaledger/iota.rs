@@ -29,8 +29,7 @@ https://api.testnet.shimmer.network
 
 ## Explore the Network
 
-You can use the [Shimmer Tangle Explorer](https://explorer.shimmer.network/testnet) to view transactions and data stored in
-the Tangle.
+You can use the [Shimmer Tangle Explorer](https://explorer.shimmer.network/testnet) to view transactions and data stored in the Tangle.
 
 ## Get Test Tokens
 
