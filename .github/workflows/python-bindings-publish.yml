@@ -1,6 +1,7 @@
 name: Build and Upload Wheels for the Python Bindings
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - develop
