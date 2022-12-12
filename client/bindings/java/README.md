@@ -1,14 +1,3 @@
----
-description: Get started with the official IOTA Client Java library.
-image: /img/logo/iota_mark_light.png
-keywords:
-
-- Java
-- jar
-- Maven
-- Gradle
-
----
 # IOTA Client Java Library
 
 Get started with the official IOTA Client Java Library.
