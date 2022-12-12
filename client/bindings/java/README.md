@@ -89,5 +89,5 @@ public class HelloWorld {
 ## What's Next?
 
 Now that you are up and running, you can get acquainted with the library using
-its [how-to guides](../../../documentation/docs/how_tos/00_run_how_tos.mdx) and the
+its [how-to guides](https://wiki.iota.org/shimmer/iota.rs/how_tos/run_how_tos/) and the
 repository's [code examples](https://github.com/iotaledger/iota.rs/tree/develop/client/bindings/java/examples/src).
