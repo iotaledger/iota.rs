@@ -1,0 +1,158 @@
+name: Create Python Release
+
+on: workflow_dispatch
+
+jobs:
+  macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          architecture: x64
+      - name: Cache cargo registry
+        uses: actions/cache@v3
+        with:
+          path: ~/.cargo/registry
+          # Add date to the cache to keep it up to date
+          key: macos-latest-stable-cargo-registry-${{ hashFiles('**/Cargo.lock') }}-${{ env.CURRENT_DATE }}
+          # Restore from outdated cache for speed
+          restore-keys: |
+            macos-latest-stable-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+            macos-latest-stable-cargo-registry-
+      - name: Cache cargo index
+        uses: actions/cache@v3
+        with:
+          path: ~/.cargo/git
+          # Add date to the cache to keep it up to date
+          key: macos-latest-stable-cargo-index-${{ hashFiles('**/Cargo.lock') }}-${{ env.CURRENT_DATE }}
+          # Restore from outdated cache for speed
+          restore-keys: |
+            macos-latest-stable-cargo-index-${{ hashFiles('**/Cargo.lock') }}
+            macos-latest-stable-cargo-index-
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          args: --release --out dist -m client/bindings/python/Cargo.toml
+      - name: Upload wheels
+        uses: actions/upload-artifact@v3
+        with:
+          name: wheels
+          path: dist
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Cache cargo registry
+        uses: actions/cache@v3
+        with:
+          path: ~/.cargo/registry
+          # Add date to the cache to keep it up to date
+          key: windows-latest-stable-cargo-registry-${{ hashFiles('**/Cargo.lock') }}-${{ env.CURRENT_DATE }}
+          # Restore from outdated cache for speed
+          restore-keys: |
+            windows-latest-stable-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+            windows-latest-stable-cargo-registry-
+      - name: Cache cargo index
+        uses: actions/cache@v3
+        with:
+          path: ~/.cargo/git
+          # Add date to the cache to keep it up to date
+          key: windows-latest-stable-cargo-index-${{ hashFiles('**/Cargo.lock') }}-${{ env.CURRENT_DATE }}
+          # Restore from outdated cache for speed
+          restore-keys: |
+            windows-latest-stable-cargo-index-${{ hashFiles('**/Cargo.lock') }}
+            windows-latest-stable-cargo-index-
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          args: --release --out dist -m client/bindings/python/Cargo.toml
+      - name: Upload wheels
+        uses: actions/upload-artifact@v3
+        with:
+          name: wheels
+          path: dist
+
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    - name: Cache cargo registry
+      uses: actions/cache@v3
+      with:
+        path: ~/.cargo/registry
+        # Add date to the cache to keep it up to date
+        key: ubuntu-latest-stable-cargo-registry-${{ hashFiles('**/Cargo.lock') }}-${{ env.CURRENT_DATE }}
+        # Restore from outdated cache for speed
+        restore-keys: |
+          ubuntu-latest-stable-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+          ubuntu-latest-stable-cargo-registry-
+    - name: Cache cargo index
+      uses: actions/cache@v3
+      with:
+        path: ~/.cargo/git
+        # Add date to the cache to keep it up to date
+        key: ubuntu-latest-stable-cargo-index-${{ hashFiles('**/Cargo.lock') }}-${{ env.CURRENT_DATE }}
+        # Restore from outdated cache for speed
+        restore-keys: |
+          ubuntu-latest-stable-cargo-index-${{ hashFiles('**/Cargo.lock') }}
+          ubuntu-latest-stable-cargo-index-
+    - name: Install libudev and libusb
+      run: |
+        sudo apt-get update
+        sudo apt-get install libudev-dev libusb-1.0-0-dev
+    - name: Build wheels
+      uses: PyO3/maturin-action@v1
+      with:
+        manylinux: auto
+        container: off
+        args: --release --out dist -m client/bindings/python/Cargo.toml -i python
+    - name: Upload wheels
+      uses: actions/upload-artifact@v3
+      with:
+        name: wheels
+        path: dist
+
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    needs: [ macos, windows, linux ]
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: wheels
+          path: wheels
+      - run: ls -R
+      - name: Get tag name
+        shell: bash
+        id: tagname
+        run: |
+          cd wheels
+          tagName="$(ls | grep -m 1 win_amd64.whl | rev | cut -c 26- | rev)"
+          echo "TAG_NAME=$tagName" >> $GITHUB_OUTPUT
+      - name: Upload Wheels to Github
+        uses: softprops/action-gh-release@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          files: wheels/*
+          tag_name: ${{ steps.tagname.outputs.TAG_NAME }}
+          append_body: true
+          prerelease: true
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Publish to PyPI
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+        run: |
+          pip install --upgrade twine
+          twine upload --skip-existing wheels/*
