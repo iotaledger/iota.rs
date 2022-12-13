@@ -1,7 +1,13 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use super::{requirement::base_token::base_token_sums, OutputInfo};
+use super::{
+    requirement::{
+        base_token::base_token_sums,
+        native_tokens::{get_minted_and_melted_native_tokens, get_native_tokens, get_native_tokens_diff},
+    },
+    OutputInfo,
+};
 use crate::{
     block::{
         address::Address,
@@ -58,48 +64,61 @@ pub(crate) fn remainder_output(
     remainder_address: Option<Address>,
     protocol_parameters: &ProtocolParameters,
 ) -> Result<Option<Output>> {
-    // let input_native_tokens = gather_nts(selected_inputs);
-    // let output_native_tokens = gather_nts(outputs);
-    // let (minted_native_tokens, melted_native_tokens) = get_minted_and_melted_nts(selected_inputs, outputs)?;
-    // let native_tokens_diffs = (input_native_tokens + minted) - (output + melted + burn);
-
     let (inputs_sum, outputs_sum) = base_token_sums(selected_inputs, outputs);
+
+    let mut input_native_tokens = get_native_tokens(selected_inputs.iter().map(|input| &input.output))?;
+    let mut output_native_tokens = get_native_tokens(outputs.iter().map(|output| &output.output))?;
+    let (minted_native_tokens, melted_native_tokens) = get_minted_and_melted_native_tokens(selected_inputs, &outputs)?;
+
+    println!("Input {input_native_tokens:?}");
+    println!("Output {output_native_tokens:?}");
+    println!("Minted {minted_native_tokens:?}");
+    println!("Melted {melted_native_tokens:?}");
+
+    input_native_tokens.merge(minted_native_tokens)?;
+    output_native_tokens.merge(melted_native_tokens)?;
+    // TODO also merge burn
+
+    println!("Input merged {input_native_tokens:?}");
+    println!("Output merged {output_native_tokens:?}");
+
+    let native_tokens_diff = get_native_tokens_diff(&input_native_tokens, &output_native_tokens)?;
+
+    println!("Diff {native_tokens_diff:?}");
 
     // println!("remainder: input {inputs_sum} output {outputs_sum}");
 
     // println!("{selected_inputs:?}\n{outputs:?}");
 
-    if inputs_sum > outputs_sum {
-        let diff = inputs_sum - outputs_sum;
-
+    if inputs_sum > outputs_sum || native_tokens_diff.is_some() {
         let Some(remainder_address) = get_remainder_address(selected_inputs,remainder_address) else {
             return Err(Error::MissingInputWithEd25519Address);
         };
 
-        // println!("{diff} {remainder_address:?}");
+        let mut remainder_builder = if inputs_sum > outputs_sum {
+            // TODO could this also fail if not enough to cover native tokens ?
+            BasicOutputBuilder::new_with_amount(inputs_sum - outputs_sum)?
+        } else {
+            BasicOutputBuilder::new_with_minimum_storage_deposit(protocol_parameters.rent_structure().clone())?
+        };
 
-        let output = BasicOutputBuilder::new_with_amount(diff)?
-            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(remainder_address)))
-            .finish_output(protocol_parameters.token_supply())?;
+        remainder_builder = remainder_builder
+            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(remainder_address)));
+
+        if let Some(native_tokens) = native_tokens_diff {
+            remainder_builder = remainder_builder.with_native_tokens(native_tokens);
+        }
+
+        let remainder = remainder_builder.finish_output(protocol_parameters.token_supply())?;
 
         // TODO should we always try to select enough inputs so the diff covers the deposit?
-        output.verify_storage_deposit(
+        remainder.verify_storage_deposit(
             protocol_parameters.rent_structure().clone(),
             protocol_parameters.token_supply(),
         )?;
 
-        return Ok(Some(output));
+        return Ok(Some(remainder));
     }
-
-    // if !native_tokens_diffs.is_empty() || base_coin_diff != 0 {
-    //     let mut remainder = OutputBuilder::new(base_coin_diff).with_unlock_condition(remainder_address);
-    //     if !native_tokens_diffs.is_empty() {
-    //         remainder = remainder.with_native_tokens(native_tokens_diffs);
-    //     }
-    //     Some(remainder.finish())
-    // } else {
-    //     None
-    // }
 
     Ok(None)
 }

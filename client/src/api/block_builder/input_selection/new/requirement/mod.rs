@@ -4,7 +4,7 @@
 pub(crate) mod alias;
 pub(crate) mod foundry;
 mod issuer;
-mod native_tokens;
+pub(crate) mod native_tokens;
 pub(crate) mod nft;
 mod sender;
 

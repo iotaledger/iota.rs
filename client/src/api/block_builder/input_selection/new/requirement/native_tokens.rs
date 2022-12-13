@@ -7,12 +7,24 @@ use primitive_types::U256;
 
 use super::{InputSelection, OutputInfo, Requirement};
 use crate::{
-    block::output::{NativeToken, NativeTokensBuilder, Output, TokenScheme},
+    block::output::{NativeToken, NativeTokens, NativeTokensBuilder, Output, TokenScheme},
     error::Result,
     secret::types::InputSigningData,
 };
 
-fn get_minted_and_melted_native_tokens(
+pub(crate) fn get_native_tokens<'a>(outputs: impl Iterator<Item = &'a Output>) -> Result<NativeTokensBuilder> {
+    let mut required_native_tokens = NativeTokensBuilder::new();
+
+    for output in outputs {
+        if let Some(output_native_tokens) = output.native_tokens() {
+            required_native_tokens.add_native_tokens(output_native_tokens.clone())?;
+        }
+    }
+
+    Ok(required_native_tokens)
+}
+
+pub(crate) fn get_minted_and_melted_native_tokens(
     inputs: &[InputSigningData],
     outputs: &[OutputInfo],
 ) -> Result<(NativeTokensBuilder, NativeTokensBuilder)> {
@@ -27,9 +39,11 @@ fn get_minted_and_melted_native_tokens(
             for input in inputs {
                 if let Output::Foundry(input_foundry) = &input.output {
                     let token_id = output_foundry.token_id();
+
                     if output_foundry.id() == input_foundry.id() {
                         initial_creation = false;
                         let TokenScheme::Simple(input_foundry_simple_ts) = input_foundry.token_scheme();
+
                         match output_foundry_simple_ts
                             .circulating_supply()
                             .cmp(&input_foundry_simple_ts.circulating_supply())
@@ -70,18 +84,45 @@ fn get_minted_and_melted_native_tokens(
     Ok((minted_native_tokens, melted_native_tokens))
 }
 
+// TODO checked ops
+pub(crate) fn get_native_tokens_diff(
+    inputs: &NativeTokensBuilder,
+    outputs: &NativeTokensBuilder,
+) -> Result<Option<NativeTokens>> {
+    let mut native_tokens_diff = NativeTokensBuilder::new();
+
+    for (token_id, output_amount) in outputs.iter() {
+        match inputs.get(token_id) {
+            None => {
+                native_tokens_diff.insert(*token_id, *output_amount);
+            }
+            Some(input_amount) => {
+                if input_amount < output_amount {
+                    native_tokens_diff.insert(*token_id, output_amount - input_amount);
+                }
+            }
+        }
+    }
+
+    // for (token_id, input_amount) in inputs.iter() {
+    //     if outputs.get(token_id).is_none() {
+    //         native_tokens_diff.insert(*token_id, 0 - *input_amount);
+    //     }
+    // }
+
+    if native_tokens_diff.is_empty() {
+        Ok(None)
+    } else {
+        Ok(Some(native_tokens_diff.finish()?))
+    }
+}
+
 impl InputSelection {
     pub(crate) fn fulfill_native_tokens_requirement(
         &self,
         selected_inputs: &[InputSigningData],
     ) -> Result<(Vec<InputSigningData>, Option<Requirement>)> {
         println!("NATIVE TOKENS");
-
-        // let input_native_tokens = gather_nts(selected_inputs);
-        // let output_native_tokens = gather_nts(outputs);
-
-        let (minted_native_tokens, melted_native_tokens) =
-            get_minted_and_melted_native_tokens(selected_inputs, &self.outputs)?;
 
         // let diffs = (input_native_tokens + minted) - (output + melted + burn);
 
