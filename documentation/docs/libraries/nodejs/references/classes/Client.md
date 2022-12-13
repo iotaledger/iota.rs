@@ -13,6 +13,9 @@ The Client to interact with nodes.
 - [getOutputs](Client.md#getoutputs)
 - [generateMnemonic](Client.md#generatemnemonic)
 - [mnemonicToHexSeed](Client.md#mnemonictohexseed)
+- [computeAliasId](Client.md#computealiasid)
+- [computeNftId](Client.md#computenftid)
+- [computeFoundryId](Client.md#computefoundryid)
 - [generateAddresses](Client.md#generateaddresses)
 - [buildAndPostBlock](Client.md#buildandpostblock)
 - [getTips](Client.md#gettips)
@@ -52,6 +55,8 @@ The Client to interact with nodes.
 - [getIncludedBlock](Client.md#getincludedblock)
 - [bech32ToHex](Client.md#bech32tohex)
 - [hexToBech32](Client.md#hextobech32)
+- [aliasIdToBech32](Client.md#aliasidtobech32)
+- [nftIdToBech32](Client.md#nftidtobech32)
 - [hexPublicKeyToBech32Address](Client.md#hexpublickeytobech32address)
 - [isAddressValid](Client.md#isaddressvalid)
 - [aliasOutputIds](Client.md#aliasoutputids)
@@ -180,6 +185,62 @@ Returns a hex encoded seed for a mnemonic.
 | Name | Type |
 | :------ | :------ |
 | `mnemonic` | `string` |
+
+#### Returns
+
+`Promise`<`string`\>
+
+___
+
+### computeAliasId
+
+▸ **computeAliasId**(`outputId`): `Promise`<`string`\>
+
+Computes the alias id for the given alias output id.
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `outputId` | `string` |
+
+#### Returns
+
+`Promise`<`string`\>
+
+___
+
+### computeNftId
+
+▸ **computeNftId**(`outputId`): `Promise`<`string`\>
+
+Computes the NFT id for the given NFT output id.
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `outputId` | `string` |
+
+#### Returns
+
+`Promise`<`string`\>
+
+___
+
+### computeFoundryId
+
+▸ **computeFoundryId**(`aliasAddress`, `serialNumber`, `tokenSchemeKind`): `Promise`<`string`\>
+
+Computes the foundry id.
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `aliasAddress` | `string` |
+| `serialNumber` | `number` |
+| `tokenSchemeKind` | `number` |
 
 #### Returns
 
@@ -814,6 +875,44 @@ Transforms a hex encoded address to a bech32 encoded address.
 | Name | Type |
 | :------ | :------ |
 | `hex` | `string` |
+| `bech32Hrp?` | `string` |
+
+#### Returns
+
+`Promise`<`string`\>
+
+___
+
+### aliasIdToBech32
+
+▸ **aliasIdToBech32**(`aliasId`, `bech32Hrp?`): `Promise`<`string`\>
+
+Transforms an alias id to a bech32 encoded address.
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `aliasId` | `string` |
+| `bech32Hrp?` | `string` |
+
+#### Returns
+
+`Promise`<`string`\>
+
+___
+
+### nftIdToBech32
+
+▸ **nftIdToBech32**(`nftId`, `bech32Hrp?`): `Promise`<`string`\>
+
+Transforms an nft id to a bech32 encoded address.
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `nftId` | `string` |
 | `bech32Hrp?` | `string` |
 
 #### Returns

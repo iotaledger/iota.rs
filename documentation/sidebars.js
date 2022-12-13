@@ -30,23 +30,23 @@ module.exports = {
             items: [
                 {
                     type: "doc",
+                    id: "getting_started/rust",
+                    label: 'Rust'
+                },
+                {
+                    type: "doc",
+                    id: "getting_started/nodejs",
+                    label: 'Node.js'
+                },
+                {
+                    type: "doc",
                     id: "getting_started/java",
                     label: 'Java'
                 },
                 {
                     type: "doc",
-                    id: "getting_started/nodejs",
-                    label: 'Nodejs'
-                },
-                {
-                    type: "doc",
                     id: "getting_started/python",
                     label: 'Python'
-                },
-                {
-                    type: "doc",
-                    id: "getting_started/rust",
-                    label: 'Rust'
                 },
             ]
         },
@@ -68,8 +68,8 @@ module.exports = {
             items: [
                 {
                     type: "doc",
-                    id: "libraries/java/api_reference",
-                    label: "Java",
+                    id: "libraries/rust/api_reference",
+                    label: "Rust",
                 },
                 {
                     type: 'category',
@@ -114,13 +114,13 @@ module.exports = {
                 },
                 {
                     type: "doc",
-                    id: "libraries/python/api_reference",
-                    label: "Python",
+                    id: "libraries/java/api_reference",
+                    label: "Java",
                 },
                 {
                     type: "doc",
-                    id: "libraries/rust/api_reference",
-                    label: "Rust",
+                    id: "libraries/python/api_reference",
+                    label: "Python",
                 },
             ],
         },

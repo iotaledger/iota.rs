@@ -5,6 +5,9 @@ import type {
     __GetOutputsMessage__,
     __GenerateMnemonicMessage__,
     __MnemonicToHexSeedMessage__,
+    __ComputeAliasIdMessage__,
+    __ComputeNftIdMessage__,
+    __ComputeFoundryIdMessage__,
     __GenerateAddressesMessage__,
     __PostBlockMessage__,
     __BuildAndPostBlockMessage__,
@@ -39,6 +42,8 @@ import type {
     __GetIncludedBlockMessage__,
     __Bech32ToHexMessage__,
     __HexToBech32Message__,
+    __AliasIdToBech32Message__,
+    __NftIdToBech32Message__,
     __HexPublicKeyToBech32AddressMessage__,
     __IsAddressValidMessage__,
     __AliasOutputIdsMessage__,
@@ -75,6 +80,9 @@ export type __ClientMessages__ =
     | __GetOutputsMessage__
     | __GenerateMnemonicMessage__
     | __MnemonicToHexSeedMessage__
+    | __ComputeAliasIdMessage__
+    | __ComputeNftIdMessage__
+    | __ComputeFoundryIdMessage__
     | __GenerateAddressesMessage__
     | __PostBlockMessage__
     | __BuildAndPostBlockMessage__
@@ -114,6 +122,8 @@ export type __ClientMessages__ =
     | __GetIncludedBlockMessage__
     | __Bech32ToHexMessage__
     | __HexToBech32Message__
+    | __AliasIdToBech32Message__
+    | __NftIdToBech32Message__
     | __HexPublicKeyToBech32AddressMessage__
     | __IsAddressValidMessage__
     | __AliasOutputIdsMessage__

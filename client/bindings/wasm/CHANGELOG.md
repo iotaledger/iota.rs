@@ -19,6 +19,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security -->
 
+## 1.0.0-alpha.2 - 202x-MM-DD
+
+### Added
+
+- `aliasIdToBech32()`;
+- `nftIdToBech32()`;
+- `computeAliasId()`;
+- `computeNftId()`;
+- `computeFoundryId()`;
+
 ## 1.0.0-alpha.1 - YYYY-MM-DD
 
 Initial release of the wasm bindings.

@@ -52,6 +52,29 @@ export interface __MnemonicToHexSeedMessage__ {
     };
 }
 
+export interface __ComputeAliasIdMessage__ {
+    name: 'computeAliasId';
+    data: {
+        outputId: string;
+    };
+}
+
+export interface __ComputeNftIdMessage__ {
+    name: 'computeNftId';
+    data: {
+        outputId: string;
+    };
+}
+
+export interface __ComputeFoundryIdMessage__ {
+    name: 'computeFoundryId';
+    data: {
+        aliasAddress: string;
+        serialNumber: number;
+        tokenSchemeKind: number;
+    };
+}
+
 export interface __GenerateAddressesMessage__ {
     name: 'generateAddresses';
     data: {
@@ -290,6 +313,22 @@ export interface __HexToBech32Message__ {
     name: 'hexToBech32';
     data: {
         hex: string;
+        bech32Hrp?: string;
+    };
+}
+
+export interface __AliasIdToBech32Message__ {
+    name: 'aliasIdToBech32';
+    data: {
+        aliasId: string;
+        bech32Hrp?: string;
+    };
+}
+
+export interface __NftIdToBech32Message__ {
+    name: 'nftIdToBech32';
+    data: {
+        nftId: string;
         bech32Hrp?: string;
     };
 }

@@ -179,12 +179,11 @@ pub enum Response {
     /// - [`Bech32ToHex`](crate::message_interface::Message::Bech32ToHex)
     Bech32ToHex(String),
     /// Response for:
-    /// - [`HexToBech32`](crate::message_interface::Message::HexToBech32)
-    /// - [`HexPublicKeyToBech32Address`](crate::message_interface::Message::HexPublicKeyToBech32Address)
-    HexToBech32(String),
-    /// Response for:
     /// - [`AliasIdToBech32`](crate::message_interface::Message::AliasIdToBech32)
-    AliasIdToBech32(String),
+    /// - [`HexPublicKeyToBech32Address`](crate::message_interface::Message::HexPublicKeyToBech32Address)
+    /// - [`HexToBech32`](crate::message_interface::Message::HexToBech32)
+    /// - [`NftIdToBech32`](crate::message_interface::Message::NftIdToBech32)
+    Bech32Address(String),
     /// Response for:
     /// - [`ParseBech32Address`](crate::message_interface::Message::ParseBech32Address)
     ParsedBech32Address(AddressDto),

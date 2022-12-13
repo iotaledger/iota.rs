@@ -78,6 +78,10 @@ jobs:
         working-directory: client/bindings/nodejs/
         run: yarn install
 
+      - name: Run Yarn Rebuild
+        working-directory: client/bindings/nodejs/
+        run: yarn rebuild
+
       - name: Run Yarn Test
         working-directory: client/bindings/nodejs/
         run: yarn test

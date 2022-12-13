@@ -55,4 +55,46 @@ describe('Client utility methods', () => {
 
         expect(isAddressValid).toBeTruthy();
     });
+
+    it('hash output id', async () => {
+        const outputId =
+            '0x00000000000000000000000000000000000000000000000000000000000000000000';
+
+        const aliasId = await offlineClient.computeAliasId(outputId);
+
+        expect(aliasId).toBe(
+            '0xcf077d276686ba64c0404b9eb2d15556782113c5a1985f262b70f9964d3bbd7f',
+        );
+    });
+
+    it('alias id to address', async () => {
+        const aliasId =
+            '0xcf077d276686ba64c0404b9eb2d15556782113c5a1985f262b70f9964d3bbd7f';
+
+        const aliasAddress = await offlineClient.aliasIdToBech32(
+            aliasId,
+            'rms',
+        );
+
+        expect(aliasAddress).toBe(
+            'rms1pr8swlf8v6rt5exqgp9eavk324t8sggnckseshex9dc0n9jd8w7h7wcnhn7',
+        );
+    });
+
+    it('compute foundry id', async () => {
+        const aliasAddress =
+            '0xcf077d276686ba64c0404b9eb2d15556782113c5a1985f262b70f9964d3bbd7f';
+        const serialNumber = 0;
+        const tokenSchemeKind = 0;
+
+        const foundryId = await offlineClient.computeFoundryId(
+            aliasAddress,
+            serialNumber,
+            tokenSchemeKind,
+        );
+
+        expect(foundryId).toBe(
+            '0x08cf077d276686ba64c0404b9eb2d15556782113c5a1985f262b70f9964d3bbd7f0000000000',
+        );
+    });
 });

@@ -535,13 +535,16 @@ impl ClientMessageHandler {
                 Ok(Response::Promoted((block_id, BlockDto::from(&block))))
             }
             Message::Bech32ToHex { bech32 } => Ok(Response::Bech32ToHex(Client::bech32_to_hex(&bech32)?)),
-            Message::HexToBech32 { hex, bech32_hrp } => Ok(Response::HexToBech32(
+            Message::HexToBech32 { hex, bech32_hrp } => Ok(Response::Bech32Address(
                 self.client.hex_to_bech32(&hex, bech32_hrp.as_deref()).await?,
             )),
-            Message::AliasIdToBech32 { alias_id, bech32_hrp } => Ok(Response::AliasIdToBech32(
+            Message::AliasIdToBech32 { alias_id, bech32_hrp } => Ok(Response::Bech32Address(
                 self.client.alias_id_to_bech32(alias_id, bech32_hrp.as_deref()).await?,
             )),
-            Message::HexPublicKeyToBech32Address { hex, bech32_hrp } => Ok(Response::HexToBech32(
+            Message::NftIdToBech32 { nft_id, bech32_hrp } => Ok(Response::Bech32Address(
+                self.client.nft_id_to_bech32(nft_id, bech32_hrp.as_deref()).await?,
+            )),
+            Message::HexPublicKeyToBech32Address { hex, bech32_hrp } => Ok(Response::Bech32Address(
                 self.client
                     .hex_public_key_to_bech32_address(&hex, bech32_hrp.as_deref())
                     .await?,

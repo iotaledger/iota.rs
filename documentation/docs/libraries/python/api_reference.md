@@ -34,12 +34,32 @@ def hex_to_bech32(hex, bech32_hrp)
 
 Transforms a hex encoded address to a bech32 encoded address.
 
-<a id="iota_client._utils.Utils.hex_public_key_to_beh32_address"></a>
+<a id="iota_client._utils.Utils.alias_id_to_bech32"></a>
 
-#### hex\_public\_key\_to\_beh32\_address
+#### alias\_id\_to\_bech32
 
 ```python
-def hex_public_key_to_beh32_address(hex, bech32_hrp=None)
+def alias_id_to_bech32(alias_id, bech32_hrp)
+```
+
+Transforms an alias id to a bech32 encoded address.
+
+<a id="iota_client._utils.Utils.nft_id_to_bech32"></a>
+
+#### nft\_id\_to\_bech32
+
+```python
+def nft_id_to_bech32(nft_id, bech32_hrp)
+```
+
+Transforms an nft id to a bech32 encoded address.
+
+<a id="iota_client._utils.Utils.hex_public_key_to_bech32_address"></a>
+
+#### hex\_public\_key\_to\_bech32\_address
+
+```python
+def hex_public_key_to_bech32_address(hex, bech32_hrp=None)
 ```
 
 Transforms a hex encoded public key to a bech32 encoded address.
@@ -83,6 +103,36 @@ def mnemonic_to_hex_seed(mnemonic)
 ```
 
 Returns a hex encoded seed for a mnemonic.
+
+<a id="iota_client._utils.Utils.compute_alias_id"></a>
+
+#### compute\_alias\_id
+
+```python
+def compute_alias_id(output_id)
+```
+
+Computes the alias id for the given alias output id.
+
+<a id="iota_client._utils.Utils.compute_nft_id"></a>
+
+#### compute\_nft\_id
+
+```python
+def compute_nft_id(output_id)
+```
+
+Computes the NFT id for the given NFT output id.
+
+<a id="iota_client._utils.Utils.compute_foundry_id"></a>
+
+#### compute\_foundry\_id
+
+```python
+def compute_foundry_id(alias_address, serial_number, token_scheme_kind)
+```
+
+Computes the foundry id.
 
 <a id="iota_client._utils.Utils.block_id"></a>
 

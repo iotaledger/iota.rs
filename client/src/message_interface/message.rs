@@ -455,6 +455,15 @@ pub enum Message {
         #[serde(rename = "bech32Hrp")]
         bech32_hrp: Option<String>,
     },
+    /// Transforms an nft id to a bech32 encoded address
+    NftIdToBech32 {
+        /// Nft ID
+        #[serde(rename = "nftId")]
+        nft_id: NftId,
+        /// Human readable part
+        #[serde(rename = "bech32Hrp")]
+        bech32_hrp: Option<String>,
+    },
     /// Transforms a hex encoded public key to a bech32 encoded address
     HexPublicKeyToBech32Address {
         /// Hex encoded public key

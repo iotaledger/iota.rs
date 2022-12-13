@@ -46,6 +46,16 @@ public class UtilsApi {
         return responsePayload;
     }
 
+    public String nftIdToBech32(NftId nftId, String bech32) throws ClientException {
+        JsonObject o = new JsonObject();
+        o.addProperty("nftId", nftId.toString());
+        o.addProperty("bech32Hrp", bech32);
+
+        String responsePayload = nativeApi.sendCommand(new ClientCommand("nftIdToBech32", o)).getAsString();
+
+        return responsePayload;
+    }
+
     public String hexPublicKeyToBech32Address(String hex, String bech32) throws ClientException {
         JsonObject o = new JsonObject();
         o.addProperty("hex", hex);

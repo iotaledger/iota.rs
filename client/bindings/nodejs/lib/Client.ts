@@ -134,6 +134,54 @@ export class Client {
         return JSON.parse(response).payload;
     }
 
+    /**
+     * Computes the alias id for the given alias output id.
+     */
+    async computeAliasId(outputId: string): Promise<string> {
+        const response = await this.messageHandler.sendMessage({
+            name: 'computeAliasId',
+            data: {
+                outputId,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Computes the NFT id for the given NFT output id.
+     */
+    async computeNftId(outputId: string): Promise<string> {
+        const response = await this.messageHandler.sendMessage({
+            name: 'computeNftId',
+            data: {
+                outputId,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Computes the foundry id.
+     */
+    async computeFoundryId(
+        aliasAddress: string,
+        serialNumber: number,
+        tokenSchemeKind: number,
+    ): Promise<string> {
+        const response = await this.messageHandler.sendMessage({
+            name: 'computeFoundryId',
+            data: {
+                aliasAddress,
+                serialNumber,
+                tokenSchemeKind,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
     /** Generate addresses */
     async generateAddresses(
         secretManager: SecretManager,
@@ -663,6 +711,39 @@ export class Client {
             name: 'hexToBech32',
             data: {
                 hex,
+                bech32Hrp,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Transforms an alias id to a bech32 encoded address.
+     */
+    async aliasIdToBech32(
+        aliasId: string,
+        bech32Hrp?: string,
+    ): Promise<string> {
+        const response = await this.messageHandler.sendMessage({
+            name: 'aliasIdToBech32',
+            data: {
+                aliasId,
+                bech32Hrp,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Transforms an nft id to a bech32 encoded address.
+     */
+    async nftIdToBech32(nftId: string, bech32Hrp?: string): Promise<string> {
+        const response = await this.messageHandler.sendMessage({
+            name: 'nftIdToBech32',
+            data: {
+                nftId,
                 bech32Hrp,
             },
         });
