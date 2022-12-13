@@ -85,30 +85,25 @@ pub(crate) fn get_minted_and_melted_native_tokens(
 }
 
 // TODO checked ops
+// TODO only handles one side
 pub(crate) fn get_native_tokens_diff(
     inputs: &NativeTokensBuilder,
     outputs: &NativeTokensBuilder,
 ) -> Result<Option<NativeTokens>> {
     let mut native_tokens_diff = NativeTokensBuilder::new();
 
-    for (token_id, output_amount) in outputs.iter() {
-        match inputs.get(token_id) {
+    for (token_id, input_amount) in inputs.iter() {
+        match outputs.get(token_id) {
             None => {
-                native_tokens_diff.insert(*token_id, *output_amount);
+                native_tokens_diff.insert(*token_id, *input_amount);
             }
-            Some(input_amount) => {
-                if input_amount < output_amount {
-                    native_tokens_diff.insert(*token_id, output_amount - input_amount);
+            Some(output_amount) => {
+                if input_amount > output_amount {
+                    native_tokens_diff.insert(*token_id, input_amount - output_amount);
                 }
             }
         }
     }
-
-    // for (token_id, input_amount) in inputs.iter() {
-    //     if outputs.get(token_id).is_none() {
-    //         native_tokens_diff.insert(*token_id, 0 - *input_amount);
-    //     }
-    // }
 
     if native_tokens_diff.is_empty() {
         Ok(None)
