@@ -14,7 +14,7 @@ fn input_amount_eq_output_amount() {
     let inputs = build_input_signing_data_most_basic_outputs(vec![(BECH32_ADDRESS, 1_000_000)]);
     let outputs = vec![build_most_basic_output(BECH32_ADDRESS, 1_000_000)];
 
-    let selected = InputSelection::build(outputs, inputs.clone(), protocol_parameters.clone())
+    let selected = InputSelection::build(outputs, inputs.clone(), protocol_parameters)
         .finish()
         .select()
         .unwrap();
@@ -30,7 +30,7 @@ fn input_amount_lt_output_amount() {
     let outputs = vec![build_most_basic_output(BECH32_ADDRESS, 2_000_000)];
 
     assert!(matches!(
-        InputSelection::build(outputs, inputs, protocol_parameters.clone())
+        InputSelection::build(outputs, inputs, protocol_parameters)
             .finish()
             .select(),
         Err(Error::NotEnoughBalance {
@@ -47,7 +47,7 @@ fn input_amount_gt_output_amount() {
     let inputs = build_input_signing_data_most_basic_outputs(vec![(BECH32_ADDRESS, 2_000_000)]);
     let outputs = vec![build_most_basic_output(BECH32_ADDRESS, 1_000_000)];
 
-    let selected = InputSelection::build(outputs, inputs.clone(), protocol_parameters.clone())
+    let selected = InputSelection::build(outputs, inputs.clone(), protocol_parameters)
         .finish()
         .select()
         .unwrap();
@@ -65,7 +65,7 @@ fn two_inputs_one_needed() {
         build_input_signing_data_most_basic_outputs(vec![(BECH32_ADDRESS, 2_000_000), (BECH32_ADDRESS, 2_000_000)]);
     let outputs = vec![build_most_basic_output(BECH32_ADDRESS, 1_000_000)];
 
-    let selected = InputSelection::build(outputs, inputs.clone(), protocol_parameters.clone())
+    let selected = InputSelection::build(outputs, inputs, protocol_parameters)
         .finish()
         .select()
         .unwrap();
@@ -84,7 +84,7 @@ fn not_enough_storage_deposit_for_remainder() {
     let outputs = vec![build_most_basic_output(BECH32_ADDRESS, 1_000_000)];
 
     assert!(matches!(
-        InputSelection::build(outputs, inputs.clone(), protocol_parameters)
+        InputSelection::build(outputs, inputs, protocol_parameters)
             .finish()
             .select(),
         Err(Error::BlockError(

@@ -23,6 +23,8 @@ use crate::{
 };
 
 #[derive(Debug, serde::Serialize, Eq, PartialEq)]
+#[allow(missing_docs)]
+// TODO still comment the struct itself
 pub enum Requirement {
     Sender(Address),
     Issuer(Address),

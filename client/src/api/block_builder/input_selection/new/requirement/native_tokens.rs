@@ -12,7 +12,7 @@ use crate::{
     secret::types::InputSigningData,
 };
 
-fn get_minted_and_melted_native_tokens<'a>(
+fn get_minted_and_melted_native_tokens(
     inputs: &[InputSigningData],
     outputs: &[OutputInfo],
 ) -> Result<(NativeTokensBuilder, NativeTokensBuilder)> {
@@ -24,7 +24,7 @@ fn get_minted_and_melted_native_tokens<'a>(
             let TokenScheme::Simple(output_foundry_simple_ts) = output_foundry.token_scheme();
             let mut initial_creation = true;
 
-            for input in inputs.clone() {
+            for input in inputs {
                 if let Output::Foundry(input_foundry) = &input.output {
                     let token_id = output_foundry.token_id();
                     if output_foundry.id() == input_foundry.id() {

@@ -29,7 +29,7 @@ fn input_nft_eq_output_nft() {
     let inputs = build_input_signing_data_nft_outputs(vec![(nft_id_1, BECH32_ADDRESS, 1_000_000)]);
     let outputs = vec![build_nft_output(nft_id_1, BECH32_ADDRESS, 1_000_000)];
 
-    let selected = InputSelection::build(outputs, inputs.clone(), protocol_parameters.clone())
+    let selected = InputSelection::build(outputs, inputs.clone(), protocol_parameters)
         .finish()
         .select()
         .unwrap();
@@ -46,7 +46,7 @@ fn input_amount_lt_output_amount() {
     let outputs = vec![build_most_basic_output(BECH32_ADDRESS, 2_000_000)];
 
     assert!(matches!(
-        InputSelection::build(outputs, inputs, protocol_parameters.clone())
+        InputSelection::build(outputs, inputs, protocol_parameters)
             .finish()
             .select(),
         Err(Error::NotEnoughBalance {
@@ -65,7 +65,7 @@ fn basic_output_with_nft_input() {
     let inputs = build_input_signing_data_nft_outputs(vec![(nft_id_1, BECH32_ADDRESS, 2_229_500)]);
     let outputs = vec![build_most_basic_output(BECH32_ADDRESS, 2_000_000)];
 
-    let selected = InputSelection::build(outputs, inputs.clone(), protocol_parameters.clone())
+    let selected = InputSelection::build(outputs, inputs, protocol_parameters)
         .finish()
         .select()
         .unwrap();
@@ -82,7 +82,7 @@ fn mint_nft() {
     let inputs = build_input_signing_data_most_basic_outputs(vec![(BECH32_ADDRESS, 2_000_000)]);
     let outputs = vec![build_nft_output(nft_id_0, BECH32_ADDRESS, 1_000_000)];
 
-    let selected = InputSelection::build(outputs, inputs.clone(), protocol_parameters.clone())
+    let selected = InputSelection::build(outputs, inputs, protocol_parameters)
         .finish()
         .select()
         .unwrap();
@@ -107,7 +107,7 @@ fn burn_nft() {
     let inputs = build_input_signing_data_nft_outputs(vec![(nft_id_1, BECH32_ADDRESS, 2_000_000)]);
     let outputs = vec![build_most_basic_output(BECH32_ADDRESS, 2_000_000)];
 
-    let selected = InputSelection::build(outputs, inputs.clone(), protocol_parameters.clone())
+    let selected = InputSelection::build(outputs, inputs, protocol_parameters)
         .burn(Burn::new().add_nft(nft_id_1))
         .finish()
         .select()
@@ -128,7 +128,7 @@ fn not_enough_storage_deposit_for_remainder() {
     let outputs = vec![build_nft_output(nft_id_1, BECH32_ADDRESS, 1_000_000)];
 
     assert!(matches!(
-        InputSelection::build(outputs, inputs, protocol_parameters.clone())
+        InputSelection::build(outputs, inputs, protocol_parameters)
             .finish()
             .select(),
         Err(Error::BlockError(
@@ -149,7 +149,7 @@ fn missing_input_for_nft_output() {
     let outputs = vec![build_nft_output(nft_id_1, BECH32_ADDRESS, 1_000_000)];
 
     assert!(matches!(
-        InputSelection::build(outputs, inputs, protocol_parameters.clone())
+        InputSelection::build(outputs, inputs, protocol_parameters)
             .finish()
             .select(),
         Err(Error::UnfulfillableRequirement(Requirement::Nft(nft_id))) if nft_id == nft_id_1
