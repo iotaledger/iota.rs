@@ -68,7 +68,7 @@ pub(crate) fn remainder_output(
 
     let mut input_native_tokens = get_native_tokens(selected_inputs.iter().map(|input| &input.output))?;
     let mut output_native_tokens = get_native_tokens(outputs.iter().map(|output| &output.output))?;
-    let (minted_native_tokens, melted_native_tokens) = get_minted_and_melted_native_tokens(selected_inputs, &outputs)?;
+    let (minted_native_tokens, melted_native_tokens) = get_minted_and_melted_native_tokens(selected_inputs, outputs)?;
 
     println!("Input {input_native_tokens:?}");
     println!("Output {output_native_tokens:?}");

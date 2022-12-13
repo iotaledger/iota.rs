@@ -37,6 +37,7 @@ pub(crate) struct OutputInfo {
     pub(crate) provided: bool,
 }
 
+/// Working state for the input selection algorithm.
 pub struct InputSelection {
     outputs: Vec<OutputInfo>,
     // TODO impl Iter instead?
@@ -56,10 +57,9 @@ impl InputSelection {
     fn required_address(
         input: &InputSigningData,
         outputs: &[OutputInfo],
-        burn: Option<&Burn>,
         timestamp: u32,
     ) -> Result<Option<Requirement>> {
-        // TODO is burn required?
+        // TODO burn?
         // TODO unwrap or false?
         // TODO this is only temporary to accommodate the current ISA.
         let outputs = outputs.iter().map(|output| output.output.clone()).collect::<Vec<_>>();
@@ -99,7 +99,7 @@ impl InputSelection {
             outputs.push(output_info);
         }
 
-        if let Some(requirement) = Self::required_address(&input, outputs, burn, timestamp)? {
+        if let Some(requirement) = Self::required_address(&input, outputs, timestamp)? {
             requirements.push(requirement);
         }
 
@@ -179,8 +179,11 @@ impl InputSelection {
     }
 
     // TODO should we somehow enforce using filter so we don't have to use can_be_unlocked_now later everywhere ?
-    pub fn filter(mut self, addresses: &[Address]) -> Self {
-        let addresses = addresses
+    /// Filters out the available inputs that
+    /// - can't be unlocked by the given addresses
+    /// - can't be unlocked now
+    pub fn filter(self, addresses: &[Address]) -> Self {
+        let _addresses = addresses
             .iter()
             // TODO meh
             .copied()

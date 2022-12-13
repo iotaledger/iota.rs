@@ -115,7 +115,7 @@ pub(crate) fn get_native_tokens_diff(
 impl InputSelection {
     pub(crate) fn fulfill_native_tokens_requirement(
         &self,
-        selected_inputs: &[InputSigningData],
+        _selected_inputs: &[InputSigningData],
     ) -> Result<(Vec<InputSigningData>, Option<Requirement>)> {
         println!("NATIVE TOKENS");
 

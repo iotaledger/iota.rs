@@ -114,15 +114,15 @@ impl InputSelection {
             if inputs_sum < outputs_sum {
                 // Moving funds of already transitioned other outputs ?
                 // println!("NOT ENOUGH, OUTPUTS: {:?}", outputs);
-                let mut outputs = self
+                let outputs = self
                     .outputs
                     .iter_mut()
                     .filter(|output| !output.output.is_basic() && !output.provided);
 
                 for output in outputs {
-                    let diff = outputs_sum - inputs_sum;
+                    let _diff = outputs_sum - inputs_sum;
                     let amount = output.output.amount();
-                    let rent = output.output.rent_cost(self.protocol_parameters.rent_structure());
+                    let _rent = output.output.rent_cost(self.protocol_parameters.rent_structure());
                     // TODO try to reduce to perfect amount and not always minimum ? Could avoid a remainder
                     let new_output = match &output.output {
                         Output::Alias(output) => AliasOutputBuilder::from(output)
