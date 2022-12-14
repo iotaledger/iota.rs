@@ -15,15 +15,9 @@ use iota_client::{
 
 use crate::input_selection::{
     build_alias_output, build_basic_output, build_input_signing_data_alias_outputs,
-    build_input_signing_data_most_basic_outputs,
+    build_input_signing_data_most_basic_outputs, ALIAS_ID_0, ALIAS_ID_1, BECH32_ADDRESS, BECH32_ADDRESS_ALIAS_SENDER,
+    BECH32_ADDRESS_ED25519_SENDER, BECH32_ADDRESS_NFT_SENDER,
 };
-
-const BECH32_ADDRESS: &str = "rms1qr2xsmt3v3eyp2ja80wd2sq8xx0fslefmxguf7tshzezzr5qsctzc2f5dg6";
-const BECH32_ADDRESS_ED25519_SENDER: &str = "rms1qqhvvur9xfj6yhgsxfa4f8xst7vz9zxeu3vcxds8mh4a6jlpteq9xrajhtf";
-const BECH32_ADDRESS_ALIAS_SENDER: &str = "rms1pr3xm8fm9ts5g96px0tpaytsqhrhgvqemprgyjlxc7gvrqyxg689kvxrn74";
-const BECH32_ADDRESS_NFT_SENDER: &str = "rms1zrsdjyctxcnkx9gh5jx3zkjh6uyutz3w76r2njj9wet95gp4d4gt5wdxrmz";
-const ALIAS_ID_0: &str = "0x0000000000000000000000000000000000000000000000000000000000000000";
-const ALIAS_ID_1: &str = "0x1111111111111111111111111111111111111111111111111111111111111111";
 
 #[test]
 fn input_alias_eq_output_alias() {

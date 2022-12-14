@@ -15,11 +15,8 @@ use primitive_types::U256;
 
 use crate::input_selection::{
     build_alias_output, build_foundry_output, build_input_signing_data_alias_outputs,
-    build_input_signing_data_foundry_outputs, build_input_signing_data_most_basic_outputs,
+    build_input_signing_data_foundry_outputs, build_input_signing_data_most_basic_outputs, ALIAS_ID_1, BECH32_ADDRESS,
 };
-
-const BECH32_ADDRESS: &str = "rms1qr2xsmt3v3eyp2ja80wd2sq8xx0fslefmxguf7tshzezzr5qsctzc2f5dg6";
-const ALIAS_ID_1: &str = "0x1111111111111111111111111111111111111111111111111111111111111111";
 
 #[test]
 fn missing_input_alias_for_foundry() {
