@@ -33,7 +33,7 @@ fn missing_input_alias_for_foundry() {
     )];
 
     assert!(matches!(
-        InputSelection::build(outputs, inputs, protocol_parameters)
+        InputSelection::build(inputs,outputs,  protocol_parameters)
             .finish()
             .select(),
         Err(Error::UnfulfillableRequirement(Requirement::Alias(alias_id))) if alias_id == alias_id_2
@@ -53,7 +53,7 @@ fn existing_input_alias_for_foundry_alias() {
         None,
     )];
 
-    let selected = InputSelection::build(outputs, inputs, protocol_parameters)
+    let selected = InputSelection::build(inputs, outputs, protocol_parameters)
         .finish()
         .select()
         .unwrap();
@@ -82,7 +82,7 @@ fn minted_native_tokens_in_new_remainder() {
         None,
     )];
 
-    let selected = InputSelection::build(outputs, inputs, protocol_parameters)
+    let selected = InputSelection::build(inputs, outputs, protocol_parameters)
         .finish()
         .select()
         .unwrap();
@@ -129,7 +129,7 @@ fn melt_native_tokens() {
         None,
     )];
 
-    let selected = InputSelection::build(outputs, inputs.clone(), protocol_parameters)
+    let selected = InputSelection::build(inputs.clone(), outputs, protocol_parameters)
         .finish()
         .select()
         .unwrap();
@@ -164,7 +164,7 @@ fn destroy_foundry() {
     // Alias output gets the amount from the foundry output added
     let outputs = vec![build_alias_output(103_100, alias_id_2, BECH32_ADDRESS, None, None)];
 
-    let selected = InputSelection::build(outputs, inputs.clone(), protocol_parameters)
+    let selected = InputSelection::build(inputs.clone(), outputs, protocol_parameters)
         .burn(Burn::new().add_foundry(inputs[1].output.as_foundry().id()))
         .finish()
         .select()

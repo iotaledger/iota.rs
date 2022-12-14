@@ -15,9 +15,9 @@ use crate::{
 
 /// A builder for an [`InputSelection`].
 pub struct InputSelectionBuilder {
-    outputs: Vec<Output>,
     // TODO impl Iter ?
     available_inputs: Vec<InputSigningData>,
+    outputs: Vec<Output>,
     protocol_parameters: ProtocolParameters,
     timestamp: Option<u32>,
     required_inputs: HashSet<OutputId>,
@@ -32,13 +32,13 @@ pub struct InputSelectionBuilder {
 impl InputSelectionBuilder {
     /// Creates an [`InputSelectionBuilder`].
     pub fn new(
-        outputs: Vec<Output>,
         available_inputs: Vec<InputSigningData>,
+        outputs: Vec<Output>,
         protocol_parameters: ProtocolParameters,
     ) -> Self {
         Self {
-            outputs,
             available_inputs,
+            outputs,
             protocol_parameters,
             timestamp: None,
             required_inputs: HashSet::new(),
@@ -81,12 +81,12 @@ impl InputSelectionBuilder {
     /// Finishes an [`InputSelectionBuilder`] into an [`InputSelection`].
     pub fn finish(self) -> InputSelection {
         InputSelection {
+            available_inputs: self.available_inputs,
             outputs: self
                 .outputs
                 .into_iter()
                 .map(|output| OutputInfo { output, provided: true })
                 .collect(),
-            available_inputs: self.available_inputs,
             protocol_parameters: self.protocol_parameters,
             timestamp: self.timestamp.unwrap_or_else(|| {
                 instant::SystemTime::now()

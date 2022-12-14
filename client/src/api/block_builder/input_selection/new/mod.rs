@@ -39,9 +39,9 @@ pub(crate) struct OutputInfo {
 
 /// Working state for the input selection algorithm.
 pub struct InputSelection {
-    outputs: Vec<OutputInfo>,
     // TODO impl Iter instead?
     available_inputs: Vec<InputSigningData>,
+    outputs: Vec<OutputInfo>,
     protocol_parameters: ProtocolParameters,
     timestamp: u32,
     required_inputs: HashSet<OutputId>,
@@ -171,11 +171,11 @@ impl InputSelection {
 
     /// Creates an [`InputSelectionBuilder`].
     pub fn build(
-        outputs: Vec<Output>,
         available_inputs: Vec<InputSigningData>,
+        outputs: Vec<Output>,
         protocol_parameters: ProtocolParameters,
     ) -> InputSelectionBuilder {
-        InputSelectionBuilder::new(outputs, available_inputs, protocol_parameters)
+        InputSelectionBuilder::new(available_inputs, outputs, protocol_parameters)
     }
 
     // TODO should we somehow enforce using filter so we don't have to use can_be_unlocked_now later everywhere ?
