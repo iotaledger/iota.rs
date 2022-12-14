@@ -16,16 +16,16 @@ use iota_client::{
 use crate::input_selection::{
     build_basic_output, build_input_signing_data_most_basic_outputs, build_input_signing_data_nft_outputs,
     build_nft_output, BECH32_ADDRESS, BECH32_ADDRESS_ALIAS_SENDER, BECH32_ADDRESS_ED25519_SENDER,
-    BECH32_ADDRESS_NFT_SENDER, NFT_ID_0, NFT_ID_1,
+    BECH32_ADDRESS_NFT_SENDER, NFT_ID_0, NFT_ID_2,
 };
 
 #[test]
 fn input_nft_eq_output_nft() {
     let protocol_parameters = protocol_parameters();
-    let nft_id_1 = NftId::from_str(NFT_ID_1).unwrap();
+    let nft_id_2 = NftId::from_str(NFT_ID_2).unwrap();
 
-    let inputs = build_input_signing_data_nft_outputs(vec![(nft_id_1, BECH32_ADDRESS, 1_000_000)]);
-    let outputs = vec![build_nft_output(1_000_000, nft_id_1, BECH32_ADDRESS, None, None)];
+    let inputs = build_input_signing_data_nft_outputs(vec![(nft_id_2, BECH32_ADDRESS, 1_000_000)]);
+    let outputs = vec![build_nft_output(1_000_000, nft_id_2, BECH32_ADDRESS, None, None)];
 
     let selected = InputSelection::build(outputs, inputs.clone(), protocol_parameters)
         .finish()
@@ -38,9 +38,9 @@ fn input_nft_eq_output_nft() {
 #[test]
 fn input_amount_lt_output_amount() {
     let protocol_parameters = protocol_parameters();
-    let nft_id_1 = NftId::from_str(NFT_ID_1).unwrap();
+    let nft_id_2 = NftId::from_str(NFT_ID_2).unwrap();
 
-    let inputs = build_input_signing_data_nft_outputs(vec![(nft_id_1, BECH32_ADDRESS, 1_000_000)]);
+    let inputs = build_input_signing_data_nft_outputs(vec![(nft_id_2, BECH32_ADDRESS, 1_000_000)]);
     let outputs = vec![build_basic_output(2_000_000, BECH32_ADDRESS, None)];
 
     assert!(matches!(
@@ -58,9 +58,9 @@ fn input_amount_lt_output_amount() {
 #[test]
 fn basic_output_with_nft_input() {
     let protocol_parameters = protocol_parameters();
-    let nft_id_1 = NftId::from_str(NFT_ID_1).unwrap();
+    let nft_id_2 = NftId::from_str(NFT_ID_2).unwrap();
 
-    let inputs = build_input_signing_data_nft_outputs(vec![(nft_id_1, BECH32_ADDRESS, 2_229_500)]);
+    let inputs = build_input_signing_data_nft_outputs(vec![(nft_id_2, BECH32_ADDRESS, 2_229_500)]);
     let outputs = vec![build_basic_output(2_000_000, BECH32_ADDRESS, None)];
 
     let selected = InputSelection::build(outputs, inputs, protocol_parameters)
@@ -100,13 +100,13 @@ fn mint_nft() {
 #[test]
 fn burn_nft() {
     let protocol_parameters = protocol_parameters();
-    let nft_id_1 = NftId::from_str(NFT_ID_1).unwrap();
+    let nft_id_2 = NftId::from_str(NFT_ID_2).unwrap();
 
-    let inputs = build_input_signing_data_nft_outputs(vec![(nft_id_1, BECH32_ADDRESS, 2_000_000)]);
+    let inputs = build_input_signing_data_nft_outputs(vec![(nft_id_2, BECH32_ADDRESS, 2_000_000)]);
     let outputs = vec![build_basic_output(2_000_000, BECH32_ADDRESS, None)];
 
     let selected = InputSelection::build(outputs, inputs, protocol_parameters)
-        .burn(Burn::new().add_nft(nft_id_1))
+        .burn(Burn::new().add_nft(nft_id_2))
         .finish()
         .select()
         .unwrap();
@@ -120,10 +120,10 @@ fn burn_nft() {
 #[test]
 fn not_enough_storage_deposit_for_remainder() {
     let protocol_parameters = protocol_parameters();
-    let nft_id_1 = NftId::from_str(NFT_ID_1).unwrap();
+    let nft_id_2 = NftId::from_str(NFT_ID_2).unwrap();
 
-    let inputs = build_input_signing_data_nft_outputs(vec![(nft_id_1, BECH32_ADDRESS, 1_000_001)]);
-    let outputs = vec![build_nft_output(1_000_000, nft_id_1, BECH32_ADDRESS, None, None)];
+    let inputs = build_input_signing_data_nft_outputs(vec![(nft_id_2, BECH32_ADDRESS, 1_000_001)]);
+    let outputs = vec![build_nft_output(1_000_000, nft_id_2, BECH32_ADDRESS, None, None)];
 
     assert!(matches!(
         InputSelection::build(outputs, inputs, protocol_parameters)
@@ -141,28 +141,28 @@ fn not_enough_storage_deposit_for_remainder() {
 #[test]
 fn missing_input_for_nft_output() {
     let protocol_parameters = protocol_parameters();
-    let nft_id_1 = NftId::from_str(NFT_ID_1).unwrap();
+    let nft_id_2 = NftId::from_str(NFT_ID_2).unwrap();
 
     let inputs = build_input_signing_data_most_basic_outputs(vec![(BECH32_ADDRESS, 1_000_000)]);
-    let outputs = vec![build_nft_output(1_000_000, nft_id_1, BECH32_ADDRESS, None, None)];
+    let outputs = vec![build_nft_output(1_000_000, nft_id_2, BECH32_ADDRESS, None, None)];
 
     assert!(matches!(
         InputSelection::build(outputs, inputs, protocol_parameters)
             .finish()
             .select(),
-        Err(Error::UnfulfillableRequirement(Requirement::Nft(nft_id))) if nft_id == nft_id_1
+        Err(Error::UnfulfillableRequirement(Requirement::Nft(nft_id))) if nft_id == nft_id_2
     ))
 }
 
 #[test]
 fn missing_ed25519_sender() {
     let protocol_parameters = protocol_parameters();
-    let nft_id_1 = NftId::from_str(NFT_ID_1).unwrap();
+    let nft_id_2 = NftId::from_str(NFT_ID_2).unwrap();
 
-    let inputs = build_input_signing_data_nft_outputs(vec![(nft_id_1, BECH32_ADDRESS, 1_000_000)]);
+    let inputs = build_input_signing_data_nft_outputs(vec![(nft_id_2, BECH32_ADDRESS, 1_000_000)]);
     let outputs = vec![build_nft_output(
         1_000_000,
-        nft_id_1,
+        nft_id_2,
         BECH32_ADDRESS,
         Some(BECH32_ADDRESS_ED25519_SENDER),
         None,
@@ -181,12 +181,12 @@ fn missing_ed25519_sender() {
 #[test]
 fn missing_ed25519_issuer() {
     let protocol_parameters = protocol_parameters();
-    let nft_id_1 = NftId::from_str(NFT_ID_1).unwrap();
+    let nft_id_2 = NftId::from_str(NFT_ID_2).unwrap();
 
-    let inputs = build_input_signing_data_nft_outputs(vec![(nft_id_1, BECH32_ADDRESS, 1_000_000)]);
+    let inputs = build_input_signing_data_nft_outputs(vec![(nft_id_2, BECH32_ADDRESS, 1_000_000)]);
     let outputs = vec![build_nft_output(
         1_000_000,
-        nft_id_1,
+        nft_id_2,
         BECH32_ADDRESS,
         None,
         Some(BECH32_ADDRESS_ED25519_SENDER),
@@ -205,12 +205,12 @@ fn missing_ed25519_issuer() {
 #[test]
 fn missing_alias_sender() {
     let protocol_parameters = protocol_parameters();
-    let nft_id_1 = NftId::from_str(NFT_ID_1).unwrap();
+    let nft_id_2 = NftId::from_str(NFT_ID_2).unwrap();
 
-    let inputs = build_input_signing_data_nft_outputs(vec![(nft_id_1, BECH32_ADDRESS, 1_000_000)]);
+    let inputs = build_input_signing_data_nft_outputs(vec![(nft_id_2, BECH32_ADDRESS, 1_000_000)]);
     let outputs = vec![build_nft_output(
         1_000_000,
-        nft_id_1,
+        nft_id_2,
         BECH32_ADDRESS,
         Some(BECH32_ADDRESS_ALIAS_SENDER),
         None,
@@ -229,12 +229,12 @@ fn missing_alias_sender() {
 #[test]
 fn missing_alias_issuer() {
     let protocol_parameters = protocol_parameters();
-    let nft_id_1 = NftId::from_str(NFT_ID_1).unwrap();
+    let nft_id_2 = NftId::from_str(NFT_ID_2).unwrap();
 
-    let inputs = build_input_signing_data_nft_outputs(vec![(nft_id_1, BECH32_ADDRESS, 1_000_000)]);
+    let inputs = build_input_signing_data_nft_outputs(vec![(nft_id_2, BECH32_ADDRESS, 1_000_000)]);
     let outputs = vec![build_nft_output(
         1_000_000,
-        nft_id_1,
+        nft_id_2,
         BECH32_ADDRESS,
         None,
         Some(BECH32_ADDRESS_ALIAS_SENDER),
@@ -253,12 +253,12 @@ fn missing_alias_issuer() {
 #[test]
 fn missing_nft_sender() {
     let protocol_parameters = protocol_parameters();
-    let nft_id_1 = NftId::from_str(NFT_ID_1).unwrap();
+    let nft_id_2 = NftId::from_str(NFT_ID_2).unwrap();
 
-    let inputs = build_input_signing_data_nft_outputs(vec![(nft_id_1, BECH32_ADDRESS, 1_000_000)]);
+    let inputs = build_input_signing_data_nft_outputs(vec![(nft_id_2, BECH32_ADDRESS, 1_000_000)]);
     let outputs = vec![build_nft_output(
         1_000_000,
-        nft_id_1,
+        nft_id_2,
         BECH32_ADDRESS,
         Some(BECH32_ADDRESS_NFT_SENDER),
         None,
@@ -277,12 +277,12 @@ fn missing_nft_sender() {
 #[test]
 fn missing_nft_issuer() {
     let protocol_parameters = protocol_parameters();
-    let nft_id_1 = NftId::from_str(NFT_ID_1).unwrap();
+    let nft_id_2 = NftId::from_str(NFT_ID_2).unwrap();
 
-    let inputs = build_input_signing_data_nft_outputs(vec![(nft_id_1, BECH32_ADDRESS, 1_000_000)]);
+    let inputs = build_input_signing_data_nft_outputs(vec![(nft_id_2, BECH32_ADDRESS, 1_000_000)]);
     let outputs = vec![build_nft_output(
         1_000_000,
-        nft_id_1,
+        nft_id_2,
         BECH32_ADDRESS,
         None,
         Some(BECH32_ADDRESS_NFT_SENDER),

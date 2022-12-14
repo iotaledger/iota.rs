@@ -15,8 +15,8 @@ use iota_client::{
 
 use crate::input_selection::{
     build_basic_output, build_input_signing_data_alias_outputs, build_input_signing_data_most_basic_outputs,
-    build_input_signing_data_nft_outputs, ALIAS_ID_0, BECH32_ADDRESS, BECH32_ADDRESS_ALIAS_SENDER,
-    BECH32_ADDRESS_ED25519_SENDER, BECH32_ADDRESS_NFT_SENDER, BECH32_ADDRESS_REMAINDER, NFT_ID_0,
+    build_input_signing_data_nft_outputs, ALIAS_ID_1, BECH32_ADDRESS, BECH32_ADDRESS_ALIAS_SENDER,
+    BECH32_ADDRESS_ED25519_SENDER, BECH32_ADDRESS_NFT_SENDER, BECH32_ADDRESS_REMAINDER, NFT_ID_1,
 };
 
 #[test]
@@ -226,12 +226,12 @@ fn missing_ed25519_sender() {
 #[test]
 fn alias_sender() {
     let protocol_parameters = protocol_parameters();
-    let alias_id_0 = AliasId::from_str(ALIAS_ID_0).unwrap();
+    let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
 
     let mut inputs =
         build_input_signing_data_most_basic_outputs(vec![(BECH32_ADDRESS, 2_000_000), (BECH32_ADDRESS, 2_000_000)]);
     inputs.extend(build_input_signing_data_alias_outputs(vec![(
-        alias_id_0,
+        alias_id_1,
         BECH32_ADDRESS,
         1_000_000,
     )]));
@@ -255,7 +255,7 @@ fn alias_sender() {
     assert!(selected
         .0
         .iter()
-        .find(|input| input.output.is_alias() && *input.output.as_alias().alias_id() == alias_id_0)
+        .find(|input| input.output.is_alias() && *input.output.as_alias().alias_id() == alias_id_1)
         .is_some());
     // Provided output + alias
     assert_eq!(selected.1.len(), 2);
@@ -285,12 +285,12 @@ fn missing_alias_sender() {
 #[test]
 fn nft_sender() {
     let protocol_parameters = protocol_parameters();
-    let nft_id_0 = NftId::from_str(NFT_ID_0).unwrap();
+    let nft_id_1 = NftId::from_str(NFT_ID_1).unwrap();
 
     let mut inputs =
         build_input_signing_data_most_basic_outputs(vec![(BECH32_ADDRESS, 2_000_000), (BECH32_ADDRESS, 2_000_000)]);
     inputs.extend(build_input_signing_data_nft_outputs(vec![(
-        nft_id_0,
+        nft_id_1,
         BECH32_ADDRESS,
         1_000_000,
     )]));
@@ -314,7 +314,7 @@ fn nft_sender() {
     assert!(selected
         .0
         .iter()
-        .find(|input| input.output.is_nft() && *input.output.as_nft().nft_id() == nft_id_0)
+        .find(|input| input.output.is_nft() && *input.output.as_nft().nft_id() == nft_id_1)
         .is_some());
     // Provided output + nft
     assert_eq!(selected.1.len(), 2);
