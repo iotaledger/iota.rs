@@ -147,6 +147,57 @@ fn two_same_inputs_one_needed() {
 }
 
 #[test]
+fn two_inputs_one_needed() {
+    let protocol_parameters = protocol_parameters();
+
+    let inputs =
+        build_input_signing_data_most_basic_outputs(vec![(BECH32_ADDRESS, 1_000_000), (BECH32_ADDRESS, 2_000_000)]);
+    let outputs = vec![build_basic_output(1_000_000, BECH32_ADDRESS, None)];
+
+    let selected = InputSelection::build(inputs.clone(), outputs.clone(), protocol_parameters)
+        .finish()
+        .select()
+        .unwrap();
+
+    assert_eq!(selected.0, vec![inputs[0].clone()]);
+    assert_eq!(selected.1, outputs);
+}
+
+#[test]
+fn two_inputs_one_needed_reversed() {
+    let protocol_parameters = protocol_parameters();
+
+    let inputs =
+        build_input_signing_data_most_basic_outputs(vec![(BECH32_ADDRESS, 2_000_000), (BECH32_ADDRESS, 1_000_000)]);
+    let outputs = vec![build_basic_output(1_000_000, BECH32_ADDRESS, None)];
+
+    let selected = InputSelection::build(inputs.clone(), outputs.clone(), protocol_parameters)
+        .finish()
+        .select()
+        .unwrap();
+
+    assert_eq!(selected.0, vec![inputs[1].clone()]);
+    assert_eq!(selected.1, outputs);
+}
+
+#[test]
+fn two_inputs_both_needed() {
+    let protocol_parameters = protocol_parameters();
+
+    let inputs =
+        build_input_signing_data_most_basic_outputs(vec![(BECH32_ADDRESS, 1_000_000), (BECH32_ADDRESS, 2_000_000)]);
+    let outputs = vec![build_basic_output(3_000_000, BECH32_ADDRESS, None)];
+
+    let selected = InputSelection::build(inputs.clone(), outputs.clone(), protocol_parameters)
+        .finish()
+        .select()
+        .unwrap();
+
+    assert_eq!(selected.0, inputs);
+    assert_eq!(selected.1, outputs);
+}
+
+#[test]
 fn not_enough_storage_deposit_for_remainder() {
     let protocol_parameters = protocol_parameters();
 
@@ -193,13 +244,11 @@ fn ed25519_sender() {
 
     // Sender + another for amount
     assert_eq!(selected.0.len(), 2);
-    assert!(
-        selected
-            .0
-            .iter()
-            .find(|input| *input.output.as_basic().address() == sender)
-            .is_some()
-    );
+    assert!(selected
+        .0
+        .iter()
+        .find(|input| *input.output.as_basic().address() == sender)
+        .is_some());
     // Provided output + remainder
     assert_eq!(selected.1.len(), 2);
 }
@@ -254,13 +303,11 @@ fn alias_sender() {
 
     // Sender + another for amount
     assert_eq!(selected.0.len(), 2);
-    assert!(
-        selected
-            .0
-            .iter()
-            .find(|input| input.output.is_alias() && *input.output.as_alias().alias_id() == alias_id_1)
-            .is_some()
-    );
+    assert!(selected
+        .0
+        .iter()
+        .find(|input| input.output.is_alias() && *input.output.as_alias().alias_id() == alias_id_1)
+        .is_some());
     // Provided output + alias
     assert_eq!(selected.1.len(), 2);
 }
@@ -315,13 +362,11 @@ fn nft_sender() {
 
     // Sender + another for amount
     assert_eq!(selected.0.len(), 2);
-    assert!(
-        selected
-            .0
-            .iter()
-            .find(|input| input.output.is_nft() && *input.output.as_nft().nft_id() == nft_id_1)
-            .is_some()
-    );
+    assert!(selected
+        .0
+        .iter()
+        .find(|input| input.output.is_nft() && *input.output.as_nft().nft_id() == nft_id_1)
+        .is_some());
     // Provided output + nft
     assert_eq!(selected.1.len(), 2);
 }
