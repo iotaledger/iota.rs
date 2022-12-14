@@ -1,5 +1,20 @@
 # Changelog
 
+## \[3.0.0-rc.5]
+
+- Add `aliasIdToBech32()`.
+  - [4693449](https://github.com/iotaledger/iota.rs/commit/469344962cec1db0b94f0d0fc6fe6a514148001f) Add changelog ([#1448](https://github.com/iotaledger/iota.rs/pull/1448)) on 2022-12-14
+- Add `computeAliasId()` and `computeNftId()` functions.
+  - [4693449](https://github.com/iotaledger/iota.rs/commit/469344962cec1db0b94f0d0fc6fe6a514148001f) Add changelog ([#1448](https://github.com/iotaledger/iota.rs/pull/1448)) on 2022-12-14
+- Add `computeFoundryId()`.
+  - [4693449](https://github.com/iotaledger/iota.rs/commit/469344962cec1db0b94f0d0fc6fe6a514148001f) Add changelog ([#1448](https://github.com/iotaledger/iota.rs/pull/1448)) on 2022-12-14
+- Add `nftIdToBech32()`.
+  - [4693449](https://github.com/iotaledger/iota.rs/commit/469344962cec1db0b94f0d0fc6fe6a514148001f) Add changelog ([#1448](https://github.com/iotaledger/iota.rs/pull/1448)) on 2022-12-14
+- Replaced `nodeSyncEnabled` by `ignoreNodeHealth`.
+  - [4693449](https://github.com/iotaledger/iota.rs/commit/469344962cec1db0b94f0d0fc6fe6a514148001f) Add changelog ([#1448](https://github.com/iotaledger/iota.rs/pull/1448)) on 2022-12-14
+- Update network info from unhealty nodes if ignoreNodeHealth is set to true.
+  - [4693449](https://github.com/iotaledger/iota.rs/commit/469344962cec1db0b94f0d0fc6fe6a514148001f) Add changelog ([#1448](https://github.com/iotaledger/iota.rs/pull/1448)) on 2022-12-14
+
 ## \[3.0.0-rc.4]
 
 - Fix rebuild script.
