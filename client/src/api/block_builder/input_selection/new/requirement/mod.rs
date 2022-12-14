@@ -128,6 +128,8 @@ impl Requirements {
                 _ => false,
             };
 
+            // TODO immutable features
+
             if let Some(features) = output.output.features() {
                 // Add a sender requirement if the feature is present.
                 if let Some(sender) = features.sender() {

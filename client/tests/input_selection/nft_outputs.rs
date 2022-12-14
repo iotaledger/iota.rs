@@ -13,7 +13,7 @@ use iota_client::{
 };
 
 use crate::input_selection::{
-    build_input_signing_data_most_basic_outputs, build_input_signing_data_nft_outputs, build_most_basic_output,
+    build_basic_output, build_input_signing_data_most_basic_outputs, build_input_signing_data_nft_outputs,
     build_nft_output,
 };
 
@@ -43,7 +43,7 @@ fn input_amount_lt_output_amount() {
     let nft_id_1 = NftId::from_str(NFT_ID_1).unwrap();
 
     let inputs = build_input_signing_data_nft_outputs(vec![(nft_id_1, BECH32_ADDRESS, 1_000_000)]);
-    let outputs = vec![build_most_basic_output(BECH32_ADDRESS, 2_000_000)];
+    let outputs = vec![build_basic_output(2_000_000, BECH32_ADDRESS, None)];
 
     assert!(matches!(
         InputSelection::build(outputs, inputs, protocol_parameters)
@@ -63,7 +63,7 @@ fn basic_output_with_nft_input() {
     let nft_id_1 = NftId::from_str(NFT_ID_1).unwrap();
 
     let inputs = build_input_signing_data_nft_outputs(vec![(nft_id_1, BECH32_ADDRESS, 2_229_500)]);
-    let outputs = vec![build_most_basic_output(BECH32_ADDRESS, 2_000_000)];
+    let outputs = vec![build_basic_output(2_000_000, BECH32_ADDRESS, None)];
 
     let selected = InputSelection::build(outputs, inputs, protocol_parameters)
         .finish()
@@ -105,7 +105,7 @@ fn burn_nft() {
     let nft_id_1 = NftId::from_str(NFT_ID_1).unwrap();
 
     let inputs = build_input_signing_data_nft_outputs(vec![(nft_id_1, BECH32_ADDRESS, 2_000_000)]);
-    let outputs = vec![build_most_basic_output(BECH32_ADDRESS, 2_000_000)];
+    let outputs = vec![build_basic_output(2_000_000, BECH32_ADDRESS, None)];
 
     let selected = InputSelection::build(outputs, inputs, protocol_parameters)
         .burn(Burn::new().add_nft(nft_id_1))

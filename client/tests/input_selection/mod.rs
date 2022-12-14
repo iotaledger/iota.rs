@@ -5,6 +5,7 @@ use iota_client::{
     block::{
         address::{Address, AliasAddress},
         output::{
+            feature::{Feature, SenderFeature},
             unlock_condition::{
                 AddressUnlockCondition, GovernorAddressUnlockCondition, ImmutableAliasAddressUnlockCondition,
                 StateControllerAddressUnlockCondition, UnlockCondition,
@@ -25,14 +26,20 @@ mod nft_outputs;
 
 const TOKEN_SUPPLY: u64 = 1_813_620_509_061_365;
 
-fn build_most_basic_output(bech32_address: &str, amount: u64) -> Output {
-    BasicOutputBuilder::new_with_amount(amount)
+fn build_basic_output(amount: u64, bech32_address: &str, bech32_sender: Option<&str>) -> Output {
+    let mut builder = BasicOutputBuilder::new_with_amount(amount)
         .unwrap()
         .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(
             Address::try_from_bech32(bech32_address).unwrap().1,
-        )))
-        .finish_output(TOKEN_SUPPLY)
-        .unwrap()
+        )));
+
+    if let Some(bech32_sender) = bech32_sender {
+        builder = builder.add_feature(Feature::Sender(SenderFeature::new(
+            Address::try_from_bech32(bech32_sender).unwrap().1,
+        )));
+    }
+
+    builder.finish_output(TOKEN_SUPPLY).unwrap()
 }
 
 fn build_nft_output(nft_id: NftId, bech32_address: &str, amount: u64) -> Output {
@@ -81,7 +88,7 @@ fn build_input_signing_data_most_basic_outputs(outputs: Vec<(&str, u64)>) -> Vec
     outputs
         .into_iter()
         .map(|(bech32_address, amount)| InputSigningData {
-            output: build_most_basic_output(bech32_address, amount),
+            output: build_basic_output(amount, bech32_address, None),
             output_metadata: OutputMetadata::new(
                 rand_block_id(),
                 OutputId::new(rand_transaction_id(), 0).unwrap(),

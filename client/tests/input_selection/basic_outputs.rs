@@ -2,22 +2,25 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use iota_client::{
-    api::input_selection::new::InputSelection,
+    api::input_selection::new::{InputSelection, Requirement},
     block::{address::Address, protocol::protocol_parameters},
     Error,
 };
 
-use crate::input_selection::{build_input_signing_data_most_basic_outputs, build_most_basic_output};
+use crate::input_selection::{build_basic_output, build_input_signing_data_most_basic_outputs};
 
 const BECH32_ADDRESS: &str = "rms1qr2xsmt3v3eyp2ja80wd2sq8xx0fslefmxguf7tshzezzr5qsctzc2f5dg6";
 const BECH32_ADDRESS_REMAINDER: &str = "rms1qrut5ajyfrtgjs325kd9chwfwyyy2z3fewy4vgy0vvdtf2pr8prg5u3zwjn";
+const BECH32_ADDRESS_ED25519_SENDER: &str = "rms1qqhvvur9xfj6yhgsxfa4f8xst7vz9zxeu3vcxds8mh4a6jlpteq9xrajhtf";
+const BECH32_ADDRESS_ALIAS_SENDER: &str = "rms1pr3xm8fm9ts5g96px0tpaytsqhrhgvqemprgyjlxc7gvrqyxg689kvxrn74";
+const BECH32_ADDRESS_NFT_SENDER: &str = "rms1zrsdjyctxcnkx9gh5jx3zkjh6uyutz3w76r2njj9wet95gp4d4gt5wdxrmz";
 
 #[test]
 fn input_amount_equal_output_amount() {
     let protocol_parameters = protocol_parameters();
 
     let inputs = build_input_signing_data_most_basic_outputs(vec![(BECH32_ADDRESS, 1_000_000)]);
-    let outputs = vec![build_most_basic_output(BECH32_ADDRESS, 1_000_000)];
+    let outputs = vec![build_basic_output(1_000_000, BECH32_ADDRESS, None)];
 
     let selected = InputSelection::build(outputs.clone(), inputs.clone(), protocol_parameters)
         .finish()
@@ -33,7 +36,7 @@ fn input_amount_lower_than_output_amount() {
     let protocol_parameters = protocol_parameters();
 
     let inputs = build_input_signing_data_most_basic_outputs(vec![(BECH32_ADDRESS, 1_000_000)]);
-    let outputs = vec![build_most_basic_output(BECH32_ADDRESS, 2_000_000)];
+    let outputs = vec![build_basic_output(2_000_000, BECH32_ADDRESS, None)];
 
     let selected = InputSelection::build(outputs, inputs, protocol_parameters)
         .finish()
@@ -53,7 +56,7 @@ fn input_amount_greater_than_output_amount() {
     let protocol_parameters = protocol_parameters();
 
     let inputs = build_input_signing_data_most_basic_outputs(vec![(BECH32_ADDRESS, 2_000_000)]);
-    let outputs = vec![build_most_basic_output(BECH32_ADDRESS, 500_000)];
+    let outputs = vec![build_basic_output(500_000, BECH32_ADDRESS, None)];
 
     let selected = InputSelection::build(outputs.clone(), inputs.clone(), protocol_parameters)
         .finish()
@@ -84,7 +87,7 @@ fn input_amount_greater_than_output_amount_with_remainder_address() {
     let remainder_address = Address::try_from_bech32(BECH32_ADDRESS_REMAINDER).unwrap().1;
 
     let inputs = build_input_signing_data_most_basic_outputs(vec![(BECH32_ADDRESS, 2_000_000)]);
-    let outputs = vec![build_most_basic_output(BECH32_ADDRESS, 500_000)];
+    let outputs = vec![build_basic_output(500_000, BECH32_ADDRESS, None)];
 
     let selected = InputSelection::build(outputs.clone(), inputs.clone(), protocol_parameters)
         .remainder_address(remainder_address)
@@ -113,7 +116,7 @@ fn two_same_inputs_one_needed() {
 
     let inputs =
         build_input_signing_data_most_basic_outputs(vec![(BECH32_ADDRESS, 2_000_000), (BECH32_ADDRESS, 2_000_000)]);
-    let outputs = vec![build_most_basic_output(BECH32_ADDRESS, 500_000)];
+    let outputs = vec![build_basic_output(500_000, BECH32_ADDRESS, None)];
 
     let selected = InputSelection::build(outputs.clone(), inputs, protocol_parameters)
         .finish()
@@ -144,7 +147,7 @@ fn not_enough_storage_deposit_for_remainder() {
     let protocol_parameters = protocol_parameters();
 
     let inputs = build_input_signing_data_most_basic_outputs(vec![(BECH32_ADDRESS, 1_000_001)]);
-    let outputs = vec![build_most_basic_output(BECH32_ADDRESS, 1_000_000)];
+    let outputs = vec![build_basic_output(1_000_000, BECH32_ADDRESS, None)];
 
     let selected = InputSelection::build(outputs, inputs, protocol_parameters)
         .finish()
@@ -158,5 +161,68 @@ fn not_enough_storage_deposit_for_remainder() {
                 required: 213000,
             }
         ))
+    ))
+}
+
+#[test]
+fn missing_ed25519_sender() {
+    let protocol_parameters = protocol_parameters();
+
+    let inputs = build_input_signing_data_most_basic_outputs(vec![(BECH32_ADDRESS, 5_000_000)]);
+    let outputs = vec![build_basic_output(
+        1_000_000,
+        BECH32_ADDRESS,
+        Some(BECH32_ADDRESS_ED25519_SENDER),
+    )];
+
+    let selected = InputSelection::build(outputs, inputs, protocol_parameters)
+        .finish()
+        .select();
+
+    assert!(matches!(
+        selected,
+        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender.is_ed25519() && sender == Address::try_from_bech32(BECH32_ADDRESS_ED25519_SENDER).unwrap().1
+    ))
+}
+
+#[test]
+fn missing_alias_sender() {
+    let protocol_parameters = protocol_parameters();
+
+    let inputs = build_input_signing_data_most_basic_outputs(vec![(BECH32_ADDRESS, 5_000_000)]);
+    let outputs = vec![build_basic_output(
+        1_000_000,
+        BECH32_ADDRESS,
+        Some(BECH32_ADDRESS_ALIAS_SENDER),
+    )];
+
+    let selected = InputSelection::build(outputs, inputs, protocol_parameters)
+        .finish()
+        .select();
+
+    assert!(matches!(
+        selected,
+        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender.is_alias() && sender == Address::try_from_bech32(BECH32_ADDRESS_ALIAS_SENDER).unwrap().1
+    ))
+}
+
+#[test]
+fn missing_nft_sender() {
+    let protocol_parameters = protocol_parameters();
+
+    let inputs = build_input_signing_data_most_basic_outputs(vec![(BECH32_ADDRESS, 5_000_000)]);
+    let outputs = vec![build_basic_output(
+        1_000_000,
+        BECH32_ADDRESS,
+        Some(BECH32_ADDRESS_NFT_SENDER),
+    )];
+
+    let selected = InputSelection::build(outputs, inputs, protocol_parameters)
+        .finish()
+        .select();
+
+    assert!(matches!(
+        selected,
+        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender.is_nft() && sender == Address::try_from_bech32(BECH32_ADDRESS_NFT_SENDER).unwrap().1
     ))
 }

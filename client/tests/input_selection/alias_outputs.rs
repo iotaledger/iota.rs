@@ -13,8 +13,8 @@ use iota_client::{
 };
 
 use crate::input_selection::{
-    build_alias_output, build_input_signing_data_alias_outputs, build_input_signing_data_most_basic_outputs,
-    build_most_basic_output,
+    build_alias_output, build_basic_output, build_input_signing_data_alias_outputs,
+    build_input_signing_data_most_basic_outputs,
 };
 
 const BECH32_ADDRESS: &str = "rms1qr2xsmt3v3eyp2ja80wd2sq8xx0fslefmxguf7tshzezzr5qsctzc2f5dg6";
@@ -43,7 +43,7 @@ fn input_amount_lt_output_amount() {
     let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
 
     let inputs = build_input_signing_data_alias_outputs(vec![(alias_id_1, BECH32_ADDRESS, 1_000_000)]);
-    let outputs = vec![build_most_basic_output(BECH32_ADDRESS, 2_000_000)];
+    let outputs = vec![build_basic_output(2_000_000, BECH32_ADDRESS, None)];
 
     assert!(matches!(
         InputSelection::build(outputs, inputs, protocol_parameters)
@@ -63,7 +63,7 @@ fn basic_output_with_alias_input() {
     let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
 
     let inputs = build_input_signing_data_alias_outputs(vec![(alias_id_1, BECH32_ADDRESS, 2_251_500)]);
-    let outputs = vec![build_most_basic_output(BECH32_ADDRESS, 2_000_000)];
+    let outputs = vec![build_basic_output(2_000_000, BECH32_ADDRESS, None)];
 
     let selected = InputSelection::build(outputs, inputs, protocol_parameters)
         .finish()
@@ -105,7 +105,7 @@ fn burn_alias() {
     let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
 
     let inputs = build_input_signing_data_alias_outputs(vec![(alias_id_1, BECH32_ADDRESS, 2_000_000)]);
-    let outputs = vec![build_most_basic_output(BECH32_ADDRESS, 2_000_000)];
+    let outputs = vec![build_basic_output(2_000_000, BECH32_ADDRESS, None)];
 
     let selected = InputSelection::build(outputs, inputs, protocol_parameters)
         .burn(Burn::new().add_alias(alias_id_1))

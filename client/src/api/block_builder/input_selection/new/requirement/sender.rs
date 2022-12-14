@@ -70,9 +70,23 @@ impl InputSelection {
         match address {
             Address::Ed25519(_) => self.fulfill_ed25519_address_requirement(address, selected_inputs),
             Address::Alias(alias_address) => {
-                self.fulfill_alias_requirement(alias_address.into_alias_id(), selected_inputs)
+                match self.fulfill_alias_requirement(alias_address.into_alias_id(), selected_inputs) {
+                    Ok(res) => Ok(res),
+                    Err(Error::UnfulfillableRequirement(Requirement::Alias(_))) => {
+                        Err(Error::UnfulfillableRequirement(Requirement::Sender(address)))
+                    }
+                    Err(e) => Err(e),
+                }
             }
-            Address::Nft(nft_address) => self.fulfill_nft_requirement(nft_address.into_nft_id(), selected_inputs),
+            Address::Nft(nft_address) => {
+                match self.fulfill_nft_requirement(nft_address.into_nft_id(), selected_inputs) {
+                    Ok(res) => Ok(res),
+                    Err(Error::UnfulfillableRequirement(Requirement::Nft(_))) => {
+                        Err(Error::UnfulfillableRequirement(Requirement::Sender(address)))
+                    }
+                    Err(e) => Err(e),
+                }
+            }
         }
     }
 }
