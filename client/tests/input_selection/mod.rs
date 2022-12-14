@@ -5,18 +5,17 @@ use iota_client::{
     block::{
         address::{Address, AliasAddress},
         output::{
-            unlock_condition::{AddressUnlockCondition, ImmutableAliasAddressUnlockCondition, UnlockCondition},
+            unlock_condition::{
+                AddressUnlockCondition, GovernorAddressUnlockCondition, ImmutableAliasAddressUnlockCondition,
+                StateControllerAddressUnlockCondition, UnlockCondition,
+            },
             AliasId, AliasOutputBuilder, BasicOutputBuilder, FoundryOutputBuilder, NativeToken, NftId,
-            NftOutputBuilder, Output, OutputId,
+            NftOutputBuilder, Output, OutputId, SimpleTokenScheme, TokenScheme,
         },
         rand::{block::rand_block_id, transaction::rand_transaction_id},
     },
     constants::SHIMMER_TESTNET_BECH32_HRP,
     secret::types::{InputSigningData, OutputMetadata},
-};
-use iota_types::block::output::{
-    unlock_condition::{GovernorAddressUnlockCondition, StateControllerAddressUnlockCondition},
-    SimpleTokenScheme, TokenScheme,
 };
 
 mod alias_outputs;

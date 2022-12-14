@@ -6,12 +6,11 @@ use std::str::FromStr;
 use iota_client::{
     api::input_selection::new::{Burn, InputSelection, Requirement},
     block::{
-        output::{AliasId, Output},
+        output::{AliasId, NativeToken, Output, SimpleTokenScheme, TokenId},
         protocol::protocol_parameters,
     },
     Error,
 };
-use iota_types::block::output::{NativeToken, SimpleTokenScheme, TokenId};
 use primitive_types::U256;
 
 use crate::input_selection::{
