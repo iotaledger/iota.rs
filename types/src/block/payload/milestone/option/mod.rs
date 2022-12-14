@@ -171,12 +171,12 @@ pub mod dto {
                 {
                     ReceiptMilestoneOption::KIND => {
                         MilestoneOptionDto::Receipt(ReceiptMilestoneOptionDto::deserialize(value).map_err(|e| {
-                            serde::de::Error::custom(format!("cannot deserialize receipt milestone option: {}", e))
+                            serde::de::Error::custom(format!("cannot deserialize receipt milestone option: {e}"))
                         })?)
                     }
                     ParametersMilestoneOption::KIND => MilestoneOptionDto::Parameters(
                         ParametersMilestoneOptionDto::deserialize(value).map_err(|e| {
-                            serde::de::Error::custom(format!("cannot deserialize parameters milestone option: {}", e))
+                            serde::de::Error::custom(format!("cannot deserialize parameters milestone option: {e}"))
                         })?,
                     ),
                     _ => return Err(serde::de::Error::custom("invalid milestone option type")),

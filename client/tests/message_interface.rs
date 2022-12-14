@@ -107,12 +107,12 @@ async fn build_and_post_block() {
     let response = message_interface::send_message(&message_handler, find_inputs_message).await;
     let inputs = match response {
         Response::Inputs(inputs) => inputs,
-        response_type => panic!("Unexpected response type: {:?}", response_type),
+        response_type => panic!("Unexpected response type: {response_type:?}"),
     };
 
     // Generate block payload
     let inputs = serde_json::to_string(&inputs).unwrap();
-    let output = format!("{{\"address\":\"{}\", \"amount\":{}}}", address, amount);
+    let output = format!("{{\"address\":\"{address}\", \"amount\":{amount}}}");
 
     let options = format!("{{\"inputs\": {inputs},\"output\": {output}}}");
 
@@ -127,7 +127,7 @@ async fn build_and_post_block() {
         Response::BlockIdWithBlock(block_id, block_data) => {
             println!("{block_id}: {}", serde_json::to_string(&block_data).unwrap());
         }
-        response_type => panic!("Unexpected response type: {:?}", response_type),
+        response_type => panic!("Unexpected response type: {response_type:?}"),
     }
 }
 
@@ -167,7 +167,7 @@ async fn get_block_id() {
                 BlockId::from_str("0xbcd2b9feed097a7aa8b894cae5eaeb1d8f516a14af25aa6f7d8aa7e2604c406c").unwrap()
             );
         }
-        response_type => panic!("Unexpected response type: {:?}", response_type),
+        response_type => panic!("Unexpected response type: {response_type:?}"),
     }
 }
 
@@ -209,7 +209,7 @@ async fn stronghold() {
                 "rms1qzev36lk0gzld0k28fd2fauz26qqzh4hd4cwymlqlv96x7phjxcw6v3ea5a".to_string(),
             );
         }
-        response_type => panic!("Unexpected response type: {:?}", response_type),
+        response_type => panic!("Unexpected response type: {response_type:?}"),
     }
 
     // Remove garbage after test, but don't care about the result

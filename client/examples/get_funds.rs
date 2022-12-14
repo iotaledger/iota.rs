@@ -36,6 +36,6 @@ async fn main() -> Result<()> {
 
     let faucet_response = request_funds_from_faucet(&faucet_url, &addresses[0]).await?;
 
-    println!("{}", faucet_response);
+    println!("{faucet_response}");
     Ok(())
 }

@@ -73,7 +73,7 @@ pub fn generate_mnemonic() -> Result<String> {
     let mut entropy = [0u8; 32];
     utils::rand::fill(&mut entropy)?;
     let mnemonic = wordlist::encode(&entropy, &crypto::keys::bip39::wordlist::ENGLISH)
-        .map_err(|e| crate::Error::InvalidMnemonic(format!("{:?}", e)))?;
+        .map_err(|e| crate::Error::InvalidMnemonic(format!("{e:?}")))?;
     entropy.zeroize();
     Ok(mnemonic)
 }
@@ -84,7 +84,7 @@ pub fn mnemonic_to_hex_seed(mnemonic: &str) -> Result<String> {
     let mnemonic = mnemonic.trim();
     // first we check if the mnemonic is valid to give meaningful errors
     crypto::keys::bip39::wordlist::verify(mnemonic, &crypto::keys::bip39::wordlist::ENGLISH)
-        .map_err(|e| crate::Error::InvalidMnemonic(format!("{:?}", e)))?;
+        .map_err(|e| crate::Error::InvalidMnemonic(format!("{e:?}")))?;
     let mut mnemonic_seed = [0u8; 64];
     crypto::keys::bip39::mnemonic_to_seed(mnemonic, "", &mut mnemonic_seed);
     Ok(prefix_hex::encode(mnemonic_seed))
@@ -96,7 +96,7 @@ pub fn mnemonic_to_seed(mnemonic: &str) -> Result<Seed> {
     let mnemonic = mnemonic.trim();
     // first we check if the mnemonic is valid to give meaningful errors
     crypto::keys::bip39::wordlist::verify(mnemonic, &crypto::keys::bip39::wordlist::ENGLISH)
-        .map_err(|e| crate::Error::InvalidMnemonic(format!("{:?}", e)))?;
+        .map_err(|e| crate::Error::InvalidMnemonic(format!("{e:?}")))?;
     let mut mnemonic_seed = [0u8; 64];
     crypto::keys::bip39::mnemonic_to_seed(mnemonic, "", &mut mnemonic_seed);
     Ok(Seed::from_bytes(&mnemonic_seed))
