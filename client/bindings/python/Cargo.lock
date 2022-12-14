@@ -985,6 +985,19 @@ dependencies = [
 
 [[package]]
 name = "iota-client"
+version = "1.0.0-rc.1"
+dependencies = [
+ "fern-logger",
+ "futures",
+ "iota-client 2.0.1-rc.4",
+ "once_cell",
+ "pyo3",
+ "serde_json",
+ "tokio",
+]
+
+[[package]]
+name = "iota-client"
 version = "2.0.1-rc.4"
 dependencies = [
  "async-trait",
@@ -1011,19 +1024,6 @@ dependencies = [
  "tokio",
  "url",
  "zeroize",
-]
-
-[[package]]
-name = "iota-client-python"
-version = "0.2.0-alpha.3"
-dependencies = [
- "fern-logger",
- "futures",
- "iota-client",
- "once_cell",
- "pyo3",
- "serde_json",
- "tokio",
 ]
 
 [[package]]
