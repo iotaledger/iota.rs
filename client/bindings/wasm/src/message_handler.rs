@@ -19,7 +19,7 @@ pub struct WasmMessageHandler {
 #[allow(non_snake_case)]
 pub fn message_handler_new(clientOptions: Option<String>) -> Result<WasmMessageHandler, JsValue> {
     let client_message_handler: ClientMessageHandler = create_message_handler(clientOptions)
-        .map_err(|err| js_sys::Error::new(&format!("Client MessageHandler constructor failed: {}", err)))?;
+        .map_err(|err| js_sys::Error::new(&format!("Client MessageHandler constructor failed: {err}")))?;
 
     Ok(WasmMessageHandler {
         handler: Rc::new(client_message_handler),
@@ -37,9 +37,10 @@ pub fn send_message_async(message: String, messageHandler: &WasmMessageHandler) 
     let promise: js_sys::Promise = future_to_promise(async move {
         let response: Response = send_message_inner(message_handler.as_ref(), message).await?;
 
-        let ser = JsValue::from(serde_json::to_string(&response).map_err(|err| {
-            JsValue::from_str(&format!("Client MessageHandler failed to serialize response: {}", err))
-        })?);
+        let ser =
+            JsValue::from(serde_json::to_string(&response).map_err(|err| {
+                JsValue::from_str(&format!("Client MessageHandler failed to serialize response: {err}"))
+            })?);
         match response {
             Response::Error(_) | Response::Panic(_) => Err(ser),
             _ => Ok(ser),
