@@ -91,7 +91,7 @@ jobs:
         id: tagname
         run: |
           cd wheels
-          tagName="$(ls | grep -m 1 win_amd64.whl | rev | cut -c 26- | rev)"
+          tagName="iota-client-python$(ls | grep -m 1 win_amd64.whl | rev | cut -c 26-34 | rev)"
           echo "TAG_NAME=$tagName" >> $GITHUB_OUTPUT
 
       - name: Upload Wheels to Github
