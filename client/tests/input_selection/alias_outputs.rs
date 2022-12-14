@@ -6,6 +6,7 @@ use std::str::FromStr;
 use iota_client::{
     api::input_selection::new::{Burn, InputSelection, Requirement},
     block::{
+        address::Address,
         output::{AliasId, Output},
         protocol::protocol_parameters,
     },
@@ -18,6 +19,9 @@ use crate::input_selection::{
 };
 
 const BECH32_ADDRESS: &str = "rms1qr2xsmt3v3eyp2ja80wd2sq8xx0fslefmxguf7tshzezzr5qsctzc2f5dg6";
+const BECH32_ADDRESS_ED25519_SENDER: &str = "rms1qqhvvur9xfj6yhgsxfa4f8xst7vz9zxeu3vcxds8mh4a6jlpteq9xrajhtf";
+const BECH32_ADDRESS_ALIAS_SENDER: &str = "rms1pr3xm8fm9ts5g96px0tpaytsqhrhgvqemprgyjlxc7gvrqyxg689kvxrn74";
+const BECH32_ADDRESS_NFT_SENDER: &str = "rms1zrsdjyctxcnkx9gh5jx3zkjh6uyutz3w76r2njj9wet95gp4d4gt5wdxrmz";
 const ALIAS_ID_0: &str = "0x0000000000000000000000000000000000000000000000000000000000000000";
 const ALIAS_ID_1: &str = "0x1111111111111111111111111111111111111111111111111111111111111111";
 
@@ -27,7 +31,7 @@ fn input_alias_eq_output_alias() {
     let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
 
     let inputs = build_input_signing_data_alias_outputs(vec![(alias_id_1, BECH32_ADDRESS, 1_000_000)]);
-    let outputs = vec![build_alias_output(alias_id_1, BECH32_ADDRESS, 1_000_000)];
+    let outputs = vec![build_alias_output(1_000_000, alias_id_1, BECH32_ADDRESS, None, None)];
 
     let selected = InputSelection::build(outputs, inputs.clone(), protocol_parameters)
         .finish()
@@ -80,7 +84,7 @@ fn create_alias() {
     let alias_id_0 = AliasId::from_str(ALIAS_ID_0).unwrap();
 
     let inputs = build_input_signing_data_most_basic_outputs(vec![(BECH32_ADDRESS, 2_000_000)]);
-    let outputs = vec![build_alias_output(alias_id_0, BECH32_ADDRESS, 1_000_000)];
+    let outputs = vec![build_alias_output(1_000_000, alias_id_0, BECH32_ADDRESS, None, None)];
 
     let selected = InputSelection::build(outputs, inputs, protocol_parameters)
         .finish()
@@ -125,7 +129,7 @@ fn not_enough_storage_deposit_for_remainder() {
     let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
 
     let inputs = build_input_signing_data_alias_outputs(vec![(alias_id_1, BECH32_ADDRESS, 1_000_001)]);
-    let outputs = vec![build_alias_output(alias_id_1, BECH32_ADDRESS, 1_000_000)];
+    let outputs = vec![build_alias_output(1_000_000, alias_id_1, BECH32_ADDRESS, None, None)];
 
     assert!(matches!(
         InputSelection::build(outputs, inputs, protocol_parameters)
@@ -146,12 +150,156 @@ fn missing_input_for_alias_output() {
     let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
 
     let inputs = build_input_signing_data_most_basic_outputs(vec![(BECH32_ADDRESS, 1_000_000)]);
-    let outputs = vec![build_alias_output(alias_id_1, BECH32_ADDRESS, 1_000_000)];
+    let outputs = vec![build_alias_output(1_000_000, alias_id_1, BECH32_ADDRESS, None, None)];
 
     assert!(matches!(
         InputSelection::build(outputs, inputs, protocol_parameters)
             .finish()
             .select(),
         Err(Error::UnfulfillableRequirement(Requirement::Alias(alias_id))) if alias_id == alias_id_1
+    ))
+}
+
+#[test]
+fn missing_ed25519_sender() {
+    let protocol_parameters = protocol_parameters();
+    let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
+
+    let inputs = build_input_signing_data_alias_outputs(vec![(alias_id_1, BECH32_ADDRESS, 1_000_000)]);
+    let outputs = vec![build_alias_output(
+        1_000_000,
+        alias_id_1,
+        BECH32_ADDRESS,
+        Some(BECH32_ADDRESS_ED25519_SENDER),
+        None,
+    )];
+
+    let selected = InputSelection::build(outputs, inputs, protocol_parameters)
+        .finish()
+        .select();
+
+    assert!(matches!(
+        selected,
+        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender.is_ed25519() && sender == Address::try_from_bech32(BECH32_ADDRESS_ED25519_SENDER).unwrap().1
+    ))
+}
+
+#[test]
+fn missing_ed25519_issuer() {
+    let protocol_parameters = protocol_parameters();
+    let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
+
+    let inputs = build_input_signing_data_alias_outputs(vec![(alias_id_1, BECH32_ADDRESS, 1_000_000)]);
+    let outputs = vec![build_alias_output(
+        1_000_000,
+        alias_id_1,
+        BECH32_ADDRESS,
+        None,
+        Some(BECH32_ADDRESS_ED25519_SENDER),
+    )];
+
+    let selected = InputSelection::build(outputs, inputs, protocol_parameters)
+        .finish()
+        .select();
+
+    assert!(matches!(
+        selected,
+        Err(Error::UnfulfillableRequirement(Requirement::Issuer(issuer))) if issuer.is_ed25519() && issuer == Address::try_from_bech32(BECH32_ADDRESS_ED25519_SENDER).unwrap().1
+    ))
+}
+
+#[test]
+fn missing_alias_sender() {
+    let protocol_parameters = protocol_parameters();
+    let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
+
+    let inputs = build_input_signing_data_alias_outputs(vec![(alias_id_1, BECH32_ADDRESS, 1_000_000)]);
+    let outputs = vec![build_alias_output(
+        1_000_000,
+        alias_id_1,
+        BECH32_ADDRESS,
+        Some(BECH32_ADDRESS_ALIAS_SENDER),
+        None,
+    )];
+
+    let selected = InputSelection::build(outputs, inputs, protocol_parameters)
+        .finish()
+        .select();
+
+    assert!(matches!(
+        selected,
+        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender.is_alias() && sender == Address::try_from_bech32(BECH32_ADDRESS_ALIAS_SENDER).unwrap().1
+    ))
+}
+
+#[test]
+fn missing_alias_issuer() {
+    let protocol_parameters = protocol_parameters();
+    let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
+
+    let inputs = build_input_signing_data_alias_outputs(vec![(alias_id_1, BECH32_ADDRESS, 1_000_000)]);
+    let outputs = vec![build_alias_output(
+        1_000_000,
+        alias_id_1,
+        BECH32_ADDRESS,
+        None,
+        Some(BECH32_ADDRESS_ALIAS_SENDER),
+    )];
+
+    let selected = InputSelection::build(outputs, inputs, protocol_parameters)
+        .finish()
+        .select();
+
+    assert!(matches!(
+        selected,
+        Err(Error::UnfulfillableRequirement(Requirement::Issuer(issuer))) if issuer.is_alias() && issuer == Address::try_from_bech32(BECH32_ADDRESS_ALIAS_SENDER).unwrap().1
+    ))
+}
+
+#[test]
+fn missing_nft_sender() {
+    let protocol_parameters = protocol_parameters();
+    let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
+
+    let inputs = build_input_signing_data_alias_outputs(vec![(alias_id_1, BECH32_ADDRESS, 1_000_000)]);
+    let outputs = vec![build_alias_output(
+        1_000_000,
+        alias_id_1,
+        BECH32_ADDRESS,
+        Some(BECH32_ADDRESS_NFT_SENDER),
+        None,
+    )];
+
+    let selected = InputSelection::build(outputs, inputs, protocol_parameters)
+        .finish()
+        .select();
+
+    assert!(matches!(
+        selected,
+        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender.is_nft() && sender == Address::try_from_bech32(BECH32_ADDRESS_NFT_SENDER).unwrap().1
+    ))
+}
+
+#[test]
+fn missing_nft_issuer() {
+    let protocol_parameters = protocol_parameters();
+    let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
+
+    let inputs = build_input_signing_data_alias_outputs(vec![(alias_id_1, BECH32_ADDRESS, 1_000_000)]);
+    let outputs = vec![build_alias_output(
+        1_000_000,
+        alias_id_1,
+        BECH32_ADDRESS,
+        None,
+        Some(BECH32_ADDRESS_NFT_SENDER),
+    )];
+
+    let selected = InputSelection::build(outputs, inputs, protocol_parameters)
+        .finish()
+        .select();
+
+    assert!(matches!(
+        selected,
+        Err(Error::UnfulfillableRequirement(Requirement::Issuer(issuer))) if issuer.is_nft() && issuer == Address::try_from_bech32(BECH32_ADDRESS_NFT_SENDER).unwrap().1
     ))
 }

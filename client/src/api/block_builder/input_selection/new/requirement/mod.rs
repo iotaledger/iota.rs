@@ -128,19 +128,19 @@ impl Requirements {
                 _ => false,
             };
 
-            // TODO immutable features
+            // Add a sender requirement if the feature is present.
+            if let Some(sender) = output.output.features().and_then(|features| features.sender()) {
+                requirements.push(Requirement::Sender(*sender.address()));
+            }
 
-            if let Some(features) = output.output.features() {
-                // Add a sender requirement if the feature is present.
-                if let Some(sender) = features.sender() {
-                    requirements.push(Requirement::Sender(*sender.address()));
-                }
-
-                // Add an issuer requirement if the feature is present and new.
-                if let Some(issuer) = features.issuer() {
-                    if is_new {
-                        requirements.push(Requirement::Issuer(*issuer.address()));
-                    }
+            // Add an issuer requirement if the feature is present and new.
+            if is_new {
+                if let Some(issuer) = output
+                    .output
+                    .immutable_features()
+                    .and_then(|features| features.issuer())
+                {
+                    requirements.push(Requirement::Issuer(*issuer.address()));
                 }
             }
         }

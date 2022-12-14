@@ -164,7 +164,7 @@ fn destroy_foundry() {
         None,
     )]));
     // Alias output gets the amount from the foundry output added
-    let outputs = vec![build_alias_output(alias_id_1, BECH32_ADDRESS, 103_100)];
+    let outputs = vec![build_alias_output(103_100, alias_id_1, BECH32_ADDRESS, None, None)];
 
     let selected = InputSelection::build(outputs, inputs.clone(), protocol_parameters)
         .burn(Burn::new().add_foundry(inputs[1].output.as_foundry().id()))

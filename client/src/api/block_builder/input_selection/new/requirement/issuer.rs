@@ -2,7 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use super::{InputSelection, Requirement};
-use crate::{block::address::Address, error::Result, secret::types::InputSigningData};
+use crate::{
+    block::address::Address,
+    error::{Error, Result},
+    secret::types::InputSigningData,
+};
 
 impl InputSelection {
     /// Fulfills an issuer requirement by fulfilling the equivalent sender requirement.
@@ -12,6 +16,12 @@ impl InputSelection {
         address: Address,
         selected_inputs: &[InputSigningData],
     ) -> Result<(Vec<InputSigningData>, Option<Requirement>)> {
-        self.fulfill_sender_requirement(address, selected_inputs)
+        match self.fulfill_sender_requirement(address, selected_inputs) {
+            Ok(res) => Ok(res),
+            Err(Error::UnfulfillableRequirement(Requirement::Sender(_))) => {
+                Err(Error::UnfulfillableRequirement(Requirement::Issuer(address)))
+            }
+            Err(e) => Err(e),
+        }
     }
 }

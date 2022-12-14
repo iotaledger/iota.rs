@@ -5,7 +5,7 @@ use iota_client::{
     block::{
         address::{Address, AliasAddress},
         output::{
-            feature::{Feature, SenderFeature},
+            feature::{Feature, IssuerFeature, SenderFeature},
             unlock_condition::{
                 AddressUnlockCondition, GovernorAddressUnlockCondition, ImmutableAliasAddressUnlockCondition,
                 StateControllerAddressUnlockCondition, UnlockCondition,
@@ -52,18 +52,37 @@ fn build_nft_output(nft_id: NftId, bech32_address: &str, amount: u64) -> Output 
         .unwrap()
 }
 
-fn build_alias_output(alias_id: AliasId, bech32_address: &str, amount: u64) -> Output {
+fn build_alias_output(
+    amount: u64,
+    alias_id: AliasId,
+    bech32_address: &str,
+    bech32_sender: Option<&str>,
+    bech32_issuer: Option<&str>,
+) -> Output {
     let address = Address::try_from_bech32(bech32_address).unwrap().1;
-    AliasOutputBuilder::new_with_amount(amount, alias_id)
+
+    let mut builder = AliasOutputBuilder::new_with_amount(amount, alias_id)
         .unwrap()
         .add_unlock_condition(UnlockCondition::StateControllerAddress(
             StateControllerAddressUnlockCondition::new(address),
         ))
         .add_unlock_condition(UnlockCondition::GovernorAddress(GovernorAddressUnlockCondition::new(
             address,
-        )))
-        .finish_output(TOKEN_SUPPLY)
-        .unwrap()
+        )));
+
+    if let Some(bech32_sender) = bech32_sender {
+        builder = builder.add_feature(Feature::Sender(SenderFeature::new(
+            Address::try_from_bech32(bech32_sender).unwrap().1,
+        )));
+    }
+
+    if let Some(bech32_issuer) = bech32_issuer {
+        builder = builder.add_immutable_feature(Feature::Issuer(IssuerFeature::new(
+            Address::try_from_bech32(bech32_issuer).unwrap().1,
+        )));
+    }
+
+    builder.finish_output(TOKEN_SUPPLY).unwrap()
 }
 
 fn build_foundry_output(
@@ -132,7 +151,7 @@ fn build_input_signing_data_alias_outputs(outputs: Vec<(AliasId, &str, u64)>) ->
     outputs
         .into_iter()
         .map(|(alias_id, bech32_address, amount)| InputSigningData {
-            output: build_alias_output(alias_id, bech32_address, amount),
+            output: build_alias_output(amount, alias_id, bech32_address, None, None),
             output_metadata: OutputMetadata::new(
                 rand_block_id(),
                 OutputId::new(rand_transaction_id(), 0).unwrap(),
