@@ -25,15 +25,15 @@ mod foundry_outputs;
 mod nft_outputs;
 
 const TOKEN_SUPPLY: u64 = 1_813_620_509_061_365;
+const ALIAS_ID_0: &str = "0x1111111111111111111111111111111111111111111111111111111111111111";
+const ALIAS_ID_1: &str = "0x2222222222222222222222222222222222222222222222222222222222222222";
+const NFT_ID_0: &str = "0x1111111111111111111111111111111111111111111111111111111111111111";
+const NFT_ID_1: &str = "0x2222222222222222222222222222222222222222222222222222222222222222";
 const BECH32_ADDRESS: &str = "rms1qr2xsmt3v3eyp2ja80wd2sq8xx0fslefmxguf7tshzezzr5qsctzc2f5dg6";
 const BECH32_ADDRESS_REMAINDER: &str = "rms1qrut5ajyfrtgjs325kd9chwfwyyy2z3fewy4vgy0vvdtf2pr8prg5u3zwjn";
 const BECH32_ADDRESS_ED25519_SENDER: &str = "rms1qqhvvur9xfj6yhgsxfa4f8xst7vz9zxeu3vcxds8mh4a6jlpteq9xrajhtf";
-const BECH32_ADDRESS_ALIAS_SENDER: &str = "rms1pr3xm8fm9ts5g96px0tpaytsqhrhgvqemprgyjlxc7gvrqyxg689kvxrn74";
-const BECH32_ADDRESS_NFT_SENDER: &str = "rms1zrsdjyctxcnkx9gh5jx3zkjh6uyutz3w76r2njj9wet95gp4d4gt5wdxrmz";
-const NFT_ID_0: &str = "0x0000000000000000000000000000000000000000000000000000000000000000";
-const NFT_ID_1: &str = "0x1111111111111111111111111111111111111111111111111111111111111111";
-const ALIAS_ID_0: &str = "0x0000000000000000000000000000000000000000000000000000000000000000";
-const ALIAS_ID_1: &str = "0x1111111111111111111111111111111111111111111111111111111111111111";
+const BECH32_ADDRESS_ALIAS_SENDER: &str = "rms1pqg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zws5524"; // Corresponds to ALIAS_ID_0
+const BECH32_ADDRESS_NFT_SENDER: &str = "rms1zqg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zxddmy7"; // Corresponds to NFT_ID_0
 
 fn build_basic_output(amount: u64, bech32_address: &str, bech32_sender: Option<&str>) -> Output {
     let mut builder = BasicOutputBuilder::new_with_amount(amount)
