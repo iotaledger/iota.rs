@@ -16,7 +16,6 @@ use helper::is_alias_state_transition;
 use remainder::remainder_output;
 pub use requirement::Requirement;
 use requirement::Requirements;
-use transition::transition_input;
 
 use crate::{
     block::{
@@ -78,7 +77,7 @@ impl InputSelection {
     }
 
     fn select_input(&mut self, input: InputSigningData, requirements: &mut Requirements) -> Result<()> {
-        if let Some(output) = transition_input(&input, &self.outputs, self.burn.as_ref(), &self.protocol_parameters)? {
+        if let Some(output) = self.transition_input(&input)? {
             let output_info = OutputInfo {
                 output,
                 provided: false,
