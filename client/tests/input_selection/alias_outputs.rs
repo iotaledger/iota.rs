@@ -185,6 +185,7 @@ fn alias_in_output_and_sender() {
             false
         }
     }));
+    assert!(selected.1.iter().any(|output| output.is_basic()));
 }
 
 #[test]
