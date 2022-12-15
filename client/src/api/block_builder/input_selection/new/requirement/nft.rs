@@ -22,10 +22,10 @@ impl InputSelection {
     pub(crate) fn fulfill_nft_requirement(
         &mut self,
         nft_id: NftId,
-        selected_inputs: &[InputSigningData],
     ) -> Result<(Vec<InputSigningData>, Option<Requirement>)> {
         // Checks if the requirement is already fulfilled.
-        if selected_inputs
+        if self
+            .selected_inputs
             .iter()
             .any(|input| is_nft_with_id(&input.output, input.output_id(), &nft_id))
         {

@@ -20,11 +20,8 @@ pub(crate) fn base_token_sums(selected_inputs: &[InputSigningData], outputs: &[O
 }
 
 impl InputSelection {
-    pub(crate) fn fulfill_base_token_requirement(
-        &mut self,
-        selected_inputs: &[InputSigningData],
-    ) -> Result<(Vec<InputSigningData>, Option<Requirement>)> {
-        let (mut inputs_sum, mut outputs_sum) = base_token_sums(selected_inputs, &self.outputs);
+    pub(crate) fn fulfill_base_token_requirement(&mut self) -> Result<(Vec<InputSigningData>, Option<Requirement>)> {
+        let (mut inputs_sum, mut outputs_sum) = base_token_sums(&self.selected_inputs, &self.outputs);
         let mut newly_selected_inputs = Vec::new();
         let mut newly_selected_ids = HashSet::new();
 

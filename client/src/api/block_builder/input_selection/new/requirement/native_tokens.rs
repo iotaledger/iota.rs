@@ -113,10 +113,7 @@ pub(crate) fn get_native_tokens_diff(
 }
 
 impl InputSelection {
-    pub(crate) fn fulfill_native_tokens_requirement(
-        &self,
-        _selected_inputs: &[InputSigningData],
-    ) -> Result<(Vec<InputSigningData>, Option<Requirement>)> {
+    pub(crate) fn fulfill_native_tokens_requirement(&self) -> Result<(Vec<InputSigningData>, Option<Requirement>)> {
         println!("NATIVE TOKENS");
 
         // let diffs = (input_native_tokens + minted) - (output + melted + burn);

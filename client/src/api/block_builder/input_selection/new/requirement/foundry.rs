@@ -22,10 +22,10 @@ impl InputSelection {
     pub(crate) fn fulfill_foundry_requirement(
         &mut self,
         foundry_id: FoundryId,
-        selected_inputs: &[InputSigningData],
     ) -> Result<(Vec<InputSigningData>, Option<Requirement>)> {
         // Checks if the requirement is already fulfilled.
-        if selected_inputs
+        if self
+            .selected_inputs
             .iter()
             .any(|input| is_foundry_with_id(&input.output, &foundry_id))
         {

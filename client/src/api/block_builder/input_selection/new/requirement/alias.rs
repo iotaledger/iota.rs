@@ -22,10 +22,10 @@ impl InputSelection {
     pub(crate) fn fulfill_alias_requirement(
         &mut self,
         alias_id: AliasId,
-        selected_inputs: &[InputSigningData],
     ) -> Result<(Vec<InputSigningData>, Option<Requirement>)> {
         // Checks if the requirement is already fulfilled.
-        if selected_inputs
+        if self
+            .selected_inputs
             .iter()
             .any(|input| is_alias_with_id(&input.output, input.output_id(), &alias_id))
         {

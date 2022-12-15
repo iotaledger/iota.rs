@@ -98,6 +98,7 @@ impl InputSelectionBuilder {
             forbidden_inputs: self.forbidden_inputs,
             remainder_address: self.remainder_address,
             burn: self.burn,
+            selected_inputs: Vec::new(),
         }
     }
 }

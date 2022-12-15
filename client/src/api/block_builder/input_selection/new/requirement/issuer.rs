@@ -14,9 +14,8 @@ impl InputSelection {
     pub(crate) fn fulfill_issuer_requirement(
         &mut self,
         address: Address,
-        selected_inputs: &[InputSigningData],
     ) -> Result<(Vec<InputSigningData>, Option<Requirement>)> {
-        match self.fulfill_sender_requirement(address, selected_inputs) {
+        match self.fulfill_sender_requirement(address) {
             Ok(res) => Ok(res),
             Err(Error::UnfulfillableRequirement(Requirement::Sender(_))) => {
                 Err(Error::UnfulfillableRequirement(Requirement::Issuer(address)))

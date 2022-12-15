@@ -48,6 +48,7 @@ pub struct InputSelection {
     forbidden_inputs: HashSet<OutputId>,
     remainder_address: Option<Address>,
     burn: Option<Burn>,
+    selected_inputs: Vec<InputSigningData>,
     // TODO: decide if we want to add the addresses here to check if we can unlock an output or not:
     // alias output can have two different addresses and expiration unlock condition can change the unlock address
     // sender_addresses: Vec<Address>,
@@ -109,8 +110,8 @@ impl InputSelection {
     }
 
     // TODO rename
-    fn init(&mut self) -> Result<(Vec<InputSigningData>, Requirements)> {
-        let mut selected_inputs = Vec::new();
+    fn init(&mut self) -> Result<Requirements> {
+        // let mut selected_inputs = Vec::new();
         let mut requirements = Requirements::new();
 
         // Removes forbidden inputs from available inputs.
@@ -135,7 +136,7 @@ impl InputSelection {
 
                     // Selects required input.
                     Self::select_input(
-                        &mut selected_inputs,
+                        &mut self.selected_inputs,
                         input,
                         &mut self.outputs,
                         &mut requirements,
@@ -150,14 +151,14 @@ impl InputSelection {
 
         // Gets requirements from outputs.
         // TODO this may re-evaluate outputs added by inputs
-        let new_requirements = Requirements::from_outputs(selected_inputs.iter(), self.outputs.iter());
-        println!("new requirements from outputs: {:?}", new_requirements);
+        let new_requirements = Requirements::from_outputs(self.selected_inputs.iter(), self.outputs.iter());
+        println!("new requirements from outputs: {new_requirements:?}");
         requirements.extend(new_requirements);
 
         // Gets requirements from burn.
         if let Some(burn) = &self.burn {
             let new_requirements = Requirements::from_burn(burn);
-            println!("new requirements from burn: {:?}", new_requirements);
+            println!("new requirements from burn: {new_requirements:?}");
             requirements.extend(new_requirements);
         }
 
@@ -166,7 +167,7 @@ impl InputSelection {
         // Adds an initial base token requirement.
         requirements.push(Requirement::BaseToken);
 
-        Ok((selected_inputs, requirements))
+        Ok(requirements)
     }
 
     /// Creates an [`InputSelectionBuilder`].
@@ -206,12 +207,12 @@ impl InputSelection {
     /// transaction. Also creates outputs if transitions are required.
     pub fn select(mut self) -> Result<(Vec<InputSigningData>, Vec<Output>)> {
         // Creates the initial state, selected inputs and requirements, based on the provided outputs.
-        let (mut selected_inputs, mut requirements) = self.init()?;
+        let mut requirements = self.init()?;
 
         // Process all the requirements until there are no more.
         while let Some(requirement) = requirements.pop() {
             // Fulfill the requirement.
-            let (inputs, new_requirement) = self.fulfill_requirement(requirement, &selected_inputs)?;
+            let (inputs, new_requirement) = self.fulfill_requirement(requirement)?;
 
             if let Some(new_requirement) = new_requirement {
                 println!("NEW REQUIREMENT");
@@ -225,7 +226,7 @@ impl InputSelection {
             // Select suggested inputs.
             for input in inputs {
                 Self::select_input(
-                    &mut selected_inputs,
+                    &mut self.selected_inputs,
                     input,
                     &mut self.outputs,
                     &mut requirements,
@@ -240,7 +241,7 @@ impl InputSelection {
 
         // // Potentially do native tokens + base coin + storage deposit here
         if let Some(output) = remainder_output(
-            &selected_inputs,
+            &self.selected_inputs,
             &self.outputs,
             self.remainder_address,
             &self.protocol_parameters,
@@ -252,7 +253,7 @@ impl InputSelection {
         }
 
         Ok((
-            selected_inputs,
+            self.selected_inputs,
             self.outputs.into_iter().map(|output| output.output).collect(),
         ))
     }

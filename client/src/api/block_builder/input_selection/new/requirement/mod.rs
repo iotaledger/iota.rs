@@ -39,17 +39,16 @@ impl InputSelection {
     pub(crate) fn fulfill_requirement(
         &mut self,
         requirement: Requirement,
-        selected_inputs: &[InputSigningData],
         // TODO can it actually return more than one output?
     ) -> Result<(Vec<InputSigningData>, Option<Requirement>)> {
         match requirement {
-            Requirement::Sender(address) => self.fulfill_sender_requirement(address, selected_inputs),
-            Requirement::Issuer(address) => self.fulfill_issuer_requirement(address, selected_inputs),
-            Requirement::Foundry(foundry_id) => self.fulfill_foundry_requirement(foundry_id, selected_inputs),
-            Requirement::Alias(alias_id) => self.fulfill_alias_requirement(alias_id, selected_inputs),
-            Requirement::Nft(nft_id) => self.fulfill_nft_requirement(nft_id, selected_inputs),
-            Requirement::NativeTokens => self.fulfill_native_tokens_requirement(selected_inputs),
-            Requirement::BaseToken => self.fulfill_base_token_requirement(selected_inputs),
+            Requirement::Sender(address) => self.fulfill_sender_requirement(address),
+            Requirement::Issuer(address) => self.fulfill_issuer_requirement(address),
+            Requirement::Foundry(foundry_id) => self.fulfill_foundry_requirement(foundry_id),
+            Requirement::Alias(alias_id) => self.fulfill_alias_requirement(alias_id),
+            Requirement::Nft(nft_id) => self.fulfill_nft_requirement(nft_id),
+            Requirement::NativeTokens => self.fulfill_native_tokens_requirement(),
+            Requirement::BaseToken => self.fulfill_base_token_requirement(),
         }
     }
 }
