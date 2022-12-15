@@ -40,7 +40,7 @@ async fn main() -> Result<()> {
     let output_ids = client
         .basic_output_ids(vec![QueryParameter::Address(addresses[0].clone())])
         .await?;
-    println!("{:?}", output_ids);
+    println!("{output_ids:?}");
 
     let block = client
         .block()
@@ -55,7 +55,7 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
 
-    println!("{:#?}", block);
+    println!("{block:#?}");
 
     println!(
         "Transaction sent: {}/block/{}",

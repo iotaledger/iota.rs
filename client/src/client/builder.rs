@@ -349,7 +349,7 @@ impl ClientBuilder {
                     &network_info_,
                     self.node_manager_builder.ignore_node_health,
                 )) {
-                    panic!("failed to sync nodes: {:?}", e);
+                    panic!("failed to sync nodes: {e:?}");
                 }
                 let sync_handle = Client::start_sync_process(
                     &runtime,

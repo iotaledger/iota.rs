@@ -194,7 +194,7 @@ mod inx {
         type Error = crate::block::error::inx::InxError;
 
         fn try_from(value: ::inx::proto::RawProtocolParameters) -> Result<Self, Self::Error> {
-            Self::unpack_verified(value.params, &()).map_err(|e| InxError::InvalidRawBytes(format!("{:?}", e)))
+            Self::unpack_verified(value.params, &()).map_err(|e| InxError::InvalidRawBytes(format!("{e:?}")))
         }
     }
 

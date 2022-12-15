@@ -33,13 +33,11 @@ async fn main() -> Result<()> {
     if let Some(ms_index) = metadata.referenced_by_milestone_index {
         let ms = client.get_milestone_by_index(ms_index).await?;
         println!(
-            "Block {} got confirmed by milestone {} at timestamp {}.",
-            block_id,
-            ms_index,
+            "Block {block_id} got confirmed by milestone {ms_index} at timestamp {}.",
             ms.essence().timestamp()
         );
     } else {
-        println!("Block {} is not confirmed.", block_id)
+        println!("Block {block_id} is not confirmed.")
     }
 
     Ok(())

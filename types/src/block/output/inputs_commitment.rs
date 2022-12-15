@@ -44,6 +44,6 @@ impl core::fmt::Display for InputsCommitment {
 
 impl core::fmt::Debug for InputsCommitment {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
-        write!(f, "InputsCommitment({})", self)
+        write!(f, "InputsCommitment({self})")
     }
 }

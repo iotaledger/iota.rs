@@ -427,45 +427,42 @@ pub mod dto {
                 {
                     AddressUnlockCondition::KIND => {
                         UnlockConditionDto::Address(AddressUnlockConditionDto::deserialize(value).map_err(|e| {
-                            serde::de::Error::custom(format!("cannot deserialize address unlock condition: {}", e))
+                            serde::de::Error::custom(format!("cannot deserialize address unlock condition: {e}"))
                         })?)
                     }
                     StorageDepositReturnUnlockCondition::KIND => UnlockConditionDto::StorageDepositReturn(
                         StorageDepositReturnUnlockConditionDto::deserialize(value).map_err(|e| {
                             serde::de::Error::custom(format!(
-                                "cannot deserialize storage deposit unlock condition: {}",
-                                e
+                                "cannot deserialize storage deposit unlock condition: {e}"
                             ))
                         })?,
                     ),
                     TimelockUnlockCondition::KIND => {
                         UnlockConditionDto::Timelock(TimelockUnlockConditionDto::deserialize(value).map_err(|e| {
-                            serde::de::Error::custom(format!("cannot deserialize timelock unlock condition: {}", e))
+                            serde::de::Error::custom(format!("cannot deserialize timelock unlock condition: {e}"))
                         })?)
                     }
                     ExpirationUnlockCondition::KIND => UnlockConditionDto::Expiration(
                         ExpirationUnlockConditionDto::deserialize(value).map_err(|e| {
-                            serde::de::Error::custom(format!("cannot deserialize expiration unlock condition: {}", e))
+                            serde::de::Error::custom(format!("cannot deserialize expiration unlock condition: {e}"))
                         })?,
                     ),
                     StateControllerAddressUnlockCondition::KIND => UnlockConditionDto::StateControllerAddress(
                         StateControllerAddressUnlockConditionDto::deserialize(value).map_err(|e| {
                             serde::de::Error::custom(format!(
-                                "cannot deserialize state controller unlock condition: {}",
-                                e
+                                "cannot deserialize state controller unlock condition: {e}"
                             ))
                         })?,
                     ),
                     GovernorAddressUnlockCondition::KIND => UnlockConditionDto::GovernorAddress(
                         GovernorAddressUnlockConditionDto::deserialize(value).map_err(|e| {
-                            serde::de::Error::custom(format!("cannot deserialize governor unlock condition: {}", e))
+                            serde::de::Error::custom(format!("cannot deserialize governor unlock condition: {e}"))
                         })?,
                     ),
                     ImmutableAliasAddressUnlockCondition::KIND => UnlockConditionDto::ImmutableAliasAddress(
                         ImmutableAliasAddressUnlockConditionDto::deserialize(value).map_err(|e| {
                             serde::de::Error::custom(format!(
-                                "cannot deserialize immutable alias address unlock condition: {}",
-                                e
+                                "cannot deserialize immutable alias address unlock condition: {e}"
                             ))
                         })?,
                     ),

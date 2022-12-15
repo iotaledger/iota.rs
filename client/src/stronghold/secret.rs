@@ -201,7 +201,7 @@ impl StrongholdAdapter {
 
         // Check if the mnemonic is valid.
         crypto::keys::bip39::wordlist::verify(&trimmed_mnemonic, &crypto::keys::bip39::wordlist::ENGLISH)
-            .map_err(|e| crate::Error::InvalidMnemonic(format!("{:?}", e)))?;
+            .map_err(|e| crate::Error::InvalidMnemonic(format!("{e:?}")))?;
 
         // We need to check if there has been a mnemonic stored in Stronghold or not to prevent overwriting it.
         if self

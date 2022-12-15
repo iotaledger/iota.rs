@@ -108,35 +108,35 @@ async fn test_get_health() {
         .get_health(DEFAULT_DEVNET_NODE_URL)
         .await
         .unwrap();
-    println!("{:#?}", r);
+    println!("{r:#?}");
 }
 
 #[ignore]
 #[tokio::test]
 async fn test_get_info() {
     let r = Client::get_node_info(DEFAULT_DEVNET_NODE_URL, None).await.unwrap();
-    println!("{:#?}", r);
+    println!("{r:#?}");
 }
 
 #[ignore]
 #[tokio::test]
 async fn test_get_tips() {
     let r = setup_client_with_node_health_ignored().get_tips().await.unwrap();
-    println!("{:#?}", r);
+    println!("{r:#?}");
 }
 
 #[ignore]
 #[tokio::test]
 async fn test_post_block_with_tagged_data() {
     let block_id = setup_tagged_data_block().await;
-    println!("{}", block_id);
+    println!("{block_id}");
 }
 
 #[ignore]
 #[tokio::test]
 async fn test_post_block_with_transaction() {
     let block_id = setup_transaction_block().await;
-    println!("Block ID: {:?}", block_id);
+    println!("Block ID: {block_id:?}");
 }
 
 #[ignore]
@@ -147,7 +147,7 @@ async fn test_get_block_data() {
     let block_id = setup_tagged_data_block().await;
     let r = client.get_block(&block_id).await.unwrap();
 
-    println!("{:#?}", r);
+    println!("{r:#?}");
 }
 
 #[ignore]
@@ -160,7 +160,7 @@ async fn test_get_block_metadata() {
         .await
         .unwrap();
 
-    println!("{:#?}", r);
+    println!("{r:#?}");
 }
 
 #[ignore]
@@ -173,7 +173,7 @@ async fn test_get_block_raw() {
         .await
         .unwrap();
 
-    println!("{:#?}", r);
+    println!("{r:#?}");
 }
 
 #[ignore]
@@ -197,7 +197,8 @@ async fn test_get_address_outputs() {
         .unwrap();
 
     let r = client.get_outputs(address).await.unwrap();
-    println!("{:#?}", r);
+
+    println!("{r:#?}");
 }
 
 #[ignore]
@@ -210,7 +211,7 @@ async fn test_get_output() {
         .await
         .unwrap();
 
-    println!("{:#?}", r);
+    println!("{r:#?}");
 }
 
 #[ignore]
@@ -218,7 +219,7 @@ async fn test_get_output() {
 async fn test_get_peers() {
     let r = setup_client_with_node_health_ignored().get_peers().await.unwrap();
 
-    println!("{:#?}", r);
+    println!("{r:#?}");
 }
 
 #[ignore]
@@ -242,7 +243,7 @@ async fn test_get_milestone_by_id() {
         .await
         .unwrap();
 
-    println!("{:#?}", r);
+    println!("{r:#?}");
 }
 
 #[ignore]
@@ -257,7 +258,7 @@ async fn test_get_milestone_by_index() {
         .await
         .unwrap();
 
-    println!("{:#?}", r);
+    println!("{r:#?}");
 }
 
 #[ignore]
@@ -281,7 +282,7 @@ async fn test_get_utxo_changes_by_id() {
         .await
         .unwrap();
 
-    println!("{:#?}", r);
+    println!("{r:#?}");
 }
 
 #[ignore]
@@ -296,7 +297,7 @@ async fn test_get_utxo_changes_by_index() {
         .await
         .unwrap();
 
-    println!("{:#?}", r);
+    println!("{r:#?}");
 }
 
 #[ignore]
@@ -304,7 +305,7 @@ async fn test_get_utxo_changes_by_index() {
 async fn test_get_receipts() {
     let r = setup_client_with_node_health_ignored().get_receipts().await.unwrap();
 
-    println!("{:#?}", r);
+    println!("{r:#?}");
 }
 
 #[ignore]
@@ -315,7 +316,7 @@ async fn get_receipts_migrated_at() {
         .await
         .unwrap();
 
-    println!("{:#?}", r);
+    println!("{r:#?}");
 }
 
 #[ignore]
@@ -323,7 +324,7 @@ async fn get_receipts_migrated_at() {
 async fn test_get_treasury() {
     let r = setup_client_with_node_health_ignored().get_treasury().await.unwrap();
 
-    println!("{:#?}", r);
+    println!("{r:#?}");
 }
 
 #[ignore]
@@ -336,5 +337,5 @@ async fn test_get_included_block() {
         .await
         .unwrap();
 
-    println!("{:#?}", r);
+    println!("{r:#?}");
 }

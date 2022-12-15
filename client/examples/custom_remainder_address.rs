@@ -35,9 +35,9 @@ async fn main() -> Result<()> {
     let receiver_address = &addresses[1];
     let remainder_address = &addresses[2];
 
-    println!("sender address: {}", sender_address);
-    println!("receiver address: {}", receiver_address);
-    println!("remainder address: {}", remainder_address);
+    println!("sender address: {sender_address}");
+    println!("receiver address: {receiver_address}");
+    println!("remainder address: {remainder_address}");
 
     println!(
         "automatically funding sender address with faucet: {}",
@@ -48,7 +48,7 @@ async fn main() -> Result<()> {
     let output_ids = client
         .basic_output_ids(vec![QueryParameter::Address(sender_address.clone())])
         .await?;
-    println!("{:?}", output_ids);
+    println!("{output_ids:?}");
 
     let block = client
         .block()
