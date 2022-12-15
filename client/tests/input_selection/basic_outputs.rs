@@ -268,7 +268,7 @@ fn ed25519_sender() {
         Some(BECH32_ADDRESS_ED25519_SENDER),
     )];
 
-    let selected = InputSelection::build(inputs.clone(), outputs.clone(), protocol_parameters)
+    let selected = InputSelection::build(inputs, outputs, protocol_parameters)
         .finish()
         .select()
         .unwrap();
@@ -279,8 +279,7 @@ fn ed25519_sender() {
         selected
             .0
             .iter()
-            .find(|input| *input.output.as_basic().address() == sender)
-            .is_some()
+            .any(|input| *input.output.as_basic().address() == sender)
     );
     // Provided output + remainder
     assert_eq!(selected.1.len(), 2);
@@ -329,7 +328,7 @@ fn alias_sender() {
         Some(BECH32_ADDRESS_ALIAS_SENDER),
     )];
 
-    let selected = InputSelection::build(inputs.clone(), outputs.clone(), protocol_parameters)
+    let selected = InputSelection::build(inputs.clone(), outputs, protocol_parameters)
         .finish()
         .select()
         .unwrap();
@@ -340,8 +339,7 @@ fn alias_sender() {
         selected
             .0
             .iter()
-            .find(|input| input.output.is_alias() && *input.output.as_alias().alias_id() == alias_id_1)
-            .is_some()
+            .any(|input| input.output.is_alias() && *input.output.as_alias().alias_id() == alias_id_1)
     );
     // Provided output + alias
     assert_eq!(selected.1.len(), 2);
@@ -390,7 +388,7 @@ fn nft_sender() {
         Some(BECH32_ADDRESS_NFT_SENDER),
     )];
 
-    let selected = InputSelection::build(inputs.clone(), outputs.clone(), protocol_parameters)
+    let selected = InputSelection::build(inputs.clone(), outputs, protocol_parameters)
         .finish()
         .select()
         .unwrap();
@@ -401,8 +399,7 @@ fn nft_sender() {
         selected
             .0
             .iter()
-            .find(|input| input.output.is_nft() && *input.output.as_nft().nft_id() == nft_id_1)
-            .is_some()
+            .any(|input| input.output.is_nft() && *input.output.as_nft().nft_id() == nft_id_1)
     );
     // Provided output + nft
     assert_eq!(selected.1.len(), 2);
