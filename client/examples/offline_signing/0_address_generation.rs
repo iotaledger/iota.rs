@@ -45,7 +45,7 @@ fn write_address_to_file<P: AsRef<Path>>(path: P, address: &[String]) -> Result<
     let json = serde_json::to_string_pretty(&address)?;
     let mut file = BufWriter::new(File::create(path).unwrap());
 
-    println!("{}", json);
+    println!("{json}");
 
     file.write_all(json.as_bytes()).unwrap();
 

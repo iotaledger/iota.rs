@@ -280,7 +280,7 @@ impl Client {
     /// Finds a block by its BlockId. This method returns the given block object.
     /// GET /api/core/v2/blocks/{BlockId}
     pub async fn get_block(&self, block_id: &BlockId) -> Result<Block> {
-        let path = &format!("api/core/v2/blocks/{}", block_id);
+        let path = &format!("api/core/v2/blocks/{block_id}");
 
         let resp = self
             .node_manager
@@ -296,7 +296,7 @@ impl Client {
     /// Finds a block by its BlockId. This method returns the given block raw data.
     /// GET /api/core/v2/blocks/{BlockId}
     pub async fn get_block_raw(&self, block_id: &BlockId) -> Result<Vec<u8>> {
-        let path = &format!("api/core/v2/blocks/{}", block_id);
+        let path = &format!("api/core/v2/blocks/{block_id}");
 
         self.node_manager
             .get_request_bytes(path, None, self.get_timeout())
@@ -306,7 +306,7 @@ impl Client {
     /// Returns the metadata of a block.
     /// GET /api/core/v2/blocks/{BlockId}/metadata
     pub async fn get_block_metadata(&self, block_id: &BlockId) -> Result<BlockMetadataResponse> {
-        let path = &format!("api/core/v2/blocks/{}/metadata", block_id);
+        let path = &format!("api/core/v2/blocks/{block_id}/metadata");
 
         self.node_manager
             .get_request(path, None, self.get_timeout(), true, true)
@@ -318,7 +318,7 @@ impl Client {
     /// Finds an output, as JSON, by its OutputId (TransactionId + output_index).
     /// GET /api/core/v2/outputs/{outputId}
     pub async fn get_output(&self, output_id: &OutputId) -> Result<OutputWithMetadataResponse> {
-        let path = &format!("api/core/v2/outputs/{}", output_id);
+        let path = &format!("api/core/v2/outputs/{output_id}");
 
         self.node_manager
             .get_request(path, None, self.get_timeout(), false, true)
@@ -328,7 +328,7 @@ impl Client {
     /// Finds an output, as raw bytes, by its OutputId (TransactionId + output_index).
     /// GET /api/core/v2/outputs/{outputId}
     pub async fn get_output_raw(&self, output_id: &OutputId) -> Result<Vec<u8>> {
-        let path = &format!("api/core/v2/outputs/{}", output_id);
+        let path = &format!("api/core/v2/outputs/{output_id}");
 
         self.node_manager
             .get_request_bytes(path, None, self.get_timeout())
@@ -338,7 +338,7 @@ impl Client {
     /// Get the metadata for a given `OutputId` (TransactionId + output_index).
     /// GET /api/core/v2/outputs/{outputId}/metadata
     pub async fn get_output_metadata(&self, output_id: &OutputId) -> Result<OutputMetadataResponse> {
-        let path = &format!("api/core/v2/outputs/{}/metadata", output_id);
+        let path = &format!("api/core/v2/outputs/{output_id}/metadata");
 
         self.node_manager
             .get_request::<OutputMetadataResponse>(path, None, self.get_timeout(), false, true)
@@ -361,7 +361,7 @@ impl Client {
     /// Gets the receipts by the given milestone index.
     /// GET /api/core/v2/receipts/{migratedAt}
     pub async fn get_receipts_migrated_at(&self, milestone_index: u32) -> Result<Vec<ReceiptDto>> {
-        let path = &format!("api/core/v2/receipts/{}", milestone_index);
+        let path = &format!("api/core/v2/receipts/{milestone_index}");
 
         let resp = self
             .node_manager
@@ -385,7 +385,7 @@ impl Client {
     /// Returns the block, as object, that was included in the ledger for a given TransactionId.
     /// GET /api/core/v2/transactions/{transactionId}/included-block
     pub async fn get_included_block(&self, transaction_id: &TransactionId) -> Result<Block> {
-        let path = &format!("api/core/v2/transactions/{}/included-block", transaction_id);
+        let path = &format!("api/core/v2/transactions/{transaction_id}/included-block");
 
         let resp = self
             .node_manager
@@ -401,7 +401,7 @@ impl Client {
     /// Returns the block, as raw bytes, that was included in the ledger for a given TransactionId.
     /// GET /api/core/v2/transactions/{transactionId}/included-block
     pub async fn get_included_block_raw(&self, transaction_id: &TransactionId) -> Result<Vec<u8>> {
-        let path = &format!("api/core/v2/transactions/{}/included-block", transaction_id);
+        let path = &format!("api/core/v2/transactions/{transaction_id}/included-block");
 
         self.node_manager
             .get_request_bytes(path, None, self.get_timeout())
@@ -413,7 +413,7 @@ impl Client {
     /// Gets the milestone by the given milestone id.
     /// GET /api/core/v2/milestones/{milestoneId}
     pub async fn get_milestone_by_id(&self, milestone_id: &MilestoneId) -> Result<MilestonePayload> {
-        let path = &format!("api/core/v2/milestones/{}", milestone_id);
+        let path = &format!("api/core/v2/milestones/{milestone_id}");
 
         let resp = self
             .node_manager
@@ -432,7 +432,7 @@ impl Client {
     /// Gets the milestone by the given milestone id.
     /// GET /api/core/v2/milestones/{milestoneId}
     pub async fn get_milestone_by_id_raw(&self, milestone_id: &MilestoneId) -> Result<Vec<u8>> {
-        let path = &format!("api/core/v2/milestones/{}", milestone_id);
+        let path = &format!("api/core/v2/milestones/{milestone_id}");
 
         self.node_manager
             .get_request_bytes(path, None, self.get_timeout())
@@ -442,7 +442,7 @@ impl Client {
     /// Gets all UTXO changes of a milestone by its milestone id.
     /// GET /api/core/v2/milestones/{milestoneId}/utxo-changes
     pub async fn get_utxo_changes_by_id(&self, milestone_id: &MilestoneId) -> Result<UtxoChangesResponse> {
-        let path = &format!("api/core/v2/milestones/{}/utxo-changes", milestone_id);
+        let path = &format!("api/core/v2/milestones/{milestone_id}/utxo-changes");
 
         self.node_manager
             .get_request(path, None, self.get_timeout(), false, false)
@@ -452,7 +452,7 @@ impl Client {
     /// Gets the milestone by the given milestone index.
     /// GET /api/core/v2/milestones/{index}
     pub async fn get_milestone_by_index(&self, index: u32) -> Result<MilestonePayload> {
-        let path = &format!("api/core/v2/milestones/by-index/{}", index);
+        let path = &format!("api/core/v2/milestones/by-index/{index}");
 
         let resp = self
             .node_manager
@@ -471,7 +471,7 @@ impl Client {
     /// Gets the milestone by the given milestone index.
     /// GET /api/core/v2/milestones/{index}
     pub async fn get_milestone_by_index_raw(&self, index: u32) -> Result<Vec<u8>> {
-        let path = &format!("api/core/v2/milestones/by-index/{}", index);
+        let path = &format!("api/core/v2/milestones/by-index/{index}");
 
         self.node_manager
             .get_request_bytes(path, None, self.get_timeout())
@@ -481,7 +481,7 @@ impl Client {
     /// Gets all UTXO changes of a milestone by its milestone index.
     /// GET /api/core/v2/milestones/by-index/{index}/utxo-changes
     pub async fn get_utxo_changes_by_index(&self, index: u32) -> Result<UtxoChangesResponse> {
-        let path = &format!("api/core/v2/milestones/by-index/{}/utxo-changes", index);
+        let path = &format!("api/core/v2/milestones/by-index/{index}/utxo-changes");
 
         self.node_manager
             .get_request(path, None, self.get_timeout(), false, false)

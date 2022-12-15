@@ -225,21 +225,21 @@ pub mod dto {
                 {
                     SignatureUnlock::KIND => {
                         UnlockDto::Signature(SignatureUnlockDto::deserialize(value).map_err(|e| {
-                            serde::de::Error::custom(format!("cannot deserialize signature unlock: {}", e))
+                            serde::de::Error::custom(format!("cannot deserialize signature unlock: {e}"))
                         })?)
                     }
                     ReferenceUnlock::KIND => {
                         UnlockDto::Reference(ReferenceUnlockDto::deserialize(value).map_err(|e| {
-                            serde::de::Error::custom(format!("cannot deserialize reference unlock: {}", e))
+                            serde::de::Error::custom(format!("cannot deserialize reference unlock: {e}"))
                         })?)
                     }
                     AliasUnlock::KIND => UnlockDto::Alias(
                         AliasUnlockDto::deserialize(value)
-                            .map_err(|e| serde::de::Error::custom(format!("cannot deserialize alias unlock: {}", e)))?,
+                            .map_err(|e| serde::de::Error::custom(format!("cannot deserialize alias unlock: {e}")))?,
                     ),
                     NftUnlock::KIND => UnlockDto::Nft(
                         NftUnlockDto::deserialize(value)
-                            .map_err(|e| serde::de::Error::custom(format!("cannot deserialize NFT unlock: {}", e)))?,
+                            .map_err(|e| serde::de::Error::custom(format!("cannot deserialize NFT unlock: {e}")))?,
                     ),
                     _ => return Err(serde::de::Error::custom("invalid unlock type")),
                 },

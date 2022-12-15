@@ -52,7 +52,7 @@ pub fn send_message(handle: &ClientMessageHandler, message: String) -> Result<St
     let message = match serde_json::from_str::<Message>(&message) {
         Ok(message) => message,
         Err(e) => {
-            panic!("Wrong message type! {:?}", e);
+            panic!("Wrong message type! {e:?}");
         }
     };
     let response = crate::block_on(async {

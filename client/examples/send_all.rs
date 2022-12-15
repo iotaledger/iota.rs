@@ -72,7 +72,7 @@ async fn main() -> Result<()> {
 
     let total_native_tokens = total_native_tokens.finish()?;
 
-    println!("Total amount: {}", total_amount);
+    println!("Total amount: {total_amount}");
 
     let mut basic_output_builder = BasicOutputBuilder::new_with_amount(total_amount)?.add_unlock_condition(
         UnlockCondition::Address(AddressUnlockCondition::new(

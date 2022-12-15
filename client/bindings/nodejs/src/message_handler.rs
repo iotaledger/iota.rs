@@ -60,7 +60,7 @@ impl MessageHandler {
             }
             Err(e) => {
                 log::debug!("{:?}", e);
-                (format!("Couldn't parse to message with error - {:?}", e), true)
+                (format!("Couldn't parse to message with error - {e:?}"), true)
             }
         }
     }

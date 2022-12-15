@@ -37,7 +37,7 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
 
-    println!("{:#?}", block);
+    println!("{block:#?}");
 
     println!(
         "Transaction sent: {}/block/{}",

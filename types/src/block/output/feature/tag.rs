@@ -58,7 +58,7 @@ impl core::fmt::Display for TagFeature {
 
 impl core::fmt::Debug for TagFeature {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
-        write!(f, "TagFeature({})", self)
+        write!(f, "TagFeature({self})")
     }
 }
 

@@ -30,7 +30,7 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
 
-    println!("List of generated public addresses:\n{:?}\n", addresses);
+    println!("List of generated public addresses:\n{addresses:?}\n");
 
     let block = client
         .block()

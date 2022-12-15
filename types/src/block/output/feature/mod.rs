@@ -238,24 +238,22 @@ pub mod dto {
                     .and_then(Value::as_u64)
                     .ok_or_else(|| serde::de::Error::custom("invalid feature type"))? as u8
                 {
-                    SenderFeature::KIND => {
-                        FeatureDto::Sender(SenderFeatureDto::deserialize(value).map_err(|e| {
-                            serde::de::Error::custom(format!("cannot deserialize sender feature: {}", e))
-                        })?)
-                    }
-                    IssuerFeature::KIND => {
-                        FeatureDto::Issuer(IssuerFeatureDto::deserialize(value).map_err(|e| {
-                            serde::de::Error::custom(format!("cannot deserialize issuer feature: {}", e))
-                        })?)
-                    }
+                    SenderFeature::KIND => FeatureDto::Sender(
+                        SenderFeatureDto::deserialize(value)
+                            .map_err(|e| serde::de::Error::custom(format!("cannot deserialize sender feature: {e}")))?,
+                    ),
+                    IssuerFeature::KIND => FeatureDto::Issuer(
+                        IssuerFeatureDto::deserialize(value)
+                            .map_err(|e| serde::de::Error::custom(format!("cannot deserialize issuer feature: {e}")))?,
+                    ),
                     MetadataFeature::KIND => {
                         FeatureDto::Metadata(MetadataFeatureDto::deserialize(value).map_err(|e| {
-                            serde::de::Error::custom(format!("cannot deserialize metadata feature: {}", e))
+                            serde::de::Error::custom(format!("cannot deserialize metadata feature: {e}"))
                         })?)
                     }
                     TagFeature::KIND => FeatureDto::Tag(
                         TagFeatureDto::deserialize(value)
-                            .map_err(|e| serde::de::Error::custom(format!("cannot deserialize tag feature: {}", e)))?,
+                            .map_err(|e| serde::de::Error::custom(format!("cannot deserialize tag feature: {e}")))?,
                     ),
                     _ => return Err(serde::de::Error::custom("invalid feature type")),
                 },
