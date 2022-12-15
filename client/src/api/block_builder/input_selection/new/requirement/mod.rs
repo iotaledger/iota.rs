@@ -39,7 +39,6 @@ impl InputSelection {
     pub(crate) fn fulfill_requirement(
         &mut self,
         requirement: Requirement,
-        // TODO can it actually return more than one output?
     ) -> Result<(Vec<InputSigningData>, Option<Requirement>)> {
         match requirement {
             Requirement::Sender(address) => self.fulfill_sender_requirement(address),
@@ -94,7 +93,7 @@ impl Requirements {
 
                     !is_new
                 }
-                // Add a nft requirement if the nft output is transitioning, thus required in the inputs.
+                // Add an nft requirement if the nft output is transitioning, thus required in the inputs.
                 Output::Nft(nft_output) => {
                     let is_new = nft_output.nft_id().is_null();
 

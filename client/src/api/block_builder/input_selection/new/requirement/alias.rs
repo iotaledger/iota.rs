@@ -23,7 +23,8 @@ impl InputSelection {
         &mut self,
         alias_id: AliasId,
     ) -> Result<(Vec<InputSigningData>, Option<Requirement>)> {
-        // Checks if the requirement is already fulfilled.
+        // Check if the requirement is already fulfilled.
+
         if self
             .selected_inputs
             .iter()
@@ -32,18 +33,17 @@ impl InputSelection {
             return Ok((Vec::new(), None));
         }
 
-        // Checks if the requirement can be fulfilled.
-        {
-            let index = self
-                .available_inputs
-                .iter()
-                .position(|input| is_alias_with_id(&input.output, input.output_id(), &alias_id));
+        // Check if the requirement can be fulfilled.
 
-            match index {
-                // Removes the output from the available inputs and returns it, swaps to make it O(1).
-                Some(index) => Ok((vec![self.available_inputs.swap_remove(index)], None)),
-                None => Err(Error::UnfulfillableRequirement(Requirement::Alias(alias_id))),
-            }
+        let index = self
+            .available_inputs
+            .iter()
+            .position(|input| is_alias_with_id(&input.output, input.output_id(), &alias_id));
+
+        match index {
+            // Remove the output from the available inputs and return it, swap to make it O(1).
+            Some(index) => Ok((vec![self.available_inputs.swap_remove(index)], None)),
+            None => Err(Error::UnfulfillableRequirement(Requirement::Alias(alias_id))),
         }
     }
 }
