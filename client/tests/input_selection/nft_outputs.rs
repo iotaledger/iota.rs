@@ -15,8 +15,8 @@ use iota_client::{
 
 use crate::input_selection::{
     build_basic_output, build_input_signing_data_most_basic_outputs, build_input_signing_data_nft_outputs,
-    build_nft_output, BECH32_ADDRESS, BECH32_ADDRESS_ALIAS_SENDER, BECH32_ADDRESS_ED25519_SENDER,
-    BECH32_ADDRESS_NFT_SENDER, NFT_ID_0, NFT_ID_2,
+    build_nft_output, unsorted_eq, BECH32_ADDRESS, BECH32_ADDRESS_ALIAS_SENDER, BECH32_ADDRESS_ED25519_SENDER,
+    BECH32_ADDRESS_NFT_SENDER, NFT_ID_0, NFT_ID_1, NFT_ID_2,
 };
 
 #[test]
@@ -152,6 +152,40 @@ fn missing_input_for_nft_output() {
             .select(),
         Err(Error::UnfulfillableRequirement(Requirement::Nft(nft_id))) if nft_id == nft_id_2
     ))
+}
+
+#[test]
+fn nft_in_output_and_sender() {
+    let protocol_parameters = protocol_parameters();
+    let nft_id_1 = NftId::from_str(NFT_ID_1).unwrap();
+
+    let mut inputs = build_input_signing_data_nft_outputs(vec![(nft_id_1, BECH32_ADDRESS, 1_000_000)]);
+    inputs.extend(build_input_signing_data_most_basic_outputs(vec![(
+        BECH32_ADDRESS,
+        1_000_000,
+    )]));
+    let mut outputs = vec![build_nft_output(1_000_000, nft_id_1, BECH32_ADDRESS, None, None)];
+    outputs.push(build_basic_output(
+        1_000_000,
+        BECH32_ADDRESS,
+        Some(BECH32_ADDRESS_NFT_SENDER),
+    ));
+
+    let selected = InputSelection::build(inputs.clone(), outputs, protocol_parameters)
+        .finish()
+        .select()
+        .unwrap();
+
+    assert!(unsorted_eq(&selected.0, &inputs));
+    assert_eq!(selected.1.len(), 2);
+    assert!(selected.1.iter().any(|output| {
+        if let Output::Nft(nft_output) = output {
+            *nft_output.nft_id() == nft_id_1
+        } else {
+            false
+        }
+    }));
+    assert!(selected.1.iter().any(|output| output.is_basic()));
 }
 
 #[test]
