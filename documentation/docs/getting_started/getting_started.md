@@ -15,8 +15,8 @@ Choose your programming language:
 
 * [Rust](./rust.mdx)
 * [Node.js](./nodejs.mdx)
-* [Python](./python.mdx)
 * [Java](./java.mdx)
+* [Python](./python.mdx)
 
 ## Connect to the Testnet API
 
