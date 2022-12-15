@@ -2,13 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 pub(crate) mod alias;
+pub(crate) mod base_token;
 pub(crate) mod foundry;
 mod issuer;
 pub(crate) mod native_tokens;
 pub(crate) mod nft;
 mod sender;
-
-pub(crate) mod base_token;
 
 use std::collections::VecDeque;
 

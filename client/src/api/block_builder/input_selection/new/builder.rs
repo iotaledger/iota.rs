@@ -94,7 +94,7 @@ impl InputSelectionBuilder {
                     .expect("time went backwards")
                     .as_secs() as u32
             }),
-            required_inputs: self.required_inputs,
+            required_inputs: Some(self.required_inputs),
             forbidden_inputs: self.forbidden_inputs,
             remainder_address: self.remainder_address,
             burn: self.burn,

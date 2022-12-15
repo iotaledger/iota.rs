@@ -44,7 +44,7 @@ pub struct InputSelection {
     outputs: Vec<OutputInfo>,
     protocol_parameters: ProtocolParameters,
     timestamp: u32,
-    required_inputs: HashSet<OutputId>,
+    required_inputs: Option<HashSet<OutputId>>,
     forbidden_inputs: HashSet<OutputId>,
     remainder_address: Option<Address>,
     burn: Option<Burn>,
@@ -55,20 +55,20 @@ pub struct InputSelection {
 }
 
 impl InputSelection {
-    fn required_address(
-        input: &InputSigningData,
-        outputs: &[OutputInfo],
-        timestamp: u32,
-    ) -> Result<Option<Requirement>> {
+    fn required_address(&self, input: &InputSigningData) -> Result<Option<Requirement>> {
         // TODO burn?
         // TODO unwrap or false?
         // TODO this is only temporary to accommodate the current ISA.
-        let outputs = outputs.iter().map(|output| output.output.clone()).collect::<Vec<_>>();
+        let outputs = self
+            .outputs
+            .iter()
+            .map(|output| output.output.clone())
+            .collect::<Vec<_>>();
         let is_alias_state_transition = is_alias_state_transition(input, &outputs)?.unwrap_or(false);
         let (required_address, _) =
             input
                 .output
-                .required_and_unlocked_address(timestamp, input.output_id(), is_alias_state_transition)?;
+                .required_and_unlocked_address(self.timestamp, input.output_id(), is_alias_state_transition)?;
 
         match required_address {
             Address::Alias(alias_address) => Ok(Some(Requirement::Alias(*alias_address.alias_id()))),
@@ -77,16 +77,8 @@ impl InputSelection {
         }
     }
 
-    fn select_input(
-        selected_inputs: &mut Vec<InputSigningData>,
-        input: InputSigningData,
-        outputs: &mut Vec<OutputInfo>,
-        requirements: &mut Requirements,
-        burn: Option<&Burn>,
-        timestamp: u32,
-        protocol_parameters: &ProtocolParameters,
-    ) -> Result<()> {
-        if let Some(output) = transition_input(&input, outputs, burn, protocol_parameters)? {
+    fn select_input(&mut self, input: InputSigningData, requirements: &mut Requirements) -> Result<()> {
+        if let Some(output) = transition_input(&input, &self.outputs, self.burn.as_ref(), &self.protocol_parameters)? {
             let output_info = OutputInfo {
                 output,
                 provided: false,
@@ -94,17 +86,17 @@ impl InputSelection {
             // TODO is this really necessary?
             // TODO should input be pushed before ? probably
             requirements.extend(Requirements::from_outputs(
-                selected_inputs.iter(),
+                self.selected_inputs.iter(),
                 std::iter::once(&output_info),
             ));
-            outputs.push(output_info);
+            self.outputs.push(output_info);
         }
 
-        if let Some(requirement) = Self::required_address(&input, outputs, timestamp)? {
+        if let Some(requirement) = self.required_address(&input)? {
             requirements.push(requirement);
         }
 
-        selected_inputs.push(input);
+        self.selected_inputs.push(input);
 
         Ok(())
     }
@@ -118,34 +110,30 @@ impl InputSelection {
         self.available_inputs
             .retain(|input| !self.forbidden_inputs.contains(input.output_id()));
 
-        for required_input in self.required_inputs.iter() {
-            // Checks that required input is not forbidden.
-            if self.forbidden_inputs.contains(required_input) {
-                return Err(Error::RequiredInputIsForbidden(*required_input));
-            }
-
-            // Checks that required input is available.
-            match self
-                .available_inputs
-                .iter()
-                .position(|input| input.output_id() == required_input)
-            {
-                Some(index) => {
-                    // Removes required input from available inputs.
-                    let input = self.available_inputs.swap_remove(index);
-
-                    // Selects required input.
-                    Self::select_input(
-                        &mut self.selected_inputs,
-                        input,
-                        &mut self.outputs,
-                        &mut requirements,
-                        self.burn.as_ref(),
-                        self.timestamp,
-                        &self.protocol_parameters,
-                    )?
+        // The `take` avoids a mutable borrow compilation issue without having to clone the required inputs.
+        // TODO could be reworked by having select_input not taking mut.
+        if let Some(required_inputs) = self.required_inputs.take() {
+            for required_input in required_inputs.into_iter() {
+                // Checks that required input is not forbidden.
+                if self.forbidden_inputs.contains(&required_input) {
+                    return Err(Error::RequiredInputIsForbidden(required_input));
                 }
-                None => return Err(Error::RequiredInputIsNotAvailable(*required_input)),
+
+                // Checks that required input is available.
+                match self
+                    .available_inputs
+                    .iter()
+                    .position(|input| input.output_id() == &required_input)
+                {
+                    Some(index) => {
+                        // Removes required input from available inputs.
+                        let input = self.available_inputs.swap_remove(index);
+
+                        // Selects required input.
+                        self.select_input(input, &mut requirements)?
+                    }
+                    None => return Err(Error::RequiredInputIsNotAvailable(required_input)),
+                }
             }
         }
 
@@ -225,15 +213,7 @@ impl InputSelection {
 
             // Select suggested inputs.
             for input in inputs {
-                Self::select_input(
-                    &mut self.selected_inputs,
-                    input,
-                    &mut self.outputs,
-                    &mut requirements,
-                    self.burn.as_ref(),
-                    self.timestamp,
-                    &self.protocol_parameters,
-                )?;
+                self.select_input(input, &mut requirements)?;
             }
         }
 
