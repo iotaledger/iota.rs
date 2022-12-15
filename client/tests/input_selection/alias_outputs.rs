@@ -15,8 +15,8 @@ use iota_client::{
 
 use crate::input_selection::{
     build_alias_output, build_basic_output, build_input_signing_data_alias_outputs,
-    build_input_signing_data_most_basic_outputs, ALIAS_ID_0, ALIAS_ID_2, BECH32_ADDRESS, BECH32_ADDRESS_ALIAS_SENDER,
-    BECH32_ADDRESS_ED25519_SENDER, BECH32_ADDRESS_NFT_SENDER,
+    build_input_signing_data_most_basic_outputs, unsorted_eq, ALIAS_ID_0, ALIAS_ID_1, ALIAS_ID_2, BECH32_ADDRESS,
+    BECH32_ADDRESS_ALIAS_SENDER, BECH32_ADDRESS_ED25519_SENDER, BECH32_ADDRESS_NFT_SENDER,
 };
 
 #[test]
@@ -152,6 +152,39 @@ fn missing_input_for_alias_output() {
             .select(),
         Err(Error::UnfulfillableRequirement(Requirement::Alias(alias_id))) if alias_id == alias_id_2
     ))
+}
+
+#[test]
+fn alias_in_output_and_sender() {
+    let protocol_parameters = protocol_parameters();
+    let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
+
+    let mut inputs = build_input_signing_data_alias_outputs(vec![(alias_id_1, BECH32_ADDRESS, 1_000_000)]);
+    inputs.extend(build_input_signing_data_most_basic_outputs(vec![(
+        BECH32_ADDRESS,
+        1_000_000,
+    )]));
+    let mut outputs = vec![build_alias_output(1_000_000, alias_id_1, BECH32_ADDRESS, None, None)];
+    outputs.push(build_basic_output(
+        1_000_000,
+        BECH32_ADDRESS,
+        Some(BECH32_ADDRESS_ALIAS_SENDER),
+    ));
+
+    let selected = InputSelection::build(inputs.clone(), outputs, protocol_parameters)
+        .finish()
+        .select()
+        .unwrap();
+
+    assert!(unsorted_eq(&selected.0, &inputs));
+    assert_eq!(selected.1.len(), 2);
+    assert!(selected.1.iter().any(|output| {
+        if let Output::Alias(alias_output) = output {
+            *alias_output.alias_id() == alias_id_1
+        } else {
+            false
+        }
+    }));
 }
 
 #[test]

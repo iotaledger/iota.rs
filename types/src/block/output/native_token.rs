@@ -12,7 +12,7 @@ use primitive_types::U256;
 use crate::block::{output::TokenId, Error};
 
 ///
-#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Packable)]
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Packable)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[packable(unpack_error = Error)]
 pub struct NativeToken {
@@ -126,7 +126,7 @@ impl From<NativeTokens> for NativeTokensBuilder {
 pub(crate) type NativeTokenCount = BoundedU8<0, { NativeTokens::COUNT_MAX }>;
 
 ///
-#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Deref, Packable)]
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Deref, Packable)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[packable(unpack_error = Error, with = |e| e.unwrap_item_err_or_else(|p| Error::InvalidNativeTokenCount(p.into())))]
 pub struct NativeTokens(

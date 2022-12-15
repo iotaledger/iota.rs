@@ -4,7 +4,7 @@
 use crate::block::{protocol::ProtocolParameters, Error};
 
 /// [`TreasuryOutput`] is an output which holds the treasury of a network.
-#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, packable::Packable)]
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, packable::Packable)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[packable(unpack_error = Error)]
 #[packable(unpack_visitor = ProtocolParameters)]

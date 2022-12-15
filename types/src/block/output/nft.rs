@@ -236,7 +236,7 @@ impl From<&NftOutput> for NftOutputBuilder {
 }
 
 /// Describes an NFT output, a globally unique token with metadata attached.
-#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct NftOutput {
     // Amount of IOTA tokens held by the output.
