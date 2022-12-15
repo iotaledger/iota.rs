@@ -198,6 +198,37 @@ fn two_inputs_both_needed() {
 }
 
 #[test]
+fn two_inputs_remainder() {
+    let protocol_parameters = protocol_parameters();
+
+    let inputs =
+        build_input_signing_data_most_basic_outputs(vec![(BECH32_ADDRESS, 1_000_000), (BECH32_ADDRESS, 2_000_000)]);
+    let outputs = vec![build_basic_output(2_500_000, BECH32_ADDRESS, None)];
+
+    let selected = InputSelection::build(inputs.clone(), outputs.clone(), protocol_parameters)
+        .finish()
+        .select()
+        .unwrap();
+
+    assert_eq!(selected.0, inputs);
+    // One output should be added for the remainder.
+    assert_eq!(selected.1.len(), 2);
+    selected.1.iter().for_each(|output| {
+        if !outputs.contains(output) {
+            assert!(output.is_basic());
+            assert_eq!(output.amount(), 500_000);
+            assert_eq!(output.as_basic().native_tokens().len(), 0);
+            assert_eq!(output.as_basic().unlock_conditions().len(), 1);
+            assert_eq!(output.as_basic().features().len(), 0);
+            assert_eq!(
+                *output.as_basic().address(),
+                Address::try_from_bech32(BECH32_ADDRESS).unwrap().1
+            );
+        }
+    });
+}
+
+#[test]
 fn not_enough_storage_deposit_for_remainder() {
     let protocol_parameters = protocol_parameters();
 
