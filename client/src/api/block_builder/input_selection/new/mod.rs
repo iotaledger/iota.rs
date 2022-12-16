@@ -38,19 +38,15 @@ pub(crate) struct OutputInfo {
 
 /// Working state for the input selection algorithm.
 pub struct InputSelection {
-    // TODO impl Iter instead?
     available_inputs: Vec<InputSigningData>,
-    outputs: Vec<OutputInfo>,
-    protocol_parameters: ProtocolParameters,
-    timestamp: u32,
     required_inputs: Option<HashSet<OutputId>>,
     forbidden_inputs: HashSet<OutputId>,
-    remainder_address: Option<Address>,
-    burn: Option<Burn>,
     selected_inputs: Vec<InputSigningData>,
-    // TODO: decide if we want to add the addresses here to check if we can unlock an output or not:
-    // alias output can have two different addresses and expiration unlock condition can change the unlock address
-    // sender_addresses: Vec<Address>,
+    outputs: Vec<OutputInfo>,
+    burn: Option<Burn>,
+    remainder_address: Option<Address>,
+    protocol_parameters: ProtocolParameters,
+    timestamp: u32,
 }
 
 impl InputSelection {

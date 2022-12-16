@@ -97,6 +97,7 @@ pub(crate) fn remainder_output(
 
         let mut remainder_builder = if inputs_sum > outputs_sum {
             // TODO could this also fail if not enough to cover native tokens ?
+            // TODO checked ops
             BasicOutputBuilder::new_with_amount(inputs_sum - outputs_sum)?
         } else {
             BasicOutputBuilder::new_with_minimum_storage_deposit(protocol_parameters.rent_structure().clone())?
