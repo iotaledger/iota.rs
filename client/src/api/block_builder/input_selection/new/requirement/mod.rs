@@ -4,10 +4,10 @@
 pub(crate) mod alias;
 pub(crate) mod base_token;
 pub(crate) mod foundry;
-mod issuer;
+pub(crate) mod issuer;
 pub(crate) mod native_tokens;
 pub(crate) mod nft;
-mod sender;
+pub(crate) mod sender;
 
 use std::collections::VecDeque;
 
@@ -21,20 +21,28 @@ use crate::{
     secret::types::InputSigningData,
 };
 
+/// A requirement, imposed by outputs, that needs to be resolved by selected inputs.
 #[derive(Debug, serde::Serialize, Eq, PartialEq)]
-#[allow(missing_docs)]
-// TODO still comment the struct itself
 pub enum Requirement {
+    /// Sender requirement.
     Sender(Address),
+    /// Issuer requirement.
     Issuer(Address),
+    /// Foundry requirement.
     Foundry(FoundryId),
+    /// Alias requirement.
     Alias(AliasId),
+    /// Nft requirement.
     Nft(NftId),
+    /// Native tokens requirement.
     NativeTokens,
+    /// Base token requirement.
     BaseToken,
 }
 
 impl InputSelection {
+    /// Fulfills a requirement by selecting the appropriate available inputs.
+    /// Returns the selected inputs and an optional new requirement.
     pub(crate) fn fulfill_requirement(
         &mut self,
         requirement: Requirement,
@@ -51,61 +59,69 @@ impl InputSelection {
     }
 }
 
+/// A queue of requirements, imposed by outputs, that need to be resolved by selected inputs.
 #[derive(Debug)]
 pub(crate) struct Requirements(VecDeque<Requirement>);
 
 impl Requirements {
+    /// Creates a new [`Requirements`].
     pub(crate) fn new() -> Self {
         Self(VecDeque::new())
     }
 
+    /// Pushes a new requirement to the queue.
     pub(crate) fn push(&mut self, requirement: Requirement) {
+        // TODO push back ?
         self.0.push_front(requirement)
     }
 
+    /// Pops a requirement from the queue.
     pub(crate) fn pop(&mut self) -> Option<Requirement> {
         self.0.pop_front()
     }
 
+    /// Extends the requirement queue with another queue.
     pub(crate) fn extend(&mut self, mut requirements: Requirements) {
+        // TODO should this iterate instead ?
         while let Some(requirement) = requirements.pop() {
             self.push(requirement);
         }
     }
 
+    /// Creates a new [`Requirements`] from outputs.
     pub(crate) fn from_outputs<'a>(
         inputs: impl Iterator<Item = &'a InputSigningData> + Clone,
         outputs: impl Iterator<Item = &'a OutputInfo>,
     ) -> Self {
-        // TODO take duplicate into account
+        // TODO take duplicates into account
         let mut requirements = Requirements::new();
 
         for output in outputs {
-            let is_new: bool = match &output.output {
-                // Add an alias requirement if the alias output is transitioning, thus required in the inputs.
+            let is_created = match &output.output {
+                // Add an alias requirement if the alias output is transitioning and then required in the inputs.
                 Output::Alias(alias_output) => {
-                    let is_new = alias_output.alias_id().is_null();
+                    let is_created = alias_output.alias_id().is_null();
 
-                    if !is_new {
+                    if !is_created {
                         requirements.push(Requirement::Alias(*alias_output.alias_id()));
                     }
 
-                    !is_new
+                    !is_created
                 }
-                // Add an nft requirement if the nft output is transitioning, thus required in the inputs.
+                // Add an nft requirement if the nft output is transitioning and then required in the inputs.
                 Output::Nft(nft_output) => {
-                    let is_new = nft_output.nft_id().is_null();
+                    let is_created = nft_output.nft_id().is_null();
 
-                    if !is_new {
+                    if !is_created {
                         requirements.push(Requirement::Nft(*nft_output.nft_id()));
                     }
 
-                    !is_new
+                    !is_created
                 }
-                // Add a foundry requirement if the foundry output is transitioning, thus required in the inputs.
+                // Add a foundry requirement if the foundry output is transitioning and then required in the inputs.
                 // Also add an alias requirement since the associated alias output needs to be transitioned.
                 Output::Foundry(foundry_output) => {
-                    let is_new = !inputs.clone().any(|input| {
+                    let is_created = !inputs.clone().any(|input| {
                         if let Output::Foundry(output) = &input.output {
                             output.id() == foundry_output.id()
                         } else {
@@ -113,25 +129,24 @@ impl Requirements {
                         }
                     });
 
-                    if !is_new {
+                    if !is_created {
                         requirements.push(Requirement::Foundry(foundry_output.id()));
-                        // TODO take care of minted and melted tokens somewhere
                     }
 
                     requirements.push(Requirement::Alias(*foundry_output.alias_address().alias_id()));
 
-                    !is_new
+                    !is_created
                 }
                 _ => false,
             };
 
-            // Add a sender requirement if the feature is present.
+            // Add a sender requirement if the sender feature is present.
             if let Some(sender) = output.output.features().and_then(|features| features.sender()) {
                 requirements.push(Requirement::Sender(*sender.address()));
             }
 
-            // Add an issuer requirement if the feature is present and new.
-            if is_new {
+            // Add an issuer requirement if the issuer feature is present and the chain output is created.
+            if is_created {
                 if let Some(issuer) = output
                     .output
                     .immutable_features()
@@ -145,6 +160,7 @@ impl Requirements {
         requirements
     }
 
+    /// Creates a new [`Requirements`] from burn.
     pub(crate) fn from_burn(burn: &Burn) -> Self {
         let mut requirements = Requirements::new();
 
@@ -159,8 +175,6 @@ impl Requirements {
         for foundry_id in &burn.foundries {
             requirements.push(Requirement::Foundry(*foundry_id));
         }
-
-        // TODO add native tokens
 
         requirements
     }

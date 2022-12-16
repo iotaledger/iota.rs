@@ -150,6 +150,8 @@ impl InputSelection {
         // Adds an initial base token requirement.
         requirements.push(Requirement::BaseToken);
 
+        // println!("{requirements:?}");
+
         Ok(requirements)
     }
 
