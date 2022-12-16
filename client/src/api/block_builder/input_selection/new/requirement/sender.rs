@@ -25,6 +25,7 @@ impl InputSelection {
         address: Address,
     ) -> Result<(Vec<InputSigningData>, Option<Requirement>)> {
         // Checks if the requirement is already fulfilled.
+
         if self
             .selected_inputs
             .iter()
@@ -34,34 +35,33 @@ impl InputSelection {
         }
 
         // Checks if the requirement can be fulfilled.
+
+        // TODO bit dumb atm, need to add more possible strategies.
+
+        // TODO check that the enumeration index is kept original and not filtered.
+        // Tries to find a basic output first.
+        let index = if let Some((index, _)) = self
+            .available_inputs
+            .iter()
+            .enumerate()
+            .find(|(_, input)| input.output.is_basic() && is_ed25519_address(input, &address))
         {
-            // TODO bit dumb atm, need to add more possible strategies.
+            Some(index)
+        } else {
+            // TODO any preference between alias and NFT?
+            // If no basic output has been found, tries the other kinds of output.
+            self.available_inputs.iter().enumerate().find_map(|(index, input)| {
+                if !input.output.is_basic() && is_ed25519_address(input, &address) {
+                    Some(index)
+                } else {
+                    None
+                }
+            })
+        };
 
-            // TODO check that the enumeration index is kept original and not filtered.
-            // Tries to find a basic output first.
-            let index = if let Some((index, _)) = self
-                .selected_inputs
-                .iter()
-                .enumerate()
-                .find(|(_, input)| input.output.is_basic() && is_ed25519_address(input, &address))
-            {
-                Some(index)
-            } else {
-                // TODO any preference between alias and NFT?
-                // If no basic output has been found, tries the other kinds of output.
-                self.available_inputs.iter().enumerate().find_map(|(index, input)| {
-                    if !input.output.is_basic() && is_ed25519_address(input, &address) {
-                        Some(index)
-                    } else {
-                        None
-                    }
-                })
-            };
-
-            match index {
-                Some(index) => Ok((vec![self.available_inputs.swap_remove(index)], None)),
-                None => Err(Error::UnfulfillableRequirement(Requirement::Sender(address))),
-            }
+        match index {
+            Some(index) => Ok((vec![self.available_inputs.swap_remove(index)], None)),
+            None => Err(Error::UnfulfillableRequirement(Requirement::Sender(address))),
         }
     }
 

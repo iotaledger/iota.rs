@@ -101,6 +101,11 @@ impl InputSelection {
         // let mut selected_inputs = Vec::new();
         let mut requirements = Requirements::new();
 
+        // Adds an initial base token requirement.
+        requirements.push(Requirement::BaseToken);
+        // Adds an initial native tokens requirement.
+        requirements.push(Requirement::NativeTokens);
+
         // Removes forbidden inputs from available inputs.
         self.available_inputs
             .retain(|input| !self.forbidden_inputs.contains(input.output_id()));
@@ -145,12 +150,7 @@ impl InputSelection {
             requirements.extend(new_requirements);
         }
 
-        // Adds an initial native tokens requirement.
-        requirements.push(Requirement::NativeTokens);
-        // Adds an initial base token requirement.
-        requirements.push(Requirement::BaseToken);
-
-        // println!("{requirements:?}");
+        println!("{requirements:?}");
 
         Ok(requirements)
     }
@@ -195,7 +195,9 @@ impl InputSelection {
         let mut requirements = self.init()?;
 
         // Process all the requirements until there are no more.
+        println!("BEFORE -----------");
         while let Some(requirement) = requirements.pop() {
+            println!("{requirement:?}");
             // Fulfill the requirement.
             let (inputs, new_requirement) = self.fulfill_requirement(requirement)?;
 
@@ -213,6 +215,7 @@ impl InputSelection {
                 self.select_input(input, &mut requirements)?;
             }
         }
+        println!("AFTER -----------");
 
         // self.output.extend(create_storage_deposit_return_outputs(selected_input, self.outputs));
 

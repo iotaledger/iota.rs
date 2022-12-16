@@ -9,8 +9,6 @@ pub(crate) mod native_tokens;
 pub(crate) mod nft;
 pub(crate) mod sender;
 
-use std::collections::VecDeque;
-
 use super::{Burn, InputSelection, OutputInfo};
 use crate::{
     block::{
@@ -59,33 +57,30 @@ impl InputSelection {
     }
 }
 
-/// A queue of requirements, imposed by outputs, that need to be resolved by selected inputs.
+/// A stack of requirements, imposed by outputs, that need to be resolved by selected inputs.
+/// TODO is this still necessary?
 #[derive(Debug)]
-pub(crate) struct Requirements(VecDeque<Requirement>);
+pub(crate) struct Requirements(Vec<Requirement>);
 
 impl Requirements {
     /// Creates a new [`Requirements`].
     pub(crate) fn new() -> Self {
-        Self(VecDeque::new())
+        Self(Vec::new())
     }
 
-    /// Pushes a new requirement to the queue.
+    /// Pushes a new requirement to the stack.
     pub(crate) fn push(&mut self, requirement: Requirement) {
-        // TODO push back ?
-        self.0.push_front(requirement)
+        self.0.push(requirement)
     }
 
-    /// Pops a requirement from the queue.
+    /// Pops a requirement from the stack.
     pub(crate) fn pop(&mut self) -> Option<Requirement> {
-        self.0.pop_front()
+        self.0.pop()
     }
 
-    /// Extends the requirement queue with another queue.
-    pub(crate) fn extend(&mut self, mut requirements: Requirements) {
-        // TODO should this iterate instead ?
-        while let Some(requirement) = requirements.pop() {
-            self.push(requirement);
-        }
+    /// Extends the requirement stack with another stack.
+    pub(crate) fn extend(&mut self, requirements: Requirements) {
+        self.0.extend(requirements.0)
     }
 
     /// Creates a new [`Requirements`] from outputs.
