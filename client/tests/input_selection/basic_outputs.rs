@@ -286,10 +286,12 @@ fn ed25519_sender() {
 
     // Sender + another for amount
     assert_eq!(selected.0.len(), 2);
-    assert!(selected
-        .0
-        .iter()
-        .any(|input| *input.output.as_basic().address() == sender));
+    assert!(
+        selected
+            .0
+            .iter()
+            .any(|input| *input.output.as_basic().address() == sender)
+    );
     // Provided output + remainder
     assert_eq!(selected.1.len(), 2);
 }
@@ -346,10 +348,12 @@ fn alias_sender() {
 
     // Sender + another for amount
     assert_eq!(selected.0.len(), 2);
-    assert!(selected
-        .0
-        .iter()
-        .any(|input| input.output.is_alias() && *input.output.as_alias().alias_id() == alias_id_1));
+    assert!(
+        selected
+            .0
+            .iter()
+            .any(|input| input.output.is_alias() && *input.output.as_alias().alias_id() == alias_id_1)
+    );
     // Provided output + alias
     assert_eq!(selected.1.len(), 2);
 }
@@ -406,10 +410,12 @@ fn nft_sender() {
 
     // Sender + another for amount
     assert_eq!(selected.0.len(), 2);
-    assert!(selected
-        .0
-        .iter()
-        .any(|input| input.output.is_nft() && *input.output.as_nft().nft_id() == nft_id_1));
+    assert!(
+        selected
+            .0
+            .iter()
+            .any(|input| input.output.is_nft() && *input.output.as_nft().nft_id() == nft_id_1)
+    );
     // Provided output + nft
     assert_eq!(selected.1.len(), 2);
 }

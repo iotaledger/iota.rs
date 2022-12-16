@@ -27,13 +27,14 @@ fn input_nft_eq_output_nft() {
     let inputs = build_input_signing_data_nft_outputs(vec![(nft_id_2, BECH32_ADDRESS, 1_000_000)]);
     let outputs = vec![build_nft_output(1_000_000, nft_id_2, BECH32_ADDRESS, None, None)];
 
-    let selected = InputSelection::build(inputs.clone(), outputs, protocol_parameters)
+    let selected = InputSelection::build(inputs.clone(), outputs.clone(), protocol_parameters)
         .finish()
         .unwrap()
         .select()
         .unwrap();
 
     assert_eq!(selected.0, inputs);
+    assert_eq!(selected.1, outputs);
 }
 
 #[test]

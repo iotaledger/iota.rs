@@ -18,7 +18,7 @@ impl InputSelection {
     fn transition_alias_input(&self, input: &AliasOutput, output_id: &OutputId) -> Result<Option<Output>> {
         let alias_id = input.alias_id_non_null(output_id);
 
-        // Don't create an alias output if the alias input is to be burned.
+        // Do not create an alias output if the alias input is to be burned.
         if self
             .burn
             .as_ref()
@@ -28,7 +28,7 @@ impl InputSelection {
             return Ok(None);
         }
 
-        // Don't create an alias output if it already exists.
+        // Do not create an alias output if it already exists.
         if self
             .outputs
             .iter()
@@ -37,8 +37,7 @@ impl InputSelection {
             return Ok(None);
         }
 
-        // TODO remove sender feature ?
-        // TODO minimum amount ?
+        // TODO Add configuration to remove features or not?
 
         let output = AliasOutputBuilder::from(input)
             .with_alias_id(alias_id)
@@ -51,7 +50,7 @@ impl InputSelection {
     fn transition_nft_input(&self, input: &NftOutput, output_id: &OutputId) -> Result<Option<Output>> {
         let nft_id = input.nft_id_non_null(output_id);
 
-        // Don't create an nft output if the nft input is to be burned.
+        // Do not create an nft output if the nft input is to be burned.
         if self
             .burn
             .as_ref()
@@ -61,7 +60,7 @@ impl InputSelection {
             return Ok(None);
         }
 
-        // Don't create an nft output if it already exists.
+        // Do not create an nft output if it already exists.
         if self
             .outputs
             .iter()
@@ -70,8 +69,7 @@ impl InputSelection {
             return Ok(None);
         }
 
-        // TODO remove sender feature ?
-        // TODO minimum amount ?
+        // TODO Add configuration to remove features or not?
 
         let output = NftOutputBuilder::from(input)
             .with_nft_id(nft_id)
@@ -83,17 +81,17 @@ impl InputSelection {
     fn transition_foundry_input(&self, input: &FoundryOutput) -> Result<Option<Output>> {
         let foundry_id = input.id();
 
-        // Don't create a foundry output if the foundry input is to be burned.
+        // Do not create a foundry output if the foundry input is to be burned.
         if self
             .burn
             .as_ref()
-            .map(|burn| burn.foundries.contains(&input.id()))
+            .map(|burn| burn.foundries.contains(&foundry_id))
             .unwrap_or(false)
         {
             return Ok(None);
         }
 
-        // Don't create a foundry output if it already exists.
+        // Do not create a foundry output if it already exists.
         if self
             .outputs
             .iter()
@@ -102,7 +100,7 @@ impl InputSelection {
             return Ok(None);
         }
 
-        // TODO minimum amount ?
+        // TODO Add configuration to remove features or not?
 
         let output = FoundryOutputBuilder::from(input).finish_output(self.protocol_parameters.token_supply())?;
 

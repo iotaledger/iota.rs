@@ -27,13 +27,14 @@ fn input_alias_eq_output_alias() {
     let inputs = build_input_signing_data_alias_outputs(vec![(alias_id_2, BECH32_ADDRESS, 1_000_000)]);
     let outputs = vec![build_alias_output(1_000_000, alias_id_2, BECH32_ADDRESS, None, None)];
 
-    let selected = InputSelection::build(inputs.clone(), outputs, protocol_parameters)
+    let selected = InputSelection::build(inputs.clone(), outputs.clone(), protocol_parameters)
         .finish()
         .unwrap()
         .select()
         .unwrap();
 
     assert_eq!(selected.0, inputs);
+    assert_eq!(selected.1, outputs);
 }
 
 #[test]

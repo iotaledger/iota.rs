@@ -7,7 +7,7 @@ use primitive_types::U256;
 
 use crate::block::output::{AliasId, FoundryId, NftId, TokenId};
 
-/// A type to explicit what needs to be burnt during input selection.
+/// A type to explicit what needs to be burned during input selection.
 #[derive(Default)]
 pub struct Burn {
     /// Aliases to burn.

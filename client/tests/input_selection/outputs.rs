@@ -12,7 +12,7 @@ fn no_inputs_provided() {
     let inputs = Vec::new();
     let outputs = vec![build_basic_output(1_000_000, BECH32_ADDRESS, None)];
 
-    let builder = InputSelection::build(inputs.clone(), outputs.clone(), protocol_parameters).finish();
+    let builder = InputSelection::build(inputs, outputs, protocol_parameters).finish();
 
     assert!(matches!(builder, Err(Error::NoInputsProvided)))
 }
@@ -24,7 +24,7 @@ fn no_outputs_provided() {
     let inputs = build_input_signing_data_most_basic_outputs(vec![(BECH32_ADDRESS, 1_000_000)]);
     let outputs = Vec::new();
 
-    let builder = InputSelection::build(inputs.clone(), outputs.clone(), protocol_parameters).finish();
+    let builder = InputSelection::build(inputs, outputs, protocol_parameters).finish();
 
     assert!(matches!(builder, Err(Error::NoOutputsProvided)))
 }
