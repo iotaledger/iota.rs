@@ -221,6 +221,12 @@ pub enum Error {
     #[error("unfulfillable requirement {0:?}")]
     // TODO better name?
     UnfulfillableRequirement(Requirement),
+    /// No inputs were provided to input selection
+    #[error("no inputs provided")]
+    NoInputsProvided,
+    /// No outputs were provided to input selection
+    #[error("no outputs provided")]
+    NoOutputsProvided,
 
     //////////////////////////////////////////////////////////////////////
     // Participation

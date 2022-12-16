@@ -5,6 +5,7 @@ mod alias_outputs;
 mod basic_outputs;
 mod foundry_outputs;
 mod nft_outputs;
+mod outputs;
 
 use std::{collections::HashMap, hash::Hash};
 

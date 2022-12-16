@@ -29,6 +29,7 @@ fn input_alias_eq_output_alias() {
 
     let selected = InputSelection::build(inputs.clone(), outputs, protocol_parameters)
         .finish()
+        .unwrap()
         .select()
         .unwrap();
 
@@ -46,6 +47,7 @@ fn input_amount_lt_output_amount() {
     assert!(matches!(
         InputSelection::build(inputs, outputs, protocol_parameters)
             .finish()
+            .unwrap()
             .select(),
         Err(Error::NotEnoughBalance {
             found: 1_000_000,
@@ -65,6 +67,7 @@ fn basic_output_with_alias_input() {
 
     let selected = InputSelection::build(inputs, outputs, protocol_parameters)
         .finish()
+        .unwrap()
         .select()
         .unwrap();
 
@@ -82,6 +85,7 @@ fn create_alias() {
 
     let selected = InputSelection::build(inputs, outputs, protocol_parameters)
         .finish()
+        .unwrap()
         .select()
         .unwrap();
 
@@ -108,6 +112,7 @@ fn burn_alias() {
     let selected = InputSelection::build(inputs, outputs, protocol_parameters)
         .burn(Burn::new().add_alias(alias_id_2))
         .finish()
+        .unwrap()
         .select()
         .unwrap();
 
@@ -128,6 +133,7 @@ fn not_enough_storage_deposit_for_remainder() {
     assert!(matches!(
         InputSelection::build(inputs, outputs, protocol_parameters)
             .finish()
+            .unwrap()
             .select(),
         Err(Error::BlockError(
             iota_types::block::Error::InsufficientStorageDepositAmount {
@@ -148,7 +154,7 @@ fn missing_input_for_alias_output() {
 
     assert!(matches!(
         InputSelection::build(inputs,outputs,  protocol_parameters)
-            .finish()
+            .finish().unwrap()
             .select(),
         Err(Error::UnfulfillableRequirement(Requirement::Alias(alias_id))) if alias_id == alias_id_2
     ))
@@ -173,6 +179,7 @@ fn alias_in_output_and_sender() {
 
     let selected = InputSelection::build(inputs.clone(), outputs, protocol_parameters)
         .finish()
+        .unwrap()
         .select()
         .unwrap();
 
@@ -204,6 +211,7 @@ fn missing_ed25519_sender() {
 
     let selected = InputSelection::build(inputs, outputs, protocol_parameters)
         .finish()
+        .unwrap()
         .select();
 
     assert!(matches!(
@@ -228,6 +236,7 @@ fn missing_ed25519_issuer() {
 
     let selected = InputSelection::build(inputs, outputs, protocol_parameters)
         .finish()
+        .unwrap()
         .select();
 
     assert!(matches!(
@@ -252,6 +261,7 @@ fn missing_alias_sender() {
 
     let selected = InputSelection::build(inputs, outputs, protocol_parameters)
         .finish()
+        .unwrap()
         .select();
 
     assert!(matches!(
@@ -276,6 +286,7 @@ fn missing_alias_issuer() {
 
     let selected = InputSelection::build(inputs, outputs, protocol_parameters)
         .finish()
+        .unwrap()
         .select();
 
     assert!(matches!(
@@ -300,6 +311,7 @@ fn missing_nft_sender() {
 
     let selected = InputSelection::build(inputs, outputs, protocol_parameters)
         .finish()
+        .unwrap()
         .select();
 
     assert!(matches!(
@@ -324,6 +336,7 @@ fn missing_nft_issuer() {
 
     let selected = InputSelection::build(inputs, outputs, protocol_parameters)
         .finish()
+        .unwrap()
         .select();
 
     assert!(matches!(

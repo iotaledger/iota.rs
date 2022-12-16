@@ -10,6 +10,7 @@ use crate::{
         output::{Output, OutputId},
         protocol::ProtocolParameters,
     },
+    error::{Error, Result},
     secret::types::InputSigningData,
 };
 
@@ -79,8 +80,15 @@ impl InputSelectionBuilder {
     }
 
     /// Finishes an [`InputSelectionBuilder`] into an [`InputSelection`].
-    pub fn finish(self) -> InputSelection {
-        InputSelection {
+    pub fn finish(self) -> Result<InputSelection> {
+        if self.available_inputs.is_empty() {
+            return Err(Error::NoInputsProvided);
+        }
+        if self.outputs.is_empty() {
+            return Err(Error::NoOutputsProvided);
+        }
+
+        Ok(InputSelection {
             available_inputs: self.available_inputs,
             outputs: self
                 .outputs
@@ -99,6 +107,6 @@ impl InputSelectionBuilder {
             remainder_address: self.remainder_address,
             burn: self.burn,
             selected_inputs: Vec::new(),
-        }
+        })
     }
 }

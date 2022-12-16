@@ -34,7 +34,7 @@ fn missing_input_alias_for_foundry() {
 
     assert!(matches!(
         InputSelection::build(inputs,outputs,  protocol_parameters)
-            .finish()
+            .finish().unwrap()
             .select(),
         Err(Error::UnfulfillableRequirement(Requirement::Alias(alias_id))) if alias_id == alias_id_2
     ))
@@ -55,6 +55,7 @@ fn existing_input_alias_for_foundry_alias() {
 
     let selected = InputSelection::build(inputs, outputs, protocol_parameters)
         .finish()
+        .unwrap()
         .select()
         .unwrap();
 
@@ -84,6 +85,7 @@ fn minted_native_tokens_in_new_remainder() {
 
     let selected = InputSelection::build(inputs, outputs, protocol_parameters)
         .finish()
+        .unwrap()
         .select()
         .unwrap();
 
@@ -131,6 +133,7 @@ fn melt_native_tokens() {
 
     let selected = InputSelection::build(inputs.clone(), outputs, protocol_parameters)
         .finish()
+        .unwrap()
         .select()
         .unwrap();
 
@@ -167,6 +170,7 @@ fn destroy_foundry() {
     let selected = InputSelection::build(inputs.clone(), outputs, protocol_parameters)
         .burn(Burn::new().add_foundry(inputs[1].output.as_foundry().id()))
         .finish()
+        .unwrap()
         .select()
         .unwrap();
 
