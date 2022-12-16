@@ -106,7 +106,7 @@ impl Requirements {
                         requirements.push(Requirement::Alias(*alias_output.alias_id()));
                     }
 
-                    !is_created
+                    is_created
                 }
                 // Add an nft requirement if the nft output is transitioning and then required in the inputs.
                 Output::Nft(nft_output) => {
@@ -116,7 +116,7 @@ impl Requirements {
                         requirements.push(Requirement::Nft(*nft_output.nft_id()));
                     }
 
-                    !is_created
+                    is_created
                 }
                 // Add a foundry requirement if the foundry output is transitioning and then required in the inputs.
                 // Also add an alias requirement since the associated alias output needs to be transitioned.
@@ -135,7 +135,7 @@ impl Requirements {
 
                     requirements.push(Requirement::Alias(*foundry_output.alias_address().alias_id()));
 
-                    !is_created
+                    is_created
                 }
                 _ => false,
             };
