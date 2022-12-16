@@ -15,6 +15,7 @@ use crate::{
 };
 
 impl InputSelection {
+    /// Transitions an alias input by creating a new alias output if required.
     fn transition_alias_input(&self, input: &AliasOutput, output_id: &OutputId) -> Result<Option<Output>> {
         let alias_id = input.alias_id_non_null(output_id);
 
@@ -47,6 +48,7 @@ impl InputSelection {
         Ok(Some(output))
     }
 
+    /// Transitions an nft input by creating a new nft output if required.
     fn transition_nft_input(&self, input: &NftOutput, output_id: &OutputId) -> Result<Option<Output>> {
         let nft_id = input.nft_id_non_null(output_id);
 
@@ -78,6 +80,7 @@ impl InputSelection {
         Ok(Some(output))
     }
 
+    /// Transitions a foundry input by creating a new foundry output if required.
     fn transition_foundry_input(&self, input: &FoundryOutput) -> Result<Option<Output>> {
         let foundry_id = input.id();
 
@@ -107,6 +110,7 @@ impl InputSelection {
         Ok(Some(output))
     }
 
+    /// Transitions an input by creating a new output if required.
     pub(crate) fn transition_input(&self, input: &InputSigningData) -> Result<Option<Output>> {
         match &input.output {
             Output::Alias(alias_input) => self.transition_alias_input(alias_input, input.output_id()),

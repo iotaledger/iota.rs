@@ -16,7 +16,7 @@ pub struct Burn {
     pub(crate) nfts: HashSet<NftId>,
     /// Foundries to burn.
     pub(crate) foundries: HashSet<FoundryId>,
-    /// Native tokens with the amount to burn.
+    /// Amounts of native tokens to burn.
     pub(crate) native_tokens: HashMap<TokenId, U256>,
 }
 
