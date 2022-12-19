@@ -247,6 +247,6 @@ pub async fn search_address(
     }
     Err(crate::error::Error::InputAddressNotFound(
         address.to_bech32(bech32_hrp),
-        format!("{:?}", range),
+        format!("{range:?}"),
     ))
 }

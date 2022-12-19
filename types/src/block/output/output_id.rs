@@ -104,7 +104,7 @@ impl core::fmt::Display for OutputId {
 
 impl core::fmt::Debug for OutputId {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
-        write!(f, "OutputId({})", self)
+        write!(f, "OutputId({self})")
     }
 }
 

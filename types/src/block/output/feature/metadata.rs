@@ -58,7 +58,7 @@ impl core::fmt::Display for MetadataFeature {
 
 impl core::fmt::Debug for MetadataFeature {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
-        write!(f, "MetadataFeature({})", self)
+        write!(f, "MetadataFeature({self})")
     }
 }
 

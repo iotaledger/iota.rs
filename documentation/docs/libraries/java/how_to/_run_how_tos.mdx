@@ -1,24 +1,25 @@
-## Prerequisites
+### Clone the Repository
 
-Before you can run the examples, please refer to the [Java Getting Started guide](./../getting_started/java) to install
-the library.
+To run the examples, you will first need to clone the repository. You can do so by running the following command:
 
-## Include the Library
+```bash
+git clone git@github.com:iotaledger/iota.rs.git
+```
 
-Before you can try out the [examples](https://github.com/iotaledger/iota.rs/tree/develop/bindings/java/iota-client-java/examples/ExampleProject/src),
-you will need to include [the `JAR` file you built](./../getting_started/java#build-your-jar) in your project. The instructions for this vary between different IDEs and will
-not be the target of this documentation. Please use the following links to get your project running on your IDE of
-choice:
+Then, move into the Java examples folder by running the following command:
 
-### Popular Java IDEs
-
-* [Eclipse](https://help.eclipse.org/latest/index.jsp).
-* [IntelliJ IDEA](https://www.jetbrains.com/help/idea/creating-and-running-your-first-java-application.html).
-* [Netbeans](https://netbeans.apache.org/kb/docs/java/quickstart.html).
-* [Visual Studio Code](https://code.visualstudio.com/docs/java/java-project).
+```bash
+cd iota.rs/client/bindings/java/examples
+```
 
 ## Run Code Examples
 
-If you have already [included](#include-the-library) the library into your project, you are a click away from running the code
-examples. However, the instructions on running the examples will also depend on your [IDE of choice](#popular-java-ides),
-so please look into their documentation for instructions on how to do so.
+The IOTA Client Java library has numerous [examples](https://github.com/iotaledger/iota.rs/tree/develop/client/bindings/java/examples/src)
+you can run to get acquainted with the library. You can run any example with the following
+command from the `examples` directory:
+
+```bash
+.././gradlew run -Pexample=GetInfo
+```
+
+To run another example of your choice, replace `GetInfo` with the name of any other example from the [Java examples directory](https://github.com/iotaledger/iota.rs/tree/develop/bindings/java/examples/src).

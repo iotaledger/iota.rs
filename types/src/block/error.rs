@@ -137,11 +137,11 @@ impl fmt::Display for Error {
             Error::ConsumedNativeTokensAmountOverflow => write!(f, "consumed native tokens amount overflow"),
             Error::CreatedAmountOverflow => write!(f, "created amount overflow"),
             Error::CreatedNativeTokensAmountOverflow => write!(f, "created native tokens amount overflow"),
-            Error::CryptoError(e) => write!(f, "cryptographic error: {}", e),
+            Error::CryptoError(e) => write!(f, "cryptographic error: {e}"),
             Error::DuplicateSignatureUnlock(index) => {
-                write!(f, "duplicate signature unlock at index: {0}", index)
+                write!(f, "duplicate signature unlock at index: {index}")
             }
-            Error::DuplicateUtxo(utxo) => write!(f, "duplicate UTXO {:?} in inputs", utxo),
+            Error::DuplicateUtxo(utxo) => write!(f, "duplicate UTXO {utxo:?} in inputs"),
             Error::ExpirationUnlockConditionZero => {
                 write!(
                     f,
@@ -155,20 +155,19 @@ impl fmt::Display for Error {
             } => {
                 write!(
                     f,
-                    "input count and unlock count mismatch: {} != {}",
-                    input_count, unlock_count
+                    "input count and unlock count mismatch: {input_count} != {unlock_count}",
                 )
             }
             Error::InvalidAddress => write!(f, "invalid address provided"),
-            Error::InvalidAddressKind(k) => write!(f, "invalid address kind: {}", k),
-            Error::InvalidAliasIndex(index) => write!(f, "invalid alias index: {}", index),
+            Error::InvalidAddressKind(k) => write!(f, "invalid address kind: {k}"),
+            Error::InvalidAliasIndex(index) => write!(f, "invalid alias index: {index}"),
             Error::InvalidBech32Hrp(err) => write!(f, "invalid bech32 hrp: {err}"),
             Error::InvalidBinaryParametersLength(length) => {
                 write!(f, "invalid binary parameters length: {length}")
             }
-            Error::InvalidControllerKind(k) => write!(f, "invalid controller kind: {}", k),
+            Error::InvalidControllerKind(k) => write!(f, "invalid controller kind: {k}"),
             Error::InvalidStorageDepositAmount(amount) => {
-                write!(f, "invalid storage deposit amount: {}", amount)
+                write!(f, "invalid storage deposit amount: {amount}")
             }
             Error::InsufficientStorageDepositAmount { amount, required } => {
                 write!(
@@ -186,19 +185,19 @@ impl fmt::Display for Error {
                 f,
                 "storage deposit return of {deposit} exceeds the original output amount of {amount}"
             ),
-            Error::InvalidEssenceKind(k) => write!(f, "invalid essence kind: {}", k),
-            Error::InvalidFeatureCount(count) => write!(f, "invalid feature count: {}", count),
-            Error::InvalidFeatureKind(k) => write!(f, "invalid feature kind: {}", k),
+            Error::InvalidEssenceKind(k) => write!(f, "invalid essence kind: {k}"),
+            Error::InvalidFeatureCount(count) => write!(f, "invalid feature count: {count}"),
+            Error::InvalidFeatureKind(k) => write!(f, "invalid feature kind: {k}"),
             Error::InvalidFoundryOutputSupply { minted, melted, max } => write!(
                 f,
                 "invalid foundry output supply: minted {minted}, melted {melted} max {max}",
             ),
-            Error::HexError(error) => write!(f, "hex error: {}", error),
-            Error::InvalidInputKind(k) => write!(f, "invalid input kind: {}", k),
-            Error::InvalidInputCount(count) => write!(f, "invalid input count: {}", count),
-            Error::InvalidInputOutputIndex(index) => write!(f, "invalid input or output index: {}", index),
-            Error::InvalidBlockLength(length) => write!(f, "invalid block length {}", length),
-            Error::InvalidStateMetadataLength(length) => write!(f, "invalid state metadata length {}", length),
+            Error::HexError(error) => write!(f, "hex error: {error}"),
+            Error::InvalidInputKind(k) => write!(f, "invalid input kind: {k}"),
+            Error::InvalidInputCount(count) => write!(f, "invalid input count: {count}"),
+            Error::InvalidInputOutputIndex(index) => write!(f, "invalid input or output index: {index}"),
+            Error::InvalidBlockLength(length) => write!(f, "invalid block length {length}"),
+            Error::InvalidStateMetadataLength(length) => write!(f, "invalid state metadata length {length}"),
             Error::InvalidMetadataFeatureLength(length) => {
                 write!(f, "invalid metadata feature length {length}")
             }
@@ -210,65 +209,64 @@ impl fmt::Display for Error {
             Error::InvalidMigratedFundsEntryAmount(amount) => {
                 write!(f, "invalid migrated funds entry amount: {amount}")
             }
-            Error::InvalidNativeTokenCount(count) => write!(f, "invalid native token count: {}", count),
+            Error::InvalidNativeTokenCount(count) => write!(f, "invalid native token count: {count}"),
             Error::InvalidNetworkName(err) => write!(f, "invalid network name: {err}"),
-            Error::InvalidNftIndex(index) => write!(f, "invalid nft index: {}", index),
-            Error::InvalidOutputAmount(amount) => write!(f, "invalid output amount: {}", amount),
-            Error::InvalidOutputCount(count) => write!(f, "invalid output count: {}", count),
-            Error::InvalidOutputKind(k) => write!(f, "invalid output kind: {}", k),
+            Error::InvalidNftIndex(index) => write!(f, "invalid nft index: {index}"),
+            Error::InvalidOutputAmount(amount) => write!(f, "invalid output amount: {amount}"),
+            Error::InvalidOutputCount(count) => write!(f, "invalid output count: {count}"),
+            Error::InvalidOutputKind(k) => write!(f, "invalid output kind: {k}"),
             Error::InvalidParentCount(count) => {
-                write!(f, "invalid parents count: {}", count)
+                write!(f, "invalid parents count: {count}")
             }
-            Error::InvalidPayloadKind(k) => write!(f, "invalid payload kind: {}", k),
+            Error::InvalidPayloadKind(k) => write!(f, "invalid payload kind: {k}"),
             Error::InvalidPayloadLength { expected, actual } => {
-                write!(f, "invalid payload length: expected {} but got {}", expected, actual)
+                write!(f, "invalid payload length: expected {expected} but got {actual}")
             }
-            Error::InvalidReceiptFundsCount(count) => write!(f, "invalid receipt funds count: {}", count),
+            Error::InvalidReceiptFundsCount(count) => write!(f, "invalid receipt funds count: {count}"),
             Error::InvalidReceiptFundsSum(sum) => write!(f, "invalid receipt amount sum: {sum}"),
-            Error::InvalidReferenceIndex(index) => write!(f, "invalid reference index: {}", index),
+            Error::InvalidReferenceIndex(index) => write!(f, "invalid reference index: {index}"),
             Error::InvalidSignature => write!(f, "invalid signature provided"),
-            Error::InvalidSignatureKind(k) => write!(f, "invalid signature kind: {}", k),
+            Error::InvalidSignatureKind(k) => write!(f, "invalid signature kind: {k}"),
             Error::InvalidStringPrefix(p) => write!(f, "invalid string prefix: {p}"),
             Error::InvalidTaggedDataLength(length) => {
-                write!(f, "invalid tagged data length {}", length)
+                write!(f, "invalid tagged data length {length}")
             }
             Error::InvalidTagFeatureLength(length) => {
-                write!(f, "invalid tag feature length {}", length)
+                write!(f, "invalid tag feature length {length}")
             }
             Error::InvalidTagLength(length) => {
-                write!(f, "invalid tag length {}", length)
+                write!(f, "invalid tag length {length}")
             }
             Error::InvalidTailTransactionHash => write!(f, "invalid tail transaction hash"),
-            Error::InvalidTokenSchemeKind(k) => write!(f, "invalid token scheme kind {}", k),
-            Error::InvalidTransactionAmountSum(value) => write!(f, "invalid transaction amount sum: {}", value),
+            Error::InvalidTokenSchemeKind(k) => write!(f, "invalid token scheme kind {k}"),
+            Error::InvalidTransactionAmountSum(value) => write!(f, "invalid transaction amount sum: {value}"),
             Error::InvalidTransactionNativeTokensCount(count) => {
-                write!(f, "invalid transaction native tokens count: {}", count)
+                write!(f, "invalid transaction native tokens count: {count}")
             }
-            Error::InvalidTreasuryOutputAmount(amount) => write!(f, "invalid treasury amount: {}", amount),
-            Error::InvalidUnlockCount(count) => write!(f, "invalid unlock count: {}", count),
-            Error::InvalidUnlockKind(k) => write!(f, "invalid unlock kind: {}", k),
+            Error::InvalidTreasuryOutputAmount(amount) => write!(f, "invalid treasury amount: {amount}"),
+            Error::InvalidUnlockCount(count) => write!(f, "invalid unlock count: {count}"),
+            Error::InvalidUnlockKind(k) => write!(f, "invalid unlock kind: {k}"),
             Error::InvalidUnlockReference(index) => {
-                write!(f, "invalid unlock reference: {0}", index)
+                write!(f, "invalid unlock reference: {index}")
             }
             Error::InvalidUnlockAlias(index) => {
-                write!(f, "invalid unlock alias: {0}", index)
+                write!(f, "invalid unlock alias: {index}")
             }
             Error::InvalidUnlockNft(index) => {
-                write!(f, "invalid unlock nft: {0}", index)
+                write!(f, "invalid unlock nft: {index}")
             }
-            Error::InvalidUnlockConditionCount(count) => write!(f, "invalid unlock condition count: {}", count),
-            Error::InvalidUnlockConditionKind(k) => write!(f, "invalid unlock condition kind: {}", k),
+            Error::InvalidUnlockConditionCount(count) => write!(f, "invalid unlock condition count: {count}"),
+            Error::InvalidUnlockConditionKind(k) => write!(f, "invalid unlock condition kind: {k}"),
             Error::MigratedFundsNotSorted => {
                 write!(f, "migrated funds are not sorted")
             }
             Error::MilestoneInvalidSignatureCount(count) => {
-                write!(f, "invalid milestone signature count: {}", count)
+                write!(f, "invalid milestone signature count: {count}")
             }
             Error::MilestonePublicKeysSignaturesCountMismatch { key_count, sig_count } => {
                 write!(
                     f,
-                    "milestone public keys and signatures count mismatch: {0} != {1}",
-                    key_count, sig_count
+                    "milestone public keys and signatures count mismatch: {key_count} != {sig_count}",
                 )
             }
             Error::MilestoneOptionsNotUniqueSorted => {
@@ -307,17 +305,13 @@ impl fmt::Display for Error {
                 write!(f, "remaining bytes after block")
             }
             Error::SelfControlledAliasOutput(alias_id) => {
-                write!(f, "self controlled alias output, alias ID {}", alias_id)
+                write!(f, "self controlled alias output, alias ID {alias_id}")
             }
             Error::SelfDepositNft(nft_id) => {
-                write!(f, "self deposit nft output, NFT ID {}", nft_id)
+                write!(f, "self deposit nft output, NFT ID {nft_id}")
             }
             Error::SignaturePublicKeyMismatch { expected, actual } => {
-                write!(
-                    f,
-                    "signature public key mismatch: expected {0} but got {1}",
-                    expected, actual
-                )
+                write!(f, "signature public key mismatch: expected {expected} but got {actual}",)
             }
             Error::StorageDepositReturnOverflow => {
                 write!(f, "storage deposit return overflow",)
@@ -325,8 +319,7 @@ impl fmt::Display for Error {
             Error::TailTransactionHashNotUnique { previous, current } => {
                 write!(
                     f,
-                    "tail transaction hash is not unique at indices: {0} and {1}",
-                    previous, current
+                    "tail transaction hash is not unique at indices: {previous} and {current}",
                 )
             }
             Error::TimelockUnlockConditionZero => {
@@ -336,10 +329,10 @@ impl fmt::Display for Error {
                 )
             }
             Error::UnallowedFeature { index, kind } => {
-                write!(f, "unallowed feature at index {} with kind {}", index, kind)
+                write!(f, "unallowed feature at index {index} with kind {kind}")
             }
             Error::UnallowedUnlockCondition { index, kind } => {
-                write!(f, "unallowed unlock condition at index {} with kind {}", index, kind)
+                write!(f, "unallowed unlock condition at index {index} with kind {kind}")
             }
             Error::UnlockConditionsNotUniqueSorted => write!(f, "unlock conditions are not unique and/or sorted"),
             Error::UnsupportedOutputKind(k) => write!(f, "unsupported output kind: {k}"),

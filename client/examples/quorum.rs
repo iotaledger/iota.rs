@@ -47,7 +47,7 @@ async fn main() -> Result<()> {
             QueryParameter::HasStorageDepositReturn(false),
         ])
         .await?;
-    println!("Address outputs: {:?}", output_ids);
+    println!("Address outputs: {output_ids:?}");
 
     Ok(())
 }

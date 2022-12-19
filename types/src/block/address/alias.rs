@@ -57,7 +57,7 @@ impl core::fmt::Display for AliasAddress {
 
 impl core::fmt::Debug for AliasAddress {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
-        write!(f, "AliasAddress({})", self)
+        write!(f, "AliasAddress({self})")
     }
 }
 

@@ -1,36 +1,18 @@
----
-description: Get started with the official IOTA Client Java library.
-image: /img/logo/iota_mark_light.png
-keywords:
-
-- Java
-- jar
-- Maven
-- Gradle
-
----
 # IOTA Client Java Library
 
-Get started with the official IOTA Client Java Library.
+Get started with the official IOTA Client Java library.
 
 ## Requirements
 
-Minimum Java version: Java 8
+minimum Java version >= 8
 
 ## Use in your Android project (Android Studio)
 
-1. Add following dependency to your `build.gradle` file:
-```
-implementation 'org.iota:iota-client:1.0.0-rc.1'
-```
-
-2. Download the `iota-client-1.0.0-rc.1-android-jni.zip` file from the GitHub release and unzip it.
-3. Add the `jniLibs` folder with its contents to your Android Studio project as shown below:
+1. Download the `iota-client-1.0.0-rc.1.jar` file from the [GitHub release](https://github.com/iotaledger/iota.rs/releases/tag/iota-client-java-1.0.0-rc.1) and add it as a library to your project.
+2. Download the `iota-client-1.0.0-rc.1-android.zip` file from the [GitHub release](https://github.com/iotaledger/iota.rs/releases/tag/iota-client-java-1.0.0-rc.1), unzip it and add the `jniLibs` folder with its contents to your Android Studio project as shown below:
 
 ```
 project/
-├──libs/
-|  └── *.jar <-- if your library has jar files, they go here
 ├──src/
    └── main/
        ├── AndroidManifest.xml
@@ -42,7 +24,10 @@ project/
            ├── armeabi-v7a/         <-- ARM 32bit
            │   └── libiota-client.so
            │   └── libc++_shared.so
-           └── x86/                 <-- Intel 32bit
+           │── x86/                 <-- Intel 32bit
+           │  └── libiota-client.so
+           │  └── libc++_shared.so
+           └── x86_64/              <-- Intel 64bit
               └── libiota-client.so
               └── libc++_shared.so
 ```
@@ -71,9 +56,9 @@ implementation 'org.iota:iota-client:1.0.0-rc.1:aarch64-apple-darwin'
 implementation 'org.iota:iota-client:1.0.0-rc.1:osx-x86_64'
 ```
 
-## Try the library
+## Use the Library
 
-In order to try with the library, create a `Client` instance:
+In order to use the library, you need to create a `Client` instance as illustrated below:
 
 ```java
 import org.iota.Client;
@@ -102,5 +87,113 @@ public class HelloWorld {
 ## What's Next?
 
 Now that you are up and running, you can get acquainted with the library using
-its [how-to guides](../../../documentation/docs/how_tos/00_run_how_tos.mdx) and the
+its [how-to guides](https://wiki.iota.org/shimmer/iota.rs/how_tos/run_how_tos/) and the
 repository's [code examples](https://github.com/iotaledger/iota.rs/tree/develop/client/bindings/java/examples/src).
+
+## Instead, build everything from scratch yourself:
+
+If you don't like to use the provided libraries and instead want to build everything yourself from scratch:
+
+### Build for Android:
+
+Requirements:
+
+- minimum Java version >= 8
+- Android Studio with NDK
+- latest stable version of Rust
+- cargo-ndk (https://github.com/bbqsrc/cargo-ndk)
+
+1. Generate the JAR:
+```
+git clone https://github.com/iotaledger/iota.rs
+cd iota.rs/client/bindings/java
+./gradlew jarWithoutNativeLibs
+```
+
+2. You will find the built JAR in the `lib/build/libs` directory. Add it as a library to your Android project.
+
+3. Install the Android targets you want to support:
+```
+ rustup target add aarch64-linux-android armv7-linux-androideabi x86_64-linux-android i686-linux-android
+```
+
+4. Build the native library for your Android targets:
+```
+cd lib/native
+cargo ndk -t arm64-v8a -t armeabi-v7a -t x86 -t x86_64 -o ./jniLibs build --release
+```
+
+5. On success, you will find the built native libraries in the `jniLibs/` directory like:
+```
+── jniLibs/ 
+    ├── arm64-v8a/           <-- ARM 64bit
+    │   └── libiota-client.so
+    ├── armeabi-v7a/         <-- ARM 32bit
+    │   └── libiota-client.so
+    │── x86/                 <-- Intel 32bit
+    │  └── libiota-client.so
+    └── x86_64/              <-- Intel 64bit
+        └── libiota-client.so
+```
+
+6. Each folder is missing its `libc++_shared.so`. You can find them in the configured Android NDK folder like:
+```
+find $ANDROID_NDK_HOME -name "libc++_shared.so"
+```
+
+7. Copy the found `libc++_shared.so` files to their respective folder inside the `jniLibs` directory:
+```
+── jniLibs/ 
+    ├── arm64-v8a/           <-- ARM 64bit
+    │   └── libiota-client.so
+    │   └── libc++_shared.so
+    ├── armeabi-v7a/         <-- ARM 32bit
+    │   └── libiota-client.so
+    │   └── libc++_shared.so
+    │── x86/                 <-- Intel 32bit
+    │  └── libiota-client.so
+    │  └── libc++_shared.so
+    └── x86_64/              <-- Intel 64bit
+        └── libiota-client.so
+        └── libc++_shared.so
+```
+
+8. Add the `jniLibs` folder with its contents to your Android Studio project as shown below:
+```
+project/
+├──src/
+   └── main/
+       ├── AndroidManifest.xml
+       ├── java/
+       └── jniLibs/ 
+           ├── arm64-v8a/           <-- ARM 64bit
+           │   └── libiota-client.so
+           │   └── libc++_shared.so
+           ├── armeabi-v7a/         <-- ARM 32bit
+           │   └── libiota-client.so
+           │   └── libc++_shared.so
+           │── x86/                 <-- Intel 32bit
+           │  └── libiota-client.so
+           │  └── libc++_shared.so
+           └── x86_64/              <-- Intel 64bit
+              └── libiota-client.so
+              └── libc++_shared.so
+```
+
+### Build for Linux, macOS, Windows
+
+Please note, following instructions build the library for your host OS/architecture only.
+
+Requirements:
+
+- minimum Java version >= 8
+- latest stable version of Rust
+
+1. Generate the JAR:
+```
+git clone https://github.com/iotaledger/iota.rs
+cd iota.rs/client/bindings/java
+./gradlew jar
+```
+
+2. You will find the built JAR in the `lib/build/libs` directory. Add it as a library to your Java project.

@@ -230,17 +230,16 @@ pub mod dto {
                 {
                     Ed25519Address::KIND => {
                         AddressDto::Ed25519(Ed25519AddressDto::deserialize(value).map_err(|e| {
-                            serde::de::Error::custom(format!("cannot deserialize ed25519 address: {}", e))
+                            serde::de::Error::custom(format!("cannot deserialize ed25519 address: {e}"))
                         })?)
                     }
-                    AliasAddress::KIND => {
-                        AddressDto::Alias(AliasAddressDto::deserialize(value).map_err(|e| {
-                            serde::de::Error::custom(format!("cannot deserialize alias address: {}", e))
-                        })?)
-                    }
+                    AliasAddress::KIND => AddressDto::Alias(
+                        AliasAddressDto::deserialize(value)
+                            .map_err(|e| serde::de::Error::custom(format!("cannot deserialize alias address: {e}")))?,
+                    ),
                     NftAddress::KIND => AddressDto::Nft(
                         NftAddressDto::deserialize(value)
-                            .map_err(|e| serde::de::Error::custom(format!("cannot deserialize NFT address: {}", e)))?,
+                            .map_err(|e| serde::de::Error::custom(format!("cannot deserialize NFT address: {e}")))?,
                     ),
                     _ => return Err(serde::de::Error::custom("invalid address type")),
                 },

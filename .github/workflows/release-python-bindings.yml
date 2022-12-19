@@ -1,0 +1,116 @@
+name: Create Python Release
+
+on: workflow_dispatch
+
+jobs:
+  build-wheels:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          architecture: x64
+
+      - name: Get current date
+        run: echo "CURRENT_DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+        if: matrix.os == 'macos-latest' || matrix.os == 'ubuntu-latest'
+
+      - name: Get current date
+        if: matrix.os == 'windows-2019'
+        run: echo "CURRENT_DATE=$(Get-Date -Format "yyyy-MM-dd")" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Cache cargo registry
+        uses: actions/cache@v3
+        with:
+          path: ~/.cargo/registry
+          # Add date to the cache to keep it up to date
+          key: ${{ matrix.os }}-stable-cargo-registry-${{ hashFiles('**/Cargo.lock') }}-${{ env.CURRENT_DATE }}
+          # Restore from outdated cache for speed
+          restore-keys: |
+            ${{ matrix.os }}-stable-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+            ${{ matrix.os }}-stable-cargo-registry-
+
+      - name: Cache cargo index
+        uses: actions/cache@v3
+        with:
+          path: ~/.cargo/git
+          # Add date to the cache to keep it up to date
+          key: ${{ matrix.os }}-stable-cargo-index-${{ hashFiles('**/Cargo.lock') }}-${{ env.CURRENT_DATE }}
+          # Restore from outdated cache for speed
+          restore-keys: |
+            ${{ matrix.os }}-stable-cargo-index-${{ hashFiles('**/Cargo.lock') }}
+            ${{ matrix.os }}-stable-cargo-index-
+
+      - name: Install required packages (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install libudev-dev libusb-1.0-0-dev
+
+      - name: Build wheels
+        if: matrix.os == 'macos-latest' || matrix.os == 'windows-latest'
+        uses: PyO3/maturin-action@v1
+        with:
+          args: --release --out dist -m client/bindings/python/Cargo.toml
+
+      # Build without container on linux
+      - name: Build wheels
+        if: matrix.os == 'ubuntu-latest'
+        uses: PyO3/maturin-action@v1
+        with:
+          manylinux: auto
+          container: off
+          args: --release --out dist -m client/bindings/python/Cargo.toml -i python
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@v3
+        with:
+          name: wheels
+          path: dist
+
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    needs: [ build-wheels ]
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: wheels
+          path: wheels
+
+      - run: ls -R
+
+      - name: Get tag name
+        shell: bash
+        id: tagname
+        run: |
+          cd wheels
+          tagName="iota-client-python$(ls | grep -m 1 win_amd64.whl | rev | cut -c 26-34 | rev)"
+          echo "TAG_NAME=$tagName" >> $GITHUB_OUTPUT
+
+      - name: Upload Wheels to Github
+        uses: softprops/action-gh-release@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          files: wheels/*
+          tag_name: ${{ steps.tagname.outputs.TAG_NAME }}
+          append_body: true
+          prerelease: true
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Publish to PyPI
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+        run: |
+          pip install --upgrade twine
+          twine upload --skip-existing wheels/*

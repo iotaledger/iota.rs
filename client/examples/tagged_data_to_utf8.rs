@@ -15,7 +15,7 @@ async fn main() -> Result<()> {
 
     let (tag_utf8, data_utf8) = Client::tagged_data_to_utf8(&TaggedDataPayload::new(tag, data)?)?;
 
-    println!("tag: {}\ndata: {}", tag_utf8, data_utf8);
+    println!("tag: {tag_utf8}\ndata: {data_utf8}");
 
     Ok(())
 }

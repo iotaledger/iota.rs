@@ -67,7 +67,7 @@ fn write_signed_transaction_to_file<P: AsRef<Path>>(
     let json = serde_json::to_string_pretty(&dto)?;
     let mut file = BufWriter::new(File::create(path).unwrap());
 
-    println!("{}", json);
+    println!("{json}");
 
     file.write_all(json.as_bytes()).unwrap();
 

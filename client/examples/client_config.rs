@@ -34,7 +34,7 @@ async fn main() -> Result<()> {
         .finish()?;
 
     let info = client.get_info().await?;
-    println!("Node Info: {:?}", info);
+    println!("Node Info: {info:?}");
 
     Ok(())
 }
