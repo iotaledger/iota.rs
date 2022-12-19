@@ -19,6 +19,12 @@ pub struct PowScorer {
     curl: CurlP,
 }
 
+impl Default for PowScorer {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl PowScorer {
     /// Creates an new `PowScorer` that holds the required hash functions as internal state.
     pub fn new() -> Self {
@@ -60,23 +66,6 @@ impl PowScorer {
     }
 }
 
-/// Returns the Proof of Work hash of given bytes.
-/// Panic: expects at least 8 bytes.
-#[deprecated(note = "Use `PowScorer::hash` instead.")]
-pub fn pow_hash(bytes: &[u8]) -> TritBuf<T1B1Buf> {
-    PowScorer::new().hash(bytes)
-}
-
-/// Computes the Proof of Work score of given bytes.
-/// Panic: expects at least 8 bytes.
-#[deprecated(note = "Use `PowScorer::score` instead.")]
-pub fn compute_pow_score(bytes: &[u8]) -> f64 {
-    debug_assert!(bytes.len() >= std::mem::size_of::<u8>());
-
-    #[allow(deprecated)]
-    pow_score_for_hash(&pow_hash(bytes), bytes.len())
-}
-
 /// Returns the number of trailing zeros of a Proof of Work hash.
 pub fn count_trailing_zeros(pow_hash: &Trits<T1B1>) -> usize {
     pow_hash.iter().rev().take_while(|t| *t == Btrit::Zero).count()
@@ -85,10 +74,4 @@ pub fn count_trailing_zeros(pow_hash: &Trits<T1B1>) -> usize {
 /// Returns the Proof of Work score of a Proof of Work hash.
 pub fn pow_score_for_hash(pow_hash: &Trits<T1B1>, len: usize) -> f64 {
     3u128.pow(count_trailing_zeros(pow_hash) as u32) as f64 / len as f64
-}
-
-impl Default for PowScorer {
-    fn default() -> Self {
-        Self::new()
-    }
 }
