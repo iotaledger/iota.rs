@@ -33,7 +33,7 @@ impl FromStr for Ed25519Address {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(Ed25519Address::new(prefix_hex::decode(s).map_err(Error::HexError)?))
+        Ok(Ed25519Address::new(prefix_hex::decode(s).map_err(Error::Hex)?))
     }
 }
 

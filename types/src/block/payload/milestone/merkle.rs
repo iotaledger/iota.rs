@@ -48,7 +48,7 @@ impl core::str::FromStr for MerkleRoot {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(Self::from(
-            prefix_hex::decode::<[u8; Self::LENGTH]>(s).map_err(Error::HexError)?,
+            prefix_hex::decode::<[u8; Self::LENGTH]>(s).map_err(Error::Hex)?,
         ))
     }
 }
