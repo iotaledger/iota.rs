@@ -102,26 +102,6 @@ impl Client {
         ClientBuilder::new()
     }
 
-    // / Gets the miner to use based on the Pow setting
-    // pub fn get_pow_provider(&self) -> Miner {
-    //     // todo: is this needed in the miner?
-    //     let local_pow: bool = self.get_local_pow();
-    //     #[cfg(target_family = "wasm")]
-    //     let miner = crate::api::wasm_miner::SingleThreadedMiner::builder()
-    //         .local_pow(local_pow)
-    //         .finish();
-    //     #[cfg(not(target_family = "wasm"))]
-    //     let miner = {
-    //         let mut miner = MinerBuilder::new();
-    //         if let Some(worker_count) = self.pow_worker_count {
-    //             miner = miner.with_num_workers(worker_count)
-    //         }
-    //         miner.finish()
-    //     };
-
-    //     miner
-    // }
-
     /// Gets the network related information such as network_id and min_pow_score
     /// and if it's the default one, sync it first and set the NetworkInfo.
     pub async fn get_network_info(&self) -> Result<NetworkInfo> {
