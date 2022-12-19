@@ -1,7 +1,7 @@
 // Copyright 2020-2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use iota_pow::{miner::MinerBuilder, score::PoWScorer};
+use iota_pow::{miner::MinerBuilder, score::PowScorer};
 use iota_types::block::{
     parent::Parents,
     payload::{Payload, TaggedDataPayload},
@@ -35,7 +35,7 @@ fn pow_provider() {
         .unwrap();
 
     let block_bytes = block.pack_to_vec();
-    let score = PoWScorer::new().score(&block_bytes);
+    let score = PowScorer::new().score(&block_bytes);
 
     assert!(score >= min_pow_score as f64);
 }
@@ -66,19 +66,17 @@ fn invalid_payload_kind() {
 
 #[test]
 fn unpack_valid_no_remaining_bytes() {
-    assert!(
-        Block::unpack_strict(
-            vec![
-                2, 2, 140, 28, 186, 52, 147, 145, 96, 9, 105, 89, 78, 139, 3, 71, 249, 97, 149, 190, 63, 238, 168, 202,
-                82, 140, 227, 66, 173, 19, 110, 93, 117, 34, 225, 202, 251, 10, 156, 58, 144, 225, 54, 79, 62, 38, 20,
-                121, 95, 90, 112, 109, 6, 166, 126, 145, 13, 62, 52, 68, 248, 135, 223, 119, 137, 13, 0, 0, 0, 0, 21,
-                205, 91, 7, 0, 0, 0, 0,
-            ]
-            .as_slice(),
-            &protocol_parameters()
-        )
-        .is_ok()
+    assert!(Block::unpack_strict(
+        vec![
+            2, 2, 140, 28, 186, 52, 147, 145, 96, 9, 105, 89, 78, 139, 3, 71, 249, 97, 149, 190, 63, 238, 168, 202, 82,
+            140, 227, 66, 173, 19, 110, 93, 117, 34, 225, 202, 251, 10, 156, 58, 144, 225, 54, 79, 62, 38, 20, 121, 95,
+            90, 112, 109, 6, 166, 126, 145, 13, 62, 52, 68, 248, 135, 223, 119, 137, 13, 0, 0, 0, 0, 21, 205, 91, 7, 0,
+            0, 0, 0,
+        ]
+        .as_slice(),
+        &protocol_parameters()
     )
+    .is_ok())
 }
 
 #[test]

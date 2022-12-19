@@ -1,7 +1,7 @@
 // Copyright 2020-2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use iota_pow::score::PoWScorer;
+use iota_pow::score::PowScorer;
 
 // Tests are from:
 // https://github.com/iotaledger/tips/blob/main/tips/TIP-0012/tip-0012.md#example
@@ -9,7 +9,7 @@ use iota_pow::score::PoWScorer;
 
 #[test]
 fn score() {
-    let mut pow = PoWScorer::new();
+    let mut pow = PowScorer::new();
 
     let block: [u8; 21] = [
         0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x2c, 0x20, 0x57, 0x6f, 0x72, 0x6c, 0x64, 0x21, 0x5e, 0xe6, 0xaa, 0xaa, 0xaa,

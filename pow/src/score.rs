@@ -13,14 +13,14 @@ use crypto::{
 };
 
 /// Encapsulates the different steps that are used for scoring Proof of Work.
-pub struct PoWScorer {
+pub struct PowScorer {
     blake2b: Blake2b256,
     pow_input: TritBuf<T1B1Buf>,
     curl: CurlP,
 }
 
-impl PoWScorer {
-    /// Creates an new `PoWScorer` that holds the required hash functions as internal state.
+impl PowScorer {
+    /// Creates an new `PowScorer` that holds the required hash functions as internal state.
     pub fn new() -> Self {
         Self {
             blake2b: Blake2b256::new(),
@@ -62,14 +62,14 @@ impl PoWScorer {
 
 /// Returns the Proof of Work hash of given bytes.
 /// Panic: expects at least 8 bytes.
-#[deprecated(note = "Use `PoWScorer::hash` instead.")]
+#[deprecated(note = "Use `PowScorer::hash` instead.")]
 pub fn pow_hash(bytes: &[u8]) -> TritBuf<T1B1Buf> {
-    PoWScorer::new().hash(bytes)
+    PowScorer::new().hash(bytes)
 }
 
 /// Computes the Proof of Work score of given bytes.
 /// Panic: expects at least 8 bytes.
-#[deprecated(note = "Use `PoWScorer::score` instead.")]
+#[deprecated(note = "Use `PowScorer::score` instead.")]
 pub fn compute_pow_score(bytes: &[u8]) -> f64 {
     debug_assert!(bytes.len() >= std::mem::size_of::<u8>());
 
@@ -87,7 +87,7 @@ pub fn pow_score_for_hash(pow_hash: &Trits<T1B1>, len: usize) -> f64 {
     3u128.pow(count_trailing_zeros(pow_hash) as u32) as f64 / len as f64
 }
 
-impl Default for PoWScorer {
+impl Default for PowScorer {
     fn default() -> Self {
         Self::new()
     }

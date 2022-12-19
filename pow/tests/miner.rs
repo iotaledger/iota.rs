@@ -3,7 +3,7 @@
 
 use iota_pow::{
     miner::{MinerBuilder, MinerCancel},
-    score::PoWScorer,
+    score::PowScorer,
 };
 use iota_types::block::rand::bytes::rand_bytes;
 
@@ -15,7 +15,7 @@ fn miner_provide() {
     let nonce = miner.nonce(&bytes[0..248], 4000).unwrap();
     bytes[248..].copy_from_slice(&nonce.to_le_bytes());
 
-    assert!(PoWScorer::new().score(&bytes) >= 4000f64);
+    assert!(PowScorer::new().score(&bytes) >= 4000f64);
 }
 
 #[test]
