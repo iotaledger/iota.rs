@@ -1,7 +1,7 @@
 // Copyright 2020-2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! Contains a nonce provider that mine nonces.
+//! Multi-threaded PoW miner.
 
 use std::{
     sync::{
@@ -27,7 +27,7 @@ use crate::{Error, LN_3};
 
 const DEFAULT_NUM_WORKERS: usize = 1;
 
-/// A type to cancel the `Miner` nonce provider to abort operations.
+/// A type to cancel a [`Miner`] to abort operations.
 #[derive(Default, Clone)]
 pub struct MinerCancel(Arc<AtomicBool>);
 
@@ -37,7 +37,7 @@ impl MinerCancel {
         Self::default()
     }
 
-    /// Cancels the `Miner` nonce provider.
+    /// Cancels the [`Miner`].
     pub fn trigger(&self) {
         self.0.store(true, Ordering::Relaxed);
     }
@@ -53,7 +53,7 @@ impl MinerCancel {
     }
 }
 
-/// Builder for the `Miner` nonce provider.
+/// Builder for a [`Miner`].
 #[derive(Default)]
 #[must_use]
 pub struct MinerBuilder {
@@ -67,13 +67,13 @@ impl MinerBuilder {
         Self { ..Default::default() }
     }
 
-    /// Sets the desired number of workers for the `Miner` nonce provider.
+    /// Sets the desired number of workers for the [`Miner`].
     pub fn with_num_workers(mut self, num_workers: usize) -> Self {
         self.num_workers.replace(num_workers);
         self
     }
 
-    /// Sets a `MinerCancel to abort the `Miner` nonce provider.
+    /// Sets a `MinerCancel to abort the [`Miner`].
     pub fn with_cancel(mut self, cancel: MinerCancel) -> Self {
         self.cancel.replace(cancel);
         self
@@ -88,7 +88,7 @@ impl MinerBuilder {
     }
 }
 
-/// A nonce provider that mine nonces.
+/// A nonce miner
 pub struct Miner {
     num_workers: usize,
     cancel: MinerCancel,

@@ -1,7 +1,7 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! Single-threaded PoW miner
+//! Single-threaded PoW miner.
 
 use crypto::{
     encoding::ternary::{b1t6, Btrit, T1B1Buf, TritBuf},
