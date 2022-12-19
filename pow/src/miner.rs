@@ -172,3 +172,20 @@ impl Miner {
         Ok(nonce)
     }
 }
+
+fn _get_miner(bytes: &[u8], min_pow_score: u32, num_workers: usize) -> Result<u64, Error> {
+    MinerBuilder::new()
+        .with_num_workers(num_workers)
+        .finish()
+        .nonce(bytes, min_pow_score)
+}
+
+/// Returns a closure for a miner with `num_cpus` workers.
+pub fn get_miner(min_pow_score: u32) -> impl Fn(&[u8]) -> Result<u64, Error> {
+    move |bytes| _get_miner(bytes, min_pow_score, num_cpus::get())
+}
+
+/// Returns a closure for a miner with `num_workers` workers.
+pub fn get_miner_num_workers(min_pow_score: u32, num_workers: usize) -> impl Fn(&[u8]) -> Result<u64, Error> {
+    move |bytes| _get_miner(bytes, min_pow_score, num_workers)
+}

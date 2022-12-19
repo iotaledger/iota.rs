@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `SingleThreadedMinerBuilder` and `SingleThreadedMiner` for `target_family = "wasm"`;
+- `get_miner` and `get_miner_num_workers` functions;
 
 ### Changed
 

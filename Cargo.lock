@@ -1273,6 +1273,7 @@ dependencies = [
  "instant",
  "iota-crypto",
  "iota-types",
+ "num_cpus",
  "thiserror",
 ]
 
