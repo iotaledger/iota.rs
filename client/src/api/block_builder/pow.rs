@@ -6,7 +6,7 @@
 #[cfg(not(target_family = "wasm"))]
 use iota_pow::miner::{Miner, MinerBuilder, MinerCancel};
 #[cfg(target_family = "wasm")]
-use iota_pow::providers::wasm_miner::{SingleThreadedMiner, SingleThreadedMinerBuilder};
+use iota_pow::wasm_miner::{SingleThreadedMiner, SingleThreadedMinerBuilder};
 use iota_types::block::{parent::Parents, payload::Payload, Block, BlockBuilder};
 
 use crate::{Client, Error, Result};
