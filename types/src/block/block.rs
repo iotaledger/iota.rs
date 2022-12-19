@@ -4,7 +4,7 @@
 use core::ops::Deref;
 
 use crypto::hashes::{blake2b::Blake2b256, Digest};
-use iota_pow::Error as PoWError;
+use iota_pow::Error as PowError;
 use packable::{
     error::{UnexpectedEOF, UnpackError, UnpackErrorExt},
     packer::Packer,
@@ -18,6 +18,7 @@ use crate::block::{
     protocol::ProtocolParameters,
     BlockId, Error, PROTOCOL_VERSION,
 };
+
 /// A builder to build a [`Block`].
 #[derive(Clone)]
 #[must_use]
@@ -64,7 +65,27 @@ impl BlockBuilder {
     }
 
     /// Finishes the [`BlockBuilder`] into a [`Block`].
-    pub fn finish_nonce_provider<F: Fn(&[u8]) -> Result<u64, PoWError>>(
+    pub fn finish(self) -> Result<Block, Error> {
+        verify_payload(self.payload.as_ref())?;
+
+        let block = Block {
+            protocol_version: self.protocol_version.unwrap_or(PROTOCOL_VERSION),
+            parents: self.parents,
+            payload: self.payload.into(),
+            nonce: self.nonce.unwrap_or(Self::DEFAULT_NONCE),
+        };
+
+        let block_bytes = block.pack_to_vec();
+
+        if block_bytes.len() > Block::LENGTH_MAX {
+            return Err(Error::InvalidBlockLength(block_bytes.len()));
+        }
+
+        Ok(block)
+    }
+
+    /// Finishes the [`BlockBuilder`] into a [`Block`].
+    pub fn finish_nonce_provider<F: Fn(&[u8]) -> Result<u64, PowError>>(
         self,
         nonce_provider: F,
     ) -> Result<Block, Error> {
@@ -84,26 +105,6 @@ impl BlockBuilder {
         }
 
         block.nonce = nonce_provider(&block_bytes[..block_bytes.len() - core::mem::size_of::<u64>()])?;
-
-        Ok(block)
-    }
-
-    /// Finishes the [`BlockBuilder`] into a [`Block`].
-    pub fn finish(self) -> Result<Block, Error> {
-        verify_payload(self.payload.as_ref())?;
-
-        let block = Block {
-            protocol_version: self.protocol_version.unwrap_or(PROTOCOL_VERSION),
-            parents: self.parents,
-            payload: self.payload.into(),
-            nonce: self.nonce.unwrap_or(Self::DEFAULT_NONCE),
-        };
-
-        let block_bytes = block.pack_to_vec();
-
-        if block_bytes.len() > Block::LENGTH_MAX {
-            return Err(Error::InvalidBlockLength(block_bytes.len()));
-        }
 
         Ok(block)
     }
