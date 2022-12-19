@@ -112,14 +112,14 @@ pub struct Answer {
 pub struct EventStatus {
     milestone_index: u32,
     status: String,
-    questions: Option<Vec<Answers>>,
+    questions: Option<Vec<QuestionStatus>>,
     checksum: String,
 }
 
-/// Answers.
+/// Question status.
 #[derive(Debug, Clone, Serialize, Deserialize, Getters)]
 #[getset(get = "pub")]
-pub struct Answers {
+pub struct QuestionStatus {
     answers: Vec<AnswerStatus>,
 }
 
