@@ -8,7 +8,7 @@ use iota_pow::score::PowScorer;
 // https://github.com/Wollac/iota-crypto-demo/blob/master/pkg/pow/pow_test.go#L26
 
 #[test]
-fn score() {
+fn pow_score() {
     let mut pow = PowScorer::new();
 
     let block: [u8; 21] = [
