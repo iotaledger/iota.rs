@@ -27,7 +27,7 @@ fn default_finish_zero_nonce() {
 fn pow_provider() {
     let min_pow_score = protocol_parameters().min_pow_score();
     let block = BlockBuilder::new(rand_parents())
-        .finish_nonce_provider(|bytes| {
+        .finish_nonce(|bytes| {
             let miner = MinerBuilder::new().with_num_workers(num_cpus::get()).finish();
 
             miner.nonce(bytes, min_pow_score)

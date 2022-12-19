@@ -64,8 +64,7 @@ impl BlockBuilder {
         self
     }
 
-    /// Finishes the [`BlockBuilder`] into a [`Block`].
-    pub fn finish(self) -> Result<Block, Error> {
+    fn _finish(self) -> Result<(Block, Vec<u8>), Error> {
         verify_payload(self.payload.as_ref())?;
 
         let block = Block {
@@ -81,28 +80,17 @@ impl BlockBuilder {
             return Err(Error::InvalidBlockLength(block_bytes.len()));
         }
 
-        Ok(block)
+        Ok((block, block_bytes))
     }
 
     /// Finishes the [`BlockBuilder`] into a [`Block`].
-    pub fn finish_nonce_provider<F: Fn(&[u8]) -> Result<u64, PowError>>(
-        self,
-        nonce_provider: F,
-    ) -> Result<Block, Error> {
-        verify_payload(self.payload.as_ref())?;
+    pub fn finish(self) -> Result<Block, Error> {
+        self._finish().map(|res| res.0)
+    }
 
-        let mut block = Block {
-            protocol_version: self.protocol_version.unwrap_or(PROTOCOL_VERSION),
-            parents: self.parents,
-            payload: self.payload.into(),
-            nonce: self.nonce.unwrap_or(Self::DEFAULT_NONCE),
-        };
-
-        let block_bytes = block.pack_to_vec();
-
-        if block_bytes.len() > Block::LENGTH_MAX {
-            return Err(Error::InvalidBlockLength(block_bytes.len()));
-        }
+    /// Finishes the [`BlockBuilder`] into a [`Block`], computing the nonce with a given provider.
+    pub fn finish_nonce<F: Fn(&[u8]) -> Result<u64, PowError>>(self, nonce_provider: F) -> Result<Block, Error> {
+        let (mut block, block_bytes) = self._finish()?;
 
         block.nonce = nonce_provider(&block_bytes[..block_bytes.len() - core::mem::size_of::<u64>()])?;
 

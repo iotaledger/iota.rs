@@ -28,7 +28,7 @@ async fn main() -> Result<()> {
     // Get parents for the block.
     let parents = Parents::new(client.get_tips().await?)?;
     // Create the block.
-    let block = Block::build(parents).finish_nonce_provider(|bytes| {
+    let block = Block::build(parents).finish_nonce(|bytes| {
         let miner = MinerBuilder::new().with_num_workers(num_cpus::get()).finish();
 
         miner.nonce(bytes, min_pow_score)

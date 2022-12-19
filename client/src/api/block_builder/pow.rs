@@ -54,7 +54,7 @@ pub fn do_pow(
         block = block.with_payload(p);
     }
     block
-        .finish_nonce_provider(|bytes| miner.nonce(bytes, min_pow_score))
+        .finish_nonce(|bytes| miner.nonce(bytes, min_pow_score))
         .map_err(Error::BlockError)
 }
 
