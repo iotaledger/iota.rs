@@ -31,7 +31,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Abort the sync nodes task through its handle instead of a oneshot channel;
-- Update network info also from unhealty nodes if ignore_node_health is set to true;
+- Update network info also from unhealthy nodes if ignore_node_health is set to true;
+- Renamed participation `Answers` to `QuestionStatus`;
 
 ### Removed
 
