@@ -7,7 +7,7 @@
 
 use iota_client::{
     block::{parent::Parents, Block},
-    pow::providers::miner::MinerBuilder,
+    pow::miner::MinerBuilder,
     Client, Result,
 };
 

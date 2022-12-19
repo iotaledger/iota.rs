@@ -23,7 +23,7 @@ use crypto::{
     },
 };
 
-use super::{Error, LN_3};
+use crate::{Error, LN_3};
 
 const DEFAULT_NUM_WORKERS: usize = 1;
 

@@ -1,7 +1,7 @@
 // Copyright 2020-2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use iota_pow::{providers::miner::MinerBuilder, score::PoWScorer};
+use iota_pow::{miner::MinerBuilder, score::PoWScorer};
 use iota_types::block::{
     parent::Parents,
     payload::{Payload, TaggedDataPayload},

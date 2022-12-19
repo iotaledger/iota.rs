@@ -5,7 +5,7 @@ use alloc::string::{FromUtf8Error, String};
 use core::{convert::Infallible, fmt};
 
 use crypto::Error as CryptoError;
-use iota_pow::providers::Error as PowError;
+use iota_pow::Error as PowError;
 use prefix_hex::Error as HexError;
 use primitive_types::U256;
 

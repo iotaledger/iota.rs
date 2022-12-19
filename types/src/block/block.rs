@@ -4,7 +4,7 @@
 use core::ops::Deref;
 
 use crypto::hashes::{blake2b::Blake2b256, Digest};
-use iota_pow::providers::Error as PoWError;
+use iota_pow::Error as PoWError;
 use packable::{
     error::{UnexpectedEOF, UnpackError, UnpackErrorExt},
     packer::Packer,

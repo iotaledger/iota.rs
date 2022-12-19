@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use iota_pow::{
-    providers::miner::{MinerBuilder, MinerCancel},
+    miner::{MinerBuilder, MinerCancel},
     score::PoWScorer,
 };
 use iota_types::block::rand::bytes::rand_bytes;

@@ -7,5 +7,14 @@
 #![cfg_attr(doc_cfg, feature(doc_cfg))]
 #![warn(missing_docs)]
 
-pub mod providers;
+mod error;
+pub mod miner;
 pub mod score;
+#[cfg(target_family = "wasm")]
+pub mod wasm_miner;
+
+pub use error::Error;
+
+// Precomputed natural logarithm of 3 for performance reasons.
+// See https://oeis.org/A002391.
+const LN_3: f64 = 1.098_612_288_668_109;
