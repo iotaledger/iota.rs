@@ -1,7 +1,7 @@
 // Copyright 2020-2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! Contains traits and implementations to provide and score Proof of Work.
+//! Provides proof of work implementations and scoring for the IOTA protocol.
 //! TIP <https://github.com/iotaledger/tips/blob/main/tips/TIP-0012/tip-0012.md>.
 
 #![cfg_attr(doc_cfg, feature(doc_cfg))]
