@@ -20,8 +20,8 @@ impl Client {
 
         let query = if let Some(event_type) = event_type {
             let query_string = match event_type {
-                ParticipationEventType::Voting => "0",
-                ParticipationEventType::Staking => "1",
+                ParticipationEventType::Voting => "type=0",
+                ParticipationEventType::Staking => "type=1",
             };
             Some(query_string)
         } else {

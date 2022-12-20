@@ -5,6 +5,7 @@ use alloc::string::{FromUtf8Error, String};
 use core::{convert::Infallible, fmt};
 
 use crypto::Error as CryptoError;
+use iota_pow::Error as PowError;
 use prefix_hex::Error as HexError;
 use primitive_types::U256;
 
@@ -31,7 +32,7 @@ pub enum Error {
     ConsumedNativeTokensAmountOverflow,
     CreatedAmountOverflow,
     CreatedNativeTokensAmountOverflow,
-    CryptoError(CryptoError),
+    Crypto(CryptoError),
     DuplicateSignatureUnlock(u16),
     DuplicateUtxo(UtxoInput),
     ExpirationUnlockConditionZero,
@@ -51,7 +52,7 @@ pub enum Error {
     InvalidFeatureCount(<FeatureCount as TryFrom<usize>>::Error),
     InvalidFeatureKind(u8),
     InvalidFoundryOutputSupply { minted: U256, melted: U256, max: U256 },
-    HexError(HexError),
+    Hex(HexError),
     InvalidInputKind(u8),
     InvalidInputCount(<InputCount as TryFrom<usize>>::Error),
     InvalidInputOutputIndex(<OutputIndex as TryFrom<u16>>::Error),
@@ -110,6 +111,7 @@ pub enum Error {
     NonZeroStateIndexOrFoundryCounter,
     ParentsNotUniqueSorted,
     ProtocolVersionMismatch { expected: u8, actual: u8 },
+    Pow(PowError),
     ReceiptFundsNotUniqueSorted,
     RemainingBytesAfterBlock,
     SelfControlledAliasOutput(AliasId),
@@ -135,7 +137,7 @@ impl fmt::Display for Error {
             Error::ConsumedNativeTokensAmountOverflow => write!(f, "consumed native tokens amount overflow"),
             Error::CreatedAmountOverflow => write!(f, "created amount overflow"),
             Error::CreatedNativeTokensAmountOverflow => write!(f, "created native tokens amount overflow"),
-            Error::CryptoError(e) => write!(f, "cryptographic error: {e}"),
+            Error::Crypto(e) => write!(f, "cryptographic error: {e}"),
             Error::DuplicateSignatureUnlock(index) => {
                 write!(f, "duplicate signature unlock at index: {index}")
             }
@@ -190,7 +192,7 @@ impl fmt::Display for Error {
                 f,
                 "invalid foundry output supply: minted {minted}, melted {melted} max {max}",
             ),
-            Error::HexError(error) => write!(f, "hex error: {error}"),
+            Error::Hex(error) => write!(f, "hex error: {error}"),
             Error::InvalidInputKind(k) => write!(f, "invalid input kind: {k}"),
             Error::InvalidInputCount(count) => write!(f, "invalid input count: {count}"),
             Error::InvalidInputOutputIndex(index) => write!(f, "invalid input or output index: {index}"),
@@ -293,6 +295,9 @@ impl fmt::Display for Error {
             Error::ProtocolVersionMismatch { expected, actual } => {
                 write!(f, "protocol version mismatch: expected {expected} but got {actual}")
             }
+            Error::Pow(e) => {
+                write!(f, "proof of work error: {e}")
+            }
             Error::ReceiptFundsNotUniqueSorted => {
                 write!(f, "receipt funds are not unique and/or sorted")
             }
@@ -337,13 +342,19 @@ impl fmt::Display for Error {
 
 impl From<CryptoError> for Error {
     fn from(error: CryptoError) -> Self {
-        Error::CryptoError(error)
+        Error::Crypto(error)
     }
 }
 
 impl From<Infallible> for Error {
-    fn from(err: Infallible) -> Self {
-        match err {}
+    fn from(error: Infallible) -> Self {
+        match error {}
+    }
+}
+
+impl From<PowError> for Error {
+    fn from(error: PowError) -> Self {
+        Error::Pow(error)
     }
 }
 

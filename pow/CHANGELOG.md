@@ -19,6 +19,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security -->
 
+## 1.0.0-rc.2 - 202X-XX-XX
+
+### Added
+
+- `SingleThreadedMinerBuilder` and `SingleThreadedMiner` for `target_family = "wasm"`;
+- `get_miner` and `get_miner_num_workers` functions;
+- `MinerBuilder::new` method;
+
+### Changed
+
+- `MinerBuilder` and `Miner` don't implement `NonceProvider` and `NonceProviderBuilder` traits anymore;
+- Renamed `PoWScorer` to `PowScorer`;
+
+### Removed
+
+- `providers` module;
+- `NonceProvider` and `NonceProviderBuilder` traits;
+- Deprecated `pow_hash` and `compute_pow_score`;
+
 ## 1.0.0-rc.1 - 2022-10-25
 
 First release based on `bee-pow`.

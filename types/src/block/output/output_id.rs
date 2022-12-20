@@ -87,7 +87,7 @@ impl FromStr for OutputId {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let bytes: [u8; OutputId::LENGTH] = prefix_hex::decode(s).map_err(Error::HexError)?;
+        let bytes: [u8; OutputId::LENGTH] = prefix_hex::decode(s).map_err(Error::Hex)?;
         Self::try_from(bytes)
     }
 }

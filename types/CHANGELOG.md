@@ -25,6 +25,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `Output::{as_treasury, as_basic, as_alias, as_foundry, as_nft}` methods;
 - `Address::{as_ed25519, as_alias, as_nft}` methods;
+- `Error::Pow` variant;
+- `BlockBuilder::{with_nonce, finish_nonce}` methods;
+
+### Changed
+
+- Renamed `Error::CryptoError` to `Error::Crypto`;
+- Renamed `Error::HexError` to `Error::Hex`;
+
+### Removed
+
+- `BlockBuilder::with_nonce_provider` method;
 
 ## 1.0.0-rc.3 - 2022-11-22
 
