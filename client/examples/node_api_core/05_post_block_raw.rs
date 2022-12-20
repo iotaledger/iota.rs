@@ -5,11 +5,7 @@
 //! Submits a block as raw bytes.
 //! Run: `cargo run --example node_api_core_post_block_raw --release -- [NODE URL]`.
 
-use iota_client::{
-    block::{parent::Parents, Block},
-    pow::miner::get_miner,
-    Client, Result,
-};
+use iota_client::{Client, Result};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -23,12 +19,8 @@ async fn main() -> Result<()> {
     // Create a client with that node.
     let client = Client::builder().with_node(&node_url)?.finish()?;
 
-    let min_pow_score = client.get_min_pow_score().await?;
-
-    // Get parents for the block.
-    let parents = Parents::new(client.get_tips().await?)?;
     // Create the block.
-    let block = Block::build(parents).finish_nonce(get_miner(min_pow_score))?;
+    let block = client.block().finish().await?;
     // Post the block as raw bytes.
     let block_id = client.post_block_raw(&block).await?;
 
