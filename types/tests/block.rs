@@ -1,7 +1,7 @@
 // Copyright 2020-2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use iota_pow::{miner::MinerBuilder, score::PowScorer};
+use iota_pow::{miner::get_miner, score::PowScorer};
 use iota_types::block::{
     parent::Parents,
     payload::{Payload, TaggedDataPayload},
@@ -27,11 +27,7 @@ fn default_finish_zero_nonce() {
 fn pow_provider() {
     let min_pow_score = protocol_parameters().min_pow_score();
     let block = BlockBuilder::new(rand_parents())
-        .finish_nonce(|bytes| {
-            let miner = MinerBuilder::new().with_num_workers(num_cpus::get()).finish();
-
-            miner.nonce(bytes, min_pow_score)
-        })
+        .finish_nonce(get_miner(min_pow_score))
         .unwrap();
 
     let block_bytes = block.pack_to_vec();
