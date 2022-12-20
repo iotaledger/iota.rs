@@ -1,7 +1,7 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! PoW functions
+//! PoW functions.
 
 #[cfg(not(target_family = "wasm"))]
 use iota_pow::miner::{Miner, MinerBuilder, MinerCancel};
@@ -12,20 +12,23 @@ use iota_types::block::{parent::Parents, payload::Payload, Block, BlockBuilder};
 use crate::{Client, Error, Result};
 
 impl Client {
-    /// Finishes the block with local PoW if needed. Without local PoW, it will finish the block with a 0 nonce.
+    /// Finishes the block with local PoW if needed.
+    /// Without local PoW, it will finish the block with a 0 nonce.
     pub async fn finish_block_builder(&self, parents: Option<Parents>, payload: Option<Payload>) -> Result<Block> {
         if self.get_local_pow() {
             self.finish_pow(parents, payload).await
         } else {
-            // Finish block without doing PoW
+            // Finish block without doing PoW.
             let parents = match parents {
                 Some(parents) => parents,
                 None => Parents::new(self.get_tips().await?)?,
             };
             let mut block_builder = BlockBuilder::new(parents);
+
             if let Some(p) = payload {
                 block_builder = block_builder.with_payload(p);
             }
+
             Ok(block_builder.finish()?)
         }
     }
@@ -48,6 +51,7 @@ impl Client {
         let pow_worker_count = self.pow_worker_count;
         let min_pow_score = self.get_min_pow_score().await?;
         let tips_interval = self.get_tips_interval();
+
         loop {
             let cancel = MinerCancel::new();
             let cancel_2 = cancel.clone();
@@ -67,6 +71,7 @@ impl Client {
             });
 
             let threads = vec![pow_thread, time_thread];
+
             for t in threads {
                 match t.join().expect("failed to join threads.") {
                     Ok(res) => {
@@ -93,6 +98,7 @@ impl Client {
         let min_pow_score: u32 = self.get_min_pow_score().await?;
         let tips_interval: u64 = self.get_tips_interval();
         let local_pow: bool = self.get_local_pow();
+
         loop {
             let parents = match &parents {
                 Some(parents) => parents.clone(),
@@ -104,8 +110,8 @@ impl Client {
                 .finish();
             let block: Block = do_pow(single_threaded_miner, min_pow_score, payload.clone(), parents)?;
 
-            // The nonce defaults to 0 on errors (from the tips interval elapsing),
-            // we need to re-run proof-of-work with new parents.
+            // The nonce defaults to 0 on errors (from the tips interval elapsing), we need to re-run proof-of-work with
+            // new parents.
             if block.nonce() != 0 || min_pow_score == 0 || local_pow {
                 return Ok(block);
             }
@@ -114,7 +120,7 @@ impl Client {
 }
 
 /// Performs proof-of-work to construct a [`Block`].
-pub fn do_pow(
+fn do_pow(
     #[cfg(not(target_family = "wasm"))] miner: Miner,
     #[cfg(target_family = "wasm")] miner: SingleThreadedMiner,
     min_pow_score: u32,
@@ -122,9 +128,11 @@ pub fn do_pow(
     parents: Parents,
 ) -> Result<Block> {
     let mut block = BlockBuilder::new(parents);
+
     if let Some(p) = payload {
         block = block.with_payload(p);
     }
+
     block
         .finish_nonce(|bytes| miner.nonce(bytes, min_pow_score))
         .map_err(Error::BlockError)
