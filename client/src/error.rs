@@ -3,6 +3,7 @@
 
 //! Error handling in iota-client crate.
 
+use std::convert::Infallible;
 use std::fmt::{Debug, Display};
 
 use iota_types::block::{output::NativeTokens, semantic::ConflictReason};
@@ -319,4 +320,10 @@ where
     S: Serializer,
 {
     value.to_string().serialize(serializer)
+}
+
+impl From<Infallible> for Error {
+    fn from(error: Infallible) -> Self {
+        match error {}
+    }
 }

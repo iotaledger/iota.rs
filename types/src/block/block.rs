@@ -207,7 +207,7 @@ impl Packable for Block {
         }
 
         let parents = Parents::unpack::<_, VERIFY>(unpacker, &())?;
-        let payload = OptionalPayload::unpack::<_, VERIFY>(unpacker, visitor)?;
+        let payload   = OptionalPayload::unpack::<_, VERIFY>(unpacker, visitor)?;
 
         if VERIFY {
             verify_payload(payload.deref().as_ref()).map_err(UnpackError::Packable)?;

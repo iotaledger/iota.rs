@@ -2,9 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use std::{convert::TryInto, io::Read};
+use std::convert::Infallible;
+use packable::{Packable, PackableExt};
+use packable::error::UnpackError;
 
-use packable::PackableExt;
+use packable::packer::Packer;
+use packable::unpacker::Unpacker;
 use serde::{Deserialize, Serialize};
+use crate::Error;
 
 use crate::node_api::participation::types::EventId;
 
@@ -18,12 +23,55 @@ pub struct Participation {
     pub answers: Vec<u8>,
 }
 
+impl Packable for Participation {
+    type UnpackError =  Error;
+    type UnpackVisitor = ();
+
+    fn pack<P: Packer>(&self, packer: &mut P) -> Result<(), P::Error> {
+        self.event_id.pack(packer)?;
+        for byte in &self.answers {
+            byte.pack(packer)?;
+        }
+
+        Ok(())
+    }
+
+    fn unpack<U: Unpacker, const VERIFY: bool>(unpacker: &mut U, visitor: &Self::UnpackVisitor) -> Result<Self, UnpackError<Self::UnpackError, U::Error>> {
+        let event_id = EventId::unpack::<_, VERIFY>(unpacker, visitor)?;
+        let answers = Vec::<u8>::unpack::<_, VERIFY>(unpacker, visitor)?;
+
+        Ok(Self {
+            event_id,
+            answers,
+        })
+    }
+}
+
 /// Participations information.
 /// https://github.com/iota-community/treasury/blob/main/specifications/hornet-participation-plugin.md#structure-of-the-participation
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 pub struct Participations {
     /// Multiple participations that happen at the same time.
     pub participations: Vec<Participation>,
+}
+
+impl Packable for Participations {
+    type UnpackError = Error;
+    type UnpackVisitor = ();
+
+    fn pack<P: Packer>(&self, packer: &mut P) -> Result<(), P::Error> {
+        self.participations.pack(packer)?;
+
+        Ok(())
+    }
+
+    fn unpack<U: Unpacker, const VERIFY: bool>(unpacker: &mut U, visitor: &Self::UnpackVisitor) -> Result<Self, UnpackError<Self::UnpackError, U::Error>> {
+        let participations = Vec::<Participation>::unpack::<_, VERIFY>(unpacker, visitor)?;
+
+        Ok(Self {
+            participations,
+        })
+    }
 }
 
 impl Participations {
@@ -104,9 +152,33 @@ impl Participations {
 #[cfg(test)]
 mod tests {
     use std::str::FromStr;
+    use packable::PackableExt;
 
     use super::{Participation, Participations};
     use crate::node_api::participation::types::EventId;
+
+    #[test]
+    fn serialize_deserialize_packable() {
+        let participations = Participations {
+            participations: vec![
+                Participation {
+                    event_id: EventId::from_str("0x09c2338f3acd51e626cc074d1abcb12d747076ddfccd5215d8f2f21af1aac111")
+                        .unwrap(),
+                    answers: vec![0, 1],
+                },
+                Participation {
+                    event_id: EventId::from_str("0x0207c34ae298b90d85455eee718037ad84a46bd784cbe5fdd8c534cc955efa1f")
+                        .unwrap(),
+                    answers: vec![],
+                },
+            ],
+        };
+        let participation_bytes = participations.pack_to_vec();
+        let mut slice: &[u8] = &participation_bytes;
+        let deserialized_participations: Participations = Participations::unpack_verified(&mut slice).unwrap();
+
+        assert_eq!(participations, deserialized_participations);
+    }
 
     #[test]
     fn serialize_deserialize() {
