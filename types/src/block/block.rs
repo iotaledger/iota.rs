@@ -4,7 +4,7 @@
 use core::ops::Deref;
 
 use crypto::hashes::{blake2b::Blake2b256, Digest};
-use iota_pow::providers::{miner::Miner, NonceProvider, NonceProviderBuilder};
+use iota_pow::Error as PowError;
 use packable::{
     error::{UnexpectedEOF, UnpackError, UnpackErrorExt},
     packer::Packer,
@@ -22,14 +22,14 @@ use crate::block::{
 /// A builder to build a [`Block`].
 #[derive(Clone)]
 #[must_use]
-pub struct BlockBuilder<P: NonceProvider = Miner> {
+pub struct BlockBuilder {
     protocol_version: Option<u8>,
     parents: Parents,
     payload: Option<Payload>,
-    nonce_provider: Option<P>,
+    nonce: Option<u64>,
 }
 
-impl<P: NonceProvider> BlockBuilder<P> {
+impl BlockBuilder {
     const DEFAULT_NONCE: u64 = 0;
 
     /// Creates a new [`BlockBuilder`].
@@ -39,7 +39,7 @@ impl<P: NonceProvider> BlockBuilder<P> {
             protocol_version: None,
             parents,
             payload: None,
-            nonce_provider: None,
+            nonce: None,
         }
     }
 
@@ -57,22 +57,21 @@ impl<P: NonceProvider> BlockBuilder<P> {
         self
     }
 
-    /// Adds a nonce provider to a [`BlockBuilder`].
+    /// Adds a nonce to a [`BlockBuilder`].
     #[inline(always)]
-    pub fn with_nonce_provider(mut self, nonce_provider: P) -> Self {
-        self.nonce_provider = Some(nonce_provider);
+    pub fn with_nonce(mut self, nonce: u64) -> Self {
+        self.nonce = Some(nonce);
         self
     }
 
-    /// Finishes the [`BlockBuilder`] into a [`Block`].
-    pub fn finish(self, min_pow_score: u32) -> Result<Block, Error> {
+    fn _finish(self) -> Result<(Block, Vec<u8>), Error> {
         verify_payload(self.payload.as_ref())?;
 
-        let mut block = Block {
+        let block = Block {
             protocol_version: self.protocol_version.unwrap_or(PROTOCOL_VERSION),
             parents: self.parents,
             payload: self.payload.into(),
-            nonce: 0,
+            nonce: self.nonce.unwrap_or(Self::DEFAULT_NONCE),
         };
 
         let block_bytes = block.pack_to_vec();
@@ -81,40 +80,19 @@ impl<P: NonceProvider> BlockBuilder<P> {
             return Err(Error::InvalidBlockLength(block_bytes.len()));
         }
 
-        let nonce_provider = self.nonce_provider.unwrap_or_else(|| P::Builder::new().finish());
-
-        block.nonce = nonce_provider
-            .nonce(
-                &block_bytes[..block_bytes.len() - core::mem::size_of::<u64>()],
-                min_pow_score,
-            )
-            .unwrap_or(Self::DEFAULT_NONCE);
-
-        Ok(block)
+        Ok((block, block_bytes))
     }
 
-    // TODO: temporary until we decide if we do PoW in finish or not.
-    fn _finish(self) -> Result<Block, Error> {
-        verify_payload(self.payload.as_ref())?;
+    /// Finishes the [`BlockBuilder`] into a [`Block`].
+    pub fn finish(self) -> Result<Block, Error> {
+        self._finish().map(|res| res.0)
+    }
 
-        let mut block = Block {
-            protocol_version: self.protocol_version.unwrap_or(PROTOCOL_VERSION),
-            parents: self.parents,
-            payload: self.payload.into(),
-            nonce: 0,
-        };
+    /// Finishes the [`BlockBuilder`] into a [`Block`], computing the nonce with a given provider.
+    pub fn finish_nonce<F: Fn(&[u8]) -> Result<u64, PowError>>(self, nonce_provider: F) -> Result<Block, Error> {
+        let (mut block, block_bytes) = self._finish()?;
 
-        let block_bytes = block.pack_to_vec();
-
-        if block_bytes.len() > Block::LENGTH_MAX {
-            return Err(Error::InvalidBlockLength(block_bytes.len()));
-        }
-
-        let nonce_provider = self.nonce_provider.unwrap_or_else(|| P::Builder::new().finish());
-
-        block.nonce = nonce_provider
-            .nonce(&block_bytes[..block_bytes.len() - core::mem::size_of::<u64>()], 0)
-            .unwrap_or(Self::DEFAULT_NONCE);
+        block.nonce = nonce_provider(&block_bytes[..block_bytes.len() - core::mem::size_of::<u64>()])?;
 
         Ok(block)
     }
@@ -307,7 +285,7 @@ pub mod dto {
     }
 
     impl Block {
-        fn _try_from_dto(value: &BlockDto) -> Result<BlockBuilder<u64>, DtoError> {
+        fn _try_from_dto(value: &BlockDto) -> Result<BlockBuilder, DtoError> {
             let parents = Parents::new(
                 value
                     .parents
@@ -318,7 +296,7 @@ pub mod dto {
 
             let builder = BlockBuilder::new(parents)
                 .with_protocol_version(value.protocol_version)
-                .with_nonce_provider(
+                .with_nonce(
                     value
                         .nonce
                         .parse::<u64>()
@@ -335,7 +313,7 @@ pub mod dto {
                 builder = builder.with_payload(Payload::try_from_dto(p, protocol_parameters)?);
             }
 
-            Ok(builder.finish(protocol_parameters.min_pow_score())?)
+            Ok(builder.finish()?)
         }
 
         pub fn try_from_dto_unverified(value: &BlockDto) -> Result<Block, DtoError> {
@@ -345,7 +323,7 @@ pub mod dto {
                 builder = builder.with_payload(Payload::try_from_dto_unverified(p)?);
             }
 
-            Ok(builder._finish()?)
+            Ok(builder.finish()?)
         }
     }
 }

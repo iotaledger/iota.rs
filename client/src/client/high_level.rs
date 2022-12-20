@@ -8,6 +8,7 @@ use iota_types::{
     block::{
         input::{Input, UtxoInput, INPUT_COUNT_MAX},
         output::{Output, OutputId},
+        parent::Parents,
         payload::{
             transaction::{TransactionEssence, TransactionId},
             Payload,
@@ -18,7 +19,7 @@ use iota_types::{
 
 use super::Client;
 use crate::{
-    api::{do_pow, ClientBlockBuilder, GetAddressesBuilder},
+    api::{ClientBlockBuilder, GetAddressesBuilder},
     constants::{
         DEFAULT_RETRY_UNTIL_INCLUDED_INTERVAL, DEFAULT_RETRY_UNTIL_INCLUDED_MAX_AMOUNT, FIVE_MINUTES_IN_SECONDS,
     },
@@ -291,7 +292,7 @@ impl Client {
     pub async fn reattach_unchecked(&self, block_id: &BlockId) -> Result<(BlockId, Block)> {
         // Get the Block object by the BlockID.
         let block = self.get_block(block_id).await?;
-        let reattach_block = crate::api::finish_pow(self, block.payload().cloned()).await?;
+        let reattach_block = self.finish_block_builder(None, block.payload().cloned()).await?;
 
         // Post the modified
         let block_id = self.post_block_raw(&reattach_block).await?;
@@ -319,11 +320,11 @@ impl Client {
     pub async fn promote_unchecked(&self, block_id: &BlockId) -> Result<(BlockId, Block)> {
         // Create a new block (zero value block) for which one tip would be the actual block.
         let mut tips = self.get_tips().await?;
-        let min_pow_score = self.get_min_pow_score().await?;
-        tips.push(*block_id);
+        if let Some(tip) = tips.first_mut() {
+            *tip = *block_id;
+        }
 
-        let miner = self.get_pow_provider();
-        let promote_block = do_pow(miner, min_pow_score, None, tips)?;
+        let promote_block = self.finish_block_builder(Some(Parents::new(tips)?), None).await?;
 
         let block_id = self.post_block_raw(&promote_block).await?;
         // Get block if we use remote Pow, because the node will change parents and nonce.

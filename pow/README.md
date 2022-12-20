@@ -1,3 +1,3 @@
 # iota-pow
 
-Provides Proof of Work utilities for the IOTA protocol.
+Provides proof of work implementations and scoring for the IOTA protocol

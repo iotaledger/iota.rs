@@ -2,27 +2,24 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use iota_pow::{
-    providers::{
-        miner::{MinerBuilder, MinerCancel},
-        NonceProvider, NonceProviderBuilder,
-    },
-    score::PoWScorer,
+    miner::{MinerBuilder, MinerCancel},
+    score::PowScorer,
 };
 use iota_types::block::rand::bytes::rand_bytes;
 
 #[test]
-fn miner_provide() {
+fn miner_nonce() {
     let miner = MinerBuilder::new().with_num_workers(4).finish();
     let mut bytes = rand_bytes(256);
 
     let nonce = miner.nonce(&bytes[0..248], 4000).unwrap();
     bytes[248..].copy_from_slice(&nonce.to_le_bytes());
 
-    assert!(PoWScorer::new().score(&bytes) >= 4000f64);
+    assert!(PowScorer::new().score(&bytes) >= 4000f64);
 }
 
 #[test]
-fn miner_abort() {
+fn miner_cancel() {
     let cancel = MinerCancel::new();
     let miner = MinerBuilder::new()
         .with_num_workers(4)
@@ -43,9 +40,7 @@ fn miner_abort() {
         151, 51, 66, 231, 13, 143, 27, 59, 116, 224, 123, 245, 213, 65, 183, 189, 125, 154, 145, 175, 46, 76, 103, 194,
         152, 222, 102, 50, 8, 233, 160, 125, 153, 64, 91, 100, 234, 113, 108, 220, 171, 192,
     ];
-
     let now = std::time::Instant::now();
-
     let handle = std::thread::spawn(move || miner.nonce(&bytes[0..248], 100000).unwrap());
 
     std::thread::sleep(std::time::Duration::from_secs(1));

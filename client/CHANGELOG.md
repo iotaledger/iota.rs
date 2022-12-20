@@ -27,17 +27,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `nft_id_to_bech32()` to utils;
 - `Response::Bech32Address()` to message interface;
 - `Message::{AliasIdToBech32(), NftIdToBech32()}` to message interface;
+- `Client::finish_block_builder()`;
 
 ### Changed
 
 - Abort the sync nodes task through its handle instead of a oneshot channel;
 - Update network info also from unhealthy nodes if ignore_node_health is set to true;
+- `finish_pow()` and `do_pow()` now accept optional parents and always do PoW, independent of the local PoW setting in Client;
+- `do_pow()` has been made private;
 - Renamed participation `Answers` to `QuestionStatus`;
 
 ### Removed
 
 - Sync nodes `select!`;
 - `Response::{HexToBech32(), AliasIdToBech32()}` from message interface;
+- `ClientMinerBuilder` and `ClientMiner`;
+- `Client::get_pow_provider` method;
 
 ## 2.0.1-rc.4 - 2022-11-22
 
