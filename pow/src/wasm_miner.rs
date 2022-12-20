@@ -4,7 +4,7 @@
 //! Single-threaded PoW miner.
 
 use crypto::{
-    encoding::ternary::{b1t6, Btrit, T1B1Buf, TritBuf},
+    encoding::ternary::{b1t6, T1B1Buf, TritBuf},
     hashes::{
         blake2b::Blake2b256,
         ternary::{
@@ -15,16 +15,11 @@ use crypto::{
     },
 };
 
-use super::{Error, LN_3};
+use crate::{score::count_trailing_zeros, Error, LN_3};
 
-// Should take around one second to reach on an average CPU,
-// so shouldn't cause a noticeable delay on timeout_in_seconds.
+// Should take around one second to reach on an average CPU, so shouldn't cause a noticeable delay on
+// `timeout_in_seconds`.
 const POW_ROUNDS_BEFORE_INTERVAL_CHECK: usize = 3000;
-
-/// Single-threaded proof-of-work for Wasm.
-pub struct SingleThreadedMiner {
-    timeout_in_seconds: Option<u64>,
-}
 
 /// Builder for [`SingleThreadedMiner`].
 #[derive(Default)]
@@ -34,7 +29,7 @@ pub struct SingleThreadedMinerBuilder {
 }
 
 impl SingleThreadedMinerBuilder {
-    /// Create a new `SingleThreadedMinerBuilder.
+    /// Creates a new `SingleThreadedMinerBuilder.
     pub fn new() -> Self {
         Self { ..Default::default() }
     }
@@ -46,30 +41,39 @@ impl SingleThreadedMinerBuilder {
         self
     }
 
-    /// Build the SingleThreadedMiner.
+    /// Builds the SingleThreadedMiner.
     pub fn finish(self) -> SingleThreadedMiner {
         SingleThreadedMiner {
-            timeout_in_seconds: self.timeout_in_seconds,
+            timeout_in_seconds: self
+                .timeout_in_seconds
+                .map(|timeout| instant::Duration::from_secs(timeout)),
         }
     }
 }
 
+/// Single-threaded proof-of-work for Wasm.
+pub struct SingleThreadedMiner {
+    timeout_in_seconds: Option<instant::Duration>,
+}
+
 impl SingleThreadedMiner {
-    /// Mine a nonce for provided bytes.
+    /// Mines a nonce for provided bytes.
     pub fn nonce(&self, bytes: &[u8], target_score: u32) -> Result<u64, Error> {
+        let mut nonce = 0;
         let mut pow_digest = TritBuf::<T1B1Buf>::new();
         let target_zeros =
             (((bytes.len() + std::mem::size_of::<u64>()) as f64 * target_score as f64).ln() / LN_3).ceil() as usize;
+
         if target_zeros > HASH_LENGTH {
             return Err(Error::InvalidPowScore(target_score, target_zeros));
         }
 
-        let hash = Blake2b256::digest(bytes);
-        b1t6::encode::<T1B1Buf>(&hash).iter().for_each(|t| pow_digest.push(t));
-
-        let mut nonce = 0;
         let mut hasher = CurlPBatchHasher::<T1B1Buf>::new(HASH_LENGTH);
         let mut buffers = Vec::<TritBuf<T1B1Buf>>::with_capacity(BATCH_SIZE);
+        let hash = Blake2b256::digest(bytes);
+
+        b1t6::encode::<T1B1Buf>(&hash).iter().for_each(|t| pow_digest.push(t));
+
         for _ in 0..BATCH_SIZE {
             let mut buffer = TritBuf::<T1B1Buf>::zeros(HASH_LENGTH);
             buffer[..pow_digest.len()].copy_from(&pow_digest);
@@ -79,12 +83,11 @@ impl SingleThreadedMiner {
         // Counter to reduce number of mining_start.elapsed() calls.
         let mut counter = 0;
         let mining_start = instant::Instant::now();
+
         loop {
-            if let Some(tips_interval) = self.timeout_in_seconds {
-                if counter % POW_ROUNDS_BEFORE_INTERVAL_CHECK == 0
-                    && mining_start.elapsed() > instant::Duration::from_secs(tips_interval)
-                {
-                    // Tips interval elapsed, cancel work and get new parents.
+            if let Some(timeout) = self.timeout_in_seconds {
+                if counter % POW_ROUNDS_BEFORE_INTERVAL_CHECK == 0 && mining_start.elapsed() > timeout {
+                    // Timeout elapsed, cancel work and get new parents.
                     break;
                 }
             }
@@ -94,12 +97,13 @@ impl SingleThreadedMiner {
                 buffer[pow_digest.len()..pow_digest.len() + nonce_trits.len()].copy_from(&nonce_trits);
                 hasher.add(buffer.clone());
             }
+
             for (i, hash) in hasher.hash().enumerate() {
-                let trailing_zeros = hash.iter().rev().take_while(|t| *t == Btrit::Zero).count();
-                if trailing_zeros >= target_zeros {
+                if count_trailing_zeros(&hash) >= target_zeros {
                     return Ok(nonce + i as u64);
                 }
             }
+
             nonce += BATCH_SIZE as u64;
             counter += 1;
         }

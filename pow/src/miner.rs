@@ -12,7 +12,7 @@ use std::{
 };
 
 use crypto::{
-    encoding::ternary::{b1t6, Btrit, T1B1Buf, TritBuf},
+    encoding::ternary::{b1t6, T1B1Buf, TritBuf},
     hashes::{
         blake2b::Blake2b256,
         ternary::{
@@ -23,7 +23,7 @@ use crypto::{
     },
 };
 
-use crate::{Error, LN_3};
+use crate::{score::count_trailing_zeros, Error, LN_3};
 
 const DEFAULT_NUM_WORKERS: usize = 1;
 
@@ -47,7 +47,7 @@ impl MinerCancel {
         self.0.load(Ordering::Relaxed)
     }
 
-    /// Reset the cancel flag.
+    /// Resets the cancel flag.
     fn reset(&self) {
         self.0.store(false, Ordering::Relaxed);
     }
@@ -62,7 +62,7 @@ pub struct MinerBuilder {
 }
 
 impl MinerBuilder {
-    /// Create a new [`MinerBuilder`].
+    /// Creates a new [`MinerBuilder`].
     pub fn new() -> Self {
         Self { ..Default::default() }
     }
@@ -79,7 +79,7 @@ impl MinerBuilder {
         self
     }
 
-    /// Build the [`Miner`].
+    /// Builds the [`Miner`].
     pub fn finish(self) -> Miner {
         Miner {
             num_workers: self.num_workers.unwrap_or(DEFAULT_NUM_WORKERS),
@@ -119,9 +119,7 @@ impl Miner {
             }
 
             for (i, hash) in hasher.hash().enumerate() {
-                let trailing_zeros = hash.iter().rev().take_while(|t| *t == Btrit::Zero).count();
-
-                if trailing_zeros >= target_zeros {
+                if count_trailing_zeros(&hash) >= target_zeros {
                     cancel.trigger();
                     return Ok(nonce + i as u64);
                 }
@@ -133,7 +131,7 @@ impl Miner {
         Err(Error::Cancelled)
     }
 
-    /// Mine a nonce for provided bytes.
+    /// Mines a nonce for provided bytes.
     pub fn nonce(&self, bytes: &[u8], target_score: u32) -> Result<u64, Error> {
         self.cancel.reset();
 
