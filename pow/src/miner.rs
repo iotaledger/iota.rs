@@ -32,7 +32,7 @@ const DEFAULT_NUM_WORKERS: usize = 1;
 pub struct MinerCancel(Arc<AtomicBool>);
 
 impl MinerCancel {
-    /// Creates a new `MinerCancel`.
+    /// Creates a new [`MinerCancel`].
     pub fn new() -> Self {
         Self::default()
     }
@@ -62,7 +62,7 @@ pub struct MinerBuilder {
 }
 
 impl MinerBuilder {
-    /// Create a new `MinerBuilder.
+    /// Create a new [`MinerBuilder`].
     pub fn new() -> Self {
         Self { ..Default::default() }
     }
@@ -88,7 +88,7 @@ impl MinerBuilder {
     }
 }
 
-/// A nonce miner
+/// A multi-threaded pow nonce miner.
 pub struct Miner {
     num_workers: usize,
     cancel: MinerCancel,
