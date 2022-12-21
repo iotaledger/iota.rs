@@ -31,7 +31,7 @@ pub struct TrackedParticipation {
     pub start_milestone_index: u32,
     /// Milestone index the participation ended. 0 if the participation is still active.
     pub end_milestone_index: u32,
-    /// IDs of the answers to the questions of a ballot.
+    /// IDs of the answers to the questions of a ballot, in the same order.
     pub answers: Vec<u8>,
 }
 
