@@ -23,15 +23,16 @@ pub struct EventsResponse {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TrackedParticipation {
-    /// Block_id is the ID of the block that included the transaction that created the output the participation was
-    /// made.
+    /// ID of the block that included the transaction that created the output the participation was made.
     pub block_id: BlockId,
-    /// Amount is the amount of tokens that were included in the output the participation was made.
+    /// Amount of tokens that were included in the output the participation was made.
     pub amount: u64,
-    /// StartMilestoneIndex is the milestone index the participation started.
+    /// Milestone index the participation started.
     pub start_milestone_index: u32,
-    /// EndMilestoneIndex is the milestone index the participation ended. 0 if the participation is still active.
+    /// Milestone index the participation ended. 0 if the participation is still active.
     pub end_milestone_index: u32,
+    /// IDs of the answers to the questions of a ballot.
+    pub answers: Vec<u8>,
 }
 
 /// OutputStatusResponse defines the response of a GET RouteOutputStatus REST API call.
