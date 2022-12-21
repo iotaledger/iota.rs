@@ -1,6 +1,6 @@
 [package]
 name = "iota-types"
-version = "1.0.0-rc.3"
+version = "1.0.0-rc.4"
 authors = [ "IOTA Stiftung" ]
 edition = "2021"
 description = "Common types required by nodes and clients APIs like blocks, responses and DTOs."
@@ -26,16 +26,16 @@ hashbrown = { version = "0.13.1", default-features = false, features = [ "ahash"
 hex = { version = "0.4.3", default-features = false, features = [ "alloc" ] }
 inx = { version = "1.0.0-beta.8", default-features = false, optional = true }
 iota-crypto = { version = "0.15.3", default-features = false, features = [ "ed25519", "blake2b", "ternary_encoding" ] }
-iota-pow = { version = "1.0.0-rc.1", path = "../pow", default-features = false }
+iota-pow = { version = "1.0.0-rc.2", path = "../pow", default-features = false }
 iterator-sorted = { version = "0.1.0", default-features = false }
 packable = { version = "0.7.0", default-features = false, features = [ "serde", "primitive-types" ] }
 prefix-hex = { version = "0.5.0", default-features = false, features = [ "primitive-types" ] }
 primitive-types = { version = "0.12.1", default-features = false, features = [ "serde" ] }
 rand = { version = "0.8.5", default-features = false, features = [ "min_const_gen", "std_rng" ], optional = true }
-serde = { version = "1.0.149", default-features = false, features = [ "derive" ], optional = true }
+serde = { version = "1.0.151", default-features = false, features = [ "derive" ], optional = true }
 serde-big-array = { version = "0.4.1", default-features = false, optional = true }
-serde_json = { version = "1.0.89", default-features = false, features = [ "alloc" ], optional = true }
-thiserror = { version = "1.0.37", default-features = false }
+serde_json = { version = "1.0.91", default-features = false, features = [ "alloc" ], optional = true }
+thiserror = { version = "1.0.38", default-features = false }
 
 [dev-dependencies]
 num_cpus = { version = "1.14.0", default-features = false }
