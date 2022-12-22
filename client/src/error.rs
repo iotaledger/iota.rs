@@ -8,6 +8,7 @@ use std::fmt::{Debug, Display};
 
 use iota_types::block::{output::NativeTokens, semantic::ConflictReason};
 use packable::error::UnexpectedEOF;
+use packable::prefix::UnpackPrefixError;
 use serde::{ser::Serializer, Serialize};
 
 use crate::node_api::indexer::QueryParameter;
@@ -325,5 +326,17 @@ where
 impl From<Infallible> for Error {
     fn from(error: Infallible) -> Self {
         match error {}
+    }
+}
+
+impl From<UnpackPrefixError<Infallible, Infallible>> for Error {
+    fn from(error: UnpackPrefixError<Infallible, Infallible>) -> Self {
+        unimplemented!()
+    }
+}
+
+impl From<UnpackPrefixError<Error, Infallible>> for Error {
+    fn from(_: UnpackPrefixError<Error, Infallible>) -> Self {
+        unimplemented!()
     }
 }

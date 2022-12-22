@@ -2,11 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use std::{convert::TryInto, io::Read};
+use std::collections::VecDeque;
 use std::convert::Infallible;
 use packable::{Packable, PackableExt};
-use packable::error::UnpackError;
+use packable::error::{UnpackError, UnpackErrorExt};
 
 use packable::packer::Packer;
+use packable::prefix::{UnpackPrefixError, VecPrefix};
 use packable::unpacker::Unpacker;
 use serde::{Deserialize, Serialize};
 use crate::Error;
@@ -29,16 +31,18 @@ impl Packable for Participation {
 
     fn pack<P: Packer>(&self, packer: &mut P) -> Result<(), P::Error> {
         self.event_id.pack(packer)?;
-        for byte in &self.answers {
-            byte.pack(packer)?;
-        }
+
+        let vec_prefix: VecPrefix<u8, u8> = VecPrefix::try_from(self.answers.clone()).unwrap();
+        vec_prefix.pack(packer)?;
 
         Ok(())
     }
 
     fn unpack<U: Unpacker, const VERIFY: bool>(unpacker: &mut U, visitor: &Self::UnpackVisitor) -> Result<Self, UnpackError<Self::UnpackError, U::Error>> {
-        let event_id = EventId::unpack::<_, VERIFY>(unpacker, visitor)?;
-        let answers = Vec::<u8>::unpack::<_, VERIFY>(unpacker, visitor)?;
+        let event_id = EventId::unpack::<_, VERIFY>(unpacker, visitor).coerce()?;
+
+        let vec_prefix: VecPrefix<u8, u8> = VecPrefix::<u8, u8>::unpack::<_, VERIFY>(unpacker, visitor).coerce()?;
+        let answers = vec_prefix.to_vec();
 
         Ok(Self {
             event_id,
@@ -60,13 +64,15 @@ impl Packable for Participations {
     type UnpackVisitor = ();
 
     fn pack<P: Packer>(&self, packer: &mut P) -> Result<(), P::Error> {
-        self.participations.pack(packer)?;
+        let vec_prefix: VecPrefix<Participation, u8> = VecPrefix::try_from(self.participations.clone()).unwrap();
+        vec_prefix.pack(packer)?;
 
         Ok(())
     }
 
     fn unpack<U: Unpacker, const VERIFY: bool>(unpacker: &mut U, visitor: &Self::UnpackVisitor) -> Result<Self, UnpackError<Self::UnpackError, U::Error>> {
-        let participations = Vec::<Participation>::unpack::<_, VERIFY>(unpacker, visitor)?;
+        let vec_prefix: VecPrefix<Participation, u8> = VecPrefix::<Participation, u8>::unpack::<_, VERIFY>(unpacker, visitor).coerce()?;
+        let participations = vec_prefix.to_vec();
 
         Ok(Self {
             participations,
@@ -92,61 +98,6 @@ impl Participations {
     pub fn remove(&mut self, event_id: &EventId) {
         self.participations.retain(|p| &p.event_id != event_id);
     }
-
-    /// Serialize to bytes.
-    pub fn to_bytes(&self) -> crate::Result<Vec<u8>> {
-        let mut bytes: Vec<u8> = vec![
-            self.participations
-                .len()
-                .try_into()
-                .map_err(|_| crate::Error::InvalidParticipations)?,
-        ];
-
-        for participation in &self.participations {
-            let event_id: Vec<u8> = participation.event_id.pack_to_vec();
-            bytes.extend(event_id);
-            bytes.push(
-                participation
-                    .answers
-                    .len()
-                    .try_into()
-                    .map_err(|_| crate::Error::InvalidParticipations)?,
-            );
-            for answer in &participation.answers {
-                bytes.push(*answer);
-            }
-        }
-        Ok(bytes)
-    }
-
-    /// Deserialize from bytes.
-    pub fn from_bytes<R: Read + ?Sized>(bytes: &mut R) -> crate::Result<Participations> {
-        let mut participations = Vec::new();
-        let mut participations_len = [0u8; 1];
-        bytes.read_exact(&mut participations_len)?;
-
-        for _ in 0..participations_len[0] {
-            let mut event_id: [u8; 32] = [0u8; 32];
-            bytes.read_exact(&mut event_id)?;
-
-            let mut answers_len = [0u8; 1];
-            bytes.read_exact(&mut answers_len)?;
-
-            let mut answers = Vec::new();
-            for _ in 0..answers_len[0] {
-                let mut answer = [0u8; 1];
-                bytes.read_exact(&mut answer)?;
-                answers.push(answer[0]);
-            }
-
-            participations.push(Participation {
-                event_id: EventId::new(event_id),
-                answers,
-            });
-        }
-
-        Ok(Participations { participations })
-    }
 }
 
 #[cfg(test)]
@@ -156,6 +107,11 @@ mod tests {
 
     use super::{Participation, Participations};
     use crate::node_api::participation::types::EventId;
+
+    #[test]
+    fn testx() {
+        assert_eq!(true,false)
+    }
 
     #[test]
     fn serialize_deserialize_packable() {
@@ -173,16 +129,8 @@ mod tests {
                 },
             ],
         };
-        let participation_bytes = participations.pack_to_vec();
-        let mut slice: &[u8] = &participation_bytes;
-        let deserialized_participations: Participations = Participations::unpack_verified(&mut slice).unwrap();
 
-        assert_eq!(participations, deserialized_participations);
-    }
-
-    #[test]
-    fn serialize_deserialize() {
-        let participations = Participations {
+        let participations2 = Participations {
             participations: vec![
                 Participation {
                     event_id: EventId::from_str("0x09c2338f3acd51e626cc074d1abcb12d747076ddfccd5215d8f2f21af1aac111")
@@ -196,9 +144,10 @@ mod tests {
                 },
             ],
         };
-        let participation_bytes = participations.to_bytes().unwrap();
+
+        let participation_bytes = participations2.pack_to_vec();
         let mut slice: &[u8] = &participation_bytes;
-        let deserialized_participations: Participations = Participations::from_bytes(&mut slice).unwrap();
+        let deserialized_participations: Participations = Participations::unpack_verified(&mut slice, &()).unwrap();
 
         assert_eq!(participations, deserialized_participations);
     }
