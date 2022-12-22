@@ -1,14 +1,11 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use std::{convert::TryInto, io::Read};
-use std::collections::VecDeque;
-use std::convert::Infallible;
-use packable::{Packable, PackableExt};
+use packable::Packable;
 use packable::error::{UnpackError, UnpackErrorExt};
 
 use packable::packer::Packer;
-use packable::prefix::{UnpackPrefixError, VecPrefix};
+use packable::prefix::{ VecPrefix};
 use packable::unpacker::Unpacker;
 use serde::{Deserialize, Serialize};
 use crate::Error;
@@ -31,7 +28,6 @@ impl Packable for Participation {
 
     fn pack<P: Packer>(&self, packer: &mut P) -> Result<(), P::Error> {
         self.event_id.pack(packer)?;
-
         let vec_prefix: VecPrefix<u8, u8> = VecPrefix::try_from(self.answers.clone()).unwrap();
         vec_prefix.pack(packer)?;
 
@@ -40,13 +36,11 @@ impl Packable for Participation {
 
     fn unpack<U: Unpacker, const VERIFY: bool>(unpacker: &mut U, visitor: &Self::UnpackVisitor) -> Result<Self, UnpackError<Self::UnpackError, U::Error>> {
         let event_id = EventId::unpack::<_, VERIFY>(unpacker, visitor).coerce()?;
-
         let vec_prefix: VecPrefix<u8, u8> = VecPrefix::<u8, u8>::unpack::<_, VERIFY>(unpacker, visitor).coerce()?;
-        let answers = vec_prefix.to_vec();
 
         Ok(Self {
             event_id,
-            answers,
+            answers: vec_prefix.to_vec(),
         })
     }
 }
@@ -72,10 +66,9 @@ impl Packable for Participations {
 
     fn unpack<U: Unpacker, const VERIFY: bool>(unpacker: &mut U, visitor: &Self::UnpackVisitor) -> Result<Self, UnpackError<Self::UnpackError, U::Error>> {
         let vec_prefix: VecPrefix<Participation, u8> = VecPrefix::<Participation, u8>::unpack::<_, VERIFY>(unpacker, visitor).coerce()?;
-        let participations = vec_prefix.to_vec();
 
         Ok(Self {
-            participations,
+            participations: vec_prefix.to_vec(),
         })
     }
 }
@@ -130,22 +123,7 @@ mod tests {
             ],
         };
 
-        let participations2 = Participations {
-            participations: vec![
-                Participation {
-                    event_id: EventId::from_str("0x09c2338f3acd51e626cc074d1abcb12d747076ddfccd5215d8f2f21af1aac111")
-                        .unwrap(),
-                    answers: vec![0, 1],
-                },
-                Participation {
-                    event_id: EventId::from_str("0x0207c34ae298b90d85455eee718037ad84a46bd784cbe5fdd8c534cc955efa1f")
-                        .unwrap(),
-                    answers: vec![],
-                },
-            ],
-        };
-
-        let participation_bytes = participations2.pack_to_vec();
+        let participation_bytes = participations.pack_to_vec();
         let mut slice: &[u8] = &participation_bytes;
         let deserialized_participations: Participations = Participations::unpack_verified(&mut slice, &()).unwrap();
 

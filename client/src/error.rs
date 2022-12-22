@@ -11,6 +11,7 @@ use packable::error::UnexpectedEOF;
 use packable::prefix::UnpackPrefixError;
 use serde::{ser::Serializer, Serialize};
 
+
 use crate::node_api::indexer::QueryParameter;
 
 /// Type alias of `Result` in iota-client
@@ -196,6 +197,8 @@ pub enum Error {
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
     UnpackError(#[from] packable::error::UnpackError<iota_types::block::Error, UnexpectedEOF>),
+    #[error("{0}")]
+    UnpackVecPrefixError(String),
     /// URL auth error
     #[error("can't set {0} to URL")]
     UrlAuthError(&'static str),
@@ -331,12 +334,12 @@ impl From<Infallible> for Error {
 
 impl From<UnpackPrefixError<Infallible, Infallible>> for Error {
     fn from(error: UnpackPrefixError<Infallible, Infallible>) -> Self {
-        unimplemented!()
+        Error::UnpackVecPrefixError(error.to_string())
     }
 }
 
 impl From<UnpackPrefixError<Error, Infallible>> for Error {
-    fn from(_: UnpackPrefixError<Error, Infallible>) -> Self {
-        unimplemented!()
+    fn from(error: UnpackPrefixError<Error, Infallible>) -> Self {
+        Error::UnpackVecPrefixError(error.to_string())
     }
 }
