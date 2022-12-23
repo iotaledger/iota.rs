@@ -42,8 +42,13 @@ pub enum Error {
     #[serde(serialize_with = "display_string")]
     CryptoError(#[from] crypto::Error),
     /// Address not found
-    #[error("address: {0} not found in range: {1}")]
-    InputAddressNotFound(String, String),
+    #[error("address: {address} not found in range: {range}")]
+    InputAddressNotFound {
+        /// The address that was not found.
+        address: String,
+        /// The range in which the address was not found.
+        range: String,
+    },
     /// Invalid amount in API response
     #[error("invalid amount in API response: {0}")]
     InvalidAmount(String),
