@@ -25,6 +25,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `TrackedParticipation::answers` field;
 
+### Changed
+
+- Fields of `Error::InputAddressNotFound` are now named;
+
 ## 2.0.1-rc.5 - 2022-12-20
 
 ### Added
