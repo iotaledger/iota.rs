@@ -32,7 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Possible infinity loop in pow::finish_multi_threaded_pow()
+- Possible infinity loop in pow::finish_multi_threaded_pow();
 
 ## 2.0.1-rc.5 - 2022-12-20
 
