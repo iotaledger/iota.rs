@@ -75,7 +75,7 @@ impl Client {
             for t in threads {
                 match t.join().expect("failed to join threads.") {
                     Ok(res) => {
-                        if res.0 != 0 {
+                        if res.0 != 0 || min_pow_score == 0 {
                             if let Some(block) = res.1 {
                                 return Ok(block);
                             }
