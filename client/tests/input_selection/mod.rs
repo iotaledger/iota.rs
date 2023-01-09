@@ -7,7 +7,7 @@ mod foundry_outputs;
 mod nft_outputs;
 mod outputs;
 
-use std::{collections::HashMap, hash::Hash};
+use std::{collections::HashMap, hash::Hash, str::FromStr};
 
 use iota_client::{
     block::{
@@ -19,13 +19,14 @@ use iota_client::{
                 StateControllerAddressUnlockCondition, UnlockCondition,
             },
             AliasId, AliasOutputBuilder, BasicOutputBuilder, FoundryOutputBuilder, NativeToken, NftId,
-            NftOutputBuilder, Output, OutputId, SimpleTokenScheme, TokenScheme,
+            NftOutputBuilder, Output, OutputId, SimpleTokenScheme, TokenId, TokenScheme,
         },
         rand::{block::rand_block_id, transaction::rand_transaction_id},
     },
     constants::SHIMMER_TESTNET_BECH32_HRP,
     secret::types::{InputSigningData, OutputMetadata},
 };
+use primitive_types::U256;
 
 const TOKEN_SUPPLY: u64 = 1_813_620_509_061_365;
 const ALIAS_ID_0: &str = "0x0000000000000000000000000000000000000000000000000000000000000000";
@@ -40,12 +41,25 @@ const BECH32_ADDRESS_ED25519_SENDER: &str = "rms1qqhvvur9xfj6yhgsxfa4f8xst7vz9zx
 const BECH32_ADDRESS_ALIAS_SENDER: &str = "rms1pqg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zws5524"; // Corresponds to ALIAS_ID_1
 const BECH32_ADDRESS_NFT_SENDER: &str = "rms1zqg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zxddmy7"; // Corresponds to NFT_ID_1
 
-fn build_basic_output(amount: u64, bech32_address: &str, bech32_sender: Option<&str>) -> Output {
+fn build_basic_output(
+    amount: u64,
+    bech32_address: &str,
+    native_tokens: Option<Vec<(&str, u64)>>,
+    bech32_sender: Option<&str>,
+) -> Output {
     let mut builder = BasicOutputBuilder::new_with_amount(amount)
         .unwrap()
         .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(
             Address::try_from_bech32(bech32_address).unwrap().1,
         )));
+
+    if let Some(native_tokens) = native_tokens {
+        builder = builder.with_native_tokens(
+            native_tokens
+                .into_iter()
+                .map(|(id, amount)| NativeToken::new(TokenId::from_str(id).unwrap(), U256::from(amount)).unwrap()),
+        );
+    }
 
     if let Some(bech32_sender) = bech32_sender {
         builder = builder.add_feature(Feature::Sender(SenderFeature::new(
@@ -60,6 +74,7 @@ fn build_nft_output(
     amount: u64,
     nft_id: NftId,
     bech32_address: &str,
+    native_tokens: Option<Vec<(&str, u64)>>,
     bech32_sender: Option<&str>,
     bech32_issuer: Option<&str>,
 ) -> Output {
@@ -68,6 +83,14 @@ fn build_nft_output(
         .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(
             Address::try_from_bech32(bech32_address).unwrap().1,
         )));
+
+    if let Some(native_tokens) = native_tokens {
+        builder = builder.with_native_tokens(
+            native_tokens
+                .into_iter()
+                .map(|(id, amount)| NativeToken::new(TokenId::from_str(id).unwrap(), U256::from(amount)).unwrap()),
+        );
+    }
 
     if let Some(bech32_sender) = bech32_sender {
         builder = builder.add_feature(Feature::Sender(SenderFeature::new(
@@ -88,6 +111,7 @@ fn build_alias_output(
     amount: u64,
     alias_id: AliasId,
     bech32_address: &str,
+    native_tokens: Option<Vec<(&str, u64)>>,
     bech32_sender: Option<&str>,
     bech32_issuer: Option<&str>,
 ) -> Output {
@@ -101,6 +125,14 @@ fn build_alias_output(
         .add_unlock_condition(UnlockCondition::GovernorAddress(GovernorAddressUnlockCondition::new(
             address,
         )));
+
+    if let Some(native_tokens) = native_tokens {
+        builder = builder.with_native_tokens(
+            native_tokens
+                .into_iter()
+                .map(|(id, amount)| NativeToken::new(TokenId::from_str(id).unwrap(), U256::from(amount)).unwrap()),
+        );
+    }
 
     if let Some(bech32_sender) = bech32_sender {
         builder = builder.add_feature(Feature::Sender(SenderFeature::new(
@@ -121,25 +153,30 @@ fn build_foundry_output(
     alias_id: AliasId,
     amount: u64,
     token_scheme: SimpleTokenScheme,
-    native_token: Option<NativeToken>,
+    native_tokens: Option<Vec<(&str, u64)>>,
 ) -> Output {
-    let mut foundry_output_builder =
-        FoundryOutputBuilder::new_with_amount(amount, 0, TokenScheme::Simple(token_scheme))
-            .unwrap()
-            .add_unlock_condition(UnlockCondition::ImmutableAliasAddress(
-                ImmutableAliasAddressUnlockCondition::new(AliasAddress::new(alias_id)),
-            ));
-    if let Some(native_token) = native_token {
-        foundry_output_builder = foundry_output_builder.add_native_token(native_token);
+    let mut builder = FoundryOutputBuilder::new_with_amount(amount, 0, TokenScheme::Simple(token_scheme))
+        .unwrap()
+        .add_unlock_condition(UnlockCondition::ImmutableAliasAddress(
+            ImmutableAliasAddressUnlockCondition::new(AliasAddress::new(alias_id)),
+        ));
+
+    if let Some(native_tokens) = native_tokens {
+        builder = builder.with_native_tokens(
+            native_tokens
+                .into_iter()
+                .map(|(id, amount)| NativeToken::new(TokenId::from_str(id).unwrap(), U256::from(amount)).unwrap()),
+        );
     }
-    foundry_output_builder.finish_output(TOKEN_SUPPLY).unwrap()
+
+    builder.finish_output(TOKEN_SUPPLY).unwrap()
 }
 
 fn build_input_signing_data_most_basic_outputs(outputs: Vec<(&str, u64)>) -> Vec<InputSigningData> {
     outputs
         .into_iter()
         .map(|(bech32_address, amount)| InputSigningData {
-            output: build_basic_output(amount, bech32_address, None),
+            output: build_basic_output(amount, bech32_address, None, None),
             output_metadata: OutputMetadata::new(
                 rand_block_id(),
                 OutputId::new(rand_transaction_id(), 0).unwrap(),
@@ -161,7 +198,7 @@ fn build_input_signing_data_nft_outputs(outputs: Vec<(NftId, &str, u64)>) -> Vec
     outputs
         .into_iter()
         .map(|(nft_id, bech32_address, amount)| InputSigningData {
-            output: build_nft_output(amount, nft_id, bech32_address, None, None),
+            output: build_nft_output(amount, nft_id, bech32_address, None, None, None),
             output_metadata: OutputMetadata::new(
                 rand_block_id(),
                 OutputId::new(rand_transaction_id(), 0).unwrap(),
@@ -183,7 +220,7 @@ fn build_input_signing_data_alias_outputs(outputs: Vec<(AliasId, &str, u64)>) ->
     outputs
         .into_iter()
         .map(|(alias_id, bech32_address, amount)| InputSigningData {
-            output: build_alias_output(amount, alias_id, bech32_address, None, None),
+            output: build_alias_output(amount, alias_id, bech32_address, None, None, None),
             output_metadata: OutputMetadata::new(
                 rand_block_id(),
                 OutputId::new(rand_transaction_id(), 0).unwrap(),
@@ -202,13 +239,13 @@ fn build_input_signing_data_alias_outputs(outputs: Vec<(AliasId, &str, u64)>) ->
 }
 
 fn build_input_signing_data_foundry_outputs(
-    outputs: Vec<(AliasId, u64, SimpleTokenScheme, Option<NativeToken>)>,
+    outputs: Vec<(AliasId, u64, SimpleTokenScheme, Option<Vec<(&str, u64)>>)>,
 ) -> Vec<InputSigningData> {
     outputs
         .into_iter()
         .map(
-            |(alias_id, amount, simple_token_scheme, native_token)| InputSigningData {
-                output: build_foundry_output(alias_id, amount, simple_token_scheme, native_token),
+            |(alias_id, amount, simple_token_scheme, native_tokens)| InputSigningData {
+                output: build_foundry_output(alias_id, amount, simple_token_scheme, native_tokens),
                 output_metadata: OutputMetadata::new(
                     rand_block_id(),
                     OutputId::new(rand_transaction_id(), 0).unwrap(),

@@ -6,7 +6,7 @@ use std::str::FromStr;
 use iota_client::{
     api::input_selection::new::{Burn, InputSelection, Requirement},
     block::{
-        output::{AliasId, NativeToken, Output, SimpleTokenScheme, TokenId},
+        output::{AliasId, Output, SimpleTokenScheme},
         protocol::protocol_parameters,
     },
     Error,
@@ -114,14 +114,10 @@ fn melt_native_tokens() {
         alias_id_1,
         1_000_000,
         SimpleTokenScheme::new(U256::from(10), U256::from(0), U256::from(10)).unwrap(),
-        Some(
-            NativeToken::new(
-                TokenId::from_str("0x0811111111111111111111111111111111111111111111111111111111111111110000000000")
-                    .unwrap(),
-                U256::from(10),
-            )
-            .unwrap(),
-        ),
+        Some(vec![(
+            "0x0811111111111111111111111111111111111111111111111111111111111111110000000000",
+            10,
+        )]),
     )]));
     let outputs = vec![build_foundry_output(
         alias_id_1,
@@ -165,7 +161,14 @@ fn destroy_foundry() {
         None,
     )]));
     // Alias output gets the amount from the foundry output added
-    let outputs = vec![build_alias_output(103_100, alias_id_2, BECH32_ADDRESS, None, None)];
+    let outputs = vec![build_alias_output(
+        103_100,
+        alias_id_2,
+        BECH32_ADDRESS,
+        None,
+        None,
+        None,
+    )];
 
     let selected = InputSelection::build(inputs.clone(), outputs, protocol_parameters)
         .burn(Burn::new().add_foundry(inputs[1].output.as_foundry().id()))

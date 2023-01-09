@@ -10,7 +10,7 @@ fn no_inputs_provided() {
     let protocol_parameters = protocol_parameters();
 
     let inputs = Vec::new();
-    let outputs = vec![build_basic_output(1_000_000, BECH32_ADDRESS, None)];
+    let outputs = vec![build_basic_output(1_000_000, BECH32_ADDRESS, None, None)];
 
     let builder = InputSelection::build(inputs, outputs, protocol_parameters).finish();
 
