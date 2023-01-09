@@ -58,7 +58,8 @@
         "decode-uri-component": "^0.2.1",
         "express": "^4.17.3",
         "minimist": "^1.2.6",
-        "qs": "^6.9.7"
+        "qs": "^6.9.7",
+        "json5": "^2.2.2"
     },
     "engines": {
         "node": ">=16"
