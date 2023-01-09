@@ -53,6 +53,7 @@
   },
   "resolutions": {
     "tar": "^4.4.19",
-    "simple-get": "^2.8.2"
+    "simple-get": "^2.8.2",
+    "json5": "^2.2.2"
   }
 }
