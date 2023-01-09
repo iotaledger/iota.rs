@@ -23,15 +23,15 @@ crate-type = [ "cdylib" ]
 [dependencies]
 iota-client = { path = "../../", default-features = false, features = [ "ledger_nano", "message_interface", "mqtt", "stronghold", "tls" ] }
 
-backtrace = { version = "0.3.66", default-features = false }
+backtrace = { version = "0.3.67", default-features = false }
 fern-logger = { version = "0.5.0", default-features = false }
 futures = { version = "0.3.25", default-features = false }
 hex = { version = "0.4.3", default-features = false }
 log = { version = "0.4.17", default-features = false }
 neon = { version =  "0.10.1", default-features = false, features = [ "napi-6", "event-queue-api" ] }
-once_cell = { version = "1.16.0", default-features = false, features = [ "std" ] }
+once_cell = { version = "1.17.0", default-features = false, features = [ "std" ] }
 rand = { version = "0.8.5", default-features = false }
-serde = { version = "1.0.147", default-features = false, features = [ "derive" ] }
-serde_json = { version = "1.0.87", default-features = false }
-thiserror = { version = "1.0.37", default-features = false }
-tokio = { version = "1.22.0", default-features = false, features = [ "macros" ] }
+serde = { version = "1.0.152", default-features = false, features = [ "derive" ] }
+serde_json = { version = "1.0.91", default-features = false }
+thiserror = { version = "1.0.38", default-features = false }
+tokio = { version = "1.24.1", default-features = false, features = [ "macros" ] }
