@@ -7,11 +7,11 @@ mkdir coverage
 
 # Run tests with profiling instrumentation
 echo "Running instrumented unit tests..."
-RUSTFLAGS="-C instrument-coverage" LLVM_PROFILE_FILE="iota-client-%m.profraw" cargo +nightly test --all --all-features
+RUSTFLAGS="-C instrument-coverage" LLVM_PROFILE_FILE="iota-%m.profraw" cargo +nightly test --all --all-features
 
-# Merge all .profraw files into "iota-client.profdata"
+# Merge all .profraw files into "iota.profdata"
 echo "Merging coverage data..."
-cargo +nightly profdata -- merge ./iota-client-*.profraw -o iota-client.profdata
+cargo +nightly profdata -- merge ./iota-*.profraw -o iota.profdata
 
 # List the test binaries
 echo "Locating test binaries..."
@@ -32,7 +32,7 @@ done
 # Generate and export the coverage report to lcov format
 echo "Generating lcov file..."
 cargo +nightly cov -- export ${BINARIES} \
-  --instr-profile=iota-client.profdata \
+  --instr-profile=iota.profdata \
   --ignore-filename-regex="/.cargo|rustc|target|tests|/.rustup" \
   --format=lcov --Xdemangler=rustfilt \
   >> coverage/coverage.info
