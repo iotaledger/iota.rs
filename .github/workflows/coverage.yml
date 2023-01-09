@@ -1,0 +1,75 @@
+name: Test coverage
+
+on:
+  push:
+    branches:
+      - develop
+      - production
+
+concurrency: 
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  collect-coverage:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Protoc
+      uses: arduino/setup-protoc@v1
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Install nightly toolchain with llvm-tools-preview
+      uses: actions-rs/toolchain@v1
+      with:
+          profile: minimal
+          toolchain: nightly
+          override: true
+          components: llvm-tools-preview
+
+    - name: Get current date
+      run: echo "CURRENT_DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+
+    - name: Install required packages (Ubuntu)
+      run: |
+        sudo apt-get update
+        sudo apt-get install libudev-dev libusb-1.0-0-dev
+
+    - name: Cache cargo registry
+      uses: actions/cache@v3
+      with:
+        path: ~/.cargo/registry
+        # Add date to the cache to keep it up to date
+        key: ubuntu-latest-nightly-cargo-registry-${{ hashFiles('**/Cargo.lock') }}-${{ env.CURRENT_DATE }}
+        # Restore from outdated cache for speed
+        restore-keys: |
+          ubuntu-latest-nightly-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+          ubuntu-latest-nightly-cargo-registry-
+
+    - name: Cache cargo index
+      uses: actions/cache@v3
+      with:
+        path: ~/.cargo/git
+        # Add date to the cache to keep it up to date
+        key: ubuntu-latest-nightly-cargo-index-${{ hashFiles('**/Cargo.lock') }}-${{ env.CURRENT_DATE }}
+        # Restore from outdated cache for speed
+        restore-keys: |
+          ubuntu-latest-nightly-cargo-index-${{ hashFiles('**/Cargo.lock') }}
+          ubuntu-latest-nightly-cargo-index-
+
+    - name: Install binutils and rustfilt
+      run: cargo install cargo-binutils rustfilt
+
+    - name: Run tests and collect coverage
+      run: bash ./coverage.sh
+      timeout-minutes: 40
+
+    - name: Upload coverage data to Coveralls
+      uses: coverallsapp/github-action@v1.1.2
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        path-to-lcov: coverage/coverage.info
+        flag-name: Unit
