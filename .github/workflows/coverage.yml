@@ -64,7 +64,6 @@ jobs:
       run: cargo install cargo-binutils rustfilt
 
     - name: Run tests and collect coverage
-      working-directory: ./client
       run: bash ./coverage.sh
       timeout-minutes: 40
 
@@ -72,5 +71,5 @@ jobs:
       uses: coverallsapp/github-action@v1.1.2
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
-        path-to-lcov: client/coverage/coverage.info
+        path-to-lcov: coverage/coverage.info
         flag-name: Unit
