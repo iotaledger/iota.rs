@@ -24,7 +24,6 @@ impl InputSelection {
         nft_id: NftId,
     ) -> Result<(Vec<InputSigningData>, Option<Requirement>)> {
         // Check if the requirement is already fulfilled.
-
         if self
             .selected_inputs
             .iter()
@@ -34,16 +33,13 @@ impl InputSelection {
         }
 
         // Check if the requirement can be fulfilled.
-
         let index = self
             .available_inputs
             .iter()
-            .position(|input| is_nft_with_id(&input.output, input.output_id(), &nft_id));
+            .position(|input| is_nft_with_id(&input.output, input.output_id(), &nft_id))
+            .ok_or(Error::UnfulfillableRequirement(Requirement::Nft(nft_id)))?;
 
-        match index {
-            // Remove the output from the available inputs and return it, swap to make it O(1).
-            Some(index) => Ok((vec![self.available_inputs.swap_remove(index)], None)),
-            None => Err(Error::UnfulfillableRequirement(Requirement::Nft(nft_id))),
-        }
+        // Remove the output from the available inputs and return it, swap to make it O(1).
+        Ok((vec![self.available_inputs.swap_remove(index)], None))
     }
 }

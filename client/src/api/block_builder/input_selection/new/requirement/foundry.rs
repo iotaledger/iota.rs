@@ -24,7 +24,6 @@ impl InputSelection {
         foundry_id: FoundryId,
     ) -> Result<(Vec<InputSigningData>, Option<Requirement>)> {
         // Check if the requirement is already fulfilled.
-
         if self
             .selected_inputs
             .iter()
@@ -34,16 +33,13 @@ impl InputSelection {
         }
 
         // Check if the requirement can be fulfilled.
-
         let index = self
             .available_inputs
             .iter()
-            .position(|input| is_foundry_with_id(&input.output, &foundry_id));
+            .position(|input| is_foundry_with_id(&input.output, &foundry_id))
+            .ok_or(Error::UnfulfillableRequirement(Requirement::Foundry(foundry_id)))?;
 
-        match index {
-            // Remove the output from the available inputs and return it, swap to make it O(1).
-            Some(index) => Ok((vec![self.available_inputs.swap_remove(index)], None)),
-            None => Err(Error::UnfulfillableRequirement(Requirement::Foundry(foundry_id))),
-        }
+        // Remove the output from the available inputs and return it, swap to make it O(1).
+        Ok((vec![self.available_inputs.swap_remove(index)], None))
     }
 }
