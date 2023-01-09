@@ -38,7 +38,7 @@ serde_json = { version = "1.0.91", default-features = false, features = [ "alloc
 thiserror = { version = "1.0.38", default-features = false }
 
 [dev-dependencies]
-num_cpus = { version = "1.14.0", default-features = false }
+num_cpus = { version = "1.15.0", default-features = false }
 
 [features]
 default = [ "api", "block", "std" ]
