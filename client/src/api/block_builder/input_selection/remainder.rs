@@ -97,7 +97,7 @@ pub(crate) fn get_remainder_output<'a>(
 
     // check amount first
     if input_data.amount < output_data.amount {
-        return Err(Error::NotEnoughBalance {
+        return Err(Error::InsufficientBaseTokenAmount {
             found: input_data.amount,
             required: output_data.amount,
         });

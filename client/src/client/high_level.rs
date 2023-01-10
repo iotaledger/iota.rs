@@ -240,7 +240,7 @@ impl Client {
         }
 
         if total_already_spent < amount {
-            return Err(crate::Error::NotEnoughBalance {
+            return Err(crate::Error::InsufficientBaseTokenAmount {
                 found: total_already_spent,
                 required: amount,
             });

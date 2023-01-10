@@ -50,7 +50,7 @@ fn input_amount_lower_than_output_amount() {
 
     assert!(matches!(
         selected,
-        Err(Error::NotEnoughBalance {
+        Err(Error::InsufficientBaseTokenAmount {
             found: 1_000_000,
             required: 2_000_000,
         })

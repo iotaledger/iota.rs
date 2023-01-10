@@ -225,10 +225,10 @@ pub enum Error {
     /// No outputs were provided to input selection
     #[error("no outputs provided")]
     NoOutputsProvided,
-    /// The wallet account doesn't have enough balance
-    #[error("the wallet account doesn't have enough balance. It only has {found}, required is {required}")]
-    NotEnoughBalance {
-        /// The amount found in the balance.
+    /// Insufficient base token amount provided.
+    #[error("insufficient base token amount: found {found}, required {required}")]
+    InsufficientBaseTokenAmount {
+        /// The amount found.
         found: u64,
         /// The required amount.
         required: u64,

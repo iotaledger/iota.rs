@@ -152,7 +152,7 @@ impl InputSelection {
                     }
                 }
 
-                return Err(Error::NotEnoughBalance {
+                return Err(Error::InsufficientBaseTokenAmount {
                     found: inputs_sum,
                     required: outputs_sum,
                 });
