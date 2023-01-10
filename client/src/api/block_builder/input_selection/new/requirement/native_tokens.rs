@@ -10,6 +10,7 @@ use crate::{
     block::output::{NativeToken, NativeTokens, NativeTokensBuilder, Output, TokenScheme},
     error::Result,
     secret::types::InputSigningData,
+    Error,
 };
 
 pub(crate) fn get_native_tokens<'a>(outputs: impl Iterator<Item = &'a Output>) -> Result<NativeTokensBuilder> {
@@ -164,6 +165,14 @@ impl InputSelection {
                     if amount >= diff.amount() {
                         break;
                     }
+                }
+
+                if amount < diff.amount() {
+                    return Err(Error::InsufficientNativeTokenAmount {
+                        token_id: *diff.token_id(),
+                        found: amount,
+                        required: diff.amount(),
+                    });
                 }
             }
         }
