@@ -156,8 +156,10 @@ impl InputSelection {
                         .get(diff.token_id())
                         .unwrap()
                         .amount();
-                    newly_selected_inputs.push(input.clone());
-                    newly_selected_ids.insert(*input.output_id());
+
+                    if newly_selected_ids.insert(*input.output_id()) {
+                        newly_selected_inputs.push(input.clone());
+                    }
 
                     if amount > diff.amount() {
                         break;
