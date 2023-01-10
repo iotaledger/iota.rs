@@ -24,7 +24,7 @@ fn missing_input_alias_for_foundry() {
     let protocol_parameters = protocol_parameters();
     let alias_id_2 = AliasId::from_str(ALIAS_ID_2).unwrap();
 
-    let inputs = build_input_signing_data_most_basic_outputs(vec![(BECH32_ADDRESS, 1_000_000)]);
+    let inputs = build_input_signing_data_most_basic_outputs(vec![(BECH32_ADDRESS, 1_000_000, None)]);
     let outputs = vec![build_foundry_output(
         alias_id_2,
         1_000_000,
@@ -45,7 +45,7 @@ fn existing_input_alias_for_foundry_alias() {
     let protocol_parameters = protocol_parameters();
     let alias_id_2 = AliasId::from_str(ALIAS_ID_2).unwrap();
 
-    let inputs = build_input_signing_data_alias_outputs(vec![(alias_id_2, BECH32_ADDRESS, 1_251_500)]);
+    let inputs = build_input_signing_data_alias_outputs(vec![(alias_id_2, BECH32_ADDRESS, 1_251_500, None)]);
     let outputs = vec![build_foundry_output(
         alias_id_2,
         1_000_000,
@@ -75,7 +75,7 @@ fn minted_native_tokens_in_new_remainder() {
     let protocol_parameters = protocol_parameters();
     let alias_id_2 = AliasId::from_str(ALIAS_ID_2).unwrap();
 
-    let inputs = build_input_signing_data_alias_outputs(vec![(alias_id_2, BECH32_ADDRESS, 2_251_500)]);
+    let inputs = build_input_signing_data_alias_outputs(vec![(alias_id_2, BECH32_ADDRESS, 2_251_500, None)]);
     let outputs = vec![build_foundry_output(
         alias_id_2,
         1_000_000,
@@ -109,7 +109,7 @@ fn melt_native_tokens() {
     let protocol_parameters = protocol_parameters();
     let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
 
-    let mut inputs = build_input_signing_data_alias_outputs(vec![(alias_id_1, BECH32_ADDRESS, 1_000_000)]);
+    let mut inputs = build_input_signing_data_alias_outputs(vec![(alias_id_1, BECH32_ADDRESS, 1_000_000, None)]);
     inputs.extend(build_input_signing_data_foundry_outputs(vec![(
         alias_id_1,
         1_000_000,
@@ -153,7 +153,7 @@ fn destroy_foundry() {
     let protocol_parameters = protocol_parameters();
     let alias_id_2 = AliasId::from_str(ALIAS_ID_2).unwrap();
 
-    let mut inputs = build_input_signing_data_alias_outputs(vec![(alias_id_2, BECH32_ADDRESS, 50_300)]);
+    let mut inputs = build_input_signing_data_alias_outputs(vec![(alias_id_2, BECH32_ADDRESS, 50_300, None)]);
     inputs.extend(build_input_signing_data_foundry_outputs(vec![(
         alias_id_2,
         52_800,

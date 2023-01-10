@@ -172,11 +172,13 @@ fn build_foundry_output(
     builder.finish_output(TOKEN_SUPPLY).unwrap()
 }
 
-fn build_input_signing_data_most_basic_outputs(outputs: Vec<(&str, u64)>) -> Vec<InputSigningData> {
+fn build_input_signing_data_most_basic_outputs(
+    outputs: Vec<(&str, u64, Option<Vec<(&str, u64)>>)>,
+) -> Vec<InputSigningData> {
     outputs
         .into_iter()
-        .map(|(bech32_address, amount)| InputSigningData {
-            output: build_basic_output(amount, bech32_address, None, None),
+        .map(|(bech32_address, amount, native_tokens)| InputSigningData {
+            output: build_basic_output(amount, bech32_address, native_tokens, None),
             output_metadata: OutputMetadata::new(
                 rand_block_id(),
                 OutputId::new(rand_transaction_id(), 0).unwrap(),
@@ -194,11 +196,13 @@ fn build_input_signing_data_most_basic_outputs(outputs: Vec<(&str, u64)>) -> Vec
         .collect()
 }
 
-fn build_input_signing_data_nft_outputs(outputs: Vec<(NftId, &str, u64)>) -> Vec<InputSigningData> {
+fn build_input_signing_data_nft_outputs(
+    outputs: Vec<(NftId, &str, u64, Option<Vec<(&str, u64)>>)>,
+) -> Vec<InputSigningData> {
     outputs
         .into_iter()
-        .map(|(nft_id, bech32_address, amount)| InputSigningData {
-            output: build_nft_output(amount, nft_id, bech32_address, None, None, None),
+        .map(|(nft_id, bech32_address, amount, native_tokens)| InputSigningData {
+            output: build_nft_output(amount, nft_id, bech32_address, native_tokens, None, None),
             output_metadata: OutputMetadata::new(
                 rand_block_id(),
                 OutputId::new(rand_transaction_id(), 0).unwrap(),
@@ -216,11 +220,13 @@ fn build_input_signing_data_nft_outputs(outputs: Vec<(NftId, &str, u64)>) -> Vec
         .collect()
 }
 
-fn build_input_signing_data_alias_outputs(outputs: Vec<(AliasId, &str, u64)>) -> Vec<InputSigningData> {
+fn build_input_signing_data_alias_outputs(
+    outputs: Vec<(AliasId, &str, u64, Option<Vec<(&str, u64)>>)>,
+) -> Vec<InputSigningData> {
     outputs
         .into_iter()
-        .map(|(alias_id, bech32_address, amount)| InputSigningData {
-            output: build_alias_output(amount, alias_id, bech32_address, None, None, None),
+        .map(|(alias_id, bech32_address, amount, native_tokens)| InputSigningData {
+            output: build_alias_output(amount, alias_id, bech32_address, native_tokens, None, None),
             output_metadata: OutputMetadata::new(
                 rand_block_id(),
                 OutputId::new(rand_transaction_id(), 0).unwrap(),

@@ -21,7 +21,7 @@ fn no_inputs_provided() {
 fn no_outputs_provided() {
     let protocol_parameters = protocol_parameters();
 
-    let inputs = build_input_signing_data_most_basic_outputs(vec![(BECH32_ADDRESS, 1_000_000)]);
+    let inputs = build_input_signing_data_most_basic_outputs(vec![(BECH32_ADDRESS, 1_000_000, None)]);
     let outputs = Vec::new();
 
     let builder = InputSelection::build(inputs, outputs, protocol_parameters).finish();
