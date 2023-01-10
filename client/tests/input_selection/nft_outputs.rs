@@ -27,9 +27,7 @@ fn input_nft_eq_output_nft() {
     let inputs = build_input_signing_data_nft_outputs(vec![(nft_id_2, BECH32_ADDRESS, 1_000_000, None)]);
     let outputs = vec![build_nft_output(1_000_000, nft_id_2, BECH32_ADDRESS, None, None, None)];
 
-    let selected = InputSelection::build(inputs.clone(), outputs.clone(), protocol_parameters)
-        .finish()
-        .unwrap()
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
         .select()
         .unwrap();
 
@@ -46,10 +44,7 @@ fn input_amount_lt_output_amount() {
     let outputs = vec![build_basic_output(2_000_000, BECH32_ADDRESS, None, None)];
 
     assert!(matches!(
-        InputSelection::build(inputs, outputs, protocol_parameters)
-            .finish()
-            .unwrap()
-            .select(),
+        InputSelection::new(inputs, outputs, protocol_parameters).select(),
         Err(Error::InsufficientBaseTokenAmount {
             found: 1_000_000,
             // Amount we want to send + storage deposit for nft remainder
@@ -66,9 +61,7 @@ fn basic_output_with_nft_input() {
     let inputs = build_input_signing_data_nft_outputs(vec![(nft_id_2, BECH32_ADDRESS, 2_229_500, None)]);
     let outputs = vec![build_basic_output(2_000_000, BECH32_ADDRESS, None, None)];
 
-    let selected = InputSelection::build(inputs, outputs, protocol_parameters)
-        .finish()
-        .unwrap()
+    let selected = InputSelection::new(inputs, outputs, protocol_parameters)
         .select()
         .unwrap();
 
@@ -84,9 +77,7 @@ fn mint_nft() {
     let inputs = build_input_signing_data_most_basic_outputs(vec![(BECH32_ADDRESS, 2_000_000, None)]);
     let outputs = vec![build_nft_output(1_000_000, nft_id_0, BECH32_ADDRESS, None, None, None)];
 
-    let selected = InputSelection::build(inputs, outputs, protocol_parameters)
-        .finish()
-        .unwrap()
+    let selected = InputSelection::new(inputs, outputs, protocol_parameters)
         .select()
         .unwrap();
 
@@ -110,10 +101,8 @@ fn burn_nft() {
     let inputs = build_input_signing_data_nft_outputs(vec![(nft_id_2, BECH32_ADDRESS, 2_000_000, None)]);
     let outputs = vec![build_basic_output(2_000_000, BECH32_ADDRESS, None, None)];
 
-    let selected = InputSelection::build(inputs, outputs, protocol_parameters)
+    let selected = InputSelection::new(inputs, outputs, protocol_parameters)
         .burn(Burn::new().add_nft(nft_id_2))
-        .finish()
-        .unwrap()
         .select()
         .unwrap();
 
@@ -132,10 +121,7 @@ fn not_enough_storage_deposit_for_remainder() {
     let outputs = vec![build_nft_output(1_000_000, nft_id_2, BECH32_ADDRESS, None, None, None)];
 
     assert!(matches!(
-        InputSelection::build(inputs, outputs, protocol_parameters)
-            .finish()
-            .unwrap()
-            .select(),
+        InputSelection::new(inputs, outputs, protocol_parameters).select(),
         Err(Error::BlockError(
             iota_types::block::Error::InsufficientStorageDepositAmount {
                 amount: 1,
@@ -154,8 +140,8 @@ fn missing_input_for_nft_output() {
     let outputs = vec![build_nft_output(1_000_000, nft_id_2, BECH32_ADDRESS, None, None, None)];
 
     assert!(matches!(
-        InputSelection::build(inputs, outputs,protocol_parameters)
-            .finish().unwrap()
+        InputSelection::new(inputs, outputs,protocol_parameters)
+
             .select(),
         Err(Error::UnfulfillableRequirement(Requirement::Nft(nft_id))) if nft_id == nft_id_2
     ))
@@ -180,9 +166,7 @@ fn nft_in_output_and_sender() {
         Some(BECH32_ADDRESS_NFT_SENDER),
     ));
 
-    let selected = InputSelection::build(inputs.clone(), outputs, protocol_parameters)
-        .finish()
-        .unwrap()
+    let selected = InputSelection::new(inputs.clone(), outputs, protocol_parameters)
         .select()
         .unwrap();
 
@@ -213,10 +197,7 @@ fn missing_ed25519_sender() {
         None,
     )];
 
-    let selected = InputSelection::build(inputs, outputs, protocol_parameters)
-        .finish()
-        .unwrap()
-        .select();
+    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
 
     assert!(matches!(
         selected,
@@ -239,10 +220,7 @@ fn missing_ed25519_issuer_created() {
         Some(BECH32_ADDRESS_ED25519_SENDER),
     )];
 
-    let selected = InputSelection::build(inputs, outputs, protocol_parameters)
-        .finish()
-        .unwrap()
-        .select();
+    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
 
     assert!(matches!(
         selected,
@@ -265,10 +243,7 @@ fn missing_ed25519_issuer_transition() {
         Some(BECH32_ADDRESS_ED25519_SENDER),
     )];
 
-    let selected = InputSelection::build(inputs, outputs, protocol_parameters)
-        .finish()
-        .unwrap()
-        .select();
+    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
 
     assert!(selected.is_ok());
 }
@@ -288,10 +263,7 @@ fn missing_alias_sender() {
         None,
     )];
 
-    let selected = InputSelection::build(inputs, outputs, protocol_parameters)
-        .finish()
-        .unwrap()
-        .select();
+    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
 
     assert!(matches!(
         selected,
@@ -314,10 +286,7 @@ fn missing_alias_issuer_created() {
         Some(BECH32_ADDRESS_ALIAS_SENDER),
     )];
 
-    let selected = InputSelection::build(inputs, outputs, protocol_parameters)
-        .finish()
-        .unwrap()
-        .select();
+    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
 
     assert!(matches!(
         selected,
@@ -340,10 +309,7 @@ fn missing_alias_issuer_transition() {
         Some(BECH32_ADDRESS_ALIAS_SENDER),
     )];
 
-    let selected = InputSelection::build(inputs, outputs, protocol_parameters)
-        .finish()
-        .unwrap()
-        .select();
+    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
 
     assert!(selected.is_ok());
 }
@@ -363,10 +329,7 @@ fn missing_nft_sender() {
         None,
     )];
 
-    let selected = InputSelection::build(inputs, outputs, protocol_parameters)
-        .finish()
-        .unwrap()
-        .select();
+    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
 
     assert!(matches!(
         selected,
@@ -389,10 +352,7 @@ fn missing_nft_issuer_created() {
         Some(BECH32_ADDRESS_NFT_SENDER),
     )];
 
-    let selected = InputSelection::build(inputs, outputs, protocol_parameters)
-        .finish()
-        .unwrap()
-        .select();
+    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
 
     assert!(matches!(
         selected,
@@ -415,10 +375,7 @@ fn missing_nft_issuer_transition() {
         Some(BECH32_ADDRESS_NFT_SENDER),
     )];
 
-    let selected = InputSelection::build(inputs, outputs, protocol_parameters)
-        .finish()
-        .unwrap()
-        .select();
+    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
 
     assert!(selected.is_ok());
 }

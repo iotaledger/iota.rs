@@ -26,9 +26,7 @@ fn input_amount_equal_output_amount() {
     let inputs = build_input_signing_data_most_basic_outputs(vec![(BECH32_ADDRESS, 1_000_000, None)]);
     let outputs = vec![build_basic_output(1_000_000, BECH32_ADDRESS, None, None)];
 
-    let selected = InputSelection::build(inputs.clone(), outputs.clone(), protocol_parameters)
-        .finish()
-        .unwrap()
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
         .select()
         .unwrap();
 
@@ -43,10 +41,7 @@ fn input_amount_lower_than_output_amount() {
     let inputs = build_input_signing_data_most_basic_outputs(vec![(BECH32_ADDRESS, 1_000_000, None)]);
     let outputs = vec![build_basic_output(2_000_000, BECH32_ADDRESS, None, None)];
 
-    let selected = InputSelection::build(inputs, outputs, protocol_parameters)
-        .finish()
-        .unwrap()
-        .select();
+    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
 
     assert!(matches!(
         selected,
@@ -64,9 +59,7 @@ fn input_amount_greater_than_output_amount() {
     let inputs = build_input_signing_data_most_basic_outputs(vec![(BECH32_ADDRESS, 2_000_000, None)]);
     let outputs = vec![build_basic_output(500_000, BECH32_ADDRESS, None, None)];
 
-    let selected = InputSelection::build(inputs.clone(), outputs.clone(), protocol_parameters)
-        .finish()
-        .unwrap()
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
         .select()
         .unwrap();
 
@@ -96,10 +89,8 @@ fn input_amount_greater_than_output_amount_with_remainder_address() {
     let inputs = build_input_signing_data_most_basic_outputs(vec![(BECH32_ADDRESS, 2_000_000, None)]);
     let outputs = vec![build_basic_output(500_000, BECH32_ADDRESS, None, None)];
 
-    let selected = InputSelection::build(inputs.clone(), outputs.clone(), protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
         .remainder_address(remainder_address)
-        .finish()
-        .unwrap()
         .select()
         .unwrap();
 
@@ -128,9 +119,7 @@ fn two_same_inputs_one_needed() {
     ]);
     let outputs = vec![build_basic_output(500_000, BECH32_ADDRESS, None, None)];
 
-    let selected = InputSelection::build(inputs, outputs.clone(), protocol_parameters)
-        .finish()
-        .unwrap()
+    let selected = InputSelection::new(inputs, outputs.clone(), protocol_parameters)
         .select()
         .unwrap();
 
@@ -163,9 +152,7 @@ fn two_inputs_one_needed() {
     ]);
     let outputs = vec![build_basic_output(1_000_000, BECH32_ADDRESS, None, None)];
 
-    let selected = InputSelection::build(inputs.clone(), outputs.clone(), protocol_parameters)
-        .finish()
-        .unwrap()
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
         .select()
         .unwrap();
 
@@ -183,9 +170,7 @@ fn two_inputs_one_needed_reversed() {
     ]);
     let outputs = vec![build_basic_output(1_000_000, BECH32_ADDRESS, None, None)];
 
-    let selected = InputSelection::build(inputs.clone(), outputs.clone(), protocol_parameters)
-        .finish()
-        .unwrap()
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
         .select()
         .unwrap();
 
@@ -203,9 +188,7 @@ fn two_inputs_both_needed() {
     ]);
     let outputs = vec![build_basic_output(3_000_000, BECH32_ADDRESS, None, None)];
 
-    let selected = InputSelection::build(inputs.clone(), outputs.clone(), protocol_parameters)
-        .finish()
-        .unwrap()
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
         .select()
         .unwrap();
 
@@ -223,9 +206,7 @@ fn two_inputs_remainder() {
     ]);
     let outputs = vec![build_basic_output(2_500_000, BECH32_ADDRESS, None, None)];
 
-    let selected = InputSelection::build(inputs.clone(), outputs.clone(), protocol_parameters)
-        .finish()
-        .unwrap()
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
         .select()
         .unwrap();
 
@@ -254,10 +235,7 @@ fn not_enough_storage_deposit_for_remainder() {
     let inputs = build_input_signing_data_most_basic_outputs(vec![(BECH32_ADDRESS, 1_000_001, None)]);
     let outputs = vec![build_basic_output(1_000_000, BECH32_ADDRESS, None, None)];
 
-    let selected = InputSelection::build(inputs, outputs, protocol_parameters)
-        .finish()
-        .unwrap()
-        .select();
+    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
 
     assert!(matches!(
         selected,
@@ -289,9 +267,7 @@ fn ed25519_sender() {
         Some(BECH32_ADDRESS_ED25519_SENDER),
     )];
 
-    let selected = InputSelection::build(inputs, outputs, protocol_parameters)
-        .finish()
-        .unwrap()
+    let selected = InputSelection::new(inputs, outputs, protocol_parameters)
         .select()
         .unwrap();
 
@@ -319,10 +295,7 @@ fn missing_ed25519_sender() {
         Some(BECH32_ADDRESS_ED25519_SENDER),
     )];
 
-    let selected = InputSelection::build(inputs, outputs, protocol_parameters)
-        .finish()
-        .unwrap()
-        .select();
+    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
 
     assert!(matches!(
         selected,
@@ -356,9 +329,7 @@ fn alias_sender() {
         Some(BECH32_ADDRESS_ALIAS_SENDER),
     )];
 
-    let selected = InputSelection::build(inputs.clone(), outputs, protocol_parameters)
-        .finish()
-        .unwrap()
+    let selected = InputSelection::new(inputs.clone(), outputs, protocol_parameters)
         .select()
         .unwrap();
 
@@ -386,10 +357,7 @@ fn missing_alias_sender() {
         Some(BECH32_ADDRESS_ALIAS_SENDER),
     )];
 
-    let selected = InputSelection::build(inputs, outputs, protocol_parameters)
-        .finish()
-        .unwrap()
-        .select();
+    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
 
     assert!(matches!(
         selected,
@@ -423,9 +391,7 @@ fn nft_sender() {
         Some(BECH32_ADDRESS_NFT_SENDER),
     )];
 
-    let selected = InputSelection::build(inputs.clone(), outputs, protocol_parameters)
-        .finish()
-        .unwrap()
+    let selected = InputSelection::new(inputs.clone(), outputs, protocol_parameters)
         .select()
         .unwrap();
 
@@ -453,10 +419,7 @@ fn missing_nft_sender() {
         Some(BECH32_ADDRESS_NFT_SENDER),
     )];
 
-    let selected = InputSelection::build(inputs, outputs, protocol_parameters)
-        .finish()
-        .unwrap()
-        .select();
+    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
 
     assert!(matches!(
         selected,

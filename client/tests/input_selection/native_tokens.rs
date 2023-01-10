@@ -34,9 +34,7 @@ fn two_native_tokens_one_needed() {
         None,
     )];
 
-    let selected = InputSelection::build(inputs.clone(), outputs.clone(), protocol_parameters)
-        .finish()
-        .unwrap()
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
         .select()
         .unwrap();
 
@@ -94,9 +92,7 @@ fn two_native_tokens_both_needed_plus_remainder() {
         None,
     )];
 
-    let selected = InputSelection::build(inputs.clone(), outputs.clone(), protocol_parameters)
-        .finish()
-        .unwrap()
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
         .select()
         .unwrap();
 
@@ -142,9 +138,7 @@ fn three_inputs_two_needed_plus_remainder() {
         None,
     )];
 
-    let selected = InputSelection::build(inputs.clone(), outputs.clone(), protocol_parameters)
-        .finish()
-        .unwrap()
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
         .select()
         .unwrap();
 
@@ -190,9 +184,7 @@ fn three_inputs_two_needed_no_remainder() {
         None,
     )];
 
-    let selected = InputSelection::build(inputs.clone(), outputs.clone(), protocol_parameters)
-        .finish()
-        .unwrap()
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
         .select()
         .unwrap();
 
@@ -213,10 +205,7 @@ fn insufficient_native_tokens_one_input() {
         None,
     )];
 
-    let selected = InputSelection::build(inputs.clone(), outputs.clone(), protocol_parameters)
-        .finish()
-        .unwrap()
-        .select();
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters).select();
 
     assert!(matches!(
         selected,
@@ -243,10 +232,7 @@ fn insufficient_native_tokens_three_inputs() {
         None,
     )];
 
-    let selected = InputSelection::build(inputs.clone(), outputs.clone(), protocol_parameters)
-        .finish()
-        .unwrap()
-        .select();
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters).select();
 
     assert!(matches!(
         selected,

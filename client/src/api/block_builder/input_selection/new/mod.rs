@@ -1,7 +1,6 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-pub(crate) mod builder;
 pub(crate) mod burn;
 pub(crate) mod helper;
 pub(crate) mod remainder;
@@ -10,7 +9,6 @@ pub(crate) mod transition;
 
 use std::collections::HashSet;
 
-pub use builder::InputSelectionBuilder;
 pub use burn::Burn;
 use helper::is_alias_state_transition;
 use remainder::remainder_output;
@@ -39,6 +37,7 @@ pub(crate) struct OutputInfo {
 /// Working state for the input selection algorithm.
 pub struct InputSelection {
     available_inputs: Vec<InputSigningData>,
+    // TODO option needed ?
     required_inputs: Option<HashSet<OutputId>>,
     forbidden_inputs: HashSet<OutputId>,
     selected_inputs: Vec<InputSigningData>,
@@ -155,13 +154,59 @@ impl InputSelection {
         Ok(requirements)
     }
 
-    /// Creates an [`InputSelectionBuilder`].
-    pub fn build(
+    /// Creates a new [`InputSelection`].
+    pub fn new(
         available_inputs: Vec<InputSigningData>,
         outputs: Vec<Output>,
         protocol_parameters: ProtocolParameters,
-    ) -> InputSelectionBuilder {
-        InputSelectionBuilder::new(available_inputs, outputs, protocol_parameters)
+    ) -> Self {
+        Self {
+            available_inputs,
+            required_inputs: None,
+            forbidden_inputs: HashSet::new(),
+            selected_inputs: Vec::new(),
+            outputs: outputs
+                .into_iter()
+                .map(|output| OutputInfo { output, provided: true })
+                .collect(),
+            burn: None,
+            remainder_address: None,
+            protocol_parameters,
+            timestamp: instant::SystemTime::now()
+                .duration_since(instant::SystemTime::UNIX_EPOCH)
+                .expect("time went backwards")
+                .as_secs() as u32,
+        }
+    }
+
+    /// Sets the required inputs of an [`InputSelection`].
+    pub fn required_inputs(mut self, inputs: HashSet<OutputId>) -> Self {
+        self.required_inputs.replace(inputs);
+        self
+    }
+
+    /// Sets the forbidden inputs of an [`InputSelection`].
+    pub fn forbidden_inputs(mut self, inputs: HashSet<OutputId>) -> Self {
+        self.forbidden_inputs = inputs;
+        self
+    }
+
+    /// Sets the burn of an [`InputSelection`].
+    pub fn burn(mut self, burn: Burn) -> Self {
+        self.burn.replace(burn);
+        self
+    }
+
+    /// Sets the remainder address of an [`InputSelection`].
+    pub fn remainder_address(mut self, address: Address) -> Self {
+        self.remainder_address.replace(address);
+        self
+    }
+
+    /// Sets the timestamp of an [`InputSelection`].
+    pub fn timestamp(mut self, timestamp: u32) -> Self {
+        self.timestamp = timestamp;
+        self
     }
 
     // TODO should we somehow enforce using filter so we don't have to use can_be_unlocked_now later everywhere ?
@@ -191,6 +236,13 @@ impl InputSelection {
     /// Selects inputs that meet the requirements of the outputs to satisfy the semantic validation of the overall
     /// transaction. Also creates outputs if transitions are required.
     pub fn select(mut self) -> Result<(Vec<InputSigningData>, Vec<Output>)> {
+        if self.available_inputs.is_empty() {
+            return Err(Error::NoInputsProvided);
+        }
+        if self.outputs.is_empty() {
+            return Err(Error::NoOutputsProvided);
+        }
+
         // Creates the initial state, selected inputs and requirements, based on the provided outputs.
         let mut requirements = self.init()?;
 
