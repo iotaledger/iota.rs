@@ -39,7 +39,7 @@
       ],
       "publish": [
         {
-          "command": "yarn publish --access public --loglevel silly"
+          "command": "yarn publish --access public --loglevel silly --tag develop"
         }
       ]
     }
