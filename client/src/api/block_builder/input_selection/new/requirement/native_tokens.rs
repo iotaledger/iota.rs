@@ -161,7 +161,7 @@ impl InputSelection {
                         newly_selected_inputs.push(input.clone());
                     }
 
-                    if amount > diff.amount() {
+                    if amount >= diff.amount() {
                         break;
                     }
                 }
