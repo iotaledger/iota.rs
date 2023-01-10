@@ -53,6 +53,27 @@ fn input_amount_lower_than_output_amount() {
 }
 
 #[test]
+fn input_amount_lower_than_output_amount_2() {
+    let protocol_parameters = protocol_parameters();
+
+    let inputs = build_input_signing_data_most_basic_outputs(vec![
+        (BECH32_ADDRESS, 1_000_000, None),
+        (BECH32_ADDRESS, 2_000_000, None),
+    ]);
+    let outputs = vec![build_basic_output(3_500_000, BECH32_ADDRESS, None, None)];
+
+    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
+
+    assert!(matches!(
+        selected,
+        Err(Error::InsufficientBaseTokenAmount {
+            found: 3_000_000,
+            required: 3_500_000,
+        })
+    ));
+}
+
+#[test]
 fn input_amount_greater_than_output_amount() {
     let protocol_parameters = protocol_parameters();
 

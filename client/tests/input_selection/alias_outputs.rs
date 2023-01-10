@@ -50,8 +50,10 @@ fn input_amount_lt_output_amount() {
     let inputs = build_input_signing_data_alias_outputs(vec![(alias_id_2, BECH32_ADDRESS, 1_000_000, None)]);
     let outputs = vec![build_basic_output(2_000_000, BECH32_ADDRESS, None, None)];
 
+    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
+
     assert!(matches!(
-        InputSelection::new(inputs, outputs, protocol_parameters).select(),
+        selected,
         Err(Error::InsufficientBaseTokenAmount {
             found: 1_000_000,
             // Amount we want to send + storage deposit for alias remainder
@@ -141,8 +143,10 @@ fn not_enough_storage_deposit_for_remainder() {
         None,
     )];
 
+    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
+
     assert!(matches!(
-        InputSelection::new(inputs, outputs, protocol_parameters).select(),
+        selected,
         Err(Error::BlockError(
             iota_types::block::Error::InsufficientStorageDepositAmount {
                 amount: 1,
@@ -167,10 +171,10 @@ fn missing_input_for_alias_output() {
         None,
     )];
 
-    assert!(matches!(
-        InputSelection::new(inputs,outputs,  protocol_parameters)
+    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
 
-            .select(),
+    assert!(matches!(
+        selected,
         Err(Error::UnfulfillableRequirement(Requirement::Alias(alias_id))) if alias_id == alias_id_2
     ))
 }

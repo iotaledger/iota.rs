@@ -43,8 +43,10 @@ fn input_amount_lt_output_amount() {
     let inputs = build_input_signing_data_nft_outputs(vec![(nft_id_2, BECH32_ADDRESS, 1_000_000, None)]);
     let outputs = vec![build_basic_output(2_000_000, BECH32_ADDRESS, None, None)];
 
+    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
+
     assert!(matches!(
-        InputSelection::new(inputs, outputs, protocol_parameters).select(),
+        selected,
         Err(Error::InsufficientBaseTokenAmount {
             found: 1_000_000,
             // Amount we want to send + storage deposit for nft remainder
@@ -120,8 +122,10 @@ fn not_enough_storage_deposit_for_remainder() {
     let inputs = build_input_signing_data_nft_outputs(vec![(nft_id_2, BECH32_ADDRESS, 1_000_001, None)]);
     let outputs = vec![build_nft_output(1_000_000, nft_id_2, BECH32_ADDRESS, None, None, None)];
 
+    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
+
     assert!(matches!(
-        InputSelection::new(inputs, outputs, protocol_parameters).select(),
+        selected,
         Err(Error::BlockError(
             iota_types::block::Error::InsufficientStorageDepositAmount {
                 amount: 1,
@@ -139,10 +143,10 @@ fn missing_input_for_nft_output() {
     let inputs = build_input_signing_data_most_basic_outputs(vec![(BECH32_ADDRESS, 1_000_000, None)]);
     let outputs = vec![build_nft_output(1_000_000, nft_id_2, BECH32_ADDRESS, None, None, None)];
 
-    assert!(matches!(
-        InputSelection::new(inputs, outputs,protocol_parameters)
+    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
 
-            .select(),
+    assert!(matches!(
+        selected,
         Err(Error::UnfulfillableRequirement(Requirement::Nft(nft_id))) if nft_id == nft_id_2
     ))
 }

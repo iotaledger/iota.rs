@@ -32,9 +32,10 @@ fn missing_input_alias_for_foundry() {
         None,
     )];
 
+    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
+
     assert!(matches!(
-        InputSelection::new(inputs,outputs,  protocol_parameters)
-            .select(),
+        selected,
         Err(Error::UnfulfillableRequirement(Requirement::Alias(alias_id))) if alias_id == alias_id_2
     ))
 }
