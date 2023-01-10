@@ -11,9 +11,14 @@ RUSTFLAGS="-C instrument-coverage" LLVM_PROFILE_FILE="iota-%m.profraw" cargo +ni
 
 # Merge all .profraw files into "iota.profdata"
 echo "Merging coverage data..."
-cargo +nightly profdata -- merge ./client/iota-*.profraw -o iota.profdata
-cargo +nightly profdata -- merge ./pow/iota-*.profraw -o iota.profdata
-cargo +nightly profdata -- merge ./types/iota-*.profraw -o iota.profdata
+PROFRAW=""
+for file in $(find . -type f -name "*.profraw");
+do
+  echo "Found $file"
+  PROFRAW="${PROFRAW} $file"
+done
+
+cargo +nightly profdata -- merge ${PROFRAW} -o iota.profdata
 
 # List the test binaries
 echo "Locating test binaries..."
