@@ -14,7 +14,7 @@ fn no_inputs_provided() {
 
     let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
 
-    assert!(matches!(selected, Err(Error::NoInputsProvided)))
+    assert!(matches!(selected, Err(Error::NoInputsProvided)));
 }
 
 #[test]
@@ -26,5 +26,5 @@ fn no_outputs_provided() {
 
     let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
 
-    assert!(matches!(selected, Err(Error::NoOutputsProvided)))
+    assert!(matches!(selected, Err(Error::NoOutputsProvided)));
 }

@@ -59,7 +59,7 @@ fn input_amount_lt_output_amount() {
             // Amount we want to send + storage deposit for alias remainder
             required: 2_251_500,
         })
-    ))
+    ));
 }
 
 #[test]
@@ -153,7 +153,7 @@ fn not_enough_storage_deposit_for_remainder() {
                 required: 213000,
             }
         ))
-    ))
+    ));
 }
 
 #[test]
@@ -176,7 +176,7 @@ fn missing_input_for_alias_output() {
     assert!(matches!(
         selected,
         Err(Error::UnfulfillableRequirement(Requirement::Alias(alias_id))) if alias_id == alias_id_2
-    ))
+    ));
 }
 
 #[test]
@@ -241,7 +241,7 @@ fn missing_ed25519_sender() {
     assert!(matches!(
         selected,
         Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender.is_ed25519() && sender == Address::try_from_bech32(BECH32_ADDRESS_ED25519_SENDER).unwrap().1
-    ))
+    ));
 }
 
 #[test]
@@ -264,7 +264,7 @@ fn missing_ed25519_issuer_created() {
     assert!(matches!(
         selected,
         Err(Error::UnfulfillableRequirement(Requirement::Issuer(issuer))) if issuer.is_ed25519() && issuer == Address::try_from_bech32(BECH32_ADDRESS_ED25519_SENDER).unwrap().1
-    ))
+    ));
 }
 
 #[test]
@@ -307,7 +307,7 @@ fn missing_alias_sender() {
     assert!(matches!(
         selected,
         Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender.is_alias() && sender == Address::try_from_bech32(BECH32_ADDRESS_ALIAS_SENDER).unwrap().1
-    ))
+    ));
 }
 
 #[test]
@@ -330,7 +330,7 @@ fn missing_alias_issuer_created() {
     assert!(matches!(
         selected,
         Err(Error::UnfulfillableRequirement(Requirement::Issuer(issuer))) if issuer.is_alias() && issuer == Address::try_from_bech32(BECH32_ADDRESS_ALIAS_SENDER).unwrap().1
-    ))
+    ));
 }
 
 #[test]
@@ -373,7 +373,7 @@ fn missing_nft_sender() {
     assert!(matches!(
         selected,
         Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender.is_nft() && sender == Address::try_from_bech32(BECH32_ADDRESS_NFT_SENDER).unwrap().1
-    ))
+    ));
 }
 
 #[test]
@@ -396,7 +396,7 @@ fn missing_nft_issuer_created() {
     assert!(matches!(
         selected,
         Err(Error::UnfulfillableRequirement(Requirement::Issuer(issuer))) if issuer.is_nft() && issuer == Address::try_from_bech32(BECH32_ADDRESS_NFT_SENDER).unwrap().1
-    ))
+    ));
 }
 
 #[test]

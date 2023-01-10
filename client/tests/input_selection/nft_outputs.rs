@@ -132,7 +132,7 @@ fn not_enough_storage_deposit_for_remainder() {
                 required: 213000,
             }
         ))
-    ))
+    ));
 }
 
 #[test]
@@ -148,7 +148,20 @@ fn missing_input_for_nft_output() {
     assert!(matches!(
         selected,
         Err(Error::UnfulfillableRequirement(Requirement::Nft(nft_id))) if nft_id == nft_id_2
-    ))
+    ));
+}
+
+#[test]
+fn missing_input_for_nft_output_but_created() {
+    let protocol_parameters = protocol_parameters();
+    let nft_id_0 = NftId::from_str(NFT_ID_0).unwrap();
+
+    let inputs = build_input_signing_data_most_basic_outputs(vec![(BECH32_ADDRESS, 1_000_000, None)]);
+    let outputs = vec![build_nft_output(1_000_000, nft_id_0, BECH32_ADDRESS, None, None, None)];
+
+    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
+
+    assert!(selected.is_ok());
 }
 
 #[test]
@@ -206,7 +219,7 @@ fn missing_ed25519_sender() {
     assert!(matches!(
         selected,
         Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender.is_ed25519() && sender == Address::try_from_bech32(BECH32_ADDRESS_ED25519_SENDER).unwrap().1
-    ))
+    ));
 }
 
 #[test]
@@ -229,7 +242,7 @@ fn missing_ed25519_issuer_created() {
     assert!(matches!(
         selected,
         Err(Error::UnfulfillableRequirement(Requirement::Issuer(issuer))) if issuer.is_ed25519() && issuer == Address::try_from_bech32(BECH32_ADDRESS_ED25519_SENDER).unwrap().1
-    ))
+    ));
 }
 
 #[test]
@@ -272,7 +285,7 @@ fn missing_alias_sender() {
     assert!(matches!(
         selected,
         Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender.is_alias() && sender == Address::try_from_bech32(BECH32_ADDRESS_ALIAS_SENDER).unwrap().1
-    ))
+    ));
 }
 
 #[test]
@@ -295,7 +308,7 @@ fn missing_alias_issuer_created() {
     assert!(matches!(
         selected,
         Err(Error::UnfulfillableRequirement(Requirement::Issuer(issuer))) if issuer.is_alias() && issuer == Address::try_from_bech32(BECH32_ADDRESS_ALIAS_SENDER).unwrap().1
-    ))
+    ));
 }
 
 #[test]
@@ -338,7 +351,7 @@ fn missing_nft_sender() {
     assert!(matches!(
         selected,
         Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender.is_nft() && sender == Address::try_from_bech32(BECH32_ADDRESS_NFT_SENDER).unwrap().1
-    ))
+    ));
 }
 
 #[test]
@@ -361,7 +374,7 @@ fn missing_nft_issuer_created() {
     assert!(matches!(
         selected,
         Err(Error::UnfulfillableRequirement(Requirement::Issuer(issuer))) if issuer.is_nft() && issuer == Address::try_from_bech32(BECH32_ADDRESS_NFT_SENDER).unwrap().1
-    ))
+    ));
 }
 
 #[test]

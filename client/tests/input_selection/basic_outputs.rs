@@ -266,7 +266,7 @@ fn not_enough_storage_deposit_for_remainder() {
                 required: 213000,
             }
         ))
-    ))
+    ));
 }
 
 #[test]
@@ -321,7 +321,7 @@ fn missing_ed25519_sender() {
     assert!(matches!(
         selected,
         Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender.is_ed25519() && sender == Address::try_from_bech32(BECH32_ADDRESS_ED25519_SENDER).unwrap().1
-    ))
+    ));
 }
 
 #[test]
@@ -383,7 +383,7 @@ fn missing_alias_sender() {
     assert!(matches!(
         selected,
         Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender.is_alias() && sender == Address::try_from_bech32(BECH32_ADDRESS_ALIAS_SENDER).unwrap().1
-    ))
+    ));
 }
 
 #[test]
@@ -445,5 +445,5 @@ fn missing_nft_sender() {
     assert!(matches!(
         selected,
         Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender.is_nft() && sender == Address::try_from_bech32(BECH32_ADDRESS_NFT_SENDER).unwrap().1
-    ))
+    ));
 }

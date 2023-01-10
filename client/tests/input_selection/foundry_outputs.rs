@@ -37,7 +37,7 @@ fn missing_input_alias_for_foundry() {
     assert!(matches!(
         selected,
         Err(Error::UnfulfillableRequirement(Requirement::Alias(alias_id))) if alias_id == alias_id_2
-    ))
+    ));
 }
 
 #[test]
