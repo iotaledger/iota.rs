@@ -276,7 +276,7 @@ impl TryFrom<&OutputMetadataResponse> for OutputMetadata {
 impl From<&OutputMetadata> for OutputMetadataResponse {
     fn from(output_metadata: &OutputMetadata) -> Self {
         Self {
-            block_id: output_metadata.block_id.to_string(),
+            block_id: output_metadata.block_id().to_string(),
             transaction_id: output_metadata.transaction_id().to_string(),
             output_index: output_metadata.output_index(),
             is_spent: output_metadata.is_spent(),
