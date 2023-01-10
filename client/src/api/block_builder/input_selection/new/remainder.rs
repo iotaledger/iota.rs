@@ -64,6 +64,7 @@ pub(crate) fn remainder_output(
     remainder_address: Option<Address>,
     protocol_parameters: &ProtocolParameters,
 ) -> Result<Option<Output>> {
+    println!("REMAINDER ------");
     let (inputs_sum, outputs_sum) = base_token_sums(selected_inputs, outputs);
 
     let mut input_native_tokens = get_native_tokens(selected_inputs.iter().map(|input| &input.output))?;

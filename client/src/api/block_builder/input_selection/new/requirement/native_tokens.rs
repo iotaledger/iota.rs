@@ -1,7 +1,7 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use std::cmp::Ordering;
+use std::{cmp::Ordering, collections::HashSet};
 
 use primitive_types::U256;
 
@@ -113,10 +113,58 @@ pub(crate) fn get_native_tokens_diff(
 }
 
 impl InputSelection {
-    pub(crate) fn fulfill_native_tokens_requirement(&self) -> Result<(Vec<InputSigningData>, Option<Requirement>)> {
-        println!("NATIVE TOKENS");
+    pub(crate) fn fulfill_native_tokens_requirement(&mut self) -> Result<(Vec<InputSigningData>, Option<Requirement>)> {
+        println!("NATIVE TOKENS FULFILLEMENT ---- ");
+        let mut newly_selected_inputs = Vec::new();
+        let mut newly_selected_ids = HashSet::new();
 
-        // let diffs = (input_native_tokens + minted) - (output + melted + burn);
+        let mut input_native_tokens = get_native_tokens(self.selected_inputs.iter().map(|input| &input.output))?;
+        let mut output_native_tokens = get_native_tokens(self.outputs.iter().map(|output| &output.output))?;
+        let (minted_native_tokens, melted_native_tokens) =
+            get_minted_and_melted_native_tokens(&self.selected_inputs, &self.outputs)?;
+
+        println!("Input {input_native_tokens:?}");
+        println!("Output {output_native_tokens:?}");
+        println!("Minted {minted_native_tokens:?}");
+        println!("Melted {melted_native_tokens:?}");
+
+        input_native_tokens.merge(minted_native_tokens)?;
+        output_native_tokens.merge(melted_native_tokens)?;
+        // TODO also merge burn
+
+        println!("Input merged {input_native_tokens:?}");
+        println!("Output merged {output_native_tokens:?}");
+
+        // TODO weird that it happens in this direction?
+        if let Some(diffs) = get_native_tokens_diff(&output_native_tokens, &input_native_tokens)? {
+            for diff in diffs.iter() {
+                let mut amount = U256::zero();
+                // TODO sort ?
+                let inputs = self.available_inputs.iter().filter(|input| {
+                    input
+                        .output
+                        .native_tokens()
+                        .map_or(false, |native_tokens| native_tokens.contains(diff.token_id()))
+                });
+                println!("{diff:?}");
+                for input in inputs {
+                    println!("{input:?}");
+                    amount += input
+                        .output
+                        .native_tokens()
+                        .unwrap()
+                        .get(diff.token_id())
+                        .unwrap()
+                        .amount();
+                    newly_selected_inputs.push(input.clone());
+                    newly_selected_ids.insert(*input.output_id());
+
+                    if amount > diff.amount() {
+                        break;
+                    }
+                }
+            }
+        }
 
         // let mut new_inputs = Vec::new();
 
@@ -132,8 +180,10 @@ impl InputSelection {
         //     }
         // }
 
-        // new_inputs
-        Ok((Vec::new(), None))
+        self.available_inputs
+            .retain(|input| !newly_selected_ids.contains(input.output_id()));
+
+        Ok((newly_selected_inputs, None))
     }
 }
 

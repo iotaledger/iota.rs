@@ -173,6 +173,26 @@ impl NativeTokens {
     pub fn build() -> NativeTokensBuilder {
         NativeTokensBuilder::new()
     }
+
+    /// Checks whether the provided token ID is contained in the native tokens.
+    pub fn contains(&self, token_id: &TokenId) -> bool {
+        self.0
+            .binary_search_by_key(token_id, |native_token| native_token.token_id)
+            .is_ok()
+    }
+
+    /// Gets the native token associated with the provided token ID if contained.
+    pub fn get(&self, token_id: &TokenId) -> Option<&NativeToken> {
+        // Binary search is possible because native tokens are always ordered by token ID.
+        if let Ok(index) = self
+            .0
+            .binary_search_by_key(token_id, |native_token| native_token.token_id)
+        {
+            Some(&self.0[index])
+        } else {
+            None
+        }
+    }
 }
 
 #[inline]

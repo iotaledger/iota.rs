@@ -1,14 +1,20 @@
 // Copyright 2023 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use iota_client::{api::input_selection::new::InputSelection, block::protocol::protocol_parameters};
+use std::str::FromStr;
+
+use iota_client::{
+    api::input_selection::new::InputSelection,
+    block::{address::Address, output::TokenId, protocol::protocol_parameters},
+};
+use primitive_types::U256;
 
 use crate::input_selection::{
     build_basic_output, build_input_signing_data_most_basic_outputs, BECH32_ADDRESS, TOKEN_ID_1, TOKEN_ID_2,
 };
 
 #[test]
-fn input_amount_equal_output_amount() {
+fn remainder() {
     let protocol_parameters = protocol_parameters();
 
     let inputs = build_input_signing_data_most_basic_outputs(vec![
@@ -33,10 +39,36 @@ fn input_amount_equal_output_amount() {
         .unwrap();
 
     assert_eq!(selected.0, inputs);
-    // assert_eq!(selected.1, outputs);
+    assert_eq!(selected.1.len(), 2);
+    selected.1.iter().for_each(|output| {
+        if !outputs.contains(output) {
+            assert!(output.is_basic());
+            assert_eq!(output.amount(), 1_000_000);
+            assert_eq!(output.as_basic().native_tokens().len(), 2);
+            assert_eq!(
+                output
+                    .as_basic()
+                    .native_tokens()
+                    .get(&TokenId::from_str(TOKEN_ID_1).unwrap())
+                    .unwrap()
+                    .amount(),
+                U256::from(50),
+            );
+            assert_eq!(
+                output
+                    .as_basic()
+                    .native_tokens()
+                    .get(&TokenId::from_str(TOKEN_ID_2).unwrap())
+                    .unwrap()
+                    .amount(),
+                U256::from(100),
+            );
+            assert_eq!(output.as_basic().unlock_conditions().len(), 1);
+            assert_eq!(output.as_basic().features().len(), 0);
+            assert_eq!(
+                *output.as_basic().address(),
+                Address::try_from_bech32(BECH32_ADDRESS).unwrap().1
+            );
+        }
+    });
 }
-
-// expected selected: [
-// basic{ amount: 1_000_000, native_tokens: [{‘a’: 100}] },
-// basic{ amount: 1_000_000, native_tokens: [{‘a’: 100}, {‘b’: 100}] }]
-// expected remainder: Some(basic{ amount: 1_000_000, native_tokens: [{‘a’: 50}, {‘b’: 100}] })
