@@ -176,6 +176,7 @@ impl NativeTokens {
 
     /// Checks whether the provided token ID is contained in the native tokens.
     pub fn contains(&self, token_id: &TokenId) -> bool {
+        // Binary search is possible because native tokens are always ordered by token ID.
         self.0
             .binary_search_by_key(token_id, |native_token| native_token.token_id)
             .is_ok()
