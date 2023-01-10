@@ -181,6 +181,19 @@ impl NativeTokens {
             .binary_search_by_key(token_id, |native_token| native_token.token_id)
             .is_ok()
     }
+
+    /// Gets the native token associated with the provided token ID if contained.
+    pub fn get(&self, token_id: &TokenId) -> Option<&NativeToken> {
+        // Binary search is possible because native tokens are always ordered by token ID.
+        if let Ok(index) = self
+            .0
+            .binary_search_by_key(token_id, |native_token| native_token.token_id)
+        {
+            Some(&self.0[index])
+        } else {
+            None
+        }
+    }
 }
 
 #[inline]

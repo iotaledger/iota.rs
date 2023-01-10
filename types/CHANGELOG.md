@@ -23,7 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `NativeTokens::contains`;
+- `NativeTokens::{contains, get}`;
 
 ## 1.0.0-rc.4 - 2022-12-20
 
