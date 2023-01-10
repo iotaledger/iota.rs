@@ -273,6 +273,23 @@ impl TryFrom<&OutputMetadataResponse> for OutputMetadata {
     }
 }
 
+impl From<&OutputMetadata> for OutputMetadataResponse {
+    fn from(output_metadata: &OutputMetadata) -> Self {
+        Self {
+            block_id: output_metadata.block_id().to_string(),
+            transaction_id: output_metadata.transaction_id().to_string(),
+            output_index: output_metadata.output_index(),
+            is_spent: output_metadata.is_spent(),
+            milestone_index_spent: output_metadata.milestone_index_spent(),
+            milestone_timestamp_spent: output_metadata.milestone_timestamp_spent(),
+            transaction_id_spent: output_metadata.transaction_id_spent().map(|t| t.to_string()),
+            milestone_index_booked: output_metadata.milestone_index_booked(),
+            milestone_timestamp_booked: output_metadata.milestone_timestamp_booked(),
+            ledger_index: output_metadata.ledger_index(),
+        }
+    }
+}
+
 /// Data for transaction inputs for signing and ordering of unlock blocks
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct InputSigningData {
