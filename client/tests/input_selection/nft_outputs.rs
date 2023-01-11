@@ -476,36 +476,37 @@ fn prefer_basic_to_nft() {
     assert_eq!(selected.1, outputs);
 }
 
-// #[test]
-// fn take_amount_from_nft() {
-//     let protocol_parameters = protocol_parameters();
-//     let nft_id_1 = NftId::from_str(NFT_ID_1).unwrap();
+#[test]
+fn take_amount_from_nft_to_fund_basic() {
+    let protocol_parameters = protocol_parameters();
+    let nft_id_1 = NftId::from_str(NFT_ID_1).unwrap();
 
-//     let mut inputs = build_input_signing_data_nft_outputs(vec![(nft_id_1, BECH32_ADDRESS, 2_000_000, None)]);
-//     inputs.extend(build_input_signing_data_most_basic_outputs(vec![(
-//         BECH32_ADDRESS,
-//         1_000_000,
-//         None,
-//     )]));
-//     let outputs = vec![build_basic_output(1_200_000, BECH32_ADDRESS, None, None)];
+    let mut inputs = build_input_signing_data_nft_outputs(vec![(nft_id_1, BECH32_ADDRESS, 2_000_000, None)]);
+    inputs.extend(build_input_signing_data_most_basic_outputs(vec![(
+        BECH32_ADDRESS,
+        1_000_000,
+        None,
+    )]));
+    let outputs = vec![build_basic_output(1_200_000, BECH32_ADDRESS, None, None)];
 
-//     let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
-//         .select()
-//         .unwrap();
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+        .select()
+        .unwrap();
 
-//     assert!(unsorted_eq(&selected.0, &inputs));
-//     assert_eq!(selected.1.len(), 2);
-//     // selected.1.iter().for_each(|output| {
-//     //     if !outputs.contains(output) {
-//     //         assert!(output.is_basic());
-//     //         assert_eq!(output.amount(), 1_000_000);
-//     //         assert_eq!(output.as_basic().native_tokens().len(), 0);
-//     //         assert_eq!(output.as_basic().unlock_conditions().len(), 1);
-//     //         assert_eq!(output.as_basic().features().len(), 0);
-//     //         assert_eq!(
-//     //             *output.as_basic().address(),
-//     //             Address::try_from_bech32(BECH32_ADDRESS).unwrap().1
-//     //         );
-//     //     }
-//     // });
-// }
+    assert!(unsorted_eq(&selected.0, &inputs));
+    assert_eq!(selected.1.len(), 2);
+    assert!(selected.1.contains(&outputs[0]));
+    selected.1.iter().for_each(|output| {
+        if !outputs.contains(output) {
+            assert!(output.is_nft());
+            assert_eq!(output.amount(), 1_800_000);
+            assert_eq!(output.as_nft().native_tokens().len(), 0);
+            assert_eq!(output.as_nft().unlock_conditions().len(), 1);
+            assert_eq!(output.as_nft().features().len(), 0);
+            assert_eq!(
+                *output.as_nft().address(),
+                Address::try_from_bech32(BECH32_ADDRESS).unwrap().1
+            );
+        }
+    });
+}

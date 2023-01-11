@@ -110,40 +110,40 @@ impl InputSelection {
         'ici: {
             if inputs_sum < outputs_sum {
                 // Moving funds of already transitioned other outputs ?
-                // println!("NOT ENOUGH, OUTPUTS: {:?}", outputs);
                 let outputs = self
                     .outputs
                     .iter_mut()
                     .filter(|output| !output.output.is_basic() && !output.provided);
 
                 for output in outputs {
-                    let _diff = outputs_sum - inputs_sum;
+                    let diff = outputs_sum - inputs_sum;
                     let amount = output.output.amount();
-                    let _rent = output.output.rent_cost(self.protocol_parameters.rent_structure());
-                    // TODO try to reduce to perfect amount and not always minimum ? Could avoid a remainder
+                    let rent = output.output.rent_cost(self.protocol_parameters.rent_structure());
+
+                    let new_amount = if amount >= diff + rent { amount - diff } else { rent };
+
+                    // TODO check that new_amount is enough for the rent
+
+                    println!(
+                        "INPUT {}, OUTPUT {}, DIFF {}, AMOUNT {}, NEW AMOUNT {}, RENT {}",
+                        inputs_sum, outputs_sum, diff, amount, new_amount, rent
+                    );
+
                     let new_output = match &output.output {
                         Output::Alias(output) => AliasOutputBuilder::from(output)
-                            .with_minimum_storage_deposit(self.protocol_parameters.rent_structure().clone())
+                            .with_amount(new_amount)?
                             .finish_output(self.protocol_parameters.token_supply())?,
                         Output::Nft(output) => NftOutputBuilder::from(output)
-                            .with_minimum_storage_deposit(self.protocol_parameters.rent_structure().clone())
+                            .with_amount(new_amount)?
                             .finish_output(self.protocol_parameters.token_supply())?,
                         Output::Foundry(output) => FoundryOutputBuilder::from(output)
-                            .with_minimum_storage_deposit(self.protocol_parameters.rent_structure().clone())
+                            .with_amount(new_amount)?
                             .finish_output(self.protocol_parameters.token_supply())?,
                         _ => panic!("TODO"),
                     };
 
                     // TODO checked operations
-                    let diff = amount - new_output.amount();
-                    outputs_sum -= diff;
-
-                    // println!(
-                    //     "REDUCE {:?} input sum {inputs_sum} outputs sum {outputs_sum} diff {diff} previous amount
-                    // {amount} new amount {} rent {}",     output,
-                    //     new_output.amount(),
-                    //     rent
-                    // );
+                    outputs_sum -= amount - new_amount;
 
                     output.output = new_output;
 
