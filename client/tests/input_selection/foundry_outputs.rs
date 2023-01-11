@@ -231,8 +231,6 @@ fn simple_foundry_transition_basic_not_needed() {
         .select()
         .unwrap();
 
-    println!("{selected:?}");
-
     assert_eq!(selected.0.len(), 2);
     assert!(selected.0.contains(&inputs[1]));
     assert!(selected.0.contains(&inputs[2]));
@@ -258,3 +256,138 @@ fn simple_foundry_transition_basic_not_needed() {
         }
     });
 }
+
+#[test]
+fn simple_foundry_transition_basic_not_needed_with_remainder() {
+    let protocol_parameters = protocol_parameters();
+    let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
+
+    let mut inputs = build_input_signing_data_most_basic_outputs(vec![(BECH32_ADDRESS, 1_000_000, None)]);
+    inputs.extend(build_input_signing_data_foundry_outputs(vec![(
+        alias_id_1,
+        2_000_000,
+        SimpleTokenScheme::new(U256::from(10), U256::from(10), U256::from(10)).unwrap(),
+        None,
+    )]));
+    inputs.extend(build_input_signing_data_alias_outputs(vec![(
+        alias_id_1,
+        BECH32_ADDRESS,
+        2_000_000,
+        None,
+    )]));
+    let outputs = vec![build_foundry_output(
+        alias_id_1,
+        1_000_000,
+        SimpleTokenScheme::new(U256::from(10), U256::from(10), U256::from(10)).unwrap(),
+        None,
+    )];
+
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+        .select()
+        .unwrap();
+
+    assert_eq!(selected.0.len(), 2);
+    assert!(selected.0.contains(&inputs[1]));
+    assert!(selected.0.contains(&inputs[2]));
+    assert_eq!(selected.1.len(), 3);
+    assert!(selected.1.contains(&outputs[0]));
+    selected.1.iter().for_each(|output| {
+        if !outputs.contains(output) {
+            if output.is_alias() {
+                assert_eq!(output.amount(), 2_000_000);
+                assert_eq!(output.as_alias().native_tokens().len(), 0);
+                assert_eq!(*output.as_alias().alias_id(), alias_id_1);
+                assert_eq!(output.as_alias().unlock_conditions().len(), 2);
+                assert_eq!(output.as_alias().features().len(), 0);
+                assert_eq!(output.as_alias().immutable_features().len(), 0);
+                assert_eq!(
+                    *output.as_alias().state_controller_address(),
+                    Address::try_from_bech32(BECH32_ADDRESS).unwrap().1
+                );
+                assert_eq!(
+                    *output.as_alias().governor_address(),
+                    Address::try_from_bech32(BECH32_ADDRESS).unwrap().1
+                );
+            } else if output.is_basic() {
+                assert_eq!(output.amount(), 1_000_000);
+                assert_eq!(output.as_basic().native_tokens().len(), 0);
+                assert_eq!(output.as_basic().unlock_conditions().len(), 1);
+                assert_eq!(output.as_basic().features().len(), 0);
+                assert_eq!(
+                    *output.as_basic().address(),
+                    Address::try_from_bech32(BECH32_ADDRESS).unwrap().1
+                );
+            } else {
+                panic!("unexpected output type")
+            }
+        }
+    });
+}
+
+// #[test]
+// fn alias_required_through_sender_and_sufficient() {
+//     let protocol_parameters = protocol_parameters();
+//     let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
+
+//     let mut inputs = build_input_signing_data_most_basic_outputs(vec![(BECH32_ADDRESS, 1_000_000, None)]);
+//     inputs.extend(build_input_signing_data_foundry_outputs(vec![(
+//         alias_id_1,
+//         2_000_000,
+//         SimpleTokenScheme::new(U256::from(10), U256::from(10), U256::from(10)).unwrap(),
+//         None,
+//     )]));
+//     inputs.extend(build_input_signing_data_alias_outputs(vec![(
+//         alias_id_1,
+//         BECH32_ADDRESS,
+//         2_000_000,
+//         None,
+//     )]));
+//     let outputs = vec![build_basic_output(
+//         1_000_000,
+//         BECH32_ADDRESS,
+//         None,
+//         Some(BECH32_ADDRESS_ALIAS_SENDER),
+//     )];
+
+//     let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+//         .select()
+//         .unwrap();
+
+//     println!("{selected:?}");
+
+//     assert_eq!(selected.0.len(), 1);
+//     assert!(selected.0.contains(&inputs[2]));
+//     // assert_eq!(selected.1.len(), 3);
+//     // assert!(selected.1.contains(&outputs[0]));
+//     // selected.1.iter().for_each(|output| {
+//     //     if !outputs.contains(output) {
+//     //         if output.is_alias() {
+//     //             assert_eq!(output.amount(), 2_000_000);
+//     //             assert_eq!(output.as_alias().native_tokens().len(), 0);
+//     //             assert_eq!(*output.as_alias().alias_id(), alias_id_1);
+//     //             assert_eq!(output.as_alias().unlock_conditions().len(), 2);
+//     //             assert_eq!(output.as_alias().features().len(), 0);
+//     //             assert_eq!(output.as_alias().immutable_features().len(), 0);
+//     //             assert_eq!(
+//     //                 *output.as_alias().state_controller_address(),
+//     //                 Address::try_from_bech32(BECH32_ADDRESS).unwrap().1
+//     //             );
+//     //             assert_eq!(
+//     //                 *output.as_alias().governor_address(),
+//     //                 Address::try_from_bech32(BECH32_ADDRESS).unwrap().1
+//     //             );
+//     //         } else if output.is_basic() {
+//     //             assert_eq!(output.amount(), 1_000_000);
+//     //             assert_eq!(output.as_basic().native_tokens().len(), 0);
+//     //             assert_eq!(output.as_basic().unlock_conditions().len(), 1);
+//     //             assert_eq!(output.as_basic().features().len(), 0);
+//     //             assert_eq!(
+//     //                 *output.as_basic().address(),
+//     //                 Address::try_from_bech32(BECH32_ADDRESS).unwrap().1
+//     //             );
+//     //         } else {
+//     //             panic!("unexpected output type")
+//     //         }
+//     //     }
+//     // });
+// }
