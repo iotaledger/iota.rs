@@ -159,6 +159,15 @@ public class NodeCoreApi {
         return new Block(responsePayload);
     }
 
+    public Block getIncludedBlockMetadata(TransactionId transactionId) throws ClientException {
+        JsonObject o = new JsonObject();
+        o.addProperty("transactionId", transactionId.toString());
+
+        JsonObject responsePayload = (JsonObject) nativeApi.sendCommand(new ClientCommand("getIncludedBlockMetadata", o));
+
+        return new Block(responsePayload);
+    }
+
     public MilestonePayload getMilestoneById(MilestoneId milestoneId) throws ClientException {
         JsonObject o = new JsonObject();
         o.addProperty("milestoneId", milestoneId.toString());

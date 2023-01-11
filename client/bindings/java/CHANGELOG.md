@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `Client::{aliasIdToBech32(), nftIdToBech32()}`;
+- `{Client, NodeCoreApi}::getIncludedBlockMetadata`;
 
 ## 1.0.0-rc.1 - 2022-11-30
 
