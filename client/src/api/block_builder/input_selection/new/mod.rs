@@ -80,7 +80,8 @@ impl InputSelection {
             // TODO is this really necessary?
             // TODO should input be pushed before ? probably
             requirements.extend(Requirements::from_outputs(
-                self.selected_inputs.iter(),
+                // TODO do we really need to chain?
+                self.available_inputs.iter().chain(self.selected_inputs.iter()),
                 std::iter::once(&output_info),
             ));
             self.outputs.push(output_info);
@@ -138,7 +139,11 @@ impl InputSelection {
 
         // Gets requirements from outputs.
         // TODO this may re-evaluate outputs added by inputs
-        let new_requirements = Requirements::from_outputs(self.selected_inputs.iter(), self.outputs.iter());
+        let new_requirements = Requirements::from_outputs(
+            // TODO do we really need to chain?
+            self.available_inputs.iter().chain(self.selected_inputs.iter()),
+            self.outputs.iter(),
+        );
         println!("new requirements from outputs: {new_requirements:?}");
         requirements.extend(new_requirements);
 

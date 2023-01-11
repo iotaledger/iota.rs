@@ -25,11 +25,16 @@ impl InputSelection {
         let mut newly_selected_inputs = Vec::new();
         let mut newly_selected_ids = HashSet::new();
 
+        // println!("fulfill_base_token_requirement {inputs_sum} {outputs_sum}");
+
         if inputs_sum >= outputs_sum {
             return Ok((newly_selected_inputs, None));
         }
 
-        // println!("BASE TOKEN {available_inputs:?}\n{selected_inputs:?}\n{outputs:?}");
+        // println!(
+        //     "BASE TOKEN {:?}\n{:?}\n{:?}",
+        //     self.available_inputs, self.selected_inputs, self.outputs
+        // );
 
         // TODO don't pick burned things
 

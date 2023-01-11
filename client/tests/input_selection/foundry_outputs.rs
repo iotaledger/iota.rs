@@ -6,6 +6,7 @@ use std::str::FromStr;
 use iota_client::{
     api::input_selection::new::{Burn, InputSelection, Requirement},
     block::{
+        address::Address,
         output::{AliasId, Output, SimpleTokenScheme},
         protocol::protocol_parameters,
     },
@@ -14,7 +15,7 @@ use iota_client::{
 use primitive_types::U256;
 
 use crate::input_selection::{
-    build_alias_output, build_foundry_output, build_input_signing_data_alias_outputs,
+    build_alias_output, build_basic_output, build_foundry_output, build_input_signing_data_alias_outputs,
     build_input_signing_data_foundry_outputs, build_input_signing_data_most_basic_outputs, ALIAS_ID_1, ALIAS_ID_2,
     BECH32_ADDRESS,
 };
@@ -171,4 +172,89 @@ fn destroy_foundry() {
 
     // Alias next state
     assert_eq!(selected.1.len(), 1);
+}
+
+#[test]
+fn prefer_basic_to_foundry() {
+    let protocol_parameters = protocol_parameters();
+    let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
+
+    let mut inputs = build_input_signing_data_alias_outputs(vec![(alias_id_1, BECH32_ADDRESS, 1_000_000, None)]);
+    inputs.extend(build_input_signing_data_foundry_outputs(vec![(
+        alias_id_1,
+        1_000_000,
+        SimpleTokenScheme::new(U256::from(10), U256::from(10), U256::from(10)).unwrap(),
+        None,
+    )]));
+    inputs.extend(build_input_signing_data_most_basic_outputs(vec![(
+        BECH32_ADDRESS,
+        1_000_000,
+        None,
+    )]));
+    let outputs = vec![build_basic_output(1_000_000, BECH32_ADDRESS, None, None)];
+
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+        .select()
+        .unwrap();
+
+    assert_eq!(selected.0.len(), 1);
+    assert_eq!(selected.0[0], inputs[2]);
+    assert_eq!(selected.1, outputs);
+}
+
+#[test]
+fn simple_foundry_transition_basic_not_needed() {
+    let protocol_parameters = protocol_parameters();
+    let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
+
+    let mut inputs = build_input_signing_data_most_basic_outputs(vec![(BECH32_ADDRESS, 1_000_000, None)]);
+    inputs.extend(build_input_signing_data_foundry_outputs(vec![(
+        alias_id_1,
+        1_000_000,
+        SimpleTokenScheme::new(U256::from(10), U256::from(10), U256::from(10)).unwrap(),
+        None,
+    )]));
+    inputs.extend(build_input_signing_data_alias_outputs(vec![(
+        alias_id_1,
+        BECH32_ADDRESS,
+        2_000_000,
+        None,
+    )]));
+    let outputs = vec![build_foundry_output(
+        alias_id_1,
+        1_000_000,
+        SimpleTokenScheme::new(U256::from(10), U256::from(10), U256::from(10)).unwrap(),
+        None,
+    )];
+
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+        .select()
+        .unwrap();
+
+    println!("{selected:?}");
+
+    assert_eq!(selected.0.len(), 2);
+    assert!(selected.0.contains(&inputs[1]));
+    assert!(selected.0.contains(&inputs[2]));
+    assert_eq!(selected.1.len(), 2);
+    assert!(selected.1.contains(&outputs[0]));
+    selected.1.iter().for_each(|output| {
+        if !outputs.contains(output) {
+            assert!(output.is_alias());
+            assert_eq!(output.amount(), 2_000_000);
+            assert_eq!(output.as_alias().native_tokens().len(), 0);
+            assert_eq!(*output.as_alias().alias_id(), alias_id_1);
+            assert_eq!(output.as_alias().unlock_conditions().len(), 2);
+            assert_eq!(output.as_alias().features().len(), 0);
+            assert_eq!(output.as_alias().immutable_features().len(), 0);
+            assert_eq!(
+                *output.as_alias().state_controller_address(),
+                Address::try_from_bech32(BECH32_ADDRESS).unwrap().1
+            );
+            assert_eq!(
+                *output.as_alias().governor_address(),
+                Address::try_from_bech32(BECH32_ADDRESS).unwrap().1
+            );
+        }
+    });
 }
