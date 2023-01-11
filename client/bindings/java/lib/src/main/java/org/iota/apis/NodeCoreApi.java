@@ -159,7 +159,7 @@ public class NodeCoreApi {
         return new Block(responsePayload);
     }
 
-    public Block getIncludedBlockMetadata(TransactionId transactionId) throws ClientException {
+    public BlockMetadata getIncludedBlockMetadata(TransactionId transactionId) throws ClientException {
         JsonObject o = new JsonObject();
         o.addProperty("transactionId", transactionId.toString());
 
