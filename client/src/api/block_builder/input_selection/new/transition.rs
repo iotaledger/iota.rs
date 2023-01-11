@@ -42,6 +42,7 @@ impl InputSelection {
 
         let output = AliasOutputBuilder::from(input)
             .with_alias_id(alias_id)
+            // TODO always state transition ? Add a check to the tests
             .with_state_index(input.state_index() + 1)
             .finish_output(self.protocol_parameters.token_supply())?;
 

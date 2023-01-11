@@ -63,6 +63,31 @@ fn input_amount_lt_output_amount() {
 }
 
 #[test]
+fn input_amount_lt_output_amount_2() {
+    let protocol_parameters = protocol_parameters();
+    let alias_id_2 = AliasId::from_str(ALIAS_ID_2).unwrap();
+
+    let mut inputs = build_input_signing_data_alias_outputs(vec![(alias_id_2, BECH32_ADDRESS, 2_000_000, None)]);
+    inputs.extend(build_input_signing_data_most_basic_outputs(vec![(
+        BECH32_ADDRESS,
+        1_000_000,
+        None,
+    )]));
+    let outputs = vec![build_basic_output(3_000_001, BECH32_ADDRESS, None, None)];
+
+    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
+
+    assert!(matches!(
+        selected,
+        Err(Error::InsufficientBaseTokenAmount {
+            found: 3_000_000,
+            // Amount we want to send + storage deposit for alias remainder
+            required: 3_251_501
+        })
+    ));
+}
+
+#[test]
 fn basic_output_with_alias_input() {
     let protocol_parameters = protocol_parameters();
     let alias_id_2 = AliasId::from_str(ALIAS_ID_2).unwrap();
@@ -162,6 +187,35 @@ fn missing_input_for_alias_output() {
     let alias_id_2 = AliasId::from_str(ALIAS_ID_2).unwrap();
 
     let inputs = build_input_signing_data_most_basic_outputs(vec![(BECH32_ADDRESS, 1_000_000, None)]);
+    let outputs = vec![build_alias_output(
+        1_000_000,
+        alias_id_2,
+        BECH32_ADDRESS,
+        None,
+        None,
+        None,
+    )];
+
+    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
+
+    assert!(matches!(
+        selected,
+        Err(Error::UnfulfillableRequirement(Requirement::Alias(alias_id))) if alias_id == alias_id_2
+    ));
+}
+
+#[test]
+fn missing_input_for_alias_output_2() {
+    let protocol_parameters = protocol_parameters();
+    let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
+    let alias_id_2 = AliasId::from_str(ALIAS_ID_2).unwrap();
+
+    let mut inputs = build_input_signing_data_alias_outputs(vec![(alias_id_1, BECH32_ADDRESS, 2_000_000, None)]);
+    inputs.extend(build_input_signing_data_most_basic_outputs(vec![(
+        BECH32_ADDRESS,
+        1_000_000,
+        None,
+    )]));
     let outputs = vec![build_alias_output(
         1_000_000,
         alias_id_2,
@@ -437,4 +491,138 @@ fn missing_nft_issuer_transition() {
     let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
 
     assert!(selected.is_ok());
+}
+
+#[test]
+fn increase_alias_amount() {
+    let protocol_parameters = protocol_parameters();
+    let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
+
+    let mut inputs = build_input_signing_data_alias_outputs(vec![(alias_id_1, BECH32_ADDRESS, 2_000_000, None)]);
+    inputs.extend(build_input_signing_data_most_basic_outputs(vec![(
+        BECH32_ADDRESS,
+        1_000_000,
+        None,
+    )]));
+    let outputs = vec![build_alias_output(
+        3_000_000,
+        alias_id_1,
+        BECH32_ADDRESS,
+        None,
+        None,
+        None,
+    )];
+
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+        .select()
+        .unwrap();
+
+    assert!(unsorted_eq(&selected.0, &inputs));
+    assert!(unsorted_eq(&selected.1, &outputs));
+}
+
+#[test]
+fn decrease_alias_amount() {
+    let protocol_parameters = protocol_parameters();
+    let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
+
+    let mut inputs = build_input_signing_data_alias_outputs(vec![(alias_id_1, BECH32_ADDRESS, 2_000_000, None)]);
+    inputs.extend(build_input_signing_data_most_basic_outputs(vec![(
+        BECH32_ADDRESS,
+        1_000_000,
+        None,
+    )]));
+    let outputs = vec![build_alias_output(
+        1_000_000,
+        alias_id_1,
+        BECH32_ADDRESS,
+        None,
+        None,
+        None,
+    )];
+
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+        .select()
+        .unwrap();
+
+    assert_eq!(selected.0.len(), 1);
+    assert_eq!(selected.0[0], inputs[0]);
+    assert_eq!(selected.1.len(), 2);
+    assert!(selected.1.contains(&outputs[0]));
+    selected.1.iter().for_each(|output| {
+        if !outputs.contains(output) {
+            assert!(output.is_basic());
+            assert_eq!(output.amount(), 1_000_000);
+            assert_eq!(output.as_basic().native_tokens().len(), 0);
+            assert_eq!(output.as_basic().unlock_conditions().len(), 1);
+            assert_eq!(output.as_basic().features().len(), 0);
+            assert_eq!(
+                *output.as_basic().address(),
+                Address::try_from_bech32(BECH32_ADDRESS).unwrap().1
+            );
+        }
+    });
+}
+
+#[test]
+fn prefer_basic_to_alias() {
+    let protocol_parameters = protocol_parameters();
+    let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
+
+    let mut inputs = build_input_signing_data_alias_outputs(vec![(alias_id_1, BECH32_ADDRESS, 1_000_000, None)]);
+    inputs.extend(build_input_signing_data_most_basic_outputs(vec![(
+        BECH32_ADDRESS,
+        1_000_000,
+        None,
+    )]));
+    let outputs = vec![build_basic_output(1_000_000, BECH32_ADDRESS, None, None)];
+
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+        .select()
+        .unwrap();
+
+    assert_eq!(selected.0.len(), 1);
+    assert_eq!(selected.0[0], inputs[1]);
+    assert_eq!(selected.1, outputs);
+}
+
+#[test]
+fn take_amount_from_alias_to_fund_basic() {
+    let protocol_parameters = protocol_parameters();
+    let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
+
+    let mut inputs = build_input_signing_data_alias_outputs(vec![(alias_id_1, BECH32_ADDRESS, 2_000_000, None)]);
+    inputs.extend(build_input_signing_data_most_basic_outputs(vec![(
+        BECH32_ADDRESS,
+        1_000_000,
+        None,
+    )]));
+    let outputs = vec![build_basic_output(1_200_000, BECH32_ADDRESS, None, None)];
+
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+        .select()
+        .unwrap();
+
+    assert!(unsorted_eq(&selected.0, &inputs));
+    assert_eq!(selected.1.len(), 2);
+    assert!(selected.1.contains(&outputs[0]));
+    selected.1.iter().for_each(|output| {
+        if !outputs.contains(output) {
+            assert!(output.is_alias());
+            assert_eq!(output.amount(), 1_800_000);
+            assert_eq!(output.as_alias().native_tokens().len(), 0);
+            assert_eq!(*output.as_alias().alias_id(), alias_id_1);
+            assert_eq!(output.as_alias().unlock_conditions().len(), 2);
+            assert_eq!(output.as_alias().features().len(), 0);
+            assert_eq!(output.as_alias().immutable_features().len(), 0);
+            assert_eq!(
+                *output.as_alias().state_controller_address(),
+                Address::try_from_bech32(BECH32_ADDRESS).unwrap().1
+            );
+            assert_eq!(
+                *output.as_alias().governor_address(),
+                Address::try_from_bech32(BECH32_ADDRESS).unwrap().1
+            );
+        }
+    });
 }
