@@ -180,6 +180,26 @@ fn missing_input_for_alias_output() {
 }
 
 #[test]
+fn missing_input_for_alias_output_but_created() {
+    let protocol_parameters = protocol_parameters();
+    let alias_id_0 = AliasId::from_str(ALIAS_ID_0).unwrap();
+
+    let inputs = build_input_signing_data_most_basic_outputs(vec![(BECH32_ADDRESS, 1_000_000, None)]);
+    let outputs = vec![build_alias_output(
+        1_000_000,
+        alias_id_0,
+        BECH32_ADDRESS,
+        None,
+        None,
+        None,
+    )];
+
+    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
+
+    assert!(selected.is_ok());
+}
+
+#[test]
 fn alias_in_output_and_sender() {
     let protocol_parameters = protocol_parameters();
     let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
