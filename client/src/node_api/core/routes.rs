@@ -408,6 +408,16 @@ impl Client {
             .await
     }
 
+    /// Returns the metadata of the block that was included in the ledger for a given TransactionId.
+    /// GET /api/core/v2/transactions/{transactionId}/included-block/metadata
+    pub async fn get_included_block_metadata(&self, transaction_id: &TransactionId) -> Result<BlockMetadataResponse> {
+        let path = &format!("api/core/v2/transactions/{transaction_id}/included-block/metadata");
+
+        self.node_manager
+            .get_request(path, None, self.get_timeout(), true, true)
+            .await
+    }
+
     // Milestones routes.
 
     /// Gets the milestone by the given milestone id.

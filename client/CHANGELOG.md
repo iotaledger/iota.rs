@@ -26,6 +26,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `TrackedParticipation::answers` field;
 - `#[derive(Debug, Clone, Serialize, Deserialize)]` and `#[serde(untagged)]` to `ParticipationEventType`;
 - `impl From<&OutputMetadata> for OutputMetadataResponse`;
+- `Client::get_included_block_metadata` API endpoint;
+- `Message::GetIncludedBlockMetadata` to message interface;
 
 ### Changed
 

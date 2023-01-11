@@ -302,6 +302,13 @@ export interface __GetIncludedBlockMessage__ {
     };
 }
 
+export interface __GetIncludedBlockMetadataMessage__ {
+    name: 'getIncludedBlockMetadata';
+    data: {
+        transactionId: string;
+    };
+}
+
 export interface __Bech32ToHexMessage__ {
     name: 'bech32ToHex';
     data: {

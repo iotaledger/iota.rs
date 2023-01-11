@@ -212,6 +212,17 @@ public class Client extends NativeApi {
     }
 
     /**
+     * Returns the metadata of the block that contains the transaction that was included in the ledger.
+     *
+     * @param transactionId The transaction that was included in the ledger.
+     * @return The metadata of the block that contains the transaction.
+     * @throws ClientException on error.
+     */
+    public BlockMetadata getIncludedBlockMetadata(TransactionId transactionId) throws ClientException {
+        return nodeCoreApi.getIncludedBlockMetadata(transactionId);
+    }
+
+    /**
      * Get the milestone payload for the given milestone id
      *
      * @param milestoneId The milestone ID of the milestone you want to get.

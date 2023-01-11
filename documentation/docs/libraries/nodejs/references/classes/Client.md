@@ -53,6 +53,7 @@ The Client to interact with nodes.
 - [getReceiptsMigratedAt](Client.md#getreceiptsmigratedat)
 - [getTreasury](Client.md#gettreasury)
 - [getIncludedBlock](Client.md#getincludedblock)
+- [getIncludedBlockMetadata](Client.md#getincludedblockmetadata)
 - [bech32ToHex](Client.md#bech32tohex)
 - [hexToBech32](Client.md#hextobech32)
 - [aliasIdToBech32](Client.md#aliasidtobech32)
@@ -833,6 +834,24 @@ ___
 ▸ **getIncludedBlock**(`transactionId`): `Promise`<`IBlock`\>
 
 Returns the included block of the transaction.
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `transactionId` | `string` |
+
+#### Returns
+
+`Promise`<`IBlock`\>
+
+___
+
+### getIncludedBlockMetadata
+
+▸ **getIncludedBlockMetadata**(`transactionId`): `Promise`<`IBlock`\>
+
+Returns the metadata of the included block of the transaction.
 
 #### Parameters
 

@@ -140,3 +140,10 @@ class NodeCoreAPI(BaseAPI):
         return self.send_message('getIncludedBlock', {
             'transactionId': transaction_id
         })
+
+    def get_included_block_metadata(self, transaction_id):
+        """Returns the metadata of the included block of the transaction.
+        """
+        return self.send_message('getIncludedBlockMetadata', {
+            'transactionId': transaction_id
+        })
