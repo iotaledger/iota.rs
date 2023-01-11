@@ -218,7 +218,7 @@ public class Client extends NativeApi {
      * @return The metadata of the block that contains the transaction.
      * @throws ClientException on error.
      */
-    public Block getIncludedBlockMetadata(TransactionId transactionId) throws ClientException {
+    public BlockMetadata getIncludedBlockMetadata(TransactionId transactionId) throws ClientException {
         return nodeCoreApi.getIncludedBlockMetadata(transactionId);
     }
 
