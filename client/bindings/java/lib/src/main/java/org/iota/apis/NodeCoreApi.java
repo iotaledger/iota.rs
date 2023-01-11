@@ -165,7 +165,7 @@ public class NodeCoreApi {
 
         JsonObject responsePayload = (JsonObject) nativeApi.sendCommand(new ClientCommand("getIncludedBlockMetadata", o));
 
-        return new Block(responsePayload);
+        return new BlockMetadata(responsePayload);
     }
 
     public MilestonePayload getMilestoneById(MilestoneId milestoneId) throws ClientException {
