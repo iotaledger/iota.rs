@@ -40,6 +40,7 @@ fn two_native_tokens_one_needed() {
 
     assert!(unsorted_eq(&selected.0, &inputs));
     assert_eq!(selected.1.len(), 2);
+    assert!(selected.1.contains(&outputs[0]));
     selected.1.iter().for_each(|output| {
         if !outputs.contains(output) {
             assert!(output.is_basic());
@@ -98,6 +99,7 @@ fn two_native_tokens_both_needed_plus_remainder() {
 
     assert!(unsorted_eq(&selected.0, &inputs));
     assert_eq!(selected.1.len(), 2);
+    assert!(selected.1.contains(&outputs[0]));
     selected.1.iter().for_each(|output| {
         if !outputs.contains(output) {
             assert!(output.is_basic());
@@ -144,6 +146,7 @@ fn three_inputs_two_needed_plus_remainder() {
 
     assert_eq!(selected.0.len(), 2);
     assert_eq!(selected.1.len(), 2);
+    assert!(selected.1.contains(&outputs[0]));
     selected.1.iter().for_each(|output| {
         if !outputs.contains(output) {
             assert!(output.is_basic());

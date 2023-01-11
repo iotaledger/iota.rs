@@ -87,6 +87,7 @@ fn input_amount_greater_than_output_amount() {
     assert_eq!(selected.0, inputs);
     // One output should be added for the remainder.
     assert_eq!(selected.1.len(), 2);
+    assert!(selected.1.contains(&outputs[0]));
     selected.1.iter().for_each(|output| {
         if !outputs.contains(output) {
             assert!(output.is_basic());
@@ -118,6 +119,7 @@ fn input_amount_greater_than_output_amount_with_remainder_address() {
     assert_eq!(selected.0, inputs);
     // One output should be added for the remainder.
     assert_eq!(selected.1.len(), 2);
+    assert!(selected.1.contains(&outputs[0]));
     selected.1.iter().for_each(|output| {
         if !outputs.contains(output) {
             assert!(output.is_basic());
@@ -148,6 +150,7 @@ fn two_same_inputs_one_needed() {
     assert_eq!(selected.0.len(), 1);
     // One output should be added for the remainder.
     assert_eq!(selected.1.len(), 2);
+    assert!(selected.1.contains(&outputs[0]));
     selected.1.iter().for_each(|output| {
         if !outputs.contains(output) {
             assert!(output.is_basic());
@@ -234,6 +237,7 @@ fn two_inputs_remainder() {
     assert_eq!(selected.0, inputs);
     // One output should be added for the remainder.
     assert_eq!(selected.1.len(), 2);
+    assert!(selected.1.contains(&outputs[0]));
     selected.1.iter().for_each(|output| {
         if !outputs.contains(output) {
             assert!(output.is_basic());
