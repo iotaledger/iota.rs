@@ -239,7 +239,7 @@ impl InputSelection {
     }
 
     /// Selects inputs that meet the requirements of the outputs to satisfy the semantic validation of the overall
-    /// transaction. Also creates outputs if transitions are required.
+    /// transaction. Also creates a remainder output and chain transition outputs if required.
     pub fn select(mut self) -> Result<(Vec<InputSigningData>, Vec<Output>)> {
         if self.available_inputs.is_empty() {
             return Err(Error::NoInputsProvided);

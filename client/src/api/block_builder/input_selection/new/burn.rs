@@ -4,11 +4,13 @@
 use std::collections::{HashMap, HashSet};
 
 use primitive_types::U256;
+use serde::Deserialize;
 
 use crate::block::output::{AliasId, FoundryId, NftId, TokenId};
 
 /// A type to explicit what needs to be burned during input selection.
-#[derive(Default)]
+#[derive(Default, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Burn {
     /// Aliases to burn.
     pub(crate) aliases: HashSet<AliasId>,

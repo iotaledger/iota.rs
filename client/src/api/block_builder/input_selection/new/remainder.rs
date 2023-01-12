@@ -29,7 +29,7 @@ fn get_remainder_address(selected_inputs: &[InputSigningData], remainder_address
         return remainder_address;
     }
 
-    // TODO need to check timelock/expiration?
+    // TODO need to check timelock/expiration
 
     for input in selected_inputs {
         if let Some(unlock_conditions) = input.output.unlock_conditions() {
