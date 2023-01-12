@@ -118,11 +118,6 @@ impl InputSelection {
 
                     // TODO check that new_amount is enough for the rent
 
-                    println!(
-                        "INPUT {}, OUTPUT {}, DIFF {}, AMOUNT {}, NEW AMOUNT {}, RENT {}",
-                        inputs_sum, outputs_sum, diff, amount, new_amount, rent
-                    );
-
                     let new_output = match &output.output {
                         Output::Alias(output) => AliasOutputBuilder::from(output)
                             .with_amount(new_amount)?

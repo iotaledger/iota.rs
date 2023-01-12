@@ -126,7 +126,7 @@ fn melt_native_tokens() {
         None,
     )];
 
-    let selected = InputSelection::new(inputs.clone(), outputs, protocol_parameters)
+    let selected = InputSelection::new(inputs, outputs, protocol_parameters)
         .select()
         .unwrap();
 

@@ -49,7 +49,7 @@ fn burn_alias_absent() {
     let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS, None)]);
     let outputs = vec![build_basic_output(1_000_000, BECH32_ADDRESS, None, None)];
 
-    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+    let selected = InputSelection::new(inputs, outputs, protocol_parameters)
         .burn(Burn::new().add_alias(alias_id_1))
         .select();
 
@@ -88,7 +88,7 @@ fn burn_nft_absent() {
     let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS, None)]);
     let outputs = vec![build_basic_output(1_000_000, BECH32_ADDRESS, None, None)];
 
-    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+    let selected = InputSelection::new(inputs, outputs, protocol_parameters)
         .burn(Burn::new().add_nft(nft_id_1))
         .select();
 
@@ -178,7 +178,7 @@ fn burn_foundry_absent() {
     ]);
     let outputs = vec![build_basic_output(1_000_000, BECH32_ADDRESS, None, None)];
 
-    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+    let selected = InputSelection::new(inputs, outputs, protocol_parameters)
         .burn(Burn::new().add_foundry(foundry_id_1))
         .select();
 

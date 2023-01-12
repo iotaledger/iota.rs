@@ -349,7 +349,7 @@ fn alias_sender() {
         Some(BECH32_ADDRESS_ALIAS_SENDER),
     )];
 
-    let selected = InputSelection::new(inputs.clone(), outputs, protocol_parameters)
+    let selected = InputSelection::new(inputs, outputs, protocol_parameters)
         .select()
         .unwrap();
 
@@ -404,7 +404,7 @@ fn nft_sender() {
         Some(BECH32_ADDRESS_NFT_SENDER),
     )];
 
-    let selected = InputSelection::new(inputs.clone(), outputs, protocol_parameters)
+    let selected = InputSelection::new(inputs, outputs, protocol_parameters)
         .select()
         .unwrap();
 
