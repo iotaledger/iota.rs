@@ -155,8 +155,8 @@ fn build_alias_output(
 }
 
 fn build_foundry_output(
-    alias_id: AliasId,
     amount: u64,
+    alias_id: AliasId,
     token_scheme: SimpleTokenScheme,
     native_tokens: Option<Vec<(&str, u64)>>,
 ) -> Output {
@@ -178,11 +178,11 @@ fn build_foundry_output(
 }
 
 fn build_input_signing_data_most_basic_outputs(
-    outputs: Vec<(&str, u64, Option<Vec<(&str, u64)>>)>,
+    outputs: Vec<(u64, &str, Option<Vec<(&str, u64)>>)>,
 ) -> Vec<InputSigningData> {
     outputs
         .into_iter()
-        .map(|(bech32_address, amount, native_tokens)| InputSigningData {
+        .map(|(amount, bech32_address, native_tokens)| InputSigningData {
             output: build_basic_output(amount, bech32_address, native_tokens, None),
             output_metadata: OutputMetadata::new(
                 rand_block_id(),
@@ -202,11 +202,11 @@ fn build_input_signing_data_most_basic_outputs(
 }
 
 fn build_input_signing_data_nft_outputs(
-    outputs: Vec<(NftId, &str, u64, Option<Vec<(&str, u64)>>)>,
+    outputs: Vec<(u64, NftId, &str, Option<Vec<(&str, u64)>>)>,
 ) -> Vec<InputSigningData> {
     outputs
         .into_iter()
-        .map(|(nft_id, bech32_address, amount, native_tokens)| InputSigningData {
+        .map(|(amount, nft_id, bech32_address, native_tokens)| InputSigningData {
             output: build_nft_output(amount, nft_id, bech32_address, native_tokens, None, None),
             output_metadata: OutputMetadata::new(
                 rand_block_id(),
@@ -226,11 +226,11 @@ fn build_input_signing_data_nft_outputs(
 }
 
 fn build_input_signing_data_alias_outputs(
-    outputs: Vec<(AliasId, &str, u64, Option<Vec<(&str, u64)>>)>,
+    outputs: Vec<(u64, AliasId, &str, Option<Vec<(&str, u64)>>)>,
 ) -> Vec<InputSigningData> {
     outputs
         .into_iter()
-        .map(|(alias_id, bech32_address, amount, native_tokens)| InputSigningData {
+        .map(|(amount, alias_id, bech32_address, native_tokens)| InputSigningData {
             output: build_alias_output(amount, alias_id, bech32_address, native_tokens, None, None),
             output_metadata: OutputMetadata::new(
                 rand_block_id(),
@@ -250,13 +250,13 @@ fn build_input_signing_data_alias_outputs(
 }
 
 fn build_input_signing_data_foundry_outputs(
-    outputs: Vec<(AliasId, u64, SimpleTokenScheme, Option<Vec<(&str, u64)>>)>,
+    outputs: Vec<(u64, AliasId, SimpleTokenScheme, Option<Vec<(&str, u64)>>)>,
 ) -> Vec<InputSigningData> {
     outputs
         .into_iter()
         .map(
-            |(alias_id, amount, simple_token_scheme, native_tokens)| InputSigningData {
-                output: build_foundry_output(alias_id, amount, simple_token_scheme, native_tokens),
+            |(amount, alias_id, simple_token_scheme, native_tokens)| InputSigningData {
+                output: build_foundry_output(amount, alias_id, simple_token_scheme, native_tokens),
                 output_metadata: OutputMetadata::new(
                     rand_block_id(),
                     OutputId::new(rand_transaction_id(), 0).unwrap(),
