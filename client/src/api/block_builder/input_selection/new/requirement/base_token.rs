@@ -12,6 +12,8 @@ use crate::{
     secret::types::InputSigningData,
 };
 
+// TODO checked operations ?
+
 pub(crate) fn base_token_sums(selected_inputs: &[InputSigningData], outputs: &[OutputInfo]) -> (u64, u64) {
     let inputs_sum = selected_inputs.iter().map(|input| input.output.amount()).sum::<u64>();
     let outputs_sum = outputs.iter().map(|output| output.output.amount()).sum::<u64>();
@@ -25,16 +27,9 @@ impl InputSelection {
         let mut newly_selected_inputs = Vec::new();
         let mut newly_selected_ids = HashSet::new();
 
-        // println!("fulfill_base_token_requirement {inputs_sum} {outputs_sum}");
-
         if inputs_sum >= outputs_sum {
             return Ok((newly_selected_inputs, None));
         }
-
-        // println!(
-        //     "BASE TOKEN {:?}\n{:?}\n{:?}",
-        //     self.available_inputs, self.selected_inputs, self.outputs
-        // );
 
         // TODO don't pick burned things
 
@@ -62,8 +57,6 @@ impl InputSelection {
                     inputs_sum += input.output.amount();
                     newly_selected_inputs.push(input.clone());
                     newly_selected_ids.insert(*input.output_id());
-
-                    // println!("SELECTED {:?}", input.output);
 
                     if inputs_sum >= outputs_sum {
                         break 'overall;
@@ -94,8 +87,6 @@ impl InputSelection {
                         newly_selected_inputs.push(input.clone());
                         newly_selected_ids.insert(*input.output_id());
 
-                        // println!("SELECTED {:?}", input.output);
-
                         if inputs_sum >= outputs_sum {
                             break;
                         }
@@ -109,8 +100,6 @@ impl InputSelection {
                 }
             }
         }
-
-        // println!("BEFORE {inputs_sum} {outputs_sum}");
 
         'ici: {
             if inputs_sum < outputs_sum {
@@ -147,7 +136,6 @@ impl InputSelection {
                         _ => panic!("TODO"),
                     };
 
-                    // TODO checked operations
                     outputs_sum -= amount - new_amount;
 
                     output.output = new_output;

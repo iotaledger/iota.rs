@@ -5,6 +5,7 @@
 
 mod alias_outputs;
 mod basic_outputs;
+mod burn;
 mod foundry_outputs;
 mod native_tokens;
 mod nft_outputs;
