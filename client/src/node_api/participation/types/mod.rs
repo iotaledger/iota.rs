@@ -14,6 +14,7 @@ use std::collections::HashMap;
 use getset::Getters;
 use iota_types::{impl_id, string_serde_impl};
 use serde::{Deserialize, Serialize};
+use serde_repr::{Deserialize_repr, Serialize_repr};
 
 /// Participation tag.
 pub const PARTICIPATION_TAG: &str = "PARTICIPATE";
