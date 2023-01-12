@@ -65,13 +65,19 @@ impl InputSelection {
             }
 
             // 2. Basic with ED25519 address and other things ????
-            {}
+            {
+                // TODO
+            }
 
             // 3. Moving funds of already transitioned other outputs
-            {}
+            {
+                // TODO
+            }
 
             // 4. Basic with other kind of address
-            {}
+            {
+                // TODO
+            }
 
             // 5. Other kinds of outputs
             {
@@ -128,11 +134,10 @@ impl InputSelection {
                         Output::Foundry(output) => FoundryOutputBuilder::from(output)
                             .with_amount(new_amount)?
                             .finish_output(self.protocol_parameters.token_supply())?,
-                        _ => panic!("TODO"),
+                        _ => panic!("only alias, nft and foundry can be automatically created"),
                     };
 
                     outputs_sum -= amount - new_amount;
-
                     output.output = new_output;
 
                     if inputs_sum >= outputs_sum {

@@ -64,32 +64,17 @@ pub(crate) fn remainder_output(
     remainder_address: Option<Address>,
     protocol_parameters: &ProtocolParameters,
 ) -> Result<Option<Output>> {
-    println!("REMAINDER ------");
     let (inputs_sum, outputs_sum) = base_token_sums(selected_inputs, outputs);
 
     let mut input_native_tokens = get_native_tokens(selected_inputs.iter().map(|input| &input.output))?;
     let mut output_native_tokens = get_native_tokens(outputs.iter().map(|output| &output.output))?;
     let (minted_native_tokens, melted_native_tokens) = get_minted_and_melted_native_tokens(selected_inputs, outputs)?;
 
-    println!("Input {input_native_tokens:?}");
-    println!("Output {output_native_tokens:?}");
-    println!("Minted {minted_native_tokens:?}");
-    println!("Melted {melted_native_tokens:?}");
-
     input_native_tokens.merge(minted_native_tokens)?;
     output_native_tokens.merge(melted_native_tokens)?;
     // TODO also merge burn
 
-    println!("Input merged {input_native_tokens:?}");
-    println!("Output merged {output_native_tokens:?}");
-
     let native_tokens_diff = get_native_tokens_diff(&input_native_tokens, &output_native_tokens)?;
-
-    println!("Diff {native_tokens_diff:?}");
-
-    // println!("remainder: input {inputs_sum} output {outputs_sum}");
-
-    // println!("{selected_inputs:?}\n{outputs:?}");
 
     if inputs_sum > outputs_sum || native_tokens_diff.is_some() {
         let Some(remainder_address) = get_remainder_address(selected_inputs,remainder_address) else {

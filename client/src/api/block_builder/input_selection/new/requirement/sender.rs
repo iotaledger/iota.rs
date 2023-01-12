@@ -25,7 +25,6 @@ impl InputSelection {
         address: Address,
     ) -> Result<(Vec<InputSigningData>, Option<Requirement>)> {
         // Checks if the requirement is already fulfilled.
-
         if self
             .selected_inputs
             .iter()
