@@ -19,8 +19,9 @@ use serde::{Deserialize, Serialize};
 pub const PARTICIPATION_TAG: &str = "PARTICIPATE";
 
 /// Possible participation event types.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize_repr, Deserialize_repr)]
 #[serde(untagged)]
+#[repr(u8)]
 pub enum ParticipationEventType {
     /// Voting event.
     Voting,
