@@ -16,7 +16,7 @@ use primitive_types::U256;
 
 use crate::input_selection::{
     build_alias_output, build_basic_output, build_foundry_output, build_input_signing_data_alias_outputs,
-    build_input_signing_data_foundry_outputs, build_input_signing_data_most_basic_outputs, ALIAS_ID_1, ALIAS_ID_2,
+    build_input_signing_data_basic_outputs, build_input_signing_data_foundry_outputs, ALIAS_ID_1, ALIAS_ID_2,
     BECH32_ADDRESS,
 };
 
@@ -25,7 +25,7 @@ fn missing_input_alias_for_foundry() {
     let protocol_parameters = protocol_parameters();
     let alias_id_2 = AliasId::from_str(ALIAS_ID_2).unwrap();
 
-    let inputs = build_input_signing_data_most_basic_outputs(vec![(1_000_000, BECH32_ADDRESS, None)]);
+    let inputs = build_input_signing_data_basic_outputs(vec![(1_000_000, BECH32_ADDRESS, None)]);
     let outputs = vec![build_foundry_output(
         1_000_000,
         alias_id_2,
@@ -186,7 +186,7 @@ fn prefer_basic_to_foundry() {
         SimpleTokenScheme::new(U256::from(10), U256::from(10), U256::from(10)).unwrap(),
         None,
     )]));
-    inputs.extend(build_input_signing_data_most_basic_outputs(vec![(
+    inputs.extend(build_input_signing_data_basic_outputs(vec![(
         1_000_000,
         BECH32_ADDRESS,
         None,
@@ -207,7 +207,7 @@ fn simple_foundry_transition_basic_not_needed() {
     let protocol_parameters = protocol_parameters();
     let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
 
-    let mut inputs = build_input_signing_data_most_basic_outputs(vec![(1_000_000, BECH32_ADDRESS, None)]);
+    let mut inputs = build_input_signing_data_basic_outputs(vec![(1_000_000, BECH32_ADDRESS, None)]);
     inputs.extend(build_input_signing_data_foundry_outputs(vec![(
         1_000_000,
         alias_id_1,
@@ -262,7 +262,7 @@ fn simple_foundry_transition_basic_not_needed_with_remainder() {
     let protocol_parameters = protocol_parameters();
     let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
 
-    let mut inputs = build_input_signing_data_most_basic_outputs(vec![(1_000_000, BECH32_ADDRESS, None)]);
+    let mut inputs = build_input_signing_data_basic_outputs(vec![(1_000_000, BECH32_ADDRESS, None)]);
     inputs.extend(build_input_signing_data_foundry_outputs(vec![(
         2_000_000,
         alias_id_1,
@@ -329,7 +329,7 @@ fn simple_foundry_transition_basic_not_needed_with_remainder() {
 //     let protocol_parameters = protocol_parameters();
 //     let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
 
-//     let mut inputs = build_input_signing_data_most_basic_outputs(vec![(BECH32_ADDRESS, 1_000_000, None)]);
+//     let mut inputs = build_input_signing_data_basic_outputs(vec![(BECH32_ADDRESS, 1_000_000, None)]);
 //     inputs.extend(build_input_signing_data_foundry_outputs(vec![(
 //         alias_id_1,
 //         2_000_000,

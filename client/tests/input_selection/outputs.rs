@@ -3,7 +3,7 @@
 
 use iota_client::{api::input_selection::new::InputSelection, block::protocol::protocol_parameters, Error};
 
-use crate::input_selection::{build_basic_output, build_input_signing_data_most_basic_outputs, BECH32_ADDRESS};
+use crate::input_selection::{build_basic_output, build_input_signing_data_basic_outputs, BECH32_ADDRESS};
 
 #[test]
 fn no_inputs_provided() {
@@ -21,7 +21,7 @@ fn no_inputs_provided() {
 fn no_outputs_provided() {
     let protocol_parameters = protocol_parameters();
 
-    let inputs = build_input_signing_data_most_basic_outputs(vec![(1_000_000, BECH32_ADDRESS, None)]);
+    let inputs = build_input_signing_data_basic_outputs(vec![(1_000_000, BECH32_ADDRESS, None)]);
     let outputs = Vec::new();
 
     let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();

@@ -178,7 +178,7 @@ fn build_foundry_output(
     builder.finish_output(TOKEN_SUPPLY).unwrap()
 }
 
-fn build_input_signing_data_most_basic_outputs(
+fn build_input_signing_data_basic_outputs(
     outputs: Vec<(u64, &str, Option<Vec<(&str, u64)>>)>,
 ) -> Vec<InputSigningData> {
     outputs

@@ -58,7 +58,6 @@ impl InputSelection {
 }
 
 /// A stack of requirements, imposed by outputs, that need to be resolved by selected inputs.
-/// TODO is this still necessary?
 #[derive(Debug)]
 pub(crate) struct Requirements(Vec<Requirement>);
 
@@ -88,7 +87,6 @@ impl Requirements {
         inputs: impl Iterator<Item = &'a InputSigningData> + Clone,
         outputs: impl Iterator<Item = &'a OutputInfo>,
     ) -> Self {
-        // TODO take duplicates into account
         let mut requirements = Requirements::new();
 
         for output in outputs {

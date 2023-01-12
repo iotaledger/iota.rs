@@ -15,8 +15,8 @@ use iota_client::{
 use primitive_types::U256;
 
 use crate::input_selection::{
-    build_basic_output, build_input_signing_data_alias_outputs, build_input_signing_data_foundry_outputs,
-    build_input_signing_data_most_basic_outputs, build_input_signing_data_nft_outputs, ALIAS_ID_1, BECH32_ADDRESS,
+    build_basic_output, build_input_signing_data_alias_outputs, build_input_signing_data_basic_outputs,
+    build_input_signing_data_foundry_outputs, build_input_signing_data_nft_outputs, ALIAS_ID_1, BECH32_ADDRESS,
     NFT_ID_1,
 };
 
@@ -26,7 +26,7 @@ fn burn_alias_present() {
     let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
 
     let mut inputs = build_input_signing_data_alias_outputs(vec![(1_000_000, alias_id_1, BECH32_ADDRESS, None)]);
-    inputs.extend(build_input_signing_data_most_basic_outputs(vec![(
+    inputs.extend(build_input_signing_data_basic_outputs(vec![(
         1_000_000,
         BECH32_ADDRESS,
         None,
@@ -48,7 +48,7 @@ fn burn_alias_absent() {
     let protocol_parameters = protocol_parameters();
     let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
 
-    let inputs = build_input_signing_data_most_basic_outputs(vec![(1_000_000, BECH32_ADDRESS, None)]);
+    let inputs = build_input_signing_data_basic_outputs(vec![(1_000_000, BECH32_ADDRESS, None)]);
     let outputs = vec![build_basic_output(1_000_000, BECH32_ADDRESS, None, None)];
 
     let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
@@ -67,7 +67,7 @@ fn burn_nft_present() {
     let nft_id_1 = NftId::from_str(NFT_ID_1).unwrap();
 
     let mut inputs = build_input_signing_data_nft_outputs(vec![(1_000_000, nft_id_1, BECH32_ADDRESS, None)]);
-    inputs.extend(build_input_signing_data_most_basic_outputs(vec![(
+    inputs.extend(build_input_signing_data_basic_outputs(vec![(
         1_000_000,
         BECH32_ADDRESS,
         None,
@@ -89,7 +89,7 @@ fn burn_nft_absent() {
     let protocol_parameters = protocol_parameters();
     let nft_id_1 = NftId::from_str(NFT_ID_1).unwrap();
 
-    let inputs = build_input_signing_data_most_basic_outputs(vec![(1_000_000, BECH32_ADDRESS, None)]);
+    let inputs = build_input_signing_data_basic_outputs(vec![(1_000_000, BECH32_ADDRESS, None)]);
     let outputs = vec![build_basic_output(1_000_000, BECH32_ADDRESS, None, None)];
 
     let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
@@ -119,7 +119,7 @@ fn burn_foundry_present() {
         BECH32_ADDRESS,
         None,
     )]));
-    inputs.extend(build_input_signing_data_most_basic_outputs(vec![(
+    inputs.extend(build_input_signing_data_basic_outputs(vec![(
         1_000_000,
         BECH32_ADDRESS,
         None,
@@ -184,7 +184,7 @@ fn burn_foundry_absent() {
         .id();
 
     let mut inputs = build_input_signing_data_alias_outputs(vec![(1_000_000, alias_id_1, BECH32_ADDRESS, None)]);
-    inputs.extend(build_input_signing_data_most_basic_outputs(vec![(
+    inputs.extend(build_input_signing_data_basic_outputs(vec![(
         1_000_000,
         BECH32_ADDRESS,
         None,
