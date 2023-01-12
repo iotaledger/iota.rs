@@ -11,16 +11,16 @@ use iota_client::{
 use primitive_types::U256;
 
 use crate::input_selection::{
-    build_basic_output, build_input_signing_data_basic_outputs, unsorted_eq, BECH32_ADDRESS, TOKEN_ID_1, TOKEN_ID_2,
+    build_basic_output, build_inputs, unsorted_eq, Build::Basic, BECH32_ADDRESS, TOKEN_ID_1, TOKEN_ID_2,
 };
 
 #[test]
 fn two_native_tokens_one_needed() {
     let protocol_parameters = protocol_parameters();
 
-    let inputs = build_input_signing_data_basic_outputs(vec![
-        (1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)])),
-        (
+    let inputs = build_inputs(vec![
+        Basic(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)])),
+        Basic(
             1_000_000,
             BECH32_ADDRESS,
             Some(vec![(TOKEN_ID_1, 100), (TOKEN_ID_2, 100)]),
@@ -77,9 +77,9 @@ fn two_native_tokens_one_needed() {
 fn two_native_tokens_both_needed_plus_remainder() {
     let protocol_parameters = protocol_parameters();
 
-    let inputs = build_input_signing_data_basic_outputs(vec![
-        (1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)])),
-        (
+    let inputs = build_inputs(vec![
+        Basic(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)])),
+        Basic(
             1_000_000,
             BECH32_ADDRESS,
             Some(vec![(TOKEN_ID_1, 100), (TOKEN_ID_2, 100)]),
@@ -127,10 +127,10 @@ fn two_native_tokens_both_needed_plus_remainder() {
 fn three_inputs_two_needed_plus_remainder() {
     let protocol_parameters = protocol_parameters();
 
-    let inputs = build_input_signing_data_basic_outputs(vec![
-        (1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)])),
-        (1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)])),
-        (1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)])),
+    let inputs = build_inputs(vec![
+        Basic(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)])),
+        Basic(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)])),
+        Basic(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)])),
     ]);
     let outputs = vec![build_basic_output(
         1_000_000,
@@ -174,10 +174,10 @@ fn three_inputs_two_needed_plus_remainder() {
 fn three_inputs_two_needed_no_remainder() {
     let protocol_parameters = protocol_parameters();
 
-    let inputs = build_input_signing_data_basic_outputs(vec![
-        (1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)])),
-        (1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)])),
-        (1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)])),
+    let inputs = build_inputs(vec![
+        Basic(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)])),
+        Basic(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)])),
+        Basic(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)])),
     ]);
     let outputs = vec![build_basic_output(
         2_000_000,
@@ -198,8 +198,7 @@ fn three_inputs_two_needed_no_remainder() {
 fn insufficient_native_tokens_one_input() {
     let protocol_parameters = protocol_parameters();
 
-    let inputs =
-        build_input_signing_data_basic_outputs(vec![(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)]))]);
+    let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)]))]);
     let outputs = vec![build_basic_output(
         1_000_000,
         BECH32_ADDRESS,
@@ -222,10 +221,10 @@ fn insufficient_native_tokens_one_input() {
 fn insufficient_native_tokens_three_inputs() {
     let protocol_parameters = protocol_parameters();
 
-    let inputs = build_input_signing_data_basic_outputs(vec![
-        (1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)])),
-        (1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)])),
-        (1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)])),
+    let inputs = build_inputs(vec![
+        Basic(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)])),
+        Basic(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)])),
+        Basic(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)])),
     ]);
     let outputs = vec![build_basic_output(
         1_000_000,

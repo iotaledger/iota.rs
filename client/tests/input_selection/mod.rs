@@ -47,6 +47,13 @@ const BECH32_ADDRESS_ED25519_SENDER: &str = "rms1qqhvvur9xfj6yhgsxfa4f8xst7vz9zx
 const BECH32_ADDRESS_ALIAS_SENDER: &str = "rms1pqg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zws5524"; // Corresponds to ALIAS_ID_1
 const BECH32_ADDRESS_NFT_SENDER: &str = "rms1zqg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zxddmy7"; // Corresponds to NFT_ID_1
 
+enum Build<'a> {
+    Basic(u64, &'a str, Option<Vec<(&'a str, u64)>>),
+    Nft(u64, NftId, &'a str, Option<Vec<(&'a str, u64)>>),
+    Alias(u64, AliasId, &'a str, Option<Vec<(&'a str, u64)>>),
+    Foundry(u64, AliasId, SimpleTokenScheme, Option<Vec<(&'a str, u64)>>),
+}
+
 fn build_basic_output(
     amount: u64,
     bech32_address: &str,
@@ -178,86 +185,31 @@ fn build_foundry_output(
     builder.finish_output(TOKEN_SUPPLY).unwrap()
 }
 
-fn build_input_signing_data_basic_outputs(
-    outputs: Vec<(u64, &str, Option<Vec<(&str, u64)>>)>,
-) -> Vec<InputSigningData> {
+fn build_inputs(outputs: Vec<Build>) -> Vec<InputSigningData> {
     outputs
         .into_iter()
-        .map(|(amount, bech32_address, native_tokens)| InputSigningData {
-            output: build_basic_output(amount, bech32_address, native_tokens, None),
-            output_metadata: OutputMetadata::new(
-                rand_block_id(),
-                OutputId::new(rand_transaction_id(), 0).unwrap(),
-                false,
-                None,
-                None,
-                None,
-                0,
-                0,
-                0,
-            ),
-            chain: None,
-            bech32_address: bech32_address.to_string(),
-        })
-        .collect()
-}
+        .map(|build| {
+            let (output, bech32_address) = match build {
+                Build::Basic(amount, bech32_address, native_tokens) => (
+                    build_basic_output(amount, bech32_address, native_tokens, None),
+                    bech32_address.to_string(),
+                ),
+                Build::Nft(amount, nft_id, bech32_address, native_tokens) => (
+                    build_nft_output(amount, nft_id, bech32_address, native_tokens, None, None),
+                    bech32_address.to_string(),
+                ),
+                Build::Alias(amount, alias_id, bech32_address, native_tokens) => (
+                    build_alias_output(amount, alias_id, bech32_address, native_tokens, None, None),
+                    bech32_address.to_string(),
+                ),
+                Build::Foundry(amount, alias_id, token_scheme, native_tokens) => (
+                    build_foundry_output(amount, alias_id, token_scheme, native_tokens),
+                    Address::Alias(AliasAddress::new(alias_id)).to_bech32(SHIMMER_TESTNET_BECH32_HRP),
+                ),
+            };
 
-fn build_input_signing_data_nft_outputs(
-    outputs: Vec<(u64, NftId, &str, Option<Vec<(&str, u64)>>)>,
-) -> Vec<InputSigningData> {
-    outputs
-        .into_iter()
-        .map(|(amount, nft_id, bech32_address, native_tokens)| InputSigningData {
-            output: build_nft_output(amount, nft_id, bech32_address, native_tokens, None, None),
-            output_metadata: OutputMetadata::new(
-                rand_block_id(),
-                OutputId::new(rand_transaction_id(), 0).unwrap(),
-                false,
-                None,
-                None,
-                None,
-                0,
-                0,
-                0,
-            ),
-            chain: None,
-            bech32_address: bech32_address.to_string(),
-        })
-        .collect()
-}
-
-fn build_input_signing_data_alias_outputs(
-    outputs: Vec<(u64, AliasId, &str, Option<Vec<(&str, u64)>>)>,
-) -> Vec<InputSigningData> {
-    outputs
-        .into_iter()
-        .map(|(amount, alias_id, bech32_address, native_tokens)| InputSigningData {
-            output: build_alias_output(amount, alias_id, bech32_address, native_tokens, None, None),
-            output_metadata: OutputMetadata::new(
-                rand_block_id(),
-                OutputId::new(rand_transaction_id(), 0).unwrap(),
-                false,
-                None,
-                None,
-                None,
-                0,
-                0,
-                0,
-            ),
-            chain: None,
-            bech32_address: bech32_address.to_string(),
-        })
-        .collect()
-}
-
-fn build_input_signing_data_foundry_outputs(
-    outputs: Vec<(u64, AliasId, SimpleTokenScheme, Option<Vec<(&str, u64)>>)>,
-) -> Vec<InputSigningData> {
-    outputs
-        .into_iter()
-        .map(
-            |(amount, alias_id, simple_token_scheme, native_tokens)| InputSigningData {
-                output: build_foundry_output(amount, alias_id, simple_token_scheme, native_tokens),
+            InputSigningData {
+                output,
                 output_metadata: OutputMetadata::new(
                     rand_block_id(),
                     OutputId::new(rand_transaction_id(), 0).unwrap(),
@@ -270,9 +222,9 @@ fn build_input_signing_data_foundry_outputs(
                     0,
                 ),
                 chain: None,
-                bech32_address: Address::Alias(AliasAddress::new(alias_id)).to_bech32(SHIMMER_TESTNET_BECH32_HRP),
-            },
-        )
+                bech32_address,
+            }
+        })
         .collect()
 }
 

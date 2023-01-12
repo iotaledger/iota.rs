@@ -15,9 +15,9 @@ use iota_client::{
 use primitive_types::U256;
 
 use crate::input_selection::{
-    build_alias_output, build_basic_output, build_foundry_output, build_input_signing_data_alias_outputs,
-    build_input_signing_data_basic_outputs, build_input_signing_data_foundry_outputs, ALIAS_ID_1, ALIAS_ID_2,
-    BECH32_ADDRESS,
+    build_alias_output, build_basic_output, build_foundry_output, build_inputs,
+    Build::{Alias, Basic, Foundry},
+    ALIAS_ID_1, ALIAS_ID_2, BECH32_ADDRESS,
 };
 
 #[test]
@@ -25,7 +25,7 @@ fn missing_input_alias_for_foundry() {
     let protocol_parameters = protocol_parameters();
     let alias_id_2 = AliasId::from_str(ALIAS_ID_2).unwrap();
 
-    let inputs = build_input_signing_data_basic_outputs(vec![(1_000_000, BECH32_ADDRESS, None)]);
+    let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS, None)]);
     let outputs = vec![build_foundry_output(
         1_000_000,
         alias_id_2,
@@ -46,7 +46,7 @@ fn existing_input_alias_for_foundry_alias() {
     let protocol_parameters = protocol_parameters();
     let alias_id_2 = AliasId::from_str(ALIAS_ID_2).unwrap();
 
-    let inputs = build_input_signing_data_alias_outputs(vec![(1_251_500, alias_id_2, BECH32_ADDRESS, None)]);
+    let inputs = build_inputs(vec![Alias(1_251_500, alias_id_2, BECH32_ADDRESS, None)]);
     let outputs = vec![build_foundry_output(
         1_000_000,
         alias_id_2,
@@ -74,7 +74,7 @@ fn minted_native_tokens_in_new_remainder() {
     let protocol_parameters = protocol_parameters();
     let alias_id_2 = AliasId::from_str(ALIAS_ID_2).unwrap();
 
-    let inputs = build_input_signing_data_alias_outputs(vec![(2_251_500, alias_id_2, BECH32_ADDRESS, None)]);
+    let inputs = build_inputs(vec![Alias(2_251_500, alias_id_2, BECH32_ADDRESS, None)]);
     let outputs = vec![build_foundry_output(
         1_000_000,
         alias_id_2,
@@ -106,16 +106,18 @@ fn melt_native_tokens() {
     let protocol_parameters = protocol_parameters();
     let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
 
-    let mut inputs = build_input_signing_data_alias_outputs(vec![(1_000_000, alias_id_1, BECH32_ADDRESS, None)]);
-    inputs.extend(build_input_signing_data_foundry_outputs(vec![(
-        1_000_000,
-        alias_id_1,
-        SimpleTokenScheme::new(U256::from(10), U256::from(0), U256::from(10)).unwrap(),
-        Some(vec![(
-            "0x0811111111111111111111111111111111111111111111111111111111111111110000000000",
-            10,
-        )]),
-    )]));
+    let inputs = build_inputs(vec![
+        Alias(1_000_000, alias_id_1, BECH32_ADDRESS, None),
+        Foundry(
+            1_000_000,
+            alias_id_1,
+            SimpleTokenScheme::new(U256::from(10), U256::from(0), U256::from(10)).unwrap(),
+            Some(vec![(
+                "0x0811111111111111111111111111111111111111111111111111111111111111110000000000",
+                10,
+            )]),
+        ),
+    ]);
     let outputs = vec![build_foundry_output(
         1_000_000,
         alias_id_1,
@@ -148,13 +150,15 @@ fn destroy_foundry() {
     let protocol_parameters = protocol_parameters();
     let alias_id_2 = AliasId::from_str(ALIAS_ID_2).unwrap();
 
-    let mut inputs = build_input_signing_data_alias_outputs(vec![(50_300, alias_id_2, BECH32_ADDRESS, None)]);
-    inputs.extend(build_input_signing_data_foundry_outputs(vec![(
-        52_800,
-        alias_id_2,
-        SimpleTokenScheme::new(U256::from(10), U256::from(10), U256::from(10)).unwrap(),
-        None,
-    )]));
+    let inputs = build_inputs(vec![
+        Alias(50_300, alias_id_2, BECH32_ADDRESS, None),
+        Foundry(
+            52_800,
+            alias_id_2,
+            SimpleTokenScheme::new(U256::from(10), U256::from(10), U256::from(10)).unwrap(),
+            None,
+        ),
+    ]);
     // Alias output gets the amount from the foundry output added
     let outputs = vec![build_alias_output(
         103_100,
@@ -179,18 +183,16 @@ fn prefer_basic_to_foundry() {
     let protocol_parameters = protocol_parameters();
     let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
 
-    let mut inputs = build_input_signing_data_alias_outputs(vec![(1_000_000, alias_id_1, BECH32_ADDRESS, None)]);
-    inputs.extend(build_input_signing_data_foundry_outputs(vec![(
-        1_000_000,
-        alias_id_1,
-        SimpleTokenScheme::new(U256::from(10), U256::from(10), U256::from(10)).unwrap(),
-        None,
-    )]));
-    inputs.extend(build_input_signing_data_basic_outputs(vec![(
-        1_000_000,
-        BECH32_ADDRESS,
-        None,
-    )]));
+    let inputs = build_inputs(vec![
+        Alias(1_000_000, alias_id_1, BECH32_ADDRESS, None),
+        Foundry(
+            1_000_000,
+            alias_id_1,
+            SimpleTokenScheme::new(U256::from(10), U256::from(10), U256::from(10)).unwrap(),
+            None,
+        ),
+        Basic(1_000_000, BECH32_ADDRESS, None),
+    ]);
     let outputs = vec![build_basic_output(1_000_000, BECH32_ADDRESS, None, None)];
 
     let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
@@ -207,19 +209,16 @@ fn simple_foundry_transition_basic_not_needed() {
     let protocol_parameters = protocol_parameters();
     let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
 
-    let mut inputs = build_input_signing_data_basic_outputs(vec![(1_000_000, BECH32_ADDRESS, None)]);
-    inputs.extend(build_input_signing_data_foundry_outputs(vec![(
-        1_000_000,
-        alias_id_1,
-        SimpleTokenScheme::new(U256::from(10), U256::from(10), U256::from(10)).unwrap(),
-        None,
-    )]));
-    inputs.extend(build_input_signing_data_alias_outputs(vec![(
-        2_000_000,
-        alias_id_1,
-        BECH32_ADDRESS,
-        None,
-    )]));
+    let inputs = build_inputs(vec![
+        Basic(1_000_000, BECH32_ADDRESS, None),
+        Foundry(
+            1_000_000,
+            alias_id_1,
+            SimpleTokenScheme::new(U256::from(10), U256::from(10), U256::from(10)).unwrap(),
+            None,
+        ),
+        Alias(2_000_000, alias_id_1, BECH32_ADDRESS, None),
+    ]);
     let outputs = vec![build_foundry_output(
         1_000_000,
         alias_id_1,
@@ -262,19 +261,16 @@ fn simple_foundry_transition_basic_not_needed_with_remainder() {
     let protocol_parameters = protocol_parameters();
     let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
 
-    let mut inputs = build_input_signing_data_basic_outputs(vec![(1_000_000, BECH32_ADDRESS, None)]);
-    inputs.extend(build_input_signing_data_foundry_outputs(vec![(
-        2_000_000,
-        alias_id_1,
-        SimpleTokenScheme::new(U256::from(10), U256::from(10), U256::from(10)).unwrap(),
-        None,
-    )]));
-    inputs.extend(build_input_signing_data_alias_outputs(vec![(
-        2_000_000,
-        alias_id_1,
-        BECH32_ADDRESS,
-        None,
-    )]));
+    let inputs = build_inputs(vec![
+        Basic(1_000_000, BECH32_ADDRESS, None),
+        Foundry(
+            2_000_000,
+            alias_id_1,
+            SimpleTokenScheme::new(U256::from(10), U256::from(10), U256::from(10)).unwrap(),
+            None,
+        ),
+        Alias(2_000_000, alias_id_1, BECH32_ADDRESS, None),
+    ]);
     let outputs = vec![build_foundry_output(
         1_000_000,
         alias_id_1,
@@ -329,14 +325,14 @@ fn simple_foundry_transition_basic_not_needed_with_remainder() {
 //     let protocol_parameters = protocol_parameters();
 //     let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
 
-//     let mut inputs = build_input_signing_data_basic_outputs(vec![(BECH32_ADDRESS, 1_000_000, None)]);
+//     let mut inputs = build_inputs(vec![(BECH32_ADDRESS, 1_000_000, None)]);
 //     inputs.extend(build_input_signing_data_foundry_outputs(vec![(
 //         alias_id_1,
 //         2_000_000,
 //         SimpleTokenScheme::new(U256::from(10), U256::from(10), U256::from(10)).unwrap(),
 //         None,
 //     )]));
-//     inputs.extend(build_input_signing_data_alias_outputs(vec![(
+//     inputs.extend(build_inputs(vec![(
 //         alias_id_1,
 //         BECH32_ADDRESS,
 //         2_000_000,
