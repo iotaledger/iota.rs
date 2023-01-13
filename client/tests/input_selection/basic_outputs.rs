@@ -16,7 +16,7 @@ use iota_client::{
 use crate::input_selection::{
     build_basic_output, build_inputs,
     Build::{Alias, Basic, Nft},
-    ALIAS_ID_1, BECH32_ADDRESS, BECH32_ADDRESS_ALIAS_SENDER, BECH32_ADDRESS_ED25519_SENDER, BECH32_ADDRESS_NFT_SENDER,
+    ALIAS_ID_1, BECH32_ADDRESS, BECH32_ADDRESS_ALIAS, BECH32_ADDRESS_ED25519, BECH32_ADDRESS_NFT,
     BECH32_ADDRESS_REMAINDER, NFT_ID_1,
 };
 
@@ -277,12 +277,12 @@ fn not_enough_storage_deposit_for_remainder() {
 #[test]
 fn ed25519_sender() {
     let protocol_parameters = protocol_parameters();
-    let sender = Address::try_from_bech32(BECH32_ADDRESS_ED25519_SENDER).unwrap().1;
+    let sender = Address::try_from_bech32(BECH32_ADDRESS_ED25519).unwrap().1;
 
     let inputs = build_inputs(vec![
         Basic(2_000_000, BECH32_ADDRESS, None, None),
         Basic(2_000_000, BECH32_ADDRESS, None, None),
-        Basic(1_000_000, BECH32_ADDRESS_ED25519_SENDER, None, None),
+        Basic(1_000_000, BECH32_ADDRESS_ED25519, None, None),
         Basic(2_000_000, BECH32_ADDRESS, None, None),
         Basic(2_000_000, BECH32_ADDRESS, None, None),
     ]);
@@ -290,7 +290,7 @@ fn ed25519_sender() {
         2_000_000,
         BECH32_ADDRESS,
         None,
-        Some(BECH32_ADDRESS_ED25519_SENDER),
+        Some(BECH32_ADDRESS_ED25519),
     )];
 
     let selected = InputSelection::new(inputs, outputs, protocol_parameters)
@@ -318,14 +318,14 @@ fn missing_ed25519_sender() {
         1_000_000,
         BECH32_ADDRESS,
         None,
-        Some(BECH32_ADDRESS_ED25519_SENDER),
+        Some(BECH32_ADDRESS_ED25519),
     )];
 
     let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
 
     assert!(matches!(
         selected,
-        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender.is_ed25519() && sender == Address::try_from_bech32(BECH32_ADDRESS_ED25519_SENDER).unwrap().1
+        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender.is_ed25519() && sender == Address::try_from_bech32(BECH32_ADDRESS_ED25519).unwrap().1
     ));
 }
 
@@ -346,7 +346,7 @@ fn alias_sender() {
         2_000_000,
         BECH32_ADDRESS,
         None,
-        Some(BECH32_ADDRESS_ALIAS_SENDER),
+        Some(BECH32_ADDRESS_ALIAS),
     )];
 
     let selected = InputSelection::new(inputs, outputs, protocol_parameters)
@@ -374,14 +374,14 @@ fn missing_alias_sender() {
         1_000_000,
         BECH32_ADDRESS,
         None,
-        Some(BECH32_ADDRESS_ALIAS_SENDER),
+        Some(BECH32_ADDRESS_ALIAS),
     )];
 
     let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
 
     assert!(matches!(
         selected,
-        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender.is_alias() && sender == Address::try_from_bech32(BECH32_ADDRESS_ALIAS_SENDER).unwrap().1
+        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender.is_alias() && sender == Address::try_from_bech32(BECH32_ADDRESS_ALIAS).unwrap().1
     ));
 }
 
@@ -401,7 +401,7 @@ fn nft_sender() {
         2_000_000,
         BECH32_ADDRESS,
         None,
-        Some(BECH32_ADDRESS_NFT_SENDER),
+        Some(BECH32_ADDRESS_NFT),
     )];
 
     let selected = InputSelection::new(inputs, outputs, protocol_parameters)
@@ -429,13 +429,13 @@ fn missing_nft_sender() {
         1_000_000,
         BECH32_ADDRESS,
         None,
-        Some(BECH32_ADDRESS_NFT_SENDER),
+        Some(BECH32_ADDRESS_NFT),
     )];
 
     let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
 
     assert!(matches!(
         selected,
-        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender.is_nft() && sender == Address::try_from_bech32(BECH32_ADDRESS_NFT_SENDER).unwrap().1
+        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender.is_nft() && sender == Address::try_from_bech32(BECH32_ADDRESS_NFT).unwrap().1
     ));
 }
