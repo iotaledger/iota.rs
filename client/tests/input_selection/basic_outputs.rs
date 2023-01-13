@@ -31,8 +31,8 @@ fn input_amount_equal_output_amount() {
         .select()
         .unwrap();
 
-    assert_eq!(selected.0, inputs);
-    assert_eq!(selected.1, outputs);
+    assert_eq!(selected.inputs, inputs);
+    assert_eq!(selected.outputs, outputs);
 }
 
 #[test]
@@ -85,11 +85,11 @@ fn input_amount_greater_than_output_amount() {
         .select()
         .unwrap();
 
-    assert_eq!(selected.0, inputs);
+    assert_eq!(selected.inputs, inputs);
     // One output should be added for the remainder.
-    assert_eq!(selected.1.len(), 2);
-    assert!(selected.1.contains(&outputs[0]));
-    selected.1.iter().for_each(|output| {
+    assert_eq!(selected.outputs.len(), 2);
+    assert!(selected.outputs.contains(&outputs[0]));
+    selected.outputs.iter().for_each(|output| {
         if !outputs.contains(output) {
             assert!(output.is_basic());
             assert_eq!(output.amount(), 1_500_000);
@@ -117,11 +117,11 @@ fn input_amount_greater_than_output_amount_with_remainder_address() {
         .select()
         .unwrap();
 
-    assert_eq!(selected.0, inputs);
+    assert_eq!(selected.inputs, inputs);
     // One output should be added for the remainder.
-    assert_eq!(selected.1.len(), 2);
-    assert!(selected.1.contains(&outputs[0]));
-    selected.1.iter().for_each(|output| {
+    assert_eq!(selected.outputs.len(), 2);
+    assert!(selected.outputs.contains(&outputs[0]));
+    selected.outputs.iter().for_each(|output| {
         if !outputs.contains(output) {
             assert!(output.is_basic());
             assert_eq!(output.amount(), 1_500_000);
@@ -148,11 +148,11 @@ fn two_same_inputs_one_needed() {
         .unwrap();
 
     // One input has enough amount.
-    assert_eq!(selected.0.len(), 1);
+    assert_eq!(selected.inputs.len(), 1);
     // One output should be added for the remainder.
-    assert_eq!(selected.1.len(), 2);
-    assert!(selected.1.contains(&outputs[0]));
-    selected.1.iter().for_each(|output| {
+    assert_eq!(selected.outputs.len(), 2);
+    assert!(selected.outputs.contains(&outputs[0]));
+    selected.outputs.iter().for_each(|output| {
         if !outputs.contains(output) {
             assert!(output.is_basic());
             assert_eq!(output.amount(), 1_500_000);
@@ -181,8 +181,8 @@ fn two_inputs_one_needed() {
         .select()
         .unwrap();
 
-    assert_eq!(selected.0, vec![inputs[0].clone()]);
-    assert_eq!(selected.1, outputs);
+    assert_eq!(selected.inputs, vec![inputs[0].clone()]);
+    assert_eq!(selected.outputs, outputs);
 }
 
 #[test]
@@ -199,8 +199,8 @@ fn two_inputs_one_needed_reversed() {
         .select()
         .unwrap();
 
-    assert_eq!(selected.0, vec![inputs[1].clone()]);
-    assert_eq!(selected.1, outputs);
+    assert_eq!(selected.inputs, vec![inputs[1].clone()]);
+    assert_eq!(selected.outputs, outputs);
 }
 
 #[test]
@@ -217,8 +217,8 @@ fn two_inputs_both_needed() {
         .select()
         .unwrap();
 
-    assert_eq!(selected.0, inputs);
-    assert_eq!(selected.1, outputs);
+    assert_eq!(selected.inputs, inputs);
+    assert_eq!(selected.outputs, outputs);
 }
 
 #[test]
@@ -235,11 +235,11 @@ fn two_inputs_remainder() {
         .select()
         .unwrap();
 
-    assert_eq!(selected.0, inputs);
+    assert_eq!(selected.inputs, inputs);
     // One output should be added for the remainder.
-    assert_eq!(selected.1.len(), 2);
-    assert!(selected.1.contains(&outputs[0]));
-    selected.1.iter().for_each(|output| {
+    assert_eq!(selected.outputs.len(), 2);
+    assert!(selected.outputs.contains(&outputs[0]));
+    selected.outputs.iter().for_each(|output| {
         if !outputs.contains(output) {
             assert!(output.is_basic());
             assert_eq!(output.amount(), 500_000);
@@ -298,15 +298,15 @@ fn ed25519_sender() {
         .unwrap();
 
     // Sender + another for amount
-    assert_eq!(selected.0.len(), 2);
+    assert_eq!(selected.inputs.len(), 2);
     assert!(
         selected
-            .0
+            .inputs
             .iter()
             .any(|input| *input.output.as_basic().address() == sender)
     );
     // Provided output + remainder
-    assert_eq!(selected.1.len(), 2);
+    assert_eq!(selected.outputs.len(), 2);
 }
 
 #[test]
@@ -354,15 +354,15 @@ fn alias_sender() {
         .unwrap();
 
     // Sender + another for amount
-    assert_eq!(selected.0.len(), 2);
+    assert_eq!(selected.inputs.len(), 2);
     assert!(
         selected
-            .0
+            .inputs
             .iter()
             .any(|input| input.output.is_alias() && *input.output.as_alias().alias_id() == alias_id_1)
     );
     // Provided output + alias
-    assert_eq!(selected.1.len(), 2);
+    assert_eq!(selected.outputs.len(), 2);
 }
 
 #[test]
@@ -409,15 +409,15 @@ fn nft_sender() {
         .unwrap();
 
     // Sender + another for amount
-    assert_eq!(selected.0.len(), 2);
+    assert_eq!(selected.inputs.len(), 2);
     assert!(
         selected
-            .0
+            .inputs
             .iter()
             .any(|input| input.output.is_nft() && *input.output.as_nft().nft_id() == nft_id_1)
     );
     // Provided output + nft
-    assert_eq!(selected.1.len(), 2);
+    assert_eq!(selected.outputs.len(), 2);
 }
 
 #[test]

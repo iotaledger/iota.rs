@@ -36,9 +36,9 @@ fn burn_alias_present() {
         .select()
         .unwrap();
 
-    assert_eq!(selected.0.len(), 1);
-    assert_eq!(selected.0[0], inputs[0]);
-    assert_eq!(selected.1, outputs);
+    assert_eq!(selected.inputs.len(), 1);
+    assert_eq!(selected.inputs[0], inputs[0]);
+    assert_eq!(selected.outputs, outputs);
 }
 
 #[test]
@@ -75,9 +75,9 @@ fn burn_nft_present() {
         .select()
         .unwrap();
 
-    assert_eq!(selected.0.len(), 1);
-    assert_eq!(selected.0[0], inputs[0]);
-    assert_eq!(selected.1, outputs);
+    assert_eq!(selected.inputs.len(), 1);
+    assert_eq!(selected.inputs[0], inputs[0]);
+    assert_eq!(selected.outputs, outputs);
 }
 
 #[test]
@@ -120,12 +120,12 @@ fn burn_foundry_present() {
         .select()
         .unwrap();
 
-    assert_eq!(selected.0.len(), 2);
-    assert!(selected.0.contains(&inputs[0]));
-    assert!(selected.0.contains(&inputs[1]));
-    assert_eq!(selected.1.len(), 3);
-    assert!(selected.1.contains(&outputs[0]));
-    selected.1.iter().for_each(|output| {
+    assert_eq!(selected.inputs.len(), 2);
+    assert!(selected.inputs.contains(&inputs[0]));
+    assert!(selected.inputs.contains(&inputs[1]));
+    assert_eq!(selected.outputs.len(), 3);
+    assert!(selected.outputs.contains(&outputs[0]));
+    selected.outputs.iter().for_each(|output| {
         if !outputs.contains(output) {
             if output.is_basic() {
                 assert_eq!(output.amount(), 1_500_000);

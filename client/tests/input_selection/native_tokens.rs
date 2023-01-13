@@ -37,10 +37,10 @@ fn two_native_tokens_one_needed() {
         .select()
         .unwrap();
 
-    assert!(unsorted_eq(&selected.0, &inputs));
-    assert_eq!(selected.1.len(), 2);
-    assert!(selected.1.contains(&outputs[0]));
-    selected.1.iter().for_each(|output| {
+    assert!(unsorted_eq(&selected.inputs, &inputs));
+    assert_eq!(selected.outputs.len(), 2);
+    assert!(selected.outputs.contains(&outputs[0]));
+    selected.outputs.iter().for_each(|output| {
         if !outputs.contains(output) {
             assert!(output.is_basic());
             assert_eq!(output.amount(), 1_000_000);
@@ -96,10 +96,10 @@ fn two_native_tokens_both_needed_plus_remainder() {
         .select()
         .unwrap();
 
-    assert!(unsorted_eq(&selected.0, &inputs));
-    assert_eq!(selected.1.len(), 2);
-    assert!(selected.1.contains(&outputs[0]));
-    selected.1.iter().for_each(|output| {
+    assert!(unsorted_eq(&selected.inputs, &inputs));
+    assert_eq!(selected.outputs.len(), 2);
+    assert!(selected.outputs.contains(&outputs[0]));
+    selected.outputs.iter().for_each(|output| {
         if !outputs.contains(output) {
             assert!(output.is_basic());
             assert_eq!(output.amount(), 1_000_000);
@@ -143,10 +143,10 @@ fn three_inputs_two_needed_plus_remainder() {
         .select()
         .unwrap();
 
-    assert_eq!(selected.0.len(), 2);
-    assert_eq!(selected.1.len(), 2);
-    assert!(selected.1.contains(&outputs[0]));
-    selected.1.iter().for_each(|output| {
+    assert_eq!(selected.inputs.len(), 2);
+    assert_eq!(selected.outputs.len(), 2);
+    assert!(selected.outputs.contains(&outputs[0]));
+    selected.outputs.iter().for_each(|output| {
         if !outputs.contains(output) {
             assert!(output.is_basic());
             assert_eq!(output.amount(), 1_000_000);
@@ -190,8 +190,8 @@ fn three_inputs_two_needed_no_remainder() {
         .select()
         .unwrap();
 
-    assert_eq!(selected.0.len(), 2);
-    assert_eq!(selected.1, outputs);
+    assert_eq!(selected.inputs.len(), 2);
+    assert_eq!(selected.outputs, outputs);
 }
 
 #[test]

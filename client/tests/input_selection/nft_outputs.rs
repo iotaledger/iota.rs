@@ -32,8 +32,8 @@ fn input_nft_eq_output_nft() {
         .select()
         .unwrap();
 
-    assert_eq!(selected.0, inputs);
-    assert_eq!(selected.1, outputs);
+    assert_eq!(selected.inputs, inputs);
+    assert_eq!(selected.outputs, outputs);
 }
 
 #[test]
@@ -69,7 +69,7 @@ fn basic_output_with_nft_input() {
         .unwrap();
 
     // basic output + nft remainder
-    assert_eq!(selected.1.len(), 2);
+    assert_eq!(selected.outputs.len(), 2);
 }
 
 #[test]
@@ -85,9 +85,9 @@ fn mint_nft() {
         .unwrap();
 
     // One output should be added for the remainder
-    assert_eq!(selected.1.len(), 2);
+    assert_eq!(selected.outputs.len(), 2);
     // Output contains the new minted nft id
-    assert!(selected.1.iter().any(|output| {
+    assert!(selected.outputs.iter().any(|output| {
         if let Output::Nft(nft_output) = output {
             *nft_output.nft_id() == nft_id_0
         } else {
@@ -110,9 +110,9 @@ fn burn_nft() {
         .unwrap();
 
     // No remainder
-    assert_eq!(selected.1.len(), 1);
+    assert_eq!(selected.outputs.len(), 1);
     // Output is a basic output
-    assert!(matches!(selected.1[0], Output::Basic(_)));
+    assert!(matches!(selected.outputs[0], Output::Basic(_)));
 }
 
 #[test]
@@ -186,16 +186,16 @@ fn nft_in_output_and_sender() {
         .select()
         .unwrap();
 
-    assert!(unsorted_eq(&selected.0, &inputs));
-    assert_eq!(selected.1.len(), 2);
-    assert!(selected.1.iter().any(|output| {
+    assert!(unsorted_eq(&selected.inputs, &inputs));
+    assert_eq!(selected.outputs.len(), 2);
+    assert!(selected.outputs.iter().any(|output| {
         if let Output::Nft(nft_output) = output {
             *nft_output.nft_id() == nft_id_1
         } else {
             false
         }
     }));
-    assert!(selected.1.iter().any(|output| output.is_basic()));
+    assert!(selected.outputs.iter().any(|output| output.is_basic()));
 }
 
 #[test]
@@ -411,8 +411,8 @@ fn increase_nft_amount() {
         .select()
         .unwrap();
 
-    assert!(unsorted_eq(&selected.0, &inputs));
-    assert!(unsorted_eq(&selected.1, &outputs));
+    assert!(unsorted_eq(&selected.inputs, &inputs));
+    assert!(unsorted_eq(&selected.outputs, &outputs));
 }
 
 #[test]
@@ -430,11 +430,11 @@ fn decrease_nft_amount() {
         .select()
         .unwrap();
 
-    assert_eq!(selected.0.len(), 1);
-    assert_eq!(selected.0[0], inputs[0]);
-    assert_eq!(selected.1.len(), 2);
-    assert!(selected.1.contains(&outputs[0]));
-    selected.1.iter().for_each(|output| {
+    assert_eq!(selected.inputs.len(), 1);
+    assert_eq!(selected.inputs[0], inputs[0]);
+    assert_eq!(selected.outputs.len(), 2);
+    assert!(selected.outputs.contains(&outputs[0]));
+    selected.outputs.iter().for_each(|output| {
         if !outputs.contains(output) {
             assert!(output.is_basic());
             assert_eq!(output.amount(), 1_000_000);
@@ -464,9 +464,9 @@ fn prefer_basic_to_nft() {
         .select()
         .unwrap();
 
-    assert_eq!(selected.0.len(), 1);
-    assert_eq!(selected.0[0], inputs[1]);
-    assert_eq!(selected.1, outputs);
+    assert_eq!(selected.inputs.len(), 1);
+    assert_eq!(selected.inputs[0], inputs[1]);
+    assert_eq!(selected.outputs, outputs);
 }
 
 #[test]
@@ -484,10 +484,10 @@ fn take_amount_from_nft_to_fund_basic() {
         .select()
         .unwrap();
 
-    assert!(unsorted_eq(&selected.0, &inputs));
-    assert_eq!(selected.1.len(), 2);
-    assert!(selected.1.contains(&outputs[0]));
-    selected.1.iter().for_each(|output| {
+    assert!(unsorted_eq(&selected.inputs, &inputs));
+    assert_eq!(selected.outputs.len(), 2);
+    assert!(selected.outputs.contains(&outputs[0]));
+    selected.outputs.iter().for_each(|output| {
         if !outputs.contains(output) {
             assert!(output.is_nft());
             assert_eq!(output.amount(), 1_800_000);

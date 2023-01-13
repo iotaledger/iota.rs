@@ -46,6 +46,14 @@ pub struct InputSelection {
     timestamp: u32,
 }
 
+/// Result of the input selection algorithm.
+pub struct Selected {
+    /// Selected inputs.
+    pub inputs: Vec<InputSigningData>,
+    /// Provided and created outputs.
+    pub outputs: Vec<Output>,
+}
+
 impl InputSelection {
     fn required_address(&self, input: &InputSigningData) -> Result<Option<Requirement>> {
         // TODO burn?
@@ -233,7 +241,7 @@ impl InputSelection {
 
     /// Selects inputs that meet the requirements of the outputs to satisfy the semantic validation of the overall
     /// transaction. Also creates a remainder output and chain transition outputs if required.
-    pub fn select(mut self) -> Result<(Vec<InputSigningData>, Vec<Output>)> {
+    pub fn select(mut self) -> Result<Selected> {
         if self.available_inputs.is_empty() {
             return Err(Error::NoInputsProvided);
         }
@@ -278,9 +286,9 @@ impl InputSelection {
             })
         }
 
-        Ok((
-            self.selected_inputs,
-            self.outputs.into_iter().map(|output| output.output).collect(),
-        ))
+        Ok(Selected {
+            inputs: self.selected_inputs,
+            outputs: self.outputs.into_iter().map(|output| output.output).collect(),
+        })
     }
 }

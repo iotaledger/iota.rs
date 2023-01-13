@@ -59,9 +59,9 @@ fn existing_input_alias_for_foundry_alias() {
         .unwrap();
 
     // Alias next state + foundry
-    assert_eq!(selected.1.len(), 2);
+    assert_eq!(selected.outputs.len(), 2);
     // Alias state index is increased
-    selected.1.iter().for_each(|output| {
+    selected.outputs.iter().for_each(|output| {
         if let Output::Alias(alias_output) = &output {
             // Input alias has index 0, output should have index 1
             assert_eq!(alias_output.state_index(), 1);
@@ -87,9 +87,9 @@ fn minted_native_tokens_in_new_remainder() {
         .unwrap();
 
     // Alias next state + foundry + basic output with native tokens
-    assert_eq!(selected.1.len(), 3);
+    assert_eq!(selected.outputs.len(), 3);
     // Alias state index is increased
-    selected.1.iter().for_each(|output| {
+    selected.outputs.iter().for_each(|output| {
         if let Output::Alias(alias_output) = &output {
             // Input alias has index 0, output should have index 1
             assert_eq!(alias_output.state_index(), 1);
@@ -131,9 +131,9 @@ fn melt_native_tokens() {
         .unwrap();
 
     // Alias next state + foundry + basic output with native tokens
-    assert_eq!(selected.1.len(), 3);
+    assert_eq!(selected.outputs.len(), 3);
     // Alias state index is increased
-    selected.1.iter().for_each(|output| {
+    selected.outputs.iter().for_each(|output| {
         if let Output::Alias(alias_output) = &output {
             // Input alias has index 0, output should have index 1
             assert_eq!(alias_output.state_index(), 1);
@@ -174,7 +174,7 @@ fn destroy_foundry_with_alias_state_transition() {
         .unwrap();
 
     // Alias next state
-    assert_eq!(selected.1.len(), 1);
+    assert_eq!(selected.outputs.len(), 1);
 }
 
 #[test]
@@ -254,9 +254,9 @@ fn prefer_basic_to_foundry() {
         .select()
         .unwrap();
 
-    assert_eq!(selected.0.len(), 1);
-    assert_eq!(selected.0[0], inputs[2]);
-    assert_eq!(selected.1, outputs);
+    assert_eq!(selected.inputs.len(), 1);
+    assert_eq!(selected.inputs[0], inputs[2]);
+    assert_eq!(selected.outputs, outputs);
 }
 
 #[test]
@@ -285,12 +285,12 @@ fn simple_foundry_transition_basic_not_needed() {
         .select()
         .unwrap();
 
-    assert_eq!(selected.0.len(), 2);
-    assert!(selected.0.contains(&inputs[1]));
-    assert!(selected.0.contains(&inputs[2]));
-    assert_eq!(selected.1.len(), 2);
-    assert!(selected.1.contains(&outputs[0]));
-    selected.1.iter().for_each(|output| {
+    assert_eq!(selected.inputs.len(), 2);
+    assert!(selected.inputs.contains(&inputs[1]));
+    assert!(selected.inputs.contains(&inputs[2]));
+    assert_eq!(selected.outputs.len(), 2);
+    assert!(selected.outputs.contains(&outputs[0]));
+    selected.outputs.iter().for_each(|output| {
         if !outputs.contains(output) {
             assert!(output.is_alias());
             assert_eq!(output.amount(), 2_000_000);
@@ -337,12 +337,12 @@ fn simple_foundry_transition_basic_not_needed_with_remainder() {
         .select()
         .unwrap();
 
-    assert_eq!(selected.0.len(), 2);
-    assert!(selected.0.contains(&inputs[1]));
-    assert!(selected.0.contains(&inputs[2]));
-    assert_eq!(selected.1.len(), 3);
-    assert!(selected.1.contains(&outputs[0]));
-    selected.1.iter().for_each(|output| {
+    assert_eq!(selected.inputs.len(), 2);
+    assert!(selected.inputs.contains(&inputs[1]));
+    assert!(selected.inputs.contains(&inputs[2]));
+    assert_eq!(selected.outputs.len(), 3);
+    assert!(selected.outputs.contains(&outputs[0]));
+    selected.outputs.iter().for_each(|output| {
         if !outputs.contains(output) {
             if output.is_alias() {
                 assert_eq!(output.amount(), 2_000_000);
@@ -404,11 +404,11 @@ fn simple_foundry_transition_basic_not_needed_with_remainder() {
 //         .select()
 //         .unwrap();
 
-//     assert_eq!(selected.0.len(), 1);
-//     assert!(selected.0.contains(&inputs[2]));
-//     // assert_eq!(selected.1.len(), 3);
-//     // assert!(selected.1.contains(&outputs[0]));
-//     // selected.1.iter().for_each(|output| {
+//     assert_eq!(selected.inputs.len(), 1);
+//     assert!(selected.inputs.contains(&inputs[2]));
+//     // assert_eq!(selected.outputs.len(), 3);
+//     // assert!(selected.outputs.contains(&outputs[0]));
+//     // selected.outputs.iter().for_each(|output| {
 //     //     if !outputs.contains(output) {
 //     //         if output.is_alias() {
 //     //             assert_eq!(output.amount(), 2_000_000);
