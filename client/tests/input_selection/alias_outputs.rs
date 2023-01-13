@@ -25,7 +25,7 @@ fn input_alias_eq_output_alias() {
     let protocol_parameters = protocol_parameters();
     let alias_id_2 = AliasId::from_str(ALIAS_ID_2).unwrap();
 
-    let inputs = build_inputs(vec![Alias(1_000_000, alias_id_2, BECH32_ADDRESS, None)]);
+    let inputs = build_inputs(vec![Alias(1_000_000, alias_id_2, BECH32_ADDRESS, None, None, None)]);
     let outputs = vec![build_alias_output(
         1_000_000,
         alias_id_2,
@@ -48,7 +48,7 @@ fn input_amount_lt_output_amount() {
     let protocol_parameters = protocol_parameters();
     let alias_id_2 = AliasId::from_str(ALIAS_ID_2).unwrap();
 
-    let inputs = build_inputs(vec![Alias(1_000_000, alias_id_2, BECH32_ADDRESS, None)]);
+    let inputs = build_inputs(vec![Alias(1_000_000, alias_id_2, BECH32_ADDRESS, None, None, None)]);
     let outputs = vec![build_basic_output(2_000_000, BECH32_ADDRESS, None, None)];
 
     let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
@@ -69,8 +69,8 @@ fn input_amount_lt_output_amount_2() {
     let alias_id_2 = AliasId::from_str(ALIAS_ID_2).unwrap();
 
     let inputs = build_inputs(vec![
-        Alias(2_000_000, alias_id_2, BECH32_ADDRESS, None),
-        Basic(1_000_000, BECH32_ADDRESS, None),
+        Alias(2_000_000, alias_id_2, BECH32_ADDRESS, None, None, None),
+        Basic(1_000_000, BECH32_ADDRESS, None, None),
     ]);
     let outputs = vec![build_basic_output(3_000_001, BECH32_ADDRESS, None, None)];
 
@@ -91,7 +91,7 @@ fn basic_output_with_alias_input() {
     let protocol_parameters = protocol_parameters();
     let alias_id_2 = AliasId::from_str(ALIAS_ID_2).unwrap();
 
-    let inputs = build_inputs(vec![Alias(2_251_500, alias_id_2, BECH32_ADDRESS, None)]);
+    let inputs = build_inputs(vec![Alias(2_251_500, alias_id_2, BECH32_ADDRESS, None, None, None)]);
     let outputs = vec![build_basic_output(2_000_000, BECH32_ADDRESS, None, None)];
 
     let selected = InputSelection::new(inputs, outputs, protocol_parameters)
@@ -107,7 +107,7 @@ fn create_alias() {
     let protocol_parameters = protocol_parameters();
     let alias_id_0 = AliasId::from_str(ALIAS_ID_0).unwrap();
 
-    let inputs = build_inputs(vec![Basic(2_000_000, BECH32_ADDRESS, None)]);
+    let inputs = build_inputs(vec![Basic(2_000_000, BECH32_ADDRESS, None, None)]);
     let outputs = vec![build_alias_output(
         1_000_000,
         alias_id_0,
@@ -138,7 +138,7 @@ fn burn_alias() {
     let protocol_parameters = protocol_parameters();
     let alias_id_2 = AliasId::from_str(ALIAS_ID_2).unwrap();
 
-    let inputs = build_inputs(vec![Alias(2_000_000, alias_id_2, BECH32_ADDRESS, None)]);
+    let inputs = build_inputs(vec![Alias(2_000_000, alias_id_2, BECH32_ADDRESS, None, None, None)]);
     let outputs = vec![build_basic_output(2_000_000, BECH32_ADDRESS, None, None)];
 
     let selected = InputSelection::new(inputs, outputs, protocol_parameters)
@@ -157,7 +157,7 @@ fn not_enough_storage_deposit_for_remainder() {
     let protocol_parameters = protocol_parameters();
     let alias_id_2 = AliasId::from_str(ALIAS_ID_2).unwrap();
 
-    let inputs = build_inputs(vec![Alias(1_000_001, alias_id_2, BECH32_ADDRESS, None)]);
+    let inputs = build_inputs(vec![Alias(1_000_001, alias_id_2, BECH32_ADDRESS, None, None, None)]);
     let outputs = vec![build_alias_output(
         1_000_000,
         alias_id_2,
@@ -185,7 +185,7 @@ fn missing_input_for_alias_output() {
     let protocol_parameters = protocol_parameters();
     let alias_id_2 = AliasId::from_str(ALIAS_ID_2).unwrap();
 
-    let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS, None)]);
+    let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS, None, None)]);
     let outputs = vec![build_alias_output(
         1_000_000,
         alias_id_2,
@@ -210,8 +210,8 @@ fn missing_input_for_alias_output_2() {
     let alias_id_2 = AliasId::from_str(ALIAS_ID_2).unwrap();
 
     let inputs = build_inputs(vec![
-        Alias(2_000_000, alias_id_1, BECH32_ADDRESS, None),
-        Basic(1_000_000, BECH32_ADDRESS, None),
+        Alias(2_000_000, alias_id_1, BECH32_ADDRESS, None, None, None),
+        Basic(1_000_000, BECH32_ADDRESS, None, None),
     ]);
     let outputs = vec![build_alias_output(
         1_000_000,
@@ -235,7 +235,7 @@ fn missing_input_for_alias_output_but_created() {
     let protocol_parameters = protocol_parameters();
     let alias_id_0 = AliasId::from_str(ALIAS_ID_0).unwrap();
 
-    let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS, None)]);
+    let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS, None, None)]);
     let outputs = vec![build_alias_output(
         1_000_000,
         alias_id_0,
@@ -256,8 +256,8 @@ fn alias_in_output_and_sender() {
     let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
 
     let inputs = build_inputs(vec![
-        Alias(1_000_000, alias_id_1, BECH32_ADDRESS, None),
-        Basic(1_000_000, BECH32_ADDRESS, None),
+        Alias(1_000_000, alias_id_1, BECH32_ADDRESS, None, None, None),
+        Basic(1_000_000, BECH32_ADDRESS, None, None),
     ]);
     let alias_output = AliasOutputBuilder::from(inputs[0].output.as_alias())
         .with_state_index(inputs[0].output.as_alias().state_index() + 1)
@@ -292,7 +292,7 @@ fn missing_ed25519_sender() {
     let protocol_parameters = protocol_parameters();
     let alias_id_2 = AliasId::from_str(ALIAS_ID_2).unwrap();
 
-    let inputs = build_inputs(vec![Alias(1_000_000, alias_id_2, BECH32_ADDRESS, None)]);
+    let inputs = build_inputs(vec![Alias(1_000_000, alias_id_2, BECH32_ADDRESS, None, None, None)]);
     let outputs = vec![build_alias_output(
         1_000_000,
         alias_id_2,
@@ -315,7 +315,7 @@ fn missing_ed25519_issuer_created() {
     let protocol_parameters = protocol_parameters();
     let alias_id_0 = AliasId::from_str(ALIAS_ID_0).unwrap();
 
-    let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS, None)]);
+    let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS, None, None)]);
     let outputs = vec![build_alias_output(
         1_000_000,
         alias_id_0,
@@ -338,7 +338,7 @@ fn missing_ed25519_issuer_transition() {
     let protocol_parameters = protocol_parameters();
     let alias_id_2 = AliasId::from_str(ALIAS_ID_2).unwrap();
 
-    let inputs = build_inputs(vec![Alias(1_000_000, alias_id_2, BECH32_ADDRESS, None)]);
+    let inputs = build_inputs(vec![Alias(1_000_000, alias_id_2, BECH32_ADDRESS, None, None, None)]);
     let outputs = vec![build_alias_output(
         1_000_000,
         alias_id_2,
@@ -358,7 +358,7 @@ fn missing_alias_sender() {
     let protocol_parameters = protocol_parameters();
     let alias_id_2 = AliasId::from_str(ALIAS_ID_2).unwrap();
 
-    let inputs = build_inputs(vec![Alias(1_000_000, alias_id_2, BECH32_ADDRESS, None)]);
+    let inputs = build_inputs(vec![Alias(1_000_000, alias_id_2, BECH32_ADDRESS, None, None, None)]);
     let outputs = vec![build_alias_output(
         1_000_000,
         alias_id_2,
@@ -381,7 +381,7 @@ fn missing_alias_issuer_created() {
     let protocol_parameters = protocol_parameters();
     let alias_id_0 = AliasId::from_str(ALIAS_ID_0).unwrap();
 
-    let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS, None)]);
+    let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS, None, None)]);
     let outputs = vec![build_alias_output(
         1_000_000,
         alias_id_0,
@@ -404,7 +404,7 @@ fn missing_alias_issuer_transition() {
     let protocol_parameters = protocol_parameters();
     let alias_id_2 = AliasId::from_str(ALIAS_ID_2).unwrap();
 
-    let inputs = build_inputs(vec![Alias(1_000_000, alias_id_2, BECH32_ADDRESS, None)]);
+    let inputs = build_inputs(vec![Alias(1_000_000, alias_id_2, BECH32_ADDRESS, None, None, None)]);
     let outputs = vec![build_alias_output(
         1_000_000,
         alias_id_2,
@@ -424,7 +424,7 @@ fn missing_nft_sender() {
     let protocol_parameters = protocol_parameters();
     let alias_id_2 = AliasId::from_str(ALIAS_ID_2).unwrap();
 
-    let inputs = build_inputs(vec![Alias(1_000_000, alias_id_2, BECH32_ADDRESS, None)]);
+    let inputs = build_inputs(vec![Alias(1_000_000, alias_id_2, BECH32_ADDRESS, None, None, None)]);
     let outputs = vec![build_alias_output(
         1_000_000,
         alias_id_2,
@@ -447,7 +447,7 @@ fn missing_nft_issuer_created() {
     let protocol_parameters = protocol_parameters();
     let alias_id_0 = AliasId::from_str(ALIAS_ID_0).unwrap();
 
-    let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS, None)]);
+    let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS, None, None)]);
     let outputs = vec![build_alias_output(
         1_000_000,
         alias_id_0,
@@ -470,7 +470,7 @@ fn missing_nft_issuer_transition() {
     let protocol_parameters = protocol_parameters();
     let alias_id_2 = AliasId::from_str(ALIAS_ID_2).unwrap();
 
-    let inputs = build_inputs(vec![Alias(1_000_000, alias_id_2, BECH32_ADDRESS, None)]);
+    let inputs = build_inputs(vec![Alias(1_000_000, alias_id_2, BECH32_ADDRESS, None, None, None)]);
     let outputs = vec![build_alias_output(
         1_000_000,
         alias_id_2,
@@ -491,8 +491,8 @@ fn increase_alias_amount() {
     let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
 
     let inputs = build_inputs(vec![
-        Alias(2_000_000, alias_id_1, BECH32_ADDRESS, None),
-        Basic(1_000_000, BECH32_ADDRESS, None),
+        Alias(2_000_000, alias_id_1, BECH32_ADDRESS, None, None, None),
+        Basic(1_000_000, BECH32_ADDRESS, None, None),
     ]);
     let outputs = vec![build_alias_output(
         3_000_000,
@@ -517,8 +517,8 @@ fn decrease_alias_amount() {
     let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
 
     let inputs = build_inputs(vec![
-        Alias(2_000_000, alias_id_1, BECH32_ADDRESS, None),
-        Basic(1_000_000, BECH32_ADDRESS, None),
+        Alias(2_000_000, alias_id_1, BECH32_ADDRESS, None, None, None),
+        Basic(1_000_000, BECH32_ADDRESS, None, None),
     ]);
     let outputs = vec![build_alias_output(
         1_000_000,
@@ -558,8 +558,8 @@ fn prefer_basic_to_alias() {
     let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
 
     let inputs = build_inputs(vec![
-        Alias(1_000_000, alias_id_1, BECH32_ADDRESS, None),
-        Basic(1_000_000, BECH32_ADDRESS, None),
+        Alias(1_000_000, alias_id_1, BECH32_ADDRESS, None, None, None),
+        Basic(1_000_000, BECH32_ADDRESS, None, None),
     ]);
     let outputs = vec![build_basic_output(1_000_000, BECH32_ADDRESS, None, None)];
 
@@ -578,8 +578,8 @@ fn take_amount_from_alias_to_fund_basic() {
     let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
 
     let inputs = build_inputs(vec![
-        Alias(2_000_000, alias_id_1, BECH32_ADDRESS, None),
-        Basic(1_000_000, BECH32_ADDRESS, None),
+        Alias(2_000_000, alias_id_1, BECH32_ADDRESS, None, None, None),
+        Basic(1_000_000, BECH32_ADDRESS, None, None),
     ]);
     let outputs = vec![build_basic_output(1_200_000, BECH32_ADDRESS, None, None)];
 
@@ -617,8 +617,8 @@ fn alias_burn_should_not_validate_alias_sender() {
     let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
 
     let inputs = build_inputs(vec![
-        Basic(2_000_000, BECH32_ADDRESS, None),
-        Alias(1_000_000, alias_id_1, BECH32_ADDRESS, None),
+        Basic(2_000_000, BECH32_ADDRESS, None, None),
+        Alias(1_000_000, alias_id_1, BECH32_ADDRESS, None, None, None),
     ]);
     let outputs = vec![build_basic_output(
         2_000_000,
@@ -643,8 +643,8 @@ fn alias_burn_should_not_validate_alias_address() {
     let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
 
     let inputs = build_inputs(vec![
-        Basic(2_000_000, BECH32_ADDRESS_ALIAS_SENDER, None),
-        Alias(1_000_000, alias_id_1, BECH32_ADDRESS, None),
+        Basic(2_000_000, BECH32_ADDRESS_ALIAS_SENDER, None, None),
+        Alias(1_000_000, alias_id_1, BECH32_ADDRESS, None, None, None),
     ]);
     let outputs = vec![build_basic_output(2_000_000, BECH32_ADDRESS, None, None)];
 
@@ -664,8 +664,8 @@ fn alias_governance_transition_should_not_validate_alias_sender() {
     let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
 
     let inputs = build_inputs(vec![
-        Basic(2_000_000, BECH32_ADDRESS, None),
-        Alias(1_000_000, alias_id_1, BECH32_ADDRESS, None),
+        Basic(2_000_000, BECH32_ADDRESS, None, None),
+        Alias(1_000_000, alias_id_1, BECH32_ADDRESS, None, None, None),
     ]);
     let mut outputs = vec![build_basic_output(
         2_000_000,
@@ -689,8 +689,8 @@ fn alias_governance_transition_should_not_validate_alias_address() {
     let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
 
     let inputs = build_inputs(vec![
-        Basic(2_000_000, BECH32_ADDRESS_ALIAS_SENDER, None),
-        Alias(1_000_000, alias_id_1, BECH32_ADDRESS, None),
+        Basic(2_000_000, BECH32_ADDRESS_ALIAS_SENDER, None, None),
+        Alias(1_000_000, alias_id_1, BECH32_ADDRESS, None, None, None),
     ]);
     let mut outputs = vec![build_basic_output(2_000_000, BECH32_ADDRESS, None, None)];
     outputs.push(inputs[1].output.clone());

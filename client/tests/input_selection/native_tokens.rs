@@ -19,11 +19,12 @@ fn two_native_tokens_one_needed() {
     let protocol_parameters = protocol_parameters();
 
     let inputs = build_inputs(vec![
-        Basic(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)])),
+        Basic(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)]), None),
         Basic(
             1_000_000,
             BECH32_ADDRESS,
             Some(vec![(TOKEN_ID_1, 100), (TOKEN_ID_2, 100)]),
+            None,
         ),
     ]);
     let outputs = vec![build_basic_output(
@@ -78,11 +79,12 @@ fn two_native_tokens_both_needed_plus_remainder() {
     let protocol_parameters = protocol_parameters();
 
     let inputs = build_inputs(vec![
-        Basic(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)])),
+        Basic(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)]), None),
         Basic(
             1_000_000,
             BECH32_ADDRESS,
             Some(vec![(TOKEN_ID_1, 100), (TOKEN_ID_2, 100)]),
+            None,
         ),
     ]);
     let outputs = vec![build_basic_output(
@@ -128,9 +130,9 @@ fn three_inputs_two_needed_plus_remainder() {
     let protocol_parameters = protocol_parameters();
 
     let inputs = build_inputs(vec![
-        Basic(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)])),
-        Basic(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)])),
-        Basic(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)])),
+        Basic(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)]), None),
+        Basic(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)]), None),
+        Basic(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)]), None),
     ]);
     let outputs = vec![build_basic_output(
         1_000_000,
@@ -175,9 +177,9 @@ fn three_inputs_two_needed_no_remainder() {
     let protocol_parameters = protocol_parameters();
 
     let inputs = build_inputs(vec![
-        Basic(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)])),
-        Basic(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)])),
-        Basic(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)])),
+        Basic(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)]), None),
+        Basic(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)]), None),
+        Basic(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)]), None),
     ]);
     let outputs = vec![build_basic_output(
         2_000_000,
@@ -198,7 +200,12 @@ fn three_inputs_two_needed_no_remainder() {
 fn insufficient_native_tokens_one_input() {
     let protocol_parameters = protocol_parameters();
 
-    let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)]))]);
+    let inputs = build_inputs(vec![Basic(
+        1_000_000,
+        BECH32_ADDRESS,
+        Some(vec![(TOKEN_ID_1, 100)]),
+        None,
+    )]);
     let outputs = vec![build_basic_output(
         1_000_000,
         BECH32_ADDRESS,
@@ -222,9 +229,9 @@ fn insufficient_native_tokens_three_inputs() {
     let protocol_parameters = protocol_parameters();
 
     let inputs = build_inputs(vec![
-        Basic(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)])),
-        Basic(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)])),
-        Basic(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)])),
+        Basic(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)]), None),
+        Basic(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)]), None),
+        Basic(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)]), None),
     ]);
     let outputs = vec![build_basic_output(
         1_000_000,

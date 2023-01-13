@@ -25,7 +25,7 @@ fn input_nft_eq_output_nft() {
     let protocol_parameters = protocol_parameters();
     let nft_id_2 = NftId::from_str(NFT_ID_2).unwrap();
 
-    let inputs = build_inputs(vec![Nft(1_000_000, nft_id_2, BECH32_ADDRESS, None)]);
+    let inputs = build_inputs(vec![Nft(1_000_000, nft_id_2, BECH32_ADDRESS, None, None, None)]);
     let outputs = vec![build_nft_output(1_000_000, nft_id_2, BECH32_ADDRESS, None, None, None)];
 
     let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
@@ -41,7 +41,7 @@ fn input_amount_lt_output_amount() {
     let protocol_parameters = protocol_parameters();
     let nft_id_2 = NftId::from_str(NFT_ID_2).unwrap();
 
-    let inputs = build_inputs(vec![Nft(1_000_000, nft_id_2, BECH32_ADDRESS, None)]);
+    let inputs = build_inputs(vec![Nft(1_000_000, nft_id_2, BECH32_ADDRESS, None, None, None)]);
     let outputs = vec![build_basic_output(2_000_000, BECH32_ADDRESS, None, None)];
 
     let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
@@ -61,7 +61,7 @@ fn basic_output_with_nft_input() {
     let protocol_parameters = protocol_parameters();
     let nft_id_2 = NftId::from_str(NFT_ID_2).unwrap();
 
-    let inputs = build_inputs(vec![Nft(2_229_500, nft_id_2, BECH32_ADDRESS, None)]);
+    let inputs = build_inputs(vec![Nft(2_229_500, nft_id_2, BECH32_ADDRESS, None, None, None)]);
     let outputs = vec![build_basic_output(2_000_000, BECH32_ADDRESS, None, None)];
 
     let selected = InputSelection::new(inputs, outputs, protocol_parameters)
@@ -77,7 +77,7 @@ fn mint_nft() {
     let protocol_parameters = protocol_parameters();
     let nft_id_0 = NftId::from_str(NFT_ID_0).unwrap();
 
-    let inputs = build_inputs(vec![Basic(2_000_000, BECH32_ADDRESS, None)]);
+    let inputs = build_inputs(vec![Basic(2_000_000, BECH32_ADDRESS, None, None)]);
     let outputs = vec![build_nft_output(1_000_000, nft_id_0, BECH32_ADDRESS, None, None, None)];
 
     let selected = InputSelection::new(inputs, outputs, protocol_parameters)
@@ -101,7 +101,7 @@ fn burn_nft() {
     let protocol_parameters = protocol_parameters();
     let nft_id_2 = NftId::from_str(NFT_ID_2).unwrap();
 
-    let inputs = build_inputs(vec![Nft(2_000_000, nft_id_2, BECH32_ADDRESS, None)]);
+    let inputs = build_inputs(vec![Nft(2_000_000, nft_id_2, BECH32_ADDRESS, None, None, None)]);
     let outputs = vec![build_basic_output(2_000_000, BECH32_ADDRESS, None, None)];
 
     let selected = InputSelection::new(inputs, outputs, protocol_parameters)
@@ -120,7 +120,7 @@ fn not_enough_storage_deposit_for_remainder() {
     let protocol_parameters = protocol_parameters();
     let nft_id_2 = NftId::from_str(NFT_ID_2).unwrap();
 
-    let inputs = build_inputs(vec![Nft(1_000_001, nft_id_2, BECH32_ADDRESS, None)]);
+    let inputs = build_inputs(vec![Nft(1_000_001, nft_id_2, BECH32_ADDRESS, None, None, None)]);
     let outputs = vec![build_nft_output(1_000_000, nft_id_2, BECH32_ADDRESS, None, None, None)];
 
     let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
@@ -141,7 +141,7 @@ fn missing_input_for_nft_output() {
     let protocol_parameters = protocol_parameters();
     let nft_id_2 = NftId::from_str(NFT_ID_2).unwrap();
 
-    let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS, None)]);
+    let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS, None, None)]);
     let outputs = vec![build_nft_output(1_000_000, nft_id_2, BECH32_ADDRESS, None, None, None)];
 
     let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
@@ -157,7 +157,7 @@ fn missing_input_for_nft_output_but_created() {
     let protocol_parameters = protocol_parameters();
     let nft_id_0 = NftId::from_str(NFT_ID_0).unwrap();
 
-    let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS, None)]);
+    let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS, None, None)]);
     let outputs = vec![build_nft_output(1_000_000, nft_id_0, BECH32_ADDRESS, None, None, None)];
 
     let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
@@ -171,8 +171,8 @@ fn nft_in_output_and_sender() {
     let nft_id_1 = NftId::from_str(NFT_ID_1).unwrap();
 
     let inputs = build_inputs(vec![
-        Nft(1_000_000, nft_id_1, BECH32_ADDRESS, None),
-        Basic(1_000_000, BECH32_ADDRESS, None),
+        Nft(1_000_000, nft_id_1, BECH32_ADDRESS, None, None, None),
+        Basic(1_000_000, BECH32_ADDRESS, None, None),
     ]);
     let mut outputs = vec![build_nft_output(1_000_000, nft_id_1, BECH32_ADDRESS, None, None, None)];
     outputs.push(build_basic_output(
@@ -203,7 +203,7 @@ fn missing_ed25519_sender() {
     let protocol_parameters = protocol_parameters();
     let nft_id_2 = NftId::from_str(NFT_ID_2).unwrap();
 
-    let inputs = build_inputs(vec![Nft(1_000_000, nft_id_2, BECH32_ADDRESS, None)]);
+    let inputs = build_inputs(vec![Nft(1_000_000, nft_id_2, BECH32_ADDRESS, None, None, None)]);
     let outputs = vec![build_nft_output(
         1_000_000,
         nft_id_2,
@@ -226,7 +226,7 @@ fn missing_ed25519_issuer_created() {
     let protocol_parameters = protocol_parameters();
     let nft_id_0 = NftId::from_str(NFT_ID_0).unwrap();
 
-    let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS, None)]);
+    let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS, None, None)]);
     let outputs = vec![build_nft_output(
         1_000_000,
         nft_id_0,
@@ -249,7 +249,7 @@ fn missing_ed25519_issuer_transition() {
     let protocol_parameters = protocol_parameters();
     let nft_id_2 = NftId::from_str(NFT_ID_2).unwrap();
 
-    let inputs = build_inputs(vec![Nft(1_000_000, nft_id_2, BECH32_ADDRESS, None)]);
+    let inputs = build_inputs(vec![Nft(1_000_000, nft_id_2, BECH32_ADDRESS, None, None, None)]);
     let outputs = vec![build_nft_output(
         1_000_000,
         nft_id_2,
@@ -269,7 +269,7 @@ fn missing_alias_sender() {
     let protocol_parameters = protocol_parameters();
     let nft_id_2 = NftId::from_str(NFT_ID_2).unwrap();
 
-    let inputs = build_inputs(vec![Nft(1_000_000, nft_id_2, BECH32_ADDRESS, None)]);
+    let inputs = build_inputs(vec![Nft(1_000_000, nft_id_2, BECH32_ADDRESS, None, None, None)]);
     let outputs = vec![build_nft_output(
         1_000_000,
         nft_id_2,
@@ -292,7 +292,7 @@ fn missing_alias_issuer_created() {
     let protocol_parameters = protocol_parameters();
     let nft_id_0 = NftId::from_str(NFT_ID_0).unwrap();
 
-    let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS, None)]);
+    let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS, None, None)]);
     let outputs = vec![build_nft_output(
         1_000_000,
         nft_id_0,
@@ -315,7 +315,7 @@ fn missing_alias_issuer_transition() {
     let protocol_parameters = protocol_parameters();
     let nft_id_2 = NftId::from_str(NFT_ID_2).unwrap();
 
-    let inputs = build_inputs(vec![Nft(1_000_000, nft_id_2, BECH32_ADDRESS, None)]);
+    let inputs = build_inputs(vec![Nft(1_000_000, nft_id_2, BECH32_ADDRESS, None, None, None)]);
     let outputs = vec![build_nft_output(
         1_000_000,
         nft_id_2,
@@ -335,7 +335,7 @@ fn missing_nft_sender() {
     let protocol_parameters = protocol_parameters();
     let nft_id_2 = NftId::from_str(NFT_ID_2).unwrap();
 
-    let inputs = build_inputs(vec![Nft(1_000_000, nft_id_2, BECH32_ADDRESS, None)]);
+    let inputs = build_inputs(vec![Nft(1_000_000, nft_id_2, BECH32_ADDRESS, None, None, None)]);
     let outputs = vec![build_nft_output(
         1_000_000,
         nft_id_2,
@@ -358,7 +358,7 @@ fn missing_nft_issuer_created() {
     let protocol_parameters = protocol_parameters();
     let nft_id_0 = NftId::from_str(NFT_ID_0).unwrap();
 
-    let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS, None)]);
+    let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS, None, None)]);
     let outputs = vec![build_nft_output(
         1_000_000,
         nft_id_0,
@@ -381,7 +381,7 @@ fn missing_nft_issuer_transition() {
     let protocol_parameters = protocol_parameters();
     let nft_id_2 = NftId::from_str(NFT_ID_2).unwrap();
 
-    let inputs = build_inputs(vec![Nft(1_000_000, nft_id_2, BECH32_ADDRESS, None)]);
+    let inputs = build_inputs(vec![Nft(1_000_000, nft_id_2, BECH32_ADDRESS, None, None, None)]);
     let outputs = vec![build_nft_output(
         1_000_000,
         nft_id_2,
@@ -402,8 +402,8 @@ fn increase_nft_amount() {
     let nft_id_1 = NftId::from_str(NFT_ID_1).unwrap();
 
     let inputs = build_inputs(vec![
-        Nft(2_000_000, nft_id_1, BECH32_ADDRESS, None),
-        Basic(1_000_000, BECH32_ADDRESS, None),
+        Nft(2_000_000, nft_id_1, BECH32_ADDRESS, None, None, None),
+        Basic(1_000_000, BECH32_ADDRESS, None, None),
     ]);
     let outputs = vec![build_nft_output(3_000_000, nft_id_1, BECH32_ADDRESS, None, None, None)];
 
@@ -421,8 +421,8 @@ fn decrease_nft_amount() {
     let nft_id_1 = NftId::from_str(NFT_ID_1).unwrap();
 
     let inputs = build_inputs(vec![
-        Nft(2_000_000, nft_id_1, BECH32_ADDRESS, None),
-        Basic(1_000_000, BECH32_ADDRESS, None),
+        Nft(2_000_000, nft_id_1, BECH32_ADDRESS, None, None, None),
+        Basic(1_000_000, BECH32_ADDRESS, None, None),
     ]);
     let outputs = vec![build_nft_output(1_000_000, nft_id_1, BECH32_ADDRESS, None, None, None)];
 
@@ -455,8 +455,8 @@ fn prefer_basic_to_nft() {
     let nft_id_1 = NftId::from_str(NFT_ID_1).unwrap();
 
     let inputs = build_inputs(vec![
-        Nft(2_000_000, nft_id_1, BECH32_ADDRESS, None),
-        Basic(1_000_000, BECH32_ADDRESS, None),
+        Nft(2_000_000, nft_id_1, BECH32_ADDRESS, None, None, None),
+        Basic(1_000_000, BECH32_ADDRESS, None, None),
     ]);
     let outputs = vec![build_basic_output(1_000_000, BECH32_ADDRESS, None, None)];
 
@@ -475,8 +475,8 @@ fn take_amount_from_nft_to_fund_basic() {
     let nft_id_1 = NftId::from_str(NFT_ID_1).unwrap();
 
     let inputs = build_inputs(vec![
-        Nft(2_000_000, nft_id_1, BECH32_ADDRESS, None),
-        Basic(1_000_000, BECH32_ADDRESS, None),
+        Nft(2_000_000, nft_id_1, BECH32_ADDRESS, None, None, None),
+        Basic(1_000_000, BECH32_ADDRESS, None, None),
     ]);
     let outputs = vec![build_basic_output(1_200_000, BECH32_ADDRESS, None, None)];
 

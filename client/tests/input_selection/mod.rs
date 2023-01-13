@@ -48,9 +48,23 @@ const BECH32_ADDRESS_ALIAS_SENDER: &str = "rms1pqg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3z
 const BECH32_ADDRESS_NFT_SENDER: &str = "rms1zqg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zxddmy7"; // Corresponds to NFT_ID_1
 
 enum Build<'a> {
-    Basic(u64, &'a str, Option<Vec<(&'a str, u64)>>),
-    Nft(u64, NftId, &'a str, Option<Vec<(&'a str, u64)>>),
-    Alias(u64, AliasId, &'a str, Option<Vec<(&'a str, u64)>>),
+    Basic(u64, &'a str, Option<Vec<(&'a str, u64)>>, Option<&'a str>),
+    Nft(
+        u64,
+        NftId,
+        &'a str,
+        Option<Vec<(&'a str, u64)>>,
+        Option<&'a str>,
+        Option<&'a str>,
+    ),
+    Alias(
+        u64,
+        AliasId,
+        &'a str,
+        Option<Vec<(&'a str, u64)>>,
+        Option<&'a str>,
+        Option<&'a str>,
+    ),
     Foundry(u64, AliasId, SimpleTokenScheme, Option<Vec<(&'a str, u64)>>),
 }
 
@@ -190,16 +204,30 @@ fn build_inputs(outputs: Vec<Build>) -> Vec<InputSigningData> {
         .into_iter()
         .map(|build| {
             let (output, bech32_address) = match build {
-                Build::Basic(amount, bech32_address, native_tokens) => (
-                    build_basic_output(amount, bech32_address, native_tokens, None),
+                Build::Basic(amount, bech32_address, native_tokens, bech32_sender) => (
+                    build_basic_output(amount, bech32_address, native_tokens, bech32_sender),
                     bech32_address.to_string(),
                 ),
-                Build::Nft(amount, nft_id, bech32_address, native_tokens) => (
-                    build_nft_output(amount, nft_id, bech32_address, native_tokens, None, None),
+                Build::Nft(amount, nft_id, bech32_address, native_tokens, bech32_sender, bech32_issuer) => (
+                    build_nft_output(
+                        amount,
+                        nft_id,
+                        bech32_address,
+                        native_tokens,
+                        bech32_sender,
+                        bech32_issuer,
+                    ),
                     bech32_address.to_string(),
                 ),
-                Build::Alias(amount, alias_id, bech32_address, native_tokens) => (
-                    build_alias_output(amount, alias_id, bech32_address, native_tokens, None, None),
+                Build::Alias(amount, alias_id, bech32_address, native_tokens, bech32_sender, bech32_issuer) => (
+                    build_alias_output(
+                        amount,
+                        alias_id,
+                        bech32_address,
+                        native_tokens,
+                        bech32_sender,
+                        bech32_issuer,
+                    ),
                     bech32_address.to_string(),
                 ),
                 Build::Foundry(amount, alias_id, token_scheme, native_tokens) => (
