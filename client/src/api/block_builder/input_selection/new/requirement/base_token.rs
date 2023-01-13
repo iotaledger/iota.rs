@@ -76,7 +76,27 @@ impl InputSelection {
 
             // 4. Basic with other kind of address
             {
-                // TODO
+                let inputs = self.available_inputs.iter().filter(|input| {
+                    if let Output::Basic(output) = &input.output {
+                        if let [UnlockCondition::Address(address)] = output.unlock_conditions().as_ref() {
+                            !address.address().is_ed25519()
+                        } else {
+                            false
+                        }
+                    } else {
+                        false
+                    }
+                });
+
+                for input in inputs {
+                    inputs_sum += input.output.amount();
+                    newly_selected_inputs.push(input.clone());
+                    newly_selected_ids.insert(*input.output_id());
+
+                    if inputs_sum >= outputs_sum {
+                        break 'overall;
+                    }
+                }
             }
 
             // 5. Other kinds of outputs

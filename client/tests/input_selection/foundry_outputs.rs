@@ -7,7 +7,7 @@ use iota_client::{
     api::input_selection::new::{Burn, InputSelection, Requirement},
     block::{
         address::Address,
-        output::{AliasId, Output, SimpleTokenScheme},
+        output::{AliasId, AliasOutputBuilder, Output, SimpleTokenScheme},
         protocol::protocol_parameters,
     },
     Error,
@@ -15,9 +15,9 @@ use iota_client::{
 use primitive_types::U256;
 
 use crate::input_selection::{
-    build_alias_output, build_basic_output, build_foundry_output, build_inputs,
+    build_basic_output, build_foundry_output, build_inputs,
     Build::{Alias, Basic, Foundry},
-    ALIAS_ID_1, ALIAS_ID_2, BECH32_ADDRESS,
+    ALIAS_ID_1, ALIAS_ID_2, BECH32_ADDRESS, TOKEN_SUPPLY,
 };
 
 #[test]
@@ -37,7 +37,7 @@ fn missing_input_alias_for_foundry() {
 
     assert!(matches!(
         selected,
-        Err(Error::UnfulfillableRequirement(Requirement::Alias(alias_id))) if alias_id == alias_id_2
+        Err(Error::UnfulfillableRequirement(Requirement::Alias(alias_id, true))) if alias_id == alias_id_2
     ));
 }
 
@@ -146,7 +146,7 @@ fn melt_native_tokens() {
 }
 
 #[test]
-fn destroy_foundry() {
+fn destroy_foundry_with_alias_state_transition() {
     let protocol_parameters = protocol_parameters();
     let alias_id_2 = AliasId::from_str(ALIAS_ID_2).unwrap();
 
@@ -159,15 +159,14 @@ fn destroy_foundry() {
             None,
         ),
     ]);
+    let alias_output = AliasOutputBuilder::from(inputs[0].output.as_alias())
+        .with_amount(103_100)
+        .unwrap()
+        .with_state_index(inputs[0].output.as_alias().state_index() + 1)
+        .finish_output(TOKEN_SUPPLY)
+        .unwrap();
     // Alias output gets the amount from the foundry output added
-    let outputs = vec![build_alias_output(
-        103_100,
-        alias_id_2,
-        BECH32_ADDRESS,
-        None,
-        None,
-        None,
-    )];
+    let outputs = vec![alias_output];
 
     let selected = InputSelection::new(inputs.clone(), outputs, protocol_parameters)
         .burn(Burn::new().add_foundry(inputs[1].output.as_foundry().id()))
@@ -176,6 +175,62 @@ fn destroy_foundry() {
 
     // Alias next state
     assert_eq!(selected.1.len(), 1);
+}
+
+#[test]
+fn destroy_foundry_with_alias_governance_transition() {
+    let protocol_parameters = protocol_parameters();
+    let alias_id_2 = AliasId::from_str(ALIAS_ID_2).unwrap();
+
+    let inputs = build_inputs(vec![
+        Alias(1_000_000, alias_id_2, BECH32_ADDRESS, None),
+        Foundry(
+            1_000_000,
+            alias_id_2,
+            SimpleTokenScheme::new(U256::from(10), U256::from(10), U256::from(10)).unwrap(),
+            None,
+        ),
+    ]);
+    let outputs = vec![inputs[0].output.clone()];
+
+    let selected = InputSelection::new(inputs.clone(), outputs, protocol_parameters)
+        .burn(Burn::new().add_foundry(inputs[1].output.as_foundry().id()))
+        .select();
+
+    assert!(matches!(
+        selected,
+        Err(Error::UnfulfillableRequirement(Requirement::Alias(alias_id, true))) if alias_id == alias_id_2
+    ));
+}
+
+#[test]
+fn destroy_foundry_with_alias_burn() {
+    let protocol_parameters = protocol_parameters();
+    let alias_id_2 = AliasId::from_str(ALIAS_ID_2).unwrap();
+
+    let inputs = build_inputs(vec![
+        Alias(1_000_000, alias_id_2, BECH32_ADDRESS, None),
+        Foundry(
+            1_000_000,
+            alias_id_2,
+            SimpleTokenScheme::new(U256::from(10), U256::from(10), U256::from(10)).unwrap(),
+            None,
+        ),
+    ]);
+    let outputs = vec![build_basic_output(1_000_000, BECH32_ADDRESS, None, None)];
+
+    let selected = InputSelection::new(inputs.clone(), outputs, protocol_parameters)
+        .burn(
+            Burn::new()
+                .add_foundry(inputs[1].output.as_foundry().id())
+                .add_alias(alias_id_2),
+        )
+        .select();
+
+    assert!(matches!(
+        selected,
+        Err(Error::UnfulfillableRequirement(Requirement::Alias(alias_id, true))) if alias_id == alias_id_2
+    ));
 }
 
 #[test]
@@ -348,8 +403,6 @@ fn simple_foundry_transition_basic_not_needed_with_remainder() {
 //     let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
 //         .select()
 //         .unwrap();
-
-//     println!("{selected:?}");
 
 //     assert_eq!(selected.0.len(), 1);
 //     assert!(selected.0.contains(&inputs[2]));

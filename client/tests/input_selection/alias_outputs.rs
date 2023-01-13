@@ -7,7 +7,7 @@ use iota_client::{
     api::input_selection::new::{Burn, InputSelection, Requirement},
     block::{
         address::Address,
-        output::{AliasId, Output},
+        output::{AliasId, AliasOutputBuilder, Output},
         protocol::protocol_parameters,
     },
     Error,
@@ -17,7 +17,7 @@ use crate::input_selection::{
     build_alias_output, build_basic_output, build_inputs, unsorted_eq,
     Build::{Alias, Basic},
     ALIAS_ID_0, ALIAS_ID_1, ALIAS_ID_2, BECH32_ADDRESS, BECH32_ADDRESS_ALIAS_SENDER, BECH32_ADDRESS_ED25519_SENDER,
-    BECH32_ADDRESS_NFT_SENDER,
+    BECH32_ADDRESS_NFT_SENDER, TOKEN_SUPPLY,
 };
 
 #[test]
@@ -199,7 +199,7 @@ fn missing_input_for_alias_output() {
 
     assert!(matches!(
         selected,
-        Err(Error::UnfulfillableRequirement(Requirement::Alias(alias_id))) if alias_id == alias_id_2
+        Err(Error::UnfulfillableRequirement(Requirement::Alias(alias_id, false))) if alias_id == alias_id_2
     ));
 }
 
@@ -226,7 +226,7 @@ fn missing_input_for_alias_output_2() {
 
     assert!(matches!(
         selected,
-        Err(Error::UnfulfillableRequirement(Requirement::Alias(alias_id))) if alias_id == alias_id_2
+        Err(Error::UnfulfillableRequirement(Requirement::Alias(alias_id, false))) if alias_id == alias_id_2
     ));
 }
 
@@ -259,14 +259,11 @@ fn alias_in_output_and_sender() {
         Alias(1_000_000, alias_id_1, BECH32_ADDRESS, None),
         Basic(1_000_000, BECH32_ADDRESS, None),
     ]);
-    let mut outputs = vec![build_alias_output(
-        1_000_000,
-        alias_id_1,
-        BECH32_ADDRESS,
-        None,
-        None,
-        None,
-    )];
+    let alias_output = AliasOutputBuilder::from(inputs[0].output.as_alias())
+        .with_state_index(inputs[0].output.as_alias().state_index() + 1)
+        .finish_output(TOKEN_SUPPLY)
+        .unwrap();
+    let mut outputs = vec![alias_output];
     outputs.push(build_basic_output(
         1_000_000,
         BECH32_ADDRESS,
@@ -612,4 +609,96 @@ fn take_amount_from_alias_to_fund_basic() {
             );
         }
     });
+}
+
+#[test]
+fn alias_burn_should_not_validate_alias_sender() {
+    let protocol_parameters = protocol_parameters();
+    let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
+
+    let inputs = build_inputs(vec![
+        Basic(2_000_000, BECH32_ADDRESS, None),
+        Alias(1_000_000, alias_id_1, BECH32_ADDRESS, None),
+    ]);
+    let outputs = vec![build_basic_output(
+        2_000_000,
+        BECH32_ADDRESS,
+        None,
+        Some(BECH32_ADDRESS_ALIAS_SENDER),
+    )];
+
+    let selected = InputSelection::new(inputs, outputs, protocol_parameters)
+        .burn(Burn::new().add_alias(alias_id_1))
+        .select();
+
+    assert!(matches!(
+        selected,
+        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender.is_alias() && sender == Address::try_from_bech32(BECH32_ADDRESS_ALIAS_SENDER).unwrap().1
+    ));
+}
+
+#[test]
+fn alias_burn_should_not_validate_alias_address() {
+    let protocol_parameters = protocol_parameters();
+    let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
+
+    let inputs = build_inputs(vec![
+        Basic(2_000_000, BECH32_ADDRESS_ALIAS_SENDER, None),
+        Alias(1_000_000, alias_id_1, BECH32_ADDRESS, None),
+    ]);
+    let outputs = vec![build_basic_output(2_000_000, BECH32_ADDRESS, None, None)];
+
+    let selected = InputSelection::new(inputs, outputs, protocol_parameters)
+        .burn(Burn::new().add_alias(alias_id_1))
+        .select();
+
+    assert!(matches!(
+        selected,
+        Err(Error::UnfulfillableRequirement(Requirement::Alias(alias_id, true))) if alias_id == alias_id_1
+    ));
+}
+
+#[test]
+fn alias_governance_transition_should_not_validate_alias_sender() {
+    let protocol_parameters = protocol_parameters();
+    let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
+
+    let inputs = build_inputs(vec![
+        Basic(2_000_000, BECH32_ADDRESS, None),
+        Alias(1_000_000, alias_id_1, BECH32_ADDRESS, None),
+    ]);
+    let mut outputs = vec![build_basic_output(
+        2_000_000,
+        BECH32_ADDRESS,
+        None,
+        Some(BECH32_ADDRESS_ALIAS_SENDER),
+    )];
+    outputs.push(inputs[1].output.clone());
+
+    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
+
+    assert!(matches!(
+        selected,
+        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender.is_alias() && sender == Address::try_from_bech32(BECH32_ADDRESS_ALIAS_SENDER).unwrap().1
+    ));
+}
+
+#[test]
+fn alias_governance_transition_should_not_validate_alias_address() {
+    let protocol_parameters = protocol_parameters();
+    let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
+
+    let inputs = build_inputs(vec![
+        Basic(2_000_000, BECH32_ADDRESS_ALIAS_SENDER, None),
+        Alias(1_000_000, alias_id_1, BECH32_ADDRESS, None),
+    ]);
+    let mut outputs = vec![build_basic_output(2_000_000, BECH32_ADDRESS, None, None)];
+    outputs.push(inputs[1].output.clone());
+
+    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
+
+    assert!(matches!(
+        selected,
+        Err(Error::UnfulfillableRequirement(Requirement::Alias(alias_id, true))) if alias_id == alias_id_1
+    ));
 }

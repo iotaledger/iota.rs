@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 pub(crate) mod burn;
-pub(crate) mod helper;
 pub(crate) mod remainder;
 pub(crate) mod requirement;
 pub(crate) mod transition;
@@ -10,10 +9,9 @@ pub(crate) mod transition;
 use std::collections::HashSet;
 
 pub use burn::Burn;
-use helper::is_alias_state_transition;
 use remainder::remainder_output;
 pub use requirement::Requirement;
-use requirement::Requirements;
+use requirement::{alias::is_alias_state_transition, Requirements};
 
 use crate::{
     block::{
@@ -58,14 +56,14 @@ impl InputSelection {
             .iter()
             .map(|output| output.output.clone())
             .collect::<Vec<_>>();
-        let is_alias_state_transition = is_alias_state_transition(input, &outputs)?.unwrap_or(false);
+        let is_alias_state_transition = is_alias_state_transition(input, &outputs)?.unwrap_or((false, false)).0;
         let (required_address, _) =
             input
                 .output
                 .required_and_unlocked_address(self.timestamp, input.output_id(), is_alias_state_transition)?;
 
         match required_address {
-            Address::Alias(alias_address) => Ok(Some(Requirement::Alias(*alias_address.alias_id()))),
+            Address::Alias(alias_address) => Ok(Some(Requirement::Alias(*alias_address.alias_id(), true))),
             Address::Nft(nft_address) => Ok(Some(Requirement::Nft(*nft_address.nft_id()))),
             _ => Ok(None),
         }
@@ -144,17 +142,12 @@ impl InputSelection {
             self.available_inputs.iter().chain(self.selected_inputs.iter()),
             self.outputs.iter(),
         );
-        println!("new requirements from outputs: {new_requirements:?}");
         requirements.extend(new_requirements);
 
         // Gets requirements from burn.
         if let Some(burn) = &self.burn {
-            let new_requirements = Requirements::from_burn(burn);
-            println!("new requirements from burn: {new_requirements:?}");
-            requirements.extend(new_requirements);
+            requirements.extend(Requirements::from_burn(burn));
         }
-
-        println!("{requirements:?}");
 
         Ok(requirements)
     }
@@ -252,14 +245,11 @@ impl InputSelection {
         let mut requirements = self.init()?;
 
         // Process all the requirements until there are no more.
-        println!("BEFORE -----------");
         while let Some(requirement) = requirements.pop() {
-            println!("{requirement:?}");
             // Fulfill the requirement.
             let (inputs, new_requirement) = self.fulfill_requirement(requirement)?;
 
             if let Some(new_requirement) = new_requirement {
-                println!("NEW REQUIREMENT");
                 requirements.push(new_requirement);
             }
 
@@ -272,7 +262,6 @@ impl InputSelection {
                 self.select_input(input, &mut requirements)?;
             }
         }
-        println!("AFTER -----------");
 
         // self.output.extend(create_storage_deposit_return_outputs(selected_input, self.outputs));
 

@@ -13,7 +13,7 @@ use iota_types::block::{
 
 use crate::{
     api::{
-        address::search_address, block_builder::input_selection::new::helper::is_alias_state_transition,
+        address::search_address, block_builder::input_selection::new::requirement::alias::is_alias_state_transition,
         ClientBlockBuilder,
     },
     constants::HD_WALLET_TYPE,
@@ -235,7 +235,9 @@ pub(crate) fn select_inputs_for_sender_and_issuer<'a>(
         // first check already selected outputs
         for input_signing_data in selected_inputs.iter() {
             // Default to `true`, since it will be a state transition if we add it here
-            let alias_state_transition = is_alias_state_transition(input_signing_data, outputs)?.unwrap_or(true);
+            let alias_state_transition = is_alias_state_transition(input_signing_data, outputs)?
+                .unwrap_or((true, true))
+                .0;
             let (required_unlock_address, unlocked_alias_or_nft_address) = input_signing_data
                 .output
                 .required_and_unlocked_address(current_time, input_signing_data.output_id(), alias_state_transition)?;
@@ -259,7 +261,9 @@ pub(crate) fn select_inputs_for_sender_and_issuer<'a>(
             }
 
             // Default to `true`, since it will be a state transition if we add it here
-            let alias_state_transition = is_alias_state_transition(input_signing_data, outputs)?.unwrap_or(true);
+            let alias_state_transition = is_alias_state_transition(input_signing_data, outputs)?
+                .unwrap_or((true, true))
+                .0;
             let (required_unlock_address, unlocked_alias_or_nft_address) = input_signing_data
                 .output
                 .required_and_unlocked_address(current_time, output_id, alias_state_transition)?;
@@ -302,7 +306,7 @@ fn get_required_addresses_for_sender_and_issuer(
             input_signing_data.output.required_and_unlocked_address(
                 current_time,
                 input_signing_data.output_id(),
-                alias_state_transition.unwrap_or(false),
+                alias_state_transition.unwrap_or((false, false)).0,
             )?;
         unlocked_addresses.insert(required_unlock_address);
         if let Some(unlocked_alias_or_nft_address) = unlocked_alias_or_nft_address {

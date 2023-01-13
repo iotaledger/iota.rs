@@ -55,7 +55,7 @@ fn burn_alias_absent() {
 
     assert!(matches!(
         selected,
-        Err(Error::UnfulfillableRequirement(Requirement::Alias(alias_id))) if alias_id == alias_id_1
+        Err(Error::UnfulfillableRequirement(Requirement::Alias(alias_id, false))) if alias_id == alias_id_1
     ));
 }
 

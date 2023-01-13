@@ -29,7 +29,7 @@ pub enum Requirement {
     /// Foundry requirement.
     Foundry(FoundryId),
     /// Alias requirement.
-    Alias(AliasId),
+    Alias(AliasId, bool),
     /// Nft requirement.
     Nft(NftId),
     /// Native tokens requirement.
@@ -49,7 +49,9 @@ impl InputSelection {
             Requirement::Sender(address) => self.fulfill_sender_requirement(address),
             Requirement::Issuer(address) => self.fulfill_issuer_requirement(address),
             Requirement::Foundry(foundry_id) => self.fulfill_foundry_requirement(foundry_id),
-            Requirement::Alias(alias_id) => self.fulfill_alias_requirement(alias_id),
+            Requirement::Alias(alias_id, state_transition) => {
+                self.fulfill_alias_requirement(alias_id, state_transition)
+            }
             Requirement::Nft(nft_id) => self.fulfill_nft_requirement(nft_id),
             Requirement::NativeTokens => self.fulfill_native_tokens_requirement(),
             Requirement::BaseToken => self.fulfill_base_token_requirement(),
@@ -96,7 +98,7 @@ impl Requirements {
                     let is_created = alias_output.alias_id().is_null();
 
                     if !is_created {
-                        requirements.push(Requirement::Alias(*alias_output.alias_id()));
+                        requirements.push(Requirement::Alias(*alias_output.alias_id(), false));
                     }
 
                     is_created
@@ -126,7 +128,7 @@ impl Requirements {
                         requirements.push(Requirement::Foundry(foundry_output.id()));
                     }
 
-                    requirements.push(Requirement::Alias(*foundry_output.alias_address().alias_id()));
+                    requirements.push(Requirement::Alias(*foundry_output.alias_address().alias_id(), true));
 
                     is_created
                 }
@@ -158,7 +160,7 @@ impl Requirements {
         let mut requirements = Requirements::new();
 
         for alias_id in &burn.aliases {
-            requirements.push(Requirement::Alias(*alias_id));
+            requirements.push(Requirement::Alias(*alias_id, false));
         }
 
         for nft_id in &burn.nfts {
