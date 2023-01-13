@@ -9,7 +9,7 @@ use iota_client::{
         indexer::query_parameters::QueryParameter,
         participation::types::{
             participation::{Participation, Participations},
-            EventId, PARTICIPATION_TAG,
+            ParticipationEventId, PARTICIPATION_TAG,
         },
     },
     request_funds_from_faucet,
@@ -90,7 +90,7 @@ async fn main() -> Result<()> {
     Ok(())
 }
 
-async fn participate(client: &Client, event_id: EventId, node_url: String) -> Result<()> {
+async fn participate(client: &Client, event_id: ParticipationEventId, node_url: String) -> Result<()> {
     let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
         &std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
     )?);
