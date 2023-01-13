@@ -501,3 +501,48 @@ fn take_amount_from_nft_to_fund_basic() {
         }
     });
 }
+
+#[test]
+fn nft_burn_should_validate_nft_sender() {
+    let protocol_parameters = protocol_parameters();
+    let nft_id_1 = NftId::from_str(NFT_ID_1).unwrap();
+
+    let inputs = build_inputs(vec![
+        Basic(2_000_000, BECH32_ADDRESS, None, None),
+        Nft(1_000_000, nft_id_1, BECH32_ADDRESS, None, None, None),
+    ]);
+    let outputs = vec![build_basic_output(
+        3_000_000,
+        BECH32_ADDRESS,
+        None,
+        Some(BECH32_ADDRESS_NFT_SENDER),
+    )];
+
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+        .burn(Burn::new().add_nft(nft_id_1))
+        .select()
+        .unwrap();
+
+    assert!(unsorted_eq(&selected.inputs, &inputs));
+    assert!(unsorted_eq(&selected.outputs, &outputs));
+}
+
+#[test]
+fn nft_burn_should_validate_nft_address() {
+    let protocol_parameters = protocol_parameters();
+    let nft_id_1 = NftId::from_str(NFT_ID_1).unwrap();
+
+    let inputs = build_inputs(vec![
+        Basic(2_000_000, BECH32_ADDRESS_NFT_SENDER, None, None),
+        Nft(1_000_000, nft_id_1, BECH32_ADDRESS, None, None, None),
+    ]);
+    let outputs = vec![build_basic_output(3_000_000, BECH32_ADDRESS, None, None)];
+
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+        .burn(Burn::new().add_nft(nft_id_1))
+        .select()
+        .unwrap();
+
+    assert!(unsorted_eq(&selected.inputs, &inputs));
+    assert!(unsorted_eq(&selected.outputs, &outputs));
+}
