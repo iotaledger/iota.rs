@@ -25,15 +25,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `TrackedParticipation::answers` field;
 - `#[derive(Debug, Clone, Serialize, Deserialize)]` and `#[serde(untagged)]` to `ParticipationEventType`;
+- `impl From<&OutputMetadata> for OutputMetadataResponse`;
+- `Client::get_included_block_metadata` API endpoint;
+- `Message::GetIncludedBlockMetadata` to message interface;
 
 ### Changed
 
 - Updated dependencies;
 - Fields of `Error::InputAddressNotFound` are now named;
+- `Event` renamed to `ParticipationEvent`;
+- `EventId` renamed to `ParticipationEventId`;
+- `EventData` renamed to `ParticipationEventData`;
+- `EventStatus` renamed to `ParticipationEventStatus`;
+- `EventPayload` renamed to `ParticipationEventPayload`;
 
 ### Fixed
 
-- Possible infinity loop in pow::finish_multi_threaded_pow();
+- Possible infinite loop in pow::finish_multi_threaded_pow();
 
 ## 2.0.1-rc.5 - 2022-12-20
 

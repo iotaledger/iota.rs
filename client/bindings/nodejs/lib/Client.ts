@@ -690,6 +690,20 @@ export class Client {
     }
 
     /**
+     * Returns the metadata of the included block of the transaction.
+     */
+    async getIncludedBlockMetadata(transactionId: string): Promise<IBlock> {
+        const response = await this.messageHandler.sendMessage({
+            name: 'getIncludedBlockMetadata',
+            data: {
+                transactionId,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
      * Transforms bech32 to hex.
      */
     async bech32ToHex(bech32: string): Promise<string> {

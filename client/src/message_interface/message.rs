@@ -288,6 +288,12 @@ pub enum Message {
         #[serde(rename = "transactionId")]
         transaction_id: TransactionId,
     },
+    /// Returns the included block metadata of the transaction.
+    GetIncludedBlockMetadata {
+        /// Transaction ID
+        #[serde(rename = "transactionId")]
+        transaction_id: TransactionId,
+    },
 
     //////////////////////////////////////////////////////////////////////
     // Node indexer API

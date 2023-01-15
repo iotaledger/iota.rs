@@ -448,6 +448,9 @@ impl ClientMessageHandler {
             Message::GetIncludedBlock { transaction_id } => Ok(Response::Block(BlockDto::from(
                 &self.client.get_included_block(&transaction_id).await?,
             ))),
+            Message::GetIncludedBlockMetadata { transaction_id } => Ok(Response::BlockMetadata(
+                self.client.get_included_block_metadata(&transaction_id).await?,
+            )),
             Message::BasicOutputIds { query_parameters } => Ok(Response::OutputIds(
                 self.client.basic_output_ids(query_parameters).await?,
             )),

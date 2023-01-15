@@ -2,211 +2,9 @@
 
 # iota\_client
 
-<a id="iota_client._utils"></a>
+<a id="iota_client._base_api"></a>
 
-# iota\_client.\_utils
-
-<a id="iota_client._utils.Utils"></a>
-
-## Utils Objects
-
-```python
-class Utils(BaseAPI)
-```
-
-<a id="iota_client._utils.Utils.bech32_to_hex"></a>
-
-#### bech32\_to\_hex
-
-```python
-def bech32_to_hex(bech32)
-```
-
-Transforms bech32 to hex.
-
-<a id="iota_client._utils.Utils.hex_to_bech32"></a>
-
-#### hex\_to\_bech32
-
-```python
-def hex_to_bech32(hex, bech32_hrp)
-```
-
-Transforms a hex encoded address to a bech32 encoded address.
-
-<a id="iota_client._utils.Utils.alias_id_to_bech32"></a>
-
-#### alias\_id\_to\_bech32
-
-```python
-def alias_id_to_bech32(alias_id, bech32_hrp)
-```
-
-Transforms an alias id to a bech32 encoded address.
-
-<a id="iota_client._utils.Utils.nft_id_to_bech32"></a>
-
-#### nft\_id\_to\_bech32
-
-```python
-def nft_id_to_bech32(nft_id, bech32_hrp)
-```
-
-Transforms an nft id to a bech32 encoded address.
-
-<a id="iota_client._utils.Utils.hex_public_key_to_bech32_address"></a>
-
-#### hex\_public\_key\_to\_bech32\_address
-
-```python
-def hex_public_key_to_bech32_address(hex, bech32_hrp=None)
-```
-
-Transforms a hex encoded public key to a bech32 encoded address.
-
-<a id="iota_client._utils.Utils.parse_bech32_address"></a>
-
-#### parse\_bech32\_address
-
-```python
-def parse_bech32_address(address)
-```
-
-Returns a valid Address parsed from a String.
-
-<a id="iota_client._utils.Utils.is_address_valid"></a>
-
-#### is\_address\_valid
-
-```python
-def is_address_valid(address)
-```
-
-Checks if a String is a valid bech32 encoded address.
-
-<a id="iota_client._utils.Utils.generate_mnemonic"></a>
-
-#### generate\_mnemonic
-
-```python
-def generate_mnemonic()
-```
-
-Generates a new mnemonic.
-
-<a id="iota_client._utils.Utils.mnemonic_to_hex_seed"></a>
-
-#### mnemonic\_to\_hex\_seed
-
-```python
-def mnemonic_to_hex_seed(mnemonic)
-```
-
-Returns a hex encoded seed for a mnemonic.
-
-<a id="iota_client._utils.Utils.compute_alias_id"></a>
-
-#### compute\_alias\_id
-
-```python
-def compute_alias_id(output_id)
-```
-
-Computes the alias id for the given alias output id.
-
-<a id="iota_client._utils.Utils.compute_nft_id"></a>
-
-#### compute\_nft\_id
-
-```python
-def compute_nft_id(output_id)
-```
-
-Computes the NFT id for the given NFT output id.
-
-<a id="iota_client._utils.Utils.compute_foundry_id"></a>
-
-#### compute\_foundry\_id
-
-```python
-def compute_foundry_id(alias_address, serial_number, token_scheme_kind)
-```
-
-Computes the foundry id.
-
-<a id="iota_client._utils.Utils.block_id"></a>
-
-#### block\_id
-
-```python
-def block_id(block)
-```
-
-Returns a block ID (Blake2b256 hash of block bytes) from a block.
-
-<a id="iota_client.secret_manager"></a>
-
-# iota\_client.secret\_manager
-
-<a id="iota_client.secret_manager.LedgerNanoSecretManager"></a>
-
-## LedgerNanoSecretManager Objects
-
-```python
-class LedgerNanoSecretManager(dict)
-```
-
-Secret manager that uses a Ledger Nano hardware wallet or Speculos simulator.
-
-<a id="iota_client.secret_manager.LedgerNanoSecretManager.__init__"></a>
-
-#### \_\_init\_\_
-
-```python
-def __init__(is_simulator)
-```
-
-Initialize a ledger nano secret manager.
-
-<a id="iota_client.secret_manager.MnemonicSecretManager"></a>
-
-## MnemonicSecretManager Objects
-
-```python
-class MnemonicSecretManager(dict)
-```
-
-Secret manager that uses a mnemonic in plain memory. It's not recommended for production use. Use LedgerNano or Stronghold instead.
-
-<a id="iota_client.secret_manager.MnemonicSecretManager.__init__"></a>
-
-#### \_\_init\_\_
-
-```python
-def __init__(mnemonic)
-```
-
-Initialize a mnemonic secret manager.
-
-<a id="iota_client.secret_manager.StrongholdSecretManager"></a>
-
-## StrongholdSecretManager Objects
-
-```python
-class StrongholdSecretManager(dict)
-```
-
-Secret manager that uses Stronghold.
-
-<a id="iota_client.secret_manager.StrongholdSecretManager.__init__"></a>
-
-#### \_\_init\_\_
-
-```python
-def __init__(snapshot_path, password)
-```
-
-Initialize a stronghold secret manager.
+# iota\_client.\_base\_api
 
 <a id="iota_client.client"></a>
 
@@ -452,6 +250,94 @@ def submit_payload(payload_dto)
 
 Submit a payload in a block.
 
+<a id="iota_client.secret_manager"></a>
+
+# iota\_client.secret\_manager
+
+<a id="iota_client.secret_manager.LedgerNanoSecretManager"></a>
+
+## LedgerNanoSecretManager Objects
+
+```python
+class LedgerNanoSecretManager(dict)
+```
+
+Secret manager that uses a Ledger Nano hardware wallet or Speculos simulator.
+
+<a id="iota_client.secret_manager.LedgerNanoSecretManager.__init__"></a>
+
+#### \_\_init\_\_
+
+```python
+def __init__(is_simulator)
+```
+
+Initialize a ledger nano secret manager.
+
+<a id="iota_client.secret_manager.MnemonicSecretManager"></a>
+
+## MnemonicSecretManager Objects
+
+```python
+class MnemonicSecretManager(dict)
+```
+
+Secret manager that uses a mnemonic in plain memory. It's not recommended for production use. Use LedgerNano or Stronghold instead.
+
+<a id="iota_client.secret_manager.MnemonicSecretManager.__init__"></a>
+
+#### \_\_init\_\_
+
+```python
+def __init__(mnemonic)
+```
+
+Initialize a mnemonic secret manager.
+
+<a id="iota_client.secret_manager.StrongholdSecretManager"></a>
+
+## StrongholdSecretManager Objects
+
+```python
+class StrongholdSecretManager(dict)
+```
+
+Secret manager that uses Stronghold.
+
+<a id="iota_client.secret_manager.StrongholdSecretManager.__init__"></a>
+
+#### \_\_init\_\_
+
+```python
+def __init__(snapshot_path, password)
+```
+
+Initialize a stronghold secret manager.
+
+<a id="iota_client.common"></a>
+
+# iota\_client.common
+
+<a id="iota_client.common.send_message_routine"></a>
+
+#### send\_message\_routine
+
+```python
+def send_message_routine(func)
+```
+
+The routine of dump json string and call send_message()
+
+<a id="iota_client.common.IotaClientError"></a>
+
+## IotaClientError Objects
+
+```python
+class IotaClientError(Exception)
+```
+
+iota-client error
+
 <a id="iota_client._high_level_api"></a>
 
 # iota\_client.\_high\_level\_api
@@ -591,88 +477,6 @@ def promote_unchecked(block_id)
 ```
 
 Promote a block without checking if it should be promoted.
-
-<a id="iota_client._node_indexer_api"></a>
-
-# iota\_client.\_node\_indexer\_api
-
-<a id="iota_client._node_indexer_api.NodeIndexerAPI"></a>
-
-## NodeIndexerAPI Objects
-
-```python
-class NodeIndexerAPI(BaseAPI)
-```
-
-<a id="iota_client._node_indexer_api.NodeIndexerAPI.basic_output_ids"></a>
-
-#### basic\_output\_ids
-
-```python
-def basic_output_ids(query_parameters)
-```
-
-Fetch basic output IDs.
-
-<a id="iota_client._node_indexer_api.NodeIndexerAPI.alias_output_ids"></a>
-
-#### alias\_output\_ids
-
-```python
-def alias_output_ids(query_parameters)
-```
-
-Fetch alias output IDs.
-
-<a id="iota_client._node_indexer_api.NodeIndexerAPI.alias_output_id"></a>
-
-#### alias\_output\_id
-
-```python
-def alias_output_id(alias_id)
-```
-
-Fetch alias output ID.
-
-<a id="iota_client._node_indexer_api.NodeIndexerAPI.nft_output_ids"></a>
-
-#### nft\_output\_ids
-
-```python
-def nft_output_ids(query_parameters)
-```
-
-Fetch NFT output IDs.
-
-<a id="iota_client._node_indexer_api.NodeIndexerAPI.nft_output_id"></a>
-
-#### nft\_output\_id
-
-```python
-def nft_output_id(nft_id)
-```
-
-Fetch NFT output ID.
-
-<a id="iota_client._node_indexer_api.NodeIndexerAPI.foundry_output_ids"></a>
-
-#### foundry\_output\_ids
-
-```python
-def foundry_output_ids(query_parameters)
-```
-
-Fetch foundry Output IDs.
-
-<a id="iota_client._node_indexer_api.NodeIndexerAPI.foundry_output_id"></a>
-
-#### foundry\_output\_id
-
-```python
-def foundry_output_id(foundry_id)
-```
-
-Fetch foundry Output ID.
 
 <a id="iota_client._node_core_api"></a>
 
@@ -896,31 +700,237 @@ def get_included_block(transaction_id)
 
 Returns the included block of the transaction.
 
-<a id="iota_client.common"></a>
+<a id="iota_client._node_core_api.NodeCoreAPI.get_included_block_metadata"></a>
 
-# iota\_client.common
-
-<a id="iota_client.common.send_message_routine"></a>
-
-#### send\_message\_routine
+#### get\_included\_block\_metadata
 
 ```python
-def send_message_routine(func)
+def get_included_block_metadata(transaction_id)
 ```
 
-The routine of dump json string and call send_message()
+Returns the metadata of the included block of the transaction.
 
-<a id="iota_client.common.IotaClientError"></a>
+<a id="iota_client._utils"></a>
 
-## IotaClientError Objects
+# iota\_client.\_utils
+
+<a id="iota_client._utils.Utils"></a>
+
+## Utils Objects
 
 ```python
-class IotaClientError(Exception)
+class Utils(BaseAPI)
 ```
 
-iota-client error
+<a id="iota_client._utils.Utils.bech32_to_hex"></a>
 
-<a id="iota_client._base_api"></a>
+#### bech32\_to\_hex
 
-# iota\_client.\_base\_api
+```python
+def bech32_to_hex(bech32)
+```
+
+Transforms bech32 to hex.
+
+<a id="iota_client._utils.Utils.hex_to_bech32"></a>
+
+#### hex\_to\_bech32
+
+```python
+def hex_to_bech32(hex, bech32_hrp)
+```
+
+Transforms a hex encoded address to a bech32 encoded address.
+
+<a id="iota_client._utils.Utils.alias_id_to_bech32"></a>
+
+#### alias\_id\_to\_bech32
+
+```python
+def alias_id_to_bech32(alias_id, bech32_hrp)
+```
+
+Transforms an alias id to a bech32 encoded address.
+
+<a id="iota_client._utils.Utils.nft_id_to_bech32"></a>
+
+#### nft\_id\_to\_bech32
+
+```python
+def nft_id_to_bech32(nft_id, bech32_hrp)
+```
+
+Transforms an nft id to a bech32 encoded address.
+
+<a id="iota_client._utils.Utils.hex_public_key_to_bech32_address"></a>
+
+#### hex\_public\_key\_to\_bech32\_address
+
+```python
+def hex_public_key_to_bech32_address(hex, bech32_hrp=None)
+```
+
+Transforms a hex encoded public key to a bech32 encoded address.
+
+<a id="iota_client._utils.Utils.parse_bech32_address"></a>
+
+#### parse\_bech32\_address
+
+```python
+def parse_bech32_address(address)
+```
+
+Returns a valid Address parsed from a String.
+
+<a id="iota_client._utils.Utils.is_address_valid"></a>
+
+#### is\_address\_valid
+
+```python
+def is_address_valid(address)
+```
+
+Checks if a String is a valid bech32 encoded address.
+
+<a id="iota_client._utils.Utils.generate_mnemonic"></a>
+
+#### generate\_mnemonic
+
+```python
+def generate_mnemonic()
+```
+
+Generates a new mnemonic.
+
+<a id="iota_client._utils.Utils.mnemonic_to_hex_seed"></a>
+
+#### mnemonic\_to\_hex\_seed
+
+```python
+def mnemonic_to_hex_seed(mnemonic)
+```
+
+Returns a hex encoded seed for a mnemonic.
+
+<a id="iota_client._utils.Utils.compute_alias_id"></a>
+
+#### compute\_alias\_id
+
+```python
+def compute_alias_id(output_id)
+```
+
+Computes the alias id for the given alias output id.
+
+<a id="iota_client._utils.Utils.compute_nft_id"></a>
+
+#### compute\_nft\_id
+
+```python
+def compute_nft_id(output_id)
+```
+
+Computes the NFT id for the given NFT output id.
+
+<a id="iota_client._utils.Utils.compute_foundry_id"></a>
+
+#### compute\_foundry\_id
+
+```python
+def compute_foundry_id(alias_address, serial_number, token_scheme_kind)
+```
+
+Computes the foundry id.
+
+<a id="iota_client._utils.Utils.block_id"></a>
+
+#### block\_id
+
+```python
+def block_id(block)
+```
+
+Returns a block ID (Blake2b256 hash of block bytes) from a block.
+
+<a id="iota_client._node_indexer_api"></a>
+
+# iota\_client.\_node\_indexer\_api
+
+<a id="iota_client._node_indexer_api.NodeIndexerAPI"></a>
+
+## NodeIndexerAPI Objects
+
+```python
+class NodeIndexerAPI(BaseAPI)
+```
+
+<a id="iota_client._node_indexer_api.NodeIndexerAPI.basic_output_ids"></a>
+
+#### basic\_output\_ids
+
+```python
+def basic_output_ids(query_parameters)
+```
+
+Fetch basic output IDs.
+
+<a id="iota_client._node_indexer_api.NodeIndexerAPI.alias_output_ids"></a>
+
+#### alias\_output\_ids
+
+```python
+def alias_output_ids(query_parameters)
+```
+
+Fetch alias output IDs.
+
+<a id="iota_client._node_indexer_api.NodeIndexerAPI.alias_output_id"></a>
+
+#### alias\_output\_id
+
+```python
+def alias_output_id(alias_id)
+```
+
+Fetch alias output ID.
+
+<a id="iota_client._node_indexer_api.NodeIndexerAPI.nft_output_ids"></a>
+
+#### nft\_output\_ids
+
+```python
+def nft_output_ids(query_parameters)
+```
+
+Fetch NFT output IDs.
+
+<a id="iota_client._node_indexer_api.NodeIndexerAPI.nft_output_id"></a>
+
+#### nft\_output\_id
+
+```python
+def nft_output_id(nft_id)
+```
+
+Fetch NFT output ID.
+
+<a id="iota_client._node_indexer_api.NodeIndexerAPI.foundry_output_ids"></a>
+
+#### foundry\_output\_ids
+
+```python
+def foundry_output_ids(query_parameters)
+```
+
+Fetch foundry Output IDs.
+
+<a id="iota_client._node_indexer_api.NodeIndexerAPI.foundry_output_id"></a>
+
+#### foundry\_output\_id
+
+```python
+def foundry_output_id(foundry_id)
+```
+
+Fetch foundry Output ID.
 

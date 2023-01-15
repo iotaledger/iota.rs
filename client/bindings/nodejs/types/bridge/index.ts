@@ -40,6 +40,7 @@ import type {
     __GetReceiptsMigratedAtMessage__,
     __GetTreasuryMessage__,
     __GetIncludedBlockMessage__,
+    __GetIncludedBlockMetadataMessage__,
     __Bech32ToHexMessage__,
     __HexToBech32Message__,
     __AliasIdToBech32Message__,
@@ -120,6 +121,7 @@ export type __ClientMessages__ =
     | __GetReceiptsMigratedAtMessage__
     | __GetTreasuryMessage__
     | __GetIncludedBlockMessage__
+    | __GetIncludedBlockMetadataMessage__
     | __Bech32ToHexMessage__
     | __HexToBech32Message__
     | __AliasIdToBech32Message__
