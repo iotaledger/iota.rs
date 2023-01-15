@@ -3,7 +3,7 @@
 
 use alloc::{boxed::Box, vec::Vec};
 
-use derive_more::{Deref, DerefMut};
+use derive_more::{Deref, DerefMut, From};
 use hashbrown::HashMap;
 use iterator_sorted::is_unique_sorted;
 use packable::{bounded::BoundedU8, prefix::BoxedSlicePrefix, Packable};
@@ -55,7 +55,7 @@ fn verify_amount<const VERIFY: bool>(amount: &U256, _: &()) -> Result<(), Error>
 }
 
 /// A builder for [`NativeTokens`].
-#[derive(Clone, Default, Debug, Deref, DerefMut)]
+#[derive(Clone, Default, Debug, Deref, DerefMut, From)]
 #[must_use]
 pub struct NativeTokensBuilder(HashMap<TokenId, U256>);
 

@@ -125,7 +125,10 @@ impl InputSelection {
 
         input_native_tokens.merge(minted_native_tokens)?;
         output_native_tokens.merge(melted_native_tokens)?;
-        // TODO also merge burn
+
+        if let Some(burn) = self.burn.as_ref() {
+            output_native_tokens.merge(NativeTokensBuilder::from(burn.native_tokens.clone()))?;
+        }
 
         // TODO weird that it happens in this direction?
         if let Some(diffs) = get_native_tokens_diff(&output_native_tokens, &input_native_tokens)? {

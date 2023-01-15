@@ -6,14 +6,14 @@ use super::{
         base_token::base_token_sums,
         native_tokens::{get_minted_and_melted_native_tokens, get_native_tokens, get_native_tokens_diff},
     },
-    OutputInfo,
+    Burn, OutputInfo,
 };
 use crate::{
     block::{
         address::Address,
         output::{
             unlock_condition::{AddressUnlockCondition, UnlockCondition},
-            BasicOutputBuilder, Output,
+            BasicOutputBuilder, NativeTokensBuilder, Output,
         },
         protocol::ProtocolParameters,
     },
@@ -58,11 +58,13 @@ fn get_remainder_address(selected_inputs: &[InputSigningData], remainder_address
     None
 }
 
+// TODO make self
 pub(crate) fn remainder_output(
     selected_inputs: &[InputSigningData],
     outputs: &[OutputInfo],
     remainder_address: Option<Address>,
     protocol_parameters: &ProtocolParameters,
+    burn: Option<&Burn>,
 ) -> Result<Option<Output>> {
     let (inputs_sum, outputs_sum) = base_token_sums(selected_inputs, outputs);
 
@@ -72,7 +74,10 @@ pub(crate) fn remainder_output(
 
     input_native_tokens.merge(minted_native_tokens)?;
     output_native_tokens.merge(melted_native_tokens)?;
-    // TODO also merge burn
+
+    if let Some(burn) = burn.as_ref() {
+        output_native_tokens.merge(NativeTokensBuilder::from(burn.native_tokens.clone()))?;
+    }
 
     let native_tokens_diff = get_native_tokens_diff(&input_native_tokens, &output_native_tokens)?;
 

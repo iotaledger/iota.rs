@@ -47,6 +47,7 @@ pub struct InputSelection {
 }
 
 /// Result of the input selection algorithm.
+#[derive(Debug)]
 pub struct Selected {
     /// Selected inputs.
     pub inputs: Vec<InputSigningData>,
@@ -279,6 +280,7 @@ impl InputSelection {
             &self.outputs,
             self.remainder_address,
             &self.protocol_parameters,
+            self.burn.as_ref(),
         )? {
             self.outputs.push(OutputInfo {
                 output,

@@ -6,8 +6,8 @@ use std::str::FromStr;
 use iota_client::{
     api::input_selection::new::{Burn, InputSelection, Requirement},
     block::{
-        address::Address,
-        output::{AliasId, AliasOutputBuilder, Output, SimpleTokenScheme},
+        address::{Address, AliasAddress},
+        output::{AliasId, AliasOutputBuilder, FoundryId, Output, SimpleTokenScheme, TokenId},
         protocol::protocol_parameters,
     },
     Error,
@@ -15,7 +15,7 @@ use iota_client::{
 use primitive_types::U256;
 
 use crate::input_selection::{
-    build_inputs, build_outputs,
+    build_inputs, build_outputs, unsorted_eq,
     Build::{Alias, Basic, Foundry},
     ALIAS_ID_1, ALIAS_ID_2, BECH32_ADDRESS, TOKEN_SUPPLY,
 };
@@ -440,3 +440,59 @@ fn simple_foundry_transition_basic_not_needed_with_remainder() {
 //     //     }
 //     // });
 // }
+
+#[test]
+fn mint_and_burn_at_the_same_time() {
+    let protocol_parameters = protocol_parameters();
+    let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
+    let foundry_id = FoundryId::build(&AliasAddress::from(alias_id_1), 0, SimpleTokenScheme::KIND);
+    let token_id = TokenId::from(foundry_id);
+
+    let inputs = build_inputs(vec![
+        Alias(2_000_000, alias_id_1, BECH32_ADDRESS, None, None, None),
+        Foundry(
+            1_000_000,
+            alias_id_1,
+            SimpleTokenScheme::new(U256::from(100), U256::from(0), U256::from(200)).unwrap(),
+            Some(vec![(&token_id.to_string(), 100)]),
+        ),
+    ]);
+    let outputs = build_outputs(vec![Foundry(
+        1_000_000,
+        alias_id_1,
+        SimpleTokenScheme::new(U256::from(120), U256::from(0), U256::from(200)).unwrap(),
+        Some(vec![(&token_id.to_string(), 110)]),
+    )]);
+
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+        .burn(Burn::new().add_native_token(token_id, U256::from(10)))
+        .select()
+        .unwrap();
+
+    assert!(unsorted_eq(&selected.inputs, &inputs));
+    assert_eq!(selected.outputs.len(), 2);
+    assert!(selected.outputs.contains(&outputs[0]));
+    selected.outputs.iter().for_each(|output| {
+        if !outputs.contains(output) {
+            if output.is_alias() {
+                assert_eq!(output.amount(), 2_000_000);
+                assert_eq!(output.as_alias().native_tokens().len(), 0);
+                assert_eq!(output.as_alias().state_index(), 1);
+                assert_eq!(*output.as_alias().alias_id(), alias_id_1);
+                assert_eq!(output.as_alias().unlock_conditions().len(), 2);
+                assert_eq!(output.as_alias().features().len(), 0);
+                assert_eq!(output.as_alias().immutable_features().len(), 0);
+                assert_eq!(
+                    *output.as_alias().state_controller_address(),
+                    Address::try_from_bech32(BECH32_ADDRESS).unwrap().1
+                );
+                assert_eq!(
+                    *output.as_alias().governor_address(),
+                    Address::try_from_bech32(BECH32_ADDRESS).unwrap().1
+                );
+            } else {
+                panic!("unexpected output type")
+            }
+        }
+    });
+}
