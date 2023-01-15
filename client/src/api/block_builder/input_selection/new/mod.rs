@@ -245,7 +245,7 @@ impl InputSelection {
         if self.available_inputs.is_empty() {
             return Err(Error::NoInputsProvided);
         }
-        if self.outputs.is_empty() {
+        if self.outputs.is_empty() && self.burn.is_none() {
             return Err(Error::NoOutputsProvided);
         }
 
