@@ -15,7 +15,7 @@ use iota_client::{
 use primitive_types::U256;
 
 use crate::input_selection::{
-    build_basic_output, build_inputs,
+    build_inputs, build_outputs,
     Build::{Alias, Basic, Foundry, Nft},
     ALIAS_ID_1, BECH32_ADDRESS, NFT_ID_1,
 };
@@ -29,7 +29,7 @@ fn burn_alias_present() {
         Alias(1_000_000, alias_id_1, BECH32_ADDRESS, None, None, None),
         Basic(1_000_000, BECH32_ADDRESS, None, None),
     ]);
-    let outputs = vec![build_basic_output(1_000_000, BECH32_ADDRESS, None, None)];
+    let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS, None, None)]);
 
     let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
         .burn(Burn::new().add_alias(alias_id_1))
@@ -47,7 +47,7 @@ fn burn_alias_absent() {
     let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
 
     let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS, None, None)]);
-    let outputs = vec![build_basic_output(1_000_000, BECH32_ADDRESS, None, None)];
+    let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS, None, None)]);
 
     let selected = InputSelection::new(inputs, outputs, protocol_parameters)
         .burn(Burn::new().add_alias(alias_id_1))
@@ -68,7 +68,7 @@ fn burn_nft_present() {
         Nft(1_000_000, nft_id_1, BECH32_ADDRESS, None, None, None),
         Basic(1_000_000, BECH32_ADDRESS, None, None),
     ]);
-    let outputs = vec![build_basic_output(1_000_000, BECH32_ADDRESS, None, None)];
+    let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS, None, None)]);
 
     let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
         .burn(Burn::new().add_nft(nft_id_1))
@@ -86,7 +86,7 @@ fn burn_nft_absent() {
     let nft_id_1 = NftId::from_str(NFT_ID_1).unwrap();
 
     let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS, None, None)]);
-    let outputs = vec![build_basic_output(1_000_000, BECH32_ADDRESS, None, None)];
+    let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS, None, None)]);
 
     let selected = InputSelection::new(inputs, outputs, protocol_parameters)
         .burn(Burn::new().add_nft(nft_id_1))
@@ -113,7 +113,7 @@ fn burn_foundry_present() {
         Alias(1_000_000, alias_id_1, BECH32_ADDRESS, None, None, None),
         Basic(1_000_000, BECH32_ADDRESS, None, None),
     ]);
-    let outputs = vec![build_basic_output(500_000, BECH32_ADDRESS, None, None)];
+    let outputs = build_outputs(vec![Basic(500_000, BECH32_ADDRESS, None, None)]);
 
     let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
         .burn(Burn::new().add_foundry(inputs[0].output.as_foundry().id()))
@@ -176,7 +176,7 @@ fn burn_foundry_absent() {
         Alias(1_000_000, alias_id_1, BECH32_ADDRESS, None, None, None),
         Basic(1_000_000, BECH32_ADDRESS, None, None),
     ]);
-    let outputs = vec![build_basic_output(1_000_000, BECH32_ADDRESS, None, None)];
+    let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS, None, None)]);
 
     let selected = InputSelection::new(inputs, outputs, protocol_parameters)
         .burn(Burn::new().add_foundry(foundry_id_1))

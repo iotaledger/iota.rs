@@ -14,7 +14,7 @@ use iota_client::{
 };
 
 use crate::input_selection::{
-    build_basic_output, build_inputs,
+    build_inputs, build_outputs,
     Build::{Alias, Basic, Nft},
     ALIAS_ID_1, BECH32_ADDRESS, BECH32_ADDRESS_ALIAS, BECH32_ADDRESS_ED25519, BECH32_ADDRESS_NFT,
     BECH32_ADDRESS_REMAINDER, NFT_ID_1,
@@ -25,7 +25,7 @@ fn input_amount_equal_output_amount() {
     let protocol_parameters = protocol_parameters();
 
     let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS, None, None)]);
-    let outputs = vec![build_basic_output(1_000_000, BECH32_ADDRESS, None, None)];
+    let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS, None, None)]);
 
     let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
         .select()
@@ -40,7 +40,7 @@ fn input_amount_lower_than_output_amount() {
     let protocol_parameters = protocol_parameters();
 
     let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS, None, None)]);
-    let outputs = vec![build_basic_output(2_000_000, BECH32_ADDRESS, None, None)];
+    let outputs = build_outputs(vec![Basic(2_000_000, BECH32_ADDRESS, None, None)]);
 
     let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
 
@@ -61,7 +61,7 @@ fn input_amount_lower_than_output_amount_2() {
         Basic(1_000_000, BECH32_ADDRESS, None, None),
         Basic(2_000_000, BECH32_ADDRESS, None, None),
     ]);
-    let outputs = vec![build_basic_output(3_500_000, BECH32_ADDRESS, None, None)];
+    let outputs = build_outputs(vec![Basic(3_500_000, BECH32_ADDRESS, None, None)]);
 
     let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
 
@@ -79,7 +79,7 @@ fn input_amount_greater_than_output_amount() {
     let protocol_parameters = protocol_parameters();
 
     let inputs = build_inputs(vec![Basic(2_000_000, BECH32_ADDRESS, None, None)]);
-    let outputs = vec![build_basic_output(500_000, BECH32_ADDRESS, None, None)];
+    let outputs = build_outputs(vec![Basic(500_000, BECH32_ADDRESS, None, None)]);
 
     let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
         .select()
@@ -110,7 +110,7 @@ fn input_amount_greater_than_output_amount_with_remainder_address() {
     let remainder_address = Address::try_from_bech32(BECH32_ADDRESS_REMAINDER).unwrap().1;
 
     let inputs = build_inputs(vec![Basic(2_000_000, BECH32_ADDRESS, None, None)]);
-    let outputs = vec![build_basic_output(500_000, BECH32_ADDRESS, None, None)];
+    let outputs = build_outputs(vec![Basic(500_000, BECH32_ADDRESS, None, None)]);
 
     let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
         .remainder_address(remainder_address)
@@ -141,7 +141,7 @@ fn two_same_inputs_one_needed() {
         Basic(2_000_000, BECH32_ADDRESS, None, None),
         Basic(2_000_000, BECH32_ADDRESS, None, None),
     ]);
-    let outputs = vec![build_basic_output(500_000, BECH32_ADDRESS, None, None)];
+    let outputs = build_outputs(vec![Basic(500_000, BECH32_ADDRESS, None, None)]);
 
     let selected = InputSelection::new(inputs, outputs.clone(), protocol_parameters)
         .select()
@@ -175,7 +175,7 @@ fn two_inputs_one_needed() {
         Basic(1_000_000, BECH32_ADDRESS, None, None),
         Basic(2_000_000, BECH32_ADDRESS, None, None),
     ]);
-    let outputs = vec![build_basic_output(1_000_000, BECH32_ADDRESS, None, None)];
+    let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS, None, None)]);
 
     let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
         .select()
@@ -193,7 +193,7 @@ fn two_inputs_one_needed_reversed() {
         Basic(2_000_000, BECH32_ADDRESS, None, None),
         Basic(1_000_000, BECH32_ADDRESS, None, None),
     ]);
-    let outputs = vec![build_basic_output(1_000_000, BECH32_ADDRESS, None, None)];
+    let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS, None, None)]);
 
     let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
         .select()
@@ -211,7 +211,7 @@ fn two_inputs_both_needed() {
         Basic(1_000_000, BECH32_ADDRESS, None, None),
         Basic(2_000_000, BECH32_ADDRESS, None, None),
     ]);
-    let outputs = vec![build_basic_output(3_000_000, BECH32_ADDRESS, None, None)];
+    let outputs = build_outputs(vec![Basic(3_000_000, BECH32_ADDRESS, None, None)]);
 
     let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
         .select()
@@ -229,7 +229,7 @@ fn two_inputs_remainder() {
         Basic(1_000_000, BECH32_ADDRESS, None, None),
         Basic(2_000_000, BECH32_ADDRESS, None, None),
     ]);
-    let outputs = vec![build_basic_output(2_500_000, BECH32_ADDRESS, None, None)];
+    let outputs = build_outputs(vec![Basic(2_500_000, BECH32_ADDRESS, None, None)]);
 
     let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
         .select()
@@ -259,7 +259,7 @@ fn not_enough_storage_deposit_for_remainder() {
     let protocol_parameters = protocol_parameters();
 
     let inputs = build_inputs(vec![Basic(1_000_001, BECH32_ADDRESS, None, None)]);
-    let outputs = vec![build_basic_output(1_000_000, BECH32_ADDRESS, None, None)];
+    let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS, None, None)]);
 
     let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
 
@@ -286,12 +286,12 @@ fn ed25519_sender() {
         Basic(2_000_000, BECH32_ADDRESS, None, None),
         Basic(2_000_000, BECH32_ADDRESS, None, None),
     ]);
-    let outputs = vec![build_basic_output(
+    let outputs = build_outputs(vec![Basic(
         2_000_000,
         BECH32_ADDRESS,
         None,
         Some(BECH32_ADDRESS_ED25519),
-    )];
+    )]);
 
     let selected = InputSelection::new(inputs, outputs, protocol_parameters)
         .select()
@@ -314,12 +314,12 @@ fn missing_ed25519_sender() {
     let protocol_parameters = protocol_parameters();
 
     let inputs = build_inputs(vec![Basic(5_000_000, BECH32_ADDRESS, None, None)]);
-    let outputs = vec![build_basic_output(
+    let outputs = build_outputs(vec![Basic(
         1_000_000,
         BECH32_ADDRESS,
         None,
         Some(BECH32_ADDRESS_ED25519),
-    )];
+    )]);
 
     let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
 
@@ -342,12 +342,7 @@ fn alias_sender() {
         Basic(2_000_000, BECH32_ADDRESS, None, None),
     ]);
 
-    let outputs = vec![build_basic_output(
-        2_000_000,
-        BECH32_ADDRESS,
-        None,
-        Some(BECH32_ADDRESS_ALIAS),
-    )];
+    let outputs = build_outputs(vec![Basic(2_000_000, BECH32_ADDRESS, None, Some(BECH32_ADDRESS_ALIAS))]);
 
     let selected = InputSelection::new(inputs, outputs, protocol_parameters)
         .select()
@@ -370,12 +365,7 @@ fn missing_alias_sender() {
     let protocol_parameters = protocol_parameters();
 
     let inputs = build_inputs(vec![Basic(5_000_000, BECH32_ADDRESS, None, None)]);
-    let outputs = vec![build_basic_output(
-        1_000_000,
-        BECH32_ADDRESS,
-        None,
-        Some(BECH32_ADDRESS_ALIAS),
-    )];
+    let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS, None, Some(BECH32_ADDRESS_ALIAS))]);
 
     let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
 
@@ -397,12 +387,7 @@ fn nft_sender() {
         Basic(2_000_000, BECH32_ADDRESS, None, None),
         Basic(2_000_000, BECH32_ADDRESS, None, None),
     ]);
-    let outputs = vec![build_basic_output(
-        2_000_000,
-        BECH32_ADDRESS,
-        None,
-        Some(BECH32_ADDRESS_NFT),
-    )];
+    let outputs = build_outputs(vec![Basic(2_000_000, BECH32_ADDRESS, None, Some(BECH32_ADDRESS_NFT))]);
 
     let selected = InputSelection::new(inputs, outputs, protocol_parameters)
         .select()
@@ -425,12 +410,7 @@ fn missing_nft_sender() {
     let protocol_parameters = protocol_parameters();
 
     let inputs = build_inputs(vec![Basic(5_000_000, BECH32_ADDRESS, None, None)]);
-    let outputs = vec![build_basic_output(
-        1_000_000,
-        BECH32_ADDRESS,
-        None,
-        Some(BECH32_ADDRESS_NFT),
-    )];
+    let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS, None, Some(BECH32_ADDRESS_NFT))]);
 
     let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
 

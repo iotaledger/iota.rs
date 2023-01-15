@@ -11,7 +11,7 @@ use iota_client::{
 use primitive_types::U256;
 
 use crate::input_selection::{
-    build_basic_output, build_inputs, unsorted_eq, Build::Basic, BECH32_ADDRESS, TOKEN_ID_1, TOKEN_ID_2,
+    build_inputs, build_outputs, unsorted_eq, Build::Basic, BECH32_ADDRESS, TOKEN_ID_1, TOKEN_ID_2,
 };
 
 #[test]
@@ -27,12 +27,12 @@ fn two_native_tokens_one_needed() {
             None,
         ),
     ]);
-    let outputs = vec![build_basic_output(
+    let outputs = build_outputs(vec![Basic(
         1_000_000,
         BECH32_ADDRESS,
         Some(vec![(TOKEN_ID_1, 150)]),
         None,
-    )];
+    )]);
 
     let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
         .select()
@@ -87,12 +87,12 @@ fn two_native_tokens_both_needed_plus_remainder() {
             None,
         ),
     ]);
-    let outputs = vec![build_basic_output(
+    let outputs = build_outputs(vec![Basic(
         1_000_000,
         BECH32_ADDRESS,
         Some(vec![(TOKEN_ID_1, 150), (TOKEN_ID_2, 100)]),
         None,
-    )];
+    )]);
 
     let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
         .select()
@@ -134,12 +134,12 @@ fn three_inputs_two_needed_plus_remainder() {
         Basic(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)]), None),
         Basic(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)]), None),
     ]);
-    let outputs = vec![build_basic_output(
+    let outputs = build_outputs(vec![Basic(
         1_000_000,
         BECH32_ADDRESS,
         Some(vec![(TOKEN_ID_1, 120)]),
         None,
-    )];
+    )]);
 
     let selected = InputSelection::new(inputs, outputs.clone(), protocol_parameters)
         .select()
@@ -181,12 +181,12 @@ fn three_inputs_two_needed_no_remainder() {
         Basic(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)]), None),
         Basic(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)]), None),
     ]);
-    let outputs = vec![build_basic_output(
+    let outputs = build_outputs(vec![Basic(
         2_000_000,
         BECH32_ADDRESS,
         Some(vec![(TOKEN_ID_1, 200)]),
         None,
-    )];
+    )]);
 
     let selected = InputSelection::new(inputs, outputs.clone(), protocol_parameters)
         .select()
@@ -206,12 +206,12 @@ fn insufficient_native_tokens_one_input() {
         Some(vec![(TOKEN_ID_1, 100)]),
         None,
     )]);
-    let outputs = vec![build_basic_output(
+    let outputs = build_outputs(vec![Basic(
         1_000_000,
         BECH32_ADDRESS,
         Some(vec![(TOKEN_ID_1, 150)]),
         None,
-    )];
+    )]);
 
     let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
 
@@ -233,12 +233,12 @@ fn insufficient_native_tokens_three_inputs() {
         Basic(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)]), None),
         Basic(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)]), None),
     ]);
-    let outputs = vec![build_basic_output(
+    let outputs = build_outputs(vec![Basic(
         1_000_000,
         BECH32_ADDRESS,
         Some(vec![(TOKEN_ID_1, 301)]),
         None,
-    )];
+    )]);
 
     let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
 

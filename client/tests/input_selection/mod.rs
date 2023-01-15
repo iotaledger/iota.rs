@@ -199,42 +199,46 @@ fn build_foundry_output(
     builder.finish_output(TOKEN_SUPPLY).unwrap()
 }
 
+fn build_output_inner(build: Build) -> (Output, String) {
+    match build {
+        Build::Basic(amount, bech32_address, native_tokens, bech32_sender) => (
+            build_basic_output(amount, bech32_address, native_tokens, bech32_sender),
+            bech32_address.to_string(),
+        ),
+        Build::Nft(amount, nft_id, bech32_address, native_tokens, bech32_sender, bech32_issuer) => (
+            build_nft_output(
+                amount,
+                nft_id,
+                bech32_address,
+                native_tokens,
+                bech32_sender,
+                bech32_issuer,
+            ),
+            bech32_address.to_string(),
+        ),
+        Build::Alias(amount, alias_id, bech32_address, native_tokens, bech32_sender, bech32_issuer) => (
+            build_alias_output(
+                amount,
+                alias_id,
+                bech32_address,
+                native_tokens,
+                bech32_sender,
+                bech32_issuer,
+            ),
+            bech32_address.to_string(),
+        ),
+        Build::Foundry(amount, alias_id, token_scheme, native_tokens) => (
+            build_foundry_output(amount, alias_id, token_scheme, native_tokens),
+            Address::Alias(AliasAddress::new(alias_id)).to_bech32(SHIMMER_TESTNET_BECH32_HRP),
+        ),
+    }
+}
+
 fn build_inputs(outputs: Vec<Build>) -> Vec<InputSigningData> {
     outputs
         .into_iter()
         .map(|build| {
-            let (output, bech32_address) = match build {
-                Build::Basic(amount, bech32_address, native_tokens, bech32_sender) => (
-                    build_basic_output(amount, bech32_address, native_tokens, bech32_sender),
-                    bech32_address.to_string(),
-                ),
-                Build::Nft(amount, nft_id, bech32_address, native_tokens, bech32_sender, bech32_issuer) => (
-                    build_nft_output(
-                        amount,
-                        nft_id,
-                        bech32_address,
-                        native_tokens,
-                        bech32_sender,
-                        bech32_issuer,
-                    ),
-                    bech32_address.to_string(),
-                ),
-                Build::Alias(amount, alias_id, bech32_address, native_tokens, bech32_sender, bech32_issuer) => (
-                    build_alias_output(
-                        amount,
-                        alias_id,
-                        bech32_address,
-                        native_tokens,
-                        bech32_sender,
-                        bech32_issuer,
-                    ),
-                    bech32_address.to_string(),
-                ),
-                Build::Foundry(amount, alias_id, token_scheme, native_tokens) => (
-                    build_foundry_output(amount, alias_id, token_scheme, native_tokens),
-                    Address::Alias(AliasAddress::new(alias_id)).to_bech32(SHIMMER_TESTNET_BECH32_HRP),
-                ),
-            };
+            let (output, bech32_address) = build_output_inner(build);
 
             InputSigningData {
                 output,
@@ -254,6 +258,10 @@ fn build_inputs(outputs: Vec<Build>) -> Vec<InputSigningData> {
             }
         })
         .collect()
+}
+
+fn build_outputs(outputs: Vec<Build>) -> Vec<Output> {
+    outputs.into_iter().map(|build| build_output_inner(build).0).collect()
 }
 
 fn unsorted_eq<T>(a: &[T], b: &[T]) -> bool
