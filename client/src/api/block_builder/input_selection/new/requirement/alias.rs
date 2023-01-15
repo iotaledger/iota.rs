@@ -108,7 +108,7 @@ impl InputSelection {
 
         if is_alias_state_transition(
             input,
-            // TODO this output conversion s temporarily needed to accommodate the current version of ISA.
+            // TODO this output conversion is temporarily needed to accommodate the current version of ISA.
             self.outputs
                 .iter()
                 .map(|output| output.output.clone())

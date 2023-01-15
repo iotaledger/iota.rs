@@ -55,7 +55,7 @@ pub struct Selected {
 }
 
 impl InputSelection {
-    fn required_address(&self, input: &InputSigningData) -> Result<Option<Requirement>> {
+    fn required_alias_nft_addresses(&self, input: &InputSigningData) -> Result<Option<Requirement>> {
         // TODO burn?
         // TODO unwrap or false?
         // TODO this is only temporary to accommodate the current ISA.
@@ -93,7 +93,7 @@ impl InputSelection {
             self.outputs.push(output_info);
         }
 
-        if let Some(requirement) = self.required_address(&input)? {
+        if let Some(requirement) = self.required_alias_nft_addresses(&input)? {
             requirements.push(requirement);
         }
 
