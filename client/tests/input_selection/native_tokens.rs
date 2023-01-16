@@ -11,7 +11,7 @@ use iota_client::{
 use primitive_types::U256;
 
 use crate::input_selection::{
-    build_inputs, build_outputs, unsorted_eq, Build::Basic, BECH32_ADDRESS, TOKEN_ID_1, TOKEN_ID_2,
+    build_inputs, build_outputs, unsorted_eq, Build::Basic, BECH32_ADDRESS_ED25519_0, TOKEN_ID_1, TOKEN_ID_2,
 };
 
 #[test]
@@ -19,10 +19,16 @@ fn two_native_tokens_one_needed() {
     let protocol_parameters = protocol_parameters();
 
     let inputs = build_inputs(vec![
-        Basic(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)]), None, None),
         Basic(
             1_000_000,
-            BECH32_ADDRESS,
+            BECH32_ADDRESS_ED25519_0,
+            Some(vec![(TOKEN_ID_1, 100)]),
+            None,
+            None,
+        ),
+        Basic(
+            1_000_000,
+            BECH32_ADDRESS_ED25519_0,
             Some(vec![(TOKEN_ID_1, 100), (TOKEN_ID_2, 100)]),
             None,
             None,
@@ -30,7 +36,7 @@ fn two_native_tokens_one_needed() {
     ]);
     let outputs = build_outputs(vec![Basic(
         1_000_000,
-        BECH32_ADDRESS,
+        BECH32_ADDRESS_ED25519_0,
         Some(vec![(TOKEN_ID_1, 150)]),
         None,
         None,
@@ -70,7 +76,7 @@ fn two_native_tokens_one_needed() {
             assert_eq!(output.as_basic().features().len(), 0);
             assert_eq!(
                 *output.as_basic().address(),
-                Address::try_from_bech32(BECH32_ADDRESS).unwrap().1
+                Address::try_from_bech32(BECH32_ADDRESS_ED25519_0).unwrap().1
             );
         }
     });
@@ -81,10 +87,16 @@ fn two_native_tokens_both_needed_plus_remainder() {
     let protocol_parameters = protocol_parameters();
 
     let inputs = build_inputs(vec![
-        Basic(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)]), None, None),
         Basic(
             1_000_000,
-            BECH32_ADDRESS,
+            BECH32_ADDRESS_ED25519_0,
+            Some(vec![(TOKEN_ID_1, 100)]),
+            None,
+            None,
+        ),
+        Basic(
+            1_000_000,
+            BECH32_ADDRESS_ED25519_0,
             Some(vec![(TOKEN_ID_1, 100), (TOKEN_ID_2, 100)]),
             None,
             None,
@@ -92,7 +104,7 @@ fn two_native_tokens_both_needed_plus_remainder() {
     ]);
     let outputs = build_outputs(vec![Basic(
         1_000_000,
-        BECH32_ADDRESS,
+        BECH32_ADDRESS_ED25519_0,
         Some(vec![(TOKEN_ID_1, 150), (TOKEN_ID_2, 100)]),
         None,
         None,
@@ -123,7 +135,7 @@ fn two_native_tokens_both_needed_plus_remainder() {
             assert_eq!(output.as_basic().features().len(), 0);
             assert_eq!(
                 *output.as_basic().address(),
-                Address::try_from_bech32(BECH32_ADDRESS).unwrap().1
+                Address::try_from_bech32(BECH32_ADDRESS_ED25519_0).unwrap().1
             );
         }
     });
@@ -134,13 +146,31 @@ fn three_inputs_two_needed_plus_remainder() {
     let protocol_parameters = protocol_parameters();
 
     let inputs = build_inputs(vec![
-        Basic(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)]), None, None),
-        Basic(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)]), None, None),
-        Basic(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)]), None, None),
+        Basic(
+            1_000_000,
+            BECH32_ADDRESS_ED25519_0,
+            Some(vec![(TOKEN_ID_1, 100)]),
+            None,
+            None,
+        ),
+        Basic(
+            1_000_000,
+            BECH32_ADDRESS_ED25519_0,
+            Some(vec![(TOKEN_ID_1, 100)]),
+            None,
+            None,
+        ),
+        Basic(
+            1_000_000,
+            BECH32_ADDRESS_ED25519_0,
+            Some(vec![(TOKEN_ID_1, 100)]),
+            None,
+            None,
+        ),
     ]);
     let outputs = build_outputs(vec![Basic(
         1_000_000,
-        BECH32_ADDRESS,
+        BECH32_ADDRESS_ED25519_0,
         Some(vec![(TOKEN_ID_1, 120)]),
         None,
         None,
@@ -171,7 +201,7 @@ fn three_inputs_two_needed_plus_remainder() {
             assert_eq!(output.as_basic().features().len(), 0);
             assert_eq!(
                 *output.as_basic().address(),
-                Address::try_from_bech32(BECH32_ADDRESS).unwrap().1
+                Address::try_from_bech32(BECH32_ADDRESS_ED25519_0).unwrap().1
             );
         }
     });
@@ -182,13 +212,31 @@ fn three_inputs_two_needed_no_remainder() {
     let protocol_parameters = protocol_parameters();
 
     let inputs = build_inputs(vec![
-        Basic(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)]), None, None),
-        Basic(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)]), None, None),
-        Basic(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)]), None, None),
+        Basic(
+            1_000_000,
+            BECH32_ADDRESS_ED25519_0,
+            Some(vec![(TOKEN_ID_1, 100)]),
+            None,
+            None,
+        ),
+        Basic(
+            1_000_000,
+            BECH32_ADDRESS_ED25519_0,
+            Some(vec![(TOKEN_ID_1, 100)]),
+            None,
+            None,
+        ),
+        Basic(
+            1_000_000,
+            BECH32_ADDRESS_ED25519_0,
+            Some(vec![(TOKEN_ID_1, 100)]),
+            None,
+            None,
+        ),
     ]);
     let outputs = build_outputs(vec![Basic(
         2_000_000,
-        BECH32_ADDRESS,
+        BECH32_ADDRESS_ED25519_0,
         Some(vec![(TOKEN_ID_1, 200)]),
         None,
         None,
@@ -208,14 +256,14 @@ fn insufficient_native_tokens_one_input() {
 
     let inputs = build_inputs(vec![Basic(
         1_000_000,
-        BECH32_ADDRESS,
+        BECH32_ADDRESS_ED25519_0,
         Some(vec![(TOKEN_ID_1, 100)]),
         None,
         None,
     )]);
     let outputs = build_outputs(vec![Basic(
         1_000_000,
-        BECH32_ADDRESS,
+        BECH32_ADDRESS_ED25519_0,
         Some(vec![(TOKEN_ID_1, 150)]),
         None,
         None,
@@ -237,13 +285,31 @@ fn insufficient_native_tokens_three_inputs() {
     let protocol_parameters = protocol_parameters();
 
     let inputs = build_inputs(vec![
-        Basic(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)]), None, None),
-        Basic(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)]), None, None),
-        Basic(1_000_000, BECH32_ADDRESS, Some(vec![(TOKEN_ID_1, 100)]), None, None),
+        Basic(
+            1_000_000,
+            BECH32_ADDRESS_ED25519_0,
+            Some(vec![(TOKEN_ID_1, 100)]),
+            None,
+            None,
+        ),
+        Basic(
+            1_000_000,
+            BECH32_ADDRESS_ED25519_0,
+            Some(vec![(TOKEN_ID_1, 100)]),
+            None,
+            None,
+        ),
+        Basic(
+            1_000_000,
+            BECH32_ADDRESS_ED25519_0,
+            Some(vec![(TOKEN_ID_1, 100)]),
+            None,
+            None,
+        ),
     ]);
     let outputs = build_outputs(vec![Basic(
         1_000_000,
-        BECH32_ADDRESS,
+        BECH32_ADDRESS_ED25519_0,
         Some(vec![(TOKEN_ID_1, 301)]),
         None,
         None,
@@ -266,14 +332,14 @@ fn burn_and_send_at_the_same_time() {
 
     let inputs = build_inputs(vec![Basic(
         2_000_000,
-        BECH32_ADDRESS,
+        BECH32_ADDRESS_ED25519_0,
         Some(vec![(TOKEN_ID_1, 100), (TOKEN_ID_2, 100)]),
         None,
         None,
     )]);
     let outputs = build_outputs(vec![Basic(
         1_000_000,
-        BECH32_ADDRESS,
+        BECH32_ADDRESS_ED25519_0,
         Some(vec![(TOKEN_ID_1, 50), (TOKEN_ID_2, 100)]),
         None,
         None,
@@ -305,7 +371,7 @@ fn burn_and_send_at_the_same_time() {
             assert_eq!(output.as_basic().features().len(), 0);
             assert_eq!(
                 *output.as_basic().address(),
-                Address::try_from_bech32(BECH32_ADDRESS).unwrap().1
+                Address::try_from_bech32(BECH32_ADDRESS_ED25519_0).unwrap().1
             );
         }
     });

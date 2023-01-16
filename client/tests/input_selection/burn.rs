@@ -17,7 +17,7 @@ use primitive_types::U256;
 use crate::input_selection::{
     build_inputs, build_outputs,
     Build::{Alias, Basic, Foundry, Nft},
-    ALIAS_ID_1, BECH32_ADDRESS, NFT_ID_1,
+    ALIAS_ID_1, BECH32_ADDRESS_ED25519_0, NFT_ID_1,
 };
 
 #[test]
@@ -26,10 +26,10 @@ fn burn_alias_present() {
     let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
 
     let inputs = build_inputs(vec![
-        Alias(1_000_000, alias_id_1, BECH32_ADDRESS, None, None, None),
-        Basic(1_000_000, BECH32_ADDRESS, None, None, None),
+        Alias(1_000_000, alias_id_1, BECH32_ADDRESS_ED25519_0, None, None, None),
+        Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None),
     ]);
-    let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS, None, None, None)]);
+    let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None)]);
 
     let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
         .burn(Burn::new().add_alias(alias_id_1))
@@ -46,8 +46,8 @@ fn burn_alias_absent() {
     let protocol_parameters = protocol_parameters();
     let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
 
-    let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS, None, None, None)]);
-    let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS, None, None, None)]);
+    let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None)]);
+    let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None)]);
 
     let selected = InputSelection::new(inputs, outputs, protocol_parameters)
         .burn(Burn::new().add_alias(alias_id_1))
@@ -65,10 +65,10 @@ fn burn_nft_present() {
     let nft_id_1 = NftId::from_str(NFT_ID_1).unwrap();
 
     let inputs = build_inputs(vec![
-        Nft(1_000_000, nft_id_1, BECH32_ADDRESS, None, None, None, None),
-        Basic(1_000_000, BECH32_ADDRESS, None, None, None),
+        Nft(1_000_000, nft_id_1, BECH32_ADDRESS_ED25519_0, None, None, None, None),
+        Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None),
     ]);
-    let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS, None, None, None)]);
+    let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None)]);
 
     let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
         .burn(Burn::new().add_nft(nft_id_1))
@@ -85,8 +85,8 @@ fn burn_nft_absent() {
     let protocol_parameters = protocol_parameters();
     let nft_id_1 = NftId::from_str(NFT_ID_1).unwrap();
 
-    let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS, None, None, None)]);
-    let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS, None, None, None)]);
+    let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None)]);
+    let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None)]);
 
     let selected = InputSelection::new(inputs, outputs, protocol_parameters)
         .burn(Burn::new().add_nft(nft_id_1))
@@ -110,10 +110,10 @@ fn burn_foundry_present() {
             SimpleTokenScheme::new(U256::from(0), U256::from(0), U256::from(10)).unwrap(),
             None,
         ),
-        Alias(1_000_000, alias_id_1, BECH32_ADDRESS, None, None, None),
-        Basic(1_000_000, BECH32_ADDRESS, None, None, None),
+        Alias(1_000_000, alias_id_1, BECH32_ADDRESS_ED25519_0, None, None, None),
+        Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None),
     ]);
-    let outputs = build_outputs(vec![Basic(500_000, BECH32_ADDRESS, None, None, None)]);
+    let outputs = build_outputs(vec![Basic(500_000, BECH32_ADDRESS_ED25519_0, None, None, None)]);
 
     let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
         .burn(Burn::new().add_foundry(inputs[0].output.as_foundry().id()))
@@ -134,7 +134,7 @@ fn burn_foundry_present() {
                 assert_eq!(output.as_basic().features().len(), 0);
                 assert_eq!(
                     *output.as_basic().address(),
-                    Address::try_from_bech32(BECH32_ADDRESS).unwrap().1
+                    Address::try_from_bech32(BECH32_ADDRESS_ED25519_0).unwrap().1
                 );
             } else if output.is_alias() {
                 assert_eq!(output.amount(), 1_000_000);
@@ -145,11 +145,11 @@ fn burn_foundry_present() {
                 assert_eq!(output.as_alias().immutable_features().len(), 0);
                 assert_eq!(
                     *output.as_alias().state_controller_address(),
-                    Address::try_from_bech32(BECH32_ADDRESS).unwrap().1
+                    Address::try_from_bech32(BECH32_ADDRESS_ED25519_0).unwrap().1
                 );
                 assert_eq!(
                     *output.as_alias().governor_address(),
-                    Address::try_from_bech32(BECH32_ADDRESS).unwrap().1
+                    Address::try_from_bech32(BECH32_ADDRESS_ED25519_0).unwrap().1
                 );
             } else {
                 panic!("unexpected output type")
@@ -173,10 +173,10 @@ fn burn_foundry_absent() {
         .id();
 
     let inputs = build_inputs(vec![
-        Alias(1_000_000, alias_id_1, BECH32_ADDRESS, None, None, None),
-        Basic(1_000_000, BECH32_ADDRESS, None, None, None),
+        Alias(1_000_000, alias_id_1, BECH32_ADDRESS_ED25519_0, None, None, None),
+        Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None),
     ]);
-    let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS, None, None, None)]);
+    let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None)]);
 
     let selected = InputSelection::new(inputs, outputs, protocol_parameters)
         .burn(Burn::new().add_foundry(foundry_id_1))

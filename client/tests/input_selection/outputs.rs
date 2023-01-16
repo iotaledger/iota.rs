@@ -12,7 +12,7 @@ use iota_client::{
 use crate::input_selection::{
     build_inputs, build_outputs,
     Build::{Alias, Basic},
-    ALIAS_ID_2, BECH32_ADDRESS,
+    ALIAS_ID_2, BECH32_ADDRESS_ED25519_0,
 };
 
 #[test]
@@ -20,7 +20,7 @@ fn no_inputs() {
     let protocol_parameters = protocol_parameters();
 
     let inputs = Vec::new();
-    let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS, None, None, None)]);
+    let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None)]);
 
     let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
 
@@ -31,7 +31,7 @@ fn no_inputs() {
 fn no_outputs() {
     let protocol_parameters = protocol_parameters();
 
-    let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS, None, None, None)]);
+    let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None)]);
     let outputs = Vec::new();
 
     let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
@@ -44,7 +44,14 @@ fn no_outputs_but_burn() {
     let protocol_parameters = protocol_parameters();
     let alias_id_2 = AliasId::from_str(ALIAS_ID_2).unwrap();
 
-    let inputs = build_inputs(vec![Alias(2_000_000, alias_id_2, BECH32_ADDRESS, None, None, None)]);
+    let inputs = build_inputs(vec![Alias(
+        2_000_000,
+        alias_id_2,
+        BECH32_ADDRESS_ED25519_0,
+        None,
+        None,
+        None,
+    )]);
     let outputs = Vec::new();
 
     let selected = InputSelection::new(inputs.clone(), outputs, protocol_parameters)
@@ -61,6 +68,6 @@ fn no_outputs_but_burn() {
     assert_eq!(selected.outputs[0].as_basic().features().len(), 0);
     assert_eq!(
         *selected.outputs[0].as_basic().address(),
-        Address::try_from_bech32(BECH32_ADDRESS).unwrap().1
+        Address::try_from_bech32(BECH32_ADDRESS_ED25519_0).unwrap().1
     );
 }
