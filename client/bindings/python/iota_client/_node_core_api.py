@@ -61,6 +61,13 @@ class NodeCoreAPI(BaseAPI):
             'blockId': block_id
         })
 
+    def post_block_raw(self, block_bytes):
+        """Post block raw.
+        """
+        return self.send_message('postBlockRaw', {
+            'blockBytes': block_bytes
+        })
+
     def get_output(self, output_id):
         """Get output.
         """

@@ -68,8 +68,8 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
         """Build a FoundryOutput.
         """
         return self.send_message('buildFoundryOutput', {
-            'serial_number': serial_number,
-            'token_scheme': token_scheme,
+            'serialNumber': serial_number,
+            'tokenScheme': token_scheme,
             'unlockConditions': unlock_conditions,
             'amount': amount,
             'nativeTokens': native_tokens,
