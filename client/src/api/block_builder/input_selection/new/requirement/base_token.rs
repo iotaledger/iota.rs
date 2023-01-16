@@ -39,15 +39,11 @@ impl InputSelection {
             .sort_by(|left, right| left.output.amount().cmp(&right.output.amount()));
 
         'overall: {
-            // 1. Basic with ED25519 address and nothing else
+            // 1. Basic with ED25519 address
             {
                 let inputs = self.available_inputs.iter().filter(|input| {
                     if let Output::Basic(output) = &input.output {
-                        if let [UnlockCondition::Address(address)] = output.unlock_conditions().as_ref() {
-                            address.address().is_ed25519()
-                        } else {
-                            false
-                        }
+                        output.address().is_ed25519()
                     } else {
                         false
                     }
@@ -64,17 +60,7 @@ impl InputSelection {
                 }
             }
 
-            // 2. Basic with ED25519 address and other things ????
-            {
-                // TODO
-            }
-
-            // 3. Moving funds of already transitioned other outputs
-            {
-                // TODO
-            }
-
-            // 4. Basic with other kind of address
+            // 2. Basic with other kind of address
             {
                 let inputs = self.available_inputs.iter().filter(|input| {
                     if let Output::Basic(output) = &input.output {
@@ -99,7 +85,7 @@ impl InputSelection {
                 }
             }
 
-            // 5. Other kinds of outputs
+            // 3. Other kinds of outputs
             {
                 let mut inputs = self
                     .available_inputs

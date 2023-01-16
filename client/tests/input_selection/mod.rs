@@ -10,6 +10,7 @@ mod foundry_outputs;
 mod native_tokens;
 mod nft_outputs;
 mod outputs;
+mod storage_deposit_return;
 
 use std::{collections::HashMap, hash::Hash, str::FromStr};
 
