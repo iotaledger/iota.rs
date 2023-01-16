@@ -38,11 +38,8 @@ impl InputSelection {
             return Ok(None);
         }
 
-        // TODO Add configuration to remove features or not?
-
         let output = AliasOutputBuilder::from(input)
             .with_alias_id(alias_id)
-            // TODO always state transition ? Add a check to the tests
             .with_state_index(input.state_index() + 1)
             .finish_output(self.protocol_parameters.token_supply())?;
 
@@ -71,8 +68,6 @@ impl InputSelection {
         {
             return Ok(None);
         }
-
-        // TODO Add configuration to remove features or not?
 
         let output = NftOutputBuilder::from(input)
             .with_nft_id(nft_id)
@@ -103,8 +98,6 @@ impl InputSelection {
         {
             return Ok(None);
         }
-
-        // TODO Add configuration to remove features or not?
 
         let output = FoundryOutputBuilder::from(input).finish_output(self.protocol_parameters.token_supply())?;
 

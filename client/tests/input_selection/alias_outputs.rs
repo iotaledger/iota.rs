@@ -774,3 +774,46 @@ fn alias_governance_transition_should_not_validate_alias_address() {
         Err(Error::UnfulfillableRequirement(Requirement::Alias(alias_id, true))) if alias_id == alias_id_1
     ));
 }
+
+#[test]
+fn transitioned_zero_alias_id_no_longer_is_zero() {
+    let protocol_parameters = protocol_parameters();
+    let alias_id_0 = AliasId::from_str(ALIAS_ID_0).unwrap();
+
+    let inputs = build_inputs(vec![Alias(
+        2_000_000,
+        alias_id_0,
+        BECH32_ADDRESS_ED25519_0,
+        None,
+        None,
+        None,
+    )]);
+    let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None)]);
+
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+        .select()
+        .unwrap();
+
+    assert!(unsorted_eq(&selected.inputs, &inputs));
+    assert_eq!(selected.outputs.len(), 2);
+    assert!(selected.outputs.contains(&outputs[0]));
+    selected.outputs.iter().for_each(|output| {
+        if !outputs.contains(output) {
+            assert!(output.is_alias());
+            assert_eq!(output.amount(), 1_000_000);
+            assert_eq!(output.as_alias().native_tokens().len(), 0);
+            assert_ne!(*output.as_alias().alias_id(), alias_id_0);
+            assert_eq!(output.as_alias().unlock_conditions().len(), 2);
+            assert_eq!(output.as_alias().features().len(), 0);
+            assert_eq!(output.as_alias().immutable_features().len(), 0);
+            assert_eq!(
+                *output.as_alias().state_controller_address(),
+                Address::try_from_bech32(BECH32_ADDRESS_ED25519_0).unwrap().1
+            );
+            assert_eq!(
+                *output.as_alias().governor_address(),
+                Address::try_from_bech32(BECH32_ADDRESS_ED25519_0).unwrap().1
+            );
+        }
+    });
+}
