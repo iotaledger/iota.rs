@@ -102,15 +102,20 @@ impl InputSelection {
                 });
 
                 for input in inputs {
-                    inputs_sum += input.output.amount();
-                    newly_selected_inputs.push(input.clone());
-                    newly_selected_ids.insert(*input.output_id());
-
                     let sdruc = input
                         .output
                         .unlock_conditions()
                         .and_then(|unlock_conditions| unlock_conditions.storage_deposit_return())
                         .unwrap();
+
+                    // This output is useless as it has to send back its full amount.
+                    if sdruc.amount() == input.output.amount() {
+                        continue;
+                    }
+
+                    inputs_sum += input.output.amount();
+                    newly_selected_inputs.push(input.clone());
+                    newly_selected_ids.insert(*input.output_id());
 
                     let input_sdr = inputs_sdr.get(sdruc.return_address()).unwrap_or(&0) + sdruc.amount();
                     let output_sdr = *outputs_sdr.get(sdruc.return_address()).unwrap_or(&0);
