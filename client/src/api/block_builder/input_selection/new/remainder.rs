@@ -13,7 +13,7 @@ use crate::{
         address::Address,
         output::{
             unlock_condition::{AddressUnlockCondition, UnlockCondition},
-            BasicOutputBuilder, NativeTokensBuilder, Output,
+            BasicOutputBuilder, NativeTokensBuilder,
         },
         protocol::ProtocolParameters,
     },
@@ -65,8 +65,26 @@ pub(crate) fn remainder_output(
     remainder_address: Option<Address>,
     protocol_parameters: &ProtocolParameters,
     burn: Option<&Burn>,
-) -> Result<Option<Output>> {
-    let (inputs_sum, outputs_sum) = base_token_sums(selected_inputs, outputs);
+) -> Result<Vec<OutputInfo>> {
+    let (inputs_sum, mut outputs_sum, inputs_sdr, outputs_sdr) = base_token_sums(selected_inputs, outputs);
+    let mut new_outputs = Vec::new();
+
+    for (address, amount) in inputs_sdr {
+        let output_sdr_amount = *outputs_sdr.get(&address).unwrap_or(&0);
+
+        if amount > output_sdr_amount {
+            let diff = amount - output_sdr_amount;
+            let srd_output = BasicOutputBuilder::new_with_amount(diff)?
+                .with_unlock_conditions([UnlockCondition::Address(AddressUnlockCondition::new(address))])
+                .finish_output(protocol_parameters.token_supply())?;
+
+            new_outputs.push(OutputInfo {
+                output: srd_output,
+                provided: false,
+            });
+            outputs_sum += diff;
+        }
+    }
 
     let mut input_native_tokens = get_native_tokens(selected_inputs.iter().map(|input| &input.output))?;
     let mut output_native_tokens = get_native_tokens(outputs.iter().map(|output| &output.output))?;
@@ -109,8 +127,11 @@ pub(crate) fn remainder_output(
             protocol_parameters.token_supply(),
         )?;
 
-        return Ok(Some(remainder));
+        new_outputs.push(OutputInfo {
+            output: remainder,
+            provided: false,
+        });
     }
 
-    Ok(None)
+    Ok(new_outputs)
 }

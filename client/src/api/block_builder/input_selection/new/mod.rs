@@ -275,18 +275,15 @@ impl InputSelection {
         // self.output.extend(create_storage_deposit_return_outputs(selected_input, self.outputs));
 
         // // Potentially do native tokens + base coin + storage deposit here
-        if let Some(output) = remainder_output(
+        let new_outputs = remainder_output(
             &self.selected_inputs,
             &self.outputs,
             self.remainder_address,
             &self.protocol_parameters,
             self.burn.as_ref(),
-        )? {
-            self.outputs.push(OutputInfo {
-                output,
-                provided: false,
-            })
-        }
+        )?;
+
+        self.outputs.extend(new_outputs);
 
         Ok(Selected {
             inputs: self.selected_inputs,

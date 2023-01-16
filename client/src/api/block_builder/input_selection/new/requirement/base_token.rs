@@ -1,12 +1,15 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use super::{InputSelection, OutputInfo, Requirement};
 use crate::{
-    block::output::{
-        unlock_condition::UnlockCondition, AliasOutputBuilder, FoundryOutputBuilder, NftOutputBuilder, Output, Rent,
+    block::{
+        address::Address,
+        output::{
+            unlock_condition::UnlockCondition, AliasOutputBuilder, FoundryOutputBuilder, NftOutputBuilder, Output, Rent,
+        },
     },
     error::{Error, Result},
     secret::types::InputSigningData,
@@ -14,16 +17,44 @@ use crate::{
 
 // TODO checked operations ?
 
-pub(crate) fn base_token_sums(selected_inputs: &[InputSigningData], outputs: &[OutputInfo]) -> (u64, u64) {
-    let inputs_sum = selected_inputs.iter().map(|input| input.output.amount()).sum::<u64>();
-    let outputs_sum = outputs.iter().map(|output| output.output.amount()).sum::<u64>();
+pub(crate) fn base_token_sums(
+    selected_inputs: &[InputSigningData],
+    outputs: &[OutputInfo],
+) -> (u64, u64, HashMap<Address, u64>, HashMap<Address, u64>) {
+    let mut inputs_sum = 0;
+    let mut outputs_sum = 0;
+    let mut inputs_sdr = HashMap::new();
+    let mut outputs_sdr = HashMap::new();
 
-    (inputs_sum, outputs_sum)
+    for selected_input in selected_inputs {
+        inputs_sum += selected_input.output.amount();
+
+        if let Some(sdruc) = selected_input
+            .output
+            .unlock_conditions()
+            .and_then(|unlock_condition| unlock_condition.storage_deposit_return())
+        {
+            *inputs_sdr.entry(*sdruc.return_address()).or_default() += sdruc.amount();
+        }
+    }
+
+    for output in outputs {
+        outputs_sum += output.output.amount();
+
+        if let Output::Basic(output) = &output.output {
+            if let Some(address) = output.simple_deposit_address() {
+                *outputs_sdr.entry(*address).or_default() += output.amount();
+            }
+        }
+    }
+
+    (inputs_sum, outputs_sum, inputs_sdr, outputs_sdr)
 }
 
 impl InputSelection {
     pub(crate) fn fulfill_base_token_requirement(&mut self) -> Result<(Vec<InputSigningData>, Option<Requirement>)> {
-        let (mut inputs_sum, mut outputs_sum) = base_token_sums(&self.selected_inputs, &self.outputs);
+        let (mut inputs_sum, mut outputs_sum, mut inputs_sdr, mut outputs_sdr) =
+            base_token_sums(&self.selected_inputs, &self.outputs);
         let mut newly_selected_inputs = Vec::new();
         let mut newly_selected_ids = HashSet::new();
 
@@ -39,11 +70,11 @@ impl InputSelection {
             .sort_by(|left, right| left.output.amount().cmp(&right.output.amount()));
 
         'overall: {
-            // 1. Basic with ED25519 address
+            // 1. Basic with ED25519 address without SDRUC
             {
                 let inputs = self.available_inputs.iter().filter(|input| {
                     if let Output::Basic(output) = &input.output {
-                        output.address().is_ed25519()
+                        output.address().is_ed25519() && output.unlock_conditions().storage_deposit_return().is_none()
                     } else {
                         false
                     }
@@ -60,7 +91,45 @@ impl InputSelection {
                 }
             }
 
-            // 2. Basic with other kind of address
+            // 2. Basic with ED25519 address and SDRUC
+            {
+                let inputs = self.available_inputs.iter().filter(|input| {
+                    if let Output::Basic(output) = &input.output {
+                        output.address().is_ed25519() && output.unlock_conditions().storage_deposit_return().is_some()
+                    } else {
+                        false
+                    }
+                });
+
+                for input in inputs {
+                    inputs_sum += input.output.amount();
+                    newly_selected_inputs.push(input.clone());
+                    newly_selected_ids.insert(*input.output_id());
+
+                    let sdruc = input
+                        .output
+                        .unlock_conditions()
+                        .and_then(|unlock_conditions| unlock_conditions.storage_deposit_return())
+                        .unwrap();
+
+                    let input_sdr = inputs_sdr.get(sdruc.return_address()).unwrap_or(&0) + sdruc.amount();
+                    let output_sdr = *outputs_sdr.get(sdruc.return_address()).unwrap_or(&0);
+
+                    if input_sdr > output_sdr {
+                        let diff = input_sdr - output_sdr;
+                        outputs_sum += diff;
+                        *outputs_sdr.entry(*sdruc.return_address()).or_default() += sdruc.amount();
+                    }
+
+                    *inputs_sdr.entry(*sdruc.return_address()).or_default() += sdruc.amount();
+
+                    if inputs_sum >= outputs_sum {
+                        break 'overall;
+                    }
+                }
+            }
+
+            // 3. Basic with other kind of address
             {
                 let inputs = self.available_inputs.iter().filter(|input| {
                     if let Output::Basic(output) = &input.output {
@@ -85,7 +154,7 @@ impl InputSelection {
                 }
             }
 
-            // 3. Other kinds of outputs
+            // 4. Other kinds of outputs
             {
                 let mut inputs = self
                     .available_inputs
