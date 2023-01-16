@@ -95,7 +95,16 @@ impl InputSelection {
             {
                 let inputs = self.available_inputs.iter().filter(|input| {
                     if let Output::Basic(output) = &input.output {
-                        output.address().is_ed25519() && output.unlock_conditions().storage_deposit_return().is_some()
+                        if output.address().is_ed25519() {
+                            if let Some(sdr) = output.unlock_conditions().storage_deposit_return() {
+                                // Filter out outputs that have to send back their full amount as they contribute to nothing.
+                                sdr.amount() != input.output.amount()
+                            } else {
+                                false
+                            }
+                        } else {
+                            false
+                        }
                     } else {
                         false
                     }
@@ -107,11 +116,6 @@ impl InputSelection {
                         .unlock_conditions()
                         .and_then(|unlock_conditions| unlock_conditions.storage_deposit_return())
                         .unwrap();
-
-                    // This output is useless as it has to send back its full amount.
-                    if sdruc.amount() == input.output.amount() {
-                        continue;
-                    }
 
                     inputs_sum += input.output.amount();
                     newly_selected_inputs.push(input.clone());
