@@ -42,6 +42,16 @@ pub(crate) fn is_alias_state_transition(input: &InputSigningData, outputs: &[Out
     })
 }
 
+/// Checks if an output is an alias with a given non null alias ID.
+/// Calling it with a null alias ID may lead to undefined behavior.
+pub(crate) fn is_alias_with_id_non_null(output: &Output, alias_id: &AliasId) -> bool {
+    if let Output::Alias(alias) = output {
+        alias.alias_id() == alias_id
+    } else {
+        false
+    }
+}
+
 /// Checks if an output is an alias with output ID that matches the given alias ID.
 pub(crate) fn is_alias_with_id(output: &Output, output_id: &OutputId, alias_id: &AliasId) -> bool {
     if let Output::Alias(alias) = output {

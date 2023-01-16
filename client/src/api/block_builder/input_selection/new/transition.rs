@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use super::{
-    requirement::{alias::is_alias_with_id, foundry::is_foundry_with_id, nft::is_nft_with_id},
+    requirement::{alias::is_alias_with_id_non_null, foundry::is_foundry_with_id, nft::is_nft_with_id_non_null},
     InputSelection,
 };
 use crate::{
@@ -33,7 +33,7 @@ impl InputSelection {
         if self
             .outputs
             .iter()
-            .any(|output| is_alias_with_id(&output.output, output_id, &alias_id))
+            .any(|output| is_alias_with_id_non_null(&output.output, &alias_id))
         {
             return Ok(None);
         }
@@ -64,7 +64,7 @@ impl InputSelection {
         if self
             .outputs
             .iter()
-            .any(|output| is_nft_with_id(&output.output, output_id, &nft_id))
+            .any(|output| is_nft_with_id_non_null(&output.output, &nft_id))
         {
             return Ok(None);
         }

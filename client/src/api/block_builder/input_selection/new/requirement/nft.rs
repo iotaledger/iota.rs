@@ -8,6 +8,16 @@ use crate::{
     secret::types::InputSigningData,
 };
 
+/// Checks if an output is an nft with a given non null nft ID.
+/// Calling it with a null nft ID may lead to undefined behavior.
+pub(crate) fn is_nft_with_id_non_null(output: &Output, nft_id: &NftId) -> bool {
+    if let Output::Nft(nft) = output {
+        nft.nft_id() == nft_id
+    } else {
+        false
+    }
+}
+
 /// Checks if an output is an nft with output ID that matches the given nft ID.
 pub(crate) fn is_nft_with_id(output: &Output, output_id: &OutputId, nft_id: &NftId) -> bool {
     if let Output::Nft(nft) = output {
