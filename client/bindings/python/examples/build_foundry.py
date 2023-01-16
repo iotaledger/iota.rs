@@ -3,7 +3,7 @@ from iota_client import IotaClient, MnemonicSecretManager
 # Create an IotaClient instance
 client = IotaClient({'nodes': ['https://api.testnet.shimmer.network']})
 
-# Configure alias output
+# Configure foundry output
 # TODO: replace with your own values
 serial_number = 1
 token_scheme = { 'type': 0, 'meltedTokens': '0x0', 'mintedTokens': '0x32', 'maximumSupply': '0x64' }
