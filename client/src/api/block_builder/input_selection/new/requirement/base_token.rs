@@ -97,7 +97,8 @@ impl InputSelection {
                     if let Output::Basic(output) = &input.output {
                         if output.address().is_ed25519() {
                             if let Some(sdr) = output.unlock_conditions().storage_deposit_return() {
-                                // Filter out outputs that have to send back their full amount as they contribute to nothing.
+                                // Filter out outputs that have to send back their full amount as they contribute to
+                                // nothing.
                                 sdr.amount() != input.output.amount()
                             } else {
                                 false

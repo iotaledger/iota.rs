@@ -9,7 +9,6 @@ pub(crate) mod transition;
 use std::collections::HashSet;
 
 pub use burn::Burn;
-use remainder::remainder_output;
 pub use requirement::Requirement;
 use requirement::{alias::is_alias_state_transition, Requirements};
 
@@ -274,14 +273,7 @@ impl InputSelection {
 
         // self.output.extend(create_storage_deposit_return_outputs(selected_input, self.outputs));
 
-        // // Potentially do native tokens + base coin + storage deposit here
-        let new_outputs = remainder_output(
-            &self.selected_inputs,
-            &self.outputs,
-            self.remainder_address,
-            &self.protocol_parameters,
-            self.burn.as_ref(),
-        )?;
+        let new_outputs = self.remainder_and_storage_deposit_return_outputs()?;
 
         self.outputs.extend(new_outputs);
 
