@@ -20,7 +20,7 @@ use iota_client::{
             feature::{Feature, IssuerFeature, SenderFeature},
             unlock_condition::{
                 AddressUnlockCondition, GovernorAddressUnlockCondition, ImmutableAliasAddressUnlockCondition,
-                StateControllerAddressUnlockCondition, UnlockCondition,
+                StateControllerAddressUnlockCondition, StorageDepositReturnUnlockCondition, UnlockCondition,
             },
             AliasId, AliasOutputBuilder, BasicOutputBuilder, FoundryOutputBuilder, NativeToken, NftId,
             NftOutputBuilder, Output, OutputId, SimpleTokenScheme, TokenId, TokenScheme,
@@ -48,7 +48,13 @@ const BECH32_ADDRESS_ALIAS: &str = "rms1pqg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3
 const BECH32_ADDRESS_NFT: &str = "rms1zqg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zxddmy7"; // Corresponds to NFT_ID_1
 
 enum Build<'a> {
-    Basic(u64, &'a str, Option<Vec<(&'a str, u64)>>, Option<&'a str>),
+    Basic(
+        u64,
+        &'a str,
+        Option<Vec<(&'a str, u64)>>,
+        Option<&'a str>,
+        Option<(&'a str, u64)>,
+    ),
     Nft(
         u64,
         NftId,
@@ -56,6 +62,7 @@ enum Build<'a> {
         Option<Vec<(&'a str, u64)>>,
         Option<&'a str>,
         Option<&'a str>,
+        Option<(&'a str, u64)>,
     ),
     Alias(
         u64,
@@ -73,6 +80,7 @@ fn build_basic_output(
     bech32_address: &str,
     native_tokens: Option<Vec<(&str, u64)>>,
     bech32_sender: Option<&str>,
+    sdruc: Option<(&str, u64)>,
 ) -> Output {
     let mut builder = BasicOutputBuilder::new_with_amount(amount)
         .unwrap()
@@ -94,6 +102,17 @@ fn build_basic_output(
         )));
     }
 
+    if let Some((address, amount)) = sdruc {
+        builder = builder.add_unlock_condition(UnlockCondition::StorageDepositReturn(
+            StorageDepositReturnUnlockCondition::new(
+                Address::try_from_bech32(address).unwrap().1,
+                amount,
+                TOKEN_SUPPLY,
+            )
+            .unwrap(),
+        ));
+    }
+
     builder.finish_output(TOKEN_SUPPLY).unwrap()
 }
 
@@ -104,6 +123,7 @@ fn build_nft_output(
     native_tokens: Option<Vec<(&str, u64)>>,
     bech32_sender: Option<&str>,
     bech32_issuer: Option<&str>,
+    sdruc: Option<(&str, u64)>,
 ) -> Output {
     let mut builder = NftOutputBuilder::new_with_amount(amount, nft_id)
         .unwrap()
@@ -129,6 +149,17 @@ fn build_nft_output(
         builder = builder.add_immutable_feature(Feature::Issuer(IssuerFeature::new(
             Address::try_from_bech32(bech32_issuer).unwrap().1,
         )));
+    }
+
+    if let Some((address, amount)) = sdruc {
+        builder = builder.add_unlock_condition(UnlockCondition::StorageDepositReturn(
+            StorageDepositReturnUnlockCondition::new(
+                Address::try_from_bech32(address).unwrap().1,
+                amount,
+                TOKEN_SUPPLY,
+            )
+            .unwrap(),
+        ));
     }
 
     builder.finish_output(TOKEN_SUPPLY).unwrap()
@@ -201,11 +232,11 @@ fn build_foundry_output(
 
 fn build_output_inner(build: Build) -> (Output, String) {
     match build {
-        Build::Basic(amount, bech32_address, native_tokens, bech32_sender) => (
-            build_basic_output(amount, bech32_address, native_tokens, bech32_sender),
+        Build::Basic(amount, bech32_address, native_tokens, bech32_sender, sdruc) => (
+            build_basic_output(amount, bech32_address, native_tokens, bech32_sender, sdruc),
             bech32_address.to_string(),
         ),
-        Build::Nft(amount, nft_id, bech32_address, native_tokens, bech32_sender, bech32_issuer) => (
+        Build::Nft(amount, nft_id, bech32_address, native_tokens, bech32_sender, bech32_issuer, sdruc) => (
             build_nft_output(
                 amount,
                 nft_id,
@@ -213,6 +244,7 @@ fn build_output_inner(build: Build) -> (Output, String) {
                 native_tokens,
                 bech32_sender,
                 bech32_issuer,
+                sdruc,
             ),
             bech32_address.to_string(),
         ),

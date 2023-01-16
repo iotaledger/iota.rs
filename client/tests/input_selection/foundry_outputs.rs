@@ -25,7 +25,7 @@ fn missing_input_alias_for_foundry() {
     let protocol_parameters = protocol_parameters();
     let alias_id_2 = AliasId::from_str(ALIAS_ID_2).unwrap();
 
-    let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS, None, None)]);
+    let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS, None, None, None)]);
     let outputs = build_outputs(vec![Foundry(
         1_000_000,
         alias_id_2,
@@ -217,7 +217,7 @@ fn destroy_foundry_with_alias_burn() {
             None,
         ),
     ]);
-    let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS, None, None)]);
+    let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS, None, None, None)]);
 
     let selected = InputSelection::new(inputs.clone(), outputs, protocol_parameters)
         .burn(
@@ -246,9 +246,9 @@ fn prefer_basic_to_foundry() {
             SimpleTokenScheme::new(U256::from(10), U256::from(10), U256::from(10)).unwrap(),
             None,
         ),
-        Basic(1_000_000, BECH32_ADDRESS, None, None),
+        Basic(1_000_000, BECH32_ADDRESS, None, None, None),
     ]);
-    let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS, None, None)]);
+    let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS, None, None, None)]);
 
     let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
         .select()
@@ -265,7 +265,7 @@ fn simple_foundry_transition_basic_not_needed() {
     let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
 
     let inputs = build_inputs(vec![
-        Basic(1_000_000, BECH32_ADDRESS, None, None),
+        Basic(1_000_000, BECH32_ADDRESS, None, None, None),
         Foundry(
             1_000_000,
             alias_id_1,
@@ -317,7 +317,7 @@ fn simple_foundry_transition_basic_not_needed_with_remainder() {
     let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
 
     let inputs = build_inputs(vec![
-        Basic(1_000_000, BECH32_ADDRESS, None, None),
+        Basic(1_000_000, BECH32_ADDRESS, None, None, None),
         Foundry(
             2_000_000,
             alias_id_1,
