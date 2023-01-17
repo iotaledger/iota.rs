@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `impl From<&OutputMetadata> for OutputMetadataResponse`;
 - `Client::get_included_block_metadata` API endpoint;
 - `Message::GetIncludedBlockMetadata` to message interface;
+- `Serialize_repr`, `Deserialize_repr` and `#[repr(u8)]` to `ParticipationEventType`;
 
 ### Changed
 

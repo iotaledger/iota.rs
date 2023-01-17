@@ -14,13 +14,15 @@ use std::collections::HashMap;
 use getset::Getters;
 use iota_types::{impl_id, string_serde_impl};
 use serde::{Deserialize, Serialize};
+use serde_repr::{Deserialize_repr, Serialize_repr};
 
 /// Participation tag.
 pub const PARTICIPATION_TAG: &str = "PARTICIPATE";
 
 /// Possible participation event types.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize_repr, Deserialize_repr)]
 #[serde(untagged)]
+#[repr(u8)]
 pub enum ParticipationEventType {
     /// Voting event.
     Voting,
