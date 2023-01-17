@@ -28,7 +28,7 @@ pub enum Requirement {
     Issuer(Address),
     /// Foundry requirement.
     Foundry(FoundryId),
-    /// Alias requirement.
+    /// Alias requirement and whether it needs to be state transitioned (true) or not (false).
     Alias(AliasId, bool),
     /// Nft requirement.
     Nft(NftId),
