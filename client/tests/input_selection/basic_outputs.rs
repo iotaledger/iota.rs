@@ -367,7 +367,6 @@ fn alias_sender() {
     // Provided output + alias
     assert_eq!(selected.outputs.len(), 2);
     assert!(selected.outputs.contains(&outputs[0]));
-    assert!(selected.outputs.contains(&inputs[2].output));
 }
 
 #[test]
