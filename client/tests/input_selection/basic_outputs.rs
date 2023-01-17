@@ -14,7 +14,7 @@ use iota_client::{
 };
 
 use crate::input_selection::{
-    build_inputs, build_outputs,
+    build_inputs, build_outputs, unsorted_eq,
     Build::{Alias, Basic, Nft},
     ALIAS_ID_1, BECH32_ADDRESS_ALIAS, BECH32_ADDRESS_ED25519_0, BECH32_ADDRESS_ED25519_1, BECH32_ADDRESS_NFT,
     BECH32_ADDRESS_REMAINDER, NFT_ID_1,
@@ -31,8 +31,8 @@ fn input_amount_equal_output_amount() {
         .select()
         .unwrap();
 
-    assert_eq!(selected.inputs, inputs);
-    assert_eq!(selected.outputs, outputs);
+    assert!(unsorted_eq(&selected.inputs, &inputs));
+    assert!(unsorted_eq(&selected.outputs, &outputs));
 }
 
 #[test]
@@ -85,7 +85,7 @@ fn input_amount_greater_than_output_amount() {
         .select()
         .unwrap();
 
-    assert_eq!(selected.inputs, inputs);
+    assert!(unsorted_eq(&selected.inputs, &inputs));
     // One output should be added for the remainder.
     assert_eq!(selected.outputs.len(), 2);
     assert!(selected.outputs.contains(&outputs[0]));
@@ -117,7 +117,7 @@ fn input_amount_greater_than_output_amount_with_remainder_address() {
         .select()
         .unwrap();
 
-    assert_eq!(selected.inputs, inputs);
+    assert!(unsorted_eq(&selected.inputs, &inputs));
     // One output should be added for the remainder.
     assert_eq!(selected.outputs.len(), 2);
     assert!(selected.outputs.contains(&outputs[0]));
@@ -182,7 +182,7 @@ fn two_inputs_one_needed() {
         .unwrap();
 
     assert_eq!(selected.inputs, vec![inputs[0].clone()]);
-    assert_eq!(selected.outputs, outputs);
+    assert!(unsorted_eq(&selected.outputs, &outputs));
 }
 
 #[test]
@@ -200,7 +200,7 @@ fn two_inputs_one_needed_reversed() {
         .unwrap();
 
     assert_eq!(selected.inputs, vec![inputs[1].clone()]);
-    assert_eq!(selected.outputs, outputs);
+    assert!(unsorted_eq(&selected.outputs, &outputs));
 }
 
 #[test]
@@ -217,8 +217,8 @@ fn two_inputs_both_needed() {
         .select()
         .unwrap();
 
-    assert_eq!(selected.inputs, inputs);
-    assert_eq!(selected.outputs, outputs);
+    assert!(unsorted_eq(&selected.inputs, &inputs));
+    assert!(unsorted_eq(&selected.outputs, &outputs));
 }
 
 #[test]
@@ -235,7 +235,7 @@ fn two_inputs_remainder() {
         .select()
         .unwrap();
 
-    assert_eq!(selected.inputs, inputs);
+    assert!(unsorted_eq(&selected.inputs, &inputs));
     // One output should be added for the remainder.
     assert_eq!(selected.outputs.len(), 2);
     assert!(selected.outputs.contains(&outputs[0]));
@@ -443,5 +443,87 @@ fn missing_nft_sender() {
     assert!(matches!(
         selected,
         Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender.is_nft() && sender == Address::try_from_bech32(BECH32_ADDRESS_NFT).unwrap().1
+    ));
+}
+
+#[test]
+fn simple_remainder() {
+    let protocol_parameters = protocol_parameters();
+
+    let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None)]);
+    let outputs = build_outputs(vec![Basic(500_000, BECH32_ADDRESS_ED25519_0, None, None, None)]);
+
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+        .select()
+        .unwrap();
+
+    assert!(unsorted_eq(&selected.inputs, &inputs));
+    assert_eq!(selected.outputs.len(), 2);
+    assert!(selected.outputs.contains(&outputs[0]));
+    selected.outputs.iter().for_each(|output| {
+        if !outputs.contains(output) {
+            assert!(output.is_basic());
+            assert_eq!(output.amount(), 500_000);
+            assert_eq!(output.as_basic().native_tokens().len(), 0);
+            assert_eq!(output.as_basic().unlock_conditions().len(), 1);
+            assert_eq!(output.as_basic().features().len(), 0);
+            assert_eq!(
+                *output.as_basic().address(),
+                Address::try_from_bech32(BECH32_ADDRESS_ED25519_0).unwrap().1
+            );
+        }
+    });
+}
+
+#[test]
+fn remainder_lower_than_rent() {
+    let protocol_parameters = protocol_parameters();
+
+    let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None)]);
+    let outputs = build_outputs(vec![Basic(800_000, BECH32_ADDRESS_ED25519_0, None, None, None)]);
+
+    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
+
+    assert!(matches!(
+        selected,
+        Err(Error::BlockError(
+            iota_types::block::Error::InsufficientStorageDepositAmount {
+                amount: 200_000,
+                required: 213_000,
+            }
+        ))
+    ));
+}
+
+#[test]
+fn one_provided_one_needed() {
+    let protocol_parameters = protocol_parameters();
+
+    let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None)]);
+    let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None)]);
+
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+        .select()
+        .unwrap();
+
+    assert!(unsorted_eq(&selected.inputs, &inputs));
+    assert!(unsorted_eq(&selected.outputs, &outputs));
+}
+
+#[test]
+fn insufficient_amount() {
+    let protocol_parameters = protocol_parameters();
+
+    let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None)]);
+    let outputs = build_outputs(vec![Basic(1_250_000, BECH32_ADDRESS_ED25519_0, None, None, None)]);
+
+    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
+
+    assert!(matches!(
+        selected,
+        Err(Error::InsufficientBaseTokenAmount {
+            found: 1_000_000,
+            required: 1_250_000,
+        })
     ));
 }
