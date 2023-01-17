@@ -352,7 +352,7 @@ fn alias_sender() {
         None,
     )]);
 
-    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+    let selected = InputSelection::new(inputs, outputs.clone(), protocol_parameters)
         .select()
         .unwrap();
 
