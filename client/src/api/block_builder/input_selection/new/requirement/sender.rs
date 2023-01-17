@@ -1,8 +1,6 @@
 // Copyright 2023 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use iota_types::block::output::UnlockCondition;
-
 use super::{InputSelection, Requirement};
 use crate::{
     block::address::Address,
@@ -10,10 +8,14 @@ use crate::{
     secret::types::InputSigningData,
 };
 
-fn is_ed25519_address(input: &InputSigningData, address: &Address) -> bool {
+fn has_ed25519_address(input: &InputSigningData, address: &Address) -> bool {
     // TODO could also be in state/governor?
-    if let Some([UnlockCondition::Address(unlock)]) = input.output.unlock_conditions().map(|u| u.as_ref()) {
-        unlock.address() == address
+    if let Some(unlock_conditions) = input.output.unlock_conditions() {
+        if let Some(address_unlock_condition) = unlock_conditions.address() {
+            address_unlock_condition.address() == address
+        } else {
+            false
+        }
     } else {
         false
     }
@@ -28,7 +30,7 @@ impl InputSelection {
         if self
             .selected_inputs
             .iter()
-            .any(|input| is_ed25519_address(input, &address))
+            .any(|input| has_ed25519_address(input, &address))
         {
             return Ok((Vec::new(), None));
         }
@@ -43,14 +45,14 @@ impl InputSelection {
             .available_inputs
             .iter()
             .enumerate()
-            .find(|(_, input)| input.output.is_basic() && is_ed25519_address(input, &address))
+            .find(|(_, input)| input.output.is_basic() && has_ed25519_address(input, &address))
         {
             Some(index)
         } else {
             // TODO any preference between alias and NFT?
             // If no basic output has been found, tries the other kinds of output.
             self.available_inputs.iter().enumerate().find_map(|(index, input)| {
-                if !input.output.is_basic() && is_ed25519_address(input, &address) {
+                if !input.output.is_basic() && has_ed25519_address(input, &address) {
                     Some(index)
                 } else {
                     None

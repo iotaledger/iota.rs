@@ -48,6 +48,14 @@ pub(crate) fn base_token_sums(
         }
     }
 
+    for (sdr_address, input_sdr_amount) in &inputs_sdr {
+        let output_sdr_amount = outputs_sdr.get(sdr_address).unwrap_or(&0);
+
+        if input_sdr_amount > output_sdr_amount {
+            outputs_sum += input_sdr_amount - output_sdr_amount;
+        }
+    }
+
     (inputs_sum, outputs_sum, inputs_sdr, outputs_sdr)
 }
 
