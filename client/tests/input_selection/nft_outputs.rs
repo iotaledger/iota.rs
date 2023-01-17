@@ -53,6 +53,39 @@ fn input_nft_eq_output_nft() {
 }
 
 #[test]
+fn transition_nft_id_zero() {
+    let protocol_parameters = protocol_parameters();
+    let nft_id_0 = NftId::from_str(NFT_ID_0).unwrap();
+
+    let inputs = build_inputs(vec![Nft(
+        1_000_000,
+        nft_id_0,
+        BECH32_ADDRESS_ED25519_0,
+        None,
+        None,
+        None,
+        None,
+    )]);
+    let nft_id = NftId::from(inputs[0].output_id());
+    let outputs = build_outputs(vec![Nft(
+        1_000_000,
+        nft_id,
+        BECH32_ADDRESS_ED25519_0,
+        None,
+        None,
+        None,
+        None,
+    )]);
+
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+        .select()
+        .unwrap();
+
+    assert!(unsorted_eq(&selected.inputs, &inputs));
+    assert!(unsorted_eq(&selected.outputs, &outputs));
+}
+
+#[test]
 fn input_amount_lt_output_amount() {
     let protocol_parameters = protocol_parameters();
     let nft_id_2 = NftId::from_str(NFT_ID_2).unwrap();

@@ -6,7 +6,7 @@ use std::str::FromStr;
 use iota_client::{
     api::input_selection::new::{InputSelection, Requirement},
     block::{
-        address::Address,
+        address::{Address, AliasAddress, NftAddress},
         output::{AliasId, NftId},
         protocol::protocol_parameters,
     },
@@ -16,8 +16,8 @@ use iota_client::{
 use crate::input_selection::{
     build_inputs, build_outputs, unsorted_eq,
     Build::{Alias, Basic, Nft},
-    ALIAS_ID_1, BECH32_ADDRESS_ALIAS, BECH32_ADDRESS_ED25519_0, BECH32_ADDRESS_ED25519_1, BECH32_ADDRESS_NFT,
-    BECH32_ADDRESS_REMAINDER, NFT_ID_1,
+    ALIAS_ID_0, ALIAS_ID_1, BECH32_ADDRESS_ALIAS, BECH32_ADDRESS_ED25519_0, BECH32_ADDRESS_ED25519_1,
+    BECH32_ADDRESS_NFT, BECH32_ADDRESS_REMAINDER, NFT_ID_0, NFT_ID_1,
 };
 
 #[test]
@@ -352,7 +352,7 @@ fn alias_sender() {
         None,
     )]);
 
-    let selected = InputSelection::new(inputs, outputs, protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
         .select()
         .unwrap();
 
@@ -366,6 +366,40 @@ fn alias_sender() {
     );
     // Provided output + alias
     assert_eq!(selected.outputs.len(), 2);
+    assert!(selected.outputs.contains(&outputs[0]));
+    assert!(selected.outputs.contains(&inputs[2].output));
+}
+
+#[test]
+fn alias_sender_zero_id() {
+    let protocol_parameters = protocol_parameters();
+    let alias_id_0 = AliasId::from_str(ALIAS_ID_0).unwrap();
+
+    let inputs = build_inputs(vec![
+        Basic(2_000_000, BECH32_ADDRESS_ED25519_0, None, None, None),
+        Alias(1_000_000, alias_id_0, BECH32_ADDRESS_ED25519_0, None, None, None),
+    ]);
+    let alias_id = AliasId::from(inputs[1].output_id());
+    let outputs = build_outputs(vec![Basic(
+        2_000_000,
+        BECH32_ADDRESS_ED25519_0,
+        None,
+        Some(&Address::from(AliasAddress::from(alias_id)).to_bech32("rms")),
+        None,
+    )]);
+
+    let selected = InputSelection::new(inputs.clone(), outputs, protocol_parameters)
+        .select()
+        .unwrap();
+
+    assert!(unsorted_eq(&selected.inputs, &inputs));
+    assert_eq!(selected.outputs.len(), 2);
+    assert!(
+        selected
+            .outputs
+            .iter()
+            .any(|output| output.is_alias() && *output.as_alias().alias_id() == alias_id)
+    );
 }
 
 #[test]
@@ -409,7 +443,7 @@ fn nft_sender() {
         None,
     )]);
 
-    let selected = InputSelection::new(inputs, outputs, protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
         .select()
         .unwrap();
 
@@ -423,6 +457,40 @@ fn nft_sender() {
     );
     // Provided output + nft
     assert_eq!(selected.outputs.len(), 2);
+    assert!(selected.outputs.contains(&inputs[2].output));
+    assert!(selected.outputs.contains(&outputs[0]));
+}
+
+#[test]
+fn nft_sender_zero_id() {
+    let protocol_parameters = protocol_parameters();
+    let nft_id_0 = NftId::from_str(NFT_ID_0).unwrap();
+
+    let inputs = build_inputs(vec![
+        Basic(2_000_000, BECH32_ADDRESS_ED25519_0, None, None, None),
+        Nft(1_000_000, nft_id_0, BECH32_ADDRESS_ED25519_0, None, None, None, None),
+    ]);
+    let nft_id = NftId::from(inputs[1].output_id());
+    let outputs = build_outputs(vec![Basic(
+        2_000_000,
+        BECH32_ADDRESS_ED25519_0,
+        None,
+        Some(&Address::from(NftAddress::from(nft_id)).to_bech32("rms")),
+        None,
+    )]);
+
+    let selected = InputSelection::new(inputs.clone(), outputs, protocol_parameters)
+        .select()
+        .unwrap();
+
+    assert!(unsorted_eq(&selected.inputs, &inputs));
+    assert_eq!(selected.outputs.len(), 2);
+    assert!(
+        selected
+            .outputs
+            .iter()
+            .any(|output| output.is_nft() && *output.as_nft().nft_id() == nft_id)
+    );
 }
 
 #[test]

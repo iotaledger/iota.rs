@@ -17,7 +17,7 @@ use primitive_types::U256;
 use crate::input_selection::{
     build_inputs, build_outputs,
     Build::{Alias, Basic, Foundry, Nft},
-    ALIAS_ID_1, BECH32_ADDRESS_ED25519_0, NFT_ID_1,
+    ALIAS_ID_0, ALIAS_ID_1, BECH32_ADDRESS_ED25519_0, NFT_ID_0, NFT_ID_1,
 };
 
 #[test]
@@ -33,6 +33,28 @@ fn burn_alias_present() {
 
     let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
         .burn(Burn::new().add_alias(alias_id_1))
+        .select()
+        .unwrap();
+
+    assert_eq!(selected.inputs.len(), 1);
+    assert_eq!(selected.inputs[0], inputs[0]);
+    assert_eq!(selected.outputs, outputs);
+}
+
+#[test]
+fn burn_alias_id_zero() {
+    let protocol_parameters = protocol_parameters();
+    let nft_id_0 = NftId::from_str(NFT_ID_0).unwrap();
+
+    let inputs = build_inputs(vec![
+        Nft(1_000_000, nft_id_0, BECH32_ADDRESS_ED25519_0, None, None, None, None),
+        Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None),
+    ]);
+    let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None)]);
+    let nft_id = NftId::from(inputs[0].output_id());
+
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+        .burn(Burn::new().add_nft(nft_id))
         .select()
         .unwrap();
 
@@ -72,6 +94,28 @@ fn burn_nft_present() {
 
     let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
         .burn(Burn::new().add_nft(nft_id_1))
+        .select()
+        .unwrap();
+
+    assert_eq!(selected.inputs.len(), 1);
+    assert_eq!(selected.inputs[0], inputs[0]);
+    assert_eq!(selected.outputs, outputs);
+}
+
+#[test]
+fn burn_nft_id_zero() {
+    let protocol_parameters = protocol_parameters();
+    let alias_id_0 = AliasId::from_str(ALIAS_ID_0).unwrap();
+
+    let inputs = build_inputs(vec![
+        Alias(1_000_000, alias_id_0, BECH32_ADDRESS_ED25519_0, None, None, None),
+        Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None),
+    ]);
+    let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None)]);
+    let alias_id = AliasId::from(inputs[0].output_id());
+
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+        .burn(Burn::new().add_alias(alias_id))
         .select()
         .unwrap();
 

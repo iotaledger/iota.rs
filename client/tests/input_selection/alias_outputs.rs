@@ -51,6 +51,37 @@ fn input_alias_eq_output_alias() {
 }
 
 #[test]
+fn transition_alias_id_zero() {
+    let protocol_parameters = protocol_parameters();
+    let alias_id_0 = AliasId::from_str(ALIAS_ID_0).unwrap();
+
+    let inputs = build_inputs(vec![Alias(
+        1_000_000,
+        alias_id_0,
+        BECH32_ADDRESS_ED25519_0,
+        None,
+        None,
+        None,
+    )]);
+    let alias_id = AliasId::from(inputs[0].output_id());
+    let outputs = build_outputs(vec![Alias(
+        1_000_000,
+        alias_id,
+        BECH32_ADDRESS_ED25519_0,
+        None,
+        None,
+        None,
+    )]);
+
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+        .select()
+        .unwrap();
+
+    assert!(unsorted_eq(&selected.inputs, &inputs));
+    assert!(unsorted_eq(&selected.outputs, &outputs));
+}
+
+#[test]
 fn input_amount_lt_output_amount() {
     let protocol_parameters = protocol_parameters();
     let alias_id_2 = AliasId::from_str(ALIAS_ID_2).unwrap();
