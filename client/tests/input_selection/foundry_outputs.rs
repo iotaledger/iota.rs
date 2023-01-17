@@ -61,10 +61,11 @@ fn existing_input_alias_for_foundry_alias() {
         None,
     )]);
 
-    let selected = InputSelection::new(inputs, outputs, protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs, protocol_parameters)
         .select()
         .unwrap();
 
+    assert!(unsorted_eq(&selected.inputs, &inputs));
     // Alias next state + foundry
     assert_eq!(selected.outputs.len(), 2);
     // Alias state index is increased
@@ -96,10 +97,11 @@ fn minted_native_tokens_in_new_remainder() {
         None,
     )]);
 
-    let selected = InputSelection::new(inputs, outputs, protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs, protocol_parameters)
         .select()
         .unwrap();
 
+    assert!(unsorted_eq(&selected.inputs, &inputs));
     // Alias next state + foundry + basic output with native tokens
     assert_eq!(selected.outputs.len(), 3);
     // Alias state index is increased
@@ -140,10 +142,11 @@ fn melt_native_tokens() {
         None,
     )]);
 
-    let selected = InputSelection::new(inputs, outputs, protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs, protocol_parameters)
         .select()
         .unwrap();
 
+    assert!(unsorted_eq(&selected.inputs, &inputs));
     // Alias next state + foundry + basic output with native tokens
     assert_eq!(selected.outputs.len(), 3);
     // Alias state index is increased
@@ -187,6 +190,7 @@ fn destroy_foundry_with_alias_state_transition() {
         .select()
         .unwrap();
 
+    assert!(unsorted_eq(&selected.inputs, &inputs));
     // Alias next state
     assert_eq!(selected.outputs.len(), 1);
 }
