@@ -48,7 +48,7 @@ fn input_nft_eq_output_nft() {
         .select()
         .unwrap();
 
-    assert_eq!(selected.inputs, inputs);
+    assert!(unsorted_eq(&selected.inputs, &inputs));
     assert_eq!(selected.outputs, outputs);
 }
 
@@ -96,10 +96,11 @@ fn basic_output_with_nft_input() {
     )]);
     let outputs = build_outputs(vec![Basic(2_000_000, BECH32_ADDRESS_ED25519_0, None, None, None)]);
 
-    let selected = InputSelection::new(inputs, outputs, protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs, protocol_parameters)
         .select()
         .unwrap();
 
+    assert!(unsorted_eq(&selected.inputs, &inputs));
     // basic output + nft remainder
     assert_eq!(selected.outputs.len(), 2);
 }
@@ -120,10 +121,11 @@ fn mint_nft() {
         None,
     )]);
 
-    let selected = InputSelection::new(inputs, outputs, protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs, protocol_parameters)
         .select()
         .unwrap();
 
+    assert!(unsorted_eq(&selected.inputs, &inputs));
     // One output should be added for the remainder
     assert_eq!(selected.outputs.len(), 2);
     // Output contains the new minted nft id
@@ -152,11 +154,12 @@ fn burn_nft() {
     )]);
     let outputs = build_outputs(vec![Basic(2_000_000, BECH32_ADDRESS_ED25519_0, None, None, None)]);
 
-    let selected = InputSelection::new(inputs, outputs, protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs, protocol_parameters)
         .burn(Burn::new().add_nft(nft_id_2))
         .select()
         .unwrap();
 
+    assert!(unsorted_eq(&selected.inputs, &inputs));
     // No remainder
     assert_eq!(selected.outputs.len(), 1);
     // Output is a basic output
@@ -729,18 +732,16 @@ fn transitioned_zero_nft_id_no_longer_is_zero() {
     assert!(selected.outputs.contains(&outputs[0]));
     selected.outputs.iter().for_each(|output| {
         if !outputs.contains(output) {
-            if !outputs.contains(output) {
-                assert!(output.is_nft());
-                assert_eq!(output.amount(), 1_000_000);
-                assert_ne!(*output.as_nft().nft_id(), nft_id_0);
-                assert_eq!(output.as_nft().native_tokens().len(), 0);
-                assert_eq!(output.as_nft().unlock_conditions().len(), 1);
-                assert_eq!(output.as_nft().features().len(), 0);
-                assert_eq!(
-                    *output.as_nft().address(),
-                    Address::try_from_bech32(BECH32_ADDRESS_ED25519_0).unwrap().1
-                );
-            }
+            assert!(output.is_nft());
+            assert_eq!(output.amount(), 1_000_000);
+            assert_ne!(*output.as_nft().nft_id(), nft_id_0);
+            assert_eq!(output.as_nft().native_tokens().len(), 0);
+            assert_eq!(output.as_nft().unlock_conditions().len(), 1);
+            assert_eq!(output.as_nft().features().len(), 0);
+            assert_eq!(
+                *output.as_nft().address(),
+                Address::try_from_bech32(BECH32_ADDRESS_ED25519_0).unwrap().1
+            );
         }
     });
 }

@@ -46,7 +46,7 @@ fn input_alias_eq_output_alias() {
         .select()
         .unwrap();
 
-    assert_eq!(selected.inputs, inputs);
+    assert!(unsorted_eq(&selected.inputs, &inputs));
     assert_eq!(selected.outputs, outputs);
 }
 
@@ -115,10 +115,11 @@ fn basic_output_with_alias_input() {
     )]);
     let outputs = build_outputs(vec![Basic(2_000_000, BECH32_ADDRESS_ED25519_0, None, None, None)]);
 
-    let selected = InputSelection::new(inputs, outputs, protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs, protocol_parameters)
         .select()
         .unwrap();
 
+    assert!(unsorted_eq(&selected.inputs, &inputs));
     // basic output + alias remainder
     assert_eq!(selected.outputs.len(), 2);
 }
@@ -138,10 +139,11 @@ fn create_alias() {
         None,
     )]);
 
-    let selected = InputSelection::new(inputs, outputs, protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs, protocol_parameters)
         .select()
         .unwrap();
 
+    assert!(unsorted_eq(&selected.inputs, &inputs));
     // One output should be added for the remainder
     assert_eq!(selected.outputs.len(), 2);
     // Output contains the new minted alias id
@@ -169,11 +171,12 @@ fn burn_alias() {
     )]);
     let outputs = build_outputs(vec![Basic(2_000_000, BECH32_ADDRESS_ED25519_0, None, None, None)]);
 
-    let selected = InputSelection::new(inputs, outputs, protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs, protocol_parameters)
         .burn(Burn::new().add_alias(alias_id_2))
         .select()
         .unwrap();
 
+    assert!(unsorted_eq(&selected.inputs, &inputs));
     // No remainder
     assert_eq!(selected.outputs.len(), 1);
     // Output is a basic output
