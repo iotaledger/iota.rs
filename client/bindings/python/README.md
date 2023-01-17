@@ -21,7 +21,7 @@ Python binding to the iota.rs client library.
 - `pip install .`
 
 ### Run examples
-`python3 example/[example file]`
+`python3 examples/[example file]`
 
 Example: 
 - `python3 examples/00_get_info.py`

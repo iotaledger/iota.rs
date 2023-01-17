@@ -33,49 +33,37 @@ pub enum ParticipationEventType {
 /// Wrapper interface containing a participation event ID and the corresponding event data.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Event {
+pub struct ParticipationEvent {
     /// The event id.
-    pub id: EventId,
+    pub id: ParticipationEventId,
     /// Information about a voting or staking event.
-    pub data: EventData,
+    pub data: ParticipationEventData,
 }
+
+impl_id!(pub ParticipationEventId, 32, "A participation event id.");
+string_serde_impl!(ParticipationEventId);
 
 /// Information about a voting or staking event.
 #[derive(Debug, Clone, Serialize, Deserialize, Getters)]
 #[serde(rename_all = "camelCase")]
 #[getset(get = "pub")]
-pub struct EventData {
+pub struct ParticipationEventData {
     name: String,
     milestone_index_commence: u32,
     milestone_index_start: u32,
     milestone_index_end: u32,
-    payload: EventPayload,
+    payload: ParticipationEventPayload,
     additional_info: String,
 }
 
 /// Event payload types.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
-pub enum EventPayload {
+pub enum ParticipationEventPayload {
     /// Voting payload.
     VotingEventPayload(VotingEventPayload),
     /// Staking payload.
     StakingEventPayload(StakingEventPayload),
-}
-
-/// Payload for a staking event.
-#[derive(Debug, Clone, Serialize, Deserialize, Getters)]
-#[serde(rename_all = "camelCase")]
-#[getset(get = "pub")]
-pub struct StakingEventPayload {
-    #[serde(rename = "type")]
-    kind: u32,
-    text: String,
-    symbol: String,
-    numerator: u64,
-    denominator: u64,
-    required_minimum_rewards: u64,
-    additional_info: String,
 }
 
 /// Payload for a voting event.
@@ -105,7 +93,21 @@ pub struct Question {
 pub struct Answer {
     value: u8,
     text: String,
-    #[serde(rename = "additionalInfo")]
+    additional_info: String,
+}
+
+/// Payload for a staking event.
+#[derive(Debug, Clone, Serialize, Deserialize, Getters)]
+#[serde(rename_all = "camelCase")]
+#[getset(get = "pub")]
+pub struct StakingEventPayload {
+    #[serde(rename = "type")]
+    kind: u32,
+    text: String,
+    symbol: String,
+    numerator: u64,
+    denominator: u64,
+    required_minimum_rewards: u64,
     additional_info: String,
 }
 
@@ -113,7 +115,7 @@ pub struct Answer {
 #[derive(Debug, Clone, Serialize, Deserialize, Getters)]
 #[serde(rename_all = "camelCase")]
 #[getset(get = "pub")]
-pub struct EventStatus {
+pub struct ParticipationEventStatus {
     milestone_index: u32,
     status: String,
     questions: Option<Vec<QuestionStatus>>,
@@ -157,6 +159,3 @@ pub struct StakingStatus {
     /// If the required minimum staking reward is reached.
     pub minimum_reached: bool,
 }
-
-impl_id!(pub EventId, 32, "A participation event id.");
-string_serde_impl!(EventId);
