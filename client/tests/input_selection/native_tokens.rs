@@ -376,3 +376,139 @@ fn burn_and_send_at_the_same_time() {
         }
     });
 }
+
+#[test]
+fn burn_one_input_no_output() {
+    let protocol_parameters = protocol_parameters();
+
+    let inputs = build_inputs(vec![Basic(
+        1_000_000,
+        BECH32_ADDRESS_ED25519_0,
+        Some(vec![(TOKEN_ID_1, 100)]),
+        None,
+        None,
+    )]);
+
+    let selected = InputSelection::new(inputs.clone(), Vec::new(), protocol_parameters)
+        .burn(Burn::new().add_native_token(TokenId::from_str(TOKEN_ID_1).unwrap(), U256::from(50)))
+        .select()
+        .unwrap();
+
+    assert!(unsorted_eq(&selected.inputs, &inputs));
+    assert_eq!(selected.outputs.len(), 1);
+    assert!(selected.outputs[0].is_basic());
+    assert_eq!(selected.outputs[0].amount(), 1_000_000);
+    assert_eq!(selected.outputs[0].as_basic().native_tokens().len(), 1);
+    assert_eq!(
+        selected.outputs[0]
+            .as_basic()
+            .native_tokens()
+            .get(&TokenId::from_str(TOKEN_ID_1).unwrap())
+            .unwrap()
+            .amount(),
+        U256::from(50),
+    );
+    assert_eq!(selected.outputs[0].as_basic().unlock_conditions().len(), 1);
+    assert_eq!(selected.outputs[0].as_basic().features().len(), 0);
+    assert_eq!(
+        *selected.outputs[0].as_basic().address(),
+        Address::try_from_bech32(BECH32_ADDRESS_ED25519_0).unwrap().1
+    );
+}
+
+#[test]
+fn burn_two_inputs_no_output() {
+    let protocol_parameters = protocol_parameters();
+
+    let inputs = build_inputs(vec![
+        Basic(
+            1_000_000,
+            BECH32_ADDRESS_ED25519_0,
+            Some(vec![(TOKEN_ID_1, 100)]),
+            None,
+            None,
+        ),
+        Basic(
+            1_000_000,
+            BECH32_ADDRESS_ED25519_0,
+            Some(vec![(TOKEN_ID_1, 100), (TOKEN_ID_2, 100)]),
+            None,
+            None,
+        ),
+    ]);
+
+    let selected = InputSelection::new(inputs.clone(), Vec::new(), protocol_parameters)
+        .burn(Burn::new().add_native_token(TokenId::from_str(TOKEN_ID_1).unwrap(), U256::from(50)))
+        .select()
+        .unwrap();
+
+    assert_eq!(selected.inputs.len(), 1);
+    assert!(selected.inputs.contains(&inputs[0]));
+    assert_eq!(selected.outputs.len(), 1);
+    assert!(selected.outputs[0].is_basic());
+    assert_eq!(selected.outputs[0].amount(), 1_000_000);
+    assert_eq!(selected.outputs[0].as_basic().native_tokens().len(), 1);
+    assert_eq!(
+        selected.outputs[0]
+            .as_basic()
+            .native_tokens()
+            .get(&TokenId::from_str(TOKEN_ID_1).unwrap())
+            .unwrap()
+            .amount(),
+        U256::from(50),
+    );
+    assert_eq!(selected.outputs[0].as_basic().unlock_conditions().len(), 1);
+    assert_eq!(selected.outputs[0].as_basic().features().len(), 0);
+    assert_eq!(
+        *selected.outputs[0].as_basic().address(),
+        Address::try_from_bech32(BECH32_ADDRESS_ED25519_0).unwrap().1
+    );
+}
+
+#[test]
+fn burn_one_input_two_tokens_no_output() {
+    let protocol_parameters = protocol_parameters();
+
+    let inputs = build_inputs(vec![Basic(
+        1_000_000,
+        BECH32_ADDRESS_ED25519_0,
+        Some(vec![(TOKEN_ID_1, 100), (TOKEN_ID_2, 100)]),
+        None,
+        None,
+    )]);
+
+    let selected = InputSelection::new(inputs.clone(), Vec::new(), protocol_parameters)
+        .burn(Burn::new().add_native_token(TokenId::from_str(TOKEN_ID_1).unwrap(), U256::from(50)))
+        .select()
+        .unwrap();
+
+    assert!(unsorted_eq(&selected.inputs, &inputs));
+    assert_eq!(selected.outputs.len(), 1);
+    assert!(selected.outputs[0].is_basic());
+    assert_eq!(selected.outputs[0].amount(), 1_000_000);
+    assert_eq!(selected.outputs[0].as_basic().native_tokens().len(), 2);
+    assert_eq!(
+        selected.outputs[0]
+            .as_basic()
+            .native_tokens()
+            .get(&TokenId::from_str(TOKEN_ID_1).unwrap())
+            .unwrap()
+            .amount(),
+        U256::from(50),
+    );
+    assert_eq!(
+        selected.outputs[0]
+            .as_basic()
+            .native_tokens()
+            .get(&TokenId::from_str(TOKEN_ID_2).unwrap())
+            .unwrap()
+            .amount(),
+        U256::from(100),
+    );
+    assert_eq!(selected.outputs[0].as_basic().unlock_conditions().len(), 1);
+    assert_eq!(selected.outputs[0].as_basic().features().len(), 0);
+    assert_eq!(
+        *selected.outputs[0].as_basic().address(),
+        Address::try_from_bech32(BECH32_ADDRESS_ED25519_0).unwrap().1
+    );
+}
