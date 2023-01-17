@@ -108,12 +108,14 @@ impl InputSelection {
         // If a state transition is not required, we can simply select the alias.
         if !state_transition {
             // Remove the output from the available inputs and return it, swap to make it O(1).
+            // PANIC: safe to unwrap as it's been checked that it can't be None when a state transition is not required.
             return Ok((vec![self.available_inputs.swap_remove(available_index.unwrap())], None));
         }
 
         // At this point, a state transition is required so we need to verify that an alias output describing a
         // governance transition was not provided.
 
+        // PANIC: safe to unwrap as it's been checked that both can't be None at the same time.
         let input = selected_input.unwrap_or_else(|| &self.available_inputs[available_index.unwrap()]);
 
         if is_alias_state_transition(

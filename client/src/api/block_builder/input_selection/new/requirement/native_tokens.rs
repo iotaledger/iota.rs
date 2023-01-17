@@ -146,8 +146,8 @@ impl InputSelection {
                     amount += input
                         .output
                         .native_tokens()
-                        .unwrap()
-                        .get(diff.token_id())
+                        .and_then(|native_tokens| native_tokens.get(diff.token_id()))
+                        // PANIC: safe to unwrap as the filter guarantees inputs containing this native token.
                         .unwrap()
                         .amount();
 

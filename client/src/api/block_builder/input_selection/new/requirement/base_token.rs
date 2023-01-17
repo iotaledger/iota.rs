@@ -116,6 +116,7 @@ impl InputSelection {
                         .output
                         .unlock_conditions()
                         .and_then(|unlock_conditions| unlock_conditions.storage_deposit_return())
+                        // PANIC: safe to unwrap as the filter guarantees outputs with SDRUC only.
                         .unwrap();
 
                     inputs_sum += input.output.amount();
