@@ -1,5 +1,14 @@
 # Changelog
 
+## \[3.0.0-rc.6]
+
+- Add `u8` representation to serialization and deserialization for `ParticipationEventType`.
+  - [3534a07](https://github.com/iotaledger/iota.rs/commit/3534a079afeefadd9f2879398d9e2b286209f8a6) Add change file ([#1494](https://github.com/iotaledger/iota.rs/pull/1494)) on 2023-01-17
+- Add `Client::getIncludedBlockMetadata`.
+  - [3534a07](https://github.com/iotaledger/iota.rs/commit/3534a079afeefadd9f2879398d9e2b286209f8a6) Add change file ([#1494](https://github.com/iotaledger/iota.rs/pull/1494)) on 2023-01-17
+- Fix infinite loop when the minimum PoW score is 0 (often in private tangles).
+  - [3534a07](https://github.com/iotaledger/iota.rs/commit/3534a079afeefadd9f2879398d9e2b286209f8a6) Add change file ([#1494](https://github.com/iotaledger/iota.rs/pull/1494)) on 2023-01-17
+
 ## \[3.0.0-rc.5]
 
 - Add `aliasIdToBech32()`.
