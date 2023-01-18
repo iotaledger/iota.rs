@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 pub(crate) mod alias;
-pub(crate) mod base_token;
+pub(crate) mod amount;
 pub(crate) mod foundry;
 pub(crate) mod issuer;
 pub(crate) mod native_tokens;
@@ -34,8 +34,8 @@ pub enum Requirement {
     Nft(NftId),
     /// Native tokens requirement.
     NativeTokens,
-    /// Base token requirement.
-    BaseToken,
+    /// Amount requirement.
+    Amount,
 }
 
 impl InputSelection {
@@ -54,7 +54,7 @@ impl InputSelection {
             }
             Requirement::Nft(nft_id) => self.fulfill_nft_requirement(nft_id),
             Requirement::NativeTokens => self.fulfill_native_tokens_requirement(),
-            Requirement::BaseToken => self.fulfill_base_token_requirement(),
+            Requirement::Amount => self.fulfill_amount_requirement(),
         }
     }
 }

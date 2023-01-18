@@ -225,9 +225,9 @@ pub enum Error {
     /// No outputs were provided to input selection
     #[error("no outputs provided")]
     NoOutputsProvided,
-    /// Insufficient base token amount provided.
-    #[error("insufficient base token amount: found {found}, required {required}")]
-    InsufficientBaseTokenAmount {
+    /// Insufficient amount provided.
+    #[error("insufficient amount: found {found}, required {required}")]
+    InsufficientAmount {
         /// The amount found.
         found: u64,
         /// The required amount.

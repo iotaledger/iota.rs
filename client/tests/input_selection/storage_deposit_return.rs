@@ -302,7 +302,7 @@ fn insufficient_amount_because_of_sdruc() {
 
     assert!(matches!(
         selected,
-        Err(Error::InsufficientBaseTokenAmount {
+        Err(Error::InsufficientAmount {
             found: 2_000_000,
             required: 3_000_000,
         })

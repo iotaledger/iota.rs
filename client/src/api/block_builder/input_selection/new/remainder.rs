@@ -3,7 +3,7 @@
 
 use super::{
     requirement::{
-        base_token::base_token_sums,
+        amount::amount_sums,
         native_tokens::{get_minted_and_melted_native_tokens, get_native_tokens, get_native_tokens_diff},
     },
     InputSelection, OutputInfo,
@@ -58,8 +58,7 @@ impl InputSelection {
     }
 
     pub(crate) fn remainder_and_storage_deposit_return_outputs(&self) -> Result<Vec<OutputInfo>> {
-        let (inputs_sum, mut outputs_sum, inputs_sdr, outputs_sdr) =
-            base_token_sums(&self.selected_inputs, &self.outputs);
+        let (inputs_sum, mut outputs_sum, inputs_sdr, outputs_sdr) = amount_sums(&self.selected_inputs, &self.outputs);
         let mut new_outputs = Vec::new();
 
         for (address, amount) in inputs_sdr {

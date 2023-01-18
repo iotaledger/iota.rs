@@ -17,7 +17,7 @@ use crate::{
 
 // TODO checked operations ?
 
-pub(crate) fn base_token_sums(
+pub(crate) fn amount_sums(
     selected_inputs: &[InputSigningData],
     outputs: &[OutputInfo],
 ) -> (u64, u64, HashMap<Address, u64>, HashMap<Address, u64>) {
@@ -60,9 +60,9 @@ pub(crate) fn base_token_sums(
 }
 
 impl InputSelection {
-    pub(crate) fn fulfill_base_token_requirement(&mut self) -> Result<(Vec<InputSigningData>, Option<Requirement>)> {
+    pub(crate) fn fulfill_amount_requirement(&mut self) -> Result<(Vec<InputSigningData>, Option<Requirement>)> {
         let (mut inputs_sum, mut outputs_sum, mut inputs_sdr, mut outputs_sdr) =
-            base_token_sums(&self.selected_inputs, &self.outputs);
+            amount_sums(&self.selected_inputs, &self.outputs);
         let mut newly_selected_inputs = Vec::new();
         let mut newly_selected_ids = HashSet::new();
 
@@ -195,8 +195,8 @@ impl InputSelection {
                     self.available_inputs
                         .retain(|input| !newly_selected_ids.contains(input.output_id()));
 
-                    // TODO explanation of BaseToken
-                    return Ok((newly_selected_inputs, Some(Requirement::BaseToken)));
+                    // TODO explanation of Amount
+                    return Ok((newly_selected_inputs, Some(Requirement::Amount)));
                 }
             }
         }
@@ -239,7 +239,7 @@ impl InputSelection {
                     }
                 }
 
-                return Err(Error::InsufficientBaseTokenAmount {
+                return Err(Error::InsufficientAmount {
                     found: inputs_sum,
                     required: outputs_sum,
                 });

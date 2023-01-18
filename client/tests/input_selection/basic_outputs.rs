@@ -46,7 +46,7 @@ fn input_amount_lower_than_output_amount() {
 
     assert!(matches!(
         selected,
-        Err(Error::InsufficientBaseTokenAmount {
+        Err(Error::InsufficientAmount {
             found: 1_000_000,
             required: 2_000_000,
         })
@@ -67,7 +67,7 @@ fn input_amount_lower_than_output_amount_2() {
 
     assert!(matches!(
         selected,
-        Err(Error::InsufficientBaseTokenAmount {
+        Err(Error::InsufficientAmount {
             found: 3_000_000,
             required: 3_500_000,
         })
@@ -611,7 +611,7 @@ fn insufficient_amount() {
 
     assert!(matches!(
         selected,
-        Err(Error::InsufficientBaseTokenAmount {
+        Err(Error::InsufficientAmount {
             found: 1_000_000,
             required: 1_250_000,
         })

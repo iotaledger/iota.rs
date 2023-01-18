@@ -107,8 +107,8 @@ impl InputSelection {
         // let mut selected_inputs = Vec::new();
         let mut requirements = Requirements::new();
 
-        // Adds an initial base token requirement.
-        requirements.push(Requirement::BaseToken);
+        // Adds an initial amount requirement.
+        requirements.push(Requirement::Amount);
         // Adds an initial native tokens requirement.
         requirements.push(Requirement::NativeTokens);
 

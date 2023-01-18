@@ -105,7 +105,7 @@ fn input_amount_lt_output_amount() {
 
     assert!(matches!(
         selected,
-        Err(Error::InsufficientBaseTokenAmount {
+        Err(Error::InsufficientAmount {
             found: 1_000_000,
             // Amount we want to send + storage deposit for nft remainder
             required: 2_229_500,
