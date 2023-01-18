@@ -82,14 +82,10 @@ fn minted_native_tokens_in_new_remainder() {
     let protocol_parameters = protocol_parameters();
     let alias_id_2 = AliasId::from_str(ALIAS_ID_2).unwrap();
 
-    let inputs = build_inputs(vec![Alias(
-        2_251_500,
-        alias_id_2,
-        BECH32_ADDRESS_ED25519_0,
-        None,
-        None,
-        None,
-    )]);
+    let inputs = build_inputs(vec![
+        Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None),
+        Alias(1_000_000, alias_id_2, BECH32_ADDRESS_ED25519_0, None, None, None),
+    ]);
     let outputs = build_outputs(vec![Foundry(
         1_000_000,
         alias_id_2,
@@ -123,8 +119,7 @@ fn melt_native_tokens() {
     let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
 
     let inputs = build_inputs(vec![
-        // TODO
-        // Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None),
+        Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None),
         Alias(1_000_000, alias_id_1, BECH32_ADDRESS_ED25519_0, None, None, None),
         Foundry(
             1_000_000,

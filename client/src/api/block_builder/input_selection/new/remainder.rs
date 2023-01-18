@@ -1,6 +1,8 @@
 // Copyright 2023 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+use iota_types::block::address::Ed25519Address;
+
 use super::{
     requirement::{
         amount::amount_sums,
@@ -57,15 +59,44 @@ impl InputSelection {
         None
     }
 
+    pub(crate) fn remainder_amount(&self) -> Result<u64> {
+        let mut input_native_tokens = get_native_tokens(self.selected_inputs.iter().map(|input| &input.output))?;
+        let mut output_native_tokens = get_native_tokens(self.outputs.iter().map(|output| &output.output))?;
+        let (minted_native_tokens, melted_native_tokens) =
+            get_minted_and_melted_native_tokens(&self.selected_inputs, &self.outputs)?;
+
+        input_native_tokens.merge(minted_native_tokens)?;
+        output_native_tokens.merge(melted_native_tokens)?;
+
+        if let Some(burn) = self.burn.as_ref() {
+            output_native_tokens.merge(NativeTokensBuilder::from(burn.native_tokens.clone()))?;
+        }
+
+        let native_tokens_diff = get_native_tokens_diff(&input_native_tokens, &output_native_tokens)?;
+
+        if let Some(native_tokens) = native_tokens_diff {
+            let amount = BasicOutputBuilder::new_with_minimum_storage_deposit(
+                self.protocol_parameters.rent_structure().clone(),
+            )?
+            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(Address::from(
+                Ed25519Address::from([0; 32]),
+            ))))
+            .with_native_tokens(native_tokens)
+            .finish_output(self.protocol_parameters.token_supply())?
+            .amount();
+
+            Ok(amount)
+        } else {
+            Ok(0)
+        }
+    }
+
     pub(crate) fn remainder_and_storage_deposit_return_outputs(&self) -> Result<Vec<OutputInfo>> {
         let (inputs_sum, outputs_sum, inputs_sdr, outputs_sdr) = amount_sums(&self.selected_inputs, &self.outputs);
-        println!("inputs_sum {inputs_sum} outputs_sum {outputs_sum}");
         let mut new_outputs = Vec::new();
 
         for (address, amount) in inputs_sdr {
             let output_sdr_amount = *outputs_sdr.get(&address).unwrap_or(&0);
-
-            println!("amount {amount} output_sdr_amount {output_sdr_amount}");
 
             if amount > output_sdr_amount {
                 let diff = amount - output_sdr_amount;
@@ -94,8 +125,6 @@ impl InputSelection {
 
         let native_tokens_diff = get_native_tokens_diff(&input_native_tokens, &output_native_tokens)?;
 
-        println!("inputs_sum {inputs_sum} outputs_sum {outputs_sum} native_tokens_diff {native_tokens_diff:?}");
-
         if inputs_sum == outputs_sum && native_tokens_diff.is_none() {
             return Ok(new_outputs);
         }
@@ -116,7 +145,6 @@ impl InputSelection {
 
         let remainder = remainder_builder.finish_output(self.protocol_parameters.token_supply())?;
 
-        // TODO should we always try to select enough inputs so the diff covers the deposit?
         remainder.verify_storage_deposit(
             self.protocol_parameters.rent_structure().clone(),
             self.protocol_parameters.token_supply(),

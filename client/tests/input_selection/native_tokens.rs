@@ -744,22 +744,14 @@ fn insufficient_amount_for_remainder() {
 
     let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
 
-    println!("{selected:?}");
-
     assert!(matches!(
         selected,
-        Err(Error::BlockError(
-            iota_types::block::Error::InsufficientStorageDepositAmount {
-                amount: 0,
-                required: 213000,
-            }
-        ))
+        Err(Error::InsufficientAmount {
+            found: 1_000_000,
+            required: 1_248_000,
+        })
     ));
 }
-
-// T 18
-// outputs: [basic{ amount: 1_000_000, native_tokens: [{'a': 50}] }]
-// expected error: insufficient inputs for remainder native tokens
 
 // T19: :wavy_dash:
 // inputs: [basic{ amount: 1_000_000, native_tokens: [{'a': 100}] }] }]
