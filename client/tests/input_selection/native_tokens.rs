@@ -668,3 +668,113 @@ fn multiple_native_tokens_3() {
         Address::try_from_bech32(BECH32_ADDRESS_ED25519_0).unwrap().1
     );
 }
+
+#[test]
+fn insufficient_native_tokens() {
+    let protocol_parameters = protocol_parameters();
+
+    let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None)]);
+    let outputs = build_outputs(vec![Basic(
+        1_000_000,
+        BECH32_ADDRESS_ED25519_0,
+        Some(vec![(TOKEN_ID_1, 150)]),
+        None,
+        None,
+    )]);
+
+    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
+
+    assert!(matches!(
+        selected,
+        Err(Error::InsufficientNativeTokenAmount {
+            token_id,
+            found,
+            required,
+        }) if token_id == TokenId::from_str(TOKEN_ID_1).unwrap() && found == U256::from(0) && required == U256::from(150)));
+}
+
+#[test]
+fn insufficient_native_tokens_2() {
+    let protocol_parameters = protocol_parameters();
+
+    let inputs = build_inputs(vec![Basic(
+        1_000_000,
+        BECH32_ADDRESS_ED25519_0,
+        Some(vec![(TOKEN_ID_1, 100)]),
+        None,
+        None,
+    )]);
+    let outputs = build_outputs(vec![Basic(
+        1_000_000,
+        BECH32_ADDRESS_ED25519_0,
+        Some(vec![(TOKEN_ID_1, 150)]),
+        None,
+        None,
+    )]);
+
+    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
+
+    assert!(matches!(
+        selected,
+        Err(Error::InsufficientNativeTokenAmount {
+            token_id,
+            found,
+            required,
+        }) if token_id == TokenId::from_str(TOKEN_ID_1).unwrap() && found == U256::from(100) && required == U256::from(150)));
+}
+
+#[test]
+fn insufficient_amount_for_remainder() {
+    let protocol_parameters = protocol_parameters();
+
+    let inputs = build_inputs(vec![Basic(
+        1_000_000,
+        BECH32_ADDRESS_ED25519_0,
+        Some(vec![(TOKEN_ID_1, 100)]),
+        None,
+        None,
+    )]);
+    let outputs = build_outputs(vec![Basic(
+        1_000_000,
+        BECH32_ADDRESS_ED25519_0,
+        Some(vec![(TOKEN_ID_1, 50)]),
+        None,
+        None,
+    )]);
+
+    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
+
+    println!("{selected:?}");
+
+    assert!(matches!(
+        selected,
+        Err(Error::BlockError(
+            iota_types::block::Error::InsufficientStorageDepositAmount {
+                amount: 0,
+                required: 213000,
+            }
+        ))
+    ));
+}
+
+// T 18
+// outputs: [basic{ amount: 1_000_000, native_tokens: [{'a': 50}] }]
+// expected error: insufficient inputs for remainder native tokens
+
+// T19: :wavy_dash:
+// inputs: [basic{ amount: 1_000_000, native_tokens: [{'a': 100}] }] }]
+// outputs: [basic{ amount: 1_000_000, native_tokens: [{'a': 100}] }]
+// expected selected: [basic{ amount: 1_000_000, native_tokens: [{'a': 100}] }]
+// expected remainder: None
+
+// T21: :wavy_dash:
+// inputs: [basic{ amount: 1_000_000, native_tokens: [{'a': 100}] }] }]
+// outputs: [basic{ amount: 500_000, native_tokens: [{'a': 50}] }]
+// expected selected: [basic{ amount: 500_000, native_tokens: [{'a': 50}] }]
+// expected remainder: Some(basic{ amount: 500_000, native_tokens: [{'a': 50}]})
+
+// T22: :wavy_dash:
+// inputs: [basic{ amount: 1_000_000, native_tokens: [{'a': 100}] }] }]
+// outputs: [basic{ amount: 500_000, native_tokens: [{'a': 100}] }]
+// expected selected: [basic{ amount: 1_000_000, native_tokens: [{'a': 100}] }]
+// expected remainder: Some(basic{ amount: 500_000 })

@@ -123,6 +123,8 @@ fn melt_native_tokens() {
     let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
 
     let inputs = build_inputs(vec![
+        // TODO
+        // Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None),
         Alias(1_000_000, alias_id_1, BECH32_ADDRESS_ED25519_0, None, None, None),
         Foundry(
             1_000_000,

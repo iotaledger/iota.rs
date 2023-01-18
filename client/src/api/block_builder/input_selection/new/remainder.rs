@@ -58,11 +58,14 @@ impl InputSelection {
     }
 
     pub(crate) fn remainder_and_storage_deposit_return_outputs(&self) -> Result<Vec<OutputInfo>> {
-        let (inputs_sum, mut outputs_sum, inputs_sdr, outputs_sdr) = amount_sums(&self.selected_inputs, &self.outputs);
+        let (inputs_sum, outputs_sum, inputs_sdr, outputs_sdr) = amount_sums(&self.selected_inputs, &self.outputs);
+        println!("inputs_sum {inputs_sum} outputs_sum {outputs_sum}");
         let mut new_outputs = Vec::new();
 
         for (address, amount) in inputs_sdr {
             let output_sdr_amount = *outputs_sdr.get(&address).unwrap_or(&0);
+
+            println!("amount {amount} output_sdr_amount {output_sdr_amount}");
 
             if amount > output_sdr_amount {
                 let diff = amount - output_sdr_amount;
@@ -74,7 +77,6 @@ impl InputSelection {
                     output: srd_output,
                     provided: false,
                 });
-                outputs_sum += diff;
             }
         }
 
@@ -92,39 +94,38 @@ impl InputSelection {
 
         let native_tokens_diff = get_native_tokens_diff(&input_native_tokens, &output_native_tokens)?;
 
-        if inputs_sum > outputs_sum || native_tokens_diff.is_some() {
-            let Some(remainder_address) = self.get_remainder_address() else {
-            return Err(Error::MissingInputWithEd25519Address);
-        };
+        println!("inputs_sum {inputs_sum} outputs_sum {outputs_sum} native_tokens_diff {native_tokens_diff:?}");
 
-            let mut remainder_builder = if inputs_sum > outputs_sum {
-                // TODO could this also fail if not enough to cover native tokens ?
-                // TODO checked ops
-                BasicOutputBuilder::new_with_amount(inputs_sum - outputs_sum)?
-            } else {
-                BasicOutputBuilder::new_with_minimum_storage_deposit(self.protocol_parameters.rent_structure().clone())?
+        if inputs_sum == outputs_sum && native_tokens_diff.is_none() {
+            return Ok(new_outputs);
+        }
+
+        let Some(remainder_address) = self.get_remainder_address() else {
+                return Err(Error::MissingInputWithEd25519Address);
             };
 
-            remainder_builder = remainder_builder
-                .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(remainder_address)));
+        // TODO checked ops ?
+        let mut remainder_builder = BasicOutputBuilder::new_with_amount(inputs_sum - outputs_sum)?;
 
-            if let Some(native_tokens) = native_tokens_diff {
-                remainder_builder = remainder_builder.with_native_tokens(native_tokens);
-            }
+        remainder_builder = remainder_builder
+            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(remainder_address)));
 
-            let remainder = remainder_builder.finish_output(self.protocol_parameters.token_supply())?;
-
-            // TODO should we always try to select enough inputs so the diff covers the deposit?
-            remainder.verify_storage_deposit(
-                self.protocol_parameters.rent_structure().clone(),
-                self.protocol_parameters.token_supply(),
-            )?;
-
-            new_outputs.push(OutputInfo {
-                output: remainder,
-                provided: false,
-            });
+        if let Some(native_tokens) = native_tokens_diff {
+            remainder_builder = remainder_builder.with_native_tokens(native_tokens);
         }
+
+        let remainder = remainder_builder.finish_output(self.protocol_parameters.token_supply())?;
+
+        // TODO should we always try to select enough inputs so the diff covers the deposit?
+        remainder.verify_storage_deposit(
+            self.protocol_parameters.rent_structure().clone(),
+            self.protocol_parameters.token_supply(),
+        )?;
+
+        new_outputs.push(OutputInfo {
+            output: remainder,
+            provided: false,
+        });
 
         Ok(new_outputs)
     }

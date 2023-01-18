@@ -48,6 +48,7 @@ pub(crate) fn amount_sums(
         }
     }
 
+    // TODO explanation about that
     for (sdr_address, input_sdr_amount) in &inputs_sdr {
         let output_sdr_amount = outputs_sdr.get(sdr_address).unwrap_or(&0);
 
