@@ -60,15 +60,34 @@ pub(crate) fn amount_sums(
     (inputs_sum, outputs_sum, inputs_sdr, outputs_sdr)
 }
 
+fn missing_amount(inputs_sum: u64, outputs_sum: u64, remainder_amount: u64, native_tokens_remainder: bool) -> u64 {
+    // If there is already a remainder, make sure it's enough to cover the storage deposit.
+    if inputs_sum > outputs_sum {
+        let diff = inputs_sum - outputs_sum;
+
+        if remainder_amount > diff {
+            remainder_amount - diff
+        } else {
+            0
+        }
+    } else if inputs_sum < outputs_sum {
+        outputs_sum - inputs_sum
+    } else if native_tokens_remainder {
+        remainder_amount
+    } else {
+        0
+    }
+}
+
 impl InputSelection {
     pub(crate) fn fulfill_amount_requirement(&mut self) -> Result<(Vec<InputSigningData>, Option<Requirement>)> {
         let (mut inputs_sum, mut outputs_sum, mut inputs_sdr, mut outputs_sdr) =
             amount_sums(&self.selected_inputs, &self.outputs);
-        let remainder_amount = self.remainder_amount()?;
+        let (remainder_amount, native_tokens_remainder) = self.remainder_amount()?;
         let mut newly_selected_inputs = Vec::new();
         let mut newly_selected_ids = HashSet::new();
 
-        if inputs_sum >= outputs_sum + remainder_amount {
+        if missing_amount(inputs_sum, outputs_sum, remainder_amount, native_tokens_remainder) == 0 {
             return Ok((newly_selected_inputs, None));
         }
 
@@ -95,7 +114,7 @@ impl InputSelection {
                     newly_selected_inputs.push(input.clone());
                     newly_selected_ids.insert(*input.output_id());
 
-                    if inputs_sum >= outputs_sum + remainder_amount {
+                    if missing_amount(inputs_sum, outputs_sum, remainder_amount, native_tokens_remainder) == 0 {
                         break 'overall;
                     }
                 }
@@ -144,7 +163,7 @@ impl InputSelection {
 
                     *inputs_sdr.entry(*sdruc.return_address()).or_default() += sdruc.amount();
 
-                    if inputs_sum >= outputs_sum + remainder_amount {
+                    if missing_amount(inputs_sum, outputs_sum, remainder_amount, native_tokens_remainder) == 0 {
                         break 'overall;
                     }
                 }
@@ -204,7 +223,7 @@ impl InputSelection {
         }
 
         'ici: {
-            if inputs_sum < outputs_sum + remainder_amount {
+            if missing_amount(inputs_sum, outputs_sum, remainder_amount, native_tokens_remainder) != 0 {
                 // Moving funds of already transitioned other outputs ?
                 let outputs = self
                     .outputs
@@ -212,7 +231,7 @@ impl InputSelection {
                     .filter(|output| !output.output.is_basic() && !output.provided);
 
                 for output in outputs {
-                    let diff = (outputs_sum + remainder_amount) - inputs_sum;
+                    let diff = missing_amount(inputs_sum, outputs_sum, remainder_amount, native_tokens_remainder);
                     let amount = output.output.amount();
                     let rent = output.output.rent_cost(self.protocol_parameters.rent_structure());
 
@@ -236,14 +255,15 @@ impl InputSelection {
                     outputs_sum -= amount - new_amount;
                     output.output = new_output;
 
-                    if inputs_sum >= outputs_sum + remainder_amount {
+                    if missing_amount(inputs_sum, outputs_sum, remainder_amount, native_tokens_remainder) == 0 {
                         break 'ici;
                     }
                 }
 
                 return Err(Error::InsufficientAmount {
                     found: inputs_sum,
-                    required: outputs_sum + remainder_amount,
+                    required: inputs_sum
+                        + missing_amount(inputs_sum, outputs_sum, remainder_amount, native_tokens_remainder),
                 });
             }
         }

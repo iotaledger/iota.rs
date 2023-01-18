@@ -265,12 +265,10 @@ fn not_enough_storage_deposit_for_remainder() {
 
     assert!(matches!(
         selected,
-        Err(Error::BlockError(
-            iota_types::block::Error::InsufficientStorageDepositAmount {
-                amount: 1,
-                required: 213000,
-            }
-        ))
+        Err(Error::InsufficientAmount {
+            found: 1_000_001,
+            required: 1_213_000,
+        })
     ));
 }
 
@@ -300,12 +298,10 @@ fn ed25519_sender() {
 
     // Sender + another for amount
     assert_eq!(selected.inputs.len(), 2);
-    assert!(
-        selected
-            .inputs
-            .iter()
-            .any(|input| *input.output.as_basic().address() == sender)
-    );
+    assert!(selected
+        .inputs
+        .iter()
+        .any(|input| *input.output.as_basic().address() == sender));
     // Provided output + remainder
     assert_eq!(selected.outputs.len(), 2);
 }
@@ -358,12 +354,10 @@ fn alias_sender() {
 
     // Sender + another for amount
     assert_eq!(selected.inputs.len(), 2);
-    assert!(
-        selected
-            .inputs
-            .iter()
-            .any(|input| input.output.is_alias() && *input.output.as_alias().alias_id() == alias_id_1)
-    );
+    assert!(selected
+        .inputs
+        .iter()
+        .any(|input| input.output.is_alias() && *input.output.as_alias().alias_id() == alias_id_1));
     // Provided output + alias
     assert_eq!(selected.outputs.len(), 2);
     assert!(selected.outputs.contains(&outputs[0]));
@@ -393,12 +387,10 @@ fn alias_sender_zero_id() {
 
     assert!(unsorted_eq(&selected.inputs, &inputs));
     assert_eq!(selected.outputs.len(), 2);
-    assert!(
-        selected
-            .outputs
-            .iter()
-            .any(|output| output.is_alias() && *output.as_alias().alias_id() == alias_id)
-    );
+    assert!(selected
+        .outputs
+        .iter()
+        .any(|output| output.is_alias() && *output.as_alias().alias_id() == alias_id));
 }
 
 #[test]
@@ -448,12 +440,10 @@ fn nft_sender() {
 
     // Sender + another for amount
     assert_eq!(selected.inputs.len(), 2);
-    assert!(
-        selected
-            .inputs
-            .iter()
-            .any(|input| input.output.is_nft() && *input.output.as_nft().nft_id() == nft_id_1)
-    );
+    assert!(selected
+        .inputs
+        .iter()
+        .any(|input| input.output.is_nft() && *input.output.as_nft().nft_id() == nft_id_1));
     // Provided output + nft
     assert_eq!(selected.outputs.len(), 2);
     assert!(selected.outputs.contains(&inputs[2].output));
@@ -484,12 +474,10 @@ fn nft_sender_zero_id() {
 
     assert!(unsorted_eq(&selected.inputs, &inputs));
     assert_eq!(selected.outputs.len(), 2);
-    assert!(
-        selected
-            .outputs
-            .iter()
-            .any(|output| output.is_nft() && *output.as_nft().nft_id() == nft_id)
-    );
+    assert!(selected
+        .outputs
+        .iter()
+        .any(|output| output.is_nft() && *output.as_nft().nft_id() == nft_id));
 }
 
 #[test]
@@ -553,12 +541,10 @@ fn remainder_lower_than_rent() {
 
     assert!(matches!(
         selected,
-        Err(Error::BlockError(
-            iota_types::block::Error::InsufficientStorageDepositAmount {
-                amount: 200_000,
-                required: 213_000,
-            }
-        ))
+        Err(Error::InsufficientAmount {
+            found: 1_000_000,
+            required: 1_013_000,
+        })
     ));
 }
 
@@ -576,12 +562,10 @@ fn remainder_lower_than_rent_2() {
 
     assert!(matches!(
         selected,
-        Err(Error::BlockError(
-            iota_types::block::Error::InsufficientStorageDepositAmount {
-                amount: 200_000,
-                required: 213_000,
-            }
-        ))
+        Err(Error::InsufficientAmount {
+            found: 3_000_000,
+            required: 3_013_000,
+        })
     ));
 }
 
@@ -672,6 +656,39 @@ fn two_inputs_remainder_3() {
         if !outputs.contains(output) {
             assert!(output.is_basic());
             assert_eq!(output.amount(), 1_250_000);
+            assert_eq!(output.as_basic().native_tokens().len(), 0);
+            assert_eq!(output.as_basic().unlock_conditions().len(), 1);
+            assert_eq!(output.as_basic().features().len(), 0);
+            assert_eq!(
+                *output.as_basic().address(),
+                Address::try_from_bech32(BECH32_ADDRESS_ED25519_0).unwrap().1
+            );
+        }
+    });
+}
+
+#[test]
+fn another_input_required_to_cover_remainder_rent() {
+    let protocol_parameters = protocol_parameters();
+
+    let inputs = build_inputs(vec![
+        Basic(500_000, BECH32_ADDRESS_ED25519_0, None, None, None),
+        Basic(600_000, BECH32_ADDRESS_ED25519_0, None, None, None),
+        Basic(700_000, BECH32_ADDRESS_ED25519_0, None, None, None),
+    ]);
+    let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None)]);
+
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+        .select()
+        .unwrap();
+
+    assert!(unsorted_eq(&selected.inputs, &inputs));
+    assert_eq!(selected.outputs.len(), 2);
+    assert!(selected.outputs.contains(&outputs[0]));
+    selected.outputs.iter().for_each(|output| {
+        if !outputs.contains(output) {
+            assert!(output.is_basic());
+            assert_eq!(output.amount(), 800_000);
             assert_eq!(output.as_basic().native_tokens().len(), 0);
             assert_eq!(output.as_basic().unlock_conditions().len(), 1);
             assert_eq!(output.as_basic().features().len(), 0);

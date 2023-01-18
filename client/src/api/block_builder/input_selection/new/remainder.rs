@@ -1,8 +1,6 @@
 // Copyright 2023 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use iota_types::block::address::Ed25519Address;
-
 use super::{
     requirement::{
         amount::amount_sums,
@@ -12,7 +10,7 @@ use super::{
 };
 use crate::{
     block::{
-        address::Address,
+        address::{Address, Ed25519Address},
         output::{
             unlock_condition::{AddressUnlockCondition, UnlockCondition},
             BasicOutputBuilder, NativeTokensBuilder,
@@ -59,7 +57,7 @@ impl InputSelection {
         None
     }
 
-    pub(crate) fn remainder_amount(&self) -> Result<u64> {
+    pub(crate) fn remainder_amount(&self) -> Result<(u64, bool)> {
         let mut input_native_tokens = get_native_tokens(self.selected_inputs.iter().map(|input| &input.output))?;
         let mut output_native_tokens = get_native_tokens(self.outputs.iter().map(|output| &output.output))?;
         let (minted_native_tokens, melted_native_tokens) =
@@ -73,22 +71,24 @@ impl InputSelection {
         }
 
         let native_tokens_diff = get_native_tokens_diff(&input_native_tokens, &output_native_tokens)?;
+        let native_tokens_remainder = native_tokens_diff.is_some();
+
+        let mut remainder_builder =
+            BasicOutputBuilder::new_with_minimum_storage_deposit(self.protocol_parameters.rent_structure().clone())?
+                .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(Address::from(
+                    Ed25519Address::from([0; 32]),
+                ))));
 
         if let Some(native_tokens) = native_tokens_diff {
-            let amount = BasicOutputBuilder::new_with_minimum_storage_deposit(
-                self.protocol_parameters.rent_structure().clone(),
-            )?
-            .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(Address::from(
-                Ed25519Address::from([0; 32]),
-            ))))
-            .with_native_tokens(native_tokens)
-            .finish_output(self.protocol_parameters.token_supply())?
-            .amount();
-
-            Ok(amount)
-        } else {
-            Ok(0)
+            remainder_builder = remainder_builder.with_native_tokens(native_tokens);
         }
+
+        Ok((
+            remainder_builder
+                .finish_output(self.protocol_parameters.token_supply())?
+                .amount(),
+            native_tokens_remainder,
+        ))
     }
 
     pub(crate) fn remainder_and_storage_deposit_return_outputs(&self) -> Result<Vec<OutputInfo>> {

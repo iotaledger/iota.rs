@@ -224,12 +224,10 @@ fn not_enough_storage_deposit_for_remainder() {
 
     assert!(matches!(
         selected,
-        Err(Error::BlockError(
-            iota_types::block::Error::InsufficientStorageDepositAmount {
-                amount: 1,
-                required: 213000,
-            }
-        ))
+        Err(Error::InsufficientAmount {
+            found: 1_000_001,
+            required: 1_213_000,
+        })
     ));
 }
 
