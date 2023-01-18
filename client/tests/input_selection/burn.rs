@@ -15,7 +15,7 @@ use iota_client::{
 use primitive_types::U256;
 
 use crate::input_selection::{
-    build_inputs, build_outputs,
+    build_inputs, build_outputs, is_remainder_or_return,
     Build::{Alias, Basic, Foundry, Nft},
     ALIAS_ID_0, ALIAS_ID_1, BECH32_ADDRESS_ED25519_0, NFT_ID_0, NFT_ID_1,
 };
@@ -172,14 +172,12 @@ fn burn_foundry_present() {
     selected.outputs.iter().for_each(|output| {
         if !outputs.contains(output) {
             if output.is_basic() {
-                assert_eq!(output.amount(), 1_500_000);
-                assert_eq!(output.as_basic().native_tokens().len(), 0);
-                assert_eq!(output.as_basic().unlock_conditions().len(), 1);
-                assert_eq!(output.as_basic().features().len(), 0);
-                assert_eq!(
-                    *output.as_basic().address(),
-                    Address::try_from_bech32(BECH32_ADDRESS_ED25519_0).unwrap().1
-                );
+                assert!(is_remainder_or_return(
+                    output,
+                    1_500_000,
+                    BECH32_ADDRESS_ED25519_0,
+                    None,
+                ));
             } else if output.is_alias() {
                 assert_eq!(output.amount(), 1_000_000);
                 assert_eq!(output.as_alias().native_tokens().len(), 0);

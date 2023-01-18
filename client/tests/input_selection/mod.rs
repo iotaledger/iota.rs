@@ -23,7 +23,7 @@ use iota_client::{
                 AddressUnlockCondition, GovernorAddressUnlockCondition, ImmutableAliasAddressUnlockCondition,
                 StateControllerAddressUnlockCondition, StorageDepositReturnUnlockCondition, UnlockCondition,
             },
-            AliasId, AliasOutputBuilder, BasicOutputBuilder, FoundryOutputBuilder, NativeToken, NftId,
+            AliasId, AliasOutputBuilder, BasicOutputBuilder, FoundryOutputBuilder, NativeToken, NativeTokens, NftId,
             NftOutputBuilder, Output, OutputId, SimpleTokenScheme, TokenId, TokenScheme,
         },
         rand::{block::rand_block_id, transaction::rand_transaction_id},
@@ -314,4 +314,53 @@ where
     }
 
     count(a) == count(b)
+}
+
+fn is_remainder_or_return(
+    output: &Output,
+    amount: u64,
+    address: &str,
+    native_tokens: Option<Vec<(&str, u64)>>,
+) -> bool {
+    if let Output::Basic(output) = output {
+        if output.amount() != amount {
+            return false;
+        }
+
+        // assert_eq!(output.as_basic().native_tokens().len(), 0);
+
+        if let [UnlockCondition::Address(address_unlock_condition)] = output.unlock_conditions().as_ref() {
+            if *address_unlock_condition.address() != Address::try_from_bech32(address).unwrap().1 {
+                return false;
+            }
+        } else {
+            return false;
+        }
+
+        if output.features().len() != 0 {
+            return false;
+        }
+
+        if let Some(native_tokens) = native_tokens {
+            let native_tokens = NativeTokens::new(
+                native_tokens
+                    .into_iter()
+                    .map(|(token_id, amount)| {
+                        NativeToken::new(TokenId::from_str(token_id).unwrap(), U256::from(amount)).unwrap()
+                    })
+                    .collect::<Vec<_>>(),
+            )
+            .unwrap();
+
+            if output.native_tokens() != &native_tokens {
+                return false;
+            }
+        } else if output.native_tokens().len() != 0 {
+            return false;
+        }
+
+        true
+    } else {
+        false
+    }
 }

@@ -14,7 +14,7 @@ use iota_client::{
 };
 
 use crate::input_selection::{
-    build_inputs, build_outputs, unsorted_eq,
+    build_inputs, build_outputs, is_remainder_or_return, unsorted_eq,
     Build::{Alias, Basic, Nft},
     ALIAS_ID_0, ALIAS_ID_1, BECH32_ADDRESS_ALIAS, BECH32_ADDRESS_ED25519_0, BECH32_ADDRESS_ED25519_1,
     BECH32_ADDRESS_NFT, BECH32_ADDRESS_REMAINDER, NFT_ID_0, NFT_ID_1,
@@ -91,15 +91,12 @@ fn input_amount_greater_than_output_amount() {
     assert!(selected.outputs.contains(&outputs[0]));
     selected.outputs.iter().for_each(|output| {
         if !outputs.contains(output) {
-            assert!(output.is_basic());
-            assert_eq!(output.amount(), 1_500_000);
-            assert_eq!(output.as_basic().native_tokens().len(), 0);
-            assert_eq!(output.as_basic().unlock_conditions().len(), 1);
-            assert_eq!(output.as_basic().features().len(), 0);
-            assert_eq!(
-                *output.as_basic().address(),
-                Address::try_from_bech32(BECH32_ADDRESS_ED25519_0).unwrap().1
-            );
+            assert!(is_remainder_or_return(
+                output,
+                1_500_000,
+                BECH32_ADDRESS_ED25519_0,
+                None,
+            ));
         }
     });
 }
@@ -123,12 +120,12 @@ fn input_amount_greater_than_output_amount_with_remainder_address() {
     assert!(selected.outputs.contains(&outputs[0]));
     selected.outputs.iter().for_each(|output| {
         if !outputs.contains(output) {
-            assert!(output.is_basic());
-            assert_eq!(output.amount(), 1_500_000);
-            assert_eq!(output.as_basic().native_tokens().len(), 0);
-            assert_eq!(output.as_basic().unlock_conditions().len(), 1);
-            assert_eq!(output.as_basic().features().len(), 0);
-            assert_eq!(*output.as_basic().address(), remainder_address);
+            assert!(is_remainder_or_return(
+                output,
+                1_500_000,
+                BECH32_ADDRESS_REMAINDER,
+                None,
+            ));
         }
     });
 }
@@ -154,15 +151,12 @@ fn two_same_inputs_one_needed() {
     assert!(selected.outputs.contains(&outputs[0]));
     selected.outputs.iter().for_each(|output| {
         if !outputs.contains(output) {
-            assert!(output.is_basic());
-            assert_eq!(output.amount(), 1_500_000);
-            assert_eq!(output.as_basic().native_tokens().len(), 0);
-            assert_eq!(output.as_basic().unlock_conditions().len(), 1);
-            assert_eq!(output.as_basic().features().len(), 0);
-            assert_eq!(
-                *output.as_basic().address(),
-                Address::try_from_bech32(BECH32_ADDRESS_ED25519_0).unwrap().1
-            );
+            assert!(is_remainder_or_return(
+                output,
+                1_500_000,
+                BECH32_ADDRESS_ED25519_0,
+                None,
+            ));
         }
     });
 }
@@ -241,15 +235,7 @@ fn two_inputs_remainder() {
     assert!(selected.outputs.contains(&outputs[0]));
     selected.outputs.iter().for_each(|output| {
         if !outputs.contains(output) {
-            assert!(output.is_basic());
-            assert_eq!(output.amount(), 500_000);
-            assert_eq!(output.as_basic().native_tokens().len(), 0);
-            assert_eq!(output.as_basic().unlock_conditions().len(), 1);
-            assert_eq!(output.as_basic().features().len(), 0);
-            assert_eq!(
-                *output.as_basic().address(),
-                Address::try_from_bech32(BECH32_ADDRESS_ED25519_0).unwrap().1
-            );
+            assert!(is_remainder_or_return(output, 500_000, BECH32_ADDRESS_ED25519_0, None));
         }
     });
 }
@@ -527,15 +513,7 @@ fn simple_remainder() {
     assert!(selected.outputs.contains(&outputs[0]));
     selected.outputs.iter().for_each(|output| {
         if !outputs.contains(output) {
-            assert!(output.is_basic());
-            assert_eq!(output.amount(), 500_000);
-            assert_eq!(output.as_basic().native_tokens().len(), 0);
-            assert_eq!(output.as_basic().unlock_conditions().len(), 1);
-            assert_eq!(output.as_basic().features().len(), 0);
-            assert_eq!(
-                *output.as_basic().address(),
-                Address::try_from_bech32(BECH32_ADDRESS_ED25519_0).unwrap().1
-            );
+            assert!(is_remainder_or_return(output, 500_000, BECH32_ADDRESS_ED25519_0, None));
         }
     });
 }
@@ -632,15 +610,7 @@ fn two_inputs_remainder_2() {
     assert!(selected.outputs.contains(&outputs[0]));
     selected.outputs.iter().for_each(|output| {
         if !outputs.contains(output) {
-            assert!(output.is_basic());
-            assert_eq!(output.amount(), 500_000);
-            assert_eq!(output.as_basic().native_tokens().len(), 0);
-            assert_eq!(output.as_basic().unlock_conditions().len(), 1);
-            assert_eq!(output.as_basic().features().len(), 0);
-            assert_eq!(
-                *output.as_basic().address(),
-                Address::try_from_bech32(BECH32_ADDRESS_ED25519_0).unwrap().1
-            );
+            assert!(is_remainder_or_return(output, 500_000, BECH32_ADDRESS_ED25519_0, None));
         }
     });
 }
@@ -664,15 +634,12 @@ fn two_inputs_remainder_3() {
     assert!(selected.outputs.contains(&outputs[0]));
     selected.outputs.iter().for_each(|output| {
         if !outputs.contains(output) {
-            assert!(output.is_basic());
-            assert_eq!(output.amount(), 1_250_000);
-            assert_eq!(output.as_basic().native_tokens().len(), 0);
-            assert_eq!(output.as_basic().unlock_conditions().len(), 1);
-            assert_eq!(output.as_basic().features().len(), 0);
-            assert_eq!(
-                *output.as_basic().address(),
-                Address::try_from_bech32(BECH32_ADDRESS_ED25519_0).unwrap().1
-            );
+            assert!(is_remainder_or_return(
+                output,
+                1_250_000,
+                BECH32_ADDRESS_ED25519_0,
+                None
+            ));
         }
     });
 }
@@ -697,15 +664,7 @@ fn another_input_required_to_cover_remainder_rent() {
     assert!(selected.outputs.contains(&outputs[0]));
     selected.outputs.iter().for_each(|output| {
         if !outputs.contains(output) {
-            assert!(output.is_basic());
-            assert_eq!(output.amount(), 800_000);
-            assert_eq!(output.as_basic().native_tokens().len(), 0);
-            assert_eq!(output.as_basic().unlock_conditions().len(), 1);
-            assert_eq!(output.as_basic().features().len(), 0);
-            assert_eq!(
-                *output.as_basic().address(),
-                Address::try_from_bech32(BECH32_ADDRESS_ED25519_0).unwrap().1
-            );
+            assert!(is_remainder_or_return(output, 800_000, BECH32_ADDRESS_ED25519_0, None));
         }
     });
 }

@@ -5,13 +5,14 @@ use std::str::FromStr;
 
 use iota_client::{
     api::input_selection::new::{Burn, InputSelection},
-    block::{address::Address, output::TokenId, protocol::protocol_parameters},
+    block::{output::TokenId, protocol::protocol_parameters},
     Error,
 };
 use primitive_types::U256;
 
 use crate::input_selection::{
-    build_inputs, build_outputs, unsorted_eq, Build::Basic, BECH32_ADDRESS_ED25519_0, TOKEN_ID_1, TOKEN_ID_2,
+    build_inputs, build_outputs, is_remainder_or_return, unsorted_eq, Build::Basic, BECH32_ADDRESS_ED25519_0,
+    TOKEN_ID_1, TOKEN_ID_2,
 };
 
 #[test]
@@ -51,33 +52,12 @@ fn two_native_tokens_one_needed() {
     assert!(selected.outputs.contains(&outputs[0]));
     selected.outputs.iter().for_each(|output| {
         if !outputs.contains(output) {
-            assert!(output.is_basic());
-            assert_eq!(output.amount(), 1_000_000);
-            assert_eq!(output.as_basic().native_tokens().len(), 2);
-            assert_eq!(
-                output
-                    .as_basic()
-                    .native_tokens()
-                    .get(&TokenId::from_str(TOKEN_ID_1).unwrap())
-                    .unwrap()
-                    .amount(),
-                U256::from(50),
-            );
-            assert_eq!(
-                output
-                    .as_basic()
-                    .native_tokens()
-                    .get(&TokenId::from_str(TOKEN_ID_2).unwrap())
-                    .unwrap()
-                    .amount(),
-                U256::from(100),
-            );
-            assert_eq!(output.as_basic().unlock_conditions().len(), 1);
-            assert_eq!(output.as_basic().features().len(), 0);
-            assert_eq!(
-                *output.as_basic().address(),
-                Address::try_from_bech32(BECH32_ADDRESS_ED25519_0).unwrap().1
-            );
+            assert!(is_remainder_or_return(
+                output,
+                1_000_000,
+                BECH32_ADDRESS_ED25519_0,
+                Some(vec![(TOKEN_ID_1, 50), (TOKEN_ID_2, 100)])
+            ));
         }
     });
 }
@@ -119,24 +99,12 @@ fn two_native_tokens_both_needed_plus_remainder() {
     assert!(selected.outputs.contains(&outputs[0]));
     selected.outputs.iter().for_each(|output| {
         if !outputs.contains(output) {
-            assert!(output.is_basic());
-            assert_eq!(output.amount(), 1_000_000);
-            assert_eq!(output.as_basic().native_tokens().len(), 1);
-            assert_eq!(
-                output
-                    .as_basic()
-                    .native_tokens()
-                    .get(&TokenId::from_str(TOKEN_ID_1).unwrap())
-                    .unwrap()
-                    .amount(),
-                U256::from(50),
-            );
-            assert_eq!(output.as_basic().unlock_conditions().len(), 1);
-            assert_eq!(output.as_basic().features().len(), 0);
-            assert_eq!(
-                *output.as_basic().address(),
-                Address::try_from_bech32(BECH32_ADDRESS_ED25519_0).unwrap().1
-            );
+            assert!(is_remainder_or_return(
+                output,
+                1_000_000,
+                BECH32_ADDRESS_ED25519_0,
+                Some(vec![(TOKEN_ID_1, 50)])
+            ));
         }
     });
 }
@@ -185,24 +153,12 @@ fn three_inputs_two_needed_plus_remainder() {
     assert!(selected.outputs.contains(&outputs[0]));
     selected.outputs.iter().for_each(|output| {
         if !outputs.contains(output) {
-            assert!(output.is_basic());
-            assert_eq!(output.amount(), 1_000_000);
-            assert_eq!(output.as_basic().native_tokens().len(), 1);
-            assert_eq!(
-                output
-                    .as_basic()
-                    .native_tokens()
-                    .get(&TokenId::from_str(TOKEN_ID_1).unwrap())
-                    .unwrap()
-                    .amount(),
-                U256::from(80),
-            );
-            assert_eq!(output.as_basic().unlock_conditions().len(), 1);
-            assert_eq!(output.as_basic().features().len(), 0);
-            assert_eq!(
-                *output.as_basic().address(),
-                Address::try_from_bech32(BECH32_ADDRESS_ED25519_0).unwrap().1
-            );
+            assert!(is_remainder_or_return(
+                output,
+                1_000_000,
+                BECH32_ADDRESS_ED25519_0,
+                Some(vec![(TOKEN_ID_1, 80)])
+            ));
         }
     });
 }
@@ -355,24 +311,12 @@ fn burn_and_send_at_the_same_time() {
     assert!(selected.outputs.contains(&outputs[0]));
     selected.outputs.iter().for_each(|output| {
         if !outputs.contains(output) {
-            assert!(output.is_basic());
-            assert_eq!(output.amount(), 1_000_000);
-            assert_eq!(output.as_basic().native_tokens().len(), 1);
-            assert_eq!(
-                output
-                    .as_basic()
-                    .native_tokens()
-                    .get(&TokenId::from_str(TOKEN_ID_1).unwrap())
-                    .unwrap()
-                    .amount(),
-                U256::from(40),
-            );
-            assert_eq!(output.as_basic().unlock_conditions().len(), 1);
-            assert_eq!(output.as_basic().features().len(), 0);
-            assert_eq!(
-                *output.as_basic().address(),
-                Address::try_from_bech32(BECH32_ADDRESS_ED25519_0).unwrap().1
-            );
+            assert!(is_remainder_or_return(
+                output,
+                1_000_000,
+                BECH32_ADDRESS_ED25519_0,
+                Some(vec![(TOKEN_ID_1, 40)])
+            ));
         }
     });
 }
@@ -396,24 +340,12 @@ fn burn_one_input_no_output() {
 
     assert!(unsorted_eq(&selected.inputs, &inputs));
     assert_eq!(selected.outputs.len(), 1);
-    assert!(selected.outputs[0].is_basic());
-    assert_eq!(selected.outputs[0].amount(), 1_000_000);
-    assert_eq!(selected.outputs[0].as_basic().native_tokens().len(), 1);
-    assert_eq!(
-        selected.outputs[0]
-            .as_basic()
-            .native_tokens()
-            .get(&TokenId::from_str(TOKEN_ID_1).unwrap())
-            .unwrap()
-            .amount(),
-        U256::from(50),
-    );
-    assert_eq!(selected.outputs[0].as_basic().unlock_conditions().len(), 1);
-    assert_eq!(selected.outputs[0].as_basic().features().len(), 0);
-    assert_eq!(
-        *selected.outputs[0].as_basic().address(),
-        Address::try_from_bech32(BECH32_ADDRESS_ED25519_0).unwrap().1
-    );
+    assert!(is_remainder_or_return(
+        &selected.outputs[0],
+        1_000_000,
+        BECH32_ADDRESS_ED25519_0,
+        Some(vec![(TOKEN_ID_1, 50)])
+    ));
 }
 
 #[test]
@@ -445,24 +377,12 @@ fn burn_two_inputs_no_output() {
     assert_eq!(selected.inputs.len(), 1);
     assert!(selected.inputs.contains(&inputs[0]));
     assert_eq!(selected.outputs.len(), 1);
-    assert!(selected.outputs[0].is_basic());
-    assert_eq!(selected.outputs[0].amount(), 1_000_000);
-    assert_eq!(selected.outputs[0].as_basic().native_tokens().len(), 1);
-    assert_eq!(
-        selected.outputs[0]
-            .as_basic()
-            .native_tokens()
-            .get(&TokenId::from_str(TOKEN_ID_1).unwrap())
-            .unwrap()
-            .amount(),
-        U256::from(50),
-    );
-    assert_eq!(selected.outputs[0].as_basic().unlock_conditions().len(), 1);
-    assert_eq!(selected.outputs[0].as_basic().features().len(), 0);
-    assert_eq!(
-        *selected.outputs[0].as_basic().address(),
-        Address::try_from_bech32(BECH32_ADDRESS_ED25519_0).unwrap().1
-    );
+    assert!(is_remainder_or_return(
+        &selected.outputs[0],
+        1_000_000,
+        BECH32_ADDRESS_ED25519_0,
+        Some(vec![(TOKEN_ID_1, 50)])
+    ));
 }
 
 #[test]
@@ -484,33 +404,12 @@ fn burn_one_input_two_tokens_no_output() {
 
     assert!(unsorted_eq(&selected.inputs, &inputs));
     assert_eq!(selected.outputs.len(), 1);
-    assert!(selected.outputs[0].is_basic());
-    assert_eq!(selected.outputs[0].amount(), 1_000_000);
-    assert_eq!(selected.outputs[0].as_basic().native_tokens().len(), 2);
-    assert_eq!(
-        selected.outputs[0]
-            .as_basic()
-            .native_tokens()
-            .get(&TokenId::from_str(TOKEN_ID_1).unwrap())
-            .unwrap()
-            .amount(),
-        U256::from(50),
-    );
-    assert_eq!(
-        selected.outputs[0]
-            .as_basic()
-            .native_tokens()
-            .get(&TokenId::from_str(TOKEN_ID_2).unwrap())
-            .unwrap()
-            .amount(),
-        U256::from(100),
-    );
-    assert_eq!(selected.outputs[0].as_basic().unlock_conditions().len(), 1);
-    assert_eq!(selected.outputs[0].as_basic().features().len(), 0);
-    assert_eq!(
-        *selected.outputs[0].as_basic().address(),
-        Address::try_from_bech32(BECH32_ADDRESS_ED25519_0).unwrap().1
-    );
+    assert!(is_remainder_or_return(
+        &selected.outputs[0],
+        1_000_000,
+        BECH32_ADDRESS_ED25519_0,
+        Some(vec![(TOKEN_ID_1, 50), (TOKEN_ID_2, 100)])
+    ));
 }
 
 #[test]
@@ -585,33 +484,12 @@ fn multiple_native_tokens_2() {
     assert!(unsorted_eq(&selected.inputs, &inputs));
     assert_eq!(selected.outputs.len(), 2);
     assert!(selected.outputs.contains(&outputs[0]));
-    assert!(selected.outputs[1].is_basic());
-    assert_eq!(selected.outputs[1].amount(), 1_000_000);
-    assert_eq!(selected.outputs[1].as_basic().native_tokens().len(), 2);
-    assert_eq!(
-        selected.outputs[1]
-            .as_basic()
-            .native_tokens()
-            .get(&TokenId::from_str(TOKEN_ID_1).unwrap())
-            .unwrap()
-            .amount(),
-        U256::from(50),
-    );
-    assert_eq!(
-        selected.outputs[1]
-            .as_basic()
-            .native_tokens()
-            .get(&TokenId::from_str(TOKEN_ID_2).unwrap())
-            .unwrap()
-            .amount(),
-        U256::from(100),
-    );
-    assert_eq!(selected.outputs[1].as_basic().unlock_conditions().len(), 1);
-    assert_eq!(selected.outputs[1].as_basic().features().len(), 0);
-    assert_eq!(
-        *selected.outputs[1].as_basic().address(),
-        Address::try_from_bech32(BECH32_ADDRESS_ED25519_0).unwrap().1
-    );
+    assert!(is_remainder_or_return(
+        &selected.outputs[1],
+        1_000_000,
+        BECH32_ADDRESS_ED25519_0,
+        Some(vec![(TOKEN_ID_1, 50), (TOKEN_ID_2, 100)])
+    ));
 }
 
 #[test]
@@ -649,24 +527,12 @@ fn multiple_native_tokens_3() {
     assert!(unsorted_eq(&selected.inputs, &inputs));
     assert_eq!(selected.outputs.len(), 2);
     assert!(selected.outputs.contains(&outputs[0]));
-    assert!(selected.outputs[1].is_basic());
-    assert_eq!(selected.outputs[1].amount(), 1_000_000);
-    assert_eq!(selected.outputs[1].as_basic().native_tokens().len(), 1);
-    assert_eq!(
-        selected.outputs[1]
-            .as_basic()
-            .native_tokens()
-            .get(&TokenId::from_str(TOKEN_ID_2).unwrap())
-            .unwrap()
-            .amount(),
-        U256::from(100),
-    );
-    assert_eq!(selected.outputs[1].as_basic().unlock_conditions().len(), 1);
-    assert_eq!(selected.outputs[1].as_basic().features().len(), 0);
-    assert_eq!(
-        *selected.outputs[1].as_basic().address(),
-        Address::try_from_bech32(BECH32_ADDRESS_ED25519_0).unwrap().1
-    );
+    assert!(is_remainder_or_return(
+        &selected.outputs[1],
+        1_000_000,
+        BECH32_ADDRESS_ED25519_0,
+        Some(vec![(TOKEN_ID_2, 100)])
+    ));
 }
 
 #[test]
@@ -806,24 +672,12 @@ fn single_output_native_token_remainder_1() {
     assert!(unsorted_eq(&selected.inputs, &inputs));
     assert_eq!(selected.outputs.len(), 2);
     assert!(selected.outputs.contains(&outputs[0]));
-    assert!(selected.outputs[1].is_basic());
-    assert_eq!(selected.outputs[1].amount(), 500_000);
-    assert_eq!(selected.outputs[1].as_basic().native_tokens().len(), 1);
-    assert_eq!(
-        selected.outputs[1]
-            .as_basic()
-            .native_tokens()
-            .get(&TokenId::from_str(TOKEN_ID_1).unwrap())
-            .unwrap()
-            .amount(),
-        U256::from(50),
-    );
-    assert_eq!(selected.outputs[1].as_basic().unlock_conditions().len(), 1);
-    assert_eq!(selected.outputs[1].as_basic().features().len(), 0);
-    assert_eq!(
-        *selected.outputs[1].as_basic().address(),
-        Address::try_from_bech32(BECH32_ADDRESS_ED25519_0).unwrap().1
-    );
+    assert!(is_remainder_or_return(
+        &selected.outputs[0],
+        500_000,
+        BECH32_ADDRESS_ED25519_0,
+        Some(vec![(TOKEN_ID_1, 50)])
+    ));
 }
 
 #[test]
@@ -852,13 +706,10 @@ fn single_output_native_token_remainder_2() {
     assert!(unsorted_eq(&selected.inputs, &inputs));
     assert_eq!(selected.outputs.len(), 2);
     assert!(selected.outputs.contains(&outputs[0]));
-    assert!(selected.outputs[1].is_basic());
-    assert_eq!(selected.outputs[1].amount(), 500_000);
-    assert_eq!(selected.outputs[1].as_basic().native_tokens().len(), 0);
-    assert_eq!(selected.outputs[1].as_basic().unlock_conditions().len(), 1);
-    assert_eq!(selected.outputs[1].as_basic().features().len(), 0);
-    assert_eq!(
-        *selected.outputs[1].as_basic().address(),
-        Address::try_from_bech32(BECH32_ADDRESS_ED25519_0).unwrap().1
-    );
+    assert!(is_remainder_or_return(
+        &selected.outputs[1],
+        500_000,
+        BECH32_ADDRESS_ED25519_0,
+        None
+    ));
 }

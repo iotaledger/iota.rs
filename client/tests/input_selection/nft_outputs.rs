@@ -14,7 +14,7 @@ use iota_client::{
 };
 
 use crate::input_selection::{
-    build_inputs, build_outputs, unsorted_eq,
+    build_inputs, build_outputs, is_remainder_or_return, unsorted_eq,
     Build::{Basic, Nft},
     BECH32_ADDRESS_ALIAS, BECH32_ADDRESS_ED25519_0, BECH32_ADDRESS_ED25519_1, BECH32_ADDRESS_NFT, NFT_ID_0, NFT_ID_1,
     NFT_ID_2,
@@ -623,15 +623,12 @@ fn decrease_nft_amount() {
     assert!(selected.outputs.contains(&outputs[0]));
     selected.outputs.iter().for_each(|output| {
         if !outputs.contains(output) {
-            assert!(output.is_basic());
-            assert_eq!(output.amount(), 1_000_000);
-            assert_eq!(output.as_basic().native_tokens().len(), 0);
-            assert_eq!(output.as_basic().unlock_conditions().len(), 1);
-            assert_eq!(output.as_basic().features().len(), 0);
-            assert_eq!(
-                *output.as_basic().address(),
-                Address::try_from_bech32(BECH32_ADDRESS_ED25519_0).unwrap().1
-            );
+            assert!(is_remainder_or_return(
+                output,
+                1_000_000,
+                BECH32_ADDRESS_ED25519_0,
+                None
+            ));
         }
     });
 }

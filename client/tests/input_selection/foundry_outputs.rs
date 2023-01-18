@@ -15,7 +15,7 @@ use iota_client::{
 use primitive_types::U256;
 
 use crate::input_selection::{
-    build_inputs, build_outputs, unsorted_eq,
+    build_inputs, build_outputs, is_remainder_or_return, unsorted_eq,
     Build::{Alias, Basic, Foundry},
     ALIAS_ID_1, ALIAS_ID_2, BECH32_ADDRESS_ED25519_0, TOKEN_SUPPLY,
 };
@@ -375,14 +375,12 @@ fn simple_foundry_transition_basic_not_needed_with_remainder() {
                     Address::try_from_bech32(BECH32_ADDRESS_ED25519_0).unwrap().1
                 );
             } else if output.is_basic() {
-                assert_eq!(output.amount(), 1_000_000);
-                assert_eq!(output.as_basic().native_tokens().len(), 0);
-                assert_eq!(output.as_basic().unlock_conditions().len(), 1);
-                assert_eq!(output.as_basic().features().len(), 0);
-                assert_eq!(
-                    *output.as_basic().address(),
-                    Address::try_from_bech32(BECH32_ADDRESS_ED25519_0).unwrap().1
-                );
+                assert!(is_remainder_or_return(
+                    output,
+                    1_000_000,
+                    BECH32_ADDRESS_ED25519_0,
+                    None,
+                ));
             } else {
                 panic!("unexpected output type")
             }

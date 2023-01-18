@@ -5,12 +5,12 @@ use std::str::FromStr;
 
 use iota_client::{
     api::input_selection::new::{Burn, InputSelection},
-    block::{address::Address, output::AliasId, protocol::protocol_parameters},
+    block::{output::AliasId, protocol::protocol_parameters},
     Error,
 };
 
 use crate::input_selection::{
-    build_inputs, build_outputs,
+    build_inputs, build_outputs, is_remainder_or_return,
     Build::{Alias, Basic},
     ALIAS_ID_2, BECH32_ADDRESS_ED25519_0,
 };
@@ -61,13 +61,10 @@ fn no_outputs_but_burn() {
 
     assert_eq!(selected.inputs, inputs);
     assert_eq!(selected.outputs.len(), 1);
-    assert!(selected.outputs[0].is_basic());
-    assert_eq!(selected.outputs[0].amount(), 2_000_000);
-    assert_eq!(selected.outputs[0].as_basic().native_tokens().len(), 0);
-    assert_eq!(selected.outputs[0].as_basic().unlock_conditions().len(), 1);
-    assert_eq!(selected.outputs[0].as_basic().features().len(), 0);
-    assert_eq!(
-        *selected.outputs[0].as_basic().address(),
-        Address::try_from_bech32(BECH32_ADDRESS_ED25519_0).unwrap().1
-    );
+    assert!(is_remainder_or_return(
+        &selected.outputs[0],
+        2_000_000,
+        BECH32_ADDRESS_ED25519_0,
+        None
+    ));
 }
