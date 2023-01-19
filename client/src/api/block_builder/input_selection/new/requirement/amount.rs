@@ -8,7 +8,7 @@ use crate::{
     block::{
         address::Address,
         output::{
-            unlock_condition::UnlockCondition, AliasOutputBuilder, FoundryOutputBuilder, NftOutputBuilder, Output, Rent,
+            AliasOutputBuilder, FoundryOutputBuilder, NftOutputBuilder, Output, Rent, UnlockCondition, UnlockConditions,
         },
     },
     error::{Error, Result},
@@ -32,7 +32,7 @@ pub(crate) fn amount_sums(
         if let Some(sdruc) = selected_input
             .output
             .unlock_conditions()
-            .and_then(|unlock_condition| unlock_condition.storage_deposit_return())
+            .and_then(UnlockConditions::storage_deposit_return)
         {
             *inputs_sdr.entry(*sdruc.return_address()).or_default() += sdruc.amount();
         }
@@ -144,7 +144,7 @@ impl InputSelection {
                     let sdruc = input
                         .output
                         .unlock_conditions()
-                        .and_then(|unlock_conditions| unlock_conditions.storage_deposit_return())
+                        .and_then(UnlockConditions::storage_deposit_return)
                         // PANIC: safe to unwrap as the filter guarantees outputs with SDRUC only.
                         .unwrap();
 

@@ -13,7 +13,7 @@ use super::{Burn, InputSelection, OutputInfo};
 use crate::{
     block::{
         address::Address,
-        output::{AliasId, FoundryId, NftId, Output},
+        output::{AliasId, Features, FoundryId, NftId, Output},
     },
     error::Result,
     secret::types::InputSigningData,
@@ -136,17 +136,13 @@ impl Requirements {
             };
 
             // Add a sender requirement if the sender feature is present.
-            if let Some(sender) = output.output.features().and_then(|features| features.sender()) {
+            if let Some(sender) = output.output.features().and_then(Features::sender) {
                 requirements.push(Requirement::Sender(*sender.address()));
             }
 
             // Add an issuer requirement if the issuer feature is present and the chain output is created.
             if is_created {
-                if let Some(issuer) = output
-                    .output
-                    .immutable_features()
-                    .and_then(|features| features.issuer())
-                {
+                if let Some(issuer) = output.output.immutable_features().and_then(Features::issuer) {
                     requirements.push(Requirement::Issuer(*issuer.address()));
                 }
             }

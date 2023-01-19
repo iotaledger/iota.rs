@@ -27,7 +27,6 @@ use self::{
     helpers::get_accumulated_output_amounts,
     native_token_helpers::{get_minted_and_melted_native_tokens, get_remainder_native_tokens, missing_native_tokens},
     remainder::{get_additional_required_remainder_amount, get_remainder_output},
-    sender_issuer::select_inputs_for_sender_and_issuer,
     types::SelectedTransactionData,
 };
 use crate::{
@@ -57,13 +56,6 @@ pub fn try_select_inputs(
     current_time: u32,
     token_supply: u64,
 ) -> Result<SelectedTransactionData> {
-    log::debug!("[try_select_inputs]");
-
-    // Can't select inputs if there are no inputs.
-    if mandatory_inputs.is_empty() && additional_inputs.is_empty() {
-        return Err(crate::Error::NoInputs);
-    }
-
     dedup_inputs(&mut mandatory_inputs, &mut additional_inputs);
 
     // Always have the mandatory inputs already selected.
@@ -73,16 +65,6 @@ pub fn try_select_inputs(
         selected_inputs.iter().map(|input| *input.output_id()).collect();
     let all_inputs = mandatory_inputs.iter().chain(additional_inputs.iter());
     let input_outputs = all_inputs.clone().map(|i| &i.output);
-
-    // select outputs for sender/issuer features. Alias and nft outputs added to the inputs will be added to the outputs
-    // in select_utxo_chain_inputs().
-    select_inputs_for_sender_and_issuer(
-        all_inputs.clone(),
-        &mut selected_inputs,
-        &mut selected_inputs_output_ids,
-        &mut outputs,
-        current_time,
-    )?;
 
     let mut required = get_accumulated_output_amounts(&input_outputs, outputs.iter())?;
     // Add the minted tokens to the inputs, because we don't need to provide other inputs for them
