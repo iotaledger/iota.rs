@@ -3,44 +3,10 @@
 
 use std::cmp::Ordering;
 
-use iota_types::block::output::{NativeToken, NativeTokens, NativeTokensBuilder, Output, TokenScheme};
+use iota_types::block::output::{NativeToken, NativeTokensBuilder, Output, TokenScheme};
 use primitive_types::U256;
 
 use crate::Result;
-
-pub(crate) fn missing_native_tokens(
-    inputs: &NativeTokensBuilder,
-    required: &NativeTokensBuilder,
-) -> Result<Option<NativeTokens>> {
-    let mut missing_native_tokens = NativeTokensBuilder::new();
-
-    for (token_id, required_native_token_amount) in required.iter() {
-        match inputs.get(token_id) {
-            None => {
-                missing_native_tokens.insert(*token_id, *required_native_token_amount);
-            }
-            Some(amount) => {
-                if amount < required_native_token_amount {
-                    missing_native_tokens.insert(*token_id, required_native_token_amount - amount);
-                }
-            }
-        }
-    }
-
-    if missing_native_tokens.is_empty() {
-        Ok(None)
-    } else {
-        Ok(Some(missing_native_tokens.finish()?))
-    }
-}
-
-pub(crate) fn get_remainder_native_tokens(
-    inputs: &NativeTokensBuilder,
-    required: &NativeTokensBuilder,
-) -> Result<Option<NativeTokens>> {
-    // inputs and required are switched
-    missing_native_tokens(required, inputs)
-}
 
 // Get minted and melted tokens from foundry outputs
 // minted first, melted second
@@ -100,80 +66,4 @@ pub(crate) fn get_minted_and_melted_native_tokens<'a>(
     }
 
     Ok((minted_native_tokens, melted_native_tokens))
-}
-
-#[cfg(test)]
-mod tests {
-    use iota_types::block::output::TokenId;
-
-    use super::*;
-
-    #[test]
-    fn native_token() {
-        let token_id_bytes: [u8; 38] =
-            prefix_hex::decode("0x08e68f7616cd4948efebc6a77c4f935eaed770ac53869cba56d104f2b472a8836d0100000000")
-                .unwrap();
-        let token_id = TokenId::from(token_id_bytes);
-
-        // inputs == required
-        let mut input_native_tokens = NativeTokensBuilder::new();
-        input_native_tokens.insert(token_id, U256::from(50u32));
-        let mut required_native_tokens = NativeTokensBuilder::new();
-        required_native_tokens.insert(token_id, U256::from(50u32));
-
-        assert_eq!(
-            None,
-            get_remainder_native_tokens(&input_native_tokens, &required_native_tokens).unwrap()
-        );
-
-        // no inputs
-        let input_native_tokens = NativeTokensBuilder::new();
-        let mut required_native_tokens = NativeTokensBuilder::new();
-        required_native_tokens.insert(token_id, U256::from(50u32));
-
-        assert_eq!(
-            Some(required_native_tokens.clone().finish().unwrap()),
-            missing_native_tokens(&input_native_tokens, &required_native_tokens).unwrap()
-        );
-
-        // no inputs used
-        let mut input_native_tokens = NativeTokensBuilder::new();
-        input_native_tokens.insert(token_id, U256::from(50u32));
-        let required_native_tokens = NativeTokensBuilder::new();
-
-        assert_eq!(
-            Some(input_native_tokens.clone().finish().unwrap()),
-            get_remainder_native_tokens(&input_native_tokens, &required_native_tokens).unwrap()
-        );
-
-        // only a part of the inputs is used
-        let mut input_native_tokens = NativeTokensBuilder::new();
-        input_native_tokens.insert(token_id, U256::from(50u32));
-        let mut required_native_tokens = NativeTokensBuilder::new();
-        required_native_tokens.insert(token_id, U256::from(20u32));
-        let mut remainder_native_tokens = NativeTokensBuilder::new();
-        remainder_native_tokens.insert(token_id, U256::from(30u32));
-
-        assert_eq!(
-            Some(remainder_native_tokens.finish().unwrap()),
-            get_remainder_native_tokens(&input_native_tokens, &required_native_tokens).unwrap()
-        );
-
-        // more amount than required
-        let mut input_native_tokens = NativeTokensBuilder::new();
-        input_native_tokens.insert(token_id, U256::from(20u32));
-        let mut required_native_tokens = NativeTokensBuilder::new();
-        required_native_tokens.insert(token_id, U256::from(50u32));
-        let mut remainder_native_tokens = NativeTokensBuilder::new();
-        remainder_native_tokens.insert(token_id, U256::from(30u32));
-
-        assert_eq!(
-            Some(remainder_native_tokens.finish().unwrap()),
-            missing_native_tokens(&input_native_tokens, &required_native_tokens).unwrap()
-        );
-        assert_eq!(
-            None,
-            get_remainder_native_tokens(&input_native_tokens, &required_native_tokens).unwrap()
-        );
-    }
 }

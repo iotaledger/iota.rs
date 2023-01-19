@@ -5,10 +5,7 @@
 
 use iota_types::block::{
     address::{Address, AliasAddress, Ed25519Address, NftAddress},
-    output::{
-        unlock_condition::AddressUnlockCondition, BasicOutputBuilder, NativeTokens, NativeTokensBuilder, Output, Rent,
-        RentStructure, UnlockCondition,
-    },
+    output::{NativeTokensBuilder, Output},
 };
 
 use crate::{
@@ -23,12 +20,9 @@ pub(crate) fn get_accumulated_output_amounts<'a>(
     outputs: impl Iterator<Item = &'a Output> + Clone,
 ) -> Result<AccumulatedOutputAmounts> {
     // Calculate the total tokens to spend
-    let mut required_amount: u64 = 0;
     let mut required_native_tokens = NativeTokensBuilder::new();
 
     for output in outputs.clone() {
-        required_amount += output.amount();
-
         if let Some(output_native_tokens) = output.native_tokens() {
             required_native_tokens.add_native_tokens(output_native_tokens.clone())?;
         }
@@ -39,31 +33,7 @@ pub(crate) fn get_accumulated_output_amounts<'a>(
     // add melted native tokens as outputs, because we need to have this amount in the inputs
     required_native_tokens.merge(melted_native_tokens)?;
 
-    Ok(AccumulatedOutputAmounts {
-        minted_native_tokens,
-        amount: required_amount,
-        native_tokens: required_native_tokens,
-    })
-}
-
-/// Computes the minimum storage deposit amount that a basic output needs to have with an [AddressUnlockCondition] and
-/// optional [NativeTokens].
-pub fn minimum_storage_deposit_basic_output(
-    config: &RentStructure,
-    address: &Address,
-    native_tokens: &Option<NativeTokens>,
-    token_supply: u64,
-) -> Result<u64> {
-    let address_condition = UnlockCondition::Address(AddressUnlockCondition::new(*address));
-    let mut basic_output_builder = BasicOutputBuilder::new_with_amount(Output::AMOUNT_MIN)?;
-    if let Some(native_tokens) = native_tokens {
-        basic_output_builder = basic_output_builder.with_native_tokens(native_tokens.clone());
-    }
-    let basic_output = basic_output_builder
-        .add_unlock_condition(address_condition)
-        .finish_output(token_supply)?;
-
-    Ok(basic_output.rent_cost(config))
+    Ok(AccumulatedOutputAmounts { minted_native_tokens })
 }
 
 // Inputs need to be sorted before signing, because the reference unlock conditions can only reference a lower index

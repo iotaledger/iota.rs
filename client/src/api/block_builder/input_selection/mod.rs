@@ -9,25 +9,20 @@ mod manual;
 mod native_token_helpers;
 /// TODO No need to document, will be removed in the future.
 pub mod new;
-mod remainder;
 mod sender_issuer;
 pub mod types;
 mod utxo_chains;
 
-pub use helpers::minimum_storage_deposit_basic_output;
 use iota_types::block::{
     address::Address,
-    output::{Output, RentStructure, OUTPUT_COUNT_MAX},
+    output::{Output, RentStructure},
 };
-use packable::bounded::TryIntoBoundedU16Error;
 
 use self::{
-    helpers::get_accumulated_output_amounts,
-    native_token_helpers::{get_minted_and_melted_native_tokens, get_remainder_native_tokens},
-    remainder::get_remainder_output,
+    helpers::get_accumulated_output_amounts, native_token_helpers::get_minted_and_melted_native_tokens,
     types::SelectedTransactionData,
 };
-use crate::{api::input_selection::helpers::sort_input_signing_data, secret::types::InputSigningData, Error, Result};
+use crate::{api::input_selection::helpers::sort_input_signing_data, secret::types::InputSigningData, Result};
 
 /// Select inputs from provided mandatory_inputs([InputSigningData]) and additional_inputs([InputSigningData]) for
 /// provided [Output]s, validate amounts and create remainder output if necessary. Also checks for alias, foundry and
@@ -38,12 +33,12 @@ use crate::{api::input_selection::helpers::sort_input_signing_data, secret::type
 pub fn try_select_inputs(
     mut mandatory_inputs: Vec<InputSigningData>,
     mut additional_inputs: Vec<InputSigningData>,
-    mut outputs: Vec<Output>,
-    remainder_address: Option<Address>,
-    rent_structure: &RentStructure,
-    allow_burning: bool,
-    current_time: u32,
-    token_supply: u64,
+    outputs: Vec<Output>,
+    _remainder_address: Option<Address>,
+    _rent_structure: &RentStructure,
+    _allow_burning: bool,
+    _current_time: u32,
+    _token_supply: u64,
 ) -> Result<SelectedTransactionData> {
     dedup_inputs(&mut mandatory_inputs, &mut additional_inputs);
 
@@ -63,34 +58,12 @@ pub fn try_select_inputs(
         }
     }
 
-    // create remainder output if necessary
-    // get_remainder also checks for amounts and returns an error if we don't have enough
-    let remainder_data = get_remainder_output(
-        selected_inputs.iter(),
-        outputs.iter(),
-        remainder_address,
-        rent_structure,
-        allow_burning,
-        current_time,
-        token_supply,
-    )?;
-    if let Some(remainder_data) = &remainder_data {
-        outputs.push(remainder_data.output.clone());
-
-        // check if we have too many outputs after adding the remainder output
-        if outputs.len() as u16 > OUTPUT_COUNT_MAX {
-            return Err(Error::BlockError(iota_types::block::Error::InvalidOutputCount(
-                TryIntoBoundedU16Error::Truncated(outputs.len()),
-            )));
-        }
-    }
-
     let sorted_inputs = sort_input_signing_data(selected_inputs)?;
 
     Ok(SelectedTransactionData {
         inputs: sorted_inputs,
         outputs,
-        remainder: remainder_data,
+        remainder: None,
     })
 }
 
