@@ -1,8 +1,6 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use std::collections::HashMap;
-
 use iota_types::block::{
     address::Address,
     output::{
@@ -15,7 +13,6 @@ use crate::{
     api::{
         input_selection::{
             get_accumulated_output_amounts, get_minted_and_melted_native_tokens, get_remainder_native_tokens,
-            helpers::sdr_not_expired,
         },
         RemainderData,
     },
@@ -23,58 +20,6 @@ use crate::{
     secret::types::InputSigningData,
     Error, Result,
 };
-
-// Get possible required storage deposit return outputs, if there is already an output for the storage deposit return,
-// then don't return a new output for that.
-pub(crate) fn get_storage_deposit_return_outputs<'a>(
-    inputs: impl Iterator<Item = &'a InputSigningData> + Clone,
-    outputs: impl Iterator<Item = &'a Output> + Clone,
-    current_time: u32,
-    token_supply: u64,
-) -> Result<Vec<Output>> {
-    log::debug!("[get_storage_deposit_return_outputs]");
-
-    // Get inputs with storage deposit return unlock condition that are not expired
-    let inputs_sdr = inputs.filter_map(|i| sdr_not_expired(&i.output, current_time));
-
-    // There could be multiple sdr outputs required for the same address, so we keep track of the required amount here.
-    let mut required_address_returns: HashMap<Address, u64> = HashMap::new();
-    for sdr in inputs_sdr {
-        *required_address_returns.entry(*sdr.return_address()).or_default() += sdr.amount();
-    }
-
-    let mut new_sdr_outputs = Vec::new();
-
-    for (return_address, required_return_amount) in required_address_returns {
-        // Check if we already have outputs for this storage deposit return
-        let existing_sdr_amount: u64 = outputs
-            .clone()
-            .filter(|output| {
-                // sdr output must be a basic output with only the AddressUnlockCondition
-                if let Output::Basic(output) = output {
-                    output
-                        .simple_deposit_address()
-                        .map_or(false, |address| address == &return_address)
-                } else {
-                    false
-                }
-            })
-            .map(|o| o.amount())
-            .sum();
-
-        if required_return_amount > existing_sdr_amount {
-            // create a new output with the missing amount
-            let remaining_amount_to_add = required_return_amount - existing_sdr_amount;
-            new_sdr_outputs.push(
-                BasicOutputBuilder::new_with_amount(remaining_amount_to_add)?
-                    .with_unlock_conditions([UnlockCondition::Address(AddressUnlockCondition::new(return_address))])
-                    .finish_output(token_supply)?,
-            );
-        }
-    }
-
-    Ok(new_sdr_outputs)
-}
 
 // Get a remainder with amount and native tokens if necessary, if no remainder_address is provided it will be selected
 // from the inputs, also validates the amounts

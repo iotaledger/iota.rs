@@ -27,11 +27,7 @@ use self::{
     remainder::get_remainder_output,
     types::SelectedTransactionData,
 };
-use crate::{
-    api::input_selection::{helpers::sort_input_signing_data, remainder::get_storage_deposit_return_outputs},
-    secret::types::InputSigningData,
-    Error, Result,
-};
+use crate::{api::input_selection::helpers::sort_input_signing_data, secret::types::InputSigningData, Error, Result};
 
 /// Select inputs from provided mandatory_inputs([InputSigningData]) and additional_inputs([InputSigningData]) for
 /// provided [Output]s, validate amounts and create remainder output if necessary. Also checks for alias, foundry and
@@ -66,17 +62,6 @@ pub fn try_select_inputs(
             selected_input_native_tokens.add_native_tokens(native_tokens.clone())?;
         }
     }
-
-    // Basic outputs.
-    let mut basic_outputs = Vec::<InputSigningData>::new();
-
-    // Order input outputs descending, so that as few inputs as necessary are used
-    basic_outputs.sort_by(|l, r| l.output.amount().cmp(&r.output.amount()));
-
-    // Add possible required storage deposit return outputs
-    let additional_storage_deposit_return_outputs =
-        get_storage_deposit_return_outputs(all_inputs, outputs.iter(), current_time, token_supply)?;
-    outputs.extend(additional_storage_deposit_return_outputs.into_iter());
 
     // create remainder output if necessary
     // get_remainder also checks for amounts and returns an error if we don't have enough
