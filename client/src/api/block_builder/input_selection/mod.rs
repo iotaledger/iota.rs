@@ -26,14 +26,13 @@ use packable::bounded::TryIntoBoundedU16Error;
 use self::{
     helpers::get_accumulated_output_amounts,
     native_token_helpers::{get_minted_and_melted_native_tokens, get_remainder_native_tokens},
-    remainder::{get_additional_required_remainder_amount, get_remainder_output},
+    remainder::get_remainder_output,
     types::SelectedTransactionData,
 };
 use crate::{
     api::input_selection::{
         helpers::{sdr_not_expired, sort_input_signing_data},
         remainder::get_storage_deposit_return_outputs,
-        types::AccumulatedOutputAmounts,
     },
     secret::types::InputSigningData,
     Error, Result,
@@ -70,7 +69,7 @@ pub fn try_select_inputs(
     let mut selected_input_native_tokens = required.minted_native_tokens.clone();
 
     // Add the mandatory inputs amounts.
-    let mut selected_input_amount = selected_inputs.iter().map(|i| i.output.amount()).sum();
+    let mut selected_input_amount = selected_inputs.iter().map(|i| i.output.amount()).sum::<u64>();
 
     // Add the mandatory inputs native tokens.
     for input in selected_inputs.iter() {
@@ -100,16 +99,7 @@ pub fn try_select_inputs(
     while index < basic_outputs.len() {
         let mut added_to_inputs = false;
 
-        let additional_required_remainder_amount = get_additional_required_remainder_amount(
-            remainder_address,
-            &selected_inputs,
-            selected_input_amount,
-            &selected_input_native_tokens,
-            &required,
-            rent_structure,
-            current_time,
-            token_supply,
-        )?;
+        let additional_required_remainder_amount = 0;
 
         if selected_input_amount < required.amount || additional_required_remainder_amount > 0 {
             let output = &basic_outputs[index].output;
@@ -151,16 +141,7 @@ pub fn try_select_inputs(
     while index < basic_outputs.len() {
         let mut added_to_inputs = false;
 
-        let additional_required_remainder_amount = get_additional_required_remainder_amount(
-            remainder_address,
-            &selected_inputs,
-            selected_input_amount,
-            &selected_input_native_tokens,
-            &required,
-            rent_structure,
-            current_time,
-            token_supply,
-        )?;
+        let additional_required_remainder_amount = 0;
 
         if selected_input_amount < required.amount || additional_required_remainder_amount > 0 {
             let output = &basic_outputs[index].output;

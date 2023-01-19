@@ -7,7 +7,7 @@ use iota_types::block::{
     address::Address,
     output::{
         unlock_condition::{AddressUnlockCondition, UnlockCondition},
-        BasicOutputBuilder, NativeTokensBuilder, Output, RentStructure,
+        BasicOutputBuilder, Output, RentStructure,
     },
 };
 
@@ -15,8 +15,7 @@ use crate::{
     api::{
         input_selection::{
             get_accumulated_output_amounts, get_minted_and_melted_native_tokens, get_remainder_native_tokens,
-            helpers::{minimum_storage_deposit_basic_output, sdr_not_expired},
-            AccumulatedOutputAmounts,
+            helpers::sdr_not_expired,
         },
         RemainderData,
     },
@@ -179,63 +178,4 @@ pub(crate) fn get_remainder_address<'a>(
     }
 
     Err(Error::MissingInputWithEd25519Address)
-}
-
-// Get additional required storage deposit amount for the remainder output
-#[allow(clippy::too_many_arguments)]
-pub(crate) fn get_additional_required_remainder_amount(
-    remainder_address: Option<Address>,
-    selected_inputs: &[InputSigningData],
-    selected_input_amount: u64,
-    selected_input_native_tokens: &NativeTokensBuilder,
-    required_accumulated_amounts: &AccumulatedOutputAmounts,
-    rent_structure: &RentStructure,
-    current_time: u32,
-    token_supply: u64,
-) -> crate::Result<u64> {
-    let additional_required_remainder_amount = {
-        if selected_input_amount > required_accumulated_amounts.amount {
-            let current_remainder_amount = selected_input_amount - required_accumulated_amounts.amount;
-            let native_token_remainder = get_remainder_native_tokens(
-                selected_input_native_tokens,
-                &required_accumulated_amounts.native_tokens,
-            )?;
-
-            let required_deposit = minimum_storage_deposit_basic_output(
-                rent_structure,
-                &match remainder_address {
-                    Some(a) => a,
-                    None => get_remainder_address(selected_inputs.iter(), current_time)?.0,
-                },
-                &native_token_remainder,
-                token_supply,
-            )?;
-            if required_deposit > current_remainder_amount {
-                required_deposit - current_remainder_amount
-            } else {
-                0
-            }
-        } else {
-            // Not more amount than required, but maybe still native tokens left
-            let native_token_remainder = get_remainder_native_tokens(
-                selected_input_native_tokens,
-                &required_accumulated_amounts.native_tokens,
-            )?;
-
-            if let Some(native_token_remainder) = native_token_remainder {
-                minimum_storage_deposit_basic_output(
-                    rent_structure,
-                    &match remainder_address {
-                        Some(a) => a,
-                        None => get_remainder_address(selected_inputs.iter(), current_time)?.0,
-                    },
-                    &Some(native_token_remainder),
-                    token_supply,
-                )?
-            } else {
-                0
-            }
-        }
-    };
-    Ok(additional_required_remainder_amount)
 }
