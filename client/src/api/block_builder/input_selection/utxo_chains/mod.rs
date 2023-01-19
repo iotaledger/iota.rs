@@ -24,8 +24,6 @@ use crate::{
     Client, Result,
 };
 mod automatic;
-mod validation;
-pub(crate) use validation::check_utxo_chain_inputs;
 
 // Select required alias, nft and foundry outputs. When the amount of alias or nft outputs is > the minimum required
 // storage deposit and burning is not allowed, they will be added in the input and also to the outputs, but there just

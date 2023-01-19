@@ -35,7 +35,7 @@ use crate::{
         helpers::{sdr_not_expired, sort_input_signing_data},
         remainder::get_storage_deposit_return_outputs,
         types::AccumulatedOutputAmounts,
-        utxo_chains::{check_utxo_chain_inputs, select_utxo_chain_inputs},
+        utxo_chains::select_utxo_chain_inputs,
     },
     secret::types::InputSigningData,
     Error, Result,
@@ -134,9 +134,6 @@ pub fn try_select_inputs(
 
     // No need to check for sender and issuer again, since these outputs already exist and we don't set new features
     // for them.
-
-    // Validate that we have selected the required inputs for alias, nft and foundry outputs.
-    check_utxo_chain_inputs(&selected_inputs, &outputs)?;
 
     // Remove inputs we added in `select_inputs_for_sender_and_issuer()`
     let mut index = 0;
