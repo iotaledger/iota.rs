@@ -18,23 +18,36 @@ import WarningPasswordStorage from '../_admonitions/_password_storage.md';
 
 * [Python 3.x](https://www.python.org).
 * [pip](https://pypi.org/project/pip).
-* [Rust and Cargo](https://doc.rust-lang.org/cargo/getting-started/installation.html) to compile the binding.
+
+## Install package from PyPI
+
+You can install the library by executing `pip install iota-client`.
+
+## Install from source
+
+:::caution
+
+We recommend to install the library with [pip from PyPI](#install-package-from-pypi). 
+Only compile the library from source if you are in need of some unreleased features or are working with an unsupported computer architecture.
+
+:::
+
+### Additional Requirements
+
+* [Rust and Cargo](https://doc.rust-lang.org/cargo/getting-started/installation.html).
 * (for Linux only) `libudev`. You can install it with `apt install libudev-dev`.
-
-
-## Install the Library
 
 ### Clone the Repository
 
 You can clone the [iota.rs client library](https://github.com/iotaledger/iota.rs) by running the following command:
 
 ```bash
-git clone https://github.com/iotaledger/iota.rs
+git clone -b develop https://github.com/iotaledger/iota.rs
 ```
 
 ### Change to the Python Binding Directory
 
-After you have cloned the repository, you should change directory to `iota.rs/bindings/python/native`. You can do so by
+After you have cloned the repository, you should change directory to `iota.rs/client/bindings/python`. You can do so by
 running the following command:
 
 ```bash
@@ -43,7 +56,7 @@ cd iota.rs/client/bindings/python
 
 ### Install the Required Dependencies and Build the Wheel
 
-Once you have [cloned the library](#clone-the-library),
+Once you have [cloned the repository](#clone-the-repository),
 and [moved to the binding's directory](#change-to-the-python-binding-directory), you should install dependencies and build the wheel file.
 
 You can do so by running the following commands:
