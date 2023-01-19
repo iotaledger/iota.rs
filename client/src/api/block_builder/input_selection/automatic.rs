@@ -177,7 +177,7 @@ impl<'a> ClientBlockBuilder<'a> {
                         Ok(r) => r,
                         // for these errors, just try again in the next round with more addresses which might have more
                         // outputs.
-                        Err(err @ crate::Error::NotEnoughBalance { .. }) => {
+                        Err(err @ crate::Error::InsufficientAmount { .. }) => {
                             cached_error.replace(err);
                             continue;
                         }

@@ -7,7 +7,7 @@ pub use self::simple::SimpleTokenScheme;
 use crate::block::Error;
 
 ///
-#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, derive_more::From, packable::Packable)]
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, derive_more::From, packable::Packable)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[packable(unpack_error = Error)]
 #[packable(tag_type = u8, with_error = Error::InvalidTokenSchemeKind)]

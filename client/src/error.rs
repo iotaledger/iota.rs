@@ -5,11 +5,15 @@
 
 use std::fmt::{Debug, Display};
 
-use iota_types::block::{output::NativeTokens, semantic::ConflictReason};
+use iota_types::block::{
+    output::{NativeTokens, OutputId, TokenId},
+    semantic::ConflictReason,
+};
 use packable::error::UnexpectedEOF;
+use primitive_types::U256;
 use serde::{ser::Serializer, Serialize};
 
-use crate::node_api::indexer::QueryParameter;
+use crate::{api::input_selection::new::requirement::Requirement, node_api::indexer::QueryParameter};
 
 /// Type alias of `Result` in iota-client
 pub type Result<T> = std::result::Result<T, Error>;
@@ -96,14 +100,6 @@ pub enum Error {
     /// The requested data was not found.
     #[error("the requested data {0} was not found.")]
     NotFound(String),
-    /// The wallet account doesn't have enough balance
-    #[error("the wallet account doesn't have enough balance. It only has {found}, required is {required}")]
-    NotEnoughBalance {
-        /// The amount found in the balance.
-        found: u64,
-        /// The required amount.
-        required: u64,
-    },
     /// The wallet account doesn't have any inputs found
     #[error("no inputs found")]
     NoInputs,
@@ -209,6 +205,44 @@ pub enum Error {
     /// URL validation error
     #[error("{0}")]
     UrlValidationError(String),
+
+    //////////////////////////////////////////////////////////////////////
+    // Input Selection
+    //////////////////////////////////////////////////////////////////////
+    /// Required input is forbidden.
+    #[error("required input {0} is forbidden")]
+    RequiredInputIsForbidden(OutputId),
+    /// Required input is not available.
+    #[error("required input {0} is not available")]
+    RequiredInputIsNotAvailable(OutputId),
+    /// Unfulfillable requirement.
+    #[error("unfulfillable requirement {0:?}")]
+    // TODO better name?
+    UnfulfillableRequirement(Requirement),
+    /// No inputs were provided to input selection
+    #[error("no inputs provided")]
+    NoInputsProvided,
+    /// No outputs were provided to input selection
+    #[error("no outputs provided")]
+    NoOutputsProvided,
+    /// Insufficient amount provided.
+    #[error("insufficient amount: found {found}, required {required}")]
+    InsufficientAmount {
+        /// The amount found.
+        found: u64,
+        /// The required amount.
+        required: u64,
+    },
+    /// Insufficient native token amount provided.
+    #[error("insufficient native token amount: found {found}, required {required}")]
+    InsufficientNativeTokenAmount {
+        /// The token ID.
+        token_id: TokenId,
+        /// The amount found.
+        found: U256,
+        /// The required amount.
+        required: U256,
+    },
 
     //////////////////////////////////////////////////////////////////////
     // Participation

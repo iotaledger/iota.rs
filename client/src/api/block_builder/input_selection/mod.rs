@@ -7,6 +7,8 @@ mod automatic;
 mod helpers;
 mod manual;
 mod native_token_helpers;
+/// TODO No need to document, will be removed in the future.
+pub mod new;
 mod remainder;
 mod sender_issuer;
 pub mod types;

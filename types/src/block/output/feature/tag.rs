@@ -12,7 +12,7 @@ pub(crate) type TagFeatureLength =
     BoundedU8<{ *TagFeature::LENGTH_RANGE.start() }, { *TagFeature::LENGTH_RANGE.end() }>;
 
 /// Makes it possible to tag outputs with an index, so they can be retrieved through an indexer API.
-#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, packable::Packable)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, packable::Packable)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[packable(unpack_error = Error, with = |e| Error::InvalidTagFeatureLength(e.into_prefix_err().into()))]
 pub struct TagFeature(
