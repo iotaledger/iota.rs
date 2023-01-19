@@ -13,8 +13,7 @@ use iota_types::block::{
 
 use crate::{
     api::{
-        address::search_address, block_builder::input_selection::types::SelectedTransactionData,
-        input_selection::try_select_inputs, ClientBlockBuilder,
+        address::search_address, block_builder::input_selection::types::SelectedTransactionData, ClientBlockBuilder,
     },
     constants::HD_WALLET_TYPE,
     secret::types::{InputSigningData, OutputMetadata},
