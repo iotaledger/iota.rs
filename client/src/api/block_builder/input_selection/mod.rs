@@ -34,7 +34,6 @@ use crate::{
         helpers::{sdr_not_expired, sort_input_signing_data},
         remainder::get_storage_deposit_return_outputs,
         types::AccumulatedOutputAmounts,
-        utxo_chains::select_utxo_chain_inputs,
     },
     secret::types::InputSigningData,
     Error, Result,
@@ -61,7 +60,7 @@ pub fn try_select_inputs(
     // Always have the mandatory inputs already selected.
     let mut selected_inputs: Vec<InputSigningData> = mandatory_inputs.clone();
     // Keep track of which inputs we selected in a HashSet, so we don't need to iterate over the inputs every time.
-    let mut selected_inputs_output_ids: HashSet<OutputId> =
+    let selected_inputs_output_ids: HashSet<OutputId> =
         selected_inputs.iter().map(|input| *input.output_id()).collect();
     let all_inputs = mandatory_inputs.iter().chain(additional_inputs.iter());
     let input_outputs = all_inputs.clone().map(|i| &i.output);
@@ -94,25 +93,6 @@ pub fn try_select_inputs(
             Output::Treasury(_) => {}
         }
     }
-
-    // 1. Get Alias, Foundry or NFT inputs (because amount and native tokens of these outputs will also be available for
-    // the outputs).
-    // Check the inputs in a loop, because if we add an an output which requires another Alias or NFT output to unlock
-    // it, then we might have to add this also.
-    // Inputs for which no outputs exists already, will be added automatically to the outputs, if burning isn't allowed.
-    select_utxo_chain_inputs(
-        &mut selected_inputs,
-        &mut selected_inputs_output_ids,
-        &mut selected_input_amount,
-        &mut selected_input_native_tokens,
-        &mut outputs,
-        &mut required,
-        &mut utxo_chain_inputs,
-        allow_burning,
-        current_time,
-        rent_structure,
-        token_supply,
-    )?;
 
     // No need to check for sender and issuer again, since these outputs already exist and we don't set new features
     // for them.
@@ -275,21 +255,6 @@ pub fn try_select_inputs(
     let additional_storage_deposit_return_outputs =
         get_storage_deposit_return_outputs(all_inputs, outputs.iter(), current_time, token_supply)?;
     outputs.extend(additional_storage_deposit_return_outputs.into_iter());
-
-    // Check utxo chain inputs again, because new inputs could have an alias or nft address in their unlock condition
-    select_utxo_chain_inputs(
-        &mut selected_inputs,
-        &mut selected_inputs_output_ids,
-        &mut selected_input_amount,
-        &mut selected_input_native_tokens,
-        &mut outputs,
-        &mut required,
-        &mut utxo_chain_inputs,
-        allow_burning,
-        current_time,
-        rent_structure,
-        token_supply,
-    )?;
 
     // create remainder output if necessary
     // get_remainder also checks for amounts and returns an error if we don't have enough
