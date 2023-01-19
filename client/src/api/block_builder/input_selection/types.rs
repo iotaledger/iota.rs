@@ -3,7 +3,7 @@
 
 //! Types used during transaction creation
 
-use iota_types::block::output::{NativeTokensBuilder, Output};
+use iota_types::block::output::Output;
 
 use crate::api::{block_builder::input_selection::InputSigningData, RemainderData};
 
@@ -16,10 +16,4 @@ pub struct SelectedTransactionData {
     pub outputs: Vec<Output>,
     /// Optional remainder output, also already parts of the outputs
     pub remainder: Option<RemainderData>,
-}
-
-/// Required things from the to be created outputs
-#[derive(Debug, Clone)]
-pub(crate) struct AccumulatedOutputAmounts {
-    pub(crate) minted_native_tokens: NativeTokensBuilder,
 }

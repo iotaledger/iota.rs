@@ -6,7 +6,6 @@
 mod automatic;
 mod helpers;
 mod manual;
-mod native_token_helpers;
 /// TODO No need to document, will be removed in the future.
 pub mod new;
 mod sender_issuer;
@@ -18,10 +17,7 @@ use iota_types::block::{
     output::{Output, RentStructure},
 };
 
-use self::{
-    helpers::get_accumulated_output_amounts, native_token_helpers::get_minted_and_melted_native_tokens,
-    types::SelectedTransactionData,
-};
+use self::types::SelectedTransactionData;
 use crate::{api::input_selection::helpers::sort_input_signing_data, secret::types::InputSigningData, Result};
 
 /// Select inputs from provided mandatory_inputs([InputSigningData]) and additional_inputs([InputSigningData]) for
@@ -44,19 +40,6 @@ pub fn try_select_inputs(
 
     // Always have the mandatory inputs already selected.
     let selected_inputs: Vec<InputSigningData> = mandatory_inputs.clone();
-    let all_inputs = mandatory_inputs.iter().chain(additional_inputs.iter());
-    let input_outputs = all_inputs.clone().map(|i| &i.output);
-
-    let required = get_accumulated_output_amounts(&input_outputs, outputs.iter())?;
-    // Add the minted tokens to the inputs, because we don't need to provide other inputs for them
-    let mut selected_input_native_tokens = required.minted_native_tokens.clone();
-
-    // Add the mandatory inputs native tokens.
-    for input in selected_inputs.iter() {
-        if let Some(native_tokens) = input.output.native_tokens() {
-            selected_input_native_tokens.add_native_tokens(native_tokens.clone())?;
-        }
-    }
 
     let sorted_inputs = sort_input_signing_data(selected_inputs)?;
 
