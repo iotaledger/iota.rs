@@ -9,8 +9,8 @@ use crate::{
 };
 
 impl InputSelection {
-    /// Fulfills an issuer requirement by fulfilling the equivalent sender requirement and potentially converting the
-    /// error for a more accurate one.
+    /// Fulfills an issuer requirement by fulfilling the equivalent sender requirement.
+    /// Potentially converts the error for a more accurate one.
     pub(crate) fn fulfill_issuer_requirement(
         &mut self,
         address: Address,
