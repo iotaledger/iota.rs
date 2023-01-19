@@ -479,7 +479,7 @@ fn mint_and_burn_at_the_same_time() {
     )]);
 
     let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
-        .burn(Burn::new().add_native_token(token_id, U256::from(10)))
+        .burn(Burn::new().add_native_token(token_id, 10))
         .select()
         .unwrap();
 

@@ -302,7 +302,7 @@ fn burn_and_send_at_the_same_time() {
     )]);
 
     let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
-        .burn(Burn::new().add_native_token(TokenId::from_str(TOKEN_ID_1).unwrap(), U256::from(10)))
+        .burn(Burn::new().add_native_token(TokenId::from_str(TOKEN_ID_1).unwrap(), 10))
         .select()
         .unwrap();
 
@@ -334,7 +334,7 @@ fn burn_one_input_no_output() {
     )]);
 
     let selected = InputSelection::new(inputs.clone(), Vec::new(), protocol_parameters)
-        .burn(Burn::new().add_native_token(TokenId::from_str(TOKEN_ID_1).unwrap(), U256::from(50)))
+        .burn(Burn::new().add_native_token(TokenId::from_str(TOKEN_ID_1).unwrap(), 50))
         .select()
         .unwrap();
 
@@ -370,7 +370,7 @@ fn burn_two_inputs_no_output() {
     ]);
 
     let selected = InputSelection::new(inputs.clone(), Vec::new(), protocol_parameters)
-        .burn(Burn::new().add_native_token(TokenId::from_str(TOKEN_ID_1).unwrap(), U256::from(50)))
+        .burn(Burn::new().add_native_token(TokenId::from_str(TOKEN_ID_1).unwrap(), 50))
         .select()
         .unwrap();
 
@@ -398,7 +398,7 @@ fn burn_one_input_two_tokens_no_output() {
     )]);
 
     let selected = InputSelection::new(inputs.clone(), Vec::new(), protocol_parameters)
-        .burn(Burn::new().add_native_token(TokenId::from_str(TOKEN_ID_1).unwrap(), U256::from(50)))
+        .burn(Burn::new().add_native_token(TokenId::from_str(TOKEN_ID_1).unwrap(), 50))
         .select()
         .unwrap();
 
@@ -1042,7 +1042,7 @@ fn two_basic_outputs_8() {
         None,
     )]);
 
-    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters).select();
+    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
 
     assert!(matches!(
             selected,

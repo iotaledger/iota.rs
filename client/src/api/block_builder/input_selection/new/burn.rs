@@ -9,7 +9,8 @@ use serde::Deserialize;
 
 use crate::block::output::{AliasId, FoundryId, NftId, TokenId};
 
-/// A type to explicit what needs to be burned during input selection.
+/// A type to specify what needs to be burned during input selection.
+/// Nothing will be burned that has not been explicitly set with this struct.
 #[derive(Default, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Burn {
@@ -65,15 +66,18 @@ impl Burn {
         self
     }
 
-    /// Adds a native token to burn.
-    pub fn add_native_token(mut self, token_id: TokenId, amount: U256) -> Self {
-        self.native_tokens.insert(token_id, amount);
+    /// Adds an amount of native token to burn.
+    pub fn add_native_token(mut self, token_id: TokenId, amount: impl Into<U256>) -> Self {
+        self.native_tokens.insert(token_id, amount.into());
         self
     }
 
-    /// Sets the native tokens to burn.
-    pub fn set_native_tokens(mut self, native_tokens: HashMap<TokenId, U256>) -> Self {
-        self.native_tokens = native_tokens;
+    /// Sets the amounts of native tokens to burn.
+    pub fn set_native_tokens(mut self, native_tokens: HashMap<TokenId, impl Into<U256>>) -> Self {
+        self.native_tokens = native_tokens
+            .into_iter()
+            .map(|(token_id, amount)| (token_id, amount.into()))
+            .collect();
         self
     }
 }
