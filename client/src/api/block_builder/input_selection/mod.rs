@@ -13,13 +13,11 @@ mod remainder;
 mod sender_issuer;
 pub mod types;
 mod utxo_chains;
-use std::collections::HashSet;
 
 pub use helpers::minimum_storage_deposit_basic_output;
 use iota_types::block::{
     address::Address,
-    input::INPUT_COUNT_MAX,
-    output::{Output, OutputId, RentStructure, OUTPUT_COUNT_MAX},
+    output::{Output, RentStructure, OUTPUT_COUNT_MAX},
 };
 use packable::bounded::TryIntoBoundedU16Error;
 
@@ -30,10 +28,7 @@ use self::{
     types::SelectedTransactionData,
 };
 use crate::{
-    api::input_selection::{
-        helpers::{sdr_not_expired, sort_input_signing_data},
-        remainder::get_storage_deposit_return_outputs,
-    },
+    api::input_selection::{helpers::sort_input_signing_data, remainder::get_storage_deposit_return_outputs},
     secret::types::InputSigningData,
     Error, Result,
 };
@@ -57,19 +52,13 @@ pub fn try_select_inputs(
     dedup_inputs(&mut mandatory_inputs, &mut additional_inputs);
 
     // Always have the mandatory inputs already selected.
-    let mut selected_inputs: Vec<InputSigningData> = mandatory_inputs.clone();
-    // Keep track of which inputs we selected in a HashSet, so we don't need to iterate over the inputs every time.
-    let selected_inputs_output_ids: HashSet<OutputId> =
-        selected_inputs.iter().map(|input| *input.output_id()).collect();
+    let selected_inputs: Vec<InputSigningData> = mandatory_inputs.clone();
     let all_inputs = mandatory_inputs.iter().chain(additional_inputs.iter());
     let input_outputs = all_inputs.clone().map(|i| &i.output);
 
-    let mut required = get_accumulated_output_amounts(&input_outputs, outputs.iter())?;
+    let required = get_accumulated_output_amounts(&input_outputs, outputs.iter())?;
     // Add the minted tokens to the inputs, because we don't need to provide other inputs for them
     let mut selected_input_native_tokens = required.minted_native_tokens.clone();
-
-    // Add the mandatory inputs amounts.
-    let mut selected_input_amount = selected_inputs.iter().map(|i| i.output.amount()).sum::<u64>();
 
     // Add the mandatory inputs native tokens.
     for input in selected_inputs.iter() {
@@ -81,98 +70,8 @@ pub fn try_select_inputs(
     // Basic outputs.
     let mut basic_outputs = Vec::<InputSigningData>::new();
 
-    // Remove inputs we added in `select_inputs_for_sender_and_issuer()`
-    let mut index = 0;
-    while index < basic_outputs.len() {
-        // Remove already added inputs
-        if selected_inputs_output_ids.contains(basic_outputs[index].output_id()) {
-            basic_outputs.remove(index);
-            // Continue without increasing the index because we removed one element
-            continue;
-        }
-        // Increase index so we check the next index
-        index += 1;
-    }
-
-    // 3. try to select basic outputs without native tokens
-    let mut index = 0;
-    while index < basic_outputs.len() {
-        let mut added_to_inputs = false;
-
-        let additional_required_remainder_amount = 0;
-
-        if selected_input_amount < required.amount || additional_required_remainder_amount > 0 {
-            let output = &basic_outputs[index].output;
-
-            if let Some(output_native_tokens) = output.native_tokens() {
-                if output_native_tokens.is_empty() {
-                    selected_input_amount += output.amount();
-                    selected_inputs.push(basic_outputs[index].clone());
-                    added_to_inputs = true;
-                    if let Some(sdr) = sdr_not_expired(output, current_time) {
-                        // add sdr to required amount, because we have to send it back
-                        required.amount += sdr.amount();
-                    }
-                }
-            }
-        }
-
-        // If added to the inputs, remove it so it can't be selected again
-        if added_to_inputs {
-            basic_outputs.remove(index);
-            // Continue without increasing the index because we removed one element
-            continue;
-        }
-        // Increase index so we check the next index
-        index += 1;
-    }
-
-    // check if we have too many inputs
-    let current_selected_input_len = selected_inputs.len() as u16;
-    if current_selected_input_len > INPUT_COUNT_MAX {
-        return Err(Error::ConsolidationRequired(current_selected_input_len.into()));
-    }
-
     // Order input outputs descending, so that as few inputs as necessary are used
     basic_outputs.sort_by(|l, r| l.output.amount().cmp(&r.output.amount()));
-
-    // 4. try to select basic outputs with native tokens we need for the outputs
-    let mut index = 0;
-    while index < basic_outputs.len() {
-        let mut added_to_inputs = false;
-
-        let additional_required_remainder_amount = 0;
-
-        if selected_input_amount < required.amount || additional_required_remainder_amount > 0 {
-            let output = &basic_outputs[index].output;
-
-            selected_input_amount += output.amount();
-            if let Some(output_native_tokens) = output.native_tokens() {
-                selected_input_native_tokens.add_native_tokens(output_native_tokens.clone())?;
-            }
-            selected_inputs.push(basic_outputs[index].clone());
-            added_to_inputs = true;
-            if let Some(sdr) = sdr_not_expired(output, current_time) {
-                // add sdr to required amount, because we have to send it back
-                required.amount += sdr.amount();
-            }
-        }
-
-        // If added to the inputs, remove it so it can't be selected again
-        if added_to_inputs {
-            basic_outputs.remove(index);
-            // Continue without increasing the index because we removed one element
-            continue;
-        }
-        // Increase index so we check the next index
-        index += 1;
-    }
-
-    // check if we have too many inputs
-    let current_selected_input_len = selected_inputs.len() as u16;
-    if current_selected_input_len > INPUT_COUNT_MAX {
-        return Err(Error::ConsolidationRequired(current_selected_input_len.into()));
-    }
 
     // Add possible required storage deposit return outputs
     let additional_storage_deposit_return_outputs =
