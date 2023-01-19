@@ -48,7 +48,7 @@ cd iota.rs/bindings/python/native
 
 #### Install the Required Dependencies and Build the Wheel
 
-Install  and run maturin:
+Install and run maturin:
 
 ```bash
 pip3 install maturin
@@ -84,7 +84,7 @@ import iota_client
 print(iota_client.__doc__)
 print(dir(iota_client))
 
-client = iota_client.Client(nodes_name_password=[[node="https://api.lb-0.h.chrysalis-devnet.iota.cafe"]], node_sync_disabled=True)
+client = iota_client.Client(nodes_name_password=[['https://api.lb-0.h.chrysalis-devnet.iota.cafe']])
 
 print('get_health()')
 print(f'health: {client.get_health()}')
