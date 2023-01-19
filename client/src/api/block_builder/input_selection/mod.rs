@@ -25,7 +25,7 @@ use packable::bounded::TryIntoBoundedU16Error;
 
 use self::{
     helpers::get_accumulated_output_amounts,
-    native_token_helpers::{get_minted_and_melted_native_tokens, get_remainder_native_tokens, missing_native_tokens},
+    native_token_helpers::{get_minted_and_melted_native_tokens, get_remainder_native_tokens},
     remainder::{get_additional_required_remainder_amount, get_remainder_output},
     types::SelectedTransactionData,
 };
@@ -80,22 +80,7 @@ pub fn try_select_inputs(
     }
 
     // Basic outputs.
-    let mut basic_outputs = Vec::new();
-    // Alias, Foundry and NFT outputs.
-    let mut utxo_chain_inputs = Vec::new();
-
-    for input_signing_data in all_inputs.clone() {
-        match input_signing_data.output {
-            Output::Basic(_) => basic_outputs.push(input_signing_data),
-            Output::Alias(_) | Output::Foundry(_) | Output::Nft(_) => {
-                utxo_chain_inputs.push(input_signing_data.clone())
-            }
-            Output::Treasury(_) => {}
-        }
-    }
-
-    // No need to check for sender and issuer again, since these outputs already exist and we don't set new features
-    // for them.
+    let mut basic_outputs = Vec::<InputSigningData>::new();
 
     // Remove inputs we added in `select_inputs_for_sender_and_issuer()`
     let mut index = 0;
@@ -108,49 +93,6 @@ pub fn try_select_inputs(
         }
         // Increase index so we check the next index
         index += 1;
-    }
-
-    // 2. get basic inputs for the required native tokens (because the amount of these outputs will also be available in
-    // the outputs)
-    if !required.native_tokens.is_empty() {
-        let mut index = 0;
-        while index < basic_outputs.len() {
-            let mut added_to_inputs = false;
-            let output = &basic_outputs[index].output;
-
-            if let Some(output_native_tokens) = output.native_tokens() {
-                // Only add output to the inputs if it has a native token we need for the outputs
-                if output_native_tokens
-                    .iter()
-                    .any(|native_token| required.native_tokens.get(native_token.token_id()).is_some())
-                {
-                    // If there is a native token we need for the outputs we'll also add all others, because we'll
-                    // consume this output
-                    selected_input_native_tokens.add_native_tokens(output_native_tokens.clone())?;
-                    selected_input_amount += output.amount();
-                    selected_inputs.push(basic_outputs[index].clone());
-                    added_to_inputs = true;
-                    if let Some(sdr) = sdr_not_expired(output, current_time) {
-                        // add sdr to required amount, because we have to send it back
-                        required.amount += sdr.amount();
-                    }
-                }
-            }
-
-            // If added to the inputs, remove it so it can't be selected again
-            if added_to_inputs {
-                basic_outputs.remove(index);
-                // Continue without increasing the index because we removed one element
-                continue;
-            }
-            // Increase index so we check the next index
-            index += 1;
-        }
-    }
-
-    // check if we got all required native tokens
-    if let Some(native_token) = missing_native_tokens(&selected_input_native_tokens, &required.native_tokens)? {
-        return Err(Error::NotEnoughNativeTokens(native_token));
     }
 
     // 3. try to select basic outputs without native tokens
