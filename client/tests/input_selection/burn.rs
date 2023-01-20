@@ -4,7 +4,7 @@
 use std::str::FromStr;
 
 use iota_client::{
-    api::input_selection::new::{Burn, InputSelection, Requirement},
+    api::input_selection::{Burn, InputSelection, Requirement},
     block::{
         address::Address,
         output::{AliasId, NftId, SimpleTokenScheme},

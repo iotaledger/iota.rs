@@ -4,9 +4,10 @@
 //! Input selection for transactions
 
 mod automatic;
+mod core;
 mod helpers;
 mod manual;
-/// TODO No need to document, will be removed in the future.
-pub mod new;
 mod sender_issuer;
 mod utxo_chains;
+
+pub use self::core::{Burn, InputSelection, Requirement, Selected};

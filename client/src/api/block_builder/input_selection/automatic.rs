@@ -11,7 +11,7 @@ use iota_types::{
 
 use crate::{
     api::{
-        block_builder::input_selection::new::{InputSelection, Selected},
+        block_builder::input_selection::core::{InputSelection, Selected},
         ClientBlockBuilder, ADDRESS_GAP_RANGE,
     },
     constants::HD_WALLET_TYPE,

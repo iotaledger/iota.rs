@@ -13,7 +13,7 @@ use packable::error::UnexpectedEOF;
 use primitive_types::U256;
 use serde::{ser::Serializer, Serialize};
 
-use crate::{api::input_selection::new::requirement::Requirement, node_api::indexer::QueryParameter};
+use crate::{api::input_selection::Requirement, node_api::indexer::QueryParameter};
 
 /// Type alias of `Result` in iota-client
 pub type Result<T> = std::result::Result<T, Error>;

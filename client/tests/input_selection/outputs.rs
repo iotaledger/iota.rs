@@ -4,7 +4,7 @@
 use std::str::FromStr;
 
 use iota_client::{
-    api::input_selection::new::{Burn, InputSelection},
+    api::input_selection::{Burn, InputSelection},
     block::{output::AliasId, protocol::protocol_parameters},
     Error,
 };
