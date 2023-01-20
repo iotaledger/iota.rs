@@ -8,14 +8,14 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
+        python-version: ['3.8', '3.9', '3.10', '3.11']
 
     steps:
       - uses: actions/checkout@v3
 
       - uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
-          architecture: x64
+          python-version: ${{ matrix.python-version }}
 
       - name: Get current date
         run: echo "CURRENT_DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
@@ -58,6 +58,13 @@ jobs:
         uses: PyO3/maturin-action@v1
         with:
           args: --release --out dist -m client/bindings/python/Cargo.toml
+
+      - name: Build wheels for --target aarch64-apple-darwin
+        if: matrix.os == 'macos-latest'
+        uses: PyO3/maturin-action@v1
+        with:
+          container: off
+          args: --target aarch64-apple-darwin --release --out dist -m client/bindings/python/Cargo.toml -i python${{ matrix.python-version }}
 
       # Build without container on linux
       - name: Build wheels
