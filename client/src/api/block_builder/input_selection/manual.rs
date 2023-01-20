@@ -33,6 +33,7 @@ impl<'a> ClientBlockBuilder<'a> {
         &self,
         governance_transition: Option<HashSet<AliasId>>,
         protocol_parameters: &ProtocolParameters,
+        // TODO Replace with a Burn struct
         _allow_burning: bool,
     ) -> Result<Selected> {
         log::debug!("[get_custom_inputs]");
@@ -94,20 +95,17 @@ impl<'a> ClientBlockBuilder<'a> {
             }
         }
 
-        // let selected_transaction_data = try_select_inputs(
-        //     inputs_data,
-        //     Vec::new(),
-        //     self.outputs.clone(),
-        //     self.custom_remainder_address,
-        //     rent_structure,
-        //     allow_burning,
-        //     current_time,
-        //     token_supply,
-        // )?;
+        let required_inputs = inputs_data
+            .iter()
+            .map(|input| *input.output_id())
+            .collect::<HashSet<_>>();
+        let mut input_selection = InputSelection::new(inputs_data, self.outputs.clone(), protocol_parameters.clone())
+            .required_inputs(required_inputs);
 
-        let selected_transaction_data =
-            InputSelection::new(inputs_data, self.outputs.clone(), protocol_parameters.clone()).select()?;
+        if let Some(address) = self.custom_remainder_address {
+            input_selection = input_selection.remainder_address(address);
+        }
 
-        Ok(selected_transaction_data)
+        input_selection.select()
     }
 }
