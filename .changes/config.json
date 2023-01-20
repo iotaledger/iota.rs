@@ -10,7 +10,7 @@
     "nodejs-binding": {
       "path": "./client/bindings/nodejs",
       "manager": "javascript",
-      "getPublishedVersion": "npm view ${ pkgFile.pkg.name } version",
+      "getPublishedVersion": "npm view ${ pkgFile.pkg.name }@develop version",
       "prepublish": [
         {
           "command": "false || dasel put -f Cargo.toml '.dependencies.iota-client.rev' -v $GITHUB_SHA"
