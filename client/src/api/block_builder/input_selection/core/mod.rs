@@ -47,7 +47,7 @@ pub struct InputSelection {
 }
 
 /// Result of the input selection algorithm.
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Selected {
     /// Selected inputs.
     pub inputs: Vec<InputSigningData>,

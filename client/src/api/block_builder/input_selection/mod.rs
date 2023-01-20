@@ -10,4 +10,7 @@ mod manual;
 mod sender_issuer;
 mod utxo_chains;
 
-pub use self::core::{Burn, InputSelection, Requirement, Selected};
+pub use self::{
+    core::{Burn, InputSelection, Requirement, Selected},
+    helpers::minimum_storage_deposit_basic_output,
+};
