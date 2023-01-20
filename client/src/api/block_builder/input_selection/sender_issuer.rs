@@ -8,12 +8,12 @@ use std::collections::HashSet;
 use crypto::keys::slip10::Chain;
 use iota_types::block::{
     address::Address,
-    output::{dto::OutputDto, feature::Features, AliasOutput, NftOutput, Output, OutputId},
+    output::{dto::OutputDto, feature::Features, AliasOutput, NftOutput, Output},
 };
 
 use crate::{
     api::{
-        address::search_address, block_builder::input_selection::new::requirement::alias::is_alias_state_transition,
+        address::search_address, block_builder::input_selection::core::requirement::alias::is_alias_state_transition,
         ClientBlockBuilder,
     },
     constants::HD_WALLET_TYPE,
@@ -217,77 +217,6 @@ impl<'a> ClientBlockBuilder<'a> {
 
         Ok(required_inputs)
     }
-}
-
-// Select inputs for sender and issuer features
-pub(crate) fn select_inputs_for_sender_and_issuer<'a>(
-    inputs: impl Iterator<Item = &'a InputSigningData> + Clone,
-    selected_inputs: &mut Vec<InputSigningData>,
-    selected_inputs_output_ids: &mut HashSet<OutputId>,
-    outputs: &mut Vec<Output>,
-    current_time: u32,
-) -> Result<()> {
-    log::debug!("[select_inputs_for_sender_and_issuer]");
-
-    let required_sender_or_issuer_addresses =
-        get_required_addresses_for_sender_and_issuer(selected_inputs, outputs, current_time)?;
-    'addresses_loop: for required_address in required_sender_or_issuer_addresses {
-        // first check already selected outputs
-        for input_signing_data in selected_inputs.iter() {
-            // Default to `true`, since it will be a state transition if we add it here
-            let alias_state_transition = is_alias_state_transition(input_signing_data, outputs)?
-                .unwrap_or((true, true))
-                .0;
-            let (required_unlock_address, unlocked_alias_or_nft_address) = input_signing_data
-                .output
-                .required_and_unlocked_address(current_time, input_signing_data.output_id(), alias_state_transition)?;
-
-            if required_unlock_address == required_address {
-                continue 'addresses_loop;
-            }
-            if let Some(unlocked_alias_or_nft_address) = unlocked_alias_or_nft_address {
-                if unlocked_alias_or_nft_address == required_address {
-                    continue 'addresses_loop;
-                }
-            }
-        }
-
-        // if not found, check currently not selected outputs
-        for input_signing_data in inputs.clone() {
-            // Skip already added inputs
-            let output_id = input_signing_data.output_id();
-            if selected_inputs_output_ids.contains(output_id) {
-                continue;
-            }
-
-            // Default to `true`, since it will be a state transition if we add it here
-            let alias_state_transition = is_alias_state_transition(input_signing_data, outputs)?
-                .unwrap_or((true, true))
-                .0;
-            let (required_unlock_address, unlocked_alias_or_nft_address) = input_signing_data
-                .output
-                .required_and_unlocked_address(current_time, output_id, alias_state_transition)?;
-
-            if required_unlock_address == required_address {
-                selected_inputs.push(input_signing_data.clone());
-                selected_inputs_output_ids.insert(*output_id);
-                continue 'addresses_loop;
-            }
-            if let Some(unlocked_alias_or_nft_address) = unlocked_alias_or_nft_address {
-                if unlocked_alias_or_nft_address == required_address {
-                    selected_inputs.push(input_signing_data.clone());
-                    selected_inputs_output_ids.insert(*output_id);
-                    continue 'addresses_loop;
-                }
-            }
-        }
-
-        return Err(Error::MissingInput(format!(
-            "missing input with {required_address:?} for sender or issuer feature"
-        )));
-    }
-
-    Ok(())
 }
 
 // Returns required addresses for sender and issuer features that aren't already unlocked with the selected_inputs

@@ -13,6 +13,7 @@ pub use requirement::Requirement;
 use requirement::{alias::is_alias_state_transition, Requirements};
 
 use crate::{
+    api::types::RemainderData,
     block::{
         address::{Address, AliasAddress, NftAddress},
         output::{Output, OutputId},
@@ -52,6 +53,8 @@ pub struct Selected {
     pub inputs: Vec<InputSigningData>,
     /// Provided and created outputs.
     pub outputs: Vec<Output>,
+    /// Remainder, if there was one.
+    pub remainder: Option<RemainderData>,
 }
 
 impl InputSelection {
@@ -271,15 +274,21 @@ impl InputSelection {
             }
         }
 
-        // self.output.extend(create_storage_deposit_return_outputs(selected_input, self.outputs));
+        let (remainder, storage_deposit_returns) = self.remainder_and_storage_deposit_return_outputs()?;
 
-        let new_outputs = self.remainder_and_storage_deposit_return_outputs()?;
+        if let Some(remainder) = &remainder {
+            self.outputs.push(OutputInfo {
+                output: remainder.output.clone(),
+                provided: false,
+            });
+        }
 
-        self.outputs.extend(new_outputs);
+        self.outputs.extend(storage_deposit_returns);
 
         Ok(Selected {
             inputs: self.selected_inputs,
             outputs: self.outputs.into_iter().map(|output| output.output).collect(),
+            remainder,
         })
     }
 }

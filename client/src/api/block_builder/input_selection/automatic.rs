@@ -3,18 +3,17 @@
 
 //! Automatic input selection for transactions
 
+use std::collections::HashSet;
+
 use crypto::keys::slip10::Chain;
 use iota_types::{
     api::response::OutputWithMetadataResponse,
-    block::{
-        address::Address,
-        output::{Output, RentStructure},
-    },
+    block::{address::Address, output::Output, protocol::ProtocolParameters},
 };
 
 use crate::{
     api::{
-        block_builder::input_selection::types::SelectedTransactionData, input_selection::try_select_inputs,
+        block_builder::input_selection::core::{InputSelection, Selected},
         ClientBlockBuilder, ADDRESS_GAP_RANGE,
     },
     constants::HD_WALLET_TYPE,
@@ -61,7 +60,7 @@ impl<'a> ClientBlockBuilder<'a> {
 
     /// Searches inputs for provided outputs, by requesting the outputs from the account addresses or for
     /// alias/foundry/nft outputs get the latest state with their alias/nft id. Forwards to [try_select_inputs()].
-    pub(crate) async fn get_inputs(&self, rent_structure: &RentStructure) -> Result<SelectedTransactionData> {
+    pub(crate) async fn get_inputs(&self, protocol_parameters: &ProtocolParameters) -> Result<Selected> {
         log::debug!("[get_inputs]");
 
         let account_index = self.account_index;
@@ -74,25 +73,30 @@ impl<'a> ClientBlockBuilder<'a> {
 
         // First get inputs for utxo chains (Alias, Foundry, NFT outputs).
         let mut available_inputs = self.get_utxo_chains_inputs(self.outputs.iter()).await?;
-        let required_inputs_for_sender_or_issuer = self.get_inputs_for_sender_and_issuer(&available_inputs).await?;
+        let required_inputs_for_sender_or_issuer = self
+            .get_inputs_for_sender_and_issuer(&available_inputs)
+            .await?
+            .iter()
+            .map(|input| *input.output_id())
+            .collect::<HashSet<_>>();
 
         let current_time = self.client.get_time_checked().await?;
 
         // Try to select inputs with required inputs for utxo chains alone before requesting more inputs from addresses.
-        if let Ok(selected_transaction_data) = try_select_inputs(
-            required_inputs_for_sender_or_issuer.clone(),
+        let mut input_selection = InputSelection::new(
             available_inputs.clone(),
             self.outputs.clone(),
-            self.custom_remainder_address,
-            rent_structure,
-            // Don't allow burning of native tokens during automatic input selection, because otherwise it
-            // could lead to burned native tokens by accident.
-            false,
-            current_time,
-            token_supply,
-        ) {
+            protocol_parameters.clone(),
+        )
+        .required_inputs(required_inputs_for_sender_or_issuer.clone());
+
+        if let Some(address) = self.custom_remainder_address {
+            input_selection = input_selection.remainder_address(address);
+        }
+
+        if let Ok(selected_transaction_data) = input_selection.select() {
             return Ok(selected_transaction_data);
-        };
+        }
 
         log::debug!("[get_inputs from addresses]");
 
@@ -162,18 +166,19 @@ impl<'a> ClientBlockBuilder<'a> {
                             });
                         }
                     }
-                    let selected_transaction_data = match try_select_inputs(
-                        required_inputs_for_sender_or_issuer.clone(),
+
+                    let mut input_selection = InputSelection::new(
                         available_inputs.clone(),
                         self.outputs.clone(),
-                        self.custom_remainder_address,
-                        rent_structure,
-                        // Don't allow burning of native tokens during automatic input selection, because otherwise it
-                        // could lead to burned native tokens by accident.
-                        false,
-                        current_time,
-                        token_supply,
-                    ) {
+                        protocol_parameters.clone(),
+                    )
+                    .required_inputs(required_inputs_for_sender_or_issuer.clone());
+
+                    if let Some(address) = self.custom_remainder_address {
+                        input_selection = input_selection.remainder_address(address);
+                    }
+
+                    let selected_transaction_data = match input_selection.select() {
                         Ok(r) => r,
                         // for these errors, just try again in the next round with more addresses which might have more
                         // outputs.

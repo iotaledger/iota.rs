@@ -9,6 +9,7 @@ use super::{
     InputSelection, OutputInfo,
 };
 use crate::{
+    api::RemainderData,
     block::{
         address::{Address, Ed25519Address},
         output::{
@@ -16,6 +17,7 @@ use crate::{
             BasicOutputBuilder, NativeTokensBuilder,
         },
     },
+    crypto::keys::slip10::Chain,
     error::{Error, Result},
 };
 
@@ -23,9 +25,9 @@ impl InputSelection {
     // Gets the remainder address from configuration of finds one from the inputs.
     // TODO should this also look for non-ed25519 addresses?
     // TODO should this also check available inputs ? not only selected.
-    fn get_remainder_address(&self) -> Option<Address> {
+    fn get_remainder_address(&self) -> Option<(Address, Option<Chain>)> {
         if self.remainder_address.is_some() {
-            return self.remainder_address;
+            return self.remainder_address.map(|address| (address, None));
         }
 
         // TODO need to check timelock/expiration
@@ -34,7 +36,7 @@ impl InputSelection {
             if let Some(unlock_conditions) = input.output.unlock_conditions() {
                 if let Some(address_unlock_condition) = unlock_conditions.address() {
                     if address_unlock_condition.address().is_ed25519() {
-                        return Some(*address_unlock_condition.address());
+                        return Some((*address_unlock_condition.address(), input.chain.clone()));
                     }
                 }
 
@@ -42,13 +44,16 @@ impl InputSelection {
 
                 if let Some(governor_address_unlock_condition) = unlock_conditions.governor_address() {
                     if governor_address_unlock_condition.address().is_ed25519() {
-                        return Some(*governor_address_unlock_condition.address());
+                        return Some((*governor_address_unlock_condition.address(), input.chain.clone()));
                     }
                 }
 
                 if let Some(state_controller_address_unlock_condition) = unlock_conditions.state_controller_address() {
                     if state_controller_address_unlock_condition.address().is_ed25519() {
-                        return Some(*state_controller_address_unlock_condition.address());
+                        return Some((
+                            *state_controller_address_unlock_condition.address(),
+                            input.chain.clone(),
+                        ));
                     }
                 }
             }
@@ -91,9 +96,11 @@ impl InputSelection {
         ))
     }
 
-    pub(crate) fn remainder_and_storage_deposit_return_outputs(&self) -> Result<Vec<OutputInfo>> {
+    pub(crate) fn remainder_and_storage_deposit_return_outputs(
+        &self,
+    ) -> Result<(Option<RemainderData>, Vec<OutputInfo>)> {
         let (inputs_sum, outputs_sum, inputs_sdr, outputs_sdr) = amount_sums(&self.selected_inputs, &self.outputs);
-        let mut new_outputs = Vec::new();
+        let mut storage_deposit_returns = Vec::new();
 
         for (address, amount) in inputs_sdr {
             let output_sdr_amount = *outputs_sdr.get(&address).unwrap_or(&0);
@@ -104,7 +111,9 @@ impl InputSelection {
                     .with_unlock_conditions([UnlockCondition::Address(AddressUnlockCondition::new(address))])
                     .finish_output(self.protocol_parameters.token_supply())?;
 
-                new_outputs.push(OutputInfo {
+                // TODO verify_storage_deposit ?
+
+                storage_deposit_returns.push(OutputInfo {
                     output: srd_output,
                     provided: false,
                 });
@@ -126,12 +135,12 @@ impl InputSelection {
         let native_tokens_diff = get_native_tokens_diff(&input_native_tokens, &output_native_tokens)?;
 
         if inputs_sum == outputs_sum && native_tokens_diff.is_none() {
-            return Ok(new_outputs);
+            return Ok((None, storage_deposit_returns));
         }
 
-        let Some(remainder_address) = self.get_remainder_address() else {
+        let Some((remainder_address, chain)) = self.get_remainder_address() else {
                 return Err(Error::MissingInputWithEd25519Address);
-            };
+        };
 
         // TODO checked ops ?
         let mut remainder_builder = BasicOutputBuilder::new_with_amount(inputs_sum - outputs_sum)?;
@@ -150,11 +159,13 @@ impl InputSelection {
             self.protocol_parameters.token_supply(),
         )?;
 
-        new_outputs.push(OutputInfo {
-            output: remainder,
-            provided: false,
-        });
-
-        Ok(new_outputs)
+        Ok((
+            Some(RemainderData {
+                output: remainder,
+                chain,
+                address: remainder_address,
+            }),
+            storage_deposit_returns,
+        ))
     }
 }

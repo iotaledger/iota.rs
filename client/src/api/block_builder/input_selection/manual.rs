@@ -8,13 +8,15 @@ use std::collections::HashSet;
 use crypto::keys::slip10::Chain;
 use iota_types::block::{
     address::Address,
-    output::{AliasId, Output, RentStructure},
+    output::{AliasId, Output},
+    protocol::ProtocolParameters,
 };
 
 use crate::{
     api::{
-        address::search_address, block_builder::input_selection::types::SelectedTransactionData,
-        input_selection::try_select_inputs, ClientBlockBuilder,
+        address::search_address,
+        block_builder::input_selection::{InputSelection, Selected},
+        ClientBlockBuilder,
     },
     constants::HD_WALLET_TYPE,
     secret::types::{InputSigningData, OutputMetadata},
@@ -30,9 +32,10 @@ impl<'a> ClientBlockBuilder<'a> {
     pub(crate) async fn get_custom_inputs(
         &self,
         governance_transition: Option<HashSet<AliasId>>,
-        rent_structure: &RentStructure,
-        allow_burning: bool,
-    ) -> Result<SelectedTransactionData> {
+        protocol_parameters: &ProtocolParameters,
+        // TODO Replace with a Burn struct
+        _allow_burning: bool,
+    ) -> Result<Selected> {
         log::debug!("[get_custom_inputs]");
 
         let mut inputs_data = Vec::new();
@@ -92,17 +95,17 @@ impl<'a> ClientBlockBuilder<'a> {
             }
         }
 
-        let selected_transaction_data = try_select_inputs(
-            inputs_data,
-            Vec::new(),
-            self.outputs.clone(),
-            self.custom_remainder_address,
-            rent_structure,
-            allow_burning,
-            current_time,
-            token_supply,
-        )?;
+        let required_inputs = inputs_data
+            .iter()
+            .map(|input| *input.output_id())
+            .collect::<HashSet<_>>();
+        let mut input_selection = InputSelection::new(inputs_data, self.outputs.clone(), protocol_parameters.clone())
+            .required_inputs(required_inputs);
 
-        Ok(selected_transaction_data)
+        if let Some(address) = self.custom_remainder_address {
+            input_selection = input_selection.remainder_address(address);
+        }
+
+        input_selection.select()
     }
 }
