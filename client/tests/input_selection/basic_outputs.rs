@@ -16,8 +16,8 @@ use iota_client::{
 use crate::input_selection::{
     build_inputs, build_outputs, is_remainder_or_return, unsorted_eq,
     Build::{Alias, Basic, Nft},
-    ALIAS_ID_0, ALIAS_ID_1, BECH32_ADDRESS_ALIAS, BECH32_ADDRESS_ED25519_0, BECH32_ADDRESS_ED25519_1,
-    BECH32_ADDRESS_NFT, BECH32_ADDRESS_REMAINDER, NFT_ID_0, NFT_ID_1,
+    ALIAS_ID_0, ALIAS_ID_1, BECH32_ADDRESS_ALIAS_1, BECH32_ADDRESS_ED25519_0, BECH32_ADDRESS_ED25519_1,
+    BECH32_ADDRESS_NFT_1, BECH32_ADDRESS_REMAINDER, NFT_ID_0, NFT_ID_1,
 };
 
 #[test]
@@ -332,7 +332,7 @@ fn alias_sender() {
         2_000_000,
         BECH32_ADDRESS_ED25519_0,
         None,
-        Some(BECH32_ADDRESS_ALIAS),
+        Some(BECH32_ADDRESS_ALIAS_1),
         None,
     )]);
 
@@ -394,7 +394,7 @@ fn missing_alias_sender() {
         1_000_000,
         BECH32_ADDRESS_ED25519_0,
         None,
-        Some(BECH32_ADDRESS_ALIAS),
+        Some(BECH32_ADDRESS_ALIAS_1),
         None,
     )]);
 
@@ -402,7 +402,7 @@ fn missing_alias_sender() {
 
     assert!(matches!(
         selected,
-        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender.is_alias() && sender == Address::try_from_bech32(BECH32_ADDRESS_ALIAS).unwrap().1
+        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender.is_alias() && sender == Address::try_from_bech32(BECH32_ADDRESS_ALIAS_1).unwrap().1
     ));
 }
 
@@ -422,7 +422,7 @@ fn nft_sender() {
         2_000_000,
         BECH32_ADDRESS_ED25519_0,
         None,
-        Some(BECH32_ADDRESS_NFT),
+        Some(BECH32_ADDRESS_NFT_1),
         None,
     )]);
 
@@ -485,7 +485,7 @@ fn missing_nft_sender() {
         1_000_000,
         BECH32_ADDRESS_ED25519_0,
         None,
-        Some(BECH32_ADDRESS_NFT),
+        Some(BECH32_ADDRESS_NFT_1),
         None,
     )]);
 
@@ -493,7 +493,7 @@ fn missing_nft_sender() {
 
     assert!(matches!(
         selected,
-        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender.is_nft() && sender == Address::try_from_bech32(BECH32_ADDRESS_NFT).unwrap().1
+        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender.is_nft() && sender == Address::try_from_bech32(BECH32_ADDRESS_NFT_1).unwrap().1
     ));
 }
 

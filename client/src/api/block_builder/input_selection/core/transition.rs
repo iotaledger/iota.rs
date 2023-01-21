@@ -99,8 +99,6 @@ impl InputSelection {
             return Ok(None);
         }
 
-        println!("YOOOOOOOOOO");
-
         let output = FoundryOutputBuilder::from(input).finish_output(self.protocol_parameters.token_supply())?;
 
         Ok(Some(output))
