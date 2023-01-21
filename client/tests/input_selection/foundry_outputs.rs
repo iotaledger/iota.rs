@@ -527,7 +527,7 @@ fn mint_and_burn_at_the_same_time() {
 }
 
 #[test]
-fn take_amount_from_foundry_to_fund_basic() {
+fn take_amount_from_alias_and_foundry_to_fund_basic() {
     let protocol_parameters = protocol_parameters();
     let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
     let foundry_id = FoundryId::build(&AliasAddress::from(alias_id_1), 0, SimpleTokenScheme::KIND);
