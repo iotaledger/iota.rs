@@ -25,6 +25,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `NodeCoreAPI::get_included_block_metadata`;
 
+### Changed
+
+- Updated dependencies;
+
 ## 1.0.0-rc.1 - 2022-12-14
 
 Initial release of the Python bindings.

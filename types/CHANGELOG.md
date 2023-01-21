@@ -25,6 +25,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `NativeTokens::{contains, get}`;
 
+### Changed
+
+- Updated dependencies;
+
 ## 1.0.0-rc.4 - 2022-12-20
 
 ### Added
