@@ -510,3 +510,39 @@ fn mint_and_burn_at_the_same_time() {
         }
     });
 }
+
+#[test]
+fn take_amount_from_foundry_to_fund_basic() {
+    let protocol_parameters = protocol_parameters();
+    let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
+    let foundry_id = FoundryId::build(&AliasAddress::from(alias_id_1), 0, SimpleTokenScheme::KIND);
+    let token_id = TokenId::from(foundry_id);
+
+    let inputs = build_inputs(vec![
+        Alias(2_000_000, alias_id_1, BECH32_ADDRESS_ED25519_0, None, None, None),
+        Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None),
+        Foundry(
+            1_000_000,
+            alias_id_1,
+            SimpleTokenScheme::new(U256::from(100), U256::from(0), U256::from(200)).unwrap(),
+            Some(vec![(&token_id.to_string(), 100)]),
+        ),
+    ]);
+    let outputs = build_outputs(vec![Basic(3_200_000, BECH32_ADDRESS_ED25519_0, None, None, None)]);
+
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+        .select()
+        .unwrap();
+
+    println!("{selected:?}");
+
+    assert!(unsorted_eq(&selected.inputs, &inputs));
+    assert_eq!(selected.outputs.len(), 3);
+    assert!(selected.outputs.contains(&outputs[0]));
+    assert!(selected.outputs.iter().any(|output| output.is_alias()));
+    assert!(selected.outputs.iter().any(|output| output.is_foundry()));
+    assert_eq!(
+        selected.outputs.iter().map(|output| output.amount()).sum::<u64>(),
+        4_000_000
+    );
+}
