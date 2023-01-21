@@ -1,7 +1,7 @@
 // Copyright 2023 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use std::str::FromStr;
+use std::{collections::HashSet, str::FromStr};
 
 use iota_client::{
     api::input_selection::{Burn, InputSelection, Requirement},
@@ -15,9 +15,9 @@ use iota_client::{
 use primitive_types::U256;
 
 use crate::input_selection::{
-    build_inputs, build_outputs, is_remainder_or_return,
+    build_inputs, build_outputs, is_remainder_or_return, unsorted_eq,
     Build::{Alias, Basic, Foundry, Nft},
-    ALIAS_ID_0, ALIAS_ID_1, BECH32_ADDRESS_ED25519_0, NFT_ID_0, NFT_ID_1,
+    ALIAS_ID_0, ALIAS_ID_1, ALIAS_ID_2, BECH32_ADDRESS_ED25519_0, NFT_ID_0, NFT_ID_1, NFT_ID_2,
 };
 
 #[test]
@@ -82,6 +82,28 @@ fn burn_alias_absent() {
 }
 
 #[test]
+fn burn_aliases_present() {
+    let protocol_parameters = protocol_parameters();
+    let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
+    let alias_id_2 = AliasId::from_str(ALIAS_ID_2).unwrap();
+
+    let inputs = build_inputs(vec![
+        Alias(1_000_000, alias_id_1, BECH32_ADDRESS_ED25519_0, None, None, None),
+        Alias(1_000_000, alias_id_2, BECH32_ADDRESS_ED25519_0, None, None, None),
+        Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None),
+    ]);
+    let outputs = build_outputs(vec![Basic(3_000_000, BECH32_ADDRESS_ED25519_0, None, None, None)]);
+
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+        .burn(Burn::new().set_aliases(HashSet::from([alias_id_1, alias_id_2])))
+        .select()
+        .unwrap();
+
+    assert!(unsorted_eq(&selected.inputs, &inputs));
+    assert!(unsorted_eq(&selected.outputs, &outputs));
+}
+
+#[test]
 fn burn_nft_present() {
     let protocol_parameters = protocol_parameters();
     let nft_id_1 = NftId::from_str(NFT_ID_1).unwrap();
@@ -143,6 +165,28 @@ fn burn_nft_absent() {
 }
 
 #[test]
+fn burn_nfts_present() {
+    let protocol_parameters = protocol_parameters();
+    let nft_id_1 = NftId::from_str(NFT_ID_1).unwrap();
+    let nft_id_2 = NftId::from_str(NFT_ID_2).unwrap();
+
+    let inputs = build_inputs(vec![
+        Nft(1_000_000, nft_id_1, BECH32_ADDRESS_ED25519_0, None, None, None, None),
+        Nft(1_000_000, nft_id_2, BECH32_ADDRESS_ED25519_0, None, None, None, None),
+        Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None),
+    ]);
+    let outputs = build_outputs(vec![Basic(3_000_000, BECH32_ADDRESS_ED25519_0, None, None, None)]);
+
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+        .burn(Burn::new().set_nfts(HashSet::from([nft_id_1, nft_id_2])))
+        .select()
+        .unwrap();
+
+    assert!(unsorted_eq(&selected.inputs, &inputs));
+    assert!(unsorted_eq(&selected.outputs, &outputs));
+}
+
+#[test]
 fn burn_foundry_present() {
     let protocol_parameters = protocol_parameters();
     let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
@@ -151,6 +195,7 @@ fn burn_foundry_present() {
         Foundry(
             1_000_000,
             alias_id_1,
+            0,
             SimpleTokenScheme::new(U256::from(0), U256::from(0), U256::from(10)).unwrap(),
             None,
         ),
@@ -207,6 +252,7 @@ fn burn_foundry_absent() {
     let foundry_id_1 = build_inputs(vec![Foundry(
         1_000_000,
         alias_id_1,
+        1,
         SimpleTokenScheme::new(U256::from(0), U256::from(0), U256::from(10)).unwrap(),
         None,
     )])[0]
@@ -228,4 +274,60 @@ fn burn_foundry_absent() {
         selected,
         Err(Error::UnfulfillableRequirement(Requirement::Foundry(foundry_id))) if foundry_id == foundry_id_1
     ));
+}
+
+#[test]
+fn burn_foundries_present() {
+    let protocol_parameters = protocol_parameters();
+    let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
+
+    let inputs = build_inputs(vec![
+        Foundry(
+            1_000_000,
+            alias_id_1,
+            0,
+            SimpleTokenScheme::new(U256::from(0), U256::from(0), U256::from(10)).unwrap(),
+            None,
+        ),
+        Foundry(
+            1_000_000,
+            alias_id_1,
+            1,
+            SimpleTokenScheme::new(U256::from(0), U256::from(0), U256::from(10)).unwrap(),
+            None,
+        ),
+        Alias(1_000_000, alias_id_1, BECH32_ADDRESS_ED25519_0, None, None, None),
+    ]);
+    let outputs = build_outputs(vec![Basic(2_000_000, BECH32_ADDRESS_ED25519_0, None, None, None)]);
+
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+        .burn(Burn::new().set_foundries(HashSet::from([
+            inputs[0].output.as_foundry().id(),
+            inputs[1].output.as_foundry().id(),
+        ])))
+        .select()
+        .unwrap();
+
+    assert!(unsorted_eq(&selected.inputs, &inputs));
+    assert_eq!(selected.outputs.len(), 2);
+    assert!(selected.outputs.contains(&outputs[0]));
+    selected.outputs.iter().for_each(|output| {
+        if !outputs.contains(output) {
+            assert!(output.is_alias());
+            assert_eq!(output.amount(), 1_000_000);
+            assert_eq!(output.as_alias().native_tokens().len(), 0);
+            assert_eq!(*output.as_alias().alias_id(), alias_id_1);
+            assert_eq!(output.as_alias().unlock_conditions().len(), 2);
+            assert_eq!(output.as_alias().features().len(), 0);
+            assert_eq!(output.as_alias().immutable_features().len(), 0);
+            assert_eq!(
+                *output.as_alias().state_controller_address(),
+                Address::try_from_bech32(BECH32_ADDRESS_ED25519_0).unwrap().1
+            );
+            assert_eq!(
+                *output.as_alias().governor_address(),
+                Address::try_from_bech32(BECH32_ADDRESS_ED25519_0).unwrap().1
+            );
+        }
+    });
 }

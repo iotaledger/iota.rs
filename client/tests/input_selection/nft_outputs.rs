@@ -16,8 +16,8 @@ use iota_client::{
 use crate::input_selection::{
     build_inputs, build_outputs, is_remainder_or_return, unsorted_eq,
     Build::{Basic, Nft},
-    BECH32_ADDRESS_ALIAS, BECH32_ADDRESS_ED25519_0, BECH32_ADDRESS_ED25519_1, BECH32_ADDRESS_NFT, NFT_ID_0, NFT_ID_1,
-    NFT_ID_2,
+    BECH32_ADDRESS_ALIAS_1, BECH32_ADDRESS_ED25519_0, BECH32_ADDRESS_ED25519_1, BECH32_ADDRESS_NFT_1, NFT_ID_0,
+    NFT_ID_1, NFT_ID_2,
 };
 
 #[test]
@@ -291,7 +291,7 @@ fn nft_in_output_and_sender() {
             1_000_000,
             BECH32_ADDRESS_ED25519_0,
             None,
-            Some(BECH32_ADDRESS_NFT),
+            Some(BECH32_ADDRESS_NFT_1),
             None,
         ),
     ]);
@@ -416,7 +416,7 @@ fn missing_alias_sender() {
         nft_id_2,
         BECH32_ADDRESS_ED25519_0,
         None,
-        Some(BECH32_ADDRESS_ALIAS),
+        Some(BECH32_ADDRESS_ALIAS_1),
         None,
         None,
     )]);
@@ -425,7 +425,7 @@ fn missing_alias_sender() {
 
     assert!(matches!(
         selected,
-        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender.is_alias() && sender == Address::try_from_bech32(BECH32_ADDRESS_ALIAS).unwrap().1
+        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender.is_alias() && sender == Address::try_from_bech32(BECH32_ADDRESS_ALIAS_1).unwrap().1
     ));
 }
 
@@ -441,7 +441,7 @@ fn missing_alias_issuer_created() {
         BECH32_ADDRESS_ED25519_0,
         None,
         None,
-        Some(BECH32_ADDRESS_ALIAS),
+        Some(BECH32_ADDRESS_ALIAS_1),
         None,
     )]);
 
@@ -449,7 +449,7 @@ fn missing_alias_issuer_created() {
 
     assert!(matches!(
         selected,
-        Err(Error::UnfulfillableRequirement(Requirement::Issuer(issuer))) if issuer.is_alias() && issuer == Address::try_from_bech32(BECH32_ADDRESS_ALIAS).unwrap().1
+        Err(Error::UnfulfillableRequirement(Requirement::Issuer(issuer))) if issuer.is_alias() && issuer == Address::try_from_bech32(BECH32_ADDRESS_ALIAS_1).unwrap().1
     ));
 }
 
@@ -473,7 +473,7 @@ fn missing_alias_issuer_transition() {
         BECH32_ADDRESS_ED25519_0,
         None,
         None,
-        Some(BECH32_ADDRESS_ALIAS),
+        Some(BECH32_ADDRESS_ALIAS_1),
         None,
     )]);
 
@@ -501,7 +501,7 @@ fn missing_nft_sender() {
         nft_id_2,
         BECH32_ADDRESS_ED25519_0,
         None,
-        Some(BECH32_ADDRESS_NFT),
+        Some(BECH32_ADDRESS_NFT_1),
         None,
         None,
     )]);
@@ -510,7 +510,7 @@ fn missing_nft_sender() {
 
     assert!(matches!(
         selected,
-        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender.is_nft() && sender == Address::try_from_bech32(BECH32_ADDRESS_NFT).unwrap().1
+        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender.is_nft() && sender == Address::try_from_bech32(BECH32_ADDRESS_NFT_1).unwrap().1
     ));
 }
 
@@ -526,7 +526,7 @@ fn missing_nft_issuer_created() {
         BECH32_ADDRESS_ED25519_0,
         None,
         None,
-        Some(BECH32_ADDRESS_NFT),
+        Some(BECH32_ADDRESS_NFT_1),
         None,
     )]);
 
@@ -534,7 +534,7 @@ fn missing_nft_issuer_created() {
 
     assert!(matches!(
         selected,
-        Err(Error::UnfulfillableRequirement(Requirement::Issuer(issuer))) if issuer.is_nft() && issuer == Address::try_from_bech32(BECH32_ADDRESS_NFT).unwrap().1
+        Err(Error::UnfulfillableRequirement(Requirement::Issuer(issuer))) if issuer.is_nft() && issuer == Address::try_from_bech32(BECH32_ADDRESS_NFT_1).unwrap().1
     ));
 }
 
@@ -558,7 +558,7 @@ fn missing_nft_issuer_transition() {
         BECH32_ADDRESS_ED25519_0,
         None,
         None,
-        Some(BECH32_ADDRESS_NFT),
+        Some(BECH32_ADDRESS_NFT_1),
         None,
     )]);
 
@@ -699,7 +699,7 @@ fn nft_burn_should_validate_nft_sender() {
         3_000_000,
         BECH32_ADDRESS_ED25519_0,
         None,
-        Some(BECH32_ADDRESS_NFT),
+        Some(BECH32_ADDRESS_NFT_1),
         None,
     )]);
 
@@ -718,7 +718,7 @@ fn nft_burn_should_validate_nft_address() {
     let nft_id_1 = NftId::from_str(NFT_ID_1).unwrap();
 
     let inputs = build_inputs(vec![
-        Basic(2_000_000, BECH32_ADDRESS_NFT, None, None, None),
+        Basic(2_000_000, BECH32_ADDRESS_NFT_1, None, None, None),
         Nft(1_000_000, nft_id_1, BECH32_ADDRESS_ED25519_0, None, None, None, None),
     ]);
     let outputs = build_outputs(vec![Basic(3_000_000, BECH32_ADDRESS_ED25519_0, None, None, None)]);
