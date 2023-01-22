@@ -22,7 +22,7 @@ fn no_inputs() {
     let inputs = Vec::new();
     let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None)]);
 
-    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
+    let selected = InputSelection::new(inputs, outputs, vec![], protocol_parameters).select();
 
     assert!(matches!(selected, Err(Error::NoAvailableInputsProvided)));
 }
@@ -34,7 +34,7 @@ fn no_outputs() {
     let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None)]);
     let outputs = Vec::new();
 
-    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
+    let selected = InputSelection::new(inputs, outputs, vec![], protocol_parameters).select();
 
     assert!(matches!(selected, Err(Error::NoOutputsProvided)));
 }
@@ -54,7 +54,7 @@ fn no_outputs_but_burn() {
     )]);
     let outputs = Vec::new();
 
-    let selected = InputSelection::new(inputs.clone(), outputs, protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs, vec![], protocol_parameters)
         .burn(Burn::new().add_alias(alias_id_2))
         .select()
         .unwrap();

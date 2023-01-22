@@ -44,7 +44,7 @@ fn input_nft_eq_output_nft() {
         None,
     )]);
 
-    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), vec![], protocol_parameters)
         .select()
         .unwrap();
 
@@ -77,7 +77,7 @@ fn transition_nft_id_zero() {
         None,
     )]);
 
-    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), vec![], protocol_parameters)
         .select()
         .unwrap();
 
@@ -101,7 +101,7 @@ fn input_amount_lt_output_amount() {
     )]);
     let outputs = build_outputs(vec![Basic(2_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None)]);
 
-    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
+    let selected = InputSelection::new(inputs, outputs, vec![], protocol_parameters).select();
 
     assert!(matches!(
         selected,
@@ -129,7 +129,7 @@ fn basic_output_with_nft_input() {
     )]);
     let outputs = build_outputs(vec![Basic(2_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None)]);
 
-    let selected = InputSelection::new(inputs.clone(), outputs, protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs, vec![], protocol_parameters)
         .select()
         .unwrap();
 
@@ -154,7 +154,7 @@ fn mint_nft() {
         None,
     )]);
 
-    let selected = InputSelection::new(inputs.clone(), outputs, protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs, vec![], protocol_parameters)
         .select()
         .unwrap();
 
@@ -187,7 +187,7 @@ fn burn_nft() {
     )]);
     let outputs = build_outputs(vec![Basic(2_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None)]);
 
-    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), vec![], protocol_parameters)
         .burn(Burn::new().add_nft(nft_id_2))
         .select()
         .unwrap();
@@ -220,7 +220,7 @@ fn not_enough_storage_deposit_for_remainder() {
         None,
     )]);
 
-    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
+    let selected = InputSelection::new(inputs, outputs, vec![], protocol_parameters).select();
 
     assert!(matches!(
         selected,
@@ -247,7 +247,7 @@ fn missing_input_for_nft_output() {
         None,
     )]);
 
-    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
+    let selected = InputSelection::new(inputs, outputs, vec![], protocol_parameters).select();
 
     assert!(matches!(
         selected,
@@ -271,7 +271,7 @@ fn missing_input_for_nft_output_but_created() {
         None,
     )]);
 
-    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
+    let selected = InputSelection::new(inputs, outputs, vec![], protocol_parameters).select();
 
     assert!(selected.is_ok());
 }
@@ -297,7 +297,7 @@ fn nft_in_output_and_sender() {
         ),
     ]);
 
-    let selected = InputSelection::new(inputs.clone(), outputs, protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs, vec![], protocol_parameters)
         .select()
         .unwrap();
 
@@ -337,7 +337,7 @@ fn missing_ed25519_sender() {
         None,
     )]);
 
-    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
+    let selected = InputSelection::new(inputs, outputs, vec![], protocol_parameters).select();
 
     assert!(matches!(
         selected,
@@ -361,7 +361,7 @@ fn missing_ed25519_issuer_created() {
         None,
     )]);
 
-    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
+    let selected = InputSelection::new(inputs, outputs, vec![], protocol_parameters).select();
 
     assert!(matches!(
         selected,
@@ -393,7 +393,7 @@ fn missing_ed25519_issuer_transition() {
         None,
     )]);
 
-    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
+    let selected = InputSelection::new(inputs, outputs, vec![], protocol_parameters).select();
 
     assert!(selected.is_ok());
 }
@@ -422,7 +422,7 @@ fn missing_alias_sender() {
         None,
     )]);
 
-    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
+    let selected = InputSelection::new(inputs, outputs, vec![], protocol_parameters).select();
 
     assert!(matches!(
         selected,
@@ -446,7 +446,7 @@ fn missing_alias_issuer_created() {
         None,
     )]);
 
-    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
+    let selected = InputSelection::new(inputs, outputs, vec![], protocol_parameters).select();
 
     assert!(matches!(
         selected,
@@ -478,7 +478,7 @@ fn missing_alias_issuer_transition() {
         None,
     )]);
 
-    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
+    let selected = InputSelection::new(inputs, outputs, vec![], protocol_parameters).select();
 
     assert!(selected.is_ok());
 }
@@ -507,7 +507,7 @@ fn missing_nft_sender() {
         None,
     )]);
 
-    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
+    let selected = InputSelection::new(inputs, outputs, vec![], protocol_parameters).select();
 
     assert!(matches!(
         selected,
@@ -531,7 +531,7 @@ fn missing_nft_issuer_created() {
         None,
     )]);
 
-    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
+    let selected = InputSelection::new(inputs, outputs, vec![], protocol_parameters).select();
 
     assert!(matches!(
         selected,
@@ -563,7 +563,7 @@ fn missing_nft_issuer_transition() {
         None,
     )]);
 
-    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
+    let selected = InputSelection::new(inputs, outputs, vec![], protocol_parameters).select();
 
     assert!(selected.is_ok());
 }
@@ -587,7 +587,7 @@ fn increase_nft_amount() {
         None,
     )]);
 
-    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), vec![], protocol_parameters)
         .select()
         .unwrap();
 
@@ -614,7 +614,7 @@ fn decrease_nft_amount() {
         None,
     )]);
 
-    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), vec![], protocol_parameters)
         .select()
         .unwrap();
 
@@ -645,7 +645,7 @@ fn prefer_basic_to_nft() {
     ]);
     let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None)]);
 
-    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), vec![], protocol_parameters)
         .select()
         .unwrap();
 
@@ -665,7 +665,7 @@ fn take_amount_from_nft_to_fund_basic() {
     ]);
     let outputs = build_outputs(vec![Basic(1_200_000, BECH32_ADDRESS_ED25519_0, None, None, None, None)]);
 
-    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), vec![], protocol_parameters)
         .select()
         .unwrap();
 
@@ -705,7 +705,7 @@ fn nft_burn_should_validate_nft_sender() {
         None,
     )]);
 
-    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), vec![], protocol_parameters)
         .burn(Burn::new().add_nft(nft_id_1))
         .select()
         .unwrap();
@@ -725,7 +725,7 @@ fn nft_burn_should_validate_nft_address() {
     ]);
     let outputs = build_outputs(vec![Basic(3_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None)]);
 
-    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), vec![], protocol_parameters)
         .burn(Burn::new().add_nft(nft_id_1))
         .select()
         .unwrap();
@@ -750,7 +750,7 @@ fn transitioned_zero_nft_id_no_longer_is_zero() {
     )]);
     let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None)]);
 
-    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), vec![], protocol_parameters)
         .select()
         .unwrap();
 

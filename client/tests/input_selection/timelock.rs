@@ -21,7 +21,7 @@ fn one_output_timelock_not_expired() {
     )]);
     let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_1, None, None, None, None)]);
 
-    let selected = InputSelection::new(inputs, outputs, protocol_parameters)
+    let selected = InputSelection::new(inputs, outputs, vec![], protocol_parameters)
         .timestamp(100)
         .select();
 
@@ -42,7 +42,7 @@ fn timelock_equal_timestamp() {
     )]);
     let outputs = build_outputs(vec![Basic(2_000_000, BECH32_ADDRESS_ED25519_1, None, None, None, None)]);
 
-    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), vec![], protocol_parameters)
         .timestamp(200)
         .select()
         .unwrap();
@@ -75,7 +75,7 @@ fn two_outputs_one_timelock_expired() {
     ]);
     let outputs = build_outputs(vec![Basic(2_000_000, BECH32_ADDRESS_ED25519_1, None, None, None, None)]);
 
-    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), vec![], protocol_parameters)
         .timestamp(100)
         .select()
         .unwrap();
@@ -109,7 +109,7 @@ fn two_outputs_one_timelock_expired_2() {
     ]);
     let outputs = build_outputs(vec![Basic(2_000_000, BECH32_ADDRESS_ED25519_1, None, None, None, None)]);
 
-    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), vec![], protocol_parameters)
         .timestamp(100)
         .select()
         .unwrap();
@@ -133,7 +133,7 @@ fn one_output_timelock_expired() {
     )]);
     let outputs = build_outputs(vec![Basic(2_000_000, BECH32_ADDRESS_ED25519_1, None, None, None, None)]);
 
-    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), vec![], protocol_parameters)
         .timestamp(100)
         .select()
         .unwrap();

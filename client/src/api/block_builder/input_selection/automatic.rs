@@ -86,6 +86,7 @@ impl<'a> ClientBlockBuilder<'a> {
         let mut input_selection = InputSelection::new(
             available_inputs.clone(),
             self.outputs.clone(),
+            Vec::new(),
             protocol_parameters.clone(),
         )
         .required_inputs(required_inputs_for_sender_or_issuer.clone());
@@ -170,6 +171,7 @@ impl<'a> ClientBlockBuilder<'a> {
                     let mut input_selection = InputSelection::new(
                         available_inputs.clone(),
                         self.outputs.clone(),
+                        Vec::new(),
                         protocol_parameters.clone(),
                     )
                     .required_inputs(required_inputs_for_sender_or_issuer.clone());

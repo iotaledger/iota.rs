@@ -99,8 +99,13 @@ impl<'a> ClientBlockBuilder<'a> {
             .iter()
             .map(|input| *input.output_id())
             .collect::<HashSet<_>>();
-        let mut input_selection = InputSelection::new(inputs_data, self.outputs.clone(), protocol_parameters.clone())
-            .required_inputs(required_inputs);
+        let mut input_selection = InputSelection::new(
+            inputs_data,
+            self.outputs.clone(),
+            Vec::new(),
+            protocol_parameters.clone(),
+        )
+        .required_inputs(required_inputs);
 
         if let Some(address) = self.custom_remainder_address {
             input_selection = input_selection.remainder_address(address);

@@ -34,7 +34,7 @@ fn missing_input_alias_for_foundry() {
         None,
     )]);
 
-    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
+    let selected = InputSelection::new(inputs, outputs, vec![], protocol_parameters).select();
 
     assert!(matches!(
         selected,
@@ -63,7 +63,7 @@ fn existing_input_alias_for_foundry_alias() {
         None,
     )]);
 
-    let selected = InputSelection::new(inputs.clone(), outputs, protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs, vec![], protocol_parameters)
         .select()
         .unwrap();
 
@@ -96,7 +96,7 @@ fn minted_native_tokens_in_new_remainder() {
         None,
     )]);
 
-    let selected = InputSelection::new(inputs.clone(), outputs, protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs, vec![], protocol_parameters)
         .select()
         .unwrap();
 
@@ -145,7 +145,7 @@ fn minted_native_tokens_in_provided_output() {
         ),
     ]);
 
-    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), vec![], protocol_parameters)
         .select()
         .unwrap();
 
@@ -184,7 +184,7 @@ fn melt_native_tokens() {
         None,
     )]);
 
-    let selected = InputSelection::new(inputs.clone(), outputs, protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs, vec![], protocol_parameters)
         .select()
         .unwrap();
 
@@ -228,7 +228,7 @@ fn destroy_foundry_with_alias_state_transition() {
     // Alias output gets the amount from the foundry output added
     let outputs = vec![alias_output];
 
-    let selected = InputSelection::new(inputs.clone(), outputs, protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs, vec![], protocol_parameters)
         .burn(Burn::new().add_foundry(inputs[1].output.as_foundry().id()))
         .select()
         .unwrap();
@@ -255,7 +255,7 @@ fn destroy_foundry_with_alias_governance_transition() {
     ]);
     let outputs = vec![inputs[0].output.clone()];
 
-    let selected = InputSelection::new(inputs.clone(), outputs, protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs, vec![], protocol_parameters)
         .burn(Burn::new().add_foundry(inputs[1].output.as_foundry().id()))
         .select();
 
@@ -282,7 +282,7 @@ fn destroy_foundry_with_alias_burn() {
     ]);
     let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None)]);
 
-    let selected = InputSelection::new(inputs.clone(), outputs, protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs, vec![], protocol_parameters)
         .burn(
             Burn::new()
                 .add_foundry(inputs[1].output.as_foundry().id())
@@ -314,7 +314,7 @@ fn prefer_basic_to_foundry() {
     ]);
     let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None)]);
 
-    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), vec![], protocol_parameters)
         .select()
         .unwrap();
 
@@ -347,7 +347,7 @@ fn simple_foundry_transition_basic_not_needed() {
         None,
     )]);
 
-    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), vec![], protocol_parameters)
         .select()
         .unwrap();
 
@@ -401,7 +401,7 @@ fn simple_foundry_transition_basic_not_needed_with_remainder() {
         None,
     )]);
 
-    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), vec![], protocol_parameters)
         .select()
         .unwrap();
 
@@ -467,7 +467,7 @@ fn simple_foundry_transition_basic_not_needed_with_remainder() {
 //         Some(BECH32_ADDRESS_ALIAS_SENDER),
 //     )];
 
-//     let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+//     let selected = InputSelection::new(inputs.clone(), outputs.clone(), vec![],protocol_parameters)
 //         .select()
 //         .unwrap();
 
@@ -533,7 +533,7 @@ fn mint_and_burn_at_the_same_time() {
         Some(vec![(&token_id.to_string(), 110)]),
     )]);
 
-    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), vec![], protocol_parameters)
         .burn(Burn::new().add_native_token(token_id, 10))
         .select()
         .unwrap();
@@ -586,7 +586,7 @@ fn take_amount_from_alias_and_foundry_to_fund_basic() {
     ]);
     let outputs = build_outputs(vec![Basic(3_200_000, BECH32_ADDRESS_ED25519_0, None, None, None, None)]);
 
-    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), vec![], protocol_parameters)
         .select()
         .unwrap();
 
@@ -626,7 +626,7 @@ fn mint_native_tokens_but_burn_alias() {
         Some(vec![(&token_id.to_string(), 100)]),
     )]);
 
-    let selected = InputSelection::new(inputs, outputs, protocol_parameters)
+    let selected = InputSelection::new(inputs, outputs, vec![], protocol_parameters)
         .burn(Burn::new().add_alias(alias_id_1))
         .select();
 
@@ -661,7 +661,7 @@ fn melted_tokens_not_provided() {
         None,
     )]);
 
-    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
+    let selected = InputSelection::new(inputs, outputs, vec![], protocol_parameters).select();
 
     assert!(matches!(
         selected,
@@ -697,7 +697,7 @@ fn burned_tokens_not_provided() {
         None,
     )]);
 
-    let selected = InputSelection::new(inputs, outputs, protocol_parameters)
+    let selected = InputSelection::new(inputs, outputs, vec![], protocol_parameters)
         .burn(Burn::new().add_native_token(token_id_1, 100))
         .select();
 

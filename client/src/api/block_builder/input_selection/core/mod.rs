@@ -32,6 +32,7 @@ pub struct InputSelection {
     forbidden_inputs: HashSet<OutputId>,
     selected_inputs: Vec<InputSigningData>,
     outputs: Vec<Output>,
+    addresses: Vec<Address>,
     burn: Option<Burn>,
     remainder_address: Option<Address>,
     protocol_parameters: ProtocolParameters,
@@ -152,6 +153,7 @@ impl InputSelection {
     pub fn new(
         available_inputs: Vec<InputSigningData>,
         outputs: Vec<Output>,
+        addresses: Vec<Address>,
         protocol_parameters: ProtocolParameters,
     ) -> Self {
         Self {
@@ -160,6 +162,7 @@ impl InputSelection {
             forbidden_inputs: HashSet::new(),
             selected_inputs: Vec::new(),
             outputs,
+            addresses,
             burn: None,
             remainder_address: None,
             protocol_parameters,

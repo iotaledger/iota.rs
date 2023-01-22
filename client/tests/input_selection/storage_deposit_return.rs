@@ -22,7 +22,7 @@ fn sdruc_output_not_provided_no_remainder() {
     )]);
     let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None)]);
 
-    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), vec![], protocol_parameters)
         .select()
         .unwrap();
 
@@ -58,7 +58,7 @@ fn sdruc_output_provided_no_remainder() {
         Basic(1_000_000, BECH32_ADDRESS_ED25519_1, None, None, None, None),
     ]);
 
-    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), vec![], protocol_parameters)
         .select()
         .unwrap();
 
@@ -80,7 +80,7 @@ fn sdruc_output_provided_remainder() {
     )]);
     let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_1, None, None, None, None)]);
 
-    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), vec![], protocol_parameters)
         .select()
         .unwrap();
 
@@ -123,7 +123,7 @@ fn two_sdrucs_to_the_same_address_both_needed() {
     ]);
     let outputs = build_outputs(vec![Basic(2_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None)]);
 
-    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), vec![], protocol_parameters)
         .select()
         .unwrap();
 
@@ -166,7 +166,7 @@ fn two_sdrucs_to_the_same_address_one_needed() {
     ]);
     let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None)]);
 
-    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), vec![], protocol_parameters)
         .select()
         .unwrap();
 
@@ -210,7 +210,7 @@ fn two_sdrucs_to_different_addresses_both_needed() {
     ]);
     let outputs = build_outputs(vec![Basic(2_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None)]);
 
-    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), vec![], protocol_parameters)
         .select()
         .unwrap();
 
@@ -255,7 +255,7 @@ fn two_sdrucs_to_different_addresses_one_needed() {
     ]);
     let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None)]);
 
-    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), vec![], protocol_parameters)
         .select()
         .unwrap();
 
@@ -289,7 +289,7 @@ fn insufficient_amount_because_of_sdruc() {
     )]);
     let outputs = build_outputs(vec![Basic(2_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None)]);
 
-    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
+    let selected = InputSelection::new(inputs, outputs, vec![], protocol_parameters).select();
 
     assert!(matches!(
         selected,
@@ -324,7 +324,7 @@ fn useless_sdruc_required_for_sender_feature() {
         None,
     )]);
 
-    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), vec![], protocol_parameters)
         .select()
         .unwrap();
 

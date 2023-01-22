@@ -34,7 +34,7 @@ fn burn_alias_present() {
     ]);
     let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None)]);
 
-    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), vec![], protocol_parameters)
         .burn(Burn::new().add_alias(alias_id_1))
         .select()
         .unwrap();
@@ -56,7 +56,7 @@ fn burn_alias_id_zero() {
     let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None)]);
     let nft_id = NftId::from(inputs[0].output_id());
 
-    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), vec![], protocol_parameters)
         .burn(Burn::new().add_nft(nft_id))
         .select()
         .unwrap();
@@ -74,7 +74,7 @@ fn burn_alias_absent() {
     let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None)]);
     let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None)]);
 
-    let selected = InputSelection::new(inputs, outputs, protocol_parameters)
+    let selected = InputSelection::new(inputs, outputs, vec![], protocol_parameters)
         .burn(Burn::new().add_alias(alias_id_1))
         .select();
 
@@ -97,7 +97,7 @@ fn burn_aliases_present() {
     ]);
     let outputs = build_outputs(vec![Basic(3_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None)]);
 
-    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), vec![], protocol_parameters)
         .burn(Burn::new().set_aliases(HashSet::from([alias_id_1, alias_id_2])))
         .select()
         .unwrap();
@@ -117,7 +117,7 @@ fn burn_nft_present() {
     ]);
     let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None)]);
 
-    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), vec![], protocol_parameters)
         .burn(Burn::new().add_nft(nft_id_1))
         .select()
         .unwrap();
@@ -139,7 +139,7 @@ fn burn_nft_id_zero() {
     let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None)]);
     let alias_id = AliasId::from(inputs[0].output_id());
 
-    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), vec![], protocol_parameters)
         .burn(Burn::new().add_alias(alias_id))
         .select()
         .unwrap();
@@ -157,7 +157,7 @@ fn burn_nft_absent() {
     let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None)]);
     let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None)]);
 
-    let selected = InputSelection::new(inputs, outputs, protocol_parameters)
+    let selected = InputSelection::new(inputs, outputs, vec![], protocol_parameters)
         .burn(Burn::new().add_nft(nft_id_1))
         .select();
 
@@ -180,7 +180,7 @@ fn burn_nfts_present() {
     ]);
     let outputs = build_outputs(vec![Basic(3_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None)]);
 
-    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), vec![], protocol_parameters)
         .burn(Burn::new().set_nfts(HashSet::from([nft_id_1, nft_id_2])))
         .select()
         .unwrap();
@@ -207,7 +207,7 @@ fn burn_foundry_present() {
     ]);
     let outputs = build_outputs(vec![Basic(500_000, BECH32_ADDRESS_ED25519_0, None, None, None, None)]);
 
-    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), vec![], protocol_parameters)
         .burn(Burn::new().add_foundry(inputs[0].output.as_foundry().id()))
         .select()
         .unwrap();
@@ -269,7 +269,7 @@ fn burn_foundry_absent() {
     ]);
     let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None)]);
 
-    let selected = InputSelection::new(inputs, outputs, protocol_parameters)
+    let selected = InputSelection::new(inputs, outputs, vec![], protocol_parameters)
         .burn(Burn::new().add_foundry(foundry_id_1))
         .select();
 
@@ -303,7 +303,7 @@ fn burn_foundries_present() {
     ]);
     let outputs = build_outputs(vec![Basic(2_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None)]);
 
-    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), vec![], protocol_parameters)
         .burn(Burn::new().set_foundries(HashSet::from([
             inputs[0].output.as_foundry().id(),
             inputs[1].output.as_foundry().id(),
@@ -348,7 +348,7 @@ fn burn_native_tokens() {
         None,
     )]);
 
-    let selected = InputSelection::new(inputs.clone(), Vec::new(), protocol_parameters)
+    let selected = InputSelection::new(inputs.clone(), Vec::new(), vec![], protocol_parameters)
         .burn(Burn::new().set_native_tokens(HashMap::from([
             (TokenId::from_str(TOKEN_ID_1).unwrap(), 20),
             (TokenId::from_str(TOKEN_ID_2).unwrap(), 30),
