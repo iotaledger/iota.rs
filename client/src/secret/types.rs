@@ -134,7 +134,7 @@ impl LedgerNanoStatus {
 }
 
 ///
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct OutputMetadata {
     /// The identifier of the block in which the output was included.
     #[serde(rename = "blockId")]
@@ -291,7 +291,7 @@ impl From<&OutputMetadata> for OutputMetadataResponse {
 }
 
 /// Data for transaction inputs for signing and ordering of unlock blocks
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct InputSigningData {
     /// The output
     pub output: Output,

@@ -4,7 +4,7 @@
 use crate::block::{address::Address, output::verify_output_amount, protocol::ProtocolParameters, Error};
 
 /// Defines the amount of IOTAs used as storage deposit that have to be returned to the return [`Address`].
-#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, packable::Packable)]
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, packable::Packable)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[packable(unpack_visitor = ProtocolParameters)]
 pub struct StorageDepositReturnUnlockCondition {

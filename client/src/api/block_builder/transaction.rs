@@ -35,13 +35,13 @@ impl<'a> ClientBlockBuilder<'a> {
     /// Prepare a transaction
     pub async fn prepare_transaction(&self) -> Result<PreparedTransactionData> {
         log::debug!("[prepare_transaction]");
-        let rent_structure = self.client.get_rent_structure().await?;
+        let protocol_parameters = self.client.get_protocol_parameters().await?;
         let token_supply = self.client.get_token_supply().await?;
 
         let mut governance_transition: Option<HashSet<AliasId>> = None;
         for output in &self.outputs {
             // Check if the outputs have enough amount to cover the storage deposit
-            output.verify_storage_deposit(rent_structure.clone(), token_supply)?;
+            output.verify_storage_deposit(protocol_parameters.rent_structure().clone(), token_supply)?;
             if let Output::Alias(x) = output {
                 if x.state_index() > 0 {
                     // Check if the transaction is a governance_transition, by checking if the new index is the same as
@@ -62,10 +62,10 @@ impl<'a> ClientBlockBuilder<'a> {
 
         // Input selection
         let selected_transaction_data = if self.inputs.is_some() {
-            self.get_custom_inputs(governance_transition, &rent_structure, self.allow_burning)
+            self.get_custom_inputs(governance_transition, &protocol_parameters, self.allow_burning)
                 .await?
         } else {
-            self.get_inputs(&rent_structure).await?
+            self.get_inputs(&protocol_parameters).await?
         };
 
         // Build transaction payload

@@ -6,7 +6,7 @@ use derive_more::From;
 use crate::block::address::Address;
 
 /// Identifies the validated sender of an output.
-#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, From, packable::Packable)]
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, From, packable::Packable)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct SenderFeature(Address);
 

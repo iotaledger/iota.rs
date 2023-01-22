@@ -284,7 +284,7 @@ impl From<&AliasOutput> for AliasOutputBuilder {
 pub(crate) type StateMetadataLength = BoundedU16<0, { AliasOutput::STATE_METADATA_LENGTH_MAX }>;
 
 /// Describes an alias account in the ledger that can be controlled by the state and governance controllers.
-#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct AliasOutput {
     // Amount of IOTA tokens held by the output.

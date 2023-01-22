@@ -35,7 +35,7 @@ use crate::{
 };
 
 ///
-#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, From)]
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, From)]
 #[cfg_attr(
     feature = "serde",
     derive(serde::Serialize, serde::Deserialize),
@@ -174,7 +174,7 @@ impl Packable for UnlockCondition {
 pub(crate) type UnlockConditionCount = BoundedU8<0, { UnlockConditions::COUNT_MAX }>;
 
 ///
-#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Deref, Packable)]
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Deref, Packable)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[packable(unpack_error = Error, with = |e| e.unwrap_item_err_or_else(|p| Error::InvalidUnlockConditionCount(p.into())))]
 #[packable(unpack_visitor = ProtocolParameters)]

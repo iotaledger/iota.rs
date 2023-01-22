@@ -29,9 +29,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Client::get_included_block_metadata` API endpoint;
 - `Message::GetIncludedBlockMetadata` to message interface;
 - `Serialize_repr`, `Deserialize_repr` and `#[repr(u8)]` to `ParticipationEventType`;
+- `Error::StrongholdMnemonicMissing`;
 
 ### Changed
 
+- Complete refactoring of Input Selection;
 - Updated dependencies;
 - Fields of `Error::InputAddressNotFound` are now named;
 - `Event` renamed to `ParticipationEvent`;
