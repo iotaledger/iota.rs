@@ -323,6 +323,10 @@ pub enum Error {
     #[cfg(feature = "stronghold")]
     #[error("a mnemonic has already been stored in the Stronghold vault")]
     StrongholdMnemonicAlreadyStored,
+    /// No mnemonic has been stored into the Stronghold vault
+    #[cfg(feature = "stronghold")]
+    #[error("no mnemonic has been stored into the Stronghold vault")]
+    StrongholdMnemonicMissing,
     /// Procedure execution error from Stronghold
     #[cfg(feature = "stronghold")]
     #[error("Stronghold reported a procedure error: {0}")]
