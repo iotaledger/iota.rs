@@ -20,7 +20,15 @@ fn no_inputs() {
     let protocol_parameters = protocol_parameters();
 
     let inputs = Vec::new();
-    let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None)]);
+    let outputs = build_outputs(vec![Basic(
+        1_000_000,
+        BECH32_ADDRESS_ED25519_0,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )]);
 
     let selected = InputSelection::new(
         inputs,
@@ -37,7 +45,15 @@ fn no_inputs() {
 fn no_outputs() {
     let protocol_parameters = protocol_parameters();
 
-    let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None)]);
+    let inputs = build_inputs(vec![Basic(
+        1_000_000,
+        BECH32_ADDRESS_ED25519_0,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )]);
     let outputs = Vec::new();
 
     let selected = InputSelection::new(
@@ -90,8 +106,24 @@ fn no_outputs_but_burn() {
 fn no_address_provided() {
     let protocol_parameters = protocol_parameters();
 
-    let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None)]);
-    let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None)]);
+    let inputs = build_inputs(vec![Basic(
+        1_000_000,
+        BECH32_ADDRESS_ED25519_0,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )]);
+    let outputs = build_outputs(vec![Basic(
+        1_000_000,
+        BECH32_ADDRESS_ED25519_0,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )]);
 
     let selected = InputSelection::new(inputs, outputs, vec![], protocol_parameters).select();
 
@@ -102,8 +134,24 @@ fn no_address_provided() {
 fn no_matching_address_provided() {
     let protocol_parameters = protocol_parameters();
 
-    let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None)]);
-    let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None)]);
+    let inputs = build_inputs(vec![Basic(
+        1_000_000,
+        BECH32_ADDRESS_ED25519_0,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )]);
+    let outputs = build_outputs(vec![Basic(
+        1_000_000,
+        BECH32_ADDRESS_ED25519_0,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )]);
 
     let selected = InputSelection::new(
         inputs,
@@ -121,10 +169,18 @@ fn two_addresses_one_missing() {
     let protocol_parameters = protocol_parameters();
 
     let inputs = build_inputs(vec![
-        Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None),
-        Basic(1_000_000, BECH32_ADDRESS_ED25519_1, None, None, None, None),
+        Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None, None),
+        Basic(1_000_000, BECH32_ADDRESS_ED25519_1, None, None, None, None, None),
     ]);
-    let outputs = build_outputs(vec![Basic(2_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None)]);
+    let outputs = build_outputs(vec![Basic(
+        2_000_000,
+        BECH32_ADDRESS_ED25519_0,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )]);
 
     let selected = InputSelection::new(
         inputs,
@@ -148,10 +204,18 @@ fn two_addresses() {
     let protocol_parameters = protocol_parameters();
 
     let inputs = build_inputs(vec![
-        Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None),
-        Basic(1_000_000, BECH32_ADDRESS_ED25519_1, None, None, None, None),
+        Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None, None),
+        Basic(1_000_000, BECH32_ADDRESS_ED25519_1, None, None, None, None, None),
     ]);
-    let outputs = build_outputs(vec![Basic(2_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None)]);
+    let outputs = build_outputs(vec![Basic(
+        2_000_000,
+        BECH32_ADDRESS_ED25519_0,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )]);
 
     let selected = InputSelection::new(
         inputs.clone(),

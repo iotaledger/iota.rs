@@ -19,8 +19,17 @@ fn one_output_timelock_not_expired() {
         None,
         Some((BECH32_ADDRESS_ED25519_1, 1_000_000)),
         Some(200),
+        None,
     )]);
-    let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_1, None, None, None, None)]);
+    let outputs = build_outputs(vec![Basic(
+        1_000_000,
+        BECH32_ADDRESS_ED25519_1,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )]);
 
     let selected = InputSelection::new(
         inputs,
@@ -45,8 +54,17 @@ fn timelock_equal_timestamp() {
         None,
         Some((BECH32_ADDRESS_ED25519_1, 1_000_000)),
         Some(200),
+        None,
     )]);
-    let outputs = build_outputs(vec![Basic(2_000_000, BECH32_ADDRESS_ED25519_1, None, None, None, None)]);
+    let outputs = build_outputs(vec![Basic(
+        2_000_000,
+        BECH32_ADDRESS_ED25519_1,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )]);
 
     let selected = InputSelection::new(
         inputs.clone(),
@@ -74,6 +92,7 @@ fn two_outputs_one_timelock_expired() {
             None,
             Some((BECH32_ADDRESS_ED25519_1, 1_000_000)),
             Some(200),
+            None,
         ),
         Basic(
             2_000_000,
@@ -82,9 +101,18 @@ fn two_outputs_one_timelock_expired() {
             None,
             Some((BECH32_ADDRESS_ED25519_1, 1_000_000)),
             Some(50),
+            None,
         ),
     ]);
-    let outputs = build_outputs(vec![Basic(2_000_000, BECH32_ADDRESS_ED25519_1, None, None, None, None)]);
+    let outputs = build_outputs(vec![Basic(
+        2_000_000,
+        BECH32_ADDRESS_ED25519_1,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )]);
 
     let selected = InputSelection::new(
         inputs.clone(),
@@ -113,6 +141,7 @@ fn two_outputs_one_timelock_expired_2() {
             None,
             Some((BECH32_ADDRESS_ED25519_1, 1_000_000)),
             Some(200),
+            None,
         ),
         Basic(
             2_000_000,
@@ -121,9 +150,18 @@ fn two_outputs_one_timelock_expired_2() {
             None,
             Some((BECH32_ADDRESS_ED25519_1, 1_000_000)),
             None,
+            None,
         ),
     ]);
-    let outputs = build_outputs(vec![Basic(2_000_000, BECH32_ADDRESS_ED25519_1, None, None, None, None)]);
+    let outputs = build_outputs(vec![Basic(
+        2_000_000,
+        BECH32_ADDRESS_ED25519_1,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )]);
 
     let selected = InputSelection::new(
         inputs.clone(),
@@ -151,8 +189,17 @@ fn one_output_timelock_expired() {
         None,
         Some((BECH32_ADDRESS_ED25519_1, 1_000_000)),
         Some(50),
+        None,
     )]);
-    let outputs = build_outputs(vec![Basic(2_000_000, BECH32_ADDRESS_ED25519_1, None, None, None, None)]);
+    let outputs = build_outputs(vec![Basic(
+        2_000_000,
+        BECH32_ADDRESS_ED25519_1,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )]);
 
     let selected = InputSelection::new(
         inputs.clone(),
