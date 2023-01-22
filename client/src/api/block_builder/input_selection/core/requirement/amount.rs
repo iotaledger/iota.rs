@@ -3,7 +3,7 @@
 
 use std::collections::{HashMap, HashSet};
 
-use super::{InputSelection, OutputInfo, Requirement};
+use super::{InputSelection, Requirement};
 use crate::{
     block::{
         address::Address,
@@ -19,7 +19,7 @@ use crate::{
 
 pub(crate) fn amount_sums(
     selected_inputs: &[InputSigningData],
-    outputs: &[OutputInfo],
+    outputs: &[Output],
 ) -> (u64, u64, HashMap<Address, u64>, HashMap<Address, u64>) {
     let mut inputs_sum = 0;
     let mut outputs_sum = 0;
@@ -39,9 +39,9 @@ pub(crate) fn amount_sums(
     }
 
     for output in outputs {
-        outputs_sum += output.inner.amount();
+        outputs_sum += output.amount();
 
-        if let Output::Basic(output) = &output.inner {
+        if let Output::Basic(output) = output {
             if let Some(address) = output.simple_deposit_address() {
                 *outputs_sdr.entry(*address).or_default() += output.amount();
             }
@@ -225,35 +225,38 @@ impl InputSelection {
         'ici: {
             if missing_amount(inputs_sum, outputs_sum, remainder_amount, native_tokens_remainder) != 0 {
                 // Moving funds of already transitioned other outputs ?
-                let outputs = self
-                    .outputs
-                    .iter_mut()
-                    .filter(|output| !output.inner.is_basic() && !output.provided);
+                let outputs = self.outputs.iter_mut().filter(|output| {
+                    output
+                        .chain_id()
+                        .as_ref()
+                        .map(|chain_id| self.automatically_transitioned.contains(chain_id))
+                        .unwrap_or(false)
+                });
 
                 for output in outputs {
                     let diff = missing_amount(inputs_sum, outputs_sum, remainder_amount, native_tokens_remainder);
-                    let amount = output.inner.amount();
-                    let rent = output.inner.rent_cost(self.protocol_parameters.rent_structure());
+                    let amount = output.amount();
+                    let rent = output.rent_cost(self.protocol_parameters.rent_structure());
 
                     let new_amount = if amount >= diff + rent { amount - diff } else { rent };
 
                     // TODO check that new_amount is enough for the rent
 
-                    let new_output = match &output.inner {
-                        Output::Alias(output) => AliasOutputBuilder::from(output)
+                    let new_output = match output {
+                        Output::Alias(output) => AliasOutputBuilder::from(&*output)
                             .with_amount(new_amount)?
                             .finish_output(self.protocol_parameters.token_supply())?,
-                        Output::Nft(output) => NftOutputBuilder::from(output)
+                        Output::Nft(output) => NftOutputBuilder::from(&*output)
                             .with_amount(new_amount)?
                             .finish_output(self.protocol_parameters.token_supply())?,
-                        Output::Foundry(output) => FoundryOutputBuilder::from(output)
+                        Output::Foundry(output) => FoundryOutputBuilder::from(&*output)
                             .with_amount(new_amount)?
                             .finish_output(self.protocol_parameters.token_supply())?,
                         _ => panic!("only alias, nft and foundry can be automatically created"),
                     };
 
                     outputs_sum -= amount - new_amount;
-                    output.inner = new_output;
+                    *output = new_output;
 
                     if missing_amount(inputs_sum, outputs_sum, remainder_amount, native_tokens_remainder) == 0 {
                         break 'ici;

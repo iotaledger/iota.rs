@@ -9,7 +9,7 @@ pub(crate) mod native_tokens;
 pub(crate) mod nft;
 pub(crate) mod sender;
 
-use super::{Burn, InputSelection, OutputInfo};
+use super::{Burn, InputSelection};
 use crate::{
     block::{
         address::Address,
@@ -87,12 +87,12 @@ impl Requirements {
     /// Creates a new [`Requirements`] from outputs.
     pub(crate) fn from_outputs<'a>(
         inputs: impl Iterator<Item = &'a InputSigningData> + Clone,
-        outputs: impl Iterator<Item = &'a OutputInfo>,
+        outputs: impl Iterator<Item = &'a Output>,
     ) -> Self {
         let mut requirements = Requirements::new();
 
         for output in outputs {
-            let is_created = match &output.inner {
+            let is_created = match output {
                 // Add an alias requirement if the alias output is transitioning and then required in the inputs.
                 Output::Alias(alias_output) => {
                     let is_created = alias_output.alias_id().is_null();
@@ -137,13 +137,13 @@ impl Requirements {
             };
 
             // Add a sender requirement if the sender feature is present.
-            if let Some(sender) = output.inner.features().and_then(Features::sender) {
+            if let Some(sender) = output.features().and_then(Features::sender) {
                 requirements.push(Requirement::Sender(*sender.address()));
             }
 
             // Add an issuer requirement if the issuer feature is present and the chain output is created.
             if is_created {
-                if let Some(issuer) = output.inner.immutable_features().and_then(Features::issuer) {
+                if let Some(issuer) = output.immutable_features().and_then(Features::issuer) {
                     requirements.push(Requirement::Issuer(*issuer.address()));
                 }
             }

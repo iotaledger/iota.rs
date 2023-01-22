@@ -118,16 +118,7 @@ impl InputSelection {
         // PANIC: safe to unwrap as it's been checked that both can't be None at the same time.
         let input = selected_input.unwrap_or_else(|| &self.available_inputs[available_index.unwrap()]);
 
-        if is_alias_state_transition(
-            input,
-            // TODO this output conversion is temporarily needed to accommodate the current version of ISA.
-            self.outputs
-                .iter()
-                .map(|output| output.inner.clone())
-                .collect::<Vec<_>>()
-                .as_slice(),
-        )? == Some((false, true))
-        {
+        if is_alias_state_transition(input, &self.outputs)? == Some((false, true)) {
             return Err(Error::UnfulfillableRequirement(Requirement::Alias(
                 alias_id,
                 state_transition,

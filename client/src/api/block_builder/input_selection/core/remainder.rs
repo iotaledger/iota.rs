@@ -6,7 +6,7 @@ use super::{
         amount::amount_sums,
         native_tokens::{get_minted_and_melted_native_tokens, get_native_tokens, get_native_tokens_diff},
     },
-    InputSelection, OutputInfo,
+    InputSelection,
 };
 use crate::{
     api::RemainderData,
@@ -14,7 +14,7 @@ use crate::{
         address::{Address, Ed25519Address},
         output::{
             unlock_condition::{AddressUnlockCondition, UnlockCondition},
-            BasicOutputBuilder, NativeTokensBuilder,
+            BasicOutputBuilder, NativeTokensBuilder, Output,
         },
     },
     crypto::keys::slip10::Chain,
@@ -64,9 +64,9 @@ impl InputSelection {
 
     pub(crate) fn remainder_amount(&self) -> Result<(u64, bool)> {
         let mut input_native_tokens = get_native_tokens(self.selected_inputs.iter().map(|input| &input.output))?;
-        let mut output_native_tokens = get_native_tokens(self.outputs.iter().map(|output| &output.inner))?;
+        let mut output_native_tokens = get_native_tokens(self.outputs.iter())?;
         let (minted_native_tokens, melted_native_tokens) =
-            get_minted_and_melted_native_tokens(&self.selected_inputs, &self.outputs)?;
+            get_minted_and_melted_native_tokens(&self.selected_inputs, self.outputs.as_slice())?;
 
         input_native_tokens.merge(minted_native_tokens)?;
         output_native_tokens.merge(melted_native_tokens)?;
@@ -96,9 +96,7 @@ impl InputSelection {
         ))
     }
 
-    pub(crate) fn remainder_and_storage_deposit_return_outputs(
-        &self,
-    ) -> Result<(Option<RemainderData>, Vec<OutputInfo>)> {
+    pub(crate) fn remainder_and_storage_deposit_return_outputs(&self) -> Result<(Option<RemainderData>, Vec<Output>)> {
         let (inputs_sum, outputs_sum, inputs_sdr, outputs_sdr) = amount_sums(&self.selected_inputs, &self.outputs);
         let mut storage_deposit_returns = Vec::new();
 
@@ -113,15 +111,12 @@ impl InputSelection {
 
                 // TODO verify_storage_deposit ?
 
-                storage_deposit_returns.push(OutputInfo {
-                    inner: srd_output,
-                    provided: false,
-                });
+                storage_deposit_returns.push(srd_output);
             }
         }
 
         let mut input_native_tokens = get_native_tokens(self.selected_inputs.iter().map(|input| &input.output))?;
-        let mut output_native_tokens = get_native_tokens(self.outputs.iter().map(|output| &output.inner))?;
+        let mut output_native_tokens = get_native_tokens(self.outputs.iter())?;
         let (minted_native_tokens, melted_native_tokens) =
             get_minted_and_melted_native_tokens(&self.selected_inputs, &self.outputs)?;
 

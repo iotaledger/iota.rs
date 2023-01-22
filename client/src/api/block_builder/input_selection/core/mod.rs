@@ -14,7 +14,7 @@ use crate::{
     api::types::RemainderData,
     block::{
         address::{Address, AliasAddress, NftAddress},
-        output::{Output, OutputId},
+        output::{ChainId, Output, OutputId},
         protocol::ProtocolParameters,
     },
     error::{Error, Result},
@@ -24,12 +24,6 @@ use crate::{
 // TODO should ISA have its own error type? At least review errors.
 // TODO make methods actually take self? There was a mut issue.
 
-#[derive(Debug)]
-pub(crate) struct OutputInfo {
-    pub(crate) inner: Output,
-    pub(crate) provided: bool,
-}
-
 /// Working state for the input selection algorithm.
 pub struct InputSelection {
     available_inputs: Vec<InputSigningData>,
@@ -37,11 +31,12 @@ pub struct InputSelection {
     required_inputs: Option<HashSet<OutputId>>,
     forbidden_inputs: HashSet<OutputId>,
     selected_inputs: Vec<InputSigningData>,
-    outputs: Vec<OutputInfo>,
+    outputs: Vec<Output>,
     burn: Option<Burn>,
     remainder_address: Option<Address>,
     protocol_parameters: ProtocolParameters,
     timestamp: u32,
+    automatically_transitioned: HashSet<ChainId>,
 }
 
 /// Result of the input selection algorithm.
@@ -59,13 +54,9 @@ impl InputSelection {
     fn required_alias_nft_addresses(&self, input: &InputSigningData) -> Result<Option<Requirement>> {
         // TODO burn?
         // TODO unwrap or false?
-        // TODO this is only temporary to accommodate the current ISA.
-        let outputs = self
-            .outputs
-            .iter()
-            .map(|output| output.inner.clone())
-            .collect::<Vec<_>>();
-        let is_alias_state_transition = is_alias_state_transition(input, &outputs)?.unwrap_or((false, false)).0;
+        let is_alias_state_transition = is_alias_state_transition(input, &self.outputs)?
+            .unwrap_or((false, false))
+            .0;
         let (required_address, _) =
             input
                 .output
@@ -80,18 +71,14 @@ impl InputSelection {
 
     fn select_input(&mut self, input: InputSigningData, requirements: &mut Requirements) -> Result<()> {
         if let Some(output) = self.transition_input(&input)? {
-            let output_info = OutputInfo {
-                inner: output,
-                provided: false,
-            };
             // TODO is this really necessary?
             // TODO should input be pushed before ? probably
             requirements.extend(Requirements::from_outputs(
                 // TODO do we really need to chain?
                 self.available_inputs.iter().chain(self.selected_inputs.iter()),
-                std::iter::once(&output_info),
+                std::iter::once(&output),
             ));
-            self.outputs.push(output_info);
+            self.outputs.push(output);
         }
 
         if let Some(requirement) = self.required_alias_nft_addresses(&input)? {
@@ -172,13 +159,7 @@ impl InputSelection {
             required_inputs: None,
             forbidden_inputs: HashSet::new(),
             selected_inputs: Vec::new(),
-            outputs: outputs
-                .into_iter()
-                .map(|output| OutputInfo {
-                    inner: output,
-                    provided: true,
-                })
-                .collect(),
+            outputs,
             burn: None,
             remainder_address: None,
             protocol_parameters,
@@ -186,6 +167,7 @@ impl InputSelection {
                 .duration_since(instant::SystemTime::UNIX_EPOCH)
                 .expect("time went backwards")
                 .as_secs() as u32,
+            automatically_transitioned: HashSet::new(),
         }
     }
 
@@ -290,17 +272,14 @@ impl InputSelection {
         let (remainder, storage_deposit_returns) = self.remainder_and_storage_deposit_return_outputs()?;
 
         if let Some(remainder) = &remainder {
-            self.outputs.push(OutputInfo {
-                inner: remainder.output.clone(),
-                provided: false,
-            });
+            self.outputs.push(remainder.output.clone());
         }
 
         self.outputs.extend(storage_deposit_returns);
 
         Ok(Selected {
             inputs: self.selected_inputs,
-            outputs: self.outputs.into_iter().map(|output| output.inner).collect(),
+            outputs: self.outputs,
             remainder,
         })
     }
