@@ -17,7 +17,7 @@ fn one_output_timelock_not_expired() {
         BECH32_ADDRESS_ED25519_0,
         None,
         None,
-        Some((BECH32_ADDRESS_ED25519_1, 1_000_000)),
+        None,
         Some(200),
         None,
     )]);
@@ -52,7 +52,7 @@ fn timelock_equal_timestamp() {
         BECH32_ADDRESS_ED25519_0,
         None,
         None,
-        Some((BECH32_ADDRESS_ED25519_1, 1_000_000)),
+        None,
         Some(200),
         None,
     )]);
@@ -85,24 +85,8 @@ fn two_outputs_one_timelock_expired() {
     let protocol_parameters = protocol_parameters();
 
     let inputs = build_inputs(vec![
-        Basic(
-            2_000_000,
-            BECH32_ADDRESS_ED25519_0,
-            None,
-            None,
-            Some((BECH32_ADDRESS_ED25519_1, 1_000_000)),
-            Some(200),
-            None,
-        ),
-        Basic(
-            2_000_000,
-            BECH32_ADDRESS_ED25519_0,
-            None,
-            None,
-            Some((BECH32_ADDRESS_ED25519_1, 1_000_000)),
-            Some(50),
-            None,
-        ),
+        Basic(2_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, Some(200), None),
+        Basic(2_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, Some(50), None),
     ]);
     let outputs = build_outputs(vec![Basic(
         2_000_000,
@@ -134,24 +118,8 @@ fn two_outputs_one_timelock_expired_2() {
     let protocol_parameters = protocol_parameters();
 
     let inputs = build_inputs(vec![
-        Basic(
-            2_000_000,
-            BECH32_ADDRESS_ED25519_0,
-            None,
-            None,
-            Some((BECH32_ADDRESS_ED25519_1, 1_000_000)),
-            Some(200),
-            None,
-        ),
-        Basic(
-            2_000_000,
-            BECH32_ADDRESS_ED25519_0,
-            None,
-            None,
-            Some((BECH32_ADDRESS_ED25519_1, 1_000_000)),
-            None,
-            None,
-        ),
+        Basic(2_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, Some(200), None),
+        Basic(2_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None, None),
     ]);
     let outputs = build_outputs(vec![Basic(
         2_000_000,
@@ -187,7 +155,7 @@ fn one_output_timelock_expired() {
         BECH32_ADDRESS_ED25519_0,
         None,
         None,
-        Some((BECH32_ADDRESS_ED25519_1, 1_000_000)),
+        None,
         Some(50),
         None,
     )]);
