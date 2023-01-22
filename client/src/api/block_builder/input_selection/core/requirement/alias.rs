@@ -123,7 +123,7 @@ impl InputSelection {
             // TODO this output conversion is temporarily needed to accommodate the current version of ISA.
             self.outputs
                 .iter()
-                .map(|output| output.output.clone())
+                .map(|output| output.inner.clone())
                 .collect::<Vec<_>>()
                 .as_slice(),
         )? == Some((false, true))

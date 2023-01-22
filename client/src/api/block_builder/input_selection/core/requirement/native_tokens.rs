@@ -33,7 +33,7 @@ pub(crate) fn get_minted_and_melted_native_tokens(
     let mut melted_native_tokens = NativeTokensBuilder::new();
 
     for output in outputs {
-        if let Output::Foundry(output_foundry) = &output.output {
+        if let Output::Foundry(output_foundry) = &output.inner {
             let TokenScheme::Simple(output_foundry_simple_ts) = output_foundry.token_scheme();
             let mut initial_creation = true;
 
@@ -119,7 +119,7 @@ impl InputSelection {
         let mut newly_selected_ids = HashSet::new();
 
         let mut input_native_tokens = get_native_tokens(self.selected_inputs.iter().map(|input| &input.output))?;
-        let mut output_native_tokens = get_native_tokens(self.outputs.iter().map(|output| &output.output))?;
+        let mut output_native_tokens = get_native_tokens(self.outputs.iter().map(|output| &output.inner))?;
         let (minted_native_tokens, melted_native_tokens) =
             get_minted_and_melted_native_tokens(&self.selected_inputs, &self.outputs)?;
 

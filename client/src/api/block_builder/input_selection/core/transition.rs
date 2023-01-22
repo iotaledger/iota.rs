@@ -33,7 +33,7 @@ impl InputSelection {
         if self
             .outputs
             .iter()
-            .any(|output| is_alias_with_id_non_null(&output.output, &alias_id))
+            .any(|output| is_alias_with_id_non_null(&output.inner, &alias_id))
         {
             return Ok(None);
         }
@@ -64,7 +64,7 @@ impl InputSelection {
         if self
             .outputs
             .iter()
-            .any(|output| is_nft_with_id_non_null(&output.output, &nft_id))
+            .any(|output| is_nft_with_id_non_null(&output.inner, &nft_id))
         {
             return Ok(None);
         }
@@ -94,7 +94,7 @@ impl InputSelection {
         if self
             .outputs
             .iter()
-            .any(|output| is_foundry_with_id(&output.output, &foundry_id))
+            .any(|output| is_foundry_with_id(&output.inner, &foundry_id))
         {
             return Ok(None);
         }

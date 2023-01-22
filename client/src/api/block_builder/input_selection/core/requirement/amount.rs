@@ -39,9 +39,9 @@ pub(crate) fn amount_sums(
     }
 
     for output in outputs {
-        outputs_sum += output.output.amount();
+        outputs_sum += output.inner.amount();
 
-        if let Output::Basic(output) = &output.output {
+        if let Output::Basic(output) = &output.inner {
             if let Some(address) = output.simple_deposit_address() {
                 *outputs_sdr.entry(*address).or_default() += output.amount();
             }
@@ -228,18 +228,18 @@ impl InputSelection {
                 let outputs = self
                     .outputs
                     .iter_mut()
-                    .filter(|output| !output.output.is_basic() && !output.provided);
+                    .filter(|output| !output.inner.is_basic() && !output.provided);
 
                 for output in outputs {
                     let diff = missing_amount(inputs_sum, outputs_sum, remainder_amount, native_tokens_remainder);
-                    let amount = output.output.amount();
-                    let rent = output.output.rent_cost(self.protocol_parameters.rent_structure());
+                    let amount = output.inner.amount();
+                    let rent = output.inner.rent_cost(self.protocol_parameters.rent_structure());
 
                     let new_amount = if amount >= diff + rent { amount - diff } else { rent };
 
                     // TODO check that new_amount is enough for the rent
 
-                    let new_output = match &output.output {
+                    let new_output = match &output.inner {
                         Output::Alias(output) => AliasOutputBuilder::from(output)
                             .with_amount(new_amount)?
                             .finish_output(self.protocol_parameters.token_supply())?,
@@ -253,7 +253,7 @@ impl InputSelection {
                     };
 
                     outputs_sum -= amount - new_amount;
-                    output.output = new_output;
+                    output.inner = new_output;
 
                     if missing_amount(inputs_sum, outputs_sum, remainder_amount, native_tokens_remainder) == 0 {
                         break 'ici;

@@ -64,7 +64,7 @@ impl InputSelection {
 
     pub(crate) fn remainder_amount(&self) -> Result<(u64, bool)> {
         let mut input_native_tokens = get_native_tokens(self.selected_inputs.iter().map(|input| &input.output))?;
-        let mut output_native_tokens = get_native_tokens(self.outputs.iter().map(|output| &output.output))?;
+        let mut output_native_tokens = get_native_tokens(self.outputs.iter().map(|output| &output.inner))?;
         let (minted_native_tokens, melted_native_tokens) =
             get_minted_and_melted_native_tokens(&self.selected_inputs, &self.outputs)?;
 
@@ -114,14 +114,14 @@ impl InputSelection {
                 // TODO verify_storage_deposit ?
 
                 storage_deposit_returns.push(OutputInfo {
-                    output: srd_output,
+                    inner: srd_output,
                     provided: false,
                 });
             }
         }
 
         let mut input_native_tokens = get_native_tokens(self.selected_inputs.iter().map(|input| &input.output))?;
-        let mut output_native_tokens = get_native_tokens(self.outputs.iter().map(|output| &output.output))?;
+        let mut output_native_tokens = get_native_tokens(self.outputs.iter().map(|output| &output.inner))?;
         let (minted_native_tokens, melted_native_tokens) =
             get_minted_and_melted_native_tokens(&self.selected_inputs, &self.outputs)?;
 

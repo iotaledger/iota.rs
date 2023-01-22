@@ -26,7 +26,7 @@ use crate::{
 
 #[derive(Debug)]
 pub(crate) struct OutputInfo {
-    pub(crate) output: Output,
+    pub(crate) inner: Output,
     pub(crate) provided: bool,
 }
 
@@ -63,7 +63,7 @@ impl InputSelection {
         let outputs = self
             .outputs
             .iter()
-            .map(|output| output.output.clone())
+            .map(|output| output.inner.clone())
             .collect::<Vec<_>>();
         let is_alias_state_transition = is_alias_state_transition(input, &outputs)?.unwrap_or((false, false)).0;
         let (required_address, _) =
@@ -81,7 +81,7 @@ impl InputSelection {
     fn select_input(&mut self, input: InputSigningData, requirements: &mut Requirements) -> Result<()> {
         if let Some(output) = self.transition_input(&input)? {
             let output_info = OutputInfo {
-                output,
+                inner: output,
                 provided: false,
             };
             // TODO is this really necessary?
@@ -174,7 +174,10 @@ impl InputSelection {
             selected_inputs: Vec::new(),
             outputs: outputs
                 .into_iter()
-                .map(|output| OutputInfo { output, provided: true })
+                .map(|output| OutputInfo {
+                    inner: output,
+                    provided: true,
+                })
                 .collect(),
             burn: None,
             remainder_address: None,
@@ -272,7 +275,7 @@ impl InputSelection {
 
         if let Some(remainder) = &remainder {
             self.outputs.push(OutputInfo {
-                output: remainder.output.clone(),
+                inner: remainder.output.clone(),
                 provided: false,
             });
         }
@@ -281,7 +284,7 @@ impl InputSelection {
 
         Ok(Selected {
             inputs: self.selected_inputs,
-            outputs: self.outputs.into_iter().map(|output| output.output).collect(),
+            outputs: self.outputs.into_iter().map(|output| output.inner).collect(),
             remainder,
         })
     }
