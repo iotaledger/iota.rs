@@ -670,3 +670,41 @@ fn melted_tokens_not_provided() {
             required,
         }) if token_id == token_id_1 && found == U256::from(0) && required == U256::from(100)));
 }
+
+#[test]
+fn burned_tokens_not_provided() {
+    let protocol_parameters = protocol_parameters();
+    let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
+    let foundry_id = FoundryId::build(&AliasAddress::from(alias_id_1), 0, SimpleTokenScheme::KIND);
+    let token_id_1 = TokenId::from(foundry_id);
+
+    let inputs = build_inputs(vec![
+        Alias(2_000_000, alias_id_1, BECH32_ADDRESS_ED25519_0, None, None, None),
+        Foundry(
+            1_000_000,
+            alias_id_1,
+            0,
+            SimpleTokenScheme::new(U256::from(100), U256::from(0), U256::from(100)).unwrap(),
+            None,
+        ),
+    ]);
+    let outputs = build_outputs(vec![Foundry(
+        1_000_000,
+        alias_id_1,
+        0,
+        SimpleTokenScheme::new(U256::from(100), U256::from(0), U256::from(100)).unwrap(),
+        None,
+    )]);
+
+    let selected = InputSelection::new(inputs, outputs, protocol_parameters)
+        .burn(Burn::new().add_native_token(token_id_1, 100))
+        .select();
+
+    assert!(matches!(
+        selected,
+        Err(Error::InsufficientNativeTokenAmount {
+        token_id,
+            found,
+            required,
+        }) if token_id == token_id_1 && found == U256::from(0) && required == U256::from(100)));
+}
