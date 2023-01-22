@@ -157,13 +157,13 @@ impl StrongholdAdapter {
             .execute_procedure(procedures::Slip10Derive { chain, input, output })
         {
             match err {
-                iota_stronghold::procedures::ProcedureError::Engine(e) => {
+                iota_stronghold::procedures::ProcedureError::Engine(ref e) => {
                     // Custom error for missing vault error: https://github.com/iotaledger/stronghold.rs/blob/7f0a2e0637394595e953f9071fa74b1d160f51ec/client/src/types/error.rs#L170
                     if e.to_string().contains("does not exist") {
                         // Actually the seed, derived from the mnemonic, is not stored.
                         return Err(Error::StrongholdMnemonicMissing);
                     } else {
-                        return Err(iota_stronghold::procedures::ProcedureError::Engine(e).into());
+                        return Err(err.into());
                     }
                 }
                 _ => {
@@ -301,12 +301,10 @@ mod tests {
         stronghold_adapter.clear_key().await;
 
         // Address generation returns an error when the key is cleared.
-        assert!(
-            stronghold_adapter
-                .generate_addresses(IOTA_COIN_TYPE, 0, 0..1, false, None,)
-                .await
-                .is_err()
-        );
+        assert!(stronghold_adapter
+            .generate_addresses(IOTA_COIN_TYPE, 0, 0..1, false, None,)
+            .await
+            .is_err());
 
         stronghold_adapter.set_password("drowssap").await.unwrap();
 
