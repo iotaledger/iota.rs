@@ -10,9 +10,9 @@ use iota_client::{
 };
 
 use crate::input_selection::{
-    addresses, build_inputs, build_outputs, is_remainder_or_return,
+    addresses, build_inputs, build_outputs, is_remainder_or_return, unsorted_eq,
     Build::{Alias, Basic},
-    ALIAS_ID_2, BECH32_ADDRESS_ED25519_0,
+    ALIAS_ID_2, BECH32_ADDRESS_ED25519_0, BECH32_ADDRESS_ED25519_1,
 };
 
 #[test]
@@ -84,4 +84,84 @@ fn no_outputs_but_burn() {
         BECH32_ADDRESS_ED25519_0,
         None
     ));
+}
+
+#[test]
+fn no_address_provided() {
+    let protocol_parameters = protocol_parameters();
+
+    let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None)]);
+    let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None)]);
+
+    let selected = InputSelection::new(inputs, outputs, vec![], protocol_parameters).select();
+
+    assert!(matches!(selected, Err(Error::NoAvailableInputsProvided)));
+}
+
+#[test]
+fn no_matching_address_provided() {
+    let protocol_parameters = protocol_parameters();
+
+    let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None)]);
+    let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None)]);
+
+    let selected = InputSelection::new(
+        inputs,
+        outputs,
+        addresses(vec![BECH32_ADDRESS_ED25519_1]),
+        protocol_parameters,
+    )
+    .select();
+
+    assert!(matches!(selected, Err(Error::NoAvailableInputsProvided)));
+}
+
+#[test]
+fn two_addresses_one_missing() {
+    let protocol_parameters = protocol_parameters();
+
+    let inputs = build_inputs(vec![
+        Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None),
+        Basic(1_000_000, BECH32_ADDRESS_ED25519_1, None, None, None, None),
+    ]);
+    let outputs = build_outputs(vec![Basic(2_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None)]);
+
+    let selected = InputSelection::new(
+        inputs,
+        outputs,
+        addresses(vec![BECH32_ADDRESS_ED25519_0]),
+        protocol_parameters,
+    )
+    .select();
+
+    assert!(matches!(
+        selected,
+        Err(Error::InsufficientAmount {
+            found: 1_000_000,
+            required: 2_000_000,
+        })
+    ));
+}
+
+#[test]
+fn two_addresses() {
+    let protocol_parameters = protocol_parameters();
+
+    let inputs = build_inputs(vec![
+        Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None),
+        Basic(1_000_000, BECH32_ADDRESS_ED25519_1, None, None, None, None),
+    ]);
+    let outputs = build_outputs(vec![Basic(2_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None)]);
+
+    let selected = InputSelection::new(
+        inputs.clone(),
+        outputs.clone(),
+        addresses(vec![BECH32_ADDRESS_ED25519_0, BECH32_ADDRESS_ED25519_1]),
+        protocol_parameters,
+    )
+    .select()
+    .unwrap();
+
+    assert!(unsorted_eq(&selected.inputs, &inputs));
+    assert!(unsorted_eq(&selected.outputs, &outputs));
 }
