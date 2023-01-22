@@ -1,13 +1,16 @@
 // Copyright 2023 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use std::{collections::HashSet, str::FromStr};
+use std::{
+    collections::{HashMap, HashSet},
+    str::FromStr,
+};
 
 use iota_client::{
     api::input_selection::{Burn, InputSelection, Requirement},
     block::{
         address::Address,
-        output::{AliasId, NftId, SimpleTokenScheme},
+        output::{AliasId, NftId, SimpleTokenScheme, TokenId},
         protocol::protocol_parameters,
     },
     Error,
@@ -17,7 +20,7 @@ use primitive_types::U256;
 use crate::input_selection::{
     build_inputs, build_outputs, is_remainder_or_return, unsorted_eq,
     Build::{Alias, Basic, Foundry, Nft},
-    ALIAS_ID_0, ALIAS_ID_1, ALIAS_ID_2, BECH32_ADDRESS_ED25519_0, NFT_ID_0, NFT_ID_1, NFT_ID_2,
+    ALIAS_ID_0, ALIAS_ID_1, ALIAS_ID_2, BECH32_ADDRESS_ED25519_0, NFT_ID_0, NFT_ID_1, NFT_ID_2, TOKEN_ID_1, TOKEN_ID_2,
 };
 
 #[test]
@@ -330,4 +333,34 @@ fn burn_foundries_present() {
             );
         }
     });
+}
+
+#[test]
+fn burn_native_tokens() {
+    let protocol_parameters = protocol_parameters();
+
+    let inputs = build_inputs(vec![Basic(
+        1_000_000,
+        BECH32_ADDRESS_ED25519_0,
+        Some(vec![(TOKEN_ID_1, 100), (TOKEN_ID_2, 100)]),
+        None,
+        None,
+    )]);
+
+    let selected = InputSelection::new(inputs.clone(), Vec::new(), protocol_parameters)
+        .burn(Burn::new().set_native_tokens(HashMap::from([
+            (TokenId::from_str(TOKEN_ID_1).unwrap(), 20),
+            (TokenId::from_str(TOKEN_ID_2).unwrap(), 30),
+        ])))
+        .select()
+        .unwrap();
+
+    assert!(unsorted_eq(&selected.inputs, &inputs));
+    assert_eq!(selected.outputs.len(), 1);
+    assert!(is_remainder_or_return(
+        &selected.outputs[0],
+        1_000_000,
+        BECH32_ADDRESS_ED25519_0,
+        Some(vec![(TOKEN_ID_1, 80), (TOKEN_ID_2, 70)])
+    ));
 }
