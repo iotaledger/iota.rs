@@ -116,6 +116,7 @@ impl Requirements {
                 // Add a foundry requirement if the foundry output is transitioning and then required in the inputs.
                 // Also add an alias requirement since the associated alias output needs to be transitioned.
                 Output::Foundry(foundry_output) => {
+                    // TODO add some tests
                     let is_created = !inputs.clone().any(|input| {
                         if let Output::Foundry(output) = &input.output {
                             output.id() == foundry_output.id()

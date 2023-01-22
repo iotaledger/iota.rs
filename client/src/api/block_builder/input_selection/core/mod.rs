@@ -8,10 +8,8 @@ pub(crate) mod transition;
 
 use std::collections::HashSet;
 
-pub use burn::Burn;
-pub use requirement::Requirement;
-use requirement::{alias::is_alias_state_transition, Requirements};
-
+use self::requirement::{alias::is_alias_state_transition, Requirements};
+pub use self::{burn::Burn, requirement::Requirement};
 use crate::{
     api::types::RemainderData,
     block::{
@@ -263,10 +261,6 @@ impl InputSelection {
             if let Some(new_requirement) = new_requirement {
                 requirements.push(new_requirement);
             }
-
-            //     if !inputs.is_empty() && requirements.is_empty(){
-            //         requirements.push(Requirement::BaseCoinAmount);
-            //     }
 
             // Select suggested inputs.
             for input in inputs {

@@ -117,6 +117,45 @@ fn minted_native_tokens_in_new_remainder() {
 }
 
 #[test]
+fn minted_native_tokens_in_provided_output() {
+    let protocol_parameters = protocol_parameters();
+    let alias_id_2 = AliasId::from_str(ALIAS_ID_2).unwrap();
+    let foundry_id = FoundryId::build(&AliasAddress::from(alias_id_2), 0, SimpleTokenScheme::KIND);
+    let token_id = TokenId::from(foundry_id);
+
+    let inputs = build_inputs(vec![
+        Basic(2_000_000, BECH32_ADDRESS_ED25519_0, None, None, None),
+        Alias(1_000_000, alias_id_2, BECH32_ADDRESS_ED25519_0, None, None, None),
+    ]);
+    let outputs = build_outputs(vec![
+        Foundry(
+            1_000_000,
+            alias_id_2,
+            0,
+            SimpleTokenScheme::new(U256::from(100), U256::from(0), U256::from(100)).unwrap(),
+            None,
+        ),
+        Basic(
+            1_000_000,
+            BECH32_ADDRESS_ED25519_0,
+            Some(vec![(&token_id.to_string(), 100)]),
+            None,
+            None,
+        ),
+    ]);
+
+    let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
+        .select()
+        .unwrap();
+
+    assert!(unsorted_eq(&selected.inputs, &inputs));
+    assert_eq!(selected.outputs.len(), 3);
+    assert!(selected.outputs.contains(&outputs[0]));
+    assert!(selected.outputs.contains(&outputs[1]));
+    assert!(selected.outputs.iter().any(|output| output.is_alias()));
+}
+
+#[test]
 fn melt_native_tokens() {
     let protocol_parameters = protocol_parameters();
     let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
@@ -559,4 +598,75 @@ fn take_amount_from_alias_and_foundry_to_fund_basic() {
         selected.outputs.iter().map(|output| output.amount()).sum::<u64>(),
         4_000_000
     );
+}
+
+#[test]
+fn mint_native_tokens_but_burn_alias() {
+    let protocol_parameters = protocol_parameters();
+    let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
+    let foundry_id = FoundryId::build(&AliasAddress::from(alias_id_1), 0, SimpleTokenScheme::KIND);
+    let token_id = TokenId::from(foundry_id);
+
+    let inputs = build_inputs(vec![
+        Alias(2_000_000, alias_id_1, BECH32_ADDRESS_ED25519_0, None, None, None),
+        Foundry(
+            1_000_000,
+            alias_id_1,
+            0,
+            SimpleTokenScheme::new(U256::from(0), U256::from(0), U256::from(100)).unwrap(),
+            None,
+        ),
+    ]);
+    let outputs = build_outputs(vec![Foundry(
+        1_000_000,
+        alias_id_1,
+        0,
+        SimpleTokenScheme::new(U256::from(100), U256::from(0), U256::from(100)).unwrap(),
+        Some(vec![(&token_id.to_string(), 100)]),
+    )]);
+
+    let selected = InputSelection::new(inputs, outputs, protocol_parameters)
+        .burn(Burn::new().add_alias(alias_id_1))
+        .select();
+
+    assert!(matches!(
+        selected,
+        Err(Error::UnfulfillableRequirement(Requirement::Alias(alias_id, true))) if alias_id == alias_id_1
+    ));
+}
+
+#[test]
+fn melted_tokens_not_provided() {
+    let protocol_parameters = protocol_parameters();
+    let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
+    let foundry_id = FoundryId::build(&AliasAddress::from(alias_id_1), 0, SimpleTokenScheme::KIND);
+    let token_id_1 = TokenId::from(foundry_id);
+
+    let inputs = build_inputs(vec![
+        Alias(2_000_000, alias_id_1, BECH32_ADDRESS_ED25519_0, None, None, None),
+        Foundry(
+            1_000_000,
+            alias_id_1,
+            0,
+            SimpleTokenScheme::new(U256::from(100), U256::from(0), U256::from(100)).unwrap(),
+            None,
+        ),
+    ]);
+    let outputs = build_outputs(vec![Foundry(
+        1_000_000,
+        alias_id_1,
+        0,
+        SimpleTokenScheme::new(U256::from(100), U256::from(100), U256::from(100)).unwrap(),
+        None,
+    )]);
+
+    let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
+
+    assert!(matches!(
+        selected,
+        Err(Error::InsufficientNativeTokenAmount {
+        token_id,
+            found,
+            required,
+        }) if token_id == token_id_1 && found == U256::from(0) && required == U256::from(100)));
 }
