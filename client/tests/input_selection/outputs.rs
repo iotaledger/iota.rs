@@ -20,18 +20,18 @@ fn no_inputs() {
     let protocol_parameters = protocol_parameters();
 
     let inputs = Vec::new();
-    let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None)]);
+    let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None)]);
 
     let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();
 
-    assert!(matches!(selected, Err(Error::NoInputsProvided)));
+    assert!(matches!(selected, Err(Error::NoAvailableInputsProvided)));
 }
 
 #[test]
 fn no_outputs() {
     let protocol_parameters = protocol_parameters();
 
-    let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None)]);
+    let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None)]);
     let outputs = Vec::new();
 
     let selected = InputSelection::new(inputs, outputs, protocol_parameters).select();

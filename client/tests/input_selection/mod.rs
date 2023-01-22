@@ -21,7 +21,8 @@ use iota_client::{
             feature::{Feature, IssuerFeature, SenderFeature},
             unlock_condition::{
                 AddressUnlockCondition, GovernorAddressUnlockCondition, ImmutableAliasAddressUnlockCondition,
-                StateControllerAddressUnlockCondition, StorageDepositReturnUnlockCondition, UnlockCondition,
+                StateControllerAddressUnlockCondition, StorageDepositReturnUnlockCondition, TimelockUnlockCondition,
+                UnlockCondition,
             },
             AliasId, AliasOutputBuilder, BasicOutputBuilder, FoundryOutputBuilder, NativeToken, NativeTokens, NftId,
             NftOutputBuilder, Output, OutputId, SimpleTokenScheme, TokenId, TokenScheme,
@@ -58,6 +59,7 @@ enum Build<'a> {
         Option<Vec<(&'a str, u64)>>,
         Option<&'a str>,
         Option<(&'a str, u64)>,
+        Option<u32>,
     ),
     Nft(
         u64,
@@ -85,6 +87,7 @@ fn build_basic_output(
     native_tokens: Option<Vec<(&str, u64)>>,
     bech32_sender: Option<&str>,
     sdruc: Option<(&str, u64)>,
+    timelock: Option<u32>,
 ) -> Output {
     let mut builder = BasicOutputBuilder::new_with_amount(amount)
         .unwrap()
@@ -114,6 +117,12 @@ fn build_basic_output(
                 TOKEN_SUPPLY,
             )
             .unwrap(),
+        ));
+    }
+
+    if let Some(timelock) = timelock {
+        builder = builder.add_unlock_condition(UnlockCondition::Timelock(
+            TimelockUnlockCondition::new(timelock).unwrap(),
         ));
     }
 
@@ -237,8 +246,8 @@ fn build_foundry_output(
 
 fn build_output_inner(build: Build) -> (Output, String) {
     match build {
-        Build::Basic(amount, bech32_address, native_tokens, bech32_sender, sdruc) => (
-            build_basic_output(amount, bech32_address, native_tokens, bech32_sender, sdruc),
+        Build::Basic(amount, bech32_address, native_tokens, bech32_sender, sdruc, timelock) => (
+            build_basic_output(amount, bech32_address, native_tokens, bech32_sender, sdruc, timelock),
             bech32_address.to_string(),
         ),
         Build::Nft(amount, nft_id, bech32_address, native_tokens, bech32_sender, bech32_issuer, sdruc) => (

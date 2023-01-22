@@ -243,11 +243,27 @@ impl InputSelection {
         self
     }
 
+    fn filter_timelock_and_expired(&mut self) {
+        self.available_inputs.retain(|input| {
+            if let Some(unlock_conditions) = input.output.unlock_conditions() {
+                if let Some(timelock) = unlock_conditions.timelock() {
+                    self.timestamp >= timelock.timestamp()
+                } else {
+                    true
+                }
+            } else {
+                true
+            }
+        })
+    }
+
     /// Selects inputs that meet the requirements of the outputs to satisfy the semantic validation of the overall
     /// transaction. Also creates a remainder output and chain transition outputs if required.
     pub fn select(mut self) -> Result<Selected> {
+        self.filter_timelock_and_expired();
+
         if self.available_inputs.is_empty() {
-            return Err(Error::NoInputsProvided);
+            return Err(Error::NoAvailableInputsProvided);
         }
         if self.outputs.is_empty() && self.burn.is_none() {
             return Err(Error::NoOutputsProvided);

@@ -25,7 +25,7 @@ fn missing_input_alias_for_foundry() {
     let protocol_parameters = protocol_parameters();
     let alias_id_2 = AliasId::from_str(ALIAS_ID_2).unwrap();
 
-    let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None)]);
+    let inputs = build_inputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None)]);
     let outputs = build_outputs(vec![Foundry(
         1_000_000,
         alias_id_2,
@@ -85,7 +85,7 @@ fn minted_native_tokens_in_new_remainder() {
     let alias_id_2 = AliasId::from_str(ALIAS_ID_2).unwrap();
 
     let inputs = build_inputs(vec![
-        Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None),
+        Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None),
         Alias(1_000_000, alias_id_2, BECH32_ADDRESS_ED25519_0, None, None, None),
     ]);
     let outputs = build_outputs(vec![Foundry(
@@ -124,7 +124,7 @@ fn minted_native_tokens_in_provided_output() {
     let token_id = TokenId::from(foundry_id);
 
     let inputs = build_inputs(vec![
-        Basic(2_000_000, BECH32_ADDRESS_ED25519_0, None, None, None),
+        Basic(2_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None),
         Alias(1_000_000, alias_id_2, BECH32_ADDRESS_ED25519_0, None, None, None),
     ]);
     let outputs = build_outputs(vec![
@@ -139,6 +139,7 @@ fn minted_native_tokens_in_provided_output() {
             1_000_000,
             BECH32_ADDRESS_ED25519_0,
             Some(vec![(&token_id.to_string(), 100)]),
+            None,
             None,
             None,
         ),
@@ -161,7 +162,7 @@ fn melt_native_tokens() {
     let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
 
     let inputs = build_inputs(vec![
-        Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None),
+        Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None),
         Alias(1_000_000, alias_id_1, BECH32_ADDRESS_ED25519_0, None, None, None),
         Foundry(
             1_000_000,
@@ -279,7 +280,7 @@ fn destroy_foundry_with_alias_burn() {
             None,
         ),
     ]);
-    let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None)]);
+    let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None)]);
 
     let selected = InputSelection::new(inputs.clone(), outputs, protocol_parameters)
         .burn(
@@ -309,9 +310,9 @@ fn prefer_basic_to_foundry() {
             SimpleTokenScheme::new(U256::from(10), U256::from(10), U256::from(10)).unwrap(),
             None,
         ),
-        Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None),
+        Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None),
     ]);
-    let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None)]);
+    let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None)]);
 
     let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
         .select()
@@ -328,7 +329,7 @@ fn simple_foundry_transition_basic_not_needed() {
     let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
 
     let inputs = build_inputs(vec![
-        Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None),
+        Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None),
         Foundry(
             1_000_000,
             alias_id_1,
@@ -382,7 +383,7 @@ fn simple_foundry_transition_basic_not_needed_with_remainder() {
     let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
 
     let inputs = build_inputs(vec![
-        Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None),
+        Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None),
         Foundry(
             2_000_000,
             alias_id_1,
@@ -574,7 +575,7 @@ fn take_amount_from_alias_and_foundry_to_fund_basic() {
 
     let inputs = build_inputs(vec![
         Alias(2_000_000, alias_id_1, BECH32_ADDRESS_ED25519_0, None, None, None),
-        Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None),
+        Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None),
         Foundry(
             1_000_000,
             alias_id_1,
@@ -583,7 +584,7 @@ fn take_amount_from_alias_and_foundry_to_fund_basic() {
             Some(vec![(&token_id.to_string(), 100)]),
         ),
     ]);
-    let outputs = build_outputs(vec![Basic(3_200_000, BECH32_ADDRESS_ED25519_0, None, None, None)]);
+    let outputs = build_outputs(vec![Basic(3_200_000, BECH32_ADDRESS_ED25519_0, None, None, None, None)]);
 
     let selected = InputSelection::new(inputs.clone(), outputs.clone(), protocol_parameters)
         .select()
