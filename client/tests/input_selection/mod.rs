@@ -11,6 +11,7 @@ mod native_tokens;
 mod nft_outputs;
 mod outputs;
 mod storage_deposit_return;
+mod timelock;
 
 use std::{collections::HashMap, hash::Hash, str::FromStr};
 
