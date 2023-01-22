@@ -4,7 +4,8 @@
 use iota_client::{api::input_selection::InputSelection, block::protocol::protocol_parameters, Error};
 
 use crate::input_selection::{
-    build_inputs, build_outputs, unsorted_eq, Build::Basic, BECH32_ADDRESS_ED25519_0, BECH32_ADDRESS_ED25519_1,
+    addresses, build_inputs, build_outputs, unsorted_eq, Build::Basic, BECH32_ADDRESS_ED25519_0,
+    BECH32_ADDRESS_ED25519_1,
 };
 
 #[test]
@@ -21,9 +22,14 @@ fn one_output_timelock_not_expired() {
     )]);
     let outputs = build_outputs(vec![Basic(1_000_000, BECH32_ADDRESS_ED25519_1, None, None, None, None)]);
 
-    let selected = InputSelection::new(inputs, outputs, vec![], protocol_parameters)
-        .timestamp(100)
-        .select();
+    let selected = InputSelection::new(
+        inputs,
+        outputs,
+        addresses(vec![BECH32_ADDRESS_ED25519_0]),
+        protocol_parameters,
+    )
+    .timestamp(100)
+    .select();
 
     assert!(matches!(selected, Err(Error::NoAvailableInputsProvided)));
 }
@@ -42,10 +48,15 @@ fn timelock_equal_timestamp() {
     )]);
     let outputs = build_outputs(vec![Basic(2_000_000, BECH32_ADDRESS_ED25519_1, None, None, None, None)]);
 
-    let selected = InputSelection::new(inputs.clone(), outputs.clone(), vec![], protocol_parameters)
-        .timestamp(200)
-        .select()
-        .unwrap();
+    let selected = InputSelection::new(
+        inputs.clone(),
+        outputs.clone(),
+        addresses(vec![BECH32_ADDRESS_ED25519_0]),
+        protocol_parameters,
+    )
+    .timestamp(200)
+    .select()
+    .unwrap();
 
     assert!(unsorted_eq(&selected.inputs, &inputs));
     assert!(unsorted_eq(&selected.outputs, &outputs));
@@ -75,10 +86,15 @@ fn two_outputs_one_timelock_expired() {
     ]);
     let outputs = build_outputs(vec![Basic(2_000_000, BECH32_ADDRESS_ED25519_1, None, None, None, None)]);
 
-    let selected = InputSelection::new(inputs.clone(), outputs.clone(), vec![], protocol_parameters)
-        .timestamp(100)
-        .select()
-        .unwrap();
+    let selected = InputSelection::new(
+        inputs.clone(),
+        outputs.clone(),
+        addresses(vec![BECH32_ADDRESS_ED25519_0]),
+        protocol_parameters,
+    )
+    .timestamp(100)
+    .select()
+    .unwrap();
 
     assert_eq!(selected.inputs.len(), 1);
     assert_eq!(selected.inputs[0], inputs[1]);
@@ -109,10 +125,15 @@ fn two_outputs_one_timelock_expired_2() {
     ]);
     let outputs = build_outputs(vec![Basic(2_000_000, BECH32_ADDRESS_ED25519_1, None, None, None, None)]);
 
-    let selected = InputSelection::new(inputs.clone(), outputs.clone(), vec![], protocol_parameters)
-        .timestamp(100)
-        .select()
-        .unwrap();
+    let selected = InputSelection::new(
+        inputs.clone(),
+        outputs.clone(),
+        addresses(vec![BECH32_ADDRESS_ED25519_0]),
+        protocol_parameters,
+    )
+    .timestamp(100)
+    .select()
+    .unwrap();
 
     assert_eq!(selected.inputs.len(), 1);
     assert_eq!(selected.inputs[0], inputs[1]);
@@ -133,10 +154,15 @@ fn one_output_timelock_expired() {
     )]);
     let outputs = build_outputs(vec![Basic(2_000_000, BECH32_ADDRESS_ED25519_1, None, None, None, None)]);
 
-    let selected = InputSelection::new(inputs.clone(), outputs.clone(), vec![], protocol_parameters)
-        .timestamp(100)
-        .select()
-        .unwrap();
+    let selected = InputSelection::new(
+        inputs.clone(),
+        outputs.clone(),
+        addresses(vec![BECH32_ADDRESS_ED25519_0]),
+        protocol_parameters,
+    )
+    .timestamp(100)
+    .select()
+    .unwrap();
 
     assert!(unsorted_eq(&selected.inputs, &inputs));
     assert!(unsorted_eq(&selected.outputs, &outputs));

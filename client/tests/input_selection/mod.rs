@@ -377,3 +377,10 @@ fn is_remainder_or_return(
         false
     }
 }
+
+fn addresses(addresses: Vec<&str>) -> Vec<Address> {
+    addresses
+        .iter()
+        .map(|address| Address::try_from_bech32(address).unwrap().1)
+        .collect()
+}

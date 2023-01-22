@@ -32,7 +32,7 @@ pub struct InputSelection {
     forbidden_inputs: HashSet<OutputId>,
     selected_inputs: Vec<InputSigningData>,
     outputs: Vec<Output>,
-    addresses: Vec<Address>,
+    addresses: HashSet<Address>,
     burn: Option<Burn>,
     remainder_address: Option<Address>,
     protocol_parameters: ProtocolParameters,
@@ -156,6 +156,18 @@ impl InputSelection {
         addresses: Vec<Address>,
         protocol_parameters: ProtocolParameters,
     ) -> Self {
+        let mut addresses = HashSet::from_iter(addresses);
+
+        addresses.extend(available_inputs.iter().filter_map(|input| match &input.output {
+            Output::Alias(output) => Some(Address::Alias(AliasAddress::from(
+                output.alias_id_non_null(input.output_id()),
+            ))),
+            Output::Nft(output) => Some(Address::Nft(NftAddress::from(
+                output.nft_id_non_null(input.output_id()),
+            ))),
+            _ => None,
+        }));
+
         Self {
             available_inputs,
             required_inputs: None,
@@ -204,38 +216,29 @@ impl InputSelection {
         self
     }
 
-    // TODO should we somehow enforce using filter so we don't have to use can_be_unlocked_now later everywhere ?
-    /// Filters out the available inputs that
-    /// - can't be unlocked by the given addresses
-    /// - can't be unlocked now
-    pub fn filter(self, addresses: &[Address]) -> Self {
-        let _addresses = addresses
-            .iter()
-            // TODO meh
-            .copied()
-            .chain(self.available_inputs.iter().filter_map(|input| match &input.output {
-                Output::Alias(output) => Some(Address::Alias(AliasAddress::from(
-                    output.alias_id_non_null(input.output_id()),
-                ))),
-                Output::Nft(output) => Some(Address::Nft(NftAddress::from(
-                    output.nft_id_non_null(input.output_id()),
-                ))),
-                _ => None,
-            }));
-
-        // self.available_inputs.retain(|input| input.can_be_unlocked_now(input, addresses, ???, self.time))
-
-        self
-    }
-
-    fn filter_timelock_and_expired(&mut self) {
+    fn filter_inputs(&mut self) {
         self.available_inputs.retain(|input| {
+            if !input.output.is_basic()
+                && !input.output.is_alias()
+                && !input.output.is_foundry()
+                && !input.output.is_nft()
+            {
+                return false;
+            }
+
             if let Some(unlock_conditions) = input.output.unlock_conditions() {
-                if let Some(timelock) = unlock_conditions.timelock() {
-                    self.timestamp >= timelock.timestamp()
-                } else {
-                    true
+                if unlock_conditions.is_time_locked(self.timestamp) {
+                    return false;
                 }
+
+                let required_address = input
+                    .output
+                    .required_and_unlocked_address(self.timestamp, input.output_id(), true)
+                    // PANIC: safe to unwrap as non basic/alias/foundry/nft outputs are already filtered out.
+                    .unwrap()
+                    .0;
+
+                self.addresses.contains(&required_address)
             } else {
                 true
             }
@@ -245,7 +248,7 @@ impl InputSelection {
     /// Selects inputs that meet the requirements of the outputs to satisfy the semantic validation of the overall
     /// transaction. Also creates a remainder output and chain transition outputs if required.
     pub fn select(mut self) -> Result<Selected> {
-        self.filter_timelock_and_expired();
+        self.filter_inputs();
 
         if self.available_inputs.is_empty() {
             return Err(Error::NoAvailableInputsProvided);
