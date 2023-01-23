@@ -102,7 +102,6 @@ impl InputSelection {
         let (mut inputs_sum, mut outputs_sum, mut inputs_sdr, mut outputs_sdr) =
             amount_sums(&self.selected_inputs, &self.outputs, self.timestamp);
 
-        println!("inputs_sum {inputs_sum} outputs_sum{outputs_sum}");
         let (remainder_amount, native_tokens_remainder) = self.remainder_amount()?;
         let mut newly_selected_inputs = Vec::new();
         let mut newly_selected_ids = HashSet::new();
