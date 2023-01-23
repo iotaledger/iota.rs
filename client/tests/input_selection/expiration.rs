@@ -167,7 +167,7 @@ fn two_outputs_one_expiration_expired() {
 }
 
 #[test]
-fn two_outputs_one_expiration_expired_2() {
+fn two_outputs_one_expired_one_missing() {
     let protocol_parameters = protocol_parameters();
 
     let inputs = build_inputs(vec![
