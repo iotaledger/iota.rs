@@ -388,7 +388,7 @@ fn expiration_expired_with_sdr_and_timelock() {
         BECH32_ADDRESS_ED25519_1,
         None,
         None,
-        Some((BECH32_ADDRESS_ED25519_1, 1_000_000)),
+        Some((BECH32_ADDRESS_ED25519_0, 1_000_000)),
         Some(50),
         Some((BECH32_ADDRESS_ED25519_0, 50)),
     )]);
