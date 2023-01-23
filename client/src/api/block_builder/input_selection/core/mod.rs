@@ -11,7 +11,7 @@ use std::collections::HashSet;
 use self::requirement::{alias::is_alias_state_transition, Requirements};
 pub use self::{burn::Burn, requirement::Requirement};
 use crate::{
-    api::types::RemainderData,
+    api::{block_builder::input_selection::helpers::sort_input_signing_data, types::RemainderData},
     block::{
         address::{Address, AliasAddress, NftAddress},
         output::{ChainId, Output, OutputId},
@@ -283,7 +283,7 @@ impl InputSelection {
         self.outputs.extend(storage_deposit_returns);
 
         Ok(Selected {
-            inputs: self.selected_inputs,
+            inputs: sort_input_signing_data(self.selected_inputs)?,
             outputs: self.outputs,
             remainder,
         })

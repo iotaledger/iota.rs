@@ -35,7 +35,7 @@ use crate::{secret::types::InputSigningData, Result};
 // }
 
 // Inputs need to be sorted before signing, because the reference unlock conditions can only reference a lower index
-pub(crate) fn _sort_input_signing_data(inputs: Vec<InputSigningData>) -> crate::Result<Vec<InputSigningData>> {
+pub(crate) fn sort_input_signing_data(inputs: Vec<InputSigningData>) -> crate::Result<Vec<InputSigningData>> {
     // filter for ed25519 address first, safe to unwrap since we encoded it before
     let (mut sorted_inputs, alias_nft_address_inputs): (Vec<InputSigningData>, Vec<InputSigningData>) = inputs
         .into_iter()
