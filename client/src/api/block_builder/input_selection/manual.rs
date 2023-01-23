@@ -99,8 +99,21 @@ impl<'a> ClientBlockBuilder<'a> {
             .iter()
             .map(|input| *input.output_id())
             .collect::<HashSet<_>>();
-        let mut input_selection = InputSelection::new(inputs_data, self.outputs.clone(), protocol_parameters.clone())
-            .required_inputs(required_inputs);
+
+        // Assume that we own the addresses for inputs that are provided
+        let available_input_addresses = inputs_data
+            .iter()
+            .map(|input| Ok(Address::try_from_bech32(&input.bech32_address)?.1))
+            .collect::<Result<Vec<Address>>>()?;
+
+        let mut input_selection = InputSelection::new(
+            inputs_data,
+            self.outputs.clone(),
+            available_input_addresses,
+            protocol_parameters.clone(),
+        )
+        .required_inputs(required_inputs)
+        .timestamp(current_time);
 
         if let Some(address) = self.custom_remainder_address {
             input_selection = input_selection.remainder_address(address);

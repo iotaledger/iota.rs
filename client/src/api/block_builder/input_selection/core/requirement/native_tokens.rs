@@ -5,7 +5,7 @@ use std::{cmp::Ordering, collections::HashSet};
 
 use primitive_types::U256;
 
-use super::{InputSelection, OutputInfo, Requirement};
+use super::{InputSelection, Requirement};
 use crate::{
     block::output::{NativeToken, NativeTokens, NativeTokensBuilder, Output, TokenScheme},
     error::Result,
@@ -27,13 +27,13 @@ pub(crate) fn get_native_tokens<'a>(outputs: impl Iterator<Item = &'a Output>) -
 
 pub(crate) fn get_minted_and_melted_native_tokens(
     inputs: &[InputSigningData],
-    outputs: &[OutputInfo],
+    outputs: &[Output],
 ) -> Result<(NativeTokensBuilder, NativeTokensBuilder)> {
     let mut minted_native_tokens = NativeTokensBuilder::new();
     let mut melted_native_tokens = NativeTokensBuilder::new();
 
     for output in outputs {
-        if let Output::Foundry(output_foundry) = &output.output {
+        if let Output::Foundry(output_foundry) = output {
             let TokenScheme::Simple(output_foundry_simple_ts) = output_foundry.token_scheme();
             let mut initial_creation = true;
 
@@ -119,7 +119,7 @@ impl InputSelection {
         let mut newly_selected_ids = HashSet::new();
 
         let mut input_native_tokens = get_native_tokens(self.selected_inputs.iter().map(|input| &input.output))?;
-        let mut output_native_tokens = get_native_tokens(self.outputs.iter().map(|output| &output.output))?;
+        let mut output_native_tokens = get_native_tokens(self.outputs.iter())?;
         let (minted_native_tokens, melted_native_tokens) =
             get_minted_and_melted_native_tokens(&self.selected_inputs, &self.outputs)?;
 

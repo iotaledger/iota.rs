@@ -3,12 +3,13 @@
 
 use std::collections::{HashMap, HashSet};
 
-use super::{InputSelection, OutputInfo, Requirement};
+use super::{InputSelection, Requirement};
 use crate::{
     block::{
         address::Address,
         output::{
-            AliasOutputBuilder, FoundryOutputBuilder, NftOutputBuilder, Output, Rent, UnlockCondition, UnlockConditions,
+            unlock_condition::{StorageDepositReturnUnlockCondition, UnlockCondition, UnlockConditions},
+            AliasOutputBuilder, FoundryOutputBuilder, NftOutputBuilder, Output, Rent,
         },
     },
     error::{Error, Result},
@@ -17,9 +18,30 @@ use crate::{
 
 // TODO checked operations ?
 
+/// Get the `StorageDepositReturnUnlockCondition`, if not expired.
+pub(crate) fn sdruc_not_expired(output: &Output, current_time: u32) -> Option<&StorageDepositReturnUnlockCondition> {
+    if let Some(unlock_conditions) = output.unlock_conditions() {
+        if let Some(sdr) = unlock_conditions.storage_deposit_return() {
+            let expired = if let Some(expiration) = unlock_conditions.expiration() {
+                current_time >= expiration.timestamp()
+            } else {
+                false
+            };
+
+            // We only have to send the storage deposit return back if the output is not expired
+            if !expired { Some(sdr) } else { None }
+        } else {
+            None
+        }
+    } else {
+        None
+    }
+}
+
 pub(crate) fn amount_sums(
     selected_inputs: &[InputSigningData],
-    outputs: &[OutputInfo],
+    outputs: &[Output],
+    timestamp: u32,
 ) -> (u64, u64, HashMap<Address, u64>, HashMap<Address, u64>) {
     let mut inputs_sum = 0;
     let mut outputs_sum = 0;
@@ -29,19 +51,15 @@ pub(crate) fn amount_sums(
     for selected_input in selected_inputs {
         inputs_sum += selected_input.output.amount();
 
-        if let Some(sdruc) = selected_input
-            .output
-            .unlock_conditions()
-            .and_then(UnlockConditions::storage_deposit_return)
-        {
+        if let Some(sdruc) = sdruc_not_expired(&selected_input.output, timestamp) {
             *inputs_sdr.entry(*sdruc.return_address()).or_default() += sdruc.amount();
         }
     }
 
     for output in outputs {
-        outputs_sum += output.output.amount();
+        outputs_sum += output.amount();
 
-        if let Output::Basic(output) = &output.output {
+        if let Output::Basic(output) = output {
             if let Some(address) = output.simple_deposit_address() {
                 *outputs_sdr.entry(*address).or_default() += output.amount();
             }
@@ -82,7 +100,8 @@ fn missing_amount(inputs_sum: u64, outputs_sum: u64, remainder_amount: u64, nati
 impl InputSelection {
     pub(crate) fn fulfill_amount_requirement(&mut self) -> Result<(Vec<InputSigningData>, Option<Requirement>)> {
         let (mut inputs_sum, mut outputs_sum, mut inputs_sdr, mut outputs_sdr) =
-            amount_sums(&self.selected_inputs, &self.outputs);
+            amount_sums(&self.selected_inputs, &self.outputs, self.timestamp);
+
         let (remainder_amount, native_tokens_remainder) = self.remainder_amount()?;
         let mut newly_selected_inputs = Vec::new();
         let mut newly_selected_ids = HashSet::new();
@@ -99,11 +118,11 @@ impl InputSelection {
             .sort_by(|left, right| left.output.amount().cmp(&right.output.amount()));
 
         'overall: {
-            // 1. Basic with ED25519 address without SDRUC
+            // 1. Basic with ED25519 address without SDRUC or expired SDRUC
             {
                 let inputs = self.available_inputs.iter().filter(|input| {
                     if let Output::Basic(output) = &input.output {
-                        output.address().is_ed25519() && output.unlock_conditions().storage_deposit_return().is_none()
+                        output.address().is_ed25519() && sdruc_not_expired(&input.output, self.timestamp).is_none()
                     } else {
                         false
                     }
@@ -120,7 +139,7 @@ impl InputSelection {
                 }
             }
 
-            // 2. Basic with ED25519 address and SDRUC
+            // 2. Basic with ED25519 address and unexpired SDRUC
             {
                 let inputs = self.available_inputs.iter().filter(|input| {
                     if let Output::Basic(output) = &input.output {
@@ -225,35 +244,38 @@ impl InputSelection {
         'ici: {
             if missing_amount(inputs_sum, outputs_sum, remainder_amount, native_tokens_remainder) != 0 {
                 // Moving funds of already transitioned other outputs ?
-                let outputs = self
-                    .outputs
-                    .iter_mut()
-                    .filter(|output| !output.output.is_basic() && !output.provided);
+                let outputs = self.outputs.iter_mut().filter(|output| {
+                    output
+                        .chain_id()
+                        .as_ref()
+                        .map(|chain_id| self.automatically_transitioned.contains(chain_id))
+                        .unwrap_or(false)
+                });
 
                 for output in outputs {
                     let diff = missing_amount(inputs_sum, outputs_sum, remainder_amount, native_tokens_remainder);
-                    let amount = output.output.amount();
-                    let rent = output.output.rent_cost(self.protocol_parameters.rent_structure());
+                    let amount = output.amount();
+                    let rent = output.rent_cost(self.protocol_parameters.rent_structure());
 
                     let new_amount = if amount >= diff + rent { amount - diff } else { rent };
 
                     // TODO check that new_amount is enough for the rent
 
-                    let new_output = match &output.output {
-                        Output::Alias(output) => AliasOutputBuilder::from(output)
+                    let new_output = match output {
+                        Output::Alias(output) => AliasOutputBuilder::from(&*output)
                             .with_amount(new_amount)?
                             .finish_output(self.protocol_parameters.token_supply())?,
-                        Output::Nft(output) => NftOutputBuilder::from(output)
+                        Output::Nft(output) => NftOutputBuilder::from(&*output)
                             .with_amount(new_amount)?
                             .finish_output(self.protocol_parameters.token_supply())?,
-                        Output::Foundry(output) => FoundryOutputBuilder::from(output)
+                        Output::Foundry(output) => FoundryOutputBuilder::from(&*output)
                             .with_amount(new_amount)?
                             .finish_output(self.protocol_parameters.token_supply())?,
                         _ => panic!("only alias, nft and foundry can be automatically created"),
                     };
 
                     outputs_sum -= amount - new_amount;
-                    output.output = new_output;
+                    *output = new_output;
 
                     if missing_amount(inputs_sum, outputs_sum, remainder_amount, native_tokens_remainder) == 0 {
                         break 'ici;

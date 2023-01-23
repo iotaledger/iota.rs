@@ -8,15 +8,13 @@ pub(crate) mod transition;
 
 use std::collections::HashSet;
 
-pub use burn::Burn;
-pub use requirement::Requirement;
-use requirement::{alias::is_alias_state_transition, Requirements};
-
+use self::requirement::{alias::is_alias_state_transition, Requirements};
+pub use self::{burn::Burn, requirement::Requirement};
 use crate::{
-    api::types::RemainderData,
+    api::{block_builder::input_selection::helpers::sort_input_signing_data, types::RemainderData},
     block::{
         address::{Address, AliasAddress, NftAddress},
-        output::{Output, OutputId},
+        output::{ChainId, Output, OutputId},
         protocol::ProtocolParameters,
     },
     error::{Error, Result},
@@ -26,12 +24,6 @@ use crate::{
 // TODO should ISA have its own error type? At least review errors.
 // TODO make methods actually take self? There was a mut issue.
 
-#[derive(Debug)]
-pub(crate) struct OutputInfo {
-    pub(crate) output: Output,
-    pub(crate) provided: bool,
-}
-
 /// Working state for the input selection algorithm.
 pub struct InputSelection {
     available_inputs: Vec<InputSigningData>,
@@ -39,11 +31,13 @@ pub struct InputSelection {
     required_inputs: Option<HashSet<OutputId>>,
     forbidden_inputs: HashSet<OutputId>,
     selected_inputs: Vec<InputSigningData>,
-    outputs: Vec<OutputInfo>,
+    outputs: Vec<Output>,
+    addresses: HashSet<Address>,
     burn: Option<Burn>,
     remainder_address: Option<Address>,
     protocol_parameters: ProtocolParameters,
     timestamp: u32,
+    automatically_transitioned: HashSet<ChainId>,
 }
 
 /// Result of the input selection algorithm.
@@ -61,13 +55,9 @@ impl InputSelection {
     fn required_alias_nft_addresses(&self, input: &InputSigningData) -> Result<Option<Requirement>> {
         // TODO burn?
         // TODO unwrap or false?
-        // TODO this is only temporary to accommodate the current ISA.
-        let outputs = self
-            .outputs
-            .iter()
-            .map(|output| output.output.clone())
-            .collect::<Vec<_>>();
-        let is_alias_state_transition = is_alias_state_transition(input, &outputs)?.unwrap_or((false, false)).0;
+        let is_alias_state_transition = is_alias_state_transition(input, &self.outputs)?
+            .unwrap_or((false, false))
+            .0;
         let (required_address, _) =
             input
                 .output
@@ -82,18 +72,14 @@ impl InputSelection {
 
     fn select_input(&mut self, input: InputSigningData, requirements: &mut Requirements) -> Result<()> {
         if let Some(output) = self.transition_input(&input)? {
-            let output_info = OutputInfo {
-                output,
-                provided: false,
-            };
             // TODO is this really necessary?
             // TODO should input be pushed before ? probably
             requirements.extend(Requirements::from_outputs(
                 // TODO do we really need to chain?
                 self.available_inputs.iter().chain(self.selected_inputs.iter()),
-                std::iter::once(&output_info),
+                std::iter::once(&output),
             ));
-            self.outputs.push(output_info);
+            self.outputs.push(output);
         }
 
         if let Some(requirement) = self.required_alias_nft_addresses(&input)? {
@@ -167,17 +153,28 @@ impl InputSelection {
     pub fn new(
         available_inputs: Vec<InputSigningData>,
         outputs: Vec<Output>,
+        addresses: Vec<Address>,
         protocol_parameters: ProtocolParameters,
     ) -> Self {
+        let mut addresses = HashSet::from_iter(addresses);
+
+        addresses.extend(available_inputs.iter().filter_map(|input| match &input.output {
+            Output::Alias(output) => Some(Address::Alias(AliasAddress::from(
+                output.alias_id_non_null(input.output_id()),
+            ))),
+            Output::Nft(output) => Some(Address::Nft(NftAddress::from(
+                output.nft_id_non_null(input.output_id()),
+            ))),
+            _ => None,
+        }));
+
         Self {
             available_inputs,
             required_inputs: None,
             forbidden_inputs: HashSet::new(),
             selected_inputs: Vec::new(),
-            outputs: outputs
-                .into_iter()
-                .map(|output| OutputInfo { output, provided: true })
-                .collect(),
+            outputs,
+            addresses,
             burn: None,
             remainder_address: None,
             protocol_parameters,
@@ -185,6 +182,7 @@ impl InputSelection {
                 .duration_since(instant::SystemTime::UNIX_EPOCH)
                 .expect("time went backwards")
                 .as_secs() as u32,
+            automatically_transitioned: HashSet::new(),
         }
     }
 
@@ -218,35 +216,43 @@ impl InputSelection {
         self
     }
 
-    // TODO should we somehow enforce using filter so we don't have to use can_be_unlocked_now later everywhere ?
-    /// Filters out the available inputs that
-    /// - can't be unlocked by the given addresses
-    /// - can't be unlocked now
-    pub fn filter(self, addresses: &[Address]) -> Self {
-        let _addresses = addresses
-            .iter()
-            // TODO meh
-            .copied()
-            .chain(self.available_inputs.iter().filter_map(|input| match &input.output {
-                Output::Alias(output) => Some(Address::Alias(AliasAddress::from(
-                    output.alias_id_non_null(input.output_id()),
-                ))),
-                Output::Nft(output) => Some(Address::Nft(NftAddress::from(
-                    output.nft_id_non_null(input.output_id()),
-                ))),
-                _ => None,
-            }));
+    fn filter_inputs(&mut self) {
+        self.available_inputs.retain(|input| {
+            // Keep alias outputs because at this point we do not know if a state or governor address will be required.
+            if input.output.is_alias() {
+                return true;
+            }
+            // Filter out non basic/foundry/nft outputs.
+            else if !input.output.is_basic() && !input.output.is_foundry() && !input.output.is_nft() {
+                return false;
+            }
 
-        // self.available_inputs.retain(|input| input.can_be_unlocked_now(input, addresses, ???, self.time))
+            // PANIC: safe to unwrap as non basic/alias/foundry/nft outputs are already filtered out.
+            let unlock_conditions = input.output.unlock_conditions().unwrap();
 
-        self
+            if unlock_conditions.is_time_locked(self.timestamp) {
+                return false;
+            }
+
+            let required_address = input
+                .output
+                // True is irrelevant here as we keep aliases anyway.
+                .required_and_unlocked_address(self.timestamp, input.output_id(), true)
+                // PANIC: safe to unwrap as non basic/alias/foundry/nft outputs are already filtered out.
+                .unwrap()
+                .0;
+
+            self.addresses.contains(&required_address)
+        })
     }
 
     /// Selects inputs that meet the requirements of the outputs to satisfy the semantic validation of the overall
     /// transaction. Also creates a remainder output and chain transition outputs if required.
     pub fn select(mut self) -> Result<Selected> {
+        self.filter_inputs();
+
         if self.available_inputs.is_empty() {
-            return Err(Error::NoInputsProvided);
+            return Err(Error::NoAvailableInputsProvided);
         }
         if self.outputs.is_empty() && self.burn.is_none() {
             return Err(Error::NoOutputsProvided);
@@ -264,10 +270,6 @@ impl InputSelection {
                 requirements.push(new_requirement);
             }
 
-            //     if !inputs.is_empty() && requirements.is_empty(){
-            //         requirements.push(Requirement::BaseCoinAmount);
-            //     }
-
             // Select suggested inputs.
             for input in inputs {
                 self.select_input(input, &mut requirements)?;
@@ -277,17 +279,14 @@ impl InputSelection {
         let (remainder, storage_deposit_returns) = self.remainder_and_storage_deposit_return_outputs()?;
 
         if let Some(remainder) = &remainder {
-            self.outputs.push(OutputInfo {
-                output: remainder.output.clone(),
-                provided: false,
-            });
+            self.outputs.push(remainder.output.clone());
         }
 
         self.outputs.extend(storage_deposit_returns);
 
         Ok(Selected {
-            inputs: self.selected_inputs,
-            outputs: self.outputs.into_iter().map(|output| output.output).collect(),
+            inputs: sort_input_signing_data(self.selected_inputs)?,
+            outputs: self.outputs,
             remainder,
         })
     }

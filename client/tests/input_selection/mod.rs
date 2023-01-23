@@ -6,11 +6,13 @@
 mod alias_outputs;
 mod basic_outputs;
 mod burn;
+mod expiration;
 mod foundry_outputs;
 mod native_tokens;
 mod nft_outputs;
 mod outputs;
 mod storage_deposit_return;
+mod timelock;
 
 use std::{collections::HashMap, hash::Hash, str::FromStr};
 
@@ -20,8 +22,9 @@ use iota_client::{
         output::{
             feature::{Feature, IssuerFeature, SenderFeature},
             unlock_condition::{
-                AddressUnlockCondition, GovernorAddressUnlockCondition, ImmutableAliasAddressUnlockCondition,
-                StateControllerAddressUnlockCondition, StorageDepositReturnUnlockCondition, UnlockCondition,
+                AddressUnlockCondition, ExpirationUnlockCondition, GovernorAddressUnlockCondition,
+                ImmutableAliasAddressUnlockCondition, StateControllerAddressUnlockCondition,
+                StorageDepositReturnUnlockCondition, TimelockUnlockCondition, UnlockCondition,
             },
             AliasId, AliasOutputBuilder, BasicOutputBuilder, FoundryOutputBuilder, NativeToken, NativeTokens, NftId,
             NftOutputBuilder, Output, OutputId, SimpleTokenScheme, TokenId, TokenScheme,
@@ -58,6 +61,8 @@ enum Build<'a> {
         Option<Vec<(&'a str, u64)>>,
         Option<&'a str>,
         Option<(&'a str, u64)>,
+        Option<u32>,
+        Option<(&'a str, u32)>,
     ),
     Nft(
         u64,
@@ -85,6 +90,8 @@ fn build_basic_output(
     native_tokens: Option<Vec<(&str, u64)>>,
     bech32_sender: Option<&str>,
     sdruc: Option<(&str, u64)>,
+    timelock: Option<u32>,
+    expiration: Option<(&str, u32)>,
 ) -> Output {
     let mut builder = BasicOutputBuilder::new_with_amount(amount)
         .unwrap()
@@ -114,6 +121,18 @@ fn build_basic_output(
                 TOKEN_SUPPLY,
             )
             .unwrap(),
+        ));
+    }
+
+    if let Some(timelock) = timelock {
+        builder = builder.add_unlock_condition(UnlockCondition::Timelock(
+            TimelockUnlockCondition::new(timelock).unwrap(),
+        ));
+    }
+
+    if let Some((address, timestamp)) = expiration {
+        builder = builder.add_unlock_condition(UnlockCondition::Expiration(
+            ExpirationUnlockCondition::new(Address::try_from_bech32(address).unwrap().1, timestamp).unwrap(),
         ));
     }
 
@@ -237,8 +256,16 @@ fn build_foundry_output(
 
 fn build_output_inner(build: Build) -> (Output, String) {
     match build {
-        Build::Basic(amount, bech32_address, native_tokens, bech32_sender, sdruc) => (
-            build_basic_output(amount, bech32_address, native_tokens, bech32_sender, sdruc),
+        Build::Basic(amount, bech32_address, native_tokens, bech32_sender, sdruc, timelock, expiration) => (
+            build_basic_output(
+                amount,
+                bech32_address,
+                native_tokens,
+                bech32_sender,
+                sdruc,
+                timelock,
+                expiration,
+            ),
             bech32_address.to_string(),
         ),
         Build::Nft(amount, nft_id, bech32_address, native_tokens, bech32_sender, bech32_issuer, sdruc) => (
@@ -366,4 +393,11 @@ fn is_remainder_or_return(
     } else {
         false
     }
+}
+
+fn addresses(addresses: Vec<&str>) -> Vec<Address> {
+    addresses
+        .iter()
+        .map(|address| Address::try_from_bech32(address).unwrap().1)
+        .collect()
 }

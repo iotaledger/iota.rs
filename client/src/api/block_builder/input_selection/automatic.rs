@@ -79,6 +79,11 @@ impl<'a> ClientBlockBuilder<'a> {
             .iter()
             .map(|input| *input.output_id())
             .collect::<HashSet<_>>();
+        // Assume that we own the addresses for inputs that are required for the provided outputs
+        let mut available_input_addresses = available_inputs
+            .iter()
+            .map(|input| Ok(Address::try_from_bech32(&input.bech32_address)?.1))
+            .collect::<Result<Vec<Address>>>()?;
 
         let current_time = self.client.get_time_checked().await?;
 
@@ -86,9 +91,11 @@ impl<'a> ClientBlockBuilder<'a> {
         let mut input_selection = InputSelection::new(
             available_inputs.clone(),
             self.outputs.clone(),
+            available_input_addresses.clone(),
             protocol_parameters.clone(),
         )
-        .required_inputs(required_inputs_for_sender_or_issuer.clone());
+        .required_inputs(required_inputs_for_sender_or_issuer.clone())
+        .timestamp(current_time);
 
         if let Some(address) = self.custom_remainder_address {
             input_selection = input_selection.remainder_address(address);
@@ -113,6 +120,22 @@ impl<'a> ClientBlockBuilder<'a> {
                 .with_range(gap_index..gap_index + ADDRESS_GAP_RANGE)
                 .get_all()
                 .await?;
+
+            available_input_addresses.extend(
+                addresses
+                    .public
+                    .iter()
+                    .map(|bech32_address| Ok(Address::try_from_bech32(bech32_address)?.1))
+                    .collect::<Result<Vec<Address>>>()?,
+            );
+            available_input_addresses.extend(
+                addresses
+                    .internal
+                    .iter()
+                    .map(|bech32_address| Ok(Address::try_from_bech32(bech32_address)?.1))
+                    .collect::<Result<Vec<Address>>>()?,
+            );
+
             // Have public and internal addresses with the index ascending ordered.
             let mut public_and_internal_addresses = Vec::new();
 
@@ -170,9 +193,11 @@ impl<'a> ClientBlockBuilder<'a> {
                     let mut input_selection = InputSelection::new(
                         available_inputs.clone(),
                         self.outputs.clone(),
+                        available_input_addresses.clone(),
                         protocol_parameters.clone(),
                     )
-                    .required_inputs(required_inputs_for_sender_or_issuer.clone());
+                    .required_inputs(required_inputs_for_sender_or_issuer.clone())
+                    .timestamp(current_time);
 
                     if let Some(address) = self.custom_remainder_address {
                         input_selection = input_selection.remainder_address(address);
