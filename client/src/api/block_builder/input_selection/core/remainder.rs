@@ -97,7 +97,8 @@ impl InputSelection {
     }
 
     pub(crate) fn remainder_and_storage_deposit_return_outputs(&self) -> Result<(Option<RemainderData>, Vec<Output>)> {
-        let (inputs_sum, outputs_sum, inputs_sdr, outputs_sdr) = amount_sums(&self.selected_inputs, &self.outputs);
+        let (inputs_sum, outputs_sum, inputs_sdr, outputs_sdr) =
+            amount_sums(&self.selected_inputs, &self.outputs, self.timestamp);
         let mut storage_deposit_returns = Vec::new();
 
         for (address, amount) in inputs_sdr {
