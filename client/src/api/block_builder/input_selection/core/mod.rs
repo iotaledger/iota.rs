@@ -218,11 +218,12 @@ impl InputSelection {
 
     fn filter_inputs(&mut self) {
         self.available_inputs.retain(|input| {
-            if !input.output.is_basic()
-                && !input.output.is_alias()
-                && !input.output.is_foundry()
-                && !input.output.is_nft()
-            {
+            // Keep alias outputs because at this point we do not know if a state or governor address will be required.
+            if input.output.is_alias() {
+                return true;
+            }
+            // Filter out non basic/foundry/nft outputs.
+            else if !input.output.is_basic() && !input.output.is_foundry() && !input.output.is_nft() {
                 return false;
             }
 
@@ -235,6 +236,7 @@ impl InputSelection {
 
             let required_address = input
                 .output
+                // True is irrelevant here as we keep aliases anyway.
                 .required_and_unlocked_address(self.timestamp, input.output_id(), true)
                 // PANIC: safe to unwrap as non basic/alias/foundry/nft outputs are already filtered out.
                 .unwrap()
