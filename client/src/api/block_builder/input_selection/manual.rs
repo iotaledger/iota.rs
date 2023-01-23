@@ -105,7 +105,8 @@ impl<'a> ClientBlockBuilder<'a> {
             Vec::new(),
             protocol_parameters.clone(),
         )
-        .required_inputs(required_inputs);
+        .required_inputs(required_inputs)
+        .timestamp(current_time);
 
         if let Some(address) = self.custom_remainder_address {
             input_selection = input_selection.remainder_address(address);
