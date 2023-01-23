@@ -226,22 +226,21 @@ impl InputSelection {
                 return false;
             }
 
-            if let Some(unlock_conditions) = input.output.unlock_conditions() {
-                if unlock_conditions.is_time_locked(self.timestamp) {
-                    return false;
-                }
+            // PANIC: safe to unwrap as non basic/alias/foundry/nft outputs are already filtered out.
+            let unlock_conditions = input.output.unlock_conditions().unwrap();
 
-                let required_address = input
-                    .output
-                    .required_and_unlocked_address(self.timestamp, input.output_id(), true)
-                    // PANIC: safe to unwrap as non basic/alias/foundry/nft outputs are already filtered out.
-                    .unwrap()
-                    .0;
-
-                self.addresses.contains(&required_address)
-            } else {
-                true
+            if unlock_conditions.is_time_locked(self.timestamp) {
+                return false;
             }
+
+            let required_address = input
+                .output
+                .required_and_unlocked_address(self.timestamp, input.output_id(), true)
+                // PANIC: safe to unwrap as non basic/alias/foundry/nft outputs are already filtered out.
+                .unwrap()
+                .0;
+
+            self.addresses.contains(&required_address)
         })
     }
 
