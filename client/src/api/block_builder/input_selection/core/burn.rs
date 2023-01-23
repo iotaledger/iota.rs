@@ -6,11 +6,15 @@ use std::collections::{HashMap, HashSet};
 use primitive_types::U256;
 use serde::{Deserialize, Serialize};
 
-use crate::block::output::{AliasId, FoundryId, NftId, TokenId};
+use crate::block::{
+    dto::U256Dto,
+    output::{AliasId, FoundryId, NftId, TokenId},
+    DtoError,
+};
 
 /// A type to specify what needs to be burned during input selection.
 /// Nothing will be burned that has not been explicitly set with this struct.
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Burn {
     /// Aliases to burn.
@@ -79,5 +83,54 @@ impl Burn {
             .map(|(token_id, amount)| (token_id, amount.into()))
             .collect();
         self
+    }
+}
+
+/// A DTO for [`Burn`].
+#[derive(Debug, Default, Clone, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BurnDto {
+    /// Aliases to burn.
+    pub(crate) aliases: HashSet<AliasId>,
+    /// NFTs to burn.
+    pub(crate) nfts: HashSet<NftId>,
+    /// Foundries to burn.
+    pub(crate) foundries: HashSet<FoundryId>,
+    /// Amounts of native tokens to burn.
+    /// `hashbrown::HashMap` to allow seamless operations with `NativeTokens`.
+    pub(crate) native_tokens: HashMap<TokenId, U256Dto>,
+}
+
+impl From<&Burn> for BurnDto {
+    fn from(value: &Burn) -> Self {
+        Self {
+            aliases: value.aliases.clone(),
+            nfts: value.nfts.clone(),
+            foundries: value.foundries.clone(),
+            native_tokens: HashMap::from_iter(
+                value
+                    .native_tokens
+                    .iter()
+                    .map(|(token_id, amount)| (*token_id, U256Dto::from(amount))),
+            ),
+        }
+    }
+}
+
+impl TryFrom<&BurnDto> for Burn {
+    type Error = DtoError;
+
+    fn try_from(value: &BurnDto) -> Result<Self, Self::Error> {
+        Ok(Self {
+            aliases: value.aliases.clone(),
+            nfts: value.nfts.clone(),
+            foundries: value.foundries.clone(),
+            native_tokens: value
+                .native_tokens
+                .iter()
+                .map(|(token_id, amount)| U256::try_from(amount).map(|amount| (*token_id, amount)))
+                .collect::<Result<hashbrown::HashMap<_, _>, _>>()
+                .map_err(|_| DtoError::InvalidField("native_tokens"))?,
+        })
     }
 }

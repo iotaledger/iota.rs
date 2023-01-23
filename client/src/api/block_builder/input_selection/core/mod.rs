@@ -9,7 +9,10 @@ pub(crate) mod transition;
 use std::collections::HashSet;
 
 use self::requirement::{alias::is_alias_state_transition, Requirements};
-pub use self::{burn::Burn, requirement::Requirement};
+pub use self::{
+    burn::{Burn, BurnDto},
+    requirement::Requirement,
+};
 use crate::{
     api::{block_builder::input_selection::helpers::sort_input_signing_data, types::RemainderData},
     block::{
