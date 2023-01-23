@@ -415,3 +415,40 @@ fn expiration_expired_with_sdr_and_timelock() {
     assert!(unsorted_eq(&selected.inputs, &inputs));
     assert!(unsorted_eq(&selected.outputs, &outputs));
 }
+
+#[test]
+fn expiration_expired_with_sdr_and_timelock_2() {
+    let protocol_parameters = protocol_parameters();
+
+    let inputs = build_inputs(vec![Basic(
+        2_000_000,
+        BECH32_ADDRESS_ED25519_1,
+        None,
+        None,
+        Some((BECH32_ADDRESS_ED25519_1, 1_000_000)),
+        Some(50),
+        Some((BECH32_ADDRESS_ED25519_0, 50)),
+    )]);
+    let outputs = build_outputs(vec![Basic(
+        2_000_000,
+        BECH32_ADDRESS_ED25519_1,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )]);
+
+    let selected = InputSelection::new(
+        inputs.clone(),
+        outputs.clone(),
+        addresses(vec![BECH32_ADDRESS_ED25519_0]),
+        protocol_parameters,
+    )
+    .timestamp(100)
+    .select()
+    .unwrap();
+
+    assert!(unsorted_eq(&selected.inputs, &inputs));
+    assert!(unsorted_eq(&selected.outputs, &outputs));
+}
