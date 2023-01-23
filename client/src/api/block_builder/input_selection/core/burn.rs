@@ -46,6 +46,11 @@ impl Burn {
         self
     }
 
+    /// Returns the aliases to [`Burn`].
+    pub fn aliases(&self) -> &HashSet<AliasId> {
+        &self.aliases
+    }
+
     /// Adds an NFT to [`Burn`].
     pub fn add_nft(mut self, nft_id: NftId) -> Self {
         self.nfts.insert(nft_id);
@@ -58,6 +63,11 @@ impl Burn {
         self
     }
 
+    /// Returns the NFTs to [`Burn`].
+    pub fn nfts(&self) -> &HashSet<NftId> {
+        &self.nfts
+    }
+
     /// Adds a foundry to [`Burn`].
     pub fn add_foundry(mut self, foundry_id: FoundryId) -> Self {
         self.foundries.insert(foundry_id);
@@ -68,6 +78,11 @@ impl Burn {
     pub fn set_foundries(mut self, foundries: HashSet<FoundryId>) -> Self {
         self.foundries = foundries;
         self
+    }
+
+    /// Returns the foundries to [`Burn`].
+    pub fn foundries(&self) -> &HashSet<FoundryId> {
+        &self.foundries
     }
 
     /// Adds an amount of native token to [`Burn`].
@@ -83,6 +98,11 @@ impl Burn {
             .map(|(token_id, amount)| (token_id, amount.into()))
             .collect();
         self
+    }
+
+    /// Returns the native tokens to [`Burn`].
+    pub fn native_tokens(&self) -> &hashbrown::HashMap<TokenId, U256> {
+        &self.native_tokens
     }
 }
 
