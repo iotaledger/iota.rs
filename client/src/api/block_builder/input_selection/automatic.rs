@@ -126,16 +126,14 @@ impl<'a> ClientBlockBuilder<'a> {
                     .public
                     .iter()
                     .map(|bech32_address| Ok(Address::try_from_bech32(bech32_address)?.1))
-                    .collect::<Result<Vec<Address>>>()?
-                    .into_iter(),
+                    .collect::<Result<Vec<Address>>>()?,
             );
             available_input_addresses.extend(
                 addresses
                     .internal
                     .iter()
                     .map(|bech32_address| Ok(Address::try_from_bech32(bech32_address)?.1))
-                    .collect::<Result<Vec<Address>>>()?
-                    .into_iter(),
+                    .collect::<Result<Vec<Address>>>()?,
             );
 
             // Have public and internal addresses with the index ascending ordered.
