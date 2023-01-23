@@ -1,0 +1,119 @@
+---
+title: Use Shimmer Python library together with IOTA Library
+description: How to use the Python Shimmer Library together with the IOTA library
+keywords:
+- Python
+- IOTA
+- Shimmer
+---
+
+:::info
+
+As Python doesn't support using multiple versions of the same library, if you want to use both the Shimmer and IOTA version, you need to build one of them yourself and rename it.
+
+:::
+
+In this guide we will show you an Example on how you can install both the IOTA and Shimmer Python client for usage in the same application.
+For that we will build the IOTA client library ourselfes and rename it.
+
+### Install Shimmer Version
+
+First install the Shimmer version following the [installation guide](/getting_started/python.mdx#install-package-from-pypi).
+
+### Install IOTA Version
+
+To install the IOTA version you need to follow the [Install from source](https://wiki.iota.org/iota.rs/getting_started/python#install-from-source) guide.
+Before you continue with the steps after having cloned the repo, we need to apply some changes to the repo first. 
+
+:::info
+
+In this guide we will rename the `iota-client` to `iota-client-production`, but you can use whatever you want.
+
+:::
+
+In `bindings/python/native/Cargo.toml` change both names:
+
+```diff
+[package]
+- name = "iota-client-python"
++ name = "iota-client-production"
+  version = "0.2.0-alpha.3"
+  authors = ["IOTA Stiftung"]
+  edition = "2021"
+  description = "Python bindings for the IOTA client library"
+  documentation = "https://wiki.iota.org/iota.rs/welcome"
+  homepage = "https://www.iota.org/"
+  repository = "https://github.com/iotaledger/iota.rs"
+  license = "Apache-2.0"
+  keywords = ["iota", "tangle", "client", "python"]
+  categories = ["cryptography::cryptocurrencies"]
+
+[lib]
+- name = "iota_client"
++ name = "iota_client_production"
+  crate-type = ["cdylib"]
+```
+
+In `bindings/python/native/setup.py`:
+```diff
+setup(
+-   name="iota_client",
++   name="iota_client_production"
+    version="0.1.0",
+    classifiers=[
+        "License :: SPDX-License-Identifier ::  Apache-2.0",
+        "Development Status :: 0.1.0 - Alpha",
+        "Intended Audience :: Developers",
+        "Programming Language :: Python",
+        "Programming Language :: Rust",
+        "Operating System :: POSIX",
+        "Operating System :: MacOS :: MacOS X",
+    ],
+    packages=["iota_client"],
+    rust_extensions=[
+        RustExtension(
+            "iota_client.iota_client",
+            rustc_flags=get_py_version_cfgs(),
+            debug=False,
+        ),
+    ],
+    include_package_data=True,
+    zip_safe=False,
+)
+```
+
+And in `bindings/python/native/src/lib.rs`:
+```diff
+/// A Python module implemented in Rust.
+#[pymodule]
+- fn iota_client(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
++ fn iota_client_production(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
+      m.add_class::<Client>()?;
+      Ok(())
+  }
+```
+
+Now you can continue the installation from [here](https://wiki.iota.org/iota.rs/getting_started/python#change-to-the-python-binding-directory).
+
+### Usage
+
+With both libraries installed you can now use them for example like this:
+
+```python
+import json
+
+from iota_client import IotaClient as ShimmerClient # Imported as ShimmerClient to prevent confusion
+import iota_client_production
+
+# Create an IotaClient instance
+shimmer_client = ShimmerClient({'nodes': ['https://api.testnet.shimmer.network']})
+
+# Get and print the node info
+print(f'{json.dumps(shimmer_client.get_info(), indent=4)}')
+
+# create a client with a node
+iota_client = iota_client_production.Client(
+    nodes_name_password=[['https://api.lb-0.h.chrysalis-devnet.iota.cafe']])
+
+print(f'{json.dumps(iota_client.get_info(), indent=4)}')
+```
