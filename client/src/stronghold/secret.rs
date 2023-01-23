@@ -149,11 +149,28 @@ impl StrongholdAdapter {
 
     /// Execute [Procedure::SLIP10Derive] in Stronghold to derive a SLIP-10 private key in the Stronghold vault.
     async fn slip10_derive(&self, chain: Chain, input: Slip10DeriveInput, output: Location) -> Result<()> {
-        self.stronghold
+        if let Err(err) = self
+            .stronghold
             .lock()
             .await
             .get_client(PRIVATE_DATA_CLIENT_PATH)?
-            .execute_procedure(procedures::Slip10Derive { chain, input, output })?;
+            .execute_procedure(procedures::Slip10Derive { chain, input, output })
+        {
+            match err {
+                iota_stronghold::procedures::ProcedureError::Engine(ref e) => {
+                    // Custom error for missing vault error: https://github.com/iotaledger/stronghold.rs/blob/7f0a2e0637394595e953f9071fa74b1d160f51ec/client/src/types/error.rs#L170
+                    if e.to_string().contains("does not exist") {
+                        // Actually the seed, derived from the mnemonic, is not stored.
+                        return Err(Error::StrongholdMnemonicMissing);
+                    } else {
+                        return Err(err.into());
+                    }
+                }
+                _ => {
+                    return Err(err.into());
+                }
+            }
+        };
 
         Ok(())
     }
