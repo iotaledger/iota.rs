@@ -532,7 +532,15 @@ fn alias_sender() {
     let inputs = build_inputs(vec![
         Basic(2_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None, None),
         Basic(2_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None, None),
-        Alias(1_000_000, alias_id_1, BECH32_ADDRESS_ED25519_0, None, None, None),
+        Alias(
+            1_000_000,
+            alias_id_1,
+            BECH32_ADDRESS_ED25519_0,
+            BECH32_ADDRESS_ED25519_0,
+            None,
+            None,
+            None,
+        ),
         Basic(2_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None, None),
         Basic(2_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None, None),
     ]);
@@ -576,7 +584,15 @@ fn alias_sender_zero_id() {
 
     let inputs = build_inputs(vec![
         Basic(2_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None, None),
-        Alias(1_000_000, alias_id_0, BECH32_ADDRESS_ED25519_0, None, None, None),
+        Alias(
+            1_000_000,
+            alias_id_0,
+            BECH32_ADDRESS_ED25519_0,
+            BECH32_ADDRESS_ED25519_0,
+            None,
+            None,
+            None,
+        ),
     ]);
     let alias_id = AliasId::from(inputs[1].output_id());
     let outputs = build_outputs(vec![Basic(

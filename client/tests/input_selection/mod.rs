@@ -77,6 +77,7 @@ enum Build<'a> {
         u64,
         AliasId,
         &'a str,
+        &'a str,
         Option<Vec<(&'a str, u64)>>,
         Option<&'a str>,
         Option<&'a str>,
@@ -191,20 +192,22 @@ fn build_nft_output(
 fn build_alias_output(
     amount: u64,
     alias_id: AliasId,
-    bech32_address: &str,
+    state_address: &str,
+    governor_address: &str,
     native_tokens: Option<Vec<(&str, u64)>>,
     bech32_sender: Option<&str>,
     bech32_issuer: Option<&str>,
 ) -> Output {
-    let address = Address::try_from_bech32(bech32_address).unwrap().1;
+    let state_address = Address::try_from_bech32(state_address).unwrap().1;
+    let governor_address = Address::try_from_bech32(governor_address).unwrap().1;
 
     let mut builder = AliasOutputBuilder::new_with_amount(amount, alias_id)
         .unwrap()
         .add_unlock_condition(UnlockCondition::StateControllerAddress(
-            StateControllerAddressUnlockCondition::new(address),
+            StateControllerAddressUnlockCondition::new(state_address),
         ))
         .add_unlock_condition(UnlockCondition::GovernorAddress(GovernorAddressUnlockCondition::new(
-            address,
+            governor_address,
         )));
 
     if let Some(native_tokens) = native_tokens {
@@ -280,16 +283,25 @@ fn build_output_inner(build: Build) -> (Output, String) {
             ),
             bech32_address.to_string(),
         ),
-        Build::Alias(amount, alias_id, bech32_address, native_tokens, bech32_sender, bech32_issuer) => (
+        Build::Alias(
+            amount,
+            alias_id,
+            state_address,
+            governor_address,
+            native_tokens,
+            bech32_sender,
+            bech32_issuer,
+        ) => (
             build_alias_output(
                 amount,
                 alias_id,
-                bech32_address,
+                state_address,
+                governor_address,
                 native_tokens,
                 bech32_sender,
                 bech32_issuer,
             ),
-            bech32_address.to_string(),
+            state_address.to_string(),
         ),
         Build::Foundry(amount, alias_id, serial_number, token_scheme, native_tokens) => (
             build_foundry_output(amount, alias_id, serial_number, token_scheme, native_tokens),
