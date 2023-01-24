@@ -4,17 +4,11 @@
 use std::sync::Arc;
 
 use iota_client::{
-    block::{
-        payload::milestone::{dto::MilestonePayloadDto, option::dto::ReceiptMilestoneOptionDto},
-        BlockDto,
-    },
     message_interface::{create_message_handler, ClientMessageHandler, Message, Response},
-    MqttPayload, Topic, TopicEvent,
+    Topic,
 };
 use neon::prelude::*;
-use serde::Serialize;
 use tokio::sync::mpsc::unbounded_channel;
-
 type JsCallback = Root<JsFunction<JsObject>>;
 
 pub struct MessageHandler {
@@ -64,38 +58,6 @@ impl MessageHandler {
             }
         }
     }
-
-    fn call_event_callback(&self, event: TopicEvent, callback: Arc<JsCallback>) {
-        self.channel.send(move |mut cx| {
-            #[derive(Serialize)]
-            struct MqttResponse {
-                topic: String,
-                payload: String,
-            }
-            let payload = match &event.payload {
-                MqttPayload::Json(val) => serde_json::to_string(&val).unwrap(),
-                MqttPayload::Block(block) => serde_json::to_string(&BlockDto::from(block)).unwrap(),
-                MqttPayload::MilestonePayload(ms) => serde_json::to_string(&MilestonePayloadDto::from(ms)).unwrap(),
-                MqttPayload::Receipt(receipt) => {
-                    serde_json::to_string(&ReceiptMilestoneOptionDto::from(receipt)).unwrap()
-                }
-            };
-            let response = MqttResponse {
-                topic: event.topic,
-                payload,
-            };
-            let cb = (*callback).to_inner(&mut cx);
-            let this = cx.undefined();
-            let args = vec![
-                cx.undefined().upcast::<JsValue>(),
-                cx.string(serde_json::to_string(&response).unwrap()).upcast::<JsValue>(),
-            ];
-
-            cb.call(&mut cx, this, args)?;
-
-            Ok(())
-        });
-    }
 }
 
 pub fn message_handler_new(mut cx: FunctionContext) -> JsResult<JsBox<Arc<MessageHandler>>> {
@@ -138,7 +100,7 @@ pub fn send_message(mut cx: FunctionContext) -> JsResult<JsUndefined> {
 }
 
 // MQTT
-pub fn listen(mut cx: FunctionContext) -> JsResult<JsUndefined> {
+pub fn listen(mut cx: FunctionContext) -> JsResult<JsPromise> {
     let js_arr_handle: Handle<JsArray> = cx.argument(0)?;
     let vec: Vec<Handle<JsValue>> = js_arr_handle.to_vec(&mut cx)?;
     let mut topics = vec![];
@@ -149,19 +111,37 @@ pub fn listen(mut cx: FunctionContext) -> JsResult<JsUndefined> {
 
     let callback = Arc::new(cx.argument::<JsFunction>(1)?.root(&mut cx));
     let message_handler = Arc::clone(&&cx.argument::<JsBox<Arc<MessageHandler>>>(2)?);
+    let (deferred, promise) = cx.promise();
 
     crate::RUNTIME.spawn(async move {
-        let cloned_message_handler = message_handler.clone();
-        let mut cloned_client = message_handler.client_message_handler.client.clone();
-        cloned_client
-            .subscriber()
-            .with_topics(topics)
-            .subscribe(move |event_data| {
-                cloned_message_handler.call_event_callback(event_data.clone(), callback.clone())
-            })
-            .await
-            .unwrap();
-    });
+        let channel0 = message_handler.channel.clone();
+        let channel1 = message_handler.channel.clone();
+        message_handler
+        .client_message_handler
+        .listen(topics, move |event_data| {
+            call_event_callback(&channel0, event_data, callback.clone())
+        })
+        .await;
+        
+        deferred.settle_with(&channel1, move |mut cx| {
+                Ok(cx.undefined())
+            });
+        });
+        
+    Ok(promise)
+}
 
-    Ok(cx.undefined())
+fn call_event_callback(channel: &neon::event::Channel, event_data: String, callback: Arc<JsCallback>) {
+    channel.send(move |mut cx| {
+        let cb = (*callback).to_inner(&mut cx);
+        let this = cx.undefined();
+        let args = vec![
+            cx.undefined().upcast::<JsValue>(),
+            cx.string(event_data).upcast::<JsValue>(),
+        ];
+
+        cb.call(&mut cx, this, args)?;
+
+        Ok(())
+    });
 }

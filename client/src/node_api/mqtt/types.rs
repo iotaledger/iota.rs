@@ -10,9 +10,10 @@ use iota_types::block::{
     Block,
 };
 use regex::RegexSet;
+use serde::{Deserialize, Deserializer};
 use serde_json::Value;
 
-use crate::Result;
+use crate::{serde::de::Error, Result};
 
 type TopicHandler = Box<dyn Fn(&TopicEvent) + Send + Sync>;
 
@@ -20,7 +21,7 @@ pub(crate) type TopicHandlerMap = HashMap<Topic, Vec<Arc<TopicHandler>>>;
 
 /// An event from a MQTT topic.
 
-#[derive(Debug, Clone, serde::Serialize)]
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub struct TopicEvent {
     /// the MQTT topic.
     pub topic: String,
@@ -30,7 +31,7 @@ pub struct TopicEvent {
 
 /// The payload of an `TopicEvent`.
 
-#[derive(Debug, Clone, serde::Serialize)]
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub enum MqttPayload {
     /// In case it contains JSON.
     Json(Value),
@@ -139,7 +140,7 @@ impl BrokerOptions {
 }
 
 /// A MQTT topic.
-#[derive(Debug, Clone, Hash, Eq, PartialEq)]
+#[derive(Debug, Clone, Hash, Eq, PartialEq, Serialize)]
 pub struct Topic(String);
 
 impl TryFrom<String> for Topic {
@@ -147,6 +148,15 @@ impl TryFrom<String> for Topic {
 
     fn try_from(value: String) -> std::result::Result<Self, Self::Error> {
         Self::try_new(value)
+    }
+}
+impl<'de> Deserialize<'de> for Topic {
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Topic, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s: String = Deserialize::deserialize(deserializer)?;
+        Topic::try_from(s).map_err(|err| D::Error::custom(format!("{err}")))
     }
 }
 

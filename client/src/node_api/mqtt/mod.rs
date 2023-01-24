@@ -31,14 +31,14 @@ use crate::{Client, NetworkInfo, Result};
 impl Client {
     /// Returns a handle to the MQTT topics manager.
     #[cfg(feature = "mqtt")]
-    pub fn subscriber(&mut self) -> MqttManager<'_> {
+    pub fn subscriber(&self) -> MqttManager<'_> {
         MqttManager::new(self)
     }
 
     /// Subscribe to MQTT events with a callback.
     #[cfg(feature = "mqtt")]
     pub async fn subscribe<C: Fn(&TopicEvent) + Send + Sync + 'static>(
-        &mut self,
+        &self,
         topics: Vec<Topic>,
         callback: C,
     ) -> crate::Result<()> {
@@ -47,7 +47,7 @@ impl Client {
 
     /// Unsubscribe from MQTT events.
     #[cfg(feature = "mqtt")]
-    pub async fn unsubscribe(&mut self, topics: Vec<Topic>) -> crate::Result<()> {
+    pub async fn unsubscribe(&self, topics: Vec<Topic>) -> crate::Result<()> {
         MqttManager::new(self).with_topics(topics).unsubscribe().await
     }
 
@@ -58,81 +58,80 @@ impl Client {
     }
 }
 
-async fn get_mqtt_client(client: &mut Client) -> Result<&mut MqttClient> {
+async fn set_mqtt_client(client: &Client) -> Result<()> {
     // if the client was disconnected, we clear it so we can start over
     if *client.mqtt_event_receiver().borrow() == MqttEvent::Disconnected {
-        client.mqtt_client = None;
+        *client.mqtt_client.write().await = None;
     }
-    match client.mqtt_client {
-        Some(ref mut c) => Ok(c),
-        None => {
-            let nodes = if !client.node_manager.ignore_node_health {
-                #[cfg(not(target_family = "wasm"))]
-                {
-                    client
-                        .node_manager
-                        .healthy_nodes
-                        .read()
-                        .map_or(client.node_manager.nodes.clone(), |healthy_nodes| {
-                            healthy_nodes.iter().map(|(node, _)| node.clone()).collect()
-                        })
-                }
-                #[cfg(target_family = "wasm")]
-                {
-                    client.node_manager.nodes.clone()
-                }
-            } else {
+    let exists = client.mqtt_client.read().await.is_some();
+
+    if !exists {
+        let nodes = if !client.node_manager.ignore_node_health {
+            #[cfg(not(target_family = "wasm"))]
+            {
+                client
+                    .node_manager
+                    .healthy_nodes
+                    .read()
+                    .map_or(client.node_manager.nodes.clone(), |healthy_nodes| {
+                        healthy_nodes.iter().map(|(node, _)| node.clone()).collect()
+                    })
+            }
+            #[cfg(target_family = "wasm")]
+            {
                 client.node_manager.nodes.clone()
+            }
+        } else {
+            client.node_manager.nodes.clone()
+        };
+        for node in &nodes {
+            let host = node.url.host_str().expect("can't get host from URL");
+            let mut entropy = [0u8; 8];
+            utils::rand::fill(&mut entropy)?;
+            let id = format!("iotars{}", prefix_hex::encode(entropy));
+            let port = client.broker_options.port;
+            let mut uri = format!(
+                "{}://{}:{}/api/mqtt/v1",
+                if node.url.scheme() == "https" { "wss" } else { "ws" },
+                host,
+                node.url.port_or_known_default().unwrap_or(port)
+            );
+
+            if !client.broker_options.use_ws {
+                uri = host.to_string();
             };
-            for node in &nodes {
-                let host = node.url.host_str().expect("can't get host from URL");
-                let mut entropy = [0u8; 8];
-                utils::rand::fill(&mut entropy)?;
-                let id = format!("iotars{}", prefix_hex::encode(entropy));
-                let port = client.broker_options.port;
-                let mut uri = format!(
-                    "{}://{}:{}/api/mqtt/v1",
-                    if node.url.scheme() == "https" { "wss" } else { "ws" },
-                    host,
-                    node.url.port_or_known_default().unwrap_or(port)
-                );
-
-                if !client.broker_options.use_ws {
-                    uri = host.to_string();
-                };
-                let mut mqtt_options = MqttOptions::new(id, uri, port);
-                if client.broker_options.use_ws {
-                    mqtt_options.set_transport(Transport::ws());
-                }
-                mqtt_options.set_connection_timeout(client.broker_options.timeout.as_secs());
-                let (_, mut connection) = MqttClient::new(mqtt_options.clone(), 10);
-                // poll the event loop until we find a ConnAck event,
-                // which means that the mqtt client is ready to be used on this host
-                // if the event loop returns an error, we check the next node
-                let mut got_ack = false;
-                while let Ok(event) = connection.poll().await {
-                    if let Event::Incoming(Incoming::ConnAck(_)) = event {
-                        got_ack = true;
-                        break;
-                    }
-                }
-
-                // if we found a valid mqtt connection, loop it on a separate thread
-                if got_ack {
-                    let (mqtt_client, connection) = MqttClient::new(mqtt_options, 10);
-                    client.mqtt_client.replace(mqtt_client);
-                    poll_mqtt(
-                        client.mqtt_topic_handlers.clone(),
-                        client.broker_options.clone(),
-                        client.mqtt_event_channel.0.clone(),
-                        connection,
-                        client.network_info.clone(),
-                    );
+            let mut mqtt_options = MqttOptions::new(id, uri, port);
+            if client.broker_options.use_ws {
+                mqtt_options.set_transport(Transport::ws());
+            }
+            mqtt_options.set_connection_timeout(client.broker_options.timeout.as_secs());
+            let (_, mut connection) = MqttClient::new(mqtt_options.clone(), 10);
+            // poll the event loop until we find a ConnAck event,
+            // which means that the mqtt client is ready to be used on this host
+            // if the event loop returns an error, we check the next node
+            let mut got_ack = false;
+            while let Ok(event) = connection.poll().await {
+                if let Event::Incoming(Incoming::ConnAck(_)) = event {
+                    got_ack = true;
+                    break;
                 }
             }
-            client.mqtt_client.as_mut().ok_or(crate::Error::MqttConnectionNotFound)
+
+            // if we found a valid mqtt connection, loop it on a separate thread
+            if got_ack {
+                let (mqtt_client, connection) = MqttClient::new(mqtt_options, 10);
+                client.mqtt_client.write().await.replace(mqtt_client);
+                poll_mqtt(
+                    client.mqtt_topic_handlers.clone(),
+                    client.broker_options.clone(),
+                    client.mqtt_event_channel.0.clone(),
+                    connection,
+                    client.network_info.clone(),
+                );
+            }
         }
     }
+    Ok(())
 }
 
 fn poll_mqtt(
@@ -272,12 +271,12 @@ fn poll_mqtt(
 
 /// MQTT subscriber.
 pub struct MqttManager<'a> {
-    client: &'a mut Client,
+    client: &'a Client,
 }
 
 impl<'a> MqttManager<'a> {
     /// Initializes a new instance of the mqtt subscriber.
-    pub fn new(client: &'a mut Client) -> Self {
+    pub fn new(client: &'a Client) -> Self {
         Self { client }
     }
 
@@ -299,14 +298,14 @@ impl<'a> MqttManager<'a> {
     /// Disconnects the broker.
     /// This will clear the stored topic handlers and close the MQTT connection.
     pub async fn disconnect(self) -> Result<()> {
-        if let Some(client) = &self.client.mqtt_client {
+        if let Some(client) = &*self.client.mqtt_client.write().await {
             client.disconnect().await?;
-            self.client.mqtt_client = None;
-
             let mqtt_topic_handlers = &self.client.mqtt_topic_handlers;
             let mut mqtt_topic_handlers = mqtt_topic_handlers.write().await;
             mqtt_topic_handlers.clear();
         }
+
+        *self.client.mqtt_client.write().await = None;
 
         Ok(())
     }
@@ -315,13 +314,13 @@ impl<'a> MqttManager<'a> {
 /// The MQTT topic manager.
 /// Subscribes and unsubscribes from topics.
 pub struct MqttTopicManager<'a> {
-    client: &'a mut Client,
+    client: &'a Client,
     topics: Vec<Topic>,
 }
 
 impl<'a> MqttTopicManager<'a> {
     /// Initializes a new instance of the mqtt topic manager.
-    fn new(client: &'a mut Client) -> Self {
+    fn new(client: &'a Client) -> Self {
         Self { client, topics: vec![] }
     }
 
@@ -342,10 +341,15 @@ impl<'a> MqttTopicManager<'a> {
         self,
         callback: C,
     ) -> Result<()> {
-        let client = get_mqtt_client(self.client).await?;
         let cb =
             Arc::new(Box::new(callback) as Box<dyn Fn(&crate::node_api::mqtt::TopicEvent) + Send + Sync + 'static>);
-        client
+        set_mqtt_client(self.client).await?;
+        self.client
+            .mqtt_client
+            .write()
+            .await
+            .as_ref()
+            .ok_or(crate::Error::MqttConnectionNotFound)?
             .subscribe_many(
                 self.topics
                     .iter()
@@ -381,7 +385,7 @@ impl<'a> MqttTopicManager<'a> {
             }
         };
 
-        if let Some(client) = &mut self.client.mqtt_client {
+        if let Some(client) = &*self.client.mqtt_client.write().await {
             for topic in &topics {
                 client.unsubscribe(topic.topic()).await?;
             }

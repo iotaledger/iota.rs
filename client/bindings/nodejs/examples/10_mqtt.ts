@@ -27,7 +27,15 @@ async function run() {
         console.log(JSON.parse(data));
     };
 
-    client.listen(topics, callback);
+    await client.listen(topics, callback);
+
+    // Clear listener after 10 seconds
+    setTimeout(async () => {
+        await client.clearListeners(['blocks']);
+        console.log('Listener cleared');
+        // Exit the process
+        setTimeout(async () => process.exit(0), 2000);
+    }, 10000);
 }
 
 run();

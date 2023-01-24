@@ -21,6 +21,11 @@ use iota_types::block::{
 };
 use tokio::sync::mpsc::UnboundedSender;
 use zeroize::Zeroize;
+#[cfg(feature = "mqtt")]
+use {
+    crate::{MqttPayload, Topic},
+    iota_types::block::payload::milestone::option::dto::ReceiptMilestoneOptionDto,
+};
 
 #[cfg(feature = "ledger_nano")]
 use crate::secret::ledger_nano::LedgerSecretManager;
@@ -72,6 +77,43 @@ impl ClientMessageHandler {
     /// Creates a new instance of the message handler with the specified client.
     pub fn with_client(client: Client) -> Self {
         Self { client }
+    }
+
+    #[cfg(feature = "mqtt")]
+    /// Listen to MQTT events
+    pub async fn listen<F>(&self, topics: Vec<Topic>, handler: F)
+    where
+        F: Fn(String) + 'static + Clone + Send + Sync,
+    {
+        self.client
+            .subscribe(topics, move |topic_event| {
+                #[derive(Serialize)]
+                struct MqttResponse {
+                    topic: String,
+                    payload: String,
+                }
+                // convert types to DTOs
+                let payload = match &topic_event.payload {
+                    MqttPayload::Json(val) => {
+                        serde_json::to_string(&val).expect("failed to serialize MqttPayload::Json")
+                    }
+                    MqttPayload::Block(block) => {
+                        serde_json::to_string(&BlockDto::from(block)).expect("failed to serialize MqttPayload::Block")
+                    }
+                    MqttPayload::MilestonePayload(ms) => serde_json::to_string(&MilestonePayloadDto::from(ms))
+                        .expect("failed to serialize MqttPayload::MilestonePayload"),
+                    MqttPayload::Receipt(receipt) => serde_json::to_string(&ReceiptMilestoneOptionDto::from(receipt))
+                        .expect("failed to serialize MqttPayload::Receipt"),
+                };
+                let response = MqttResponse {
+                    topic: topic_event.topic.clone(),
+                    payload,
+                };
+
+                handler(serde_json::to_string(&response).expect("failed to serialize MQTT response"))
+            })
+            .await
+            .expect("failed to listen to MQTT events");
     }
 
     /// Handle messages
@@ -285,6 +327,10 @@ impl ClientMessageHandler {
                 let block_id = block.id();
 
                 Ok(Response::BlockIdWithBlock(block_id, BlockDto::from(&block)))
+            }
+            Message::ClearListeners { topics } => {
+                self.client.unsubscribe(topics).await?;
+                Ok(Response::Ok)
             }
             Message::GetNode => Ok(Response::Node(self.client.get_node()?)),
             Message::GetNetworkInfo => Ok(Response::NetworkInfo(self.client.get_network_info().await?.into())),

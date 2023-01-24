@@ -30,6 +30,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Message::GetIncludedBlockMetadata` to message interface;
 - `Serialize_repr`, `Deserialize_repr` and `#[repr(u8)]` to `ParticipationEventType`;
 - `Error::StrongholdMnemonicMissing`;
+- `ClientMessageHandler::listen()`;
+- `Message::ClearListeners`;
 
 ### Changed
 

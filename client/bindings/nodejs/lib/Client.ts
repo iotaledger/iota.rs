@@ -1096,11 +1096,25 @@ export class Client {
         return JSON.parse(response).payload;
     }
 
-    // MQTT
-    listen(
+    /**
+     * Listen to MQTT topics.
+     */
+    async listen(
         topics: string[],
         callback: (error: Error, result: string) => void,
-    ): void {
+    ): Promise<void> {
         return this.messageHandler.listen(topics, callback);
+    }
+
+    /**
+     * Stop listening for provided MQTT topics.
+     */
+    async clearListeners(topics: string[]): Promise<void> {
+        await this.messageHandler.sendMessage({
+            name: 'clearListeners',
+            data: {
+                topics,
+            },
+        });
     }
 }

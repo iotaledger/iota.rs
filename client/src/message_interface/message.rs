@@ -18,6 +18,8 @@ use iota_types::block::{
 };
 use serde::Deserialize;
 
+#[cfg(feature = "mqtt")]
+use crate::Topic;
 use crate::{
     api::{
         ClientBlockBuilderOptions as BuildBlockOptions, GetAddressesBuilderOptions as GenerateAddressesOptions,
@@ -99,6 +101,13 @@ pub enum Message {
         features: Option<Vec<FeatureDto>>,
         #[serde(rename = "immutableFeatures")]
         immutable_features: Option<Vec<FeatureDto>>,
+    },
+    /// Removes all listeners for the provided topics.
+    /// Expected response: [`Ok`](crate::message_interface::Response::Ok)
+    #[cfg(feature = "mqtt")]
+    ClearListeners {
+        /// Topics for which listeners should be removed.
+        topics: Vec<Topic>,
     },
     /// Generate addresses.
     GenerateAddresses {
