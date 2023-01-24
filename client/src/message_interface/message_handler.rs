@@ -328,6 +328,7 @@ impl ClientMessageHandler {
 
                 Ok(Response::BlockIdWithBlock(block_id, BlockDto::from(&block)))
             }
+            #[cfg(feature = "mqtt")]
             Message::ClearListeners { topics } => {
                 self.client.unsubscribe(topics).await?;
                 Ok(Response::Ok)
