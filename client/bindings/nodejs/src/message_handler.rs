@@ -117,17 +117,15 @@ pub fn listen(mut cx: FunctionContext) -> JsResult<JsPromise> {
         let channel0 = message_handler.channel.clone();
         let channel1 = message_handler.channel.clone();
         message_handler
-        .client_message_handler
-        .listen(topics, move |event_data| {
-            call_event_callback(&channel0, event_data, callback.clone())
-        })
-        .await;
-        
-        deferred.settle_with(&channel1, move |mut cx| {
-                Ok(cx.undefined())
-            });
-        });
-        
+            .client_message_handler
+            .listen(topics, move |event_data| {
+                call_event_callback(&channel0, event_data, callback.clone())
+            })
+            .await;
+
+        deferred.settle_with(&channel1, move |mut cx| Ok(cx.undefined()));
+    });
+
     Ok(promise)
 }
 
