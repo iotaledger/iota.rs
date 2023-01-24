@@ -25,9 +25,9 @@ pub const PARTICIPATION_TAG: &str = "PARTICIPATE";
 #[repr(u8)]
 pub enum ParticipationEventType {
     /// Voting event.
-    Voting,
+    Voting = 0,
     /// Staking event.
-    Staking,
+    Staking = 1,
 }
 
 /// Wrapper interface containing a participation event ID and the corresponding event data.
