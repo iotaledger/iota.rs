@@ -8,7 +8,7 @@ use std::collections::HashSet;
 use crypto::keys::slip10::Chain;
 use iota_types::block::{
     address::Address,
-    output::{dto::OutputDto, feature::Features, AliasOutput, NftOutput, Output},
+    output::{dto::OutputDto, feature::Features, AliasOutput, NftOutput, Output, OutputMetadata},
 };
 
 use crate::{
@@ -17,7 +17,7 @@ use crate::{
         ClientBlockBuilder,
     },
     constants::HD_WALLET_TYPE,
-    secret::types::{InputSigningData, OutputMetadata},
+    secret::types::InputSigningData,
     Error, Result,
 };
 

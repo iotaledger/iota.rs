@@ -8,14 +8,17 @@ use iota_types::{
     api::{
         dto::{PeerDto, ReceiptDto},
         response::{
-            BlockMetadataResponse, InfoResponse as NodeInfo, OutputMetadataResponse, OutputWithMetadataResponse,
-            TreasuryResponse, UtxoChangesResponse as MilestoneUTXOChanges,
+            BlockMetadataResponse, InfoResponse as NodeInfo, OutputWithMetadataResponse, TreasuryResponse,
+            UtxoChangesResponse as MilestoneUTXOChanges,
         },
     },
     block::{
         address::dto::AddressDto,
         input::dto::UtxoInputDto,
-        output::{dto::OutputDto, AliasId, FoundryId, NftId, OutputId},
+        output::{
+            dto::{OutputDto, OutputMetadataDto},
+            AliasId, FoundryId, NftId, OutputId,
+        },
         payload::{
             dto::{MilestonePayloadDto, PayloadDto},
             transaction::TransactionId,
@@ -119,7 +122,7 @@ pub enum Response {
     Output(OutputWithMetadataResponse),
     /// Response for:
     /// - [`GetOutputMetadata`](crate::message_interface::Message::GetOutputMetadata)
-    OutputMetadata(OutputMetadataResponse),
+    OutputMetadata(OutputMetadataDto),
     /// Response for:
     /// - [`GetOutputs`](crate::message_interface::Message::GetOutputs)
     /// - [`TryGetOutputs`](crate::message_interface::Message::TryGetOutputs)
