@@ -6,8 +6,8 @@
 pub mod routes;
 
 use iota_types::{
-    api::response::{OutputMetadataResponse, OutputWithMetadataResponse},
-    block::output::OutputId,
+    api::response::OutputWithMetadataResponse,
+    block::output::{dto::OutputMetadataDto, OutputId},
 };
 
 #[cfg(not(target_family = "wasm"))]
@@ -74,7 +74,7 @@ impl Client {
     }
 
     /// Requests metadata for outputs by their output ID in parallel, ignoring failed requests
-    pub async fn try_get_outputs_metadata(&self, output_ids: Vec<OutputId>) -> Result<Vec<OutputMetadataResponse>> {
+    pub async fn try_get_outputs_metadata(&self, output_ids: Vec<OutputId>) -> Result<Vec<OutputMetadataDto>> {
         let mut output_metadata_responses = Vec::new();
 
         #[cfg(target_family = "wasm")]

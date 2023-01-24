@@ -42,6 +42,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `EventStatus` renamed to `ParticipationEventStatus`;
 - `EventPayload` renamed to `ParticipationEventPayload`;
 
+### Removed
+
+- `OutputMetadata`, moved to `iota-types`;
+
 ### Fixed
 
 - Possible infinite loop in pow::finish_multi_threaded_pow();

@@ -24,10 +24,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `NativeTokens::{contains, get}`;
+- `OutputMetadata` moved from `iota-client`;
 
 ### Changed
 
 - Updated dependencies;
+- `OutputMetadataResponse` renamed to `OutputMetadataDto` and moved from `api` to `block`;
 
 ## 1.0.0-rc.4 - 2022-12-20
 
