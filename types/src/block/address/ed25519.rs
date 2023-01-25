@@ -82,7 +82,7 @@ pub mod dto {
             value
                 .pub_key_hash
                 .parse::<Ed25519Address>()
-                .map_err(|_| DtoError::InvalidField("Ed25519 address"))
+                .map_err(|_| DtoError::InvalidField("pubKeyHash"))
         }
     }
 }

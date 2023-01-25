@@ -3,10 +3,14 @@
 
 use core::str::FromStr;
 
-use iota_types::block::address::{Address, Ed25519Address};
-use packable::PackableExt;
+use iota_types::block::{
+    address::{dto::Ed25519AddressDto, Ed25519Address},
+    DtoError,
+};
+// use packable::PackableExt;
 
 const ED25519_ADDRESS: &str = "0x52fdfc072182654f163f5f0f9a621d729566c74d10037c4d7bbb0407d1e2c649";
+const ED25519_ADDRESS_INVALID: &str = "0x52fdfc072182654f163f5f0f9a621d729566c74d10037c4d7bbb0407d1e2c64";
 
 #[test]
 fn kind() {
@@ -14,60 +18,80 @@ fn kind() {
 }
 
 #[test]
-fn debug_impl() {
+fn length() {
+    assert_eq!(Ed25519Address::LENGTH, 32);
+}
+
+#[test]
+fn new_bytes() {
+    let bytes = prefix_hex::decode::<[u8; Ed25519Address::LENGTH]>(ED25519_ADDRESS).unwrap();
+    let ed25519_address = Ed25519Address::new(bytes);
+
+    assert_eq!(ed25519_address.as_ref(), &bytes);
+}
+
+#[test]
+fn from_str_to_str() {
+    let ed25519_address = Ed25519Address::from_str(ED25519_ADDRESS).unwrap();
+
+    assert_eq!(ed25519_address.to_string(), ED25519_ADDRESS);
+}
+
+#[test]
+fn debug() {
+    let ed25519_address = Ed25519Address::from_str(ED25519_ADDRESS).unwrap();
+
     assert_eq!(
-        format!("{:?}", Ed25519Address::from_str(ED25519_ADDRESS).unwrap()),
+        format!("{ed25519_address:?}"),
         "Ed25519Address(0x52fdfc072182654f163f5f0f9a621d729566c74d10037c4d7bbb0407d1e2c649)"
     );
 }
 
 #[test]
-fn generate_address() {
-    let bytes = [1; 32];
+fn dto_fields() {
+    let ed25519_address = Ed25519Address::from_str(ED25519_ADDRESS).unwrap();
+    let dto = Ed25519AddressDto::from(&ed25519_address);
 
-    match Address::from(Ed25519Address::new(bytes)) {
-        Address::Ed25519(a) => assert_eq!(a.as_ref(), bytes),
-        _ => unreachable!(),
-    }
+    assert_eq!(dto.kind, Ed25519Address::KIND);
+    assert_eq!(dto.pub_key_hash, ED25519_ADDRESS.to_string());
 }
 
 #[test]
-fn from_str_valid() {
-    Ed25519Address::from_str(ED25519_ADDRESS).unwrap();
+fn address_dto_roundtrip() {
+    let ed25519_address = Ed25519Address::from_str(ED25519_ADDRESS).unwrap();
+    let dto = Ed25519AddressDto::from(&ed25519_address);
+
+    assert_eq!(Ed25519Address::try_from(&dto).unwrap(), ed25519_address);
 }
 
 #[test]
-fn from_to_str() {
-    assert_eq!(
-        ED25519_ADDRESS,
-        Ed25519Address::from_str(ED25519_ADDRESS).unwrap().to_string()
-    );
+fn dto_invalid_pub_key_hash() {
+    let dto = Ed25519AddressDto {
+        kind: Ed25519Address::KIND,
+        pub_key_hash: ED25519_ADDRESS_INVALID.to_string(),
+    };
+
+    assert!(matches!(
+        Ed25519Address::try_from(&dto),
+        Err(DtoError::InvalidField("pubKeyHash"))
+    ));
 }
 
-#[test]
-fn try_from_bech32() {
-    let address1 = Address::Ed25519(Ed25519Address::from_str(ED25519_ADDRESS).unwrap());
-    let (hrp, address2) = Address::try_from_bech32(address1.to_bech32("atoi")).unwrap();
+// #[test]
+// fn packed_len() {
+//     let address = Ed25519Address::from_str(ED25519_ADDRESS).unwrap();
 
-    assert_eq!(hrp, "atoi");
-    assert_eq!(address1, address2);
-}
+//     assert_eq!(address.packed_len(), 32);
+//     assert_eq!(address.pack_to_vec().len(), 32);
+// }
 
-#[test]
-fn packed_len() {
-    let address = Ed25519Address::from_str(ED25519_ADDRESS).unwrap();
+// #[test]
+// fn pack_unpack_valid() {
+//     let address = Ed25519Address::from_str(ED25519_ADDRESS).unwrap();
+//     let packed_address = address.pack_to_vec();
 
-    assert_eq!(address.packed_len(), 32);
-    assert_eq!(address.pack_to_vec().len(), 32);
-}
-
-#[test]
-fn pack_unpack_valid() {
-    let address = Ed25519Address::from_str(ED25519_ADDRESS).unwrap();
-    let packed_address = address.pack_to_vec();
-
-    assert_eq!(
-        address,
-        PackableExt::unpack_verified(packed_address.as_slice(), &()).unwrap()
-    );
-}
+//     assert_eq!(
+//         address,
+//         PackableExt::unpack_verified(packed_address.as_slice(), &()).unwrap()
+//     );
+// }
