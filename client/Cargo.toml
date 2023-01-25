@@ -35,7 +35,7 @@ url = { version = "2.3.1", default-features = false, features = [ "serde" ] }
 zeroize = { version = "1.5.7", default-features = false, features = [ "zeroize_derive" ] }
 
 # MQTT
-rumqttc = { version = "0.12.0", default-features = false, features = [ "websocket" ], optional = true }
+rumqttc = { version = "0.20.0", default-features = false, features = [ "websocket" ], optional = true }
 once_cell = { version = "1.17.0", default-features = false, features = [ "std" ], optional = true }
 
 # ledger hardware wallets
@@ -64,7 +64,7 @@ dotenv = { version = "0.15.0", default-features = false }
 fern-logger = { version = "0.5.0", default-features = false }
 
 [features]
-default = [ "tls" ]
+default = [ "tls", "mqtt" ]
 mqtt = [ "rumqttc", "once_cell", "regex" ]
 ledger_nano = [ "iota-ledger-nano" ]
 tls = [ "reqwest/rustls-tls" ]

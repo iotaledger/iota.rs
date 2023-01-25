@@ -79,8 +79,8 @@ impl ClientMessageHandler {
         Self { client }
     }
 
-    #[cfg(feature = "mqtt")]
     /// Listen to MQTT events
+    #[cfg(feature = "mqtt")]
     pub async fn listen<F>(&self, topics: Vec<Topic>, handler: F)
     where
         F: Fn(String) + 'static + Clone + Send + Sync,

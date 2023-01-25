@@ -89,7 +89,7 @@ impl Drop for Client {
         std::thread::spawn(move || {
             crate::async_runtime::block_on(async move {
                 if let Some(mqtt_client) = mqtt_client.write().await.take() {
-                    mqtt_client.cancel().await.unwrap();
+                    mqtt_client.disconnect().await.unwrap();
                 }
             });
         })

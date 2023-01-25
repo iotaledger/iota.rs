@@ -150,6 +150,7 @@ impl TryFrom<String> for Topic {
         Self::try_new(value)
     }
 }
+
 impl<'de> Deserialize<'de> for Topic {
     fn deserialize<D>(deserializer: D) -> std::result::Result<Topic, D::Error>
     where

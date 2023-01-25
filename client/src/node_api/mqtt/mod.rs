@@ -16,10 +16,7 @@ use iota_types::block::{
 };
 use log::warn;
 use packable::PackableExt;
-use rumqttc::{
-    AsyncClient as MqttClient, Event, EventLoop, Incoming, MqttOptions, QoS, Request, Subscribe, SubscribeFilter,
-    Transport,
-};
+use rumqttc::{AsyncClient, Event, EventLoop, Incoming, MqttOptions, NetworkOptions, QoS, SubscribeFilter, Transport};
 use tokio::sync::{
     watch::{Receiver as WatchReceiver, Sender},
     RwLock,
@@ -104,8 +101,10 @@ async fn set_mqtt_client(client: &Client) -> Result<()> {
             if client.broker_options.use_ws {
                 mqtt_options.set_transport(Transport::ws());
             }
-            mqtt_options.set_connection_timeout(client.broker_options.timeout.as_secs());
-            let (_, mut connection) = MqttClient::new(mqtt_options.clone(), 10);
+            let (_, mut connection) = AsyncClient::new(mqtt_options.clone(), 10);
+            connection.set_network_options(
+                *NetworkOptions::new().set_connection_timeout(client.broker_options.timeout.as_secs()),
+            );
             // poll the event loop until we find a ConnAck event,
             // which means that the mqtt client is ready to be used on this host
             // if the event loop returns an error, we check the next node
@@ -119,9 +118,10 @@ async fn set_mqtt_client(client: &Client) -> Result<()> {
 
             // if we found a valid mqtt connection, loop it on a separate thread
             if got_ack {
-                let (mqtt_client, connection) = MqttClient::new(mqtt_options, 10);
-                client.mqtt_client.write().await.replace(mqtt_client);
+                let (mqtt_client, connection) = AsyncClient::new(mqtt_options, 10);
+                client.mqtt_client.write().await.replace(mqtt_client.clone());
                 poll_mqtt(
+                    mqtt_client,
                     client.mqtt_topic_handlers.clone(),
                     client.broker_options.clone(),
                     client.mqtt_event_channel.0.clone(),
@@ -135,6 +135,7 @@ async fn set_mqtt_client(client: &Client) -> Result<()> {
 }
 
 fn poll_mqtt(
+    mqtt_client: AsyncClient,
     mqtt_topic_handlers_guard: Arc<RwLock<TopicHandlerMap>>,
     options: BrokerOptions,
     event_sender: Arc<Sender<MqttEvent>>,
@@ -155,7 +156,6 @@ fn poll_mqtt(
             let mut is_subscribed = true;
             let mut error_instant = Instant::now();
             let mut connection_failure_count = 0;
-            let handle = event_loop.handle();
 
             loop {
                 let event = event_loop.poll().await;
@@ -173,7 +173,7 @@ fn poll_mqtt(
                                 .map(|t| SubscribeFilter::new(t.topic().to_string(), QoS::AtLeastOnce))
                                 .collect::<Vec<SubscribeFilter>>();
                             if !topics.is_empty() {
-                                let _ = handle.send(Request::Subscribe(Subscribe::new_many(topics))).await;
+                                let _ = mqtt_client.subscribe_many(topics).await;
                             }
                         }
                     }
