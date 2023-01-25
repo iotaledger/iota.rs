@@ -93,7 +93,7 @@ pub mod dto {
             value
                 .nft_id
                 .parse::<NftAddress>()
-                .map_err(|_| DtoError::InvalidField("NFT address"))
+                .map_err(|_| DtoError::InvalidField("nftId"))
         }
     }
 }
