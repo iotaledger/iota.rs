@@ -31,9 +31,9 @@ fn length() {
 fn is_methods() {
     let address = Address::from(NftAddress::from_str(NFT_ID).unwrap());
 
-    assert_eq!(address.is_ed25519(), false);
-    assert_eq!(address.is_alias(), false);
-    assert_eq!(address.is_nft(), true);
+    assert!(!address.is_ed25519());
+    assert!(!address.is_alias());
+    assert!(address.is_nft());
 }
 
 #[test]

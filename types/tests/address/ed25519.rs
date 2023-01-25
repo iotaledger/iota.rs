@@ -30,9 +30,9 @@ fn length() {
 fn is_methods() {
     let address = Address::from(Ed25519Address::from_str(ED25519_ADDRESS).unwrap());
 
-    assert_eq!(address.is_ed25519(), true);
-    assert_eq!(address.is_alias(), false);
-    assert_eq!(address.is_nft(), false);
+    assert!(address.is_ed25519());
+    assert!(!address.is_alias());
+    assert!(!address.is_nft());
 }
 
 #[test]

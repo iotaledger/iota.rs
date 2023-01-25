@@ -12,5 +12,6 @@ const ED25519_ADDRESS_BAD: &str = "0x52fdfc072182654f163f5f0f9a621d729566c74d100
 #[test]
 fn invalid_bech32_string_to_address() {
     let address = Address::try_from_bech32(ED25519_ADDRESS_BAD);
+
     assert!(matches!(address, Err(Error::InvalidAddress)));
 }
