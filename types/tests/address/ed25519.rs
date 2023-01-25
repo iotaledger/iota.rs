@@ -13,12 +13,9 @@ const ED25519_ADDRESS: &str = "0x52fdfc072182654f163f5f0f9a621d729566c74d10037c4
 const ED25519_ADDRESS_INVALID: &str = "0x52fdfc072182654f163f5f0f9a621d729566c74d10037c4d7bbb0407d1e2c64";
 
 #[test]
-fn kind_const() {
+fn kind() {
     assert_eq!(Ed25519Address::KIND, 0);
-}
 
-#[test]
-fn kind_method() {
     let address = Address::from(Ed25519Address::from_str(ED25519_ADDRESS).unwrap());
 
     assert_eq!(address.kind(), Ed25519Address::KIND);
@@ -109,11 +106,24 @@ fn packed_len() {
 
     assert_eq!(address.packed_len(), Ed25519Address::LENGTH);
     assert_eq!(address.pack_to_vec().len(), Ed25519Address::LENGTH);
+
+    let address = Address::from(Ed25519Address::from_str(ED25519_ADDRESS).unwrap());
+
+    assert_eq!(address.packed_len(), 1 + Ed25519Address::LENGTH);
+    assert_eq!(address.pack_to_vec().len(), 1 + Ed25519Address::LENGTH);
 }
 
 #[test]
 fn pack_unpack() {
     let address = Ed25519Address::from_str(ED25519_ADDRESS).unwrap();
+    let packed_address = address.pack_to_vec();
+
+    assert_eq!(
+        address,
+        PackableExt::unpack_verified(packed_address.as_slice(), &()).unwrap()
+    );
+
+    let address = Address::from(Ed25519Address::from_str(ED25519_ADDRESS).unwrap());
     let packed_address = address.pack_to_vec();
 
     assert_eq!(

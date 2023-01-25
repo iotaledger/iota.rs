@@ -14,12 +14,9 @@ const NFT_ID: &str = "0xb0c800965d7511f5fb4406274d4e607f87d5c5970bc05e896f841a70
 const NFT_ID_INVALID: &str = "0xb0c800965d7511f5fb4406274d4e607f87d5c5970bc05e896f841a700e86e";
 
 #[test]
-fn kind_const() {
+fn kind() {
     assert_eq!(NftAddress::KIND, 16);
-}
 
-#[test]
-fn kind_method() {
     let address = Address::from(NftAddress::from_str(NFT_ID).unwrap());
 
     assert_eq!(address.kind(), NftAddress::KIND);
@@ -118,11 +115,24 @@ fn packed_len() {
 
     assert_eq!(address.packed_len(), NftAddress::LENGTH);
     assert_eq!(address.pack_to_vec().len(), NftAddress::LENGTH);
+
+    let address = Address::from(NftAddress::from_str(NFT_ID).unwrap());
+
+    assert_eq!(address.packed_len(), 1 + NftAddress::LENGTH);
+    assert_eq!(address.pack_to_vec().len(), 1 + NftAddress::LENGTH);
 }
 
 #[test]
 fn pack_unpack() {
     let address = NftAddress::from_str(NFT_ID).unwrap();
+    let packed_address = address.pack_to_vec();
+
+    assert_eq!(
+        address,
+        PackableExt::unpack_verified(packed_address.as_slice(), &()).unwrap()
+    );
+
+    let address = Address::from(NftAddress::from_str(NFT_ID).unwrap());
     let packed_address = address.pack_to_vec();
 
     assert_eq!(

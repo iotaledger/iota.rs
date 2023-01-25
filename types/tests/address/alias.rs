@@ -14,12 +14,9 @@ const ALIAS_ID: &str = "0xb0c800965d7511f5fb4406274d4e607f87d5c5970bc05e896f841a
 const ALIAS_ID_INVALID: &str = "0xb0c800965d7511f5fb4406274d4e607f87d5c5970bc05e896f841a700e86e";
 
 #[test]
-fn kind_const() {
+fn kind() {
     assert_eq!(AliasAddress::KIND, 8);
-}
 
-#[test]
-fn kind_method() {
     let address = Address::from(AliasAddress::from_str(ALIAS_ID).unwrap());
 
     assert_eq!(address.kind(), AliasAddress::KIND);
@@ -118,11 +115,24 @@ fn packed_len() {
 
     assert_eq!(address.packed_len(), AliasAddress::LENGTH);
     assert_eq!(address.pack_to_vec().len(), AliasAddress::LENGTH);
+
+    let address = Address::from(AliasAddress::from_str(ALIAS_ID).unwrap());
+
+    assert_eq!(address.packed_len(), 1 + AliasAddress::LENGTH);
+    assert_eq!(address.pack_to_vec().len(), 1 + AliasAddress::LENGTH);
 }
 
 #[test]
 fn pack_unpack() {
     let address = AliasAddress::from_str(ALIAS_ID).unwrap();
+    let packed_address = address.pack_to_vec();
+
+    assert_eq!(
+        address,
+        PackableExt::unpack_verified(packed_address.as_slice(), &()).unwrap()
+    );
+
+    let address = Address::from(AliasAddress::from_str(ALIAS_ID).unwrap());
     let packed_address = address.pack_to_vec();
 
     assert_eq!(
