@@ -14,15 +14,6 @@ use packable::PackableExt;
 const ED25519_ADDRESS: &str = "0x52fdfc072182654f163f5f0f9a621d729566c74d10037c4d7bbb0407d1e2c649";
 const ED25519_ADDRESS_BAD: &str = "0x52fdfc072182654f163f5f0f9a621d729566c74d10037c4d7bbb0407d1e2c64x";
 
-// The kind of an `Address` is the kind of the underlying address.
-#[test]
-fn kind() {
-    let bytes: [u8; 32] = prefix_hex::decode(ED25519_ADDRESS).unwrap();
-    let ed25519_address = Address::from(Ed25519Address::new(bytes));
-
-    assert_eq!(ed25519_address.kind(), 0);
-}
-
 #[test]
 fn generate_bech32_string() {
     let bytes: [u8; 32] = prefix_hex::decode(ED25519_ADDRESS).unwrap();

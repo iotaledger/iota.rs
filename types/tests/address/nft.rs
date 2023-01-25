@@ -4,7 +4,7 @@
 use std::str::FromStr;
 
 use iota_types::block::{
-    address::{dto::NftAddressDto, NftAddress},
+    address::{dto::NftAddressDto, Address, NftAddress},
     output::NftId,
     DtoError,
 };
@@ -14,13 +14,39 @@ const NFT_ID: &str = "0xb0c800965d7511f5fb4406274d4e607f87d5c5970bc05e896f841a70
 const NFT_ID_INVALID: &str = "0xb0c800965d7511f5fb4406274d4e607f87d5c5970bc05e896f841a700e86e";
 
 #[test]
-fn kind() {
+fn kind_const() {
     assert_eq!(NftAddress::KIND, 16);
+}
+
+#[test]
+fn kind_method() {
+    let address = Address::from(NftAddress::from_str(NFT_ID).unwrap());
+
+    assert_eq!(address.kind(), NftAddress::KIND);
 }
 
 #[test]
 fn length() {
     assert_eq!(NftAddress::LENGTH, 32);
+}
+
+#[test]
+fn is_methods() {
+    let address = Address::from(NftAddress::from_str(NFT_ID).unwrap());
+
+    assert_eq!(address.is_ed25519(), false);
+    assert_eq!(address.is_alias(), false);
+    assert_eq!(address.is_nft(), true);
+}
+
+#[test]
+fn as_methods() {
+    let nft_address = NftAddress::from_str(NFT_ID).unwrap();
+    let address = Address::from(nft_address);
+
+    assert!(std::panic::catch_unwind(|| address.as_ed25519()).is_err());
+    assert!(std::panic::catch_unwind(|| address.as_alias()).is_err());
+    assert_eq!(address.as_nft(), &nft_address);
 }
 
 #[test]

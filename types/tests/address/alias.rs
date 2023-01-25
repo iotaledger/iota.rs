@@ -4,7 +4,7 @@
 use std::str::FromStr;
 
 use iota_types::block::{
-    address::{dto::AliasAddressDto, AliasAddress},
+    address::{dto::AliasAddressDto, Address, AliasAddress},
     output::AliasId,
     DtoError,
 };
@@ -14,13 +14,39 @@ const ALIAS_ID: &str = "0xb0c800965d7511f5fb4406274d4e607f87d5c5970bc05e896f841a
 const ALIAS_ID_INVALID: &str = "0xb0c800965d7511f5fb4406274d4e607f87d5c5970bc05e896f841a700e86e";
 
 #[test]
-fn kind() {
+fn kind_const() {
     assert_eq!(AliasAddress::KIND, 8);
+}
+
+#[test]
+fn kind_method() {
+    let address = Address::from(AliasAddress::from_str(ALIAS_ID).unwrap());
+
+    assert_eq!(address.kind(), AliasAddress::KIND);
 }
 
 #[test]
 fn length() {
     assert_eq!(AliasAddress::LENGTH, 32);
+}
+
+#[test]
+fn is_methods() {
+    let address = Address::from(AliasAddress::from_str(ALIAS_ID).unwrap());
+
+    assert_eq!(address.is_ed25519(), false);
+    assert_eq!(address.is_alias(), true);
+    assert_eq!(address.is_nft(), false);
+}
+
+#[test]
+fn as_methods() {
+    let alias_address = AliasAddress::from_str(ALIAS_ID).unwrap();
+    let address = Address::from(alias_address);
+
+    assert!(std::panic::catch_unwind(|| address.as_ed25519()).is_err());
+    assert_eq!(address.as_alias(), &alias_address);
+    assert!(std::panic::catch_unwind(|| address.as_nft()).is_err());
 }
 
 #[test]

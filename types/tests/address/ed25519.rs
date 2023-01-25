@@ -4,7 +4,7 @@
 use core::str::FromStr;
 
 use iota_types::block::{
-    address::{dto::Ed25519AddressDto, Ed25519Address},
+    address::{dto::Ed25519AddressDto, Address, Ed25519Address},
     DtoError,
 };
 use packable::PackableExt;
@@ -13,13 +13,39 @@ const ED25519_ADDRESS: &str = "0x52fdfc072182654f163f5f0f9a621d729566c74d10037c4
 const ED25519_ADDRESS_INVALID: &str = "0x52fdfc072182654f163f5f0f9a621d729566c74d10037c4d7bbb0407d1e2c64";
 
 #[test]
-fn kind() {
+fn kind_const() {
     assert_eq!(Ed25519Address::KIND, 0);
+}
+
+#[test]
+fn kind_method() {
+    let address = Address::from(Ed25519Address::from_str(ED25519_ADDRESS).unwrap());
+
+    assert_eq!(address.kind(), Ed25519Address::KIND);
 }
 
 #[test]
 fn length() {
     assert_eq!(Ed25519Address::LENGTH, 32);
+}
+
+#[test]
+fn is_methods() {
+    let address = Address::from(Ed25519Address::from_str(ED25519_ADDRESS).unwrap());
+
+    assert_eq!(address.is_ed25519(), true);
+    assert_eq!(address.is_alias(), false);
+    assert_eq!(address.is_nft(), false);
+}
+
+#[test]
+fn as_methods() {
+    let ed25519_address = Ed25519Address::from_str(ED25519_ADDRESS).unwrap();
+    let address = Address::from(ed25519_address);
+
+    assert_eq!(address.as_ed25519(), &ed25519_address);
+    assert!(std::panic::catch_unwind(|| address.as_alias()).is_err());
+    assert!(std::panic::catch_unwind(|| address.as_nft()).is_err());
 }
 
 #[test]
