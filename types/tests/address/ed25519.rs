@@ -9,7 +9,8 @@ use iota_types::block::{
 };
 use packable::PackableExt;
 
-const ED25519_ADDRESS: &str = "0x52fdfc072182654f163f5f0f9a621d729566c74d10037c4d7bbb0407d1e2c649";
+const ED25519_ADDRESS: &str = "0xebe40a263480190dcd7939447ee01aefa73d6f3cc33c90ef7bf905abf8728655";
+const ED25519_BECH32: &str = "rms1qr47gz3xxjqpjrwd0yu5glhqrth6w0t08npney8000ust2lcw2r92j5a8rt";
 const ED25519_ADDRESS_INVALID: &str = "0x52fdfc072182654f163f5f0f9a621d729566c74d10037c4d7bbb0407d1e2c64";
 
 #[test]
@@ -66,8 +67,14 @@ fn debug() {
 
     assert_eq!(
         format!("{ed25519_address:?}"),
-        "Ed25519Address(0x52fdfc072182654f163f5f0f9a621d729566c74d10037c4d7bbb0407d1e2c649)"
+        "Ed25519Address(0xebe40a263480190dcd7939447ee01aefa73d6f3cc33c90ef7bf905abf8728655)"
     );
+}
+#[test]
+fn bech32() {
+    let address = Address::from(Ed25519Address::from_str(ED25519_ADDRESS).unwrap());
+
+    assert_eq!(address.to_bech32("rms"), ED25519_BECH32);
 }
 
 #[test]

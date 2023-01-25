@@ -10,7 +10,8 @@ use iota_types::block::{
 };
 use packable::PackableExt;
 
-const NFT_ID: &str = "0xb0c800965d7511f5fb4406274d4e607f87d5c5970bc05e896f841a700e86eafb";
+const NFT_ID: &str = "0xa9ede98a7f0223fa7a49fbc586f7a88bb4f0d152f282b19bcebd05c9e8a02370";
+const NFT_BECH32: &str = "rms1zz57m6v20upz87n6f8autphh4z9mfux32teg9vvme67stj0g5q3hqd6l53z";
 const NFT_ID_INVALID: &str = "0xb0c800965d7511f5fb4406274d4e607f87d5c5970bc05e896f841a700e86e";
 
 #[test]
@@ -75,8 +76,15 @@ fn debug() {
 
     assert_eq!(
         format!("{nft_address:?}"),
-        "NftAddress(0xb0c800965d7511f5fb4406274d4e607f87d5c5970bc05e896f841a700e86eafb)"
+        "NftAddress(0xa9ede98a7f0223fa7a49fbc586f7a88bb4f0d152f282b19bcebd05c9e8a02370)"
     );
+}
+
+#[test]
+fn bech32() {
+    let address = Address::from(NftAddress::from_str(NFT_ID).unwrap());
+
+    assert_eq!(address.to_bech32("rms"), NFT_BECH32);
 }
 
 #[test]

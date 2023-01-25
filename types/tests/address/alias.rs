@@ -10,7 +10,8 @@ use iota_types::block::{
 };
 use packable::PackableExt;
 
-const ALIAS_ID: &str = "0xb0c800965d7511f5fb4406274d4e607f87d5c5970bc05e896f841a700e86eafb";
+const ALIAS_ID: &str = "0xe9ba80ad1561e437b663a1f1efbfabd544b0d7da7bb33e0a62e99b20ee450bee";
+const ALIAS_BECH32: &str = "rms1pr5m4q9dz4s7gdakvwslrmal4025fvxhmfamx0s2vt5ekg8wg597um6lcnn";
 const ALIAS_ID_INVALID: &str = "0xb0c800965d7511f5fb4406274d4e607f87d5c5970bc05e896f841a700e86e";
 
 #[test]
@@ -75,8 +76,15 @@ fn debug() {
 
     assert_eq!(
         format!("{alias_address:?}"),
-        "AliasAddress(0xb0c800965d7511f5fb4406274d4e607f87d5c5970bc05e896f841a700e86eafb)"
+        "AliasAddress(0xe9ba80ad1561e437b663a1f1efbfabd544b0d7da7bb33e0a62e99b20ee450bee)"
     );
+}
+
+#[test]
+fn bech32() {
+    let address = Address::from(AliasAddress::from_str(ALIAS_ID).unwrap());
+
+    assert_eq!(address.to_bech32("rms"), ALIAS_BECH32);
 }
 
 #[test]
