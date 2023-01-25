@@ -4,7 +4,10 @@
 use core::str::FromStr;
 
 use iota_types::block::{
-    address::{dto::Ed25519AddressDto, Address, Ed25519Address},
+    address::{
+        dto::{AddressDto, Ed25519AddressDto},
+        Address, Ed25519Address,
+    },
     DtoError,
 };
 use packable::PackableExt;
@@ -91,18 +94,28 @@ fn bech32_roundtrip() {
 #[test]
 fn dto_fields() {
     let ed25519_address = Ed25519Address::from_str(ED25519_ADDRESS).unwrap();
-    let dto = Ed25519AddressDto::from(&ed25519_address);
+    let ed25519_dto = Ed25519AddressDto::from(&ed25519_address);
 
-    assert_eq!(dto.kind, Ed25519Address::KIND);
-    assert_eq!(dto.pub_key_hash, ED25519_ADDRESS.to_string());
+    assert_eq!(ed25519_dto.kind, Ed25519Address::KIND);
+    assert_eq!(ed25519_dto.pub_key_hash, ED25519_ADDRESS.to_string());
+
+    let address = Address::from(ed25519_address);
+    let dto = AddressDto::from(&address);
+
+    assert_eq!(dto, AddressDto::Ed25519(ed25519_dto));
 }
 
 #[test]
 fn dto_roundtrip() {
     let ed25519_address = Ed25519Address::from_str(ED25519_ADDRESS).unwrap();
-    let dto = Ed25519AddressDto::from(&ed25519_address);
+    let ed25519_dto = Ed25519AddressDto::from(&ed25519_address);
 
-    assert_eq!(Ed25519Address::try_from(&dto).unwrap(), ed25519_address);
+    assert_eq!(Ed25519Address::try_from(&ed25519_dto).unwrap(), ed25519_address);
+
+    let address = Address::from(ed25519_address);
+    let dto = AddressDto::from(&address);
+
+    assert_eq!(Address::try_from(&dto).unwrap(), address);
 }
 
 #[test]

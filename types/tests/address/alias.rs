@@ -4,7 +4,10 @@
 use std::str::FromStr;
 
 use iota_types::block::{
-    address::{dto::AliasAddressDto, Address, AliasAddress},
+    address::{
+        dto::{AddressDto, AliasAddressDto},
+        Address, AliasAddress,
+    },
     output::AliasId,
     DtoError,
 };
@@ -101,18 +104,28 @@ fn bech32_roundtrip() {
 #[test]
 fn dto_fields() {
     let alias_address = AliasAddress::from_str(ALIAS_ID).unwrap();
-    let dto = AliasAddressDto::from(&alias_address);
+    let alias_dto = AliasAddressDto::from(&alias_address);
 
-    assert_eq!(dto.kind, AliasAddress::KIND);
-    assert_eq!(dto.alias_id, ALIAS_ID.to_string());
+    assert_eq!(alias_dto.kind, AliasAddress::KIND);
+    assert_eq!(alias_dto.alias_id, ALIAS_ID.to_string());
+
+    let address = Address::from(alias_address);
+    let dto = AddressDto::from(&address);
+
+    assert_eq!(dto, AddressDto::Alias(alias_dto));
 }
 
 #[test]
 fn dto_roundtrip() {
     let alias_address = AliasAddress::from_str(ALIAS_ID).unwrap();
-    let dto = AliasAddressDto::from(&alias_address);
+    let alias_dto = AliasAddressDto::from(&alias_address);
 
-    assert_eq!(AliasAddress::try_from(&dto).unwrap(), alias_address);
+    assert_eq!(AliasAddress::try_from(&alias_dto).unwrap(), alias_address);
+
+    let address = Address::from(alias_address);
+    let dto = AddressDto::from(&address);
+
+    assert_eq!(Address::try_from(&dto).unwrap(), address);
 }
 
 #[test]

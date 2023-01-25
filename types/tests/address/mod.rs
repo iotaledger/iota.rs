@@ -7,11 +7,11 @@ mod nft;
 
 use iota_types::block::{address::Address, Error};
 
-const ED25519_ADDRESS_BAD: &str = "0x52fdfc072182654f163f5f0f9a621d729566c74d10037c4d7bbb0407d1e2c64x";
+const ED25519_ADDRESS_INVALID: &str = "0x52fdfc072182654f163f5f0f9a621d729566c74d10037c4d7bbb0407d1e2c64x";
 
 #[test]
-fn invalid_bech32_string_to_address() {
-    let address = Address::try_from_bech32(ED25519_ADDRESS_BAD);
+fn invalid_bech32() {
+    let address = Address::try_from_bech32(ED25519_ADDRESS_INVALID);
 
     assert!(matches!(address, Err(Error::InvalidAddress)));
 }
