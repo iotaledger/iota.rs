@@ -93,7 +93,7 @@ pub mod dto {
             value
                 .alias_id
                 .parse::<AliasAddress>()
-                .map_err(|_| DtoError::InvalidField("alias address"))
+                .map_err(|_| DtoError::InvalidField("aliasId"))
         }
     }
 }
