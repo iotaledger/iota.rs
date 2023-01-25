@@ -1,6 +1,10 @@
 // Copyright 2020-2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+mod alias;
+mod ed25519;
+mod nft;
+
 use iota_types::block::{
     address::{Address, Ed25519Address},
     Error,
