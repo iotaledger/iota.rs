@@ -80,6 +80,17 @@ fn debug() {
 }
 
 #[test]
+fn bech32_roundtrip() {
+    let address = Address::from(NftAddress::from_str(NFT_ID).unwrap());
+    let bech32 = address.to_bech32("rms");
+
+    assert_eq!(
+        Address::try_from_bech32(bech32).unwrap(),
+        (String::from("rms"), address)
+    );
+}
+
+#[test]
 fn dto_fields() {
     let nft_address = NftAddress::from_str(NFT_ID).unwrap();
     let dto = NftAddressDto::from(&nft_address);
@@ -89,7 +100,7 @@ fn dto_fields() {
 }
 
 #[test]
-fn address_dto_roundtrip() {
+fn dto_roundtrip() {
     let nft_address = NftAddress::from_str(NFT_ID).unwrap();
     let dto = NftAddressDto::from(&nft_address);
 

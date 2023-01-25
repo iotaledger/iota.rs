@@ -71,6 +71,17 @@ fn debug() {
 }
 
 #[test]
+fn bech32_roundtrip() {
+    let address = Address::from(Ed25519Address::from_str(ED25519_ADDRESS).unwrap());
+    let bech32 = address.to_bech32("rms");
+
+    assert_eq!(
+        Address::try_from_bech32(bech32).unwrap(),
+        (String::from("rms"), address)
+    );
+}
+
+#[test]
 fn dto_fields() {
     let ed25519_address = Ed25519Address::from_str(ED25519_ADDRESS).unwrap();
     let dto = Ed25519AddressDto::from(&ed25519_address);
@@ -80,7 +91,7 @@ fn dto_fields() {
 }
 
 #[test]
-fn address_dto_roundtrip() {
+fn dto_roundtrip() {
     let ed25519_address = Ed25519Address::from_str(ED25519_ADDRESS).unwrap();
     let dto = Ed25519AddressDto::from(&ed25519_address);
 
