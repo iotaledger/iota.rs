@@ -7,7 +7,7 @@ use iota_types::block::{
     address::{dto::Ed25519AddressDto, Ed25519Address},
     DtoError,
 };
-// use packable::PackableExt;
+use packable::PackableExt;
 
 const ED25519_ADDRESS: &str = "0x52fdfc072182654f163f5f0f9a621d729566c74d10037c4d7bbb0407d1e2c649";
 const ED25519_ADDRESS_INVALID: &str = "0x52fdfc072182654f163f5f0f9a621d729566c74d10037c4d7bbb0407d1e2c64";
@@ -77,21 +77,21 @@ fn dto_invalid_pub_key_hash() {
     ));
 }
 
-// #[test]
-// fn packed_len() {
-//     let address = Ed25519Address::from_str(ED25519_ADDRESS).unwrap();
+#[test]
+fn packed_len() {
+    let address = Ed25519Address::from_str(ED25519_ADDRESS).unwrap();
 
-//     assert_eq!(address.packed_len(), 32);
-//     assert_eq!(address.pack_to_vec().len(), 32);
-// }
+    assert_eq!(address.packed_len(), Ed25519Address::LENGTH);
+    assert_eq!(address.pack_to_vec().len(), Ed25519Address::LENGTH);
+}
 
-// #[test]
-// fn pack_unpack_valid() {
-//     let address = Ed25519Address::from_str(ED25519_ADDRESS).unwrap();
-//     let packed_address = address.pack_to_vec();
+#[test]
+fn pack_unpack() {
+    let address = Ed25519Address::from_str(ED25519_ADDRESS).unwrap();
+    let packed_address = address.pack_to_vec();
 
-//     assert_eq!(
-//         address,
-//         PackableExt::unpack_verified(packed_address.as_slice(), &()).unwrap()
-//     );
-// }
+    assert_eq!(
+        address,
+        PackableExt::unpack_verified(packed_address.as_slice(), &()).unwrap()
+    );
+}
