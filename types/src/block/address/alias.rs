@@ -12,7 +12,6 @@ use crate::block::{output::AliasId, Error};
 #[as_ref(forward)]
 pub struct AliasAddress(AliasId);
 
-#[allow(clippy::len_without_is_empty)]
 impl AliasAddress {
     /// The [`Address`](crate::block::address::Address) kind of an [`AliasAddress`].
     pub const KIND: u8 = 8;
@@ -94,7 +93,7 @@ pub mod dto {
             value
                 .alias_id
                 .parse::<AliasAddress>()
-                .map_err(|_| DtoError::InvalidField("alias address"))
+                .map_err(|_| DtoError::InvalidField("aliasId"))
         }
     }
 }

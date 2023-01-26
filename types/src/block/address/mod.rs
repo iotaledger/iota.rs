@@ -110,7 +110,6 @@ impl Address {
     }
 
     /// Encodes this address to a bech32 string with the given Human Readable Part as prefix.
-    #[allow(clippy::wrong_self_convention)]
     pub fn to_bech32<T: AsRef<str>>(&self, hrp: T) -> String {
         // PANIC: encoding can't fail as `self` has already been validated and built.
         bech32::encode(hrp.as_ref(), self.pack_to_vec().to_base32(), Variant::Bech32).unwrap()
