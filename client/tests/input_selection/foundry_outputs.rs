@@ -1,7 +1,7 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use std::str::FromStr;
+use std::{collections::HashSet, str::FromStr};
 
 use iota_client::{
     api::input_selection::{Burn, InputSelection, Requirement},
@@ -936,4 +936,55 @@ fn burned_tokens_not_provided() {
             found,
             required,
         }) if token_id == token_id_1 && found == U256::from(0) && required == U256::from(100)));
+}
+
+#[test]
+fn foundry_in_outputs_and_required() {
+    let protocol_parameters = protocol_parameters();
+    let alias_id_2 = AliasId::from_str(ALIAS_ID_2).unwrap();
+
+    let inputs = build_inputs(vec![
+        Alias(
+            1_251_500,
+            alias_id_2,
+            BECH32_ADDRESS_ED25519_0,
+            BECH32_ADDRESS_ED25519_0,
+            None,
+            None,
+            None,
+        ),
+        Foundry(
+            1_000_000,
+            alias_id_2,
+            0,
+            SimpleTokenScheme::new(U256::from(0), U256::from(0), U256::from(10)).unwrap(),
+            None,
+        ),
+    ]);
+    let outputs = build_outputs(vec![Foundry(
+        1_000_000,
+        alias_id_2,
+        0,
+        SimpleTokenScheme::new(U256::from(0), U256::from(0), U256::from(10)).unwrap(),
+        None,
+    )]);
+
+    let selected = InputSelection::new(
+        inputs.clone(),
+        outputs.clone(),
+        addresses(vec![BECH32_ADDRESS_ED25519_0]),
+        protocol_parameters,
+    )
+    .required_inputs(HashSet::from_iter([*inputs[1].output_id()]))
+    .select()
+    .unwrap();
+
+    assert!(unsorted_eq(&selected.inputs, &inputs));
+    assert_eq!(selected.outputs.len(), 2);
+    assert!(selected.outputs.contains(&outputs[0]));
+    selected.outputs.iter().for_each(|output| {
+        if !outputs.contains(output) {
+            assert_eq!(*output.as_alias().alias_id(), alias_id_2);
+        }
+    });
 }
