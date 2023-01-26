@@ -9,6 +9,7 @@ use iota_client::{
 };
 use neon::prelude::*;
 use tokio::sync::mpsc::unbounded_channel;
+
 type JsCallback = Root<JsFunction<JsObject>>;
 
 pub struct MessageHandler {
