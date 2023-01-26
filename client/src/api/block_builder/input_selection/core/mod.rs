@@ -146,7 +146,7 @@ impl InputSelection {
 
         // Gets requirements from burn.
         if let Some(burn) = &self.burn {
-            requirements.extend(Requirements::from_burn(burn));
+            requirements.extend(Requirements::from_burn(burn, self.outputs.iter())?);
         }
 
         Ok(requirements)

@@ -9,13 +9,14 @@ pub(crate) mod native_tokens;
 pub(crate) mod nft;
 pub(crate) mod sender;
 
+use self::{alias::is_alias_with_id_non_null, foundry::is_foundry_with_id, nft::is_nft_with_id_non_null};
 use super::{Burn, InputSelection};
 use crate::{
     block::{
         address::Address,
-        output::{AliasId, Features, FoundryId, NftId, Output},
+        output::{AliasId, ChainId, Features, FoundryId, NftId, Output},
     },
-    error::Result,
+    error::{Error, Result},
     secret::types::InputSigningData,
 };
 
@@ -153,21 +154,36 @@ impl Requirements {
     }
 
     /// Creates a new [`Requirements`] from burn.
-    pub(crate) fn from_burn(burn: &Burn) -> Self {
+    pub(crate) fn from_burn<'a>(burn: &Burn, outputs: impl Iterator<Item = &'a Output> + Clone) -> Result<Self> {
         let mut requirements = Requirements::new();
 
         for alias_id in &burn.aliases {
+            if outputs
+                .clone()
+                .any(|output| is_alias_with_id_non_null(output, alias_id))
+            {
+                return Err(Error::BurnAndTransition(ChainId::from(*alias_id)));
+            }
+
             requirements.push(Requirement::Alias(*alias_id, false));
         }
 
         for nft_id in &burn.nfts {
+            if outputs.clone().any(|output| is_nft_with_id_non_null(output, nft_id)) {
+                return Err(Error::BurnAndTransition(ChainId::from(*nft_id)));
+            }
+
             requirements.push(Requirement::Nft(*nft_id));
         }
 
         for foundry_id in &burn.foundries {
+            if outputs.clone().any(|output| is_foundry_with_id(output, foundry_id)) {
+                return Err(Error::BurnAndTransition(ChainId::from(*foundry_id)));
+            }
+
             requirements.push(Requirement::Foundry(*foundry_id));
         }
 
-        requirements
+        Ok(requirements)
     }
 }

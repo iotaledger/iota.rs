@@ -7,6 +7,7 @@ use crate::block::output::{AliasId, FoundryId, NftId, OutputId};
 
 ///
 #[derive(Clone, Copy, Eq, Hash, PartialEq, Ord, PartialOrd, From)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum ChainId {
     ///
     Alias(AliasId),
