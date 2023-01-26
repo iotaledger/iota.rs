@@ -32,6 +32,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Error::StrongholdMnemonicMissing`;
 - `ClientMessageHandler::listen()`;
 - `Message::ClearListeners`;
+- `#[derive(Eq, PartialEq, Deserialize)]` to `TopicEvent, MqttPayload`;
+- `#[derive(Serialize)]` to ` Topic`;
+- `impl<'de> Deserialize<'de> for Topic`;
 
 ### Changed
 
@@ -43,6 +46,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `EventData` renamed to `ParticipationEventData`;
 - `EventStatus` renamed to `ParticipationEventStatus`;
 - `EventPayload` renamed to `ParticipationEventPayload`;
+- `Client::{subscriber(), subscribe(), unsubscribe()}` take now `&self` instead of `&mut self`;
+- `{MqttManager, MqttTopicManager}::new()` take now `&'a Client` instead of `&'a mut Client`;
 
 ### Removed
 
