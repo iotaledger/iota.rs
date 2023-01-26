@@ -20,19 +20,18 @@ use crate::{
 
 /// Get the `StorageDepositReturnUnlockCondition`, if not expired.
 pub(crate) fn sdruc_not_expired(output: &Output, current_time: u32) -> Option<&StorageDepositReturnUnlockCondition> {
-    if let Some(unlock_conditions) = output.unlock_conditions() {
-        if let Some(sdr) = unlock_conditions.storage_deposit_return() {
-            let expired = if let Some(expiration) = unlock_conditions.expiration() {
-                current_time >= expiration.timestamp()
-            } else {
-                false
-            };
+    // PANIC: safe to unwrap as outputs without unlock conditions have been filtered out already.
+    let unlock_conditions = output.unlock_conditions().unwrap();
 
-            // We only have to send the storage deposit return back if the output is not expired
-            if !expired { Some(sdr) } else { None }
+    if let Some(sdr) = unlock_conditions.storage_deposit_return() {
+        let expired = if let Some(expiration) = unlock_conditions.expiration() {
+            current_time >= expiration.timestamp()
         } else {
-            None
-        }
+            false
+        };
+
+        // We only have to send the storage deposit return back if the output is not expired
+        if !expired { Some(sdr) } else { None }
     } else {
         None
     }

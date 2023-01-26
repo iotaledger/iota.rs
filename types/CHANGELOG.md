@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `NativeTokens::{contains, get}`;
 - `OutputMetadata` moved from `iota-client`;
+- Derive `serde::{Serialize, Deserialize}` on `ChainId`;
 
 ### Changed
 

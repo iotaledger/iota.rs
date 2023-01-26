@@ -6,7 +6,7 @@
 use std::fmt::{Debug, Display};
 
 use iota_types::block::{
-    output::{NativeTokens, OutputId, TokenId},
+    output::{ChainId, NativeTokens, OutputId, TokenId},
     semantic::ConflictReason,
 };
 use packable::error::UnexpectedEOF;
@@ -243,6 +243,9 @@ pub enum Error {
         /// The required amount.
         required: U256,
     },
+    /// Can't burn and transition an output at the same time.
+    #[error("can't burn and transition an output at the same time, chain ID: {0}")]
+    BurnAndTransition(ChainId),
 
     //////////////////////////////////////////////////////////////////////
     // Participation

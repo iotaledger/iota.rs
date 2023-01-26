@@ -1,7 +1,7 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use std::str::FromStr;
+use std::{collections::HashSet, str::FromStr};
 
 use iota_client::{
     api::input_selection::{Burn, InputSelection, Requirement},
@@ -65,6 +65,7 @@ fn existing_input_alias_for_foundry_alias() {
         1_251_500,
         alias_id_2,
         BECH32_ADDRESS_ED25519_0,
+        BECH32_ADDRESS_ED25519_0,
         None,
         None,
         None,
@@ -105,7 +106,15 @@ fn minted_native_tokens_in_new_remainder() {
 
     let inputs = build_inputs(vec![
         Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None, None),
-        Alias(1_000_000, alias_id_2, BECH32_ADDRESS_ED25519_0, None, None, None),
+        Alias(
+            1_000_000,
+            alias_id_2,
+            BECH32_ADDRESS_ED25519_0,
+            BECH32_ADDRESS_ED25519_0,
+            None,
+            None,
+            None,
+        ),
     ]);
     let outputs = build_outputs(vec![Foundry(
         1_000_000,
@@ -149,7 +158,15 @@ fn minted_native_tokens_in_provided_output() {
 
     let inputs = build_inputs(vec![
         Basic(2_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None, None),
-        Alias(1_000_000, alias_id_2, BECH32_ADDRESS_ED25519_0, None, None, None),
+        Alias(
+            1_000_000,
+            alias_id_2,
+            BECH32_ADDRESS_ED25519_0,
+            BECH32_ADDRESS_ED25519_0,
+            None,
+            None,
+            None,
+        ),
     ]);
     let outputs = build_outputs(vec![
         Foundry(
@@ -193,7 +210,15 @@ fn melt_native_tokens() {
 
     let inputs = build_inputs(vec![
         Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None, None),
-        Alias(1_000_000, alias_id_1, BECH32_ADDRESS_ED25519_0, None, None, None),
+        Alias(
+            1_000_000,
+            alias_id_1,
+            BECH32_ADDRESS_ED25519_0,
+            BECH32_ADDRESS_ED25519_0,
+            None,
+            None,
+            None,
+        ),
         Foundry(
             1_000_000,
             alias_id_1,
@@ -245,7 +270,15 @@ fn destroy_foundry_with_alias_state_transition() {
     let alias_id_2 = AliasId::from_str(ALIAS_ID_2).unwrap();
 
     let inputs = build_inputs(vec![
-        Alias(50_300, alias_id_2, BECH32_ADDRESS_ED25519_0, None, None, None),
+        Alias(
+            50_300,
+            alias_id_2,
+            BECH32_ADDRESS_ED25519_0,
+            BECH32_ADDRESS_ED25519_0,
+            None,
+            None,
+            None,
+        ),
         Foundry(
             52_800,
             alias_id_2,
@@ -284,7 +317,15 @@ fn destroy_foundry_with_alias_governance_transition() {
     let alias_id_2 = AliasId::from_str(ALIAS_ID_2).unwrap();
 
     let inputs = build_inputs(vec![
-        Alias(1_000_000, alias_id_2, BECH32_ADDRESS_ED25519_0, None, None, None),
+        Alias(
+            1_000_000,
+            alias_id_2,
+            BECH32_ADDRESS_ED25519_0,
+            BECH32_ADDRESS_ED25519_0,
+            None,
+            None,
+            None,
+        ),
         Foundry(
             1_000_000,
             alias_id_2,
@@ -316,7 +357,15 @@ fn destroy_foundry_with_alias_burn() {
     let alias_id_2 = AliasId::from_str(ALIAS_ID_2).unwrap();
 
     let inputs = build_inputs(vec![
-        Alias(1_000_000, alias_id_2, BECH32_ADDRESS_ED25519_0, None, None, None),
+        Alias(
+            1_000_000,
+            alias_id_2,
+            BECH32_ADDRESS_ED25519_0,
+            BECH32_ADDRESS_ED25519_0,
+            None,
+            None,
+            None,
+        ),
         Foundry(
             1_000_000,
             alias_id_2,
@@ -360,7 +409,15 @@ fn prefer_basic_to_foundry() {
     let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
 
     let inputs = build_inputs(vec![
-        Alias(1_000_000, alias_id_1, BECH32_ADDRESS_ED25519_0, None, None, None),
+        Alias(
+            1_000_000,
+            alias_id_1,
+            BECH32_ADDRESS_ED25519_0,
+            BECH32_ADDRESS_ED25519_0,
+            None,
+            None,
+            None,
+        ),
         Foundry(
             1_000_000,
             alias_id_1,
@@ -408,7 +465,15 @@ fn simple_foundry_transition_basic_not_needed() {
             SimpleTokenScheme::new(U256::from(10), U256::from(10), U256::from(10)).unwrap(),
             None,
         ),
-        Alias(2_000_000, alias_id_1, BECH32_ADDRESS_ED25519_0, None, None, None),
+        Alias(
+            2_000_000,
+            alias_id_1,
+            BECH32_ADDRESS_ED25519_0,
+            BECH32_ADDRESS_ED25519_0,
+            None,
+            None,
+            None,
+        ),
     ]);
     let outputs = build_outputs(vec![Foundry(
         1_000_000,
@@ -467,7 +532,15 @@ fn simple_foundry_transition_basic_not_needed_with_remainder() {
             SimpleTokenScheme::new(U256::from(10), U256::from(10), U256::from(10)).unwrap(),
             None,
         ),
-        Alias(2_000_000, alias_id_1, BECH32_ADDRESS_ED25519_0, None, None, None),
+        Alias(
+            2_000_000,
+            alias_id_1,
+            BECH32_ADDRESS_ED25519_0,
+            BECH32_ADDRESS_ED25519_0,
+            None,
+            None,
+            None,
+        ),
     ]);
     let outputs = build_outputs(vec![Foundry(
         1_000_000,
@@ -597,7 +670,15 @@ fn mint_and_burn_at_the_same_time() {
     let token_id = TokenId::from(foundry_id);
 
     let inputs = build_inputs(vec![
-        Alias(2_000_000, alias_id_1, BECH32_ADDRESS_ED25519_0, None, None, None),
+        Alias(
+            2_000_000,
+            alias_id_1,
+            BECH32_ADDRESS_ED25519_0,
+            BECH32_ADDRESS_ED25519_0,
+            None,
+            None,
+            None,
+        ),
         Foundry(
             1_000_000,
             alias_id_1,
@@ -660,7 +741,15 @@ fn take_amount_from_alias_and_foundry_to_fund_basic() {
     let token_id = TokenId::from(foundry_id);
 
     let inputs = build_inputs(vec![
-        Alias(2_000_000, alias_id_1, BECH32_ADDRESS_ED25519_0, None, None, None),
+        Alias(
+            2_000_000,
+            alias_id_1,
+            BECH32_ADDRESS_ED25519_0,
+            BECH32_ADDRESS_ED25519_0,
+            None,
+            None,
+            None,
+        ),
         Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None, None),
         Foundry(
             1_000_000,
@@ -708,7 +797,15 @@ fn mint_native_tokens_but_burn_alias() {
     let token_id = TokenId::from(foundry_id);
 
     let inputs = build_inputs(vec![
-        Alias(2_000_000, alias_id_1, BECH32_ADDRESS_ED25519_0, None, None, None),
+        Alias(
+            2_000_000,
+            alias_id_1,
+            BECH32_ADDRESS_ED25519_0,
+            BECH32_ADDRESS_ED25519_0,
+            None,
+            None,
+            None,
+        ),
         Foundry(
             1_000_000,
             alias_id_1,
@@ -748,7 +845,15 @@ fn melted_tokens_not_provided() {
     let token_id_1 = TokenId::from(foundry_id);
 
     let inputs = build_inputs(vec![
-        Alias(2_000_000, alias_id_1, BECH32_ADDRESS_ED25519_0, None, None, None),
+        Alias(
+            2_000_000,
+            alias_id_1,
+            BECH32_ADDRESS_ED25519_0,
+            BECH32_ADDRESS_ED25519_0,
+            None,
+            None,
+            None,
+        ),
         Foundry(
             1_000_000,
             alias_id_1,
@@ -790,7 +895,15 @@ fn burned_tokens_not_provided() {
     let token_id_1 = TokenId::from(foundry_id);
 
     let inputs = build_inputs(vec![
-        Alias(2_000_000, alias_id_1, BECH32_ADDRESS_ED25519_0, None, None, None),
+        Alias(
+            2_000_000,
+            alias_id_1,
+            BECH32_ADDRESS_ED25519_0,
+            BECH32_ADDRESS_ED25519_0,
+            None,
+            None,
+            None,
+        ),
         Foundry(
             1_000_000,
             alias_id_1,
@@ -823,4 +936,55 @@ fn burned_tokens_not_provided() {
             found,
             required,
         }) if token_id == token_id_1 && found == U256::from(0) && required == U256::from(100)));
+}
+
+#[test]
+fn foundry_in_outputs_and_required() {
+    let protocol_parameters = protocol_parameters();
+    let alias_id_2 = AliasId::from_str(ALIAS_ID_2).unwrap();
+
+    let inputs = build_inputs(vec![
+        Alias(
+            1_251_500,
+            alias_id_2,
+            BECH32_ADDRESS_ED25519_0,
+            BECH32_ADDRESS_ED25519_0,
+            None,
+            None,
+            None,
+        ),
+        Foundry(
+            1_000_000,
+            alias_id_2,
+            0,
+            SimpleTokenScheme::new(U256::from(0), U256::from(0), U256::from(10)).unwrap(),
+            None,
+        ),
+    ]);
+    let outputs = build_outputs(vec![Foundry(
+        1_000_000,
+        alias_id_2,
+        0,
+        SimpleTokenScheme::new(U256::from(0), U256::from(0), U256::from(10)).unwrap(),
+        None,
+    )]);
+
+    let selected = InputSelection::new(
+        inputs.clone(),
+        outputs.clone(),
+        addresses(vec![BECH32_ADDRESS_ED25519_0]),
+        protocol_parameters,
+    )
+    .required_inputs(HashSet::from_iter([*inputs[1].output_id()]))
+    .select()
+    .unwrap();
+
+    assert!(unsorted_eq(&selected.inputs, &inputs));
+    assert_eq!(selected.outputs.len(), 2);
+    assert!(selected.outputs.contains(&outputs[0]));
+    selected.outputs.iter().for_each(|output| {
+        if !outputs.contains(output) {
+            assert_eq!(*output.as_alias().alias_id(), alias_id_2);
+        }
+    });
 }

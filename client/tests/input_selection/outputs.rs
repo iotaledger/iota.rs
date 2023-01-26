@@ -76,6 +76,7 @@ fn no_outputs_but_burn() {
         2_000_000,
         alias_id_2,
         BECH32_ADDRESS_ED25519_0,
+        BECH32_ADDRESS_ED25519_0,
         None,
         None,
         None,
