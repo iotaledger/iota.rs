@@ -11,6 +11,7 @@
     ".changes/fix-rebuild-script.md",
     ".changes/get-included-block-metadata.md",
     ".changes/ledger-nano-prompt.md",
+    ".changes/mqtt.md",
     ".changes/networkinfo.md",
     ".changes/nftIdToBech32.md",
     ".changes/node-sync-health.md",

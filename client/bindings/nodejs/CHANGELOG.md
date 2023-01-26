@@ -1,5 +1,12 @@
 # Changelog
 
+## \[3.0.0-rc.7]
+
+- Fix MQTT multiple events when .listen() is called multiple times.
+  Made `Client::listen()` async.
+  Added `Client::clearListeners()`.
+  - [743a7c7](https://github.com/iotaledger/iota.rs/commit/743a7c70e59436ff09a2290a49538206d4a97509) Add listen and clearListeners for MQTT to message interface ([#1518](https://github.com/iotaledger/iota.rs/pull/1518)) on 2023-01-26
+
 ## \[3.0.0-rc.6]
 
 - Add `u8` representation to serialization and deserialization for `ParticipationEventType`.
