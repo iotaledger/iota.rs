@@ -1255,3 +1255,73 @@ fn transitioned_zero_alias_id_no_longer_is_zero() {
         }
     });
 }
+
+#[test]
+fn two_aliases_required() {
+    let protocol_parameters = protocol_parameters();
+    let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
+    let alias_id_2 = AliasId::from_str(ALIAS_ID_2).unwrap();
+
+    let inputs = build_inputs(vec![
+        Alias(
+            2_000_000,
+            alias_id_1,
+            BECH32_ADDRESS_ED25519_0,
+            BECH32_ADDRESS_ED25519_0,
+            None,
+            None,
+            None,
+        ),
+        Alias(
+            2_000_000,
+            alias_id_2,
+            BECH32_ADDRESS_ED25519_0,
+            BECH32_ADDRESS_ED25519_0,
+            None,
+            None,
+            None,
+        ),
+    ]);
+    let outputs = build_outputs(vec![Basic(
+        3_000_000,
+        BECH32_ADDRESS_ED25519_0,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )]);
+
+    let selected = InputSelection::new(
+        inputs.clone(),
+        outputs.clone(),
+        addresses(vec![BECH32_ADDRESS_ED25519_0]),
+        protocol_parameters,
+    )
+    .select()
+    .unwrap();
+
+    assert!(unsorted_eq(&selected.inputs, &inputs));
+    assert_eq!(selected.outputs.len(), 3);
+    assert!(selected.outputs.contains(&outputs[0]));
+    assert!(
+        selected
+            .outputs
+            .iter()
+            .any(|output| if let Output::Alias(output) = output {
+                output.alias_id() == &alias_id_1
+            } else {
+                false
+            })
+    );
+    assert!(
+        selected
+            .outputs
+            .iter()
+            .any(|output| if let Output::Alias(output) = output {
+                output.alias_id() == &alias_id_2
+            } else {
+                false
+            })
+    )
+}
