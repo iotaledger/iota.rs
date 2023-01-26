@@ -27,12 +27,12 @@ use iota_client::{
                 StorageDepositReturnUnlockCondition, TimelockUnlockCondition, UnlockCondition,
             },
             AliasId, AliasOutputBuilder, BasicOutputBuilder, FoundryOutputBuilder, NativeToken, NativeTokens, NftId,
-            NftOutputBuilder, Output, OutputId, SimpleTokenScheme, TokenId, TokenScheme,
+            NftOutputBuilder, Output, OutputId, OutputMetadata, SimpleTokenScheme, TokenId, TokenScheme,
         },
         rand::{block::rand_block_id, transaction::rand_transaction_id},
     },
     constants::SHIMMER_TESTNET_BECH32_HRP,
-    secret::types::{InputSigningData, OutputMetadata},
+    secret::types::InputSigningData,
 };
 use primitive_types::U256;
 

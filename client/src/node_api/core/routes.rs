@@ -9,13 +9,13 @@ use iota_types::{
     api::{
         dto::{PeerDto, ReceiptDto},
         response::{
-            BlockMetadataResponse, BlockResponse, InfoResponse, MilestoneResponse, OutputMetadataResponse,
-            OutputWithMetadataResponse, PeersResponse, ReceiptsResponse, RoutesResponse, SubmitBlockResponse,
-            TipsResponse, TreasuryResponse, UtxoChangesResponse,
+            BlockMetadataResponse, BlockResponse, InfoResponse, MilestoneResponse, OutputWithMetadataResponse,
+            PeersResponse, ReceiptsResponse, RoutesResponse, SubmitBlockResponse, TipsResponse, TreasuryResponse,
+            UtxoChangesResponse,
         },
     },
     block::{
-        output::OutputId,
+        output::{dto::OutputMetadataDto, OutputId},
         payload::{
             milestone::{MilestoneId, MilestonePayload},
             transaction::TransactionId,
@@ -337,11 +337,11 @@ impl Client {
 
     /// Get the metadata for a given `OutputId` (TransactionId + output_index).
     /// GET /api/core/v2/outputs/{outputId}/metadata
-    pub async fn get_output_metadata(&self, output_id: &OutputId) -> Result<OutputMetadataResponse> {
+    pub async fn get_output_metadata(&self, output_id: &OutputId) -> Result<OutputMetadataDto> {
         let path = &format!("api/core/v2/outputs/{output_id}/metadata");
 
         self.node_manager
-            .get_request::<OutputMetadataResponse>(path, None, self.get_timeout(), false, true)
+            .get_request::<OutputMetadataDto>(path, None, self.get_timeout(), false, true)
             .await
     }
 

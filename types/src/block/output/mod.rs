@@ -7,6 +7,7 @@ mod chain_id;
 
 mod foundry_id;
 mod inputs_commitment;
+mod metadata;
 mod native_token;
 mod nft_id;
 mod output_id;
@@ -55,6 +56,7 @@ pub use self::{
     foundry::{FoundryOutput, FoundryOutputBuilder},
     foundry_id::FoundryId,
     inputs_commitment::InputsCommitment,
+    metadata::OutputMetadata,
     native_token::{NativeToken, NativeTokens, NativeTokensBuilder},
     nft::{NftOutput, NftOutputBuilder},
     nft_id::NftId,
@@ -465,6 +467,7 @@ pub mod dto {
         alias_id::dto::AliasIdDto,
         basic::dto::BasicOutputDto,
         foundry::dto::FoundryOutputDto,
+        metadata::dto::OutputMetadataDto,
         native_token::dto::NativeTokenDto,
         nft::dto::NftOutputDto,
         nft_id::dto::NftIdDto,

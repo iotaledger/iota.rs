@@ -12,7 +12,6 @@ use crate::block::{output::NftId, Error};
 #[as_ref(forward)]
 pub struct NftAddress(NftId);
 
-#[allow(clippy::len_without_is_empty)]
 impl NftAddress {
     /// The [`Address`](crate::block::address::Address) kind of an NFT address.
     pub const KIND: u8 = 16;
@@ -94,7 +93,7 @@ pub mod dto {
             value
                 .nft_id
                 .parse::<NftAddress>()
-                .map_err(|_| DtoError::InvalidField("NFT address"))
+                .map_err(|_| DtoError::InvalidField("nftId"))
         }
     }
 }

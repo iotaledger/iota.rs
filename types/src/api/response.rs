@@ -1,13 +1,11 @@
 // Copyright 2020-2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use core::str::FromStr;
-
 use crate::{
     api::dto::{LedgerInclusionStateDto, PeerDto, ReceiptDto},
     block::{
-        output::{dto::OutputDto, OutputId},
-        payload::{dto::MilestonePayloadDto, transaction::TransactionId},
+        output::dto::{OutputDto, OutputMetadataDto},
+        payload::dto::MilestonePayloadDto,
         protocol::dto::ProtocolParametersDto,
         BlockDto,
     },
@@ -203,39 +201,8 @@ pub struct BlockMetadataResponse {
     serde(rename_all = "camelCase")
 )]
 pub struct OutputWithMetadataResponse {
-    pub metadata: OutputMetadataResponse,
+    pub metadata: OutputMetadataDto,
     pub output: OutputDto,
-}
-
-/// Response of GET /api/core/v2/outputs/{output_id}/metadata.
-/// Returns an output metadata.
-#[derive(Clone, Debug, Eq, PartialEq)]
-#[cfg_attr(
-    feature = "serde",
-    derive(serde::Serialize, serde::Deserialize),
-    serde(rename_all = "camelCase")
-)]
-pub struct OutputMetadataResponse {
-    pub block_id: String,
-    pub transaction_id: String,
-    pub output_index: u16,
-    pub is_spent: bool,
-    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
-    pub milestone_index_spent: Option<u32>,
-    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
-    pub milestone_timestamp_spent: Option<u32>,
-    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
-    pub transaction_id_spent: Option<String>,
-    pub milestone_index_booked: u32,
-    pub milestone_timestamp_booked: u32,
-    pub ledger_index: u32,
-}
-
-impl OutputMetadataResponse {
-    /// Returns the output id.
-    pub fn output_id(&self) -> Result<OutputId, crate::block::Error> {
-        OutputId::new(TransactionId::from_str(&self.transaction_id)?, self.output_index)
-    }
 }
 
 /// Response of GET /api/core/v2/outputs/{output_id}.

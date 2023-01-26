@@ -8,7 +8,11 @@ use std::collections::HashSet;
 use crypto::keys::slip10::Chain;
 use iota_types::{
     api::response::OutputWithMetadataResponse,
-    block::{address::Address, output::Output, protocol::ProtocolParameters},
+    block::{
+        address::Address,
+        output::{Output, OutputMetadata},
+        protocol::ProtocolParameters,
+    },
 };
 
 use crate::{
@@ -18,7 +22,7 @@ use crate::{
     },
     constants::HD_WALLET_TYPE,
     node_api::indexer::query_parameters::QueryParameter,
-    secret::types::{InputSigningData, OutputMetadata},
+    secret::types::InputSigningData,
     Error, Result,
 };
 

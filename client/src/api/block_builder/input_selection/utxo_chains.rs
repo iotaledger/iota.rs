@@ -10,7 +10,7 @@ use iota_types::{
     api::response::OutputWithMetadataResponse,
     block::{
         address::Address,
-        output::{dto::OutputDto, AliasOutput, FoundryOutput, NftOutput, Output, OutputId},
+        output::{dto::OutputDto, AliasOutput, FoundryOutput, NftOutput, Output, OutputId, OutputMetadata},
         payload::transaction::TransactionId,
     },
 };
@@ -18,7 +18,7 @@ use iota_types::{
 use crate::{
     api::{block_builder::ClientBlockBuilder, search_address},
     constants::HD_WALLET_TYPE,
-    secret::types::{InputSigningData, OutputMetadata},
+    secret::types::InputSigningData,
     Client, Result,
 };
 
