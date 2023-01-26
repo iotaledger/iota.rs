@@ -220,6 +220,7 @@ pub enum Response {
     /// - [`Faucet`](crate::message_interface::Message::Faucet)
     Faucet(String),
     /// Response for:
+    /// - [`ClearListeners`](crate::message_interface::Message::ClearListeners)
     /// - [`StoreMnemonic`](crate::message_interface::Message::StoreMnemonic)
     Ok,
     /// Response for any method that returns an error.

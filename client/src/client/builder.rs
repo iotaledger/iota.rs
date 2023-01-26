@@ -375,7 +375,7 @@ impl ClientBuilder {
             #[cfg(not(target_family = "wasm"))]
             sync_handle: sync_handle.map(Arc::new),
             #[cfg(feature = "mqtt")]
-            mqtt_client: None,
+            mqtt_client: Arc::new(tokio::sync::RwLock::new(None)),
             #[cfg(feature = "mqtt")]
             mqtt_topic_handlers: Default::default(),
             #[cfg(feature = "mqtt")]

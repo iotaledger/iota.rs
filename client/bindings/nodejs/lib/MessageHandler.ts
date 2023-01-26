@@ -17,10 +17,10 @@ export class MessageHandler {
     }
 
     // MQTT
-    listen(
+    async listen(
         topics: string[],
         callback: (error: Error, result: string) => void,
-    ): void {
+    ): Promise<void> {
         return listen(topics, callback, this.messageHandler);
     }
 }

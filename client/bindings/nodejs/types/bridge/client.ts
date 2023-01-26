@@ -486,3 +486,10 @@ export interface __BuildNftOutputMessage__ {
     name: 'buildNftOutput';
     data: INftOutputBuilderOptions;
 }
+
+export interface __ClearListenersMessage__ {
+    name: 'clearListeners';
+    data: {
+        topics: string[];
+    };
+}

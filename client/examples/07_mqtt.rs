@@ -11,7 +11,7 @@ use iota_client::{Client, MqttEvent, MqttPayload, Result, Topic};
 #[tokio::main]
 async fn main() -> Result<()> {
     // Create a client instance
-    let mut client = Client::builder()
+    let client = Client::builder()
         .with_node("https://api.testnet.shimmer.network")?
         // .with_mqtt_broker_options(BrokerOptions::new().use_ws(false))
         .finish()?;

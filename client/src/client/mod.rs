@@ -37,7 +37,7 @@ pub struct Client {
     pub(crate) sync_handle: Option<Arc<tokio::task::JoinHandle<()>>>,
     /// A MQTT client to subscribe/unsubscribe to topics.
     #[cfg(feature = "mqtt")]
-    pub(crate) mqtt_client: Option<MqttClient>,
+    pub(crate) mqtt_client: Arc<tokio::sync::RwLock<Option<MqttClient>>>,
     #[cfg(feature = "mqtt")]
     pub(crate) mqtt_topic_handlers: Arc<tokio::sync::RwLock<TopicHandlerMap>>,
     #[cfg(feature = "mqtt")]
@@ -84,15 +84,17 @@ impl Drop for Client {
         }
 
         #[cfg(feature = "mqtt")]
-        if let Some(mqtt_client) = self.mqtt_client.take() {
-            std::thread::spawn(move || {
-                // ignore errors in case the event loop was already dropped
-                // .cancel() finishes the event loop right away
-                let _ = crate::async_runtime::block_on(mqtt_client.cancel());
-            })
-            .join()
-            .unwrap();
-        }
+        let mqtt_client = self.mqtt_client.clone();
+        #[cfg(feature = "mqtt")]
+        std::thread::spawn(move || {
+            crate::async_runtime::block_on(async move {
+                if let Some(mqtt_client) = mqtt_client.write().await.take() {
+                    mqtt_client.disconnect().await.unwrap();
+                }
+            });
+        })
+        .join()
+        .unwrap();
     }
 }
 

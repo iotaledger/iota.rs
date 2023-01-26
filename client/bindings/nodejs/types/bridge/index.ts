@@ -72,6 +72,7 @@ import type {
     __BuildAliasOutputMessage__,
     __BuildFoundryOutputMessage__,
     __BuildNftOutputMessage__,
+    __ClearListenersMessage__,
 } from './client';
 
 export type __ClientMessages__ =
@@ -147,4 +148,5 @@ export type __ClientMessages__ =
     | __BuildBasicOutputMessage__
     | __BuildAliasOutputMessage__
     | __BuildFoundryOutputMessage__
-    | __BuildNftOutputMessage__;
+    | __BuildNftOutputMessage__
+    | __ClearListenersMessage__;

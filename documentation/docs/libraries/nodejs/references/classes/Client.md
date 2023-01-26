@@ -80,6 +80,8 @@ The Client to interact with nodes.
 - [buildAliasOutput](Client.md#buildaliasoutput)
 - [buildFoundryOutput](Client.md#buildfoundryoutput)
 - [buildNftOutput](Client.md#buildnftoutput)
+- [listen](Client.md#listen)
+- [clearListeners](Client.md#clearlisteners)
 
 ## Methods
 
@@ -1338,3 +1340,40 @@ Build an Nft Output.
 #### Returns
 
 `Promise`<`INftOutput`\>
+
+___
+
+### listen
+
+▸ **listen**(`topics`, `callback`): `Promise`<`void`\>
+
+Listen to MQTT topics.
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `topics` | `string`[] |
+| `callback` | (`error`: `Error`, `result`: `string`) => `void` |
+
+#### Returns
+
+`Promise`<`void`\>
+
+___
+
+### clearListeners
+
+▸ **clearListeners**(`topics`): `Promise`<`void`\>
+
+Stop listening for provided MQTT topics.
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `topics` | `string`[] |
+
+#### Returns
+
+`Promise`<`void`\>
