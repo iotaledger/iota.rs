@@ -4,12 +4,18 @@
 use core::str::FromStr;
 
 use iota_types::block::{
-    input::{Input, UtxoInput},
+    input::{
+        dto::{InputDto, UtxoInputDto},
+        Input, UtxoInput,
+    },
     output::OutputId,
+    DtoError, Error,
 };
-use packable::PackableExt;
+use packable::{bounded::InvalidBoundedU16, PackableExt};
 
 const OUTPUT_ID: &str = "0x52fdfc072182654f163f5f0f9a621d729566c74d10037c4d7bbb0407d1e2c6492a00";
+const TRANSACTION_ID: &str = "0x52fdfc072182654f163f5f0f9a621d729566c74d10037c4d7bbb0407d1e2c649";
+const TRANSACTION_ID_INVALID: &str = "0x52fdfc072182654f163f5f0f9a621d729566c74d10037c4d7bbb0407d1e2c6";
 
 #[test]
 fn kind() {
@@ -38,15 +44,7 @@ fn as_methods() {
 }
 
 #[test]
-fn debug_impl() {
-    assert_eq!(
-        format!("{:?}", UtxoInput::from_str(OUTPUT_ID).unwrap()),
-        "UtxoInput(0x52fdfc072182654f163f5f0f9a621d729566c74d10037c4d7bbb0407d1e2c6492a00)"
-    );
-}
-
-#[test]
-fn new_valid() {
+fn new_output_id() {
     let output_id = OutputId::from_str(OUTPUT_ID).unwrap();
     let input = UtxoInput::new(*output_id.transaction_id(), output_id.index()).unwrap();
 
@@ -54,15 +52,28 @@ fn new_valid() {
 }
 
 #[test]
-fn from_valid() {
+fn from() {
     let output_id = OutputId::from_str(OUTPUT_ID).unwrap();
-    let input: UtxoInput = output_id.into();
+    let input = UtxoInput::from(output_id);
 
     assert_eq!(*input.output_id(), output_id);
 }
 
 #[test]
-fn from_str_valid() {
+fn from_str_to_str() {
+    assert_eq!(UtxoInput::from_str(OUTPUT_ID).unwrap().to_string(), OUTPUT_ID);
+}
+
+#[test]
+fn debug() {
+    assert_eq!(
+        format!("{:?}", UtxoInput::from_str(OUTPUT_ID).unwrap()),
+        "UtxoInput(0x52fdfc072182654f163f5f0f9a621d729566c74d10037c4d7bbb0407d1e2c6492a00)"
+    );
+}
+
+#[test]
+fn from_str() {
     assert_eq!(
         *UtxoInput::from_str(OUTPUT_ID).unwrap().output_id(),
         OutputId::from_str(OUTPUT_ID).unwrap()
@@ -70,8 +81,57 @@ fn from_str_valid() {
 }
 
 #[test]
-fn from_str_to_str() {
-    assert_eq!(UtxoInput::from_str(OUTPUT_ID).unwrap().to_string(), OUTPUT_ID);
+fn dto_fields() {
+    let output_id = OutputId::from_str(OUTPUT_ID).unwrap();
+    let utxo_input = UtxoInput::from(output_id);
+    let utxo_dto = UtxoInputDto::from(&utxo_input);
+
+    assert_eq!(utxo_dto.kind, UtxoInput::KIND);
+    assert_eq!(utxo_dto.transaction_id, output_id.transaction_id().to_string());
+    assert_eq!(utxo_dto.transaction_output_index, output_id.index());
+
+    let input = Input::from(utxo_input);
+    let dto = InputDto::from(&input);
+
+    assert_eq!(dto, InputDto::Utxo(utxo_dto));
+}
+
+#[test]
+fn dto_roundtrip() {
+    let utxo_input = UtxoInput::from_str(OUTPUT_ID).unwrap();
+    let utxo_dto = UtxoInputDto::from(&utxo_input);
+
+    assert_eq!(UtxoInput::try_from(&utxo_dto).unwrap(), utxo_input);
+
+    let input = Input::from(utxo_input);
+    let dto = InputDto::from(&input);
+
+    assert_eq!(Input::try_from(&dto).unwrap(), input);
+}
+
+#[test]
+fn dto_invalid() {
+    let dto = UtxoInputDto {
+        kind: UtxoInput::KIND,
+        transaction_id: TRANSACTION_ID_INVALID.to_string(),
+        transaction_output_index: 0,
+    };
+
+    assert!(matches!(
+        UtxoInput::try_from(&dto),
+        Err(DtoError::InvalidField("transactionId"))
+    ));
+
+    let dto = UtxoInputDto {
+        kind: UtxoInput::KIND,
+        transaction_id: TRANSACTION_ID.to_string(),
+        transaction_output_index: 1000,
+    };
+
+    assert!(matches!(
+        UtxoInput::try_from(&dto),
+        Err(DtoError::Block(Error::InvalidInputOutputIndex(InvalidBoundedU16(1000))))
+    ));
 }
 
 #[test]
@@ -90,8 +150,16 @@ fn packed_len() {
 #[test]
 fn pack_unpack() {
     let output_id = OutputId::from_str(OUTPUT_ID).unwrap();
-    let input_1 = UtxoInput::new(*output_id.transaction_id(), output_id.index()).unwrap();
-    let input_2 = UtxoInput::unpack_verified(input_1.pack_to_vec().as_slice(), &()).unwrap();
+    let utxo_input = UtxoInput::new(*output_id.transaction_id(), output_id.index()).unwrap();
+    let packed_input = utxo_input.pack_to_vec();
 
-    assert_eq!(input_1, input_2);
+    assert_eq!(
+        utxo_input,
+        UtxoInput::unpack_verified(packed_input.as_slice(), &()).unwrap()
+    );
+
+    let input = Input::from(utxo_input);
+    let packed_input = input.pack_to_vec();
+
+    assert_eq!(input, Input::unpack_verified(packed_input.as_slice(), &()).unwrap());
 }
