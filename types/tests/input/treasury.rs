@@ -21,6 +21,23 @@ fn kind() {
 }
 
 #[test]
+fn is_methods() {
+    let input = Input::from(TreasuryInput::from_str(MILESTONE_ID).unwrap());
+
+    assert!(!input.is_utxo());
+    assert!(input.is_treasury());
+}
+
+#[test]
+fn as_methods() {
+    let treasury_input = TreasuryInput::from_str(MILESTONE_ID).unwrap();
+    let input = Input::from(treasury_input);
+
+    assert!(std::panic::catch_unwind(|| input.as_utxo()).is_err());
+    assert_eq!(input.as_treasury(), &treasury_input);
+}
+
+#[test]
 fn debug_impl() {
     assert_eq!(
         format!("{:?}", TreasuryInput::from_str(MILESTONE_ID).unwrap()),
