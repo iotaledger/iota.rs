@@ -8,7 +8,7 @@ pub(crate) mod transition;
 
 use std::collections::HashSet;
 
-use self::requirement::{alias::is_alias_state_transition, Requirements};
+use self::requirement::alias::is_alias_state_transition;
 pub use self::{
     burn::{Burn, BurnDto},
     requirement::Requirement,
@@ -40,6 +40,7 @@ pub struct InputSelection {
     remainder_address: Option<Address>,
     protocol_parameters: ProtocolParameters,
     timestamp: u32,
+    requirements: Vec<Requirement>,
     automatically_transitioned: HashSet<ChainId>,
 }
 
@@ -73,20 +74,16 @@ impl InputSelection {
         }
     }
 
-    fn select_input(&mut self, input: InputSigningData, requirements: &mut Requirements) -> Result<()> {
+    fn select_input(&mut self, input: InputSigningData) -> Result<()> {
         if let Some(output) = self.transition_input(&input)? {
             // TODO is this really necessary?
             // TODO should input be pushed before ? probably
-            requirements.extend(Requirements::from_outputs(
-                // TODO do we really need to chain?
-                self.available_inputs.iter().chain(self.selected_inputs.iter()),
-                std::iter::once(&output),
-            ));
+            self.from_outputs(Some(&output));
             self.outputs.push(output);
         }
 
         if let Some(requirement) = self.required_alias_nft_addresses(&input)? {
-            requirements.push(requirement);
+            self.requirements.push(requirement);
         }
 
         self.selected_inputs.push(input);
@@ -95,14 +92,11 @@ impl InputSelection {
     }
 
     // TODO rename
-    fn init(&mut self) -> Result<Requirements> {
-        // let mut selected_inputs = Vec::new();
-        let mut requirements = Requirements::new();
-
+    fn init(&mut self) -> Result<()> {
         // Adds an initial amount requirement.
-        requirements.push(Requirement::Amount);
+        self.requirements.push(Requirement::Amount);
         // Adds an initial native tokens requirement.
-        requirements.push(Requirement::NativeTokens);
+        self.requirements.push(Requirement::NativeTokens);
 
         // Removes forbidden inputs from available inputs.
         self.available_inputs
@@ -128,7 +122,7 @@ impl InputSelection {
                         let input = self.available_inputs.swap_remove(index);
 
                         // Selects required input.
-                        self.select_input(input, &mut requirements)?
+                        self.select_input(input)?
                     }
                     None => return Err(Error::RequiredInputIsNotAvailable(required_input)),
                 }
@@ -137,19 +131,12 @@ impl InputSelection {
 
         // Gets requirements from outputs.
         // TODO this may re-evaluate outputs added by inputs
-        let new_requirements = Requirements::from_outputs(
-            // TODO do we really need to chain?
-            self.available_inputs.iter().chain(self.selected_inputs.iter()),
-            self.outputs.iter(),
-        );
-        requirements.extend(new_requirements);
+        self.from_outputs(None);
 
         // Gets requirements from burn.
-        if let Some(burn) = &self.burn {
-            requirements.extend(Requirements::from_burn(burn, self.outputs.iter())?);
-        }
+        self.from_burn()?;
 
-        Ok(requirements)
+        Ok(())
     }
 
     /// Creates a new [`InputSelection`].
@@ -185,6 +172,7 @@ impl InputSelection {
                 .duration_since(instant::SystemTime::UNIX_EPOCH)
                 .expect("time went backwards")
                 .as_secs() as u32,
+            requirements: Vec::new(),
             automatically_transitioned: HashSet::new(),
         }
     }
@@ -262,20 +250,20 @@ impl InputSelection {
         }
 
         // Creates the initial state, selected inputs and requirements, based on the provided outputs.
-        let mut requirements = self.init()?;
+        self.init()?;
 
         // Process all the requirements until there are no more.
-        while let Some(requirement) = requirements.pop() {
+        while let Some(requirement) = self.requirements.pop() {
             // Fulfill the requirement.
             let (inputs, new_requirement) = self.fulfill_requirement(requirement)?;
 
             if let Some(new_requirement) = new_requirement {
-                requirements.push(new_requirement);
+                self.requirements.push(new_requirement);
             }
 
             // Select suggested inputs.
             for input in inputs {
-                self.select_input(input, &mut requirements)?;
+                self.select_input(input)?;
             }
         }
 
