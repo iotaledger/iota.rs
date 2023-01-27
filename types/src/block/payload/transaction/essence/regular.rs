@@ -219,7 +219,7 @@ fn verify_inputs<const VERIFY: bool>(inputs: &[Input]) -> Result<(), Error> {
             match input {
                 Input::Utxo(utxo) => {
                     if !seen_utxos.insert(utxo) {
-                        return Err(Error::DuplicateUtxo(utxo.clone()));
+                        return Err(Error::DuplicateUtxo(*utxo));
                     }
                 }
                 _ => return Err(Error::InvalidInputKind(input.kind())),

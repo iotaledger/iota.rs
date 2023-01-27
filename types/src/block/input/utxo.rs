@@ -1,4 +1,4 @@
-// Copyright 2020-2021 IOTA Stiftung
+// Copyright 2020-2023 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
 use core::str::FromStr;
@@ -8,7 +8,7 @@ use derive_more::From;
 use crate::block::{output::OutputId, payload::transaction::TransactionId, Error};
 
 /// Represents an input referencing an output.
-#[derive(Clone, Eq, PartialEq, Hash, Ord, PartialOrd, From, packable::Packable)]
+#[derive(Clone, Copy, Eq, PartialEq, Hash, Ord, PartialOrd, From, packable::Packable)]
 pub struct UtxoInput(OutputId);
 
 impl UtxoInput {

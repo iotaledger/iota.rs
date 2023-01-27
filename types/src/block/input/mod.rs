@@ -1,4 +1,4 @@
-// Copyright 2020-2021 IOTA Stiftung
+// Copyright 2020-2023 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
 mod treasury;
@@ -44,6 +44,36 @@ impl Input {
         match self {
             Self::Utxo(_) => UtxoInput::KIND,
             Self::Treasury(_) => TreasuryInput::KIND,
+        }
+    }
+
+    /// Checks whether the input is a [`UtxoInput`].
+    pub fn is_utxo(&self) -> bool {
+        matches!(self, Self::Utxo(_))
+    }
+
+    /// Gets the input as an actual [`UtxoInput`].
+    /// PANIC: do not call on a non-utxo input.
+    pub fn as_utxo(&self) -> &UtxoInput {
+        if let Input::Utxo(input) = self {
+            input
+        } else {
+            panic!("as_utxo called on a non-utxo input");
+        }
+    }
+
+    /// Checks whether the input is a [`TreasuryInput`].
+    pub fn is_treasury(&self) -> bool {
+        matches!(self, Self::Treasury(_))
+    }
+
+    /// Gets the input as an actual [`TreasuryInput`].
+    /// PANIC: do not call on a non-treasury input.
+    pub fn as_treasury(&self) -> &TreasuryInput {
+        if let Input::Treasury(input) = self {
+            input
+        } else {
+            panic!("as_treasury called on a non-treasury input");
         }
     }
 }
