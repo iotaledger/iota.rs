@@ -59,8 +59,8 @@ impl InputSelection {
         }
     }
 
-    /// Creates a new [`Requirements`] from outputs.
-    pub(crate) fn from_outputs<'a>(&mut self, output: Option<&Output>) {
+    /// Gets requirements from outputs.
+    pub(crate) fn outputs_requirements(&mut self, output: Option<&Output>) {
         // TODO do we really need to chain?
         let inputs = self.available_inputs.iter().chain(self.selected_inputs.iter());
         let outputs: Box<dyn Iterator<Item = &Output>> = match output {
@@ -129,8 +129,8 @@ impl InputSelection {
         }
     }
 
-    /// Creates a new [`Requirements`] from burn.
-    pub(crate) fn from_burn<'a>(&mut self) -> Result<()> {
+    /// Gets requirements from burn.
+    pub(crate) fn burn_requirements(&mut self) -> Result<()> {
         if let Some(burn) = self.burn.as_ref() {
             for alias_id in &burn.aliases {
                 if self

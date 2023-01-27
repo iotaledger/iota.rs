@@ -78,7 +78,7 @@ impl InputSelection {
         if let Some(output) = self.transition_input(&input)? {
             // TODO is this really necessary?
             // TODO should input be pushed before ? probably
-            self.from_outputs(Some(&output));
+            self.outputs_requirements(Some(&output));
             self.outputs.push(output);
         }
 
@@ -131,10 +131,10 @@ impl InputSelection {
 
         // Gets requirements from outputs.
         // TODO this may re-evaluate outputs added by inputs
-        self.from_outputs(None);
+        self.outputs_requirements(None);
 
         // Gets requirements from burn.
-        self.from_burn()?;
+        self.burn_requirements()?;
 
         Ok(())
     }
