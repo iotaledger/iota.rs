@@ -3,7 +3,10 @@
 
 use core::str::FromStr;
 
-use iota_types::block::{input::UtxoInput, output::OutputId};
+use iota_types::block::{
+    input::{Input, UtxoInput},
+    output::OutputId,
+};
 use packable::PackableExt;
 
 const OUTPUT_ID: &str = "0x52fdfc072182654f163f5f0f9a621d729566c74d10037c4d7bbb0407d1e2c6492a00";
@@ -11,6 +14,10 @@ const OUTPUT_ID: &str = "0x52fdfc072182654f163f5f0f9a621d729566c74d10037c4d7bbb0
 #[test]
 fn kind() {
     assert_eq!(UtxoInput::KIND, 0);
+
+    let input = Input::from(UtxoInput::from_str(OUTPUT_ID).unwrap());
+
+    assert_eq!(input.kind(), UtxoInput::KIND);
 }
 
 #[test]
