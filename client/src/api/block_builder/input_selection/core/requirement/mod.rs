@@ -10,7 +10,7 @@ pub(crate) mod nft;
 pub(crate) mod sender;
 
 use self::{alias::is_alias_with_id_non_null, foundry::is_foundry_with_id, nft::is_nft_with_id_non_null};
-use super::{Burn, InputSelection};
+use super::InputSelection;
 use crate::{
     block::{
         address::Address,
@@ -58,39 +58,15 @@ impl InputSelection {
             Requirement::Amount => self.fulfill_amount_requirement(),
         }
     }
-}
 
-/// A stack of requirements, imposed by outputs, that need to be resolved by selected inputs.
-#[derive(Debug)]
-pub(crate) struct Requirements(Vec<Requirement>);
-
-impl Requirements {
-    /// Creates a new [`Requirements`].
-    pub(crate) fn new() -> Self {
-        Self(Vec::new())
-    }
-
-    /// Pushes a new requirement to the stack.
-    pub(crate) fn push(&mut self, requirement: Requirement) {
-        self.0.push(requirement)
-    }
-
-    /// Pops a requirement from the stack.
-    pub(crate) fn pop(&mut self) -> Option<Requirement> {
-        self.0.pop()
-    }
-
-    /// Extends the requirement stack with another stack.
-    pub(crate) fn extend(&mut self, requirements: Requirements) {
-        self.0.extend(requirements.0)
-    }
-
-    /// Creates a new [`Requirements`] from outputs.
-    pub(crate) fn from_outputs<'a>(
-        inputs: impl Iterator<Item = &'a InputSigningData> + Clone,
-        outputs: impl Iterator<Item = &'a Output>,
-    ) -> Self {
-        let mut requirements = Requirements::new();
+    /// Gets requirements from outputs.
+    pub(crate) fn outputs_requirements(&mut self, output: Option<&Output>) {
+        // TODO do we really need to chain?
+        let inputs = self.available_inputs.iter().chain(self.selected_inputs.iter());
+        let outputs: Box<dyn Iterator<Item = &Output>> = match output {
+            Some(output) => Box::new(std::iter::once(output)),
+            None => Box::new(self.outputs.iter()),
+        };
 
         for output in outputs {
             let is_created = match output {
@@ -99,7 +75,8 @@ impl Requirements {
                     let is_created = alias_output.alias_id().is_null();
 
                     if !is_created {
-                        requirements.push(Requirement::Alias(*alias_output.alias_id(), false));
+                        self.requirements
+                            .push(Requirement::Alias(*alias_output.alias_id(), false));
                     }
 
                     is_created
@@ -109,7 +86,7 @@ impl Requirements {
                     let is_created = nft_output.nft_id().is_null();
 
                     if !is_created {
-                        requirements.push(Requirement::Nft(*nft_output.nft_id()));
+                        self.requirements.push(Requirement::Nft(*nft_output.nft_id()));
                     }
 
                     is_created
@@ -127,10 +104,11 @@ impl Requirements {
                     });
 
                     if !is_created {
-                        requirements.push(Requirement::Foundry(foundry_output.id()));
+                        self.requirements.push(Requirement::Foundry(foundry_output.id()));
                     }
 
-                    requirements.push(Requirement::Alias(*foundry_output.alias_address().alias_id(), true));
+                    self.requirements
+                        .push(Requirement::Alias(*foundry_output.alias_address().alias_id(), true));
 
                     is_created
                 }
@@ -139,51 +117,54 @@ impl Requirements {
 
             // Add a sender requirement if the sender feature is present.
             if let Some(sender) = output.features().and_then(Features::sender) {
-                requirements.push(Requirement::Sender(*sender.address()));
+                self.requirements.push(Requirement::Sender(*sender.address()));
             }
 
             // Add an issuer requirement if the issuer feature is present and the chain output is created.
             if is_created {
                 if let Some(issuer) = output.immutable_features().and_then(Features::issuer) {
-                    requirements.push(Requirement::Issuer(*issuer.address()));
+                    self.requirements.push(Requirement::Issuer(*issuer.address()));
                 }
             }
         }
-
-        requirements
     }
 
-    /// Creates a new [`Requirements`] from burn.
-    pub(crate) fn from_burn<'a>(burn: &Burn, outputs: impl Iterator<Item = &'a Output> + Clone) -> Result<Self> {
-        let mut requirements = Requirements::new();
+    /// Gets requirements from burn.
+    pub(crate) fn burn_requirements(&mut self) -> Result<()> {
+        if let Some(burn) = self.burn.as_ref() {
+            for alias_id in &burn.aliases {
+                if self
+                    .outputs
+                    .iter()
+                    .any(|output| is_alias_with_id_non_null(output, alias_id))
+                {
+                    return Err(Error::BurnAndTransition(ChainId::from(*alias_id)));
+                }
 
-        for alias_id in &burn.aliases {
-            if outputs
-                .clone()
-                .any(|output| is_alias_with_id_non_null(output, alias_id))
-            {
-                return Err(Error::BurnAndTransition(ChainId::from(*alias_id)));
+                self.requirements.push(Requirement::Alias(*alias_id, false));
             }
 
-            requirements.push(Requirement::Alias(*alias_id, false));
-        }
+            for nft_id in &burn.nfts {
+                if self
+                    .outputs
+                    .iter()
+                    .any(|output| is_nft_with_id_non_null(output, nft_id))
+                {
+                    return Err(Error::BurnAndTransition(ChainId::from(*nft_id)));
+                }
 
-        for nft_id in &burn.nfts {
-            if outputs.clone().any(|output| is_nft_with_id_non_null(output, nft_id)) {
-                return Err(Error::BurnAndTransition(ChainId::from(*nft_id)));
+                self.requirements.push(Requirement::Nft(*nft_id));
             }
 
-            requirements.push(Requirement::Nft(*nft_id));
-        }
+            for foundry_id in &burn.foundries {
+                if self.outputs.iter().any(|output| is_foundry_with_id(output, foundry_id)) {
+                    return Err(Error::BurnAndTransition(ChainId::from(*foundry_id)));
+                }
 
-        for foundry_id in &burn.foundries {
-            if outputs.clone().any(|output| is_foundry_with_id(output, foundry_id)) {
-                return Err(Error::BurnAndTransition(ChainId::from(*foundry_id)));
+                self.requirements.push(Requirement::Foundry(*foundry_id));
             }
-
-            requirements.push(Requirement::Foundry(*foundry_id));
         }
 
-        Ok(requirements)
+        Ok(())
     }
 }
