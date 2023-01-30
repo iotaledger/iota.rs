@@ -61,12 +61,10 @@ impl SingleThreadedMiner {
     pub fn nonce(&self, bytes: &[u8], target_score: u32) -> Result<u64, Error> {
         let mut nonce = 0;
         let mut pow_digest = TritBuf::<T1B1Buf>::new();
+        // This should not be more than HASH_LENGTH but given the types of `bytes` and `target_score`, its maximum value
+        // depending on user input is ceil(ln(usize::MAX * u32::MAX) / ln(3)) = 61.
         let target_zeros =
             (((bytes.len() + std::mem::size_of::<u64>()) as f64 * target_score as f64).ln() / LN_3).ceil() as usize;
-
-        if target_zeros > HASH_LENGTH {
-            return Err(Error::InvalidPowScore(target_score, target_zeros));
-        }
 
         let mut hasher = CurlPBatchHasher::<T1B1Buf>::new(HASH_LENGTH);
         let mut buffers = Vec::<TritBuf<T1B1Buf>>::with_capacity(BATCH_SIZE);
