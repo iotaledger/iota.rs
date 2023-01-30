@@ -18,13 +18,13 @@ pub struct OutputMetadata {
     /// Whether the output is spent or not.
     is_spent: bool,
     /// If spent, the index of the milestone in which the output was spent.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
     milestone_index_spent: Option<u32>,
     /// If spent, the timestamp of the milestone in which the output was spent.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
     milestone_timestamp_spent: Option<u32>,
     /// If spent, the identifier of the transaction that spent the output.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
     transaction_id_spent: Option<TransactionId>,
     /// The index of the milestone that booked the output.
     milestone_index_booked: u32,
