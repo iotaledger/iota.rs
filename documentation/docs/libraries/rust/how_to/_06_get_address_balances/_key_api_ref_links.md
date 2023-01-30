@@ -1,7 +1,6 @@
 ### `Client.basic_output_ids(query_parameters)`
 
-You can retrieve outputs from any given address using the  
-the [`Client.basic_output_ids(query_parameters)`](iota_client/client/struct.Client.html#method.basic_output_ids)
+You can retrieve outputs from any given address using the [`Client.basic_output_ids(query_parameters)`](iota_client/client/struct.Client.html#method.basic_output_ids)
 function.
 
 This function will query the `api/indexer/v1/outputs/basic` endpoint.

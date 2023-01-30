@@ -383,7 +383,7 @@ Computes the Foundry ID for a given alias address, serial number, and token sche
 * **Parameters:**
     * `aliasAddress` — The alias address of the device.
     * `serialNumber` — The serial number of the token.
-    * `tokenScheme` — The token scheme to use.  This is a value from the TokenScheme enum.
+    * `tokenScheme` — The token scheme to use. This is a value from the TokenScheme enum.
 * **Returns:** A FoundryId object.
 
 ## `public Output buildAliasOutput( AliasOutputBuilderParams params ) throws ClientException`

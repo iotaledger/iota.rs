@@ -1,6 +1,6 @@
 ## Get an Output by ID
 
-You can retrieve any output using its `outputId` (transaction id + output index)  by calling
+You can retrieve any output using its `outputId` (transaction id + output index) by calling
 the [`Client.get_output(output_id)`](./../libraries/python/api_reference#get_output) function and providing a
 valid output ID.
 

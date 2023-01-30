@@ -32,7 +32,7 @@ See: https://github.com/rustwasm/wasm-bindgen/pull/2677`);
 
 /** Rejects any `imports['env']` occurrences, which cause failures at runtime.
  *
- *  This is typically due to Wasm compatibility features not being enabled on crate dependencies. **/
+ * This is typically due to Wasm compatibility features not being enabled on crate dependencies. **/
 function lintImportEnv(content) {
     if (content.includes("imports['env']") || content.includes("require('env')") || content.includes("from 'env'")) {
         throw(`ERROR: generated Javascript should not include any imports for 'env', e.g.:

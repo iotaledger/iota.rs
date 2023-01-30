@@ -5,7 +5,7 @@ the library.
 
 ### Clone the Repository
 
-To run the rust examples, you will first need to clone the repository.  You can do so by running the following command:
+To run the rust examples, you will first need to clone the repository. You can do so by running the following command:
 
 ```bash
 git clone git@github.com:iotaledger/iota.rs.git
@@ -30,7 +30,7 @@ cp .env.example .env
 ## Run Code Examples
 
 The iota.rs library has numerous [examples](https://github.com/iotaledger/iota.rs/tree/develop/examples)
-you can run to get acquainted with the library.  After you have followed the instructions to
+you can run to get acquainted with the library. After you have followed the instructions to
 [install the library](./../getting_started/rust#install-the-library), you can run any example with the following
 command from the `examples` directory:
 
