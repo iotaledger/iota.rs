@@ -4,12 +4,17 @@
 //! PoW functions.
 
 #[cfg(not(target_family = "wasm"))]
-use iota_pow::miner::{Miner, MinerBuilder, MinerCancel};
+use {
+    crate::{Client, Error, Result},
+    iota_pow::miner::{Miner, MinerBuilder, MinerCancel},
+    iota_types::block::{parent::Parents, payload::Payload, Block, BlockBuilder, Error as BlockError},
+};
 #[cfg(target_family = "wasm")]
-use iota_pow::wasm_miner::{SingleThreadedMiner, SingleThreadedMinerBuilder};
-use iota_types::block::{parent::Parents, payload::Payload, Block, BlockBuilder, Error as BlockError};
-
-use crate::{Client, Error, Result};
+use {
+    crate::{Client, Result},
+    iota_pow::wasm_miner::{SingleThreadedMiner, SingleThreadedMinerBuilder},
+    iota_types::block::{parent::Parents, payload::Payload, Block, BlockBuilder},
+};
 
 impl Client {
     /// Finishes the block with local PoW if needed.
