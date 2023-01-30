@@ -52,12 +52,12 @@ fn miner_cancel() {
         152, 222, 102, 50, 8, 233, 160, 125, 153, 64, 91, 100, 234, 113, 108, 220, 171, 192,
     ];
     let now = std::time::Instant::now();
-    let handle = std::thread::spawn(move || miner.nonce(&bytes[0..248], 100000).unwrap());
+    let handle = std::thread::spawn(move || miner.nonce(&bytes[0..248], 100000));
 
     std::thread::sleep(std::time::Duration::from_secs(1));
 
     cancel.trigger();
 
     assert!(now.elapsed().as_secs() < 2);
-    assert!(matches!(handle.join(), Ok(0)));
+    assert!(matches!(handle.join().unwrap(), None));
 }
