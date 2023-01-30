@@ -24,10 +24,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Update dependencies;
+- `{Miner, SingleThreadedMiner}::nonce` return an `Option<u64>` instead of a `Result<u64, Error>`;
+- `get_miner` and `get_miner_num_workers` return an `Option<u64>` instead of a `Result<u64, Error>`;
 
 ### Removed
 
-- `Error`;
+- `Error` enum;
 
 ## 1.0.0-rc.2 - 2022-12-20
 
