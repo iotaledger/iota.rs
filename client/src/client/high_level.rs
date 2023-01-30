@@ -235,7 +235,7 @@ impl Client {
             if total_already_spent == amount || total_already_spent >= amount {
                 break;
             }
-            selected_inputs.push(output_wrapper.0.clone());
+            selected_inputs.push(output_wrapper.0);
             total_already_spent += output_wrapper.1;
         }
 
