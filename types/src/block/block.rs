@@ -4,7 +4,6 @@
 use core::ops::Deref;
 
 use crypto::hashes::{blake2b::Blake2b256, Digest};
-use iota_pow::Error as PowError;
 use packable::{
     error::{UnexpectedEOF, UnpackError, UnpackErrorExt},
     packer::Packer,
@@ -89,10 +88,11 @@ impl BlockBuilder {
     }
 
     /// Finishes the [`BlockBuilder`] into a [`Block`], computing the nonce with a given provider.
-    pub fn finish_nonce<F: Fn(&[u8]) -> Result<u64, PowError>>(self, nonce_provider: F) -> Result<Block, Error> {
+    pub fn finish_nonce<F: Fn(&[u8]) -> Option<u64>>(self, nonce_provider: F) -> Result<Block, Error> {
         let (mut block, block_bytes) = self._finish()?;
 
-        block.nonce = nonce_provider(&block_bytes[..block_bytes.len() - core::mem::size_of::<u64>()])?;
+        block.nonce = nonce_provider(&block_bytes[..block_bytes.len() - core::mem::size_of::<u64>()])
+            .ok_or(Error::NonceNotFound)?;
 
         Ok(block)
     }

@@ -23,7 +23,7 @@ use crypto::{
     },
 };
 
-use crate::{score::count_trailing_zeros, Error, LN_3};
+use crate::{score::count_trailing_zeros, LN_3};
 
 const DEFAULT_NUM_WORKERS: usize = 1;
 
@@ -95,12 +95,7 @@ pub struct Miner {
 }
 
 impl Miner {
-    fn worker(
-        cancel: MinerCancel,
-        pow_digest: TritBuf<T1B1Buf>,
-        start_nonce: u64,
-        target_zeros: usize,
-    ) -> Result<u64, Error> {
+    fn worker(cancel: MinerCancel, pow_digest: TritBuf<T1B1Buf>, start_nonce: u64, target_zeros: usize) -> Option<u64> {
         let mut nonce = start_nonce;
         let mut hasher = CurlPBatchHasher::<T1B1Buf>::new(HASH_LENGTH);
         let mut buffers = Vec::<TritBuf<T1B1Buf>>::with_capacity(BATCH_SIZE);
@@ -121,21 +116,21 @@ impl Miner {
             for (i, hash) in hasher.hash().enumerate() {
                 if count_trailing_zeros(&hash) >= target_zeros {
                     cancel.trigger();
-                    return Ok(nonce + i as u64);
+                    return Some(nonce + i as u64);
                 }
             }
 
             nonce += BATCH_SIZE as u64;
         }
 
-        Err(Error::Cancelled)
+        None
     }
 
     /// Mines a nonce for provided bytes.
-    pub fn nonce(&self, bytes: &[u8], target_score: u32) -> Result<u64, Error> {
+    pub fn nonce(&self, bytes: &[u8], target_score: u32) -> Option<u64> {
         self.cancel.reset();
 
-        let mut nonce = 0;
+        let mut nonce = None;
         let mut pow_digest = TritBuf::<T1B1Buf>::new();
         // This should not be more than HASH_LENGTH but given the types of `bytes` and `target_score`, its maximum value
         // depending on user input is ceil(ln(usize::MAX * u32::MAX) / ln(3)) = 61.
@@ -160,17 +155,16 @@ impl Miner {
         }
 
         for worker in workers {
-            nonce = match worker.join().unwrap() {
-                Ok(nonce) => nonce,
-                Err(_) => continue,
+            if let Some(mined_nonce) = worker.join().unwrap() {
+                nonce.replace(mined_nonce);
             }
         }
 
-        Ok(nonce)
+        nonce
     }
 }
 
-fn _get_miner(bytes: &[u8], min_pow_score: u32, num_workers: usize) -> Result<u64, Error> {
+fn _get_miner(bytes: &[u8], min_pow_score: u32, num_workers: usize) -> Option<u64> {
     MinerBuilder::new()
         .with_num_workers(num_workers)
         .finish()
@@ -178,11 +172,11 @@ fn _get_miner(bytes: &[u8], min_pow_score: u32, num_workers: usize) -> Result<u6
 }
 
 /// Returns a closure for a miner with `num_cpus` workers.
-pub fn get_miner(min_pow_score: u32) -> impl Fn(&[u8]) -> Result<u64, Error> {
+pub fn get_miner(min_pow_score: u32) -> impl Fn(&[u8]) -> Option<u64> {
     move |bytes| _get_miner(bytes, min_pow_score, num_cpus::get())
 }
 
 /// Returns a closure for a miner with `num_workers` workers.
-pub fn get_miner_num_workers(min_pow_score: u32, num_workers: usize) -> impl Fn(&[u8]) -> Result<u64, Error> {
+pub fn get_miner_num_workers(min_pow_score: u32, num_workers: usize) -> impl Fn(&[u8]) -> Option<u64> {
     move |bytes| _get_miner(bytes, min_pow_score, num_workers)
 }
