@@ -7,7 +7,7 @@
 use iota_pow::miner::{Miner, MinerBuilder, MinerCancel};
 #[cfg(target_family = "wasm")]
 use iota_pow::wasm_miner::{SingleThreadedMiner, SingleThreadedMinerBuilder};
-use iota_types::block::{parent::Parents, payload::Payload, Block, BlockBuilder};
+use iota_types::block::{parent::Parents, payload::Payload, Block, BlockBuilder, Error as BlockError};
 
 use crate::{Client, Error, Result};
 
@@ -66,21 +66,19 @@ impl Client {
                 if let Some(worker_count) = pow_worker_count {
                     client_miner = client_miner.with_num_workers(worker_count);
                 }
-                do_pow(client_miner.finish(), min_pow_score, payload_, parents)
-                    .map(|block| (block.nonce(), Some(block)))
+                do_pow(client_miner.finish(), min_pow_score, payload_, parents).map(Some)
             });
 
             let threads = vec![pow_thread, time_thread];
 
             for t in threads {
                 match t.join().expect("failed to join threads.") {
-                    Ok(res) => {
-                        if res.0 != 0 || min_pow_score == 0 {
-                            if let Some(block) = res.1 {
-                                return Ok(block);
-                            }
+                    Ok(block) => {
+                        if let Some(block) = block {
+                            return Ok(block);
                         }
                     }
+                    Err(Error::BlockError(BlockError::NonceNotFound)) => {}
                     Err(err) => {
                         return Err(err);
                     }
@@ -97,7 +95,6 @@ impl Client {
     async fn finish_single_threaded_pow(&self, parents: Option<Parents>, payload: Option<Payload>) -> Result<Block> {
         let min_pow_score: u32 = self.get_min_pow_score().await?;
         let tips_interval: u64 = self.get_tips_interval();
-        let local_pow: bool = self.get_local_pow();
 
         loop {
             let parents = match &parents {
@@ -108,12 +105,15 @@ impl Client {
             let single_threaded_miner = SingleThreadedMinerBuilder::new()
                 .with_timeout_in_seconds(tips_interval)
                 .finish();
-            let block: Block = do_pow(single_threaded_miner, min_pow_score, payload.clone(), parents)?;
 
-            // The nonce defaults to 0 on errors (from the tips interval elapsing), we need to re-run proof-of-work with
-            // new parents.
-            if block.nonce() != 0 || min_pow_score == 0 || local_pow {
-                return Ok(block);
+            match do_pow(single_threaded_miner, min_pow_score, payload.clone(), parents) {
+                Ok(block) => {
+                    return Ok(block);
+                }
+                Err(Error::BlockError(BlockError::NonceNotFound)) => {}
+                Err(err) => {
+                    return Err(err);
+                }
             }
         }
     }
@@ -133,15 +133,15 @@ fn do_pow(
         block = block.with_payload(p);
     }
 
-    block
-        .finish_nonce(|bytes| miner.nonce(bytes, min_pow_score))
-        .map_err(Error::BlockError)
+    Ok(block.finish_nonce(|bytes| miner.nonce(bytes, min_pow_score))?)
 }
 
 // PoW timeout, if we reach this we will restart the PoW with new tips, so the final block will never be lazy.
 #[cfg(not(target_family = "wasm"))]
-fn pow_timeout(after_seconds: u64, cancel: MinerCancel) -> (u64, Option<Block>) {
+fn pow_timeout(after_seconds: u64, cancel: MinerCancel) -> Option<Block> {
     std::thread::sleep(std::time::Duration::from_secs(after_seconds));
+
     cancel.trigger();
-    (0, None)
+
+    None
 }

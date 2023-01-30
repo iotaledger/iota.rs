@@ -15,7 +15,7 @@ use crypto::{
     },
 };
 
-use crate::{score::count_trailing_zeros, Error, LN_3};
+use crate::{score::count_trailing_zeros, LN_3};
 
 // Should take around one second to reach on an average CPU, so shouldn't cause a noticeable delay on
 // `timeout_in_seconds`.
@@ -58,7 +58,7 @@ pub struct SingleThreadedMiner {
 
 impl SingleThreadedMiner {
     /// Mines a nonce for provided bytes.
-    pub fn nonce(&self, bytes: &[u8], target_score: u32) -> Result<u64, Error> {
+    pub fn nonce(&self, bytes: &[u8], target_score: u32) -> Option<u64> {
         let mut nonce = 0;
         let mut pow_digest = TritBuf::<T1B1Buf>::new();
         // This should not be more than HASH_LENGTH but given the types of `bytes` and `target_score`, its maximum value
@@ -98,7 +98,7 @@ impl SingleThreadedMiner {
 
             for (i, hash) in hasher.hash().enumerate() {
                 if count_trailing_zeros(&hash) >= target_zeros {
-                    return Ok(nonce + i as u64);
+                    return Some(nonce + i as u64);
                 }
             }
 
@@ -106,6 +106,6 @@ impl SingleThreadedMiner {
             counter += 1;
         }
 
-        Err(Error::Cancelled)
+        None
     }
 }

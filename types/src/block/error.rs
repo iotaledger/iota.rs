@@ -5,7 +5,6 @@ use alloc::string::{FromUtf8Error, String};
 use core::{convert::Infallible, fmt};
 
 use crypto::Error as CryptoError;
-use iota_pow::Error as PowError;
 use prefix_hex::Error as HexError;
 use primitive_types::U256;
 
@@ -111,7 +110,7 @@ pub enum Error {
     NonZeroStateIndexOrFoundryCounter,
     ParentsNotUniqueSorted,
     ProtocolVersionMismatch { expected: u8, actual: u8 },
-    Pow(PowError),
+    NonceNotFound,
     ReceiptFundsNotUniqueSorted,
     RemainingBytesAfterBlock,
     SelfControlledAliasOutput(AliasId),
@@ -295,8 +294,8 @@ impl fmt::Display for Error {
             Error::ProtocolVersionMismatch { expected, actual } => {
                 write!(f, "protocol version mismatch: expected {expected} but got {actual}")
             }
-            Error::Pow(e) => {
-                write!(f, "proof of work error: {e}")
+            Error::NonceNotFound => {
+                write!(f, "nonce miner could not find a nonce")
             }
             Error::ReceiptFundsNotUniqueSorted => {
                 write!(f, "receipt funds are not unique and/or sorted")
@@ -349,12 +348,6 @@ impl From<CryptoError> for Error {
 impl From<Infallible> for Error {
     fn from(error: Infallible) -> Self {
         match error {}
-    }
-}
-
-impl From<PowError> for Error {
-    fn from(error: PowError) -> Self {
-        Error::Pow(error)
     }
 }
 
