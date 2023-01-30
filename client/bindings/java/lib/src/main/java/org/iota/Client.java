@@ -669,7 +669,7 @@ public class Client extends NativeApi {
      *
      * @param aliasAddress The alias address of the device.
      * @param serialNumber The serial number of the token.
-     * @param tokenScheme The token scheme to use.  This is a value from the TokenScheme enum.
+     * @param tokenScheme The token scheme to use. This is a value from the TokenScheme enum.
      * @return A FoundryId object.
      * @throws ClientException on error.
      */

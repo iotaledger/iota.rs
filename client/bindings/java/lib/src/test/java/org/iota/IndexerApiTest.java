@@ -102,7 +102,7 @@ public class IndexerApiTest extends ApiTest {
         AliasId aliasId = client.computeAliasId(new OutputId(transactionId + "0000" ));
         int serialNumber = 1;
         TokenScheme tokenScheme = new TokenScheme("{ type: 0, meltedTokens: '0x0', mintedTokens: '0x32', maximumSupply: '0x64' }");
-        UnlockCondition[] unlockConditions = new UnlockCondition[]{new UnlockCondition("{ type: 6, address: { type: 8, aliasId: " + aliasId + "  } }")};
+        UnlockCondition[] unlockConditions = new UnlockCondition[]{new UnlockCondition("{ type: 6, address: { type: 8, aliasId: " + aliasId + " } }")};
         FoundryOutputBuilderParams params = new FoundryOutputBuilderParams()
                 .withSerialNumber(serialNumber)
                 .withTokenScheme(tokenScheme)

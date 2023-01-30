@@ -1,7 +1,6 @@
 ### `Client.basic_output_ids(query_parameters)`
 
-You can retrieve outputs from any given address using the  
-the [`Client.basic_output_ids(query_parameters)`](./../libraries/python/api_reference#build_basic_output)
+You can retrieve outputs from any given address using the [`Client.basic_output_ids(query_parameters)`](./../libraries/python/api_reference#build_basic_output)
 function.
 
 This function will query the `api/indexer/v1/outputs/basic` endpoint.

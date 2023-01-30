@@ -89,7 +89,7 @@ test {
     useJUnitPlatform()
 }
 
-version =  project.getRootProject().properties.version
+version = project.getRootProject().properties.version
 
 publishing {
     publications {

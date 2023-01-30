@@ -361,7 +361,7 @@ impl Output {
             let minimum_deposit =
                 minimum_storage_deposit(return_condition.return_address(), rent_structure, token_supply);
 
-            // `Minimum Storage Deposit` ≤  `Return Amount`
+            // `Minimum Storage Deposit` ≤ `Return Amount`
             if return_condition.amount() < minimum_deposit {
                 return Err(Error::InsufficientStorageDepositReturnAmount {
                     deposit: return_condition.amount(),

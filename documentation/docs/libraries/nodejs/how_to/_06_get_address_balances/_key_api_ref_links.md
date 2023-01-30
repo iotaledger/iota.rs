@@ -1,7 +1,6 @@
 ### `Client.basicOutputIds(queryParameters)`
 
-You can retrieve outputs from any given address using the  
-the [`Client.basicOutputIds(queryParameters)`](./../nodejs/references/classes/Client#basicoutputids)
+You can retrieve outputs from any given address using the [`Client.basicOutputIds(queryParameters)`](./../nodejs/references/classes/Client#basicoutputids)
 function.
 
 This function will query the `api/indexer/v1/outputs/basic` endpoint.

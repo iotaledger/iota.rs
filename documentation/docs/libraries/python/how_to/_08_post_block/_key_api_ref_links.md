@@ -6,4 +6,4 @@ function.
 
 If successful, the function will return the ID of the submitted block.
 
-This function queries the  `POST JSON to /api/core/v2/blocks` endpoint.
+This function queries the `POST JSON to /api/core/v2/blocks` endpoint.
