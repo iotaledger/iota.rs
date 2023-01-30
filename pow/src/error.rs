@@ -9,7 +9,4 @@ pub enum Error {
     /// The worker has been cancelled.
     #[error("the worker has been cancelled")]
     Cancelled,
-    /// Invalid proof of work score.
-    #[error("invalid proof of work score {0}, requiring {1} trailing zeros")]
-    InvalidPowScore(u32, usize),
 }

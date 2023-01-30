@@ -137,12 +137,11 @@ impl Miner {
 
         let mut nonce = 0;
         let mut pow_digest = TritBuf::<T1B1Buf>::new();
-        let target_zeros =
-            (((bytes.len() + std::mem::size_of::<u64>()) as f64 * target_score as f64).ln() / LN_3).ceil() as usize;
-
-        if target_zeros > HASH_LENGTH {
-            return Err(Error::InvalidPowScore(target_score, target_zeros));
-        }
+        // This should not be more than HASH_LENGTH but given the types of `bytes` and `target_score`, its maximum value
+        // depending on user input is ceil(ln(usize::MAX * u32::MAX) / ln(3)) = 61.
+        let target_zeros = ((((bytes.len() + std::mem::size_of::<u64>()) as f64).ln() + (target_score as f64).ln())
+            / LN_3)
+            .ceil() as usize;
 
         let worker_width = u64::MAX / self.num_workers as u64;
         let mut workers = Vec::with_capacity(self.num_workers);

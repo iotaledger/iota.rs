@@ -2,17 +2,28 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use iota_pow::{
-    miner::{MinerBuilder, MinerCancel},
+    miner::{get_miner, get_miner_num_workers, MinerBuilder, MinerCancel},
     score::PowScorer,
 };
 use iota_types::block::rand::bytes::rand_bytes;
 
 #[test]
-fn miner_nonce() {
-    let miner = MinerBuilder::new().with_num_workers(4).finish();
+fn get_miner_score() {
+    let miner = get_miner(4000);
     let mut bytes = rand_bytes(256);
 
-    let nonce = miner.nonce(&bytes[0..248], 4000).unwrap();
+    let nonce = miner(&bytes[0..248]).unwrap();
+    bytes[248..].copy_from_slice(&nonce.to_le_bytes());
+
+    assert!(PowScorer::new().score(&bytes) >= 4000f64);
+}
+
+#[test]
+fn get_miner_num_workers_score() {
+    let miner = get_miner_num_workers(4000, 4);
+    let mut bytes = rand_bytes(256);
+
+    let nonce = miner(&bytes[0..248]).unwrap();
     bytes[248..].copy_from_slice(&nonce.to_le_bytes());
 
     assert!(PowScorer::new().score(&bytes) >= 4000f64);
