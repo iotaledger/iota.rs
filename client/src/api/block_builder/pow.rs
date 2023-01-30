@@ -7,9 +7,9 @@
 use iota_pow::miner::{Miner, MinerBuilder, MinerCancel};
 #[cfg(target_family = "wasm")]
 use iota_pow::wasm_miner::{SingleThreadedMiner, SingleThreadedMinerBuilder};
-use iota_types::block::{parent::Parents, payload::Payload, Block, BlockBuilder};
+use iota_types::block::{parent::Parents, payload::Payload, Block, BlockBuilder, Error as BlockError};
 
-use crate::{Client, Result};
+use crate::{Client, Error, Result};
 
 impl Client {
     /// Finishes the block with local PoW if needed.
@@ -66,7 +66,7 @@ impl Client {
                 if let Some(worker_count) = pow_worker_count {
                     client_miner = client_miner.with_num_workers(worker_count);
                 }
-                do_pow(client_miner.finish(), min_pow_score, payload_, parents).map(|block| Some(block))
+                do_pow(client_miner.finish(), min_pow_score, payload_, parents).map(Some)
             });
 
             let threads = vec![pow_thread, time_thread];
@@ -78,6 +78,7 @@ impl Client {
                             return Ok(block);
                         }
                     }
+                    Err(Error::BlockError(BlockError::NonceNotFound)) => {}
                     Err(err) => {
                         return Err(err);
                     }
