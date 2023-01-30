@@ -4,17 +4,12 @@
 //! PoW functions.
 
 #[cfg(not(target_family = "wasm"))]
-use {
-    crate::{Client, Error, Result},
-    iota_pow::miner::{Miner, MinerBuilder, MinerCancel},
-    iota_types::block::{parent::Parents, payload::Payload, Block, BlockBuilder, Error as BlockError},
-};
+use iota_pow::miner::{Miner, MinerBuilder, MinerCancel};
 #[cfg(target_family = "wasm")]
-use {
-    crate::{Client, Result},
-    iota_pow::wasm_miner::{SingleThreadedMiner, SingleThreadedMinerBuilder},
-    iota_types::block::{parent::Parents, payload::Payload, Block, BlockBuilder},
-};
+use iota_pow::wasm_miner::{SingleThreadedMiner, SingleThreadedMinerBuilder};
+use iota_types::block::{parent::Parents, payload::Payload, Block, BlockBuilder, Error as BlockError};
+
+use crate::{Client, Error, Result};
 
 impl Client {
     /// Finishes the block with local PoW if needed.
@@ -100,7 +95,6 @@ impl Client {
     async fn finish_single_threaded_pow(&self, parents: Option<Parents>, payload: Option<Payload>) -> Result<Block> {
         let min_pow_score: u32 = self.get_min_pow_score().await?;
         let tips_interval: u64 = self.get_tips_interval();
-        let local_pow: bool = self.get_local_pow();
 
         loop {
             let parents = match &parents {
@@ -111,12 +105,15 @@ impl Client {
             let single_threaded_miner = SingleThreadedMinerBuilder::new()
                 .with_timeout_in_seconds(tips_interval)
                 .finish();
-            let block: Block = do_pow(single_threaded_miner, min_pow_score, payload.clone(), parents)?;
 
-            // The nonce defaults to 0 on errors (from the tips interval elapsing), we need to re-run proof-of-work with
-            // new parents.
-            if block.nonce() != 0 || min_pow_score == 0 || local_pow {
-                return Ok(block);
+            match do_pow(single_threaded_miner, min_pow_score, payload.clone(), parents) {
+                Ok(block) => {
+                    return Ok(block);
+                }
+                Err(Error::BlockError(BlockError::NonceNotFound)) => {}
+                Err(err) => {
+                    return Err(err);
+                }
             }
         }
     }
