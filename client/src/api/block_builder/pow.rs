@@ -9,7 +9,7 @@ use iota_pow::miner::{Miner, MinerBuilder, MinerCancel};
 use iota_pow::wasm_miner::{SingleThreadedMiner, SingleThreadedMinerBuilder};
 use iota_types::block::{parent::Parents, payload::Payload, Block, BlockBuilder};
 
-use crate::{Client, Error, Result};
+use crate::{Client, Result};
 
 impl Client {
     /// Finishes the block with local PoW if needed.
@@ -66,19 +66,16 @@ impl Client {
                 if let Some(worker_count) = pow_worker_count {
                     client_miner = client_miner.with_num_workers(worker_count);
                 }
-                do_pow(client_miner.finish(), min_pow_score, payload_, parents)
-                    .map(|block| (block.nonce(), Some(block)))
+                do_pow(client_miner.finish(), min_pow_score, payload_, parents).map(|block| Some(block))
             });
 
             let threads = vec![pow_thread, time_thread];
 
             for t in threads {
                 match t.join().expect("failed to join threads.") {
-                    Ok(res) => {
-                        if res.0 != 0 || min_pow_score == 0 {
-                            if let Some(block) = res.1 {
-                                return Ok(block);
-                            }
+                    Ok(block) => {
+                        if let Some(block) = block {
+                            return Ok(block);
                         }
                     }
                     Err(err) => {
@@ -133,15 +130,15 @@ fn do_pow(
         block = block.with_payload(p);
     }
 
-    block
-        .finish_nonce(|bytes| miner.nonce(bytes, min_pow_score))
-        .map_err(Error::BlockError)
+    Ok(block.finish_nonce(|bytes| miner.nonce(bytes, min_pow_score))?)
 }
 
 // PoW timeout, if we reach this we will restart the PoW with new tips, so the final block will never be lazy.
 #[cfg(not(target_family = "wasm"))]
-fn pow_timeout(after_seconds: u64, cancel: MinerCancel) -> (u64, Option<Block>) {
+fn pow_timeout(after_seconds: u64, cancel: MinerCancel) -> Option<Block> {
     std::thread::sleep(std::time::Duration::from_secs(after_seconds));
+
     cancel.trigger();
-    (0, None)
+
+    None
 }
