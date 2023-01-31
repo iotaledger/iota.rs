@@ -40,7 +40,7 @@ async fn test_with_node_pool_urls() {
         .unwrap()
         .finish()
         .await;
-    println!("{:#?}", r);
+    println!("{r:#?}");
 }
 
 #[tokio::test]
@@ -49,14 +49,14 @@ async fn test_get_info() {
     let r = iota_client::Client::get_node_info(DEFAULT_NODE_URL, None, None)
         .await
         .unwrap();
-    println!("{:#?}", r);
+    println!("{r:#?}");
 }
 
 #[tokio::test]
 #[ignore]
 async fn test_get_health() {
     let r = iota_client::Client::get_node_health(DEFAULT_NODE_URL).await.unwrap();
-    println!("{:#?}", r);
+    println!("{r:#?}");
 }
 
 #[tokio::test]
@@ -71,7 +71,7 @@ async fn test_get_tips() {
         .get_tips()
         .await
         .unwrap();
-    println!("{:#?}", r);
+    println!("{r:#?}");
 }
 
 #[tokio::test]
@@ -121,7 +121,7 @@ async fn test_post_message_with_transaction() {
         .finish()
         .await
         .unwrap();
-    println!("Message ID: {:?}", message_id);
+    println!("Message ID: {message_id:?}");
 }
 
 #[tokio::test]
@@ -139,7 +139,7 @@ async fn test_get_message_by_index() {
         .await
         .unwrap();
 
-    println!("{:#?}", r);
+    println!("{r:#?}");
 }
 
 #[tokio::test]
@@ -153,7 +153,7 @@ async fn test_get_message_data() {
         .unwrap();
     let message_id = setup_indexation_message().await;
     let r = client.get_message().data(&message_id).await.unwrap();
-    println!("{:#?}", r);
+    println!("{r:#?}");
 }
 
 #[tokio::test]
@@ -172,7 +172,7 @@ async fn test_get_message_metadata() {
         .await
         .unwrap();
 
-    println!("{:#?}", r);
+    println!("{r:#?}");
 }
 
 #[tokio::test]
@@ -221,7 +221,7 @@ async fn test_get_address_balance() {
         .await
         .unwrap();
 
-    println!("{:#?}", r);
+    println!("{r:#?}");
 }
 
 #[tokio::test]
@@ -242,7 +242,7 @@ async fn test_get_address_outputs() {
         .await
         .unwrap();
 
-    println!("{:#?}", r);
+    println!("{r:#?}");
 }
 
 #[tokio::test]
@@ -264,7 +264,7 @@ async fn test_get_output() {
         .await
         .unwrap();
 
-    println!("{:#?}", r);
+    println!("{r:#?}");
 }
 
 #[tokio::test]
@@ -280,7 +280,7 @@ async fn test_get_peers() {
         .await
         .unwrap();
 
-    println!("{:#?}", r);
+    println!("{r:#?}");
 }
 
 #[tokio::test]
@@ -300,7 +300,7 @@ async fn test_get_milestone() {
         .await
         .unwrap();
 
-    println!("{:#?}", r);
+    println!("{r:#?}");
 }
 
 #[tokio::test]
@@ -316,7 +316,7 @@ async fn test_get_milestone_utxo_changes() {
         .await
         .unwrap();
 
-    println!("{:#?}", r);
+    println!("{r:#?}");
 }
 
 #[tokio::test]
@@ -332,7 +332,7 @@ async fn test_get_receipts() {
         .await
         .unwrap();
 
-    println!("{:#?}", r);
+    println!("{r:#?}");
 }
 
 #[tokio::test]
@@ -348,7 +348,7 @@ async fn get_receipts_migrated_at() {
         .await
         .unwrap();
 
-    println!("{:#?}", r);
+    println!("{r:#?}");
 }
 
 #[tokio::test]
@@ -364,7 +364,7 @@ async fn test_get_treasury() {
         .await
         .unwrap();
 
-    println!("{:#?}", r);
+    println!("{r:#?}");
 }
 
 #[tokio::test]
@@ -382,5 +382,5 @@ async fn test_get_included_message() {
         .await
         .unwrap();
 
-    println!("{:#?}", r);
+    println!("{r:#?}");
 }

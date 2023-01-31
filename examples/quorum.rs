@@ -29,7 +29,7 @@ async fn main() -> Result<()> {
     let seed = Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap()).unwrap());
 
     let seed_balance = iota.get_balance(&seed).finish().await.unwrap();
-    println!("Account balance: {:?}i\n", seed_balance);
+    println!("Account balance: {seed_balance:?}i\n");
 
     Ok(())
 }

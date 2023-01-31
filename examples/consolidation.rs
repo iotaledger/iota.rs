@@ -28,6 +28,6 @@ async fn main() -> Result<()> {
     // Here all funds will be send to the address with the lowest index in the range
     let address = consolidate_funds(&iota, &seed, 0, address_range).await?;
 
-    println!("Funds consolidated to {}", address);
+    println!("Funds consolidated to {address}");
     Ok(())
 }

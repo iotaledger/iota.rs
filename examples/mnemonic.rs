@@ -23,7 +23,7 @@ async fn main() -> Result<()> {
 
     // Generate a random mnemonic
     let mnemonic = Client::generate_mnemonic()?;
-    println!("Generated mnemonic: {:?}", mnemonic);
+    println!("Generated mnemonic: {mnemonic:?}");
 
     // This example uses dotenv, which is not safe for use in production
     dotenv().ok();
@@ -45,6 +45,6 @@ async fn main() -> Result<()> {
         .await
         .unwrap();
 
-    println!("List of generated public addresses:\n{:?}\n", addresses);
+    println!("List of generated public addresses:\n{addresses:?}\n");
     Ok(())
 }

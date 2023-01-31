@@ -93,8 +93,7 @@ async fn main() -> Result<()> {
             .id()
             .0;
         println!(
-            "Transaction {} sent: https://explorer.iota.org/devnet/message/{}",
-            index, message_id
+            "Transaction {index} sent: https://explorer.iota.org/devnet/message/{message_id}"
         );
         sent_messages.push(message_id);
     }
@@ -105,7 +104,7 @@ async fn main() -> Result<()> {
     // Send all funds back to first address
     let total_balance = iota.get_balance(&seed).finish().await?;
 
-    println!("Total balance: {}", total_balance);
+    println!("Total balance: {total_balance}");
 
     let message = iota
         .message()

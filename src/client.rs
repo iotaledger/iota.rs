@@ -306,7 +306,7 @@ impl FromStr for Api {
             "GetMilestone" => Self::GetMilestone,
             "GetMessage" => Self::GetMessage,
             "GetBalance" => Self::GetBalance,
-            _ => return Err(format!("unknown api kind `{}`", s)),
+            _ => return Err(format!("unknown api kind `{s}`")),
         };
         Ok(t)
     }
@@ -569,7 +569,7 @@ impl Client {
         let mut entropy = [0u8; 32];
         utils::rand::fill(&mut entropy)?;
         let mnemonic = wordlist::encode(&entropy, &crypto::keys::bip39::wordlist::ENGLISH)
-            .map_err(|e| crate::Error::MnemonicError(format!("{:?}", e)))?;
+            .map_err(|e| crate::Error::MnemonicError(format!("{e:?}")))?;
         entropy.zeroize();
         Ok(mnemonic)
     }
@@ -580,7 +580,7 @@ impl Client {
         let mnemonic = mnemonic.trim();
         // first we check if the mnemonic is valid to give meaningful errors
         crypto::keys::bip39::wordlist::verify(mnemonic, &crypto::keys::bip39::wordlist::ENGLISH)
-            .map_err(|e| crate::Error::InvalidMnemonic(format!("{:?}", e)))?;
+            .map_err(|e| crate::Error::InvalidMnemonic(format!("{e:?}")))?;
         let mut mnemonic_seed = [0u8; 64];
         mnemonic_to_seed(mnemonic, "", &mut mnemonic_seed);
         Ok(hex::encode(mnemonic_seed))
@@ -996,7 +996,7 @@ impl Client {
     /// GET /api/v1/milestones/{index} endpoint
     /// Get the milestone by the given index.
     pub async fn get_milestone(&self, index: u32) -> Result<MilestoneResponse> {
-        let path = &format!("api/v1/milestones/{}", index);
+        let path = &format!("api/v1/milestones/{index}");
 
         let resp: SuccessBody<MilestoneResponseDto> = self
             .node_manager
@@ -1016,7 +1016,7 @@ impl Client {
     /// GET /api/v1/milestones/{index}/utxo-changes endpoint
     /// Get the milestone by the given index.
     pub async fn get_milestone_utxo_changes(&self, index: u32) -> Result<MilestoneUTXOChanges> {
-        let path = &format!("api/v1/milestones/{}/utxo-changes", index);
+        let path = &format!("api/v1/milestones/{index}/utxo-changes");
 
         let resp: SuccessBody<MilestoneUTXOChanges> = self
             .node_manager
@@ -1039,7 +1039,7 @@ impl Client {
     /// GET /api/v1/receipts/{migratedAt} endpoint
     /// Get the receipts by the given milestone index.
     pub async fn get_receipts_migrated_at(&self, milestone_index: u32) -> Result<Vec<ReceiptDto>> {
-        let path = &format!("api/v1/receipts/{}", milestone_index);
+        let path = &format!("api/v1/receipts/{milestone_index}");
 
         let resp: SuccessBody<ReceiptsResponse> = self.node_manager.get_request(path, None, GET_API_TIMEOUT).await?;
 
@@ -1059,7 +1059,7 @@ impl Client {
     /// GET /api/v1/transactions/{transactionId}/included-message
     /// Returns the included message of the transaction.
     pub async fn get_included_message(&self, transaction_id: &TransactionId) -> Result<Message> {
-        let path = &format!("api/v1/transactions/{}/included-message", transaction_id);
+        let path = &format!("api/v1/transactions/{transaction_id}/included-message");
 
         let resp: SuccessBody<MessageResponse> = self.node_manager.get_request(path, None, GET_API_TIMEOUT).await?;
         Ok(Message::try_from(&resp.data.0)?)

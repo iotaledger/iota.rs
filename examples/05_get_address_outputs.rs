@@ -18,6 +18,6 @@ async fn main() -> Result<()> {
 
     let outputs = iota.get_address().outputs(address, Default::default()).await.unwrap();
 
-    println!("The outputs of address {:?} are: {:?}", address, outputs);
+    println!("The outputs of address {address:?} are: {outputs:?}");
     Ok(())
 }

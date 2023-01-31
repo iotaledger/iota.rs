@@ -38,5 +38,5 @@ async fn main() {
         .into_string()
         .unwrap();
 
-    println!("{}", faucet_response);
+    println!("{faucet_response}");
 }

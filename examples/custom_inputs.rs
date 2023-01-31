@@ -28,7 +28,7 @@ async fn main() -> Result<()> {
     println!("{:?}", addresses[0]);
 
     let outputs = iota.get_address().outputs(&addresses[0], Default::default()).await?;
-    println!("{:?}", outputs);
+    println!("{outputs:?}");
 
     let message = iota
         .message()
