@@ -11,7 +11,7 @@ use std::env;
 async fn main() {
     // Create a client instance
     let iota = Client::builder()
-        .with_node("https://api.thin-hornet-0.h.chrysalis-devnet.iota.cafe") // Insert the node here
+        .with_node("https://api.lb-0.h.chrysalis-devnet.iota.cafe") // Insert the node here
         .unwrap()
         .finish()
         .await
