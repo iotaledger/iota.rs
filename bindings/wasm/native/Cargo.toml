@@ -20,9 +20,9 @@ crate-type = ["cdylib", "rlib"]
 console_error_panic_hook = "0.1.7"
 js-sys = "0.3.55"
 serde = { version = "1.0.130", features = ["derive"] }
-serde_json = { version = "1.0.68", default-features = false }
-wasm-bindgen = { version = "0.2.78", features = ["serde-serialize"] }
-wasm-bindgen-futures = { version = "0.4.28", default-features = false }
+serde_json = { version = "1.0.91", default-features = false }
+wasm-bindgen = { version = "0.2.83", features = ["serde-serialize"] }
+wasm-bindgen-futures = { version = "0.4.33", default-features = false }
 hex = { version = "0.4.3", default-features = false }
 iota-client = { path = "../../..", features = ["wasm", "tls"], default-features = false }
 
