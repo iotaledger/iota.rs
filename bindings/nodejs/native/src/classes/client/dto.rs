@@ -40,7 +40,7 @@ impl TryFrom<MessageRegularEssenceDto> for RegularEssence {
             .into_iter()
             .map(|input| {
                 UtxoInput::from_str(&input)
-                    .unwrap_or_else(|_| panic!("invalid input: {}", input))
+                    .unwrap_or_else(|_| panic!("invalid input: {input}"))
                     .into()
             })
             .collect();

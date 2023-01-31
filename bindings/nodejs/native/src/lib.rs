@@ -89,14 +89,14 @@ pub(crate) fn remove_client(id: &str) {
 
 fn panic_to_response_message(panic: Box<dyn Any>) -> String {
     let msg = if let Some(message) = panic.downcast_ref::<String>() {
-        format!("Internal error: {}", message)
+        format!("Internal error: {message}")
     } else if let Some(message) = panic.downcast_ref::<&str>() {
-        format!("Internal error: {}", message)
+        format!("Internal error: {message}")
     } else {
         "Internal error".to_string()
     };
     let current_backtrace = Backtrace::new();
-    format!("{}\n\n{:?}", msg, current_backtrace)
+    format!("{msg}\n\n{current_backtrace:?}")
 }
 
 pub(crate) async fn convert_async_panics<T, F: Future<Output = Result<T>>>(f: impl FnOnce() -> F) -> Result<T> {

@@ -329,40 +329,40 @@ declare_types! {
                 let mut builder = ClientBuilder::new().with_local_pow(ref_.local_pow).with_tips_interval(ref_.tips_interval);
 
                 for node in &ref_.nodes {
-                    builder = builder.with_node(node.as_str()).unwrap_or_else(|_| panic!("invalid node url: {}", node));
+                    builder = builder.with_node(node.as_str()).unwrap_or_else(|_| panic!("invalid node url: {node}"));
                 }
                 for (permanode, auth_options) in &ref_.permanodes {
                     match auth_options{
                         Some(auth_options) => {
                             if let (Some(name), Some(password)) = (auth_options.basic_auth_name.as_ref(), auth_options.basic_auth_password.as_ref()){
-                                builder = builder.with_permanode(permanode, auth_options.jwt.clone(), Some((name, password))).unwrap_or_else(|_| panic!("invalid node url: {} or auth parameters", permanode));
+                                builder = builder.with_permanode(permanode, auth_options.jwt.clone(), Some((name, password))).unwrap_or_else(|_| panic!("invalid node url: {permanode} or auth parameters"));
                             } else{
-                                builder = builder.with_permanode(permanode, auth_options.jwt.clone(), None).unwrap_or_else(|_| panic!("invalid node url: {} or auth parameters", permanode));
+                                builder = builder.with_permanode(permanode, auth_options.jwt.clone(), None).unwrap_or_else(|_| panic!("invalid node url: {permanode} or auth parameters"));
                             }
                         },
                         None => {
-                            builder = builder.with_permanode(permanode, None, None).unwrap_or_else(|_| panic!("invalid node url: {} or auth parameters", permanode));
+                            builder = builder.with_permanode(permanode, None, None).unwrap_or_else(|_| panic!("invalid node url: {permanode} or auth parameters"));
                         },
                     }
                 }
                 if let Some((node, auth_options)) = &ref_.auth{
                     if let (Some(name), Some(password)) = (auth_options.basic_auth_name.as_ref(), auth_options.basic_auth_password.as_ref()){
-                        builder = builder.with_node_auth(node, auth_options.jwt.clone(), Some((name, password))).unwrap_or_else(|_| panic!("invalid node url: {} or auth parameters", node));
+                        builder = builder.with_node_auth(node, auth_options.jwt.clone(), Some((name, password))).unwrap_or_else(|_| panic!("invalid node url: {node} or auth parameters"));
                     } else{
-                        builder = builder.with_node_auth(node, auth_options.jwt.clone(), None).unwrap_or_else(|_| panic!("invalid node url: {} or auth parameters", node));
+                        builder = builder.with_node_auth(node, auth_options.jwt.clone(), None).unwrap_or_else(|_| panic!("invalid node url: {node} or auth parameters"));
                     }
                 }
                 if let Some((node, auth_options)) = &ref_.primary_node{
                     match auth_options{
                         Some(auth_options) => {
                             if let (Some(name), Some(password)) = (auth_options.basic_auth_name.as_ref(), auth_options.basic_auth_password.as_ref()){
-                                builder = builder.with_primary_node(node, auth_options.jwt.clone(), Some((name, password))).unwrap_or_else(|_| panic!("invalid node url: {} or auth parameters", node));
+                                builder = builder.with_primary_node(node, auth_options.jwt.clone(), Some((name, password))).unwrap_or_else(|_| panic!("invalid node url: {node} or auth parameters"));
                             }else{
-                                builder = builder.with_primary_node(node, auth_options.jwt.clone(), None).unwrap_or_else(|_| panic!("invalid node url: {} or auth parameters", node));
+                                builder = builder.with_primary_node(node, auth_options.jwt.clone(), None).unwrap_or_else(|_| panic!("invalid node url: {node} or auth parameters"));
                             }
                         },
                         None => {
-                            builder = builder.with_primary_node(node, None, None).unwrap_or_else(|_| panic!("invalid node url: {} or auth parameters", node));
+                            builder = builder.with_primary_node(node, None, None).unwrap_or_else(|_| panic!("invalid node url: {node} or auth parameters"));
                         }
                     }
                 }
@@ -370,13 +370,13 @@ declare_types! {
                     match auth_options{
                         Some(auth_options) => {
                             if let (Some(name), Some(password)) = (auth_options.basic_auth_name.as_ref(), auth_options.basic_auth_password.as_ref()){
-                                builder = builder.with_primary_pow_node(node, auth_options.jwt.clone(), Some((name, password))).unwrap_or_else(|_| panic!("invalid node url: {} or auth parameters", node));
+                                builder = builder.with_primary_pow_node(node, auth_options.jwt.clone(), Some((name, password))).unwrap_or_else(|_| panic!("invalid node url: {node} or auth parameters"));
                             }else{
-                                builder = builder.with_primary_pow_node(node, auth_options.jwt.clone(), None).unwrap_or_else(|_| panic!("invalid node url: {} or auth parameters", node));
+                                builder = builder.with_primary_pow_node(node, auth_options.jwt.clone(), None).unwrap_or_else(|_| panic!("invalid node url: {node} or auth parameters"));
                             }
                         },
                         None => {
-                            builder = builder.with_primary_pow_node(node, None, None).unwrap_or_else(|_| panic!("invalid node url: {} or auth parameters", node));
+                            builder = builder.with_primary_pow_node(node, None, None).unwrap_or_else(|_| panic!("invalid node url: {node} or auth parameters"));
                         }
                     }
                 }

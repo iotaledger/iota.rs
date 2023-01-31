@@ -226,7 +226,7 @@ declare_types! {
             let transaction_data_string = cx.argument::<JsString>(0)?.value();
             let transaction_data: PreparedTransactionData = serde_json::from_str(&transaction_data_string).expect("invalid prepared transaction data");
             let seed = cx.argument::<JsString>(1)?.value();
-            let seed = Seed::from_bytes(&hex::decode(&seed).expect("invalid seed hex"));
+            let seed = Seed::from_bytes(&hex::decode(seed).expect("invalid seed hex"));
             let inputs_range  = if cx.len() > 4 {
                 let start: Option<usize> = match cx.argument_opt(2) {
                     Some(arg) => {

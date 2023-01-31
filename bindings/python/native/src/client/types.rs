@@ -751,7 +751,7 @@ impl TryFrom<PreparedTransactionData> for RustPreparedTransactionData {
                     recorder
                         .clone()
                         .try_into()
-                        .unwrap_or_else(|_| panic!("invalid AddressIndexRecorder {:?}", data))
+                        .unwrap_or_else(|_| panic!("invalid AddressIndexRecorder {data:?}"))
                 })
                 .collect(),
         })
@@ -1421,14 +1421,14 @@ impl TryFrom<RegularEssence> for RustRegularEssence {
                 indexation_payload
                     .indexation
                     .as_ref()
-                    .unwrap_or_else(|| panic!("Invalid IndexationPayload: {:?}", indexation_payload))[0]
+                    .unwrap_or_else(|| panic!("Invalid IndexationPayload: {indexation_payload:?}"))[0]
                     .index
                     .clone()
                     .as_bytes(),
                 &(indexation_payload
                     .indexation
                     .as_ref()
-                    .unwrap_or_else(|| panic!("Invalid IndexationPayload: {:?}", indexation_payload))[0]
+                    .unwrap_or_else(|| panic!("Invalid IndexationPayload: {indexation_payload:?}"))[0]
                     .data)
                     .clone(),
             )
@@ -1491,14 +1491,14 @@ impl TryFrom<Payload> for RustPayload {
                 payload
                     .indexation
                     .as_ref()
-                    .unwrap_or_else(|| panic!("Invalid Payload: {:?}", payload))[0]
+                    .unwrap_or_else(|| panic!("Invalid Payload: {payload:?}"))[0]
                     .index
                     .clone()
                     .as_bytes(),
                 &payload
                     .indexation
                     .as_ref()
-                    .unwrap_or_else(|| panic!("Invalid Payload: {:?}", payload))[0]
+                    .unwrap_or_else(|| panic!("Invalid Payload: {payload:?}"))[0]
                     .data,
             )?;
             Ok(RustPayload::Indexation(Box::new(indexation)))

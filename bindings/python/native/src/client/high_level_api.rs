@@ -471,7 +471,7 @@ impl Client {
     ) -> Result<(usize, bool)> {
         let seed = RustSeed::from_bytes(&hex::decode(&seed[..])?);
         let address =
-            RustAddress::try_from_bech32(&address).unwrap_or_else(|_| panic!("invalid Input Address: {}", address));
+            RustAddress::try_from_bech32(&address).unwrap_or_else(|_| panic!("invalid Input Address: {address}"));
         let result = crate::block_on(async {
             search_address(&seed, &bech32_hrp, account_index, start_index..end_index, &address).await
         })?;
