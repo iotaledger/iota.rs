@@ -92,9 +92,7 @@ async fn main() -> Result<()> {
             .await?
             .id()
             .0;
-        println!(
-            "Transaction {index} sent: https://explorer.iota.org/devnet/message/{message_id}"
-        );
+        println!("Transaction {index} sent: https://explorer.iota.org/devnet/message/{message_id}");
         sent_messages.push(message_id);
     }
     // only check last message, if this gets confirmed all other messages should also be confirmed
