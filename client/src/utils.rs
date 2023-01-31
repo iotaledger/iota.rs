@@ -53,7 +53,7 @@ pub fn hex_public_key_to_bech32_address(hex: &str, bech32_hrp: &str) -> Result<S
 
     let address = Blake2b256::digest(public_key)
         .try_into()
-        .map_err(|_e| Error::Blake2b256Error("Hashing the public key failed."))?;
+        .map_err(|_e| Error::Blake2b256("hashing the public key failed."))?;
     let address: Ed25519Address = Ed25519Address::new(address);
     Ok(Address::Ed25519(address).to_bech32(bech32_hrp))
 }
@@ -178,13 +178,12 @@ impl Client {
 
     /// UTF-8 encodes the `tag` of a given TaggedDataPayload.
     pub fn tag_to_utf8(payload: &TaggedDataPayload) -> Result<String> {
-        String::from_utf8(payload.tag().to_vec()).map_err(|_| Error::TaggedDataError("found invalid UTF-8".to_string()))
+        String::from_utf8(payload.tag().to_vec()).map_err(|_| Error::TaggedData("found invalid UTF-8".to_string()))
     }
 
     /// UTF-8 encodes the `data` of a given TaggedDataPayload.
     pub fn data_to_utf8(payload: &TaggedDataPayload) -> Result<String> {
-        String::from_utf8(payload.data().to_vec())
-            .map_err(|_| Error::TaggedDataError("found invalid UTF-8".to_string()))
+        String::from_utf8(payload.data().to_vec()).map_err(|_| Error::TaggedData("found invalid UTF-8".to_string()))
     }
 
     /// UTF-8 encodes both the `tag` and `data` of a given TaggedDataPayload.

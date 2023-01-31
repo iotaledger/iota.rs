@@ -166,7 +166,7 @@ impl<'a> ClientBlockBuilder<'a> {
             .finish_output(self.client.get_token_supply().await?)?;
         self.outputs.push(output);
         if !OUTPUT_COUNT_RANGE.contains(&(self.outputs.len() as u16)) {
-            return Err(crate::Error::BlockError(iota_types::block::Error::InvalidOutputCount(
+            return Err(crate::Error::Block(iota_types::block::Error::InvalidOutputCount(
                 TryIntoBoundedU16Error::Truncated(self.outputs.len()),
             )));
         }
@@ -177,7 +177,7 @@ impl<'a> ClientBlockBuilder<'a> {
     pub fn with_outputs(mut self, outputs: Vec<Output>) -> Result<Self> {
         self.outputs.extend(outputs);
         if !OUTPUT_COUNT_RANGE.contains(&(self.outputs.len() as u16)) {
-            return Err(crate::Error::BlockError(iota_types::block::Error::InvalidOutputCount(
+            return Err(crate::Error::Block(iota_types::block::Error::InvalidOutputCount(
                 TryIntoBoundedU16Error::Truncated(self.outputs.len()),
             )));
         }
@@ -193,7 +193,7 @@ impl<'a> ClientBlockBuilder<'a> {
             .finish_output(self.client.get_token_supply().await?)?;
         self.outputs.push(output);
         if !OUTPUT_COUNT_RANGE.contains(&(self.outputs.len() as u16)) {
-            return Err(crate::Error::BlockError(iota_types::block::Error::InvalidOutputCount(
+            return Err(crate::Error::Block(iota_types::block::Error::InvalidOutputCount(
                 TryIntoBoundedU16Error::Truncated(self.outputs.len()),
             )));
         }
@@ -341,7 +341,7 @@ impl<'a> ClientBlockBuilder<'a> {
         current_time: u32,
     ) -> Result<(u64, Address)> {
         let (amount, address, unlock_conditions) = match output {
-            Output::Treasury(_) => return Err(Error::OutputError("Treasury output is no supported")),
+            Output::Treasury(_) => return Err(Error::Output("Treasury output is no supported")),
             Output::Basic(ref output) => {
                 // PANIC: safe to unwrap as BasicOutput has to have an AddressUnlockCondition.
                 let address = output.unlock_conditions().address().unwrap();
@@ -386,7 +386,7 @@ impl<'a> ClientBlockBuilder<'a> {
 
             // build tagged_data
             let index = TaggedDataPayload::new(index.expect("no tagged_data tag").to_vec(), (*data).clone())
-                .map_err(|e| Error::TaggedDataError(e.to_string()))?;
+                .map_err(|e| Error::TaggedData(e.to_string()))?;
             payload = Payload::from(index);
         }
 

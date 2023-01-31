@@ -181,7 +181,7 @@ impl Client {
                 }
             }
         }
-        Err(Error::TangleInclusionError(block_id.to_string()))
+        Err(Error::TangleInclusion(block_id.to_string()))
     }
 
     /// Function to find inputs from addresses for a provided amount (useful for offline signing), ignoring outputs with

@@ -78,7 +78,7 @@ impl Client {
                             return Ok(block);
                         }
                     }
-                    Err(Error::BlockError(BlockError::NonceNotFound)) => {}
+                    Err(Error::Block(BlockError::NonceNotFound)) => {}
                     Err(err) => {
                         return Err(err);
                     }
@@ -110,7 +110,7 @@ impl Client {
                 Ok(block) => {
                     return Ok(block);
                 }
-                Err(Error::BlockError(BlockError::NonceNotFound)) => {}
+                Err(Error::Block(BlockError::NonceNotFound)) => {}
                 Err(err) => {
                     return Err(err);
                 }

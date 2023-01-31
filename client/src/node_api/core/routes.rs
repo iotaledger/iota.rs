@@ -95,10 +95,9 @@ impl Client {
         let mut url = crate::node_manager::builder::validate_url(Url::parse(url)?)?;
         if let Some(auth) = &auth {
             if let Some((name, password)) = &auth.basic_auth_name_pwd {
-                url.set_username(name)
-                    .map_err(|_| crate::Error::UrlAuthError("username"))?;
+                url.set_username(name).map_err(|_| crate::Error::UrlAuth("username"))?;
                 url.set_password(Some(password))
-                    .map_err(|_| crate::Error::UrlAuthError("password"))?;
+                    .map_err(|_| crate::Error::UrlAuth("password"))?;
             }
         }
         let path = "api/core/v2/info";
@@ -134,7 +133,7 @@ impl Client {
 
         resp.tips
             .iter()
-            .map(|tip| BlockId::from_str(tip).map_err(Error::BlockError))
+            .map(|tip| BlockId::from_str(tip).map_err(Error::Block))
             .collect::<Result<Vec<_>>>()
     }
 
@@ -160,7 +159,7 @@ impl Client {
         {
             Ok(res) => res,
             Err(e) => {
-                if let Error::NodeError(e) = e {
+                if let Error::Node(e) = e {
                     let fallback_to_local_pow = self.get_fallback_to_local_pow();
                     // hornet and bee return different error blocks
                     if (e == *"No available nodes with remote Pow"
@@ -199,7 +198,7 @@ impl Client {
                             .post_request_json(path, timeout, serde_json::to_value(block_dto)?, true)
                             .await?
                     } else {
-                        return Err(Error::NodeError(e));
+                        return Err(Error::Node(e));
                     }
                 } else {
                     return Err(e);
@@ -229,7 +228,7 @@ impl Client {
         {
             Ok(res) => res,
             Err(e) => {
-                if let Error::NodeError(e) = e {
+                if let Error::Node(e) = e {
                     let fallback_to_local_pow = self.get_fallback_to_local_pow();
                     // hornet and bee return different error blocks
                     if (e == *"No available nodes with remote Pow"
@@ -266,7 +265,7 @@ impl Client {
                             .post_request_bytes(path, timeout, &block_with_local_pow.pack_to_vec(), true)
                             .await?
                     } else {
-                        return Err(Error::NodeError(e));
+                        return Err(Error::Node(e));
                     }
                 } else {
                     return Err(e);

@@ -29,22 +29,22 @@ pub enum Error {
     ApiTypes(#[from] iota_types::api::error::Error),
     /// Blake2b256 Error
     #[error("{0}")]
-    Blake2b256Error(&'static str),
+    Blake2b256(&'static str),
     /// Block dtos error
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
-    BlockDtoError(#[from] iota_types::block::DtoError),
+    BlockDto(#[from] iota_types::block::DtoError),
     /// Block types error
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
-    BlockError(#[from] iota_types::block::Error),
+    Block(#[from] iota_types::block::Error),
     /// The wallet account has enough funds, but split on too many outputs
     #[error("the wallet account has enough funds, but split on too many outputs: {0}, max. is 128, consolidate them")]
     ConsolidationRequired(usize),
     /// Crypto.rs error
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
-    CryptoError(#[from] crypto::Error),
+    Crypto(#[from] crypto::Error),
     /// Address not found
     #[error("address: {address} not found in range: {range}")]
     InputAddressNotFound {
@@ -93,7 +93,7 @@ pub enum Error {
     MissingInputWithEd25519Address,
     /// Error on API request
     #[error("node error: {0}")]
-    NodeError(String),
+    Node(String),
     /// The block doesn't need to be promoted or reattached
     #[error("block ID `{0}` doesn't need to be promoted or reattached")]
     NoNeedPromoteOrReattach(String),
@@ -111,7 +111,7 @@ pub enum Error {
     NoBalanceForNativeTokenRemainder,
     /// Output Error
     #[error("output error: {0}")]
-    OutputError(&'static str),
+    Output(&'static str),
     /// PlaceholderSecretManager can't be used for address generation or signing
     #[error("placeholderSecretManager can't be used for address generation or signing")]
     PlaceholderSecretManager,
@@ -124,7 +124,7 @@ pub enum Error {
     /// Prefix hex string convert error
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
-    PrefixHexError(#[from] prefix_hex::Error),
+    PrefixHex(#[from] prefix_hex::Error),
     /// Error on quorum because not enough nodes are available
     #[error("not enough nodes for quorum: {available_nodes} < {minimum_threshold}")]
     QuorumPoolSizeError {
@@ -154,7 +154,7 @@ pub enum Error {
     /// reqwest error
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
-    ReqwestError(#[from] reqwest::Error),
+    Reqwest(#[from] reqwest::Error),
     /// Specifically used for `TryInfo` implementations for `SecretManager`.
     #[error("cannot unwrap a SecretManager: type mismatch!")]
     SecretManagerMismatch,
@@ -163,15 +163,15 @@ pub enum Error {
     HealthyNodePoolEmpty,
     /// Error when building tagged_data blocks
     #[error("error when building tagged_data block: {0}")]
-    TaggedDataError(String),
+    TaggedData(String),
     /// The block cannot be included into the Tangle
     #[error("block ID `{0}` couldn't get included into the Tangle")]
-    TangleInclusionError(String),
+    TangleInclusion(String),
     #[cfg(not(target_family = "wasm"))]
     /// Tokio task join error
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
-    TaskJoinError(#[from] tokio::task::JoinError),
+    TaskJoin(#[from] tokio::task::JoinError),
     /// Local time doesn't match the time of the latest milestone timestamp
     #[error(
         "local time {current_time} doesn't match the time of the latest milestone timestamp: {milestone_timestamp}"
@@ -194,17 +194,17 @@ pub enum Error {
     /// Unpack error
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
-    UnpackError(#[from] packable::error::UnpackError<iota_types::block::Error, UnexpectedEOF>),
+    Unpack(#[from] packable::error::UnpackError<iota_types::block::Error, UnexpectedEOF>),
     /// URL auth error
     #[error("can't set {0} to URL")]
-    UrlAuthError(&'static str),
+    UrlAuth(&'static str),
     /// URL error
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
-    UrlError(#[from] url::ParseError),
+    Url(#[from] url::ParseError),
     /// URL validation error
     #[error("{0}")]
-    UrlValidationError(String),
+    UrlValidation(String),
 
     //////////////////////////////////////////////////////////////////////
     // Input Selection
@@ -258,7 +258,7 @@ pub enum Error {
     #[cfg(feature = "participation")]
     #[error("`{0}`")]
     #[serde(serialize_with = "display_string")]
-    IoError(#[from] std::io::Error),
+    Io(#[from] std::io::Error),
 
     //////////////////////////////////////////////////////////////////////
     // Ledger Nano
@@ -295,7 +295,7 @@ pub enum Error {
     #[cfg(feature = "mqtt")]
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
-    MqttClientError(#[from] rumqttc::ClientError),
+    MqttClient(#[from] rumqttc::ClientError),
     /// MQTT connection not found (all nodes MQTT's are disabled)
     #[cfg(feature = "mqtt")]
     #[error("mQTT connection not found (all nodes have the MQTT plugin disabled)")]
@@ -334,7 +334,7 @@ pub enum Error {
     #[cfg(feature = "stronghold")]
     #[error("Stronghold reported a procedure error: {0}")]
     #[serde(serialize_with = "display_string")]
-    StrongholdProcedureError(#[from] iota_stronghold::procedures::ProcedureError),
+    StrongholdProcedure(#[from] iota_stronghold::procedures::ProcedureError),
 }
 
 // map most errors to a single error but there are some errors that
