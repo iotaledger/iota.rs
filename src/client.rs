@@ -419,7 +419,7 @@ impl Client {
         let mut network_nodes: HashMap<String, Vec<(NodeInfo, Node)>> = HashMap::new();
         for node in nodes {
             // Put the healthy node url into the network_nodes
-            if let Ok(info) = Client::get_node_info(&node.url.to_string(), None, None).await {
+            if let Ok(info) = Client::get_node_info(node.url.as_ref(), None, None).await {
                 if info.is_healthy {
                     match network_nodes.get_mut(&info.network_id) {
                         Some(network_id_entry) => {
@@ -1237,7 +1237,7 @@ impl Client {
     /// Transforms a hex encoded public key to a bech32 encoded address
     pub async fn hex_public_key_to_bech32_address(&self, hex: &str, bech32_hrp: Option<&str>) -> crate::Result<String> {
         let mut public_key = [0u8; ED25519_ADDRESS_LENGTH];
-        hex::decode_to_slice(&hex, &mut public_key)?;
+        hex::decode_to_slice(hex, &mut public_key)?;
 
         let address = Blake2b256::digest(&public_key)
             .try_into()

@@ -114,7 +114,7 @@ fn get_cc_system_include_dirs() -> Result<Vec<PathBuf>, String> {
         .to_command()
         .env("LANG", "C")
         .env("LC_MESSAGES", "C")
-        .args(&["-v", "-x", "c", "-E", "-"])
+        .args(["-v", "-x", "c", "-E", "-"])
         .stderr(Stdio::piped())
         .stdin(Stdio::piped())
         .stdout(Stdio::inherit())

@@ -215,7 +215,7 @@ fn poll_mqtt(
                                     } else {
                                         Ok(TopicEvent {
                                             topic,
-                                            payload: String::from_utf8_lossy(&*p.payload).to_string(),
+                                            payload: String::from_utf8_lossy(&p.payload).to_string(),
                                         })
                                     }
                                 };

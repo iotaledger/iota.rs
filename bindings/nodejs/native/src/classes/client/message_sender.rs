@@ -204,7 +204,7 @@ declare_types! {
                 let client_task = ClientTask {
                     client_id: ref_.client_id.clone(),
                     api: Api::PrepareTransaction {
-                        seed: ref_.seed.as_ref().map(|seed| Seed::from_bytes(&hex::decode(&seed).expect("invalid seed hex"))),
+                        seed: ref_.seed.as_ref().map(|seed| Seed::from_bytes(&hex::decode(seed).expect("invalid seed hex"))),
                         index: ref_.index.clone(),
                         data: ref_.data.clone(),
                         parents: ref_.parents.clone(),
@@ -294,7 +294,7 @@ declare_types! {
                 let client_task = ClientTask {
                     client_id: ref_.client_id.clone(),
                     api: Api::Send {
-                        seed: ref_.seed.as_ref().map(|seed| Seed::from_bytes(&hex::decode(&seed).expect("invalid seed hex"))),
+                        seed: ref_.seed.as_ref().map(|seed| Seed::from_bytes(&hex::decode(seed).expect("invalid seed hex"))),
                         index: ref_.index.clone(),
                         data: ref_.data.clone(),
                         parents: ref_.parents.clone(),
