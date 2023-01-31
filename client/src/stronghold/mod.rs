@@ -407,6 +407,7 @@ impl StrongholdAdapter {
 
         // Purge the key, setting it to None then.
         self.key_provider.lock().await.take();
+        debug!("cleared stronghold key");
     }
 
     /// Get timeout for the key clearing task.
