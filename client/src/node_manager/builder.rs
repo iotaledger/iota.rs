@@ -94,10 +94,9 @@ impl NodeManagerBuilder {
         let mut url = validate_url(Url::parse(url)?)?;
         if let Some(auth) = &auth {
             if let Some((name, password)) = &auth.basic_auth_name_pwd {
-                url.set_username(name)
-                    .map_err(|_| crate::Error::UrlAuthError("username"))?;
+                url.set_username(name).map_err(|_| crate::Error::UrlAuth("username"))?;
                 url.set_password(Some(password))
-                    .map_err(|_| crate::Error::UrlAuthError("password"))?;
+                    .map_err(|_| crate::Error::UrlAuth("password"))?;
             }
         }
         self.primary_node.replace(NodeDto::Node(Node {
@@ -112,10 +111,9 @@ impl NodeManagerBuilder {
         let mut url = validate_url(Url::parse(url)?)?;
         if let Some(auth) = &auth {
             if let Some((name, password)) = &auth.basic_auth_name_pwd {
-                url.set_username(name)
-                    .map_err(|_| crate::Error::UrlAuthError("username"))?;
+                url.set_username(name).map_err(|_| crate::Error::UrlAuth("username"))?;
                 url.set_password(Some(password))
-                    .map_err(|_| crate::Error::UrlAuthError("password"))?;
+                    .map_err(|_| crate::Error::UrlAuth("password"))?;
             }
         }
         self.primary_pow_node.replace(NodeDto::Node(Node {
@@ -130,10 +128,9 @@ impl NodeManagerBuilder {
         let mut url = validate_url(Url::parse(url)?)?;
         if let Some(auth) = &auth {
             if let Some((name, password)) = &auth.basic_auth_name_pwd {
-                url.set_username(name)
-                    .map_err(|_| crate::Error::UrlAuthError("username"))?;
+                url.set_username(name).map_err(|_| crate::Error::UrlAuth("username"))?;
                 url.set_password(Some(password))
-                    .map_err(|_| crate::Error::UrlAuthError("password"))?;
+                    .map_err(|_| crate::Error::UrlAuth("password"))?;
             }
         }
         match self.permanodes {
@@ -166,10 +163,9 @@ impl NodeManagerBuilder {
         let mut url = validate_url(Url::parse(url)?)?;
         if let Some(auth) = &auth {
             if let Some((name, password)) = &auth.basic_auth_name_pwd {
-                url.set_username(name)
-                    .map_err(|_| crate::Error::UrlAuthError("username"))?;
+                url.set_username(name).map_err(|_| crate::Error::UrlAuth("username"))?;
                 url.set_password(Some(password))
-                    .map_err(|_| crate::Error::UrlAuthError("password"))?;
+                    .map_err(|_| crate::Error::UrlAuth("password"))?;
             }
         }
         self.nodes.insert(NodeDto::Node(Node {
@@ -256,7 +252,7 @@ impl Default for NodeManagerBuilder {
 /// Validates if the url starts with http or https
 pub fn validate_url(url: Url) -> Result<Url> {
     if url.scheme() != "http" && url.scheme() != "https" {
-        return Err(Error::UrlValidationError(format!("invalid scheme: {}", url.scheme())));
+        return Err(Error::UrlValidation(format!("invalid scheme: {}", url.scheme())));
     }
     Ok(url)
 }

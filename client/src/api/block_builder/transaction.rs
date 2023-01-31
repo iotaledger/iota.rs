@@ -156,7 +156,7 @@ pub fn verify_semantic(
         current_time,
     );
 
-    semantic_validation(context, inputs.as_slice(), transaction.unlocks()).map_err(Error::BlockError)
+    Ok(semantic_validation(context, inputs.as_slice(), transaction.unlocks())?)
 }
 
 /// Verifies that the transaction payload doesn't exceed the block size limit with 8 parents.

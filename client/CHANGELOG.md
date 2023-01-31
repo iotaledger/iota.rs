@@ -50,6 +50,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `{MqttManager, MqttTopicManager}::new()` take now `&'a Client` instead of `&'a mut Client`;
 - `Error::Pow` to `Error::NonceNotFound`;
 - `finish_nonce` takes a `F: Fn(&[u8]) -> Option<u64>` instead of a `F: Fn(&[u8]) -> Result<u64, PowError>`;
+- Remove `Error` suffix on some `Error` variants;
 
 ### Removed
 

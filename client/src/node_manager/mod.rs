@@ -247,7 +247,7 @@ impl NodeManager {
                             }
 
                             _ => {
-                                error.replace(crate::Error::NodeError(
+                                error.replace(crate::Error::Node(
                                     res.into_text()
                                         .await
                                         .unwrap_or_else(|_| "couldn't convert node response into text".to_string()),
@@ -268,7 +268,7 @@ impl NodeManager {
         let res = result
             .into_iter()
             .max_by_key(|v| v.1)
-            .ok_or_else(|| error.unwrap_or_else(|| Error::NodeError("couldn't get a result from any node".into())))?;
+            .ok_or_else(|| error.unwrap_or_else(|| Error::Node("couldn't get a result from any node".into())))?;
 
         // Return if quorum is false or check if quorum was reached
         if !self.quorum
@@ -306,9 +306,9 @@ impl NodeManager {
                         // Without quorum it's enough if we got one response
                         match status {
                             200 => return Ok(res_text),
-                            _ => error.replace(crate::Error::NodeError(
+                            _ => error.replace(crate::Error::Node(
                                 String::from_utf8(res_text)
-                                    .map_err(|_| Error::NodeError("non UTF8 node response".into()))?,
+                                    .map_err(|_| Error::Node("non UTF8 node response".into()))?,
                             )),
                         };
                     }
@@ -321,7 +321,7 @@ impl NodeManager {
                 }
             }
         }
-        Err(error.unwrap_or_else(|| Error::NodeError("couldn't get a result from any node".into())))
+        Err(error.unwrap_or_else(|| Error::Node("couldn't get a result from any node".into())))
     }
 
     pub(crate) async fn post_request_bytes<T: serde::de::DeserializeOwned>(
@@ -334,7 +334,7 @@ impl NodeManager {
         // primary_pow_node should only be used for post request with remote PoW
         let nodes = self.get_nodes(path, None, !local_pow, false)?;
         if nodes.is_empty() {
-            return Err(Error::NodeError("no available nodes with remote Pow".into()));
+            return Err(Error::Node("no available nodes with remote Pow".into()));
         }
         let mut error = None;
         // Send requests
@@ -346,7 +346,7 @@ impl NodeManager {
                             Ok(res) => return Ok(res),
                             Err(e) => error.replace(e),
                         },
-                        _ => error.replace(crate::Error::NodeError(
+                        _ => error.replace(crate::Error::Node(
                             res.into_text()
                                 .await
                                 .unwrap_or_else(|_| "couldn't convert node response into text".to_string()),
@@ -354,11 +354,11 @@ impl NodeManager {
                     };
                 }
                 Err(e) => {
-                    error.replace(crate::Error::NodeError(e.to_string()));
+                    error.replace(crate::Error::Node(e.to_string()));
                 }
             }
         }
-        Err(error.unwrap_or_else(|| Error::NodeError("couldn't get a result from any node".into())))
+        Err(error.unwrap_or_else(|| Error::Node("couldn't get a result from any node".into())))
     }
 
     pub(crate) async fn post_request_json<T: serde::de::DeserializeOwned>(
@@ -371,7 +371,7 @@ impl NodeManager {
         // primary_pow_node should only be used for post request with remote PoW
         let nodes = self.get_nodes(path, None, !local_pow, false)?;
         if nodes.is_empty() {
-            return Err(Error::NodeError("no available nodes with remote Pow".into()));
+            return Err(Error::Node("no available nodes with remote Pow".into()));
         }
         let mut error = None;
         // Send requests
@@ -383,7 +383,7 @@ impl NodeManager {
                             Ok(res) => return Ok(res),
                             Err(e) => error.replace(e),
                         },
-                        _ => error.replace(crate::Error::NodeError(
+                        _ => error.replace(crate::Error::Node(
                             res.into_text()
                                 .await
                                 .unwrap_or_else(|_| "couldn't convert node response into text".to_string()),
@@ -391,10 +391,10 @@ impl NodeManager {
                     };
                 }
                 Err(e) => {
-                    error.replace(crate::Error::NodeError(e.to_string()));
+                    error.replace(crate::Error::Node(e.to_string()));
                 }
             }
         }
-        Err(error.unwrap_or_else(|| Error::NodeError("couldn't get a result from any node".into())))
+        Err(error.unwrap_or_else(|| Error::Node("couldn't get a result from any node".into())))
     }
 }

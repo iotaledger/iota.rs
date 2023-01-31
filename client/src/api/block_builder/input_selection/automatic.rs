@@ -230,9 +230,9 @@ impl<'a> ClientBlockBuilder<'a> {
                             continue;
                         }
                         // Not enough balance for a remainder.
-                        Err(crate::Error::BlockError(block_error)) => match block_error {
+                        Err(crate::Error::Block(block_error)) => match block_error {
                             iota_types::block::Error::InvalidStorageDepositAmount { .. } => {
-                                cached_error.replace(crate::Error::BlockError(block_error));
+                                cached_error.replace(crate::Error::Block(block_error));
                                 continue;
                             }
                             _ => return Err(block_error.into()),
