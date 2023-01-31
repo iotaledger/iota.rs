@@ -35,10 +35,10 @@ async fn main() -> Result<()> {
             match event.topic.as_str() {
                 "messages" => {
                     let message: Message = serde_json::from_str(&event.payload).unwrap();
-                    println!("{:?}", event);
-                    println!("{:?}", message);
+                    println!("{event:?}");
+                    println!("{message:?}");
                 }
-                _ => println!("{:?}", event),
+                _ => println!("{event:?}"),
             }
             tx.lock().unwrap().send(()).unwrap();
         })

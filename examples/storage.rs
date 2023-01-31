@@ -37,5 +37,5 @@ async fn main() {
         .unwrap();
 
     let message_id = storage_adapter.get("message_id").await.unwrap();
-    println!("Message ID from storage: {:?}", message_id);
+    println!("Message ID from storage: {message_id:?}");
 }
