@@ -18,5 +18,5 @@ async fn main() {
         .unwrap();
 
     let peers = iota.get_peers().await.unwrap();
-    println!("Peers: {:?}", peers);
+    println!("Peers: {peers:?}");
 }

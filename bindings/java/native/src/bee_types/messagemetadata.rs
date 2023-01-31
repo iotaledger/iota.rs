@@ -46,7 +46,7 @@ impl core::fmt::Display for MessageMetadata {
 
 impl core::fmt::Debug for MessageMetadata {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
-        write!(f, "MessageMetadata({})", self)
+        write!(f, "MessageMetadata({self})")
     }
 }
 

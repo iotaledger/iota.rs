@@ -68,7 +68,7 @@ fn main() {
 fn gen_bindings(include_dirs: Vec<PathBuf>, target: &str) {
     let include_headers: Vec<_> = INCLUDE_SYS_H
         .iter()
-        .map(|h| search_file_in_directory(&include_dirs, h).unwrap_or_else(|_| panic!("Could not find header {}", h)))
+        .map(|h| search_file_in_directory(&include_dirs, h).unwrap_or_else(|_| panic!("Could not find header {h}")))
         .collect();
 
     let src_dir = Path::new(RUST_SRC_DIR);
@@ -98,12 +98,12 @@ fn gen_bindings(include_dirs: Vec<PathBuf>, target: &str) {
     }
 
     // Hook up cargo reruns
-    println!("cargo:rerun-if-changed={}", RUST_SRC_DIR);
+    println!("cargo:rerun-if-changed={RUST_SRC_DIR}");
     for dir in &include_dirs {
         println!("cargo:rerun-if-changed={}", dir.display());
     }
     // if the generated files were deleted (e.g by gradle -q clean), regenerate them
-    println!("cargo:rerun-if-changed={}", out_dir);
+    println!("cargo:rerun-if-changed={out_dir}");
 }
 
 fn get_cc_system_include_dirs() -> Result<Vec<PathBuf>, String> {
@@ -114,7 +114,7 @@ fn get_cc_system_include_dirs() -> Result<Vec<PathBuf>, String> {
         .to_command()
         .env("LANG", "C")
         .env("LC_MESSAGES", "C")
-        .args(&["-v", "-x", "c", "-E", "-"])
+        .args(["-v", "-x", "c", "-E", "-"])
         .stderr(Stdio::piped())
         .stdin(Stdio::piped())
         .stdout(Stdio::inherit())
@@ -139,11 +139,11 @@ fn get_cc_system_include_dirs() -> Result<Vec<PathBuf>, String> {
     const END_PAT: &str = "\nEnd of search list.\n";
     let start_includes = cc_output
         .find(BEGIN_PAT)
-        .ok_or_else(|| format!("No '{}' in output from C compiler", BEGIN_PAT))?
+        .ok_or_else(|| format!("No '{BEGIN_PAT}' in output from C compiler"))?
         + BEGIN_PAT.len();
     let end_includes = cc_output[start_includes..]
         .find(END_PAT)
-        .ok_or_else(|| format!("No '{}' in output from C compiler", END_PAT))?
+        .ok_or_else(|| format!("No '{END_PAT}' in output from C compiler"))?
         + start_includes;
 
     Ok(cc_output[start_includes..end_includes]
@@ -177,7 +177,7 @@ where
     bindings = include_dirs.iter().fold(bindings, |acc, x| {
         acc.clang_arg("-I".to_string() + x.as_ref().to_str().unwrap())
     });
-    println!("Generate binding for {:?}", c_headers);
+    println!("Generate binding for {c_headers:?}");
     bindings = bindings.rust_target(RustTarget::Stable_1_19);
     bindings = if target.contains("windows") {
         // see https://github.com/servo/rust-bindgen/issues/578

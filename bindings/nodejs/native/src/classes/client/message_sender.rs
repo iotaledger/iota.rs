@@ -204,7 +204,7 @@ declare_types! {
                 let client_task = ClientTask {
                     client_id: ref_.client_id.clone(),
                     api: Api::PrepareTransaction {
-                        seed: ref_.seed.as_ref().map(|seed| Seed::from_bytes(&hex::decode(&seed).expect("invalid seed hex"))),
+                        seed: ref_.seed.as_ref().map(|seed| Seed::from_bytes(&hex::decode(seed).expect("invalid seed hex"))),
                         index: ref_.index.clone(),
                         data: ref_.data.clone(),
                         parents: ref_.parents.clone(),
@@ -226,7 +226,7 @@ declare_types! {
             let transaction_data_string = cx.argument::<JsString>(0)?.value();
             let transaction_data: PreparedTransactionData = serde_json::from_str(&transaction_data_string).expect("invalid prepared transaction data");
             let seed = cx.argument::<JsString>(1)?.value();
-            let seed = Seed::from_bytes(&hex::decode(&seed).expect("invalid seed hex"));
+            let seed = Seed::from_bytes(&hex::decode(seed).expect("invalid seed hex"));
             let inputs_range  = if cx.len() > 4 {
                 let start: Option<usize> = match cx.argument_opt(2) {
                     Some(arg) => {
@@ -294,7 +294,7 @@ declare_types! {
                 let client_task = ClientTask {
                     client_id: ref_.client_id.clone(),
                     api: Api::Send {
-                        seed: ref_.seed.as_ref().map(|seed| Seed::from_bytes(&hex::decode(&seed).expect("invalid seed hex"))),
+                        seed: ref_.seed.as_ref().map(|seed| Seed::from_bytes(&hex::decode(seed).expect("invalid seed hex"))),
                         index: ref_.index.clone(),
                         data: ref_.data.clone(),
                         parents: ref_.parents.clone(),

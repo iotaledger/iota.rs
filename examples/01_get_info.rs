@@ -24,5 +24,5 @@ async fn main() {
         .unwrap();
 
     let info = iota.get_info().await.unwrap();
-    println!("Node Info: {:?}", info);
+    println!("Node Info: {info:?}");
 }

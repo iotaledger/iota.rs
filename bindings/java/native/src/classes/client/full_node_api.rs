@@ -150,7 +150,7 @@ impl Client {
         let output_ids: Vec<RustUtxoInput> = output_ids
             .unwrap_or_default()
             .into_iter()
-            .map(|input| RustUtxoInput::from_str(&input).unwrap_or_else(|_| panic!("invalid input: {}", input)))
+            .map(|input| RustUtxoInput::from_str(&input).unwrap_or_else(|_| panic!("invalid input: {input}")))
             .collect();
         let output_metadata_vec = crate::block_on(async {
             self.0

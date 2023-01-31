@@ -23,7 +23,7 @@ impl core::fmt::Display for Chain {
 
 impl core::fmt::Debug for Chain {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
-        write!(f, "Chain({})", self)
+        write!(f, "Chain({self})")
     }
 }
 

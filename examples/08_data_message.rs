@@ -28,6 +28,6 @@ async fn main() -> Result<()> {
     );
 
     let fetched_message_ids = iota.get_message().index("Hello").await.unwrap();
-    println!("Messages with Hello index: {:?}", fetched_message_ids);
+    println!("Messages with Hello index: {fetched_message_ids:?}");
     Ok(())
 }

@@ -11,7 +11,7 @@ use std::sync::{mpsc::channel, Arc, Mutex};
 async fn main() -> Result<()> {
     // Create a client instance
     let mut iota = Client::builder()
-        .with_node("https://api.thin-hornet-0.h.chrysalis-devnet.iota.cafe")?
+        .with_node("https://api.lb-0.h.chrysalis-devnet.iota.cafe")?
         .finish()
         .await?;
 
@@ -35,10 +35,10 @@ async fn main() -> Result<()> {
             match event.topic.as_str() {
                 "messages" => {
                     let message: Message = serde_json::from_str(&event.payload).unwrap();
-                    println!("{:?}", event);
-                    println!("{:?}", message);
+                    println!("{event:?}");
+                    println!("{message:?}");
                 }
-                _ => println!("{:?}", event),
+                _ => println!("{event:?}"),
             }
             tx.lock().unwrap().send(()).unwrap();
         })

@@ -27,7 +27,7 @@ async fn main() -> Result<()> {
     let seed_2 = Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_2").unwrap())?);
     let total_balance = iota.get_balance(&seed).with_initial_address_index(0).finish().await?;
 
-    println!("Total balance: {}", total_balance);
+    println!("Total balance: {total_balance}");
 
     let message = iota
         .message()

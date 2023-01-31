@@ -73,6 +73,6 @@ impl core::fmt::Display for IndexationPayload {
 
 impl core::fmt::Debug for IndexationPayload {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
-        write!(f, "IndexationPayload({})", self)
+        write!(f, "IndexationPayload({self})")
     }
 }

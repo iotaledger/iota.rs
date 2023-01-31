@@ -53,7 +53,7 @@ impl core::fmt::Display for MessageWrap {
 
 impl core::fmt::Debug for MessageWrap {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
-        write!(f, "MessageWrap({})", self)
+        write!(f, "MessageWrap({self})")
     }
 }
 
@@ -87,7 +87,7 @@ impl core::fmt::Display for Message {
 
 impl core::fmt::Debug for Message {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
-        write!(f, "Message({})", self)
+        write!(f, "Message({self})")
     }
 }
 

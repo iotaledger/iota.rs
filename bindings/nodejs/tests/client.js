@@ -7,7 +7,7 @@ const TestVectors = require('../../../tests/fixtures/test_vectors.json')
 const seed = '256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2'
 
 const client = new ClientBuilder()
-  .node('https://api.thin-hornet-0.h.chrysalis-devnet.iota.cafe')
+  .node('https://api.lb-0.h.chrysalis-devnet.iota.cafe')
   .disableNodeSync()
   .brokerOptions({ timeout: 50 })
   .localPow(true)

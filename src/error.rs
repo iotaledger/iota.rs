@@ -112,7 +112,7 @@ pub enum Error {
     /// ureq error
     #[cfg(feature = "sync")]
     #[error("{0}")]
-    UreqError(#[from] ureq::Error),
+    UreqError(Box<ureq::Error>),
     /// Error from RestAPI calls with unexpected status code response
     #[cfg(any(feature = "async", feature = "wasm"))]
     #[error("Response error with status code {0}: {1}")]
@@ -152,4 +152,11 @@ pub enum Error {
     /// Rw lock failed.
     #[error("Rw lock failed")]
     PoisonError,
+}
+
+#[cfg(feature = "sync")]
+impl From<ureq::Error> for Error {
+    fn from(error: ureq::Error) -> Self {
+        Error::UreqError(Box::new(error))
+    }
 }

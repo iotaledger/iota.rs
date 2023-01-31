@@ -528,7 +528,7 @@ impl Task for ClientTask {
     fn complete(self, mut cx: TaskContext, result: Result<Self::Output, Self::Error>) -> JsResult<Self::JsEvent> {
         match result {
             Ok(s) => Ok(cx.string(s)),
-            Err(e) => cx.throw_error(format!("ClientTask error: {:?}", e)),
+            Err(e) => cx.throw_error(format!("ClientTask error: {e:?}")),
         }
     }
 }

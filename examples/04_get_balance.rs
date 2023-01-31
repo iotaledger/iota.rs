@@ -27,7 +27,7 @@ async fn main() {
     let seed = Seed::from_bytes(&hex::decode(env::var("NONSECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap()).unwrap());
 
     let seed_balance = iota.get_balance(&seed).finish().await.unwrap();
-    println!("Account balance: {:?}i\n", seed_balance);
+    println!("Account balance: {seed_balance:?}i\n");
 
     let address = "atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r";
 
@@ -36,5 +36,5 @@ async fn main() {
 
     let outputs = iota.get_address().outputs(address, Default::default()).await.unwrap();
 
-    println!("The outputs of address {:?} are: {:?}", address, outputs);
+    println!("The outputs of address {address:?} are: {outputs:?}");
 }

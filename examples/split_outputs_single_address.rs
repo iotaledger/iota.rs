@@ -83,10 +83,7 @@ async fn main() -> Result<()> {
             .unwrap()
             .id()
             .0;
-        println!(
-            "Transaction {} sent: https://explorer.iota.org/devnet/message/{}",
-            index, message_id
-        );
+        println!("Transaction {index} sent: https://explorer.iota.org/devnet/message/{message_id}");
         sent_messages.push(message_id);
     }
     for message_id in sent_messages {

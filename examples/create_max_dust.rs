@@ -92,10 +92,7 @@ async fn main() -> Result<()> {
             .await?
             .id()
             .0;
-        println!(
-            "Transaction {} sent: https://explorer.iota.org/devnet/message/{}",
-            index, message_id
-        );
+        println!("Transaction {index} sent: https://explorer.iota.org/devnet/message/{message_id}");
         sent_messages.push(message_id);
     }
     // only check last message, if this gets confirmed all other messages should also be confirmed
@@ -105,7 +102,7 @@ async fn main() -> Result<()> {
     // Send all funds back to first address
     let total_balance = iota.get_balance(&seed).finish().await?;
 
-    println!("Total balance: {}", total_balance);
+    println!("Total balance: {total_balance}");
 
     let message = iota
         .message()

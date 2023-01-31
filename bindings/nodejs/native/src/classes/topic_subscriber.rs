@@ -33,7 +33,7 @@ impl Task for WaitForMessageTask {
     fn complete(self, mut cx: TaskContext, result: Result<Self::Output, Self::Error>) -> JsResult<Self::JsEvent> {
         match result {
             Ok(s) => Ok(cx.string(s)),
-            Err(e) => cx.throw_error(format!("WaitForMessageTask error: {:?}", e)),
+            Err(e) => cx.throw_error(format!("WaitForMessageTask error: {e:?}")),
         }
     }
 }
@@ -96,7 +96,7 @@ impl Task for TopicTask {
     fn complete(self, mut cx: TaskContext, result: Result<Self::Output, Self::Error>) -> JsResult<Self::JsEvent> {
         match result {
             Ok(_) => Ok(cx.undefined()),
-            Err(e) => cx.throw_error(format!("SubUnsubTask error: {:?}", e)),
+            Err(e) => cx.throw_error(format!("SubUnsubTask error: {e:?}")),
         }
     }
 }

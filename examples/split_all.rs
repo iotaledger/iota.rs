@@ -29,7 +29,7 @@ async fn main() -> Result<()> {
     let total_balance = iota.get_balance(&seed_1).finish().await?;
     let mut available = total_balance;
 
-    println!("Total balance: {}i", total_balance);
+    println!("Total balance: {total_balance}i");
 
     let addresses_from_seed_2 = iota
         .get_addresses(&seed_2)

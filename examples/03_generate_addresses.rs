@@ -27,7 +27,7 @@ async fn main() {
 
     // Generate addresses with default account index and range
     let addresses = iota.get_addresses(&seed).finish().await.unwrap();
-    println!("List of generated public addresses:\n{:?}\n", addresses);
+    println!("List of generated public addresses:\n{addresses:?}\n");
 
     // Generate addresses with custom account index and range
     let addresses = iota
@@ -38,11 +38,11 @@ async fn main() {
         .await
         .unwrap();
 
-    println!("List of generated public addresses:\n{:?}\n", addresses);
+    println!("List of generated public addresses:\n{addresses:?}\n");
 
     // Generate public (false) & internal (true) addresses
     let addresses = iota.get_addresses(&seed).with_range(0..4).get_all().await.unwrap();
-    println!("List of generated public and internal addresses:\n{:?}\n", addresses);
+    println!("List of generated public and internal addresses:\n{addresses:?}\n");
 
     // Generate public addresses offline with the bech32_hrp defined
     let addresses = GetAddressesBuilder::new(&seed)
@@ -53,5 +53,5 @@ async fn main() {
         .await
         .unwrap();
 
-    println!("List of offline generated public addresses:\n{:?}\n", addresses);
+    println!("List of offline generated public addresses:\n{addresses:?}\n");
 }

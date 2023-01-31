@@ -62,7 +62,7 @@ impl core::fmt::Display for PreparedTransactionData {
 
 impl core::fmt::Debug for PreparedTransactionData {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
-        write!(f, "PreparedTransactionData({})", self)
+        write!(f, "PreparedTransactionData({self})")
     }
 }
 
@@ -129,7 +129,7 @@ impl core::fmt::Display for AddressIndexRecorder {
 
 impl core::fmt::Debug for AddressIndexRecorder {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
-        write!(f, "AddressIndexRecorder({})", self)
+        write!(f, "AddressIndexRecorder({self})")
     }
 }
 

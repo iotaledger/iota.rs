@@ -27,10 +27,10 @@ async fn main() {
     println!("Message ID: {}\n", message.id().0);
 
     let fetched_message_ids = iota.get_message().index("Hello").await.unwrap();
-    println!("{:#?}\n", fetched_message_ids);
+    println!("{fetched_message_ids:#?}\n");
 
     let fetched_msg = iota.get_message().data(&fetched_message_ids[0]).await.unwrap();
-    println!("{:#?}\n", fetched_msg);
+    println!("{fetched_msg:#?}\n");
 
     if let Payload::Indexation(payload) = fetched_msg.payload().as_ref().unwrap() {
         println!(

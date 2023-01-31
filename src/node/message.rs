@@ -52,7 +52,7 @@ impl<'a> GetMessageBuilder<'a> {
     /// GET /api/v1/messages/{messageID} endpoint
     /// Consume the builder and find a message by its identifer. This method returns the given message object.
     pub async fn data(self, message_id: &MessageId) -> Result<Message> {
-        let path = &format!("api/v1/messages/{}", message_id);
+        let path = &format!("api/v1/messages/{message_id}");
 
         let resp: SuccessBody<MessageResponse> = self
             .client
@@ -66,7 +66,7 @@ impl<'a> GetMessageBuilder<'a> {
     /// GET /api/v1/messages/{messageID}/metadata endpoint
     /// Consume the builder and find a message by its identifer. This method returns the given message metadata.
     pub async fn metadata(self, message_id: &MessageId) -> Result<MessageMetadata> {
-        let path = &format!("api/v1/messages/{}/metadata", message_id);
+        let path = &format!("api/v1/messages/{message_id}/metadata");
 
         let resp: SuccessBody<MessageMetadata> = self
             .client
@@ -80,7 +80,7 @@ impl<'a> GetMessageBuilder<'a> {
     /// GET /api/v1/messages/{messageID}/raw endpoint
     /// Consume the builder and find a message by its identifer. This method returns the given message raw data.
     pub async fn raw(self, message_id: &MessageId) -> Result<String> {
-        let path = &format!("api/v1/messages/{}/raw", message_id);
+        let path = &format!("api/v1/messages/{message_id}/raw");
         let resp = self
             .client
             .node_manager
@@ -93,7 +93,7 @@ impl<'a> GetMessageBuilder<'a> {
     /// GET /api/v1/messages/{messageID}/children endpoint
     /// Consume the builder and returns the list of message IDs that reference a message by its identifier.
     pub async fn children(self, message_id: &MessageId) -> Result<Box<[MessageId]>> {
-        let path = &format!("api/v1/messages/{}/children", message_id);
+        let path = &format!("api/v1/messages/{message_id}/children");
 
         let resp: SuccessBody<MessageChildrenResponse> = self
             .client
