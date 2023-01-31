@@ -53,7 +53,7 @@ pub fn hex_public_key_to_bech32_address(hex: &str, bech32_hrp: &str) -> Result<S
 
     let address = Blake2b256::digest(public_key)
         .try_into()
-        .map_err(|_e| Error::Blake2b256("Hashing the public key failed."))?;
+        .map_err(|_e| Error::Blake2b256("hashing the public key failed."))?;
     let address: Ed25519Address = Ed25519Address::new(address);
     Ok(Address::Ed25519(address).to_bech32(bech32_hrp))
 }
