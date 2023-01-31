@@ -189,6 +189,6 @@ jobs:
           #
           # - RUSTSEC-2021-0145: `atty` potential unaligned read.
           #   - Waiting for https://github.com/mackwic/colored/pull/122 to be merged.
-          args: --file client/bindings/nodejs/Cargo.lock --deny warnings --ignore RUSTSEC-2021-0145
+          args: --file bindings/nodejs/native/Cargo.lock --deny warnings --ignore RUSTSEC-2021-0145
 
       # TODO: Check the JavaScript code too
