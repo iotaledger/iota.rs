@@ -27,7 +27,7 @@ impl core::fmt::Display for NodeInfoWrapper {
 
 impl core::fmt::Debug for NodeInfoWrapper {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
-        write!(f, "NodeInfoWrapper({})", self)
+        write!(f, "NodeInfoWrapper({self})")
     }
 }
 
@@ -120,7 +120,7 @@ impl core::fmt::Display for InfoResponse {
 
 impl core::fmt::Debug for InfoResponse {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
-        write!(f, "InfoResponse({})", self)
+        write!(f, "InfoResponse({self})")
     }
 }
 

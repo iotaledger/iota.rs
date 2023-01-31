@@ -129,7 +129,7 @@ impl MilestonePayload {
     pub fn validate(&self, applicable_public_keys: Vec<String>, min_threshold: usize) -> Result<()> {
         match self.rust_milestone.validate(&applicable_public_keys, min_threshold) {
             Ok(()) => Ok(()),
-            Err(e) => Err(anyhow::anyhow!(format!("{:?}", e))),
+            Err(e) => Err(anyhow::anyhow!(format!("{e:?}"))),
         }
     }
 
