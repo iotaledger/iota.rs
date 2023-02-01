@@ -1,4 +1,4 @@
-// Copyright 2023s IOTA Stiftung
+// Copyright 2023 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
 //! Response types for the public participation endpoints.
