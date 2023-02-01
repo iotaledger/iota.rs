@@ -62,7 +62,7 @@ impl<'a> ClientBlockBuilder<'a> {
 
         // Input selection
         let selected_transaction_data = if self.inputs.is_some() {
-            self.get_custom_inputs(governance_transition, &protocol_parameters, self.allow_burning)
+            self.get_custom_inputs(governance_transition, &protocol_parameters, self.burn.clone())
                 .await?
         } else {
             self.get_inputs(&protocol_parameters).await?
