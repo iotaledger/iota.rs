@@ -4,6 +4,7 @@
 //! cargo run --example foundry --release
 
 use iota_client::{
+    api::input_selection::Burn,
     block::{
         address::AliasAddress,
         output::{
@@ -24,7 +25,7 @@ use iota_client::{
 };
 use primitive_types::U256;
 
-/// In this example we will create an foundry output
+/// In this example we will create a foundry output
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -85,6 +86,7 @@ async fn main() -> Result<()> {
     //////////////////////////////////////////////////
     // create foundry output and mint 70 native tokens
     //////////////////////////////////////////////////
+
     let alias_output_id = get_alias_output_id(block.payload().unwrap())?;
     let alias_id = AliasId::from(&alias_output_id);
     let token_scheme = TokenScheme::Simple(SimpleTokenScheme::new(
@@ -223,13 +225,12 @@ async fn main() -> Result<()> {
     //////////////////////////////////
     // send native token without foundry
     //////////////////////////////////
+
     let basic_output_id = get_basic_output_id_with_native_tokens(block.payload().unwrap())?;
-    let outputs = vec![
-        basic_output_builder
-            .clone()
-            .add_native_token(NativeToken::new(token_id, U256::from(50u8))?)
-            .finish_output(token_supply)?,
-    ];
+    let outputs = vec![basic_output_builder
+        .clone()
+        .add_native_token(NativeToken::new(token_id, U256::from(50u8))?)
+        .finish_output(token_supply)?];
 
     let block = client
         .block()
@@ -247,17 +248,16 @@ async fn main() -> Result<()> {
     //////////////////////////////////
     // burn native token without foundry
     //////////////////////////////////
+
     let basic_output_id = get_basic_output_id_with_native_tokens(block.payload().unwrap())?;
-    let outputs = vec![
-        basic_output_builder
-            .add_native_token(NativeToken::new(token_id, U256::from(30u8))?)
-            .finish_output(token_supply)?,
-    ];
+    let outputs = vec![basic_output_builder
+        .add_native_token(NativeToken::new(token_id, U256::from(30u8))?)
+        .finish_output(token_supply)?];
 
     let block = client
         .block()
         .with_secret_manager(&secret_manager)
-        .with_burning_allowed(true)
+        .with_burn(Burn::new())
         .with_input(basic_output_id.into())?
         .with_outputs(outputs)?
         .finish()
