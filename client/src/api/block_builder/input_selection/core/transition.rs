@@ -7,8 +7,8 @@ use super::{
 };
 use crate::{
     block::output::{
-        feature::Feature, AliasOutput, AliasOutputBuilder, ChainId, FoundryOutput, FoundryOutputBuilder, NftOutput,
-        NftOutputBuilder, Output, OutputId,
+        AliasOutput, AliasOutputBuilder, ChainId, FoundryOutput, FoundryOutputBuilder, NftOutput, NftOutputBuilder,
+        Output, OutputId,
     },
     error::Result,
     secret::types::InputSigningData,
@@ -39,7 +39,7 @@ impl InputSelection {
         }
 
         // Remove potential sender feature because it will not be needed anymore as it only needs to be verified once.
-        let features = input.features().iter().cloned().filter(Feature::is_sender);
+        let features = input.features().iter().cloned().filter(|feature| !feature.is_sender());
 
         let output = AliasOutputBuilder::from(input)
             .with_alias_id(alias_id)
@@ -76,7 +76,7 @@ impl InputSelection {
         }
 
         // Remove potential sender feature because it will not be needed anymore as it only needs to be verified once.
-        let features = input.features().iter().cloned().filter(Feature::is_sender);
+        let features = input.features().iter().cloned().filter(|feature| !feature.is_sender());
 
         let output = NftOutputBuilder::from(input)
             .with_nft_id(nft_id)
