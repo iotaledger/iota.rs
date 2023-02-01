@@ -5,7 +5,7 @@
 use std::collections::HashSet;
 
 use iota_types::{
-    api::{
+    api::core::{
         dto::{PeerDto, ReceiptDto},
         response::{
             BlockMetadataResponse, InfoResponse as NodeInfo, OutputWithMetadataResponse, TreasuryResponse,

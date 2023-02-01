@@ -6,7 +6,7 @@
 use std::str::FromStr;
 
 use iota_types::{
-    api::{
+    api::core::{
         dto::{PeerDto, ReceiptDto},
         response::{
             BlockMetadataResponse, BlockResponse, InfoResponse, MilestoneResponse, OutputWithMetadataResponse,

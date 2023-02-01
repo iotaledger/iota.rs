@@ -4,7 +4,7 @@
 #[cfg(not(target_family = "wasm"))]
 use {
     crate::NetworkInfo,
-    iota_types::{api::response::InfoResponse, block::protocol::ProtocolParameters},
+    iota_types::{api::core::response::InfoResponse, block::protocol::ProtocolParameters},
     std::collections::HashMap,
     std::{
         collections::HashSet,

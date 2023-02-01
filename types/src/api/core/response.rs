@@ -1,8 +1,8 @@
-// Copyright 2020-2022 IOTA Stiftung
+// Copyright 2020-2023 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
-    api::dto::{LedgerInclusionStateDto, PeerDto, ReceiptDto},
+    api::core::dto::{LedgerInclusionStateDto, PeerDto, ReceiptDto},
     block::{
         output::dto::{OutputDto, OutputMetadataDto},
         payload::dto::MilestonePayloadDto,

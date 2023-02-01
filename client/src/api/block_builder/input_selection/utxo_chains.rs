@@ -7,7 +7,7 @@ use std::str::FromStr;
 
 use crypto::keys::slip10::Chain;
 use iota_types::{
-    api::response::OutputWithMetadataResponse,
+    api::core::response::OutputWithMetadataResponse,
     block::{
         address::Address,
         output::{dto::OutputDto, AliasOutput, FoundryOutput, NftOutput, Output, OutputId, OutputMetadata},

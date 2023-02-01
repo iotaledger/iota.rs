@@ -9,7 +9,7 @@ use std::{
     time::Duration,
 };
 
-use iota_types::api::response::InfoResponse;
+use iota_types::api::core::response::InfoResponse;
 use serde::{Deserialize, Serialize};
 use url::Url;
 

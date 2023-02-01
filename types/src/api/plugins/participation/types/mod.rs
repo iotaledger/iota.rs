@@ -12,15 +12,16 @@ extern crate alloc;
 use std::collections::HashMap;
 
 use getset::Getters;
-use iota_types::{impl_id, string_serde_impl};
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
+
+use crate::{impl_id, string_serde_impl};
 
 /// Participation tag.
 pub const PARTICIPATION_TAG: &str = "PARTICIPATE";
 
 /// Possible participation event types.
-#[derive(Debug, Clone, Serialize_repr, Deserialize_repr)]
+#[derive(Debug, Clone, Eq, PartialEq, Serialize_repr, Deserialize_repr)]
 #[serde(untagged)]
 #[repr(u8)]
 pub enum ParticipationEventType {
@@ -31,7 +32,7 @@ pub enum ParticipationEventType {
 }
 
 /// Wrapper interface containing a participation event ID and the corresponding event data.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ParticipationEvent {
     /// The event id.
@@ -44,7 +45,7 @@ impl_id!(pub ParticipationEventId, 32, "A participation event id.");
 string_serde_impl!(ParticipationEventId);
 
 /// Information about a voting or staking event.
-#[derive(Debug, Clone, Serialize, Deserialize, Getters)]
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize, Getters)]
 #[serde(rename_all = "camelCase")]
 #[getset(get = "pub")]
 pub struct ParticipationEventData {
@@ -57,7 +58,7 @@ pub struct ParticipationEventData {
 }
 
 /// Event payload types.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ParticipationEventPayload {
     /// Voting payload.
@@ -67,7 +68,7 @@ pub enum ParticipationEventPayload {
 }
 
 /// Payload for a voting event.
-#[derive(Debug, Clone, Serialize, Deserialize, Getters)]
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize, Getters)]
 #[serde(rename_all = "camelCase")]
 #[getset(get = "pub")]
 pub struct VotingEventPayload {
@@ -77,7 +78,7 @@ pub struct VotingEventPayload {
 }
 
 /// Question for a voting event.
-#[derive(Debug, Clone, Serialize, Deserialize, Getters)]
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize, Getters)]
 #[serde(rename_all = "camelCase")]
 #[getset(get = "pub")]
 pub struct Question {
@@ -87,7 +88,7 @@ pub struct Question {
 }
 
 /// Answer in a voting event.
-#[derive(Debug, Clone, Serialize, Deserialize, Getters)]
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize, Getters)]
 #[serde(rename_all = "camelCase")]
 #[getset(get = "pub")]
 pub struct Answer {
@@ -97,7 +98,7 @@ pub struct Answer {
 }
 
 /// Payload for a staking event.
-#[derive(Debug, Clone, Serialize, Deserialize, Getters)]
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize, Getters)]
 #[serde(rename_all = "camelCase")]
 #[getset(get = "pub")]
 pub struct StakingEventPayload {
@@ -112,7 +113,7 @@ pub struct StakingEventPayload {
 }
 
 /// Event status.
-#[derive(Debug, Clone, Serialize, Deserialize, Getters)]
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize, Getters)]
 #[serde(rename_all = "camelCase")]
 #[getset(get = "pub")]
 pub struct ParticipationEventStatus {
@@ -123,14 +124,14 @@ pub struct ParticipationEventStatus {
 }
 
 /// Question status.
-#[derive(Debug, Clone, Serialize, Deserialize, Getters)]
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize, Getters)]
 #[getset(get = "pub")]
 pub struct QuestionStatus {
     answers: Vec<AnswerStatus>,
 }
 
 /// Answer status.
-#[derive(Debug, Clone, Serialize, Deserialize, Getters)]
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize, Getters)]
 #[getset(get = "pub")]
 pub struct AnswerStatus {
     value: u8,
@@ -139,7 +140,7 @@ pub struct AnswerStatus {
 }
 
 /// Staking rewards for an address.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AddressStakingStatus {
     /// Rewards for staking events.
@@ -149,7 +150,7 @@ pub struct AddressStakingStatus {
 }
 
 /// Staking rewards for an address.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct StakingStatus {
     /// Staked amount.

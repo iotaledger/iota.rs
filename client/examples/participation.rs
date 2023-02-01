@@ -4,14 +4,12 @@
 //! cargo run --example participation --features=participation --release
 
 use iota_client::{
-    block::output::{unlock_condition::AddressUnlockCondition, BasicOutputBuilder, UnlockCondition},
-    node_api::{
-        indexer::query_parameters::QueryParameter,
-        participation::types::{
-            participation::{Participation, Participations},
-            ParticipationEventId, PARTICIPATION_TAG,
-        },
+    api_types::plugins::participation::types::{
+        participation::{Participation, Participations},
+        ParticipationEventId, PARTICIPATION_TAG,
     },
+    block::output::{unlock_condition::AddressUnlockCondition, BasicOutputBuilder, UnlockCondition},
+    node_api::indexer::query_parameters::QueryParameter,
     request_funds_from_faucet,
     secret::{mnemonic::MnemonicSecretManager, SecretManager},
     Client, Result,

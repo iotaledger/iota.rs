@@ -1,4 +1,4 @@
-// Copyright 2022 IOTA Stiftung
+// Copyright 2023s IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
 //! Response types for the public participation endpoints.
@@ -6,13 +6,13 @@
 
 use std::collections::HashMap;
 
-use iota_types::block::{output::OutputId, BlockId};
 use serde::{Deserialize, Serialize};
 
-use crate::node_api::participation::types::ParticipationEventId;
+use super::types::ParticipationEventId;
+use crate::block::{output::OutputId, BlockId};
 
 /// EventsResponse defines the response of a GET RouteParticipationEvents REST API call.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EventsResponse {
     /// The hex encoded ID of the created participation events.
@@ -20,7 +20,7 @@ pub struct EventsResponse {
 }
 
 /// TrackedParticipation holds the information for each tracked participation.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TrackedParticipation {
     /// ID of the block that included the transaction that created the output the participation was made.
@@ -36,14 +36,14 @@ pub struct TrackedParticipation {
 }
 
 /// OutputStatusResponse defines the response of a GET RouteOutputStatus REST API call.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub struct OutputStatusResponse {
     /// Participations holds the participations that were created in the output.
     pub participations: HashMap<ParticipationEventId, TrackedParticipation>,
 }
 
 /// AddressOutputsResponse defines the response of a GET RouteAddressBech32Outputs REST API call.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub struct AddressOutputsResponse {
     /// Outputs is a map of output status per output_id.
     pub outputs: HashMap<OutputId, OutputStatusResponse>,

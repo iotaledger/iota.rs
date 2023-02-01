@@ -5,15 +5,17 @@
 //! https://github.com/iota-community/treasury/blob/main/specifications/hornet-participation-plugin.md#public-node-endpoints
 //! https://github.com/iotaledger/inx-participation/blob/develop/core/participation/routes.go
 
-use iota_types::block::output::OutputId;
-
-use super::{
-    responses::{AddressOutputsResponse, EventsResponse, OutputStatusResponse},
-    types::{
-        AddressStakingStatus, ParticipationEventData, ParticipationEventId, ParticipationEventStatus,
-        ParticipationEventType,
+use iota_types::{
+    api::plugins::participation::{
+        responses::{AddressOutputsResponse, EventsResponse, OutputStatusResponse},
+        types::{
+            AddressStakingStatus, ParticipationEventData, ParticipationEventId, ParticipationEventStatus,
+            ParticipationEventType,
+        },
     },
+    block::output::OutputId,
 };
+
 use crate::{Client, Result};
 
 impl Client {
