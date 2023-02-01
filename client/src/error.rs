@@ -248,6 +248,7 @@ pub enum Error {
     BurnAndTransition(ChainId),
 
     /// Participation error
+    #[cfg(feature = "participation")]
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
     Participation(#[from] iota_types::api::plugins::participation::Error),
