@@ -1,6 +1,6 @@
 [package]
 name = "iota-types"
-version = "1.0.0-rc.4"
+version = "1.0.0-rc.5"
 authors = [ "IOTA Stiftung" ]
 edition = "2021"
 description = "Common types required by nodes and clients APIs like blocks, responses and DTOs."
@@ -26,7 +26,7 @@ hashbrown = { version = "0.13.2", default-features = false, features = [ "ahash"
 hex = { version = "0.4.3", default-features = false, features = [ "alloc" ] }
 inx = { version = "1.0.0-beta.8", default-features = false, optional = true }
 iota-crypto = { version = "0.15.3", default-features = false, features = [ "ed25519", "blake2b", "ternary_encoding" ] }
-iota-pow = { version = "1.0.0-rc.2", path = "../pow", default-features = false }
+iota-pow = { version = "1.0.0-rc.3", path = "../pow", default-features = false }
 iterator-sorted = { version = "0.1.0", default-features = false }
 packable = { version = "0.7.0", default-features = false, features = [ "serde", "primitive-types" ] }
 prefix-hex = { version = "0.5.0", default-features = false, features = [ "primitive-types" ] }
