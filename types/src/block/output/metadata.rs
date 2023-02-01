@@ -37,7 +37,7 @@ pub struct OutputMetadata {
 impl OutputMetadata {
     /// Creates a new [`OutputMetadata`].
     #[allow(clippy::too_many_arguments)]
-    pub fn new(
+    pub const fn new(
         block_id: BlockId,
         output_id: OutputId,
         is_spent: bool,
@@ -62,57 +62,57 @@ impl OutputMetadata {
     }
 
     /// Returns the block id of the [`OutputMetadata`].
-    pub fn block_id(&self) -> &BlockId {
+    pub const fn block_id(&self) -> &BlockId {
         &self.block_id
     }
 
     /// Returns the output id of the [`OutputMetadata`].
-    pub fn output_id(&self) -> &OutputId {
+    pub const fn output_id(&self) -> &OutputId {
         &self.output_id
     }
 
     /// Returns the transaction id of the [`OutputMetadata`].
-    pub fn transaction_id(&self) -> &TransactionId {
+    pub const fn transaction_id(&self) -> &TransactionId {
         self.output_id.transaction_id()
     }
 
     /// Returns the output index of the [`OutputMetadata`].
-    pub fn output_index(&self) -> u16 {
+    pub const fn output_index(&self) -> u16 {
         self.output_id.index()
     }
 
     /// Returns whether the [`Output`] is spent ot not.
-    pub fn is_spent(&self) -> bool {
+    pub const fn is_spent(&self) -> bool {
         self.is_spent
     }
 
     /// Returns the milestone index spent of the [`OutputMetadata`].
-    pub fn milestone_index_spent(&self) -> Option<u32> {
+    pub const fn milestone_index_spent(&self) -> Option<u32> {
         self.milestone_index_spent
     }
 
     /// Returns the milestone timestamp spent of the [`OutputMetadata`].
-    pub fn milestone_timestamp_spent(&self) -> Option<u32> {
+    pub const fn milestone_timestamp_spent(&self) -> Option<u32> {
         self.milestone_timestamp_spent
     }
 
     /// Returns the transaction id spent of the [`OutputMetadata`].
-    pub fn transaction_id_spent(&self) -> Option<&TransactionId> {
+    pub const fn transaction_id_spent(&self) -> Option<&TransactionId> {
         self.transaction_id_spent.as_ref()
     }
 
     /// Returns the milestone index booked of the [`OutputMetadata`].
-    pub fn milestone_index_booked(&self) -> u32 {
+    pub const fn milestone_index_booked(&self) -> u32 {
         self.milestone_index_booked
     }
 
     /// Returns the milestone timestamp booked of the [`OutputMetadata`].
-    pub fn milestone_timestamp_booked(&self) -> u32 {
+    pub const fn milestone_timestamp_booked(&self) -> u32 {
         self.milestone_timestamp_booked
     }
 
     /// Returns the ledger index of the [`OutputMetadata`].
-    pub fn ledger_index(&self) -> u32 {
+    pub const fn ledger_index(&self) -> u32 {
         self.ledger_index
     }
 }

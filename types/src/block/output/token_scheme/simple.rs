@@ -41,19 +41,19 @@ impl SimpleTokenScheme {
 
     /// Returns the number of minted tokens of the [`SimpleTokenScheme`].
     #[inline(always)]
-    pub fn minted_tokens(&self) -> U256 {
+    pub const fn minted_tokens(&self) -> U256 {
         self.minted_tokens
     }
 
     /// Returns the number of melted tokens of the [`SimpleTokenScheme`].
     #[inline(always)]
-    pub fn melted_tokens(&self) -> U256 {
+    pub const fn melted_tokens(&self) -> U256 {
         self.melted_tokens
     }
 
     /// Returns the maximum supply of the [`SimpleTokenScheme`].
     #[inline(always)]
-    pub fn maximum_supply(&self) -> U256 {
+    pub const fn maximum_supply(&self) -> U256 {
         self.maximum_supply
     }
 

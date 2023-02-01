@@ -68,12 +68,12 @@ impl ReceiptMilestoneOption {
 
     /// Returns the milestone index at which the funds of a [`ReceiptMilestoneOption`] were migrated at in the legacy
     /// network.
-    pub fn migrated_at(&self) -> MilestoneIndex {
+    pub const fn migrated_at(&self) -> MilestoneIndex {
         self.migrated_at
     }
 
     /// Returns whether a [`ReceiptMilestoneOption`] is the final one for a given migrated at index.
-    pub fn last(&self) -> bool {
+    pub const fn last(&self) -> bool {
         self.last
     }
 

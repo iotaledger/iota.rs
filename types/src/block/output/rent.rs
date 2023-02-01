@@ -110,22 +110,22 @@ impl RentStructure {
     }
 
     /// Returns the byte cost of the [`RentStructure`].
-    pub fn byte_cost(&self) -> u32 {
+    pub const fn byte_cost(&self) -> u32 {
         self.v_byte_cost
     }
 
     /// Returns the byte factor key of the [`RentStructure`].
-    pub fn byte_factor_key(&self) -> u8 {
+    pub const fn byte_factor_key(&self) -> u8 {
         self.v_byte_factor_key
     }
 
     /// Returns the byte factor data of the [`RentStructure`].
-    pub fn byte_factor_data(&self) -> u8 {
+    pub const fn byte_factor_data(&self) -> u8 {
         self.v_byte_factor_data
     }
 
     /// Returns the byte offset of the [`RentStructure`].
-    pub fn byte_offset(&self) -> u32 {
+    pub const fn byte_offset(&self) -> u32 {
         self.v_byte_offset
     }
 }
@@ -177,7 +177,7 @@ impl<T: Rent, const N: usize> Rent for [T; N] {
     }
 }
 
-fn v_byte_offset(v_byte_factor_key: u8, v_byte_factor_data: u8) -> u32 {
+const fn v_byte_offset(v_byte_factor_key: u8, v_byte_factor_data: u8) -> u32 {
     size_of::<OutputId>() as u32 * v_byte_factor_key as u32
         + size_of::<BlockId>() as u32 * v_byte_factor_data as u32
         + size_of::<MilestoneIndex>() as u32 * v_byte_factor_data as u32

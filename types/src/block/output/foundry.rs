@@ -40,7 +40,7 @@ pub struct FoundryOutputBuilder {
 
 impl FoundryOutputBuilder {
     /// Creates a [`FoundryOutputBuilder`] with a provided amount.
-    pub fn new_with_amount(
+    pub const fn new_with_amount(
         amount: u64,
         serial_number: u32,
         token_scheme: TokenScheme,
@@ -50,7 +50,7 @@ impl FoundryOutputBuilder {
 
     /// Creates a [`FoundryOutputBuilder`] with a provided rent structure.
     /// The amount will be set to the minimum storage deposit.
-    pub fn new_with_minimum_storage_deposit(
+    pub const fn new_with_minimum_storage_deposit(
         rent_structure: RentStructure,
         serial_number: u32,
         token_scheme: TokenScheme,
@@ -62,7 +62,7 @@ impl FoundryOutputBuilder {
         )
     }
 
-    fn new(
+    const fn new(
         amount: OutputBuilderAmount,
         serial_number: u32,
         token_scheme: TokenScheme,
@@ -80,14 +80,14 @@ impl FoundryOutputBuilder {
 
     /// Sets the amount to the provided value.
     #[inline(always)]
-    pub fn with_amount(mut self, amount: u64) -> Result<Self, Error> {
+    pub const fn with_amount(mut self, amount: u64) -> Result<Self, Error> {
         self.amount = OutputBuilderAmount::Amount(amount);
         Ok(self)
     }
 
     /// Sets the amount to the minimum storage deposit.
     #[inline(always)]
-    pub fn with_minimum_storage_deposit(mut self, rent_structure: RentStructure) -> Self {
+    pub const fn with_minimum_storage_deposit(mut self, rent_structure: RentStructure) -> Self {
         self.amount = OutputBuilderAmount::MinimumStorageDeposit(rent_structure);
         self
     }
@@ -108,14 +108,14 @@ impl FoundryOutputBuilder {
 
     /// Sets the serial number to the provided value.
     #[inline(always)]
-    pub fn with_serial_number(mut self, serial_number: u32) -> Self {
+    pub const fn with_serial_number(mut self, serial_number: u32) -> Self {
         self.serial_number = serial_number;
         self
     }
 
     /// Sets the token scheme to the provided value.
     #[inline(always)]
-    pub fn with_token_scheme(mut self, token_scheme: TokenScheme) -> Self {
+    pub const fn with_token_scheme(mut self, token_scheme: TokenScheme) -> Self {
         self.token_scheme = token_scheme;
         self
     }
@@ -312,7 +312,7 @@ impl FoundryOutput {
 
     /// Creates a new [`FoundryOutputBuilder`] with a provided amount.
     #[inline(always)]
-    pub fn build_with_amount(
+    pub const fn build_with_amount(
         amount: u64,
         serial_number: u32,
         token_scheme: TokenScheme,
@@ -323,7 +323,7 @@ impl FoundryOutput {
     /// Creates a new [`FoundryOutputBuilder`] with a provided rent structure.
     /// The amount will be set to the minimum storage deposit.
     #[inline(always)]
-    pub fn build_with_minimum_storage_deposit(
+    pub const fn build_with_minimum_storage_deposit(
         rent_structure: RentStructure,
         serial_number: u32,
         token_scheme: TokenScheme,
@@ -333,43 +333,43 @@ impl FoundryOutput {
 
     ///
     #[inline(always)]
-    pub fn amount(&self) -> u64 {
+    pub const fn amount(&self) -> u64 {
         self.amount
     }
 
     ///
     #[inline(always)]
-    pub fn native_tokens(&self) -> &NativeTokens {
+    pub const fn native_tokens(&self) -> &NativeTokens {
         &self.native_tokens
     }
 
     ///
     #[inline(always)]
-    pub fn serial_number(&self) -> u32 {
+    pub const fn serial_number(&self) -> u32 {
         self.serial_number
     }
 
     ///
     #[inline(always)]
-    pub fn token_scheme(&self) -> &TokenScheme {
+    pub const fn token_scheme(&self) -> &TokenScheme {
         &self.token_scheme
     }
 
     ///
     #[inline(always)]
-    pub fn unlock_conditions(&self) -> &UnlockConditions {
+    pub const fn unlock_conditions(&self) -> &UnlockConditions {
         &self.unlock_conditions
     }
 
     ///
     #[inline(always)]
-    pub fn features(&self) -> &Features {
+    pub const fn features(&self) -> &Features {
         &self.features
     }
 
     ///
     #[inline(always)]
-    pub fn immutable_features(&self) -> &Features {
+    pub const fn immutable_features(&self) -> &Features {
         &self.immutable_features
     }
 

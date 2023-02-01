@@ -19,7 +19,7 @@ pub enum TokenScheme {
 
 impl TokenScheme {
     /// Returns the token scheme kind of a [`TokenScheme`].
-    pub fn kind(&self) -> u8 {
+    pub const fn kind(&self) -> u8 {
         match self {
             Self::Simple(_) => SimpleTokenScheme::KIND,
         }

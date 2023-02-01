@@ -43,7 +43,7 @@ pub enum Feature {
 
 impl Feature {
     /// Return the output kind of an `Output`.
-    pub fn kind(&self) -> u8 {
+    pub const fn kind(&self) -> u8 {
         match self {
             Self::Sender(_) => SenderFeature::KIND,
             Self::Issuer(_) => IssuerFeature::KIND,
@@ -53,7 +53,7 @@ impl Feature {
     }
 
     /// Returns the [`FeatureFlags`] for the given [`Feature`].
-    pub fn flag(&self) -> FeatureFlags {
+    pub const fn flag(&self) -> FeatureFlags {
         match self {
             Self::Sender(_) => FeatureFlags::SENDER,
             Self::Issuer(_) => FeatureFlags::ISSUER,
@@ -339,7 +339,7 @@ pub mod dto {
 
     impl FeatureDto {
         /// Return the feature kind of a `FeatureDto`.
-        pub fn kind(&self) -> u8 {
+        pub const fn kind(&self) -> u8 {
             match self {
                 Self::Sender(_) => SenderFeature::KIND,
                 Self::Issuer(_) => IssuerFeature::KIND,

@@ -28,7 +28,7 @@ pub enum TransactionEssence {
 
 impl TransactionEssence {
     /// Returns the essence kind of an [`TransactionEssence`].
-    pub fn kind(&self) -> u8 {
+    pub const fn kind(&self) -> u8 {
         match self {
             Self::Regular(_) => RegularTransactionEssence::KIND,
         }

@@ -29,7 +29,7 @@ pub enum Signature {
 
 impl Signature {
     /// Returns the signature kind of a `Signature`.
-    pub fn kind(&self) -> u8 {
+    pub const fn kind(&self) -> u8 {
         match self {
             Self::Ed25519(_) => Ed25519Signature::KIND,
         }

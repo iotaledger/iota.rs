@@ -26,7 +26,7 @@ impl TreasuryOutput {
 
     /// Returns the amount of a [`TreasuryOutput`].
     #[inline(always)]
-    pub fn amount(&self) -> u64 {
+    pub const fn amount(&self) -> u64 {
         self.amount
     }
 }

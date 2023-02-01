@@ -26,13 +26,13 @@ impl AliasAddress {
 
     /// Returns the [`AliasId`] of an [`AliasAddress`].
     #[inline(always)]
-    pub fn alias_id(&self) -> &AliasId {
+    pub const fn alias_id(&self) -> &AliasId {
         &self.0
     }
 
     /// Consumes an [`AliasAddress`] and returns its [`AliasId`].
     #[inline(always)]
-    pub fn into_alias_id(self) -> AliasId {
+    pub const fn into_alias_id(self) -> AliasId {
         self.0
     }
 }

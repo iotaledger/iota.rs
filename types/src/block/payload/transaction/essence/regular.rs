@@ -27,7 +27,7 @@ pub struct RegularTransactionEssenceBuilder {
 
 impl RegularTransactionEssenceBuilder {
     /// Creates a new [`RegularTransactionEssenceBuilder`].
-    pub fn new(network_id: u64, inputs_commitment: InputsCommitment) -> Self {
+    pub const fn new(network_id: u64, inputs_commitment: InputsCommitment) -> Self {
         Self {
             network_id,
             inputs: Vec::new(),
@@ -62,6 +62,7 @@ impl RegularTransactionEssenceBuilder {
     }
 
     /// Add a payload to a [`RegularTransactionEssenceBuilder`].
+    #[allow(clippy::missing_const_for_fn)]
     pub fn with_payload(mut self, payload: Payload) -> Self {
         self.payload = Some(payload);
         self
@@ -166,12 +167,12 @@ impl RegularTransactionEssence {
     pub const KIND: u8 = 1;
 
     /// Creates a new [`RegularTransactionEssenceBuilder`] to build a [`RegularTransactionEssence`].
-    pub fn builder(network_id: u64, inputs_commitment: InputsCommitment) -> RegularTransactionEssenceBuilder {
+    pub const fn builder(network_id: u64, inputs_commitment: InputsCommitment) -> RegularTransactionEssenceBuilder {
         RegularTransactionEssenceBuilder::new(network_id, inputs_commitment)
     }
 
     /// Returns the network ID of a [`RegularTransactionEssence`].
-    pub fn network_id(&self) -> u64 {
+    pub const fn network_id(&self) -> u64 {
         self.network_id
     }
 
@@ -181,7 +182,7 @@ impl RegularTransactionEssence {
     }
 
     /// Returns the inputs commitment of a [`RegularTransactionEssence`].
-    pub fn inputs_commitment(&self) -> &InputsCommitment {
+    pub const fn inputs_commitment(&self) -> &InputsCommitment {
         &self.inputs_commitment
     }
 

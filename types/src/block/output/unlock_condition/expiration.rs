@@ -36,18 +36,18 @@ impl ExpirationUnlockCondition {
 
     /// Returns the return address of a [`ExpirationUnlockCondition`].
     #[inline(always)]
-    pub fn return_address(&self) -> &Address {
+    pub const fn return_address(&self) -> &Address {
         &self.return_address
     }
 
     /// Returns the timestamp of a [`ExpirationUnlockCondition`].
     #[inline(always)]
-    pub fn timestamp(&self) -> u32 {
+    pub const fn timestamp(&self) -> u32 {
         self.timestamp
     }
 
     /// Returns the return address if the condition has expired.
-    pub fn return_address_expired(&self, timestamp: u32) -> Option<&Address> {
+    pub const fn return_address_expired(&self, timestamp: u32) -> Option<&Address> {
         if timestamp >= self.timestamp() {
             Some(&self.return_address)
         } else {

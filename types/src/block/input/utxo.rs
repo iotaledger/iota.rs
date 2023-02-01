@@ -21,7 +21,7 @@ impl UtxoInput {
     }
 
     /// Returns the output id of a [`UtxoInput`].
-    pub fn output_id(&self) -> &OutputId {
+    pub const fn output_id(&self) -> &OutputId {
         &self.0
     }
 }

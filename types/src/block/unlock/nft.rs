@@ -32,7 +32,7 @@ impl NftUnlock {
 
     /// Return the index of a [`NftUnlock`].
     #[inline(always)]
-    pub fn index(&self) -> u16 {
+    pub const fn index(&self) -> u16 {
         self.0.get()
     }
 }

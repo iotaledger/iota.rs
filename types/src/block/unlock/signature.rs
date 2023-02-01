@@ -17,13 +17,13 @@ impl SignatureUnlock {
 
     /// Creates a new [`SignatureUnlock`].
     #[inline(always)]
-    pub fn new(signature: Signature) -> Self {
+    pub const fn new(signature: Signature) -> Self {
         Self(signature)
     }
 
     /// Returns the actual [`Signature`] of the [`SignatureUnlock`].
     #[inline(always)]
-    pub fn signature(&self) -> &Signature {
+    pub const fn signature(&self) -> &Signature {
         &self.0
     }
 }

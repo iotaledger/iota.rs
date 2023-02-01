@@ -59,7 +59,7 @@ impl Client {
     }
 
     /// A generic send function for easily sending transaction or tagged data blocks.
-    pub fn block(&self) -> ClientBlockBuilder<'_> {
+    pub const fn block(&self) -> ClientBlockBuilder<'_> {
         ClientBlockBuilder::new(self)
     }
 

@@ -40,7 +40,7 @@ pub enum Input {
 
 impl Input {
     /// Returns the input kind of an `Input`.
-    pub fn kind(&self) -> u8 {
+    pub const fn kind(&self) -> u8 {
         match self {
             Self::Utxo(_) => UtxoInput::KIND,
             Self::Treasury(_) => TreasuryInput::KIND,
@@ -48,13 +48,13 @@ impl Input {
     }
 
     /// Checks whether the input is a [`UtxoInput`].
-    pub fn is_utxo(&self) -> bool {
+    pub const fn is_utxo(&self) -> bool {
         matches!(self, Self::Utxo(_))
     }
 
     /// Gets the input as an actual [`UtxoInput`].
     /// PANIC: do not call on a non-utxo input.
-    pub fn as_utxo(&self) -> &UtxoInput {
+    pub const fn as_utxo(&self) -> &UtxoInput {
         if let Input::Utxo(input) = self {
             input
         } else {
@@ -63,13 +63,13 @@ impl Input {
     }
 
     /// Checks whether the input is a [`TreasuryInput`].
-    pub fn is_treasury(&self) -> bool {
+    pub const fn is_treasury(&self) -> bool {
         matches!(self, Self::Treasury(_))
     }
 
     /// Gets the input as an actual [`TreasuryInput`].
     /// PANIC: do not call on a non-treasury input.
-    pub fn as_treasury(&self) -> &TreasuryInput {
+    pub const fn as_treasury(&self) -> &TreasuryInput {
         if let Input::Treasury(input) = self {
             input
         } else {

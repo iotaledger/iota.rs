@@ -57,11 +57,11 @@ pub struct LedgerApp {
 
 impl LedgerApp {
     /// Opened app name.
-    pub fn name(&self) -> &String {
+    pub const fn name(&self) -> &String {
         &self.name
     }
     /// Opened app version.
-    pub fn version(&self) -> &String {
+    pub const fn version(&self) -> &String {
         &self.version
     }
 }
@@ -101,27 +101,27 @@ pub struct LedgerNanoStatus {
 
 impl LedgerNanoStatus {
     /// Ledger is available and ready to be used.
-    pub fn connected(&self) -> bool {
+    pub const fn connected(&self) -> bool {
         self.connected
     }
     /// Ledger is connected and locked.
-    pub fn locked(&self) -> bool {
+    pub const fn locked(&self) -> bool {
         self.locked
     }
     /// Ledger blind signing enabled
-    pub fn blind_signing_enabled(&self) -> bool {
+    pub const fn blind_signing_enabled(&self) -> bool {
         self.blind_signing_enabled
     }
     /// Ledger opened app.
-    pub fn app(&self) -> Option<&LedgerApp> {
+    pub const fn app(&self) -> Option<&LedgerApp> {
         self.app.as_ref()
     }
     /// Ledger device
-    pub fn device(&self) -> Option<LedgerDeviceType> {
+    pub const fn device(&self) -> Option<LedgerDeviceType> {
         self.device
     }
     /// Buffer size on device
-    pub fn buffer_size(&self) -> Option<usize> {
+    pub const fn buffer_size(&self) -> Option<usize> {
         self.buffer_size
     }
 }
@@ -144,7 +144,7 @@ pub struct InputSigningData {
 
 impl InputSigningData {
     /// Return the [OutputId]
-    pub fn output_id(&self) -> &OutputId {
+    pub const fn output_id(&self) -> &OutputId {
         self.output_metadata.output_id()
     }
 }

@@ -63,15 +63,15 @@ fn default_user_agent() -> String {
     DEFAULT_USER_AGENT.to_string()
 }
 
-fn default_node_sync_interval() -> Duration {
+const fn default_node_sync_interval() -> Duration {
     NODE_SYNC_INTERVAL
 }
 
-fn default_min_quorum_size() -> usize {
+const fn default_min_quorum_size() -> usize {
     DEFAULT_MIN_QUORUM_SIZE
 }
 
-fn default_quorum_threshold() -> usize {
+const fn default_quorum_threshold() -> usize {
     DEFAULT_QUORUM_THRESHOLD
 }
 
@@ -154,7 +154,7 @@ impl NodeManagerBuilder {
         Ok(self)
     }
 
-    pub(crate) fn with_ignore_node_health(mut self) -> Self {
+    pub(crate) const fn with_ignore_node_health(mut self) -> Self {
         self.ignore_node_health = true;
         self
     }
@@ -188,26 +188,27 @@ impl NodeManagerBuilder {
         Ok(self)
     }
 
-    pub(crate) fn with_node_sync_interval(mut self, node_sync_interval: Duration) -> Self {
+    pub(crate) const fn with_node_sync_interval(mut self, node_sync_interval: Duration) -> Self {
         self.node_sync_interval = node_sync_interval;
         self
     }
 
-    pub(crate) fn with_quorum(mut self, quorum: bool) -> Self {
+    pub(crate) const fn with_quorum(mut self, quorum: bool) -> Self {
         self.quorum = quorum;
         self
     }
 
-    pub(crate) fn with_min_quorum_size(mut self, min_quorum_size: usize) -> Self {
+    pub(crate) const fn with_min_quorum_size(mut self, min_quorum_size: usize) -> Self {
         self.min_quorum_size = min_quorum_size;
         self
     }
 
-    pub(crate) fn with_quorum_threshold(mut self, threshold: usize) -> Self {
+    pub(crate) const fn with_quorum_threshold(mut self, threshold: usize) -> Self {
         self.quorum_threshold = threshold;
         self
     }
 
+    #[allow(clippy::missing_const_for_fn)]
     pub(crate) fn with_user_agent(mut self, user_agent: String) -> Self {
         self.user_agent = user_agent;
         self

@@ -52,12 +52,12 @@ impl ParametersMilestoneOption {
     }
 
     /// Returns the target milestone index of a [`ParametersMilestoneOption`].
-    pub fn target_milestone_index(&self) -> MilestoneIndex {
+    pub const fn target_milestone_index(&self) -> MilestoneIndex {
         self.target_milestone_index
     }
 
     /// Returns the protocol version of a [`ParametersMilestoneOption`].
-    pub fn protocol_version(&self) -> u8 {
+    pub const fn protocol_version(&self) -> u8 {
         self.protocol_version
     }
 

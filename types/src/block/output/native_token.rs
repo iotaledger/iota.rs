@@ -34,13 +34,13 @@ impl NativeToken {
 
     /// Returns the token ID of the [`NativeToken`].
     #[inline(always)]
-    pub fn token_id(&self) -> &TokenId {
+    pub const fn token_id(&self) -> &TokenId {
         &self.token_id
     }
 
     /// Returns the amount of the [`NativeToken`].
     #[inline(always)]
-    pub fn amount(&self) -> U256 {
+    pub const fn amount(&self) -> U256 {
         self.amount
     }
 }

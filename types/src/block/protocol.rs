@@ -84,7 +84,7 @@ impl ProtocolParameters {
     }
 
     /// Returns the protocol version of the [`ProtocolParameters`].
-    pub fn protocol_version(&self) -> u8 {
+    pub const fn protocol_version(&self) -> u8 {
         self.protocol_version
     }
 
@@ -104,22 +104,22 @@ impl ProtocolParameters {
     }
 
     /// Returns the minimum PoW score of the [`ProtocolParameters`].
-    pub fn min_pow_score(&self) -> u32 {
+    pub const fn min_pow_score(&self) -> u32 {
         self.min_pow_score
     }
 
     /// Returns the below max depth of the [`ProtocolParameters`].
-    pub fn below_max_depth(&self) -> u8 {
+    pub const fn below_max_depth(&self) -> u8 {
         self.below_max_depth
     }
 
     /// Returns the rent structure of the [`ProtocolParameters`].
-    pub fn rent_structure(&self) -> &RentStructure {
+    pub const fn rent_structure(&self) -> &RentStructure {
         &self.rent_structure
     }
 
     /// Returns the token supply of the [`ProtocolParameters`].
-    pub fn token_supply(&self) -> u64 {
+    pub const fn token_supply(&self) -> u64 {
         self.token_supply
     }
 }

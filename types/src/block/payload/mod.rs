@@ -75,7 +75,7 @@ impl From<TaggedDataPayload> for Payload {
 
 impl Payload {
     /// Returns the payload kind of a `Payload`.
-    pub fn kind(&self) -> u32 {
+    pub const fn kind(&self) -> u32 {
         match self {
             Self::Transaction(_) => TransactionPayload::KIND,
             Self::Milestone(_) => MilestonePayload::KIND,

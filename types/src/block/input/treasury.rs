@@ -17,12 +17,12 @@ impl TreasuryInput {
     pub const KIND: u8 = 1;
 
     /// Creates a new [`TreasuryInput`].
-    pub fn new(id: MilestoneId) -> Self {
+    pub const fn new(id: MilestoneId) -> Self {
         Self(id)
     }
 
     /// Returns the milestones id of a [`TreasuryInput`].
-    pub fn milestone_id(&self) -> &MilestoneId {
+    pub const fn milestone_id(&self) -> &MilestoneId {
         &self.0
     }
 }

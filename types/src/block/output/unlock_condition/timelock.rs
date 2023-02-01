@@ -25,7 +25,7 @@ impl TimelockUnlockCondition {
 
     /// Returns the timestamp of a [`TimelockUnlockCondition`].
     #[inline(always)]
-    pub fn timestamp(&self) -> u32 {
+    pub const fn timestamp(&self) -> u32 {
         self.0
     }
 }

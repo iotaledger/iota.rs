@@ -71,37 +71,37 @@ impl MilestoneEssence {
     }
 
     /// Returns the index of a [`MilestoneEssence`].
-    pub fn index(&self) -> MilestoneIndex {
+    pub const fn index(&self) -> MilestoneIndex {
         self.index
     }
 
     /// Returns the timestamp of a [`MilestoneEssence`].
-    pub fn timestamp(&self) -> u32 {
+    pub const fn timestamp(&self) -> u32 {
         self.timestamp
     }
 
     /// Returns the protocol version of a [`MilestoneEssence`].
-    pub fn protocol_version(&self) -> u8 {
+    pub const fn protocol_version(&self) -> u8 {
         self.protocol_version
     }
 
     /// Returns the previous milestone ID of a [`MilestoneEssence`].
-    pub fn previous_milestone_id(&self) -> &MilestoneId {
+    pub const fn previous_milestone_id(&self) -> &MilestoneId {
         &self.previous_milestone_id
     }
 
     /// Returns the parents of a [`MilestoneEssence`].
-    pub fn parents(&self) -> &Parents {
+    pub const fn parents(&self) -> &Parents {
         &self.parents
     }
 
     /// Returns the inclusion merkle root of a [`MilestoneEssence`].
-    pub fn inclusion_merkle_root(&self) -> &MerkleRoot {
+    pub const fn inclusion_merkle_root(&self) -> &MerkleRoot {
         &self.inclusion_merkle_root
     }
 
     /// Returns the applied merkle root of a [`MilestoneEssence`].
-    pub fn applied_merkle_root(&self) -> &MerkleRoot {
+    pub const fn applied_merkle_root(&self) -> &MerkleRoot {
         &self.applied_merkle_root
     }
 
@@ -111,7 +111,7 @@ impl MilestoneEssence {
     }
 
     /// Returns the options of a [`MilestoneEssence`].
-    pub fn options(&self) -> &MilestoneOptions {
+    pub const fn options(&self) -> &MilestoneOptions {
         &self.options
     }
 

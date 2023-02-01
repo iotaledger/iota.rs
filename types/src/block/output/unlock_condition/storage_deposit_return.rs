@@ -32,13 +32,13 @@ impl StorageDepositReturnUnlockCondition {
 
     /// Returns the return address.
     #[inline(always)]
-    pub fn return_address(&self) -> &Address {
+    pub const fn return_address(&self) -> &Address {
         &self.return_address
     }
 
     /// Returns the amount.
     #[inline(always)]
-    pub fn amount(&self) -> u64 {
+    pub const fn amount(&self) -> u64 {
         self.amount
     }
 }

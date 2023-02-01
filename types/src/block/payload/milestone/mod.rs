@@ -78,7 +78,7 @@ impl MilestonePayload {
     }
 
     /// Returns the essence of a [`MilestonePayload`].
-    pub fn essence(&self) -> &MilestoneEssence {
+    pub const fn essence(&self) -> &MilestoneEssence {
         &self.essence
     }
 

@@ -70,23 +70,23 @@ pub struct BrokerOptions {
     pub(crate) max_reconnection_attempts: usize,
 }
 
-fn default_broker_automatic_disconnect() -> bool {
+const fn default_broker_automatic_disconnect() -> bool {
     true
 }
 
-fn default_broker_timeout() -> Duration {
+const fn default_broker_timeout() -> Duration {
     Duration::from_secs(30)
 }
 
-fn default_broker_use_ws() -> bool {
+const fn default_broker_use_ws() -> bool {
     true
 }
 
-fn default_broker_port() -> u16 {
+const fn default_broker_port() -> u16 {
     1883
 }
 
-fn default_max_reconnection_attempts() -> usize {
+const fn default_max_reconnection_attempts() -> usize {
     0
 }
 
@@ -109,31 +109,31 @@ impl BrokerOptions {
     }
 
     /// Whether the MQTT broker should be automatically disconnected when all topics are unsubscribed or not.
-    pub fn automatic_disconnect(mut self, automatic_disconnect: bool) -> Self {
+    pub const fn automatic_disconnect(mut self, automatic_disconnect: bool) -> Self {
         self.automatic_disconnect = automatic_disconnect;
         self
     }
 
     /// Sets the timeout used for the MQTT operations.
-    pub fn timeout(mut self, timeout: Duration) -> Self {
+    pub const fn timeout(mut self, timeout: Duration) -> Self {
         self.timeout = timeout;
         self
     }
 
     /// Sets the use_ws used for the MQTT operations.
-    pub fn use_ws(mut self, use_ws: bool) -> Self {
+    pub const fn use_ws(mut self, use_ws: bool) -> Self {
         self.use_ws = use_ws;
         self
     }
 
     /// Sets the port used for the MQTT operations.
-    pub fn port(mut self, port: u16) -> Self {
+    pub const fn port(mut self, port: u16) -> Self {
         self.port = port;
         self
     }
 
     /// Sets the maximum number of reconnection attempts. 0 is unlimited.
-    pub fn max_reconnection_attempts(mut self, max_reconnection_attempts: usize) -> Self {
+    pub const fn max_reconnection_attempts(mut self, max_reconnection_attempts: usize) -> Self {
         self.max_reconnection_attempts = max_reconnection_attempts;
         self
     }
@@ -201,7 +201,7 @@ impl Topic {
     }
 
     /// Creates a new topic without checking if the given string represents a valid topic.
-    pub fn new_unchecked(value: String) -> Self {
+    pub const fn new_unchecked(value: String) -> Self {
         Self(value)
     }
 

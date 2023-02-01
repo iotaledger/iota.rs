@@ -20,7 +20,7 @@ impl ImmutableAliasAddressUnlockCondition {
 
     /// Creates a new [`ImmutableAliasAddressUnlockCondition`].
     #[inline(always)]
-    pub fn new(address: AliasAddress) -> Self {
+    pub const fn new(address: AliasAddress) -> Self {
         Self(Address::Alias(address))
     }
 
@@ -34,7 +34,7 @@ impl ImmutableAliasAddressUnlockCondition {
     }
 
     /// Returns the alias address of an [`ImmutableAliasAddressUnlockCondition`].
-    pub fn alias_address(&self) -> &AliasAddress {
+    pub const fn alias_address(&self) -> &AliasAddress {
         // It has already been validated at construction that the address is an `AliasAddress`.
         self.0.as_alias()
     }

@@ -110,7 +110,7 @@ impl Output {
     pub const AMOUNT_MIN: u64 = 1;
 
     /// Return the output kind of an [`Output`].
-    pub fn kind(&self) -> u8 {
+    pub const fn kind(&self) -> u8 {
         match self {
             Self::Treasury(_) => TreasuryOutput::KIND,
             Self::Basic(_) => BasicOutput::KIND,
@@ -121,7 +121,7 @@ impl Output {
     }
 
     /// Returns the amount of an [`Output`].
-    pub fn amount(&self) -> u64 {
+    pub const fn amount(&self) -> u64 {
         match self {
             Self::Treasury(output) => output.amount(),
             Self::Basic(output) => output.amount(),
@@ -132,7 +132,7 @@ impl Output {
     }
 
     /// Returns the native tokens of an [`Output`], if any.
-    pub fn native_tokens(&self) -> Option<&NativeTokens> {
+    pub const fn native_tokens(&self) -> Option<&NativeTokens> {
         match self {
             Self::Treasury(_) => None,
             Self::Basic(output) => Some(output.native_tokens()),
@@ -143,7 +143,7 @@ impl Output {
     }
 
     /// Returns the unlock conditions of an [`Output`], if any.
-    pub fn unlock_conditions(&self) -> Option<&UnlockConditions> {
+    pub const fn unlock_conditions(&self) -> Option<&UnlockConditions> {
         match self {
             Self::Treasury(_) => None,
             Self::Basic(output) => Some(output.unlock_conditions()),
@@ -154,7 +154,7 @@ impl Output {
     }
 
     /// Returns the features of an [`Output`], if any.
-    pub fn features(&self) -> Option<&Features> {
+    pub const fn features(&self) -> Option<&Features> {
         match self {
             Self::Treasury(_) => None,
             Self::Basic(output) => Some(output.features()),
@@ -165,7 +165,7 @@ impl Output {
     }
 
     /// Returns the immutable features of an [`Output`], if any.
-    pub fn immutable_features(&self) -> Option<&Features> {
+    pub const fn immutable_features(&self) -> Option<&Features> {
         match self {
             Self::Treasury(_) => None,
             Self::Basic(_) => None,
@@ -187,13 +187,13 @@ impl Output {
     }
 
     /// Checks whether the output is a [`TreasuryOutput`].
-    pub fn is_treasury(&self) -> bool {
+    pub const fn is_treasury(&self) -> bool {
         matches!(self, Self::Treasury(_))
     }
 
     /// Gets the output as an actual [`TreasuryOutput`].
     /// PANIC: do not call on a non-treasury output.
-    pub fn as_treasury(&self) -> &TreasuryOutput {
+    pub const fn as_treasury(&self) -> &TreasuryOutput {
         if let Output::Treasury(output) = self {
             output
         } else {
@@ -202,13 +202,13 @@ impl Output {
     }
 
     /// Checks whether the output is a [`BasicOutput`].
-    pub fn is_basic(&self) -> bool {
+    pub const fn is_basic(&self) -> bool {
         matches!(self, Self::Basic(_))
     }
 
     /// Gets the output as an actual [`BasicOutput`].
     /// PANIC: do not call on a non-basic output.
-    pub fn as_basic(&self) -> &BasicOutput {
+    pub const fn as_basic(&self) -> &BasicOutput {
         if let Output::Basic(output) = self {
             output
         } else {
@@ -217,13 +217,13 @@ impl Output {
     }
 
     /// Checks whether the output is an [`AliasOutput`].
-    pub fn is_alias(&self) -> bool {
+    pub const fn is_alias(&self) -> bool {
         matches!(self, Self::Alias(_))
     }
 
     /// Gets the output as an actual [`AliasOutput`].
     /// PANIC: do not call on a non-alias output.
-    pub fn as_alias(&self) -> &AliasOutput {
+    pub const fn as_alias(&self) -> &AliasOutput {
         if let Output::Alias(output) = self {
             output
         } else {
@@ -232,13 +232,13 @@ impl Output {
     }
 
     /// Checks whether the output is a [`FoundryOutput`].
-    pub fn is_foundry(&self) -> bool {
+    pub const fn is_foundry(&self) -> bool {
         matches!(self, Self::Foundry(_))
     }
 
     /// Gets the output as an actual [`FoundryOutput`].
     /// PANIC: do not call on a non-foundry output.
-    pub fn as_foundry(&self) -> &FoundryOutput {
+    pub const fn as_foundry(&self) -> &FoundryOutput {
         if let Output::Foundry(output) = self {
             output
         } else {
@@ -247,13 +247,13 @@ impl Output {
     }
 
     /// Checks whether the output is an [`NftOutput`].
-    pub fn is_nft(&self) -> bool {
+    pub const fn is_nft(&self) -> bool {
         matches!(self, Self::Nft(_))
     }
 
     /// Gets the output as an actual [`NftOutput`].
     /// PANIC: do not call on a non-nft output.
-    pub fn as_nft(&self) -> &NftOutput {
+    pub const fn as_nft(&self) -> &NftOutput {
         if let Output::Nft(output) = self {
             output
         } else {

@@ -132,7 +132,7 @@ impl QueryParameter {
         }
     }
 
-    fn kind(&self) -> u8 {
+    const fn kind(&self) -> u8 {
         match self {
             QueryParameter::Address(_) => 0,
             QueryParameter::AliasAddress(_) => 1,

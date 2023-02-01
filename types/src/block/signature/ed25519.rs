@@ -28,17 +28,17 @@ impl Ed25519Signature {
     pub const SIGNATURE_LENGTH: usize = SIGNATURE_LENGTH;
 
     /// Creates a new [`Ed25519Signature`].
-    pub fn new(public_key: [u8; Self::PUBLIC_KEY_LENGTH], signature: [u8; Self::SIGNATURE_LENGTH]) -> Self {
+    pub const fn new(public_key: [u8; Self::PUBLIC_KEY_LENGTH], signature: [u8; Self::SIGNATURE_LENGTH]) -> Self {
         Self { public_key, signature }
     }
 
     /// Returns the public key of an [`Ed25519Signature`].
-    pub fn public_key(&self) -> &[u8; Self::PUBLIC_KEY_LENGTH] {
+    pub const fn public_key(&self) -> &[u8; Self::PUBLIC_KEY_LENGTH] {
         &self.public_key
     }
 
     /// Return the actual signature of an [`Ed25519Signature`].
-    pub fn signature(&self) -> &[u8; Self::SIGNATURE_LENGTH] {
+    pub const fn signature(&self) -> &[u8; Self::SIGNATURE_LENGTH] {
         &self.signature
     }
 

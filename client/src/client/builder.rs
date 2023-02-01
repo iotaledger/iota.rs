@@ -88,7 +88,7 @@ impl From<NetworkInfo> for NetworkInfoDto {
     }
 }
 
-fn default_local_pow() -> bool {
+const fn default_local_pow() -> bool {
     #[cfg(not(target_family = "wasm"))]
     {
         true
@@ -99,11 +99,11 @@ fn default_local_pow() -> bool {
     }
 }
 
-fn default_fallback_to_local_pow() -> bool {
+const fn default_fallback_to_local_pow() -> bool {
     true
 }
 
-fn default_tips_interval() -> u64 {
+const fn default_tips_interval() -> u64 {
     DEFAULT_TIPS_INTERVAL
 }
 
@@ -132,11 +132,11 @@ pub struct ClientBuilder {
     pub pow_worker_count: Option<usize>,
 }
 
-fn default_api_timeout() -> Duration {
+const fn default_api_timeout() -> Duration {
     DEFAULT_API_TIMEOUT
 }
 
-fn default_remote_pow_timeout() -> Duration {
+const fn default_remote_pow_timeout() -> Duration {
     DEFAULT_REMOTE_POW_API_TIMEOUT
 }
 
@@ -242,6 +242,7 @@ impl ClientBuilder {
     }
 
     /// Set the node sync interval
+    #[allow(clippy::missing_const_for_fn)]
     pub fn with_node_sync_interval(mut self, node_sync_interval: Duration) -> Self {
         self.node_manager_builder = self.node_manager_builder.with_node_sync_interval(node_sync_interval);
         self
@@ -249,24 +250,28 @@ impl ClientBuilder {
 
     /// Ignores the node health status.
     /// Every node will be considered healthy and ready to use.
+    #[allow(clippy::missing_const_for_fn)]
     pub fn with_ignore_node_health(mut self) -> Self {
         self.node_manager_builder = self.node_manager_builder.with_ignore_node_health();
         self
     }
 
     /// Set if quorum should be used or not
+    #[allow(clippy::missing_const_for_fn)]
     pub fn with_quorum(mut self, quorum: bool) -> Self {
         self.node_manager_builder = self.node_manager_builder.with_quorum(quorum);
         self
     }
 
     /// Set amount of nodes which should be used for quorum
+    #[allow(clippy::missing_const_for_fn)]
     pub fn with_min_quorum_size(mut self, min_quorum_size: usize) -> Self {
         self.node_manager_builder = self.node_manager_builder.with_min_quorum_size(min_quorum_size);
         self
     }
 
     /// Set quorum_threshold
+    #[allow(clippy::missing_const_for_fn)]
     pub fn with_quorum_threshold(mut self, threshold: usize) -> Self {
         let threshold = if threshold > 100 { 100 } else { threshold };
         self.node_manager_builder = self.node_manager_builder.with_quorum_threshold(threshold);
@@ -275,43 +280,43 @@ impl ClientBuilder {
 
     /// Sets the MQTT broker options.
     #[cfg(feature = "mqtt")]
-    pub fn with_mqtt_broker_options(mut self, options: BrokerOptions) -> Self {
+    pub const fn with_mqtt_broker_options(mut self, options: BrokerOptions) -> Self {
         self.broker_options = options;
         self
     }
 
     /// Sets whether the PoW should be done locally or remotely.
-    pub fn with_local_pow(mut self, local: bool) -> Self {
+    pub const fn with_local_pow(mut self, local: bool) -> Self {
         self.network_info.local_pow = local;
         self
     }
 
     /// Sets the amount of workers that should be used for PoW, default is num_cpus::get().
-    pub fn with_pow_worker_count(mut self, worker_count: usize) -> Self {
-        self.pow_worker_count.replace(worker_count);
+    pub const fn with_pow_worker_count(mut self, worker_count: usize) -> Self {
+        self.pow_worker_count = Some(worker_count);
         self
     }
 
     /// Sets whether the PoW should be done locally in case a node doesn't support remote PoW.
-    pub fn with_fallback_to_local_pow(mut self, fallback_to_local_pow: bool) -> Self {
+    pub const fn with_fallback_to_local_pow(mut self, fallback_to_local_pow: bool) -> Self {
         self.network_info.fallback_to_local_pow = fallback_to_local_pow;
         self
     }
 
     /// Sets after how many seconds new tips will be requested during PoW
-    pub fn with_tips_interval(mut self, tips_interval: u64) -> Self {
+    pub const fn with_tips_interval(mut self, tips_interval: u64) -> Self {
         self.network_info.tips_interval = tips_interval;
         self
     }
 
     /// Sets the default request timeout.
-    pub fn with_api_timeout(mut self, timeout: Duration) -> Self {
+    pub const fn with_api_timeout(mut self, timeout: Duration) -> Self {
         self.api_timeout = timeout;
         self
     }
 
     /// Sets the request timeout for API usage.
-    pub fn with_remote_pow_timeout(mut self, timeout: Duration) -> Self {
+    pub const fn with_remote_pow_timeout(mut self, timeout: Duration) -> Self {
         self.remote_pow_timeout = timeout;
         self
     }

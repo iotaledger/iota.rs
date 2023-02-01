@@ -33,7 +33,7 @@ impl BlockBuilder {
 
     /// Creates a new [`BlockBuilder`].
     #[inline(always)]
-    pub fn new(parents: Parents) -> Self {
+    pub const fn new(parents: Parents) -> Self {
         Self {
             protocol_version: None,
             parents,
@@ -44,13 +44,14 @@ impl BlockBuilder {
 
     /// Adds a protocol version to a [`BlockBuilder`].
     #[inline(always)]
-    pub fn with_protocol_version(mut self, protocol_version: u8) -> Self {
+    pub const fn with_protocol_version(mut self, protocol_version: u8) -> Self {
         self.protocol_version = Some(protocol_version);
         self
     }
 
     /// Adds a payload to a [`BlockBuilder`].
     #[inline(always)]
+    #[allow(clippy::missing_const_for_fn)]
     pub fn with_payload(mut self, payload: Payload) -> Self {
         self.payload = Some(payload);
         self
@@ -58,7 +59,7 @@ impl BlockBuilder {
 
     /// Adds a nonce to a [`BlockBuilder`].
     #[inline(always)]
-    pub fn with_nonce(mut self, nonce: u64) -> Self {
+    pub const fn with_nonce(mut self, nonce: u64) -> Self {
         self.nonce = Some(nonce);
         self
     }
@@ -120,19 +121,19 @@ impl Block {
 
     /// Creates a new [`BlockBuilder`] to construct an instance of a [`Block`].
     #[inline(always)]
-    pub fn build(parents: Parents) -> BlockBuilder {
+    pub const fn build(parents: Parents) -> BlockBuilder {
         BlockBuilder::new(parents)
     }
 
     /// Returns the protocol version of a [`Block`].
     #[inline(always)]
-    pub fn protocol_version(&self) -> u8 {
+    pub const fn protocol_version(&self) -> u8 {
         self.protocol_version
     }
 
     /// Returns the parents of a [`Block`].
     #[inline(always)]
-    pub fn parents(&self) -> &Parents {
+    pub const fn parents(&self) -> &Parents {
         &self.parents
     }
 
@@ -144,7 +145,7 @@ impl Block {
 
     /// Returns the nonce of a [`Block`].
     #[inline(always)]
-    pub fn nonce(&self) -> u64 {
+    pub const fn nonce(&self) -> u64 {
         self.nonce
     }
 
@@ -156,6 +157,7 @@ impl Block {
 
     /// Consumes the [`Block`], and returns ownership over its [`Parents`].
     #[inline(always)]
+    #[allow(clippy::missing_const_for_fn)]
     pub fn into_parents(self) -> Parents {
         self.parents
     }

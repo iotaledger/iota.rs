@@ -42,19 +42,19 @@ impl MigratedFundsEntry {
 
     #[inline(always)]
     /// Returns the tail transaction hash of a [`MigratedFundsEntry`].
-    pub fn tail_transaction_hash(&self) -> &TailTransactionHash {
+    pub const fn tail_transaction_hash(&self) -> &TailTransactionHash {
         &self.tail_transaction_hash
     }
 
     /// Returns the address of a [`MigratedFundsEntry`].
     #[inline(always)]
-    pub fn address(&self) -> &Address {
+    pub const fn address(&self) -> &Address {
         &self.address
     }
 
     /// Returns the amount of a [`MigratedFundsEntry`].
     #[inline(always)]
-    pub fn amount(&self) -> u64 {
+    pub const fn amount(&self) -> u64 {
         self.amount
     }
 }

@@ -56,7 +56,7 @@ pub enum Unlock {
 
 impl Unlock {
     /// Returns the unlock kind of an [`Unlock`].
-    pub fn kind(&self) -> u8 {
+    pub const fn kind(&self) -> u8 {
         match self {
             Self::Signature(_) => SignatureUnlock::KIND,
             Self::Reference(_) => ReferenceUnlock::KIND,

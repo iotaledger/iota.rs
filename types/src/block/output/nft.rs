@@ -38,20 +38,20 @@ pub struct NftOutputBuilder {
 
 impl NftOutputBuilder {
     /// Creates an [`NftOutputBuilder`] with a provided amount.
-    pub fn new_with_amount(amount: u64, nft_id: NftId) -> Result<NftOutputBuilder, Error> {
+    pub const fn new_with_amount(amount: u64, nft_id: NftId) -> Result<NftOutputBuilder, Error> {
         Self::new(OutputBuilderAmount::Amount(amount), nft_id)
     }
 
     /// Creates an [`NftOutputBuilder`] with a provided rent structure.
     /// The amount will be set to the minimum storage deposit.
-    pub fn new_with_minimum_storage_deposit(
+    pub const fn new_with_minimum_storage_deposit(
         rent_structure: RentStructure,
         nft_id: NftId,
     ) -> Result<NftOutputBuilder, Error> {
         Self::new(OutputBuilderAmount::MinimumStorageDeposit(rent_structure), nft_id)
     }
 
-    fn new(amount: OutputBuilderAmount, nft_id: NftId) -> Result<NftOutputBuilder, Error> {
+    const fn new(amount: OutputBuilderAmount, nft_id: NftId) -> Result<NftOutputBuilder, Error> {
         Ok(Self {
             amount,
             native_tokens: Vec::new(),
@@ -64,14 +64,14 @@ impl NftOutputBuilder {
 
     /// Sets the amount to the provided value.
     #[inline(always)]
-    pub fn with_amount(mut self, amount: u64) -> Result<Self, Error> {
+    pub const fn with_amount(mut self, amount: u64) -> Result<Self, Error> {
         self.amount = OutputBuilderAmount::Amount(amount);
         Ok(self)
     }
 
     /// Sets the amount to the minimum storage deposit.
     #[inline(always)]
-    pub fn with_minimum_storage_deposit(mut self, rent_structure: RentStructure) -> Self {
+    pub const fn with_minimum_storage_deposit(mut self, rent_structure: RentStructure) -> Self {
         self.amount = OutputBuilderAmount::MinimumStorageDeposit(rent_structure);
         self
     }
@@ -92,7 +92,7 @@ impl NftOutputBuilder {
 
     /// Sets the NFT ID to the provided value.
     #[inline(always)]
-    pub fn with_nft_id(mut self, nft_id: NftId) -> Self {
+    pub const fn with_nft_id(mut self, nft_id: NftId) -> Self {
         self.nft_id = nft_id;
         self
     }
@@ -284,14 +284,14 @@ impl NftOutput {
 
     /// Creates a new [`NftOutputBuilder`] with a provided amount.
     #[inline(always)]
-    pub fn build_with_amount(amount: u64, nft_id: NftId) -> Result<NftOutputBuilder, Error> {
+    pub const fn build_with_amount(amount: u64, nft_id: NftId) -> Result<NftOutputBuilder, Error> {
         NftOutputBuilder::new_with_amount(amount, nft_id)
     }
 
     /// Creates a new [`NftOutputBuilder`] with a provided rent structure.
     /// The amount will be set to the minimum storage deposit.
     #[inline(always)]
-    pub fn build_with_minimum_storage_deposit(
+    pub const fn build_with_minimum_storage_deposit(
         rent_structure: RentStructure,
         nft_id: NftId,
     ) -> Result<NftOutputBuilder, Error> {
@@ -300,19 +300,19 @@ impl NftOutput {
 
     ///
     #[inline(always)]
-    pub fn amount(&self) -> u64 {
+    pub const fn amount(&self) -> u64 {
         self.amount
     }
 
     ///
     #[inline(always)]
-    pub fn native_tokens(&self) -> &NativeTokens {
+    pub const fn native_tokens(&self) -> &NativeTokens {
         &self.native_tokens
     }
 
     ///
     #[inline(always)]
-    pub fn nft_id(&self) -> &NftId {
+    pub const fn nft_id(&self) -> &NftId {
         &self.nft_id
     }
 
@@ -324,19 +324,19 @@ impl NftOutput {
 
     ///
     #[inline(always)]
-    pub fn unlock_conditions(&self) -> &UnlockConditions {
+    pub const fn unlock_conditions(&self) -> &UnlockConditions {
         &self.unlock_conditions
     }
 
     ///
     #[inline(always)]
-    pub fn features(&self) -> &Features {
+    pub const fn features(&self) -> &Features {
         &self.features
     }
 
     ///
     #[inline(always)]
-    pub fn immutable_features(&self) -> &Features {
+    pub const fn immutable_features(&self) -> &Features {
         &self.immutable_features
     }
 
@@ -352,7 +352,7 @@ impl NftOutput {
 
     ///
     #[inline(always)]
-    pub fn chain_id(&self) -> ChainId {
+    pub const fn chain_id(&self) -> ChainId {
         ChainId::Nft(self.nft_id)
     }
 

@@ -32,18 +32,18 @@ pub struct BasicOutputBuilder {
 impl BasicOutputBuilder {
     /// Creates a [`BasicOutputBuilder`] with a provided amount.
     #[inline(always)]
-    pub fn new_with_amount(amount: u64) -> Result<Self, Error> {
+    pub const fn new_with_amount(amount: u64) -> Result<Self, Error> {
         Self::new(OutputBuilderAmount::Amount(amount))
     }
 
     /// Creates an [`BasicOutputBuilder`] with a provided rent structure.
     /// The amount will be set to the minimum storage deposit.
     #[inline(always)]
-    pub fn new_with_minimum_storage_deposit(rent_structure: RentStructure) -> Result<Self, Error> {
+    pub const fn new_with_minimum_storage_deposit(rent_structure: RentStructure) -> Result<Self, Error> {
         Self::new(OutputBuilderAmount::MinimumStorageDeposit(rent_structure))
     }
 
-    fn new(amount: OutputBuilderAmount) -> Result<Self, Error> {
+    const fn new(amount: OutputBuilderAmount) -> Result<Self, Error> {
         Ok(Self {
             amount,
             native_tokens: Vec::new(),
@@ -54,14 +54,14 @@ impl BasicOutputBuilder {
 
     /// Sets the amount to the provided value.
     #[inline(always)]
-    pub fn with_amount(mut self, amount: u64) -> Result<Self, Error> {
+    pub const fn with_amount(mut self, amount: u64) -> Result<Self, Error> {
         self.amount = OutputBuilderAmount::Amount(amount);
         Ok(self)
     }
 
     /// Sets the amount to the minimum storage deposit.
     #[inline(always)]
-    pub fn with_minimum_storage_deposit(mut self, rent_structure: RentStructure) -> Self {
+    pub const fn with_minimum_storage_deposit(mut self, rent_structure: RentStructure) -> Self {
         self.amount = OutputBuilderAmount::MinimumStorageDeposit(rent_structure);
         self
     }
@@ -229,38 +229,40 @@ impl BasicOutput {
 
     /// Creates a new [`BasicOutputBuilder`] with a provided amount.
     #[inline(always)]
-    pub fn build_with_amount(amount: u64) -> Result<BasicOutputBuilder, Error> {
+    pub const fn build_with_amount(amount: u64) -> Result<BasicOutputBuilder, Error> {
         BasicOutputBuilder::new_with_amount(amount)
     }
 
     /// Creates a new [`BasicOutputBuilder`] with a provided rent structure.
     /// The amount will be set to the minimum storage deposit.
     #[inline(always)]
-    pub fn build_with_minimum_storage_deposit(rent_structure: RentStructure) -> Result<BasicOutputBuilder, Error> {
+    pub const fn build_with_minimum_storage_deposit(
+        rent_structure: RentStructure,
+    ) -> Result<BasicOutputBuilder, Error> {
         BasicOutputBuilder::new_with_minimum_storage_deposit(rent_structure)
     }
 
     ///
     #[inline(always)]
-    pub fn amount(&self) -> u64 {
+    pub const fn amount(&self) -> u64 {
         self.amount
     }
 
     ///
     #[inline(always)]
-    pub fn native_tokens(&self) -> &NativeTokens {
+    pub const fn native_tokens(&self) -> &NativeTokens {
         &self.native_tokens
     }
 
     ///
     #[inline(always)]
-    pub fn unlock_conditions(&self) -> &UnlockConditions {
+    pub const fn unlock_conditions(&self) -> &UnlockConditions {
         &self.unlock_conditions
     }
 
     ///
     #[inline(always)]
-    pub fn features(&self) -> &Features {
+    pub const fn features(&self) -> &Features {
         &self.features
     }
 

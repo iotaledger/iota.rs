@@ -33,13 +33,13 @@ impl OutputId {
 
     /// Returns the [`TransactionId`] of an [`OutputId`].
     #[inline(always)]
-    pub fn transaction_id(&self) -> &TransactionId {
+    pub const fn transaction_id(&self) -> &TransactionId {
         &self.transaction_id
     }
 
     /// Returns the index of an [`OutputId`].
     #[inline(always)]
-    pub fn index(&self) -> u16 {
+    pub const fn index(&self) -> u16 {
         self.index.get()
     }
 
@@ -54,7 +54,7 @@ impl OutputId {
 
     /// Splits an [`OutputId`] into its [`TransactionId`] and index.
     #[inline(always)]
-    pub fn split(self) -> (TransactionId, u16) {
+    pub const fn split(self) -> (TransactionId, u16) {
         (self.transaction_id, self.index())
     }
 

@@ -77,7 +77,12 @@ pub(crate) fn amount_sums(
     (inputs_sum, outputs_sum, inputs_sdr, outputs_sdr)
 }
 
-fn missing_amount(inputs_sum: u64, outputs_sum: u64, remainder_amount: u64, native_tokens_remainder: bool) -> u64 {
+const fn missing_amount(
+    inputs_sum: u64,
+    outputs_sum: u64,
+    remainder_amount: u64,
+    native_tokens_remainder: bool,
+) -> u64 {
     // If there is already a remainder, make sure it's enough to cover the storage deposit.
     if inputs_sum > outputs_sum {
         let diff = inputs_sum - outputs_sum;

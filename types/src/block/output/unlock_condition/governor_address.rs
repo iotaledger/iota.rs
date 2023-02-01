@@ -17,13 +17,13 @@ impl GovernorAddressUnlockCondition {
 
     /// Creates a new [ GovernorAddressUnlockCondition`].
     #[inline(always)]
-    pub fn new(address: Address) -> Self {
+    pub const fn new(address: Address) -> Self {
         Self(address)
     }
 
     /// Returns the address of a [ GovernorAddressUnlockCondition`].
     #[inline(always)]
-    pub fn address(&self) -> &Address {
+    pub const fn address(&self) -> &Address {
         &self.0
     }
 }

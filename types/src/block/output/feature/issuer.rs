@@ -16,13 +16,13 @@ impl IssuerFeature {
 
     /// Creates a new [`IssuerFeature`].
     #[inline(always)]
-    pub fn new(address: Address) -> Self {
+    pub const fn new(address: Address) -> Self {
         Self(address)
     }
 
     /// Returns the issuer [`Address`].
     #[inline(always)]
-    pub fn address(&self) -> &Address {
+    pub const fn address(&self) -> &Address {
         &self.0
     }
 }

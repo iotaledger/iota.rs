@@ -36,12 +36,12 @@ impl TransactionPayload {
     }
 
     /// Return the essence of a [`TransactionPayload`].
-    pub fn essence(&self) -> &TransactionEssence {
+    pub const fn essence(&self) -> &TransactionEssence {
         &self.essence
     }
 
     /// Return unlocks of a [`TransactionPayload`].
-    pub fn unlocks(&self) -> &Unlocks {
+    pub const fn unlocks(&self) -> &Unlocks {
         &self.unlocks
     }
 

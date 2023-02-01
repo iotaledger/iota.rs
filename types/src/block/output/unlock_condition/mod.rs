@@ -60,7 +60,7 @@ pub enum UnlockCondition {
 
 impl UnlockCondition {
     /// Return the output kind of an `Output`.
-    pub fn kind(&self) -> u8 {
+    pub const fn kind(&self) -> u8 {
         match self {
             Self::Address(_) => AddressUnlockCondition::KIND,
             Self::StorageDepositReturn(_) => StorageDepositReturnUnlockCondition::KIND,
@@ -73,7 +73,7 @@ impl UnlockCondition {
     }
 
     /// Returns the [`UnlockConditionFlags`] for the given [`UnlockCondition`].
-    pub(crate) fn flag(&self) -> UnlockConditionFlags {
+    pub(crate) const fn flag(&self) -> UnlockConditionFlags {
         match self {
             Self::Address(_) => UnlockConditionFlags::ADDRESS,
             Self::StorageDepositReturn(_) => UnlockConditionFlags::STORAGE_DEPOSIT_RETURN,
@@ -590,7 +590,7 @@ pub mod dto {
 
     impl UnlockConditionDto {
         /// Return the unlock condition kind of a `UnlockConditionDto`.
-        pub fn kind(&self) -> u8 {
+        pub const fn kind(&self) -> u8 {
             match self {
                 Self::Address(_) => AddressUnlockCondition::KIND,
                 Self::StorageDepositReturn(_) => StorageDepositReturnUnlockCondition::KIND,

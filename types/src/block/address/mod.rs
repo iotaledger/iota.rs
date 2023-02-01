@@ -43,7 +43,7 @@ pub enum Address {
 
 impl Address {
     /// Returns the address kind of an [`Address`].
-    pub fn kind(&self) -> u8 {
+    pub const fn kind(&self) -> u8 {
         match self {
             Self::Ed25519(_) => Ed25519Address::KIND,
             Self::Alias(_) => AliasAddress::KIND,
@@ -52,13 +52,13 @@ impl Address {
     }
 
     /// Checks whether the address is an [`Ed25519Address`].
-    pub fn is_ed25519(&self) -> bool {
+    pub const fn is_ed25519(&self) -> bool {
         matches!(self, Self::Ed25519(_))
     }
 
     /// Gets the address as an actual [`Ed25519Address`].
     /// PANIC: do not call on a non-ed25519 address.
-    pub fn as_ed25519(&self) -> &Ed25519Address {
+    pub const fn as_ed25519(&self) -> &Ed25519Address {
         if let Address::Ed25519(address) = self {
             address
         } else {
@@ -67,13 +67,13 @@ impl Address {
     }
 
     /// Checks whether the address is an [`AliasAddress`].
-    pub fn is_alias(&self) -> bool {
+    pub const fn is_alias(&self) -> bool {
         matches!(self, Self::Alias(_))
     }
 
     /// Gets the address as an actual [`AliasAddress`].
     /// PANIC: do not call on a non-alias address.
-    pub fn as_alias(&self) -> &AliasAddress {
+    pub const fn as_alias(&self) -> &AliasAddress {
         if let Address::Alias(address) = self {
             address
         } else {
@@ -82,13 +82,13 @@ impl Address {
     }
 
     /// Checks whether the address is an [`NftAddress`].
-    pub fn is_nft(&self) -> bool {
+    pub const fn is_nft(&self) -> bool {
         matches!(self, Self::Nft(_))
     }
 
     /// Gets the address as an actual [`NftAddress`].
     /// PANIC: do not call on a non-nft address.
-    pub fn as_nft(&self) -> &NftAddress {
+    pub const fn as_nft(&self) -> &NftAddress {
         if let Address::Nft(address) = self {
             address
         } else {

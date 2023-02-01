@@ -41,13 +41,14 @@ impl Burn {
     }
 
     /// Sets the aliases to [`Burn`].
+    #[allow(clippy::missing_const_for_fn)]
     pub fn set_aliases(mut self, aliases: HashSet<AliasId>) -> Self {
         self.aliases = aliases;
         self
     }
 
     /// Returns the aliases to [`Burn`].
-    pub fn aliases(&self) -> &HashSet<AliasId> {
+    pub const fn aliases(&self) -> &HashSet<AliasId> {
         &self.aliases
     }
 
@@ -58,13 +59,14 @@ impl Burn {
     }
 
     /// Sets the NFTs to [`Burn`].
+    #[allow(clippy::missing_const_for_fn)]
     pub fn set_nfts(mut self, nfts: HashSet<NftId>) -> Self {
         self.nfts = nfts;
         self
     }
 
     /// Returns the NFTs to [`Burn`].
-    pub fn nfts(&self) -> &HashSet<NftId> {
+    pub const fn nfts(&self) -> &HashSet<NftId> {
         &self.nfts
     }
 
@@ -75,13 +77,14 @@ impl Burn {
     }
 
     /// Sets the foundries to [`Burn`].
+    #[allow(clippy::missing_const_for_fn)]
     pub fn set_foundries(mut self, foundries: HashSet<FoundryId>) -> Self {
         self.foundries = foundries;
         self
     }
 
     /// Returns the foundries to [`Burn`].
-    pub fn foundries(&self) -> &HashSet<FoundryId> {
+    pub const fn foundries(&self) -> &HashSet<FoundryId> {
         &self.foundries
     }
 
@@ -101,7 +104,7 @@ impl Burn {
     }
 
     /// Returns the native tokens to [`Burn`].
-    pub fn native_tokens(&self) -> &hashbrown::HashMap<TokenId, U256> {
+    pub const fn native_tokens(&self) -> &hashbrown::HashMap<TokenId, U256> {
         &self.native_tokens
     }
 }

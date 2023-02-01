@@ -44,7 +44,7 @@ impl TreasuryTransactionPayload {
     }
 
     /// Returns the output of a [`TreasuryTransactionPayload`].
-    pub fn output(&self) -> &TreasuryOutput {
+    pub const fn output(&self) -> &TreasuryOutput {
         // It has already been validated at construction that `output` is a `TreasuryOutput`.
         self.output.as_treasury()
     }

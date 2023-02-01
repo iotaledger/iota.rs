@@ -411,7 +411,7 @@ impl StrongholdAdapter {
     }
 
     /// Get timeout for the key clearing task.
-    pub fn get_timeout(&self) -> Option<Duration> {
+    pub const fn get_timeout(&self) -> Option<Duration> {
         self.timeout
     }
 

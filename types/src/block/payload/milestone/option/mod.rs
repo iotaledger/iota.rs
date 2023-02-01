@@ -38,7 +38,7 @@ pub enum MilestoneOption {
 
 impl MilestoneOption {
     /// Return the milestone option kind of a [`MilestoneOption`].
-    pub fn kind(&self) -> u8 {
+    pub const fn kind(&self) -> u8 {
         match self {
             Self::Receipt(_) => ReceiptMilestoneOption::KIND,
             Self::Parameters(_) => ParametersMilestoneOption::KIND,
@@ -244,7 +244,7 @@ pub mod dto {
 
     impl MilestoneOptionDto {
         /// Returns the milestone option kind of a [`MilestoneOptionDto`].
-        pub fn kind(&self) -> u8 {
+        pub const fn kind(&self) -> u8 {
             match self {
                 Self::Receipt(_) => ReceiptMilestoneOption::KIND,
                 Self::Parameters(_) => ParametersMilestoneOption::KIND,

@@ -184,6 +184,7 @@ impl InputSelection {
     }
 
     /// Sets the forbidden inputs of an [`InputSelection`].
+    #[allow(clippy::missing_const_for_fn)]
     pub fn forbidden_inputs(mut self, inputs: HashSet<OutputId>) -> Self {
         self.forbidden_inputs = inputs;
         self
@@ -202,7 +203,7 @@ impl InputSelection {
     }
 
     /// Sets the timestamp of an [`InputSelection`].
-    pub fn timestamp(mut self, timestamp: u32) -> Self {
+    pub const fn timestamp(mut self, timestamp: u32) -> Self {
         self.timestamp = timestamp;
         self
     }

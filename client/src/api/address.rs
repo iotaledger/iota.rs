@@ -46,7 +46,7 @@ pub struct GetAddressesBuilderOptions {
 
 impl<'a> GetAddressesBuilder<'a> {
     /// Create get_addresses builder
-    pub fn new(manager: &'a SecretManager) -> Self {
+    pub const fn new(manager: &'a SecretManager) -> Self {
         Self {
             client: None,
             secret_manager: manager,
@@ -66,25 +66,25 @@ impl<'a> GetAddressesBuilder<'a> {
     }
 
     /// Set the coin type
-    pub fn with_coin_type(mut self, coin_type: u32) -> Self {
+    pub const fn with_coin_type(mut self, coin_type: u32) -> Self {
         self.coin_type = coin_type;
         self
     }
 
     /// Set the account index
-    pub fn with_account_index(mut self, account_index: u32) -> Self {
+    pub const fn with_account_index(mut self, account_index: u32) -> Self {
         self.account_index = account_index;
         self
     }
 
     /// Set range to the builder
-    pub fn with_range(mut self, range: Range<u32>) -> Self {
+    pub const fn with_range(mut self, range: Range<u32>) -> Self {
         self.range = range;
         self
     }
 
     /// Set if internal or public addresses should be generated
-    pub fn with_internal_addresses(mut self, internal: bool) -> Self {
+    pub const fn with_internal_addresses(mut self, internal: bool) -> Self {
         self.internal = internal;
         self
     }
@@ -96,7 +96,7 @@ impl<'a> GetAddressesBuilder<'a> {
     }
 
     /// Set the metadata for the address generation (used for ledger to display addresses or not)
-    pub fn with_options(mut self, options: GenerateAddressOptions) -> Self {
+    pub const fn with_options(mut self, options: GenerateAddressOptions) -> Self {
         self.options = Some(options);
         self
     }

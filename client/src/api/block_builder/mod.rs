@@ -87,7 +87,7 @@ pub struct ClientBlockBuilderOptions {
 
 impl<'a> ClientBlockBuilder<'a> {
     /// Create block builder
-    pub fn new(client: &'a Client) -> Self {
+    pub const fn new(client: &'a Client) -> Self {
         Self {
             client,
             secret_manager: None,
@@ -106,7 +106,7 @@ impl<'a> ClientBlockBuilder<'a> {
     }
 
     /// Allow burning of native tokens when custom inputs are provided.
-    pub fn with_burning_allowed(mut self, allow_burning: bool) -> Self {
+    pub const fn with_burning_allowed(mut self, allow_burning: bool) -> Self {
         self.allow_burning = allow_burning;
         self
     }
@@ -118,19 +118,19 @@ impl<'a> ClientBlockBuilder<'a> {
     }
 
     /// Sets the coin type.
-    pub fn with_coin_type(mut self, coin_type: u32) -> Self {
+    pub const fn with_coin_type(mut self, coin_type: u32) -> Self {
         self.coin_type = coin_type;
         self
     }
 
     /// Sets the account index.
-    pub fn with_account_index(mut self, account_index: u32) -> Self {
+    pub const fn with_account_index(mut self, account_index: u32) -> Self {
         self.account_index = account_index;
         self
     }
 
     /// Sets the index of the address to start looking for balance.
-    pub fn with_initial_address_index(mut self, initial_address_index: u32) -> Self {
+    pub const fn with_initial_address_index(mut self, initial_address_index: u32) -> Self {
         self.initial_address_index = initial_address_index;
         self
     }
@@ -152,7 +152,7 @@ impl<'a> ClientBlockBuilder<'a> {
     }
 
     /// Set a custom range in which to search for addresses for custom provided inputs. Default: 0..100
-    pub fn with_input_range(mut self, range: Range<u32>) -> Self {
+    pub const fn with_input_range(mut self, range: Range<u32>) -> Self {
         self.input_range = range;
         self
     }

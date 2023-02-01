@@ -28,7 +28,7 @@ use crate::{Client, NetworkInfo, Result};
 impl Client {
     /// Returns a handle to the MQTT topics manager.
     #[cfg(feature = "mqtt")]
-    pub fn subscriber(&self) -> MqttManager<'_> {
+    pub const fn subscriber(&self) -> MqttManager<'_> {
         MqttManager::new(self)
     }
 
@@ -276,7 +276,7 @@ pub struct MqttManager<'a> {
 
 impl<'a> MqttManager<'a> {
     /// Initializes a new instance of the mqtt subscriber.
-    pub fn new(client: &'a Client) -> Self {
+    pub const fn new(client: &'a Client) -> Self {
         Self { client }
     }
 
@@ -320,7 +320,7 @@ pub struct MqttTopicManager<'a> {
 
 impl<'a> MqttTopicManager<'a> {
     /// Initializes a new instance of the mqtt topic manager.
-    fn new(client: &'a Client) -> Self {
+    const fn new(client: &'a Client) -> Self {
         Self { client, topics: vec![] }
     }
 
