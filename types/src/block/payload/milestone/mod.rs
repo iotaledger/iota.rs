@@ -333,20 +333,3 @@ pub mod dto {
         }
     }
 }
-
-#[cfg(feature = "inx")]
-#[allow(missing_docs)]
-pub mod inx {
-    use packable::PackableExt;
-
-    use super::*;
-    use crate::block::payload::Payload;
-
-    impl From<MilestonePayload> for ::inx::proto::RawMilestone {
-        fn from(value: MilestonePayload) -> Self {
-            Self {
-                data: Payload::from(value).pack_to_vec(),
-            }
-        }
-    }
-}

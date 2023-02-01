@@ -182,28 +182,3 @@ pub mod dto {
         }
     }
 }
-
-#[cfg(feature = "inx")]
-mod inx {
-    use packable::PackableExt;
-
-    use super::*;
-    use crate::block::InxError;
-
-    impl TryFrom<::inx::proto::RawProtocolParameters> for ProtocolParameters {
-        type Error = crate::block::error::inx::InxError;
-
-        fn try_from(value: ::inx::proto::RawProtocolParameters) -> Result<Self, Self::Error> {
-            Self::unpack_verified(value.params, &()).map_err(|e| InxError::InvalidRawBytes(format!("{e:?}")))
-        }
-    }
-
-    impl From<ProtocolParameters> for ::inx::proto::RawProtocolParameters {
-        fn from(value: ProtocolParameters) -> Self {
-            Self {
-                protocol_version: value.protocol_version() as u32,
-                params: value.pack_to_vec(),
-            }
-        }
-    }
-}
