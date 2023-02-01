@@ -93,7 +93,7 @@ impl Feature {
     }
 
     /// Checks whether the feature is a [`MetadataFeature`].
-    pub fn is_(&self) -> bool {
+    pub fn is_metadata(&self) -> bool {
         matches!(self, Self::Metadata(_))
     }
 
