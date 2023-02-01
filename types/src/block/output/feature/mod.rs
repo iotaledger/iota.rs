@@ -61,6 +61,66 @@ impl Feature {
             Self::Tag(_) => FeatureFlags::TAG,
         }
     }
+
+    /// Checks whether the feature is a [`SenderFeature`].
+    pub fn is_sender(&self) -> bool {
+        matches!(self, Self::Sender(_))
+    }
+
+    /// Gets the feature as an actual [`SenderFeature`].
+    /// PANIC: do not call on a non-sender feature.
+    pub fn as_sender(&self) -> &SenderFeature {
+        if let Feature::Sender(feature) = self {
+            feature
+        } else {
+            panic!("as_sender called on a non-sender feature");
+        }
+    }
+
+    /// Checks whether the feature is an [`IssuerFeature`].
+    pub fn is_issuer(&self) -> bool {
+        matches!(self, Self::Issuer(_))
+    }
+
+    /// Gets the feature as an actual [`IssuerFeature`].
+    /// PANIC: do not call on a non-issuer feature.
+    pub fn as_issuer(&self) -> &IssuerFeature {
+        if let Feature::Issuer(feature) = self {
+            feature
+        } else {
+            panic!("as_issuer called on a non-issuer feature");
+        }
+    }
+
+    /// Checks whether the feature is a [`MetadataFeature`].
+    pub fn is_(&self) -> bool {
+        matches!(self, Self::Metadata(_))
+    }
+
+    /// Gets the feature as an actual [`MetadataFeature`].
+    /// PANIC: do not call on a non-metadata feature.
+    pub fn as_metadata(&self) -> &MetadataFeature {
+        if let Feature::Metadata(feature) = self {
+            feature
+        } else {
+            panic!("as_metadata called on a non-metadata feature");
+        }
+    }
+
+    /// Checks whether the feature is a [`TagFeature`].
+    pub fn is_tag(&self) -> bool {
+        matches!(self, Self::Tag(_))
+    }
+
+    /// Gets the feature as an actual [`TagFeature`].
+    /// PANIC: do not call on a non-tag feature.
+    pub fn as_tag(&self) -> &TagFeature {
+        if let Feature::Tag(feature) = self {
+            feature
+        } else {
+            panic!("as_tag called on a non-tag feature");
+        }
+    }
 }
 
 create_bitflags!(
