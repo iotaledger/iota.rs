@@ -34,6 +34,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated dependencies;
 - `OutputMetadataResponse` renamed to `OutputMetadataDto` and moved from `api` to `block`;
 
+### Removed
+
+- `inx` feature and modules;
+
 ## 1.0.0-rc.4 - 2022-12-20
 
 ### Added
