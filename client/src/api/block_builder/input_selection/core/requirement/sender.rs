@@ -9,13 +9,11 @@ use crate::{
 };
 
 fn has_ed25519_address(input: &InputSigningData, address: &Address) -> bool {
-    // TODO could also be in state/governor?
-    if let Some(unlock_conditions) = input.output.unlock_conditions() {
-        if let Some(address_unlock_condition) = unlock_conditions.address() {
-            address_unlock_condition.address() == address
-        } else {
-            false
-        }
+    // PANIC: safe to unwrap as outputs without unlock conditions have been filtered out already.
+    let unlock_conditions = input.output.unlock_conditions().unwrap();
+
+    if let Some(address_unlock_condition) = unlock_conditions.address() {
+        address_unlock_condition.address() == address
     } else {
         false
     }
