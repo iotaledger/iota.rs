@@ -43,7 +43,12 @@ impl InputSelection {
             return Ok(None);
         }
 
-        let mut builder = AliasOutputBuilder::from(input).with_alias_id(alias_id);
+        // Remove potential sender feature because it will not be needed anymore as it only needs to be verified once.
+        let features = input.features().iter().cloned().filter(|feature| !feature.is_sender());
+
+        let mut builder = AliasOutputBuilder::from(input)
+            .with_alias_id(alias_id)
+            .with_features(features);
 
         if !governance_transition {
             builder = builder.with_state_index(input.state_index() + 1)
@@ -79,8 +84,12 @@ impl InputSelection {
             return Ok(None);
         }
 
+        // Remove potential sender feature because it will not be needed anymore as it only needs to be verified once.
+        let features = input.features().iter().cloned().filter(|feature| !feature.is_sender());
+
         let output = NftOutputBuilder::from(input)
             .with_nft_id(nft_id)
+            .with_features(features)
             .finish_output(self.protocol_parameters.token_supply())?;
 
         self.automatically_transitioned.insert(ChainId::from(nft_id));

@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Derive `serde::{Serialize, Deserialize}` on `ChainId`;
 - `Input::{is_utxo, as_utxo, is_treasury, as_treasury}`;
 - Derive `Copy` on `UtxoInput`;
+- `Feature::{is_sender, as_sender, is_issuer, as_issuer, is_metadata, as_metadata, is_tag, as_tag}`;
 
 ### Changed
 
