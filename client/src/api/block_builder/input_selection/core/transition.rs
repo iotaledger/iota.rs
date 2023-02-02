@@ -38,9 +38,13 @@ impl InputSelection {
             return Ok(None);
         }
 
+        // Remove potential sender feature because it will not be needed anymore as it only needs to be verified once.
+        let features = input.features().iter().cloned().filter(|feature| !feature.is_sender());
+
         let output = AliasOutputBuilder::from(input)
             .with_alias_id(alias_id)
             .with_state_index(input.state_index() + 1)
+            .with_features(features)
             .finish_output(self.protocol_parameters.token_supply())?;
 
         self.automatically_transitioned.insert(ChainId::from(alias_id));
@@ -71,8 +75,12 @@ impl InputSelection {
             return Ok(None);
         }
 
+        // Remove potential sender feature because it will not be needed anymore as it only needs to be verified once.
+        let features = input.features().iter().cloned().filter(|feature| !feature.is_sender());
+
         let output = NftOutputBuilder::from(input)
             .with_nft_id(nft_id)
+            .with_features(features)
             .finish_output(self.protocol_parameters.token_supply())?;
 
         self.automatically_transitioned.insert(ChainId::from(nft_id));
