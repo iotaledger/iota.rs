@@ -59,7 +59,7 @@ impl InputSelection {
     fn required_alias_nft_addresses(&self, input: &InputSigningData) -> Result<Option<Requirement>> {
         // TODO burn?
         // TODO unwrap or false?
-        let is_alias_state_transition = is_alias_state_transition(input, &self.outputs)?
+        let is_alias_state_transition = is_alias_state_transition(input, &self.outputs)
             .unwrap_or((false, false))
             .0;
         let (required_address, _) =

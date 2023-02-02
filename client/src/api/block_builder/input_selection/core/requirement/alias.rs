@@ -11,8 +11,8 @@ use crate::{
 // Returns
 // - if alias transition is a state transition with the provided outputs for a given input
 // - if the output was provided, to differentiate a burn from a proper governance transition
-pub(crate) fn is_alias_state_transition(input: &InputSigningData, outputs: &[Output]) -> Result<Option<(bool, bool)>> {
-    Ok(if let Output::Alias(alias_input) = &input.output {
+pub(crate) fn is_alias_state_transition(input: &InputSigningData, outputs: &[Output]) -> Option<(bool, bool)> {
+    if let Output::Alias(alias_input) = &input.output {
         let alias_id = alias_input.alias_id_non_null(input.output_id());
         // Checks if the alias exists in the outputs and gets the transition type.
         outputs
@@ -39,7 +39,7 @@ pub(crate) fn is_alias_state_transition(input: &InputSigningData, outputs: &[Out
     } else {
         // Not an alias transition.
         None
-    })
+    }
 }
 
 /// Checks if an output is an alias with a given non null alias ID.
@@ -121,7 +121,7 @@ impl InputSelection {
         // PANIC: safe to unwrap as it's been checked that both can't be None at the same time.
         let input = selected_input.unwrap_or_else(|| &self.available_inputs[available_index.unwrap()]);
 
-        if is_alias_state_transition(input, &self.outputs)? == Some((false, true)) {
+        if is_alias_state_transition(input, &self.outputs) == Some((false, true)) {
             return Err(Error::UnfulfillableRequirement(Requirement::Alias(
                 alias_id,
                 state_transition,

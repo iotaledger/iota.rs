@@ -230,7 +230,7 @@ fn get_required_addresses_for_sender_and_issuer(
     // Addresses in the inputs that will be unlocked in the transaction
     let mut unlocked_addresses = HashSet::new();
     for input_signing_data in selected_inputs {
-        let alias_state_transition = is_alias_state_transition(input_signing_data, outputs)?;
+        let alias_state_transition = is_alias_state_transition(input_signing_data, outputs);
         let (required_unlock_address, unlocked_alias_or_nft_address) =
             input_signing_data.output.required_and_unlocked_address(
                 current_time,

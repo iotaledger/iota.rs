@@ -1,21 +1,48 @@
 // Copyright 2023 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use super::{InputSelection, Requirement};
+use super::{alias::is_alias_state_transition, InputSelection, Requirement};
 use crate::{
-    block::address::Address,
+    block::{address::Address, output::Output},
     error::{Error, Result},
     secret::types::InputSigningData,
 };
 
-fn has_ed25519_address(input: &InputSigningData, address: &Address) -> bool {
+fn selected_has_ed25519_address(
+    input: &InputSigningData,
+    outputs: &[Output],
+    address: &Address,
+    timestamp: u32,
+) -> bool {
+    let alias_state_transition = if input.output.is_alias() {
+        is_alias_state_transition(input, outputs).unwrap_or((false, false)).0
+    } else {
+        false
+    };
+    let (required_address, _) = input
+        .output
+        .required_and_unlocked_address(timestamp, input.output_id(), alias_state_transition)
+        .unwrap();
+
+    &required_address == address
+}
+
+fn available_has_ed25519_address(input: &InputSigningData, address: &Address) -> (bool, bool) {
     // PANIC: safe to unwrap as outputs without unlock conditions have been filtered out already.
     let unlock_conditions = input.output.unlock_conditions().unwrap();
 
-    if let Some(address_unlock_condition) = unlock_conditions.address() {
-        address_unlock_condition.address() == address
+    if input.output.is_alias() {
+        if let Some(unlock_condition) = unlock_conditions.state_controller_address() {
+            (unlock_condition.address() == address, false)
+        } else if let Some(unlock_condition) = unlock_conditions.governor_address() {
+            (unlock_condition.address() == address, true)
+        } else {
+            (false, false)
+        }
+    } else if let Some(unlock_condition) = unlock_conditions.address() {
+        (unlock_condition.address() == address, false)
     } else {
-        false
+        (false, false)
     }
 }
 
@@ -28,7 +55,7 @@ impl InputSelection {
         if self
             .selected_inputs
             .iter()
-            .any(|input| has_ed25519_address(input, &address))
+            .any(|input| selected_has_ed25519_address(input, self.outputs.as_slice(), &address, self.timestamp))
         {
             return Ok((Vec::new(), None));
         }
@@ -39,27 +66,35 @@ impl InputSelection {
 
         // TODO check that the enumeration index is kept original and not filtered.
         // Tries to find a basic output first.
-        let index = if let Some((index, _)) = self
+        let found = if let Some((index, _)) = self
             .available_inputs
             .iter()
             .enumerate()
-            .find(|(_, input)| input.output.is_basic() && has_ed25519_address(input, &address))
+            .find(|(_, input)| input.output.is_basic() && available_has_ed25519_address(input, &address).0)
         {
-            Some(index)
+            Some((index, false))
         } else {
             // TODO any preference between alias and NFT?
             // If no basic output has been found, tries the other kinds of output.
             self.available_inputs.iter().enumerate().find_map(|(index, input)| {
-                if !input.output.is_basic() && has_ed25519_address(input, &address) {
-                    Some(index)
+                if !input.output.is_basic() {
+                    let (found, governance_transition) = available_has_ed25519_address(input, &address);
+                    if found {
+                        Some((index, governance_transition))
+                    } else {
+                        None
+                    }
                 } else {
                     None
                 }
             })
         };
 
-        match index {
-            Some(index) => Ok((vec![(self.available_inputs.swap_remove(index), false)], None)),
+        match found {
+            Some((index, governance_transition)) => Ok((
+                vec![(self.available_inputs.swap_remove(index), governance_transition)],
+                None,
+            )),
             None => Err(Error::UnfulfillableRequirement(Requirement::Sender(address))),
         }
     }
