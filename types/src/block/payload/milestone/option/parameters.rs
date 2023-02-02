@@ -90,7 +90,7 @@ pub mod dto {
 
     impl From<&ParametersMilestoneOption> for ParametersMilestoneOptionDto {
         fn from(value: &ParametersMilestoneOption) -> Self {
-            ParametersMilestoneOptionDto {
+            Self {
                 kind: ParametersMilestoneOption::KIND,
                 target_milestone_index: *value.target_milestone_index(),
                 protocol_version: value.protocol_version(),
@@ -103,7 +103,7 @@ pub mod dto {
         type Error = DtoError;
 
         fn try_from(value: &ParametersMilestoneOptionDto) -> Result<Self, Self::Error> {
-            Ok(ParametersMilestoneOption::new(
+            Ok(Self::new(
                 value.target_milestone_index.into(),
                 value.protocol_version,
                 prefix_hex::decode(&value.binary_parameters).map_err(|_| DtoError::InvalidField("params"))?,

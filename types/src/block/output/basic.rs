@@ -174,7 +174,7 @@ impl BasicOutputBuilder {
 
 impl From<&BasicOutput> for BasicOutputBuilder {
     fn from(output: &BasicOutput) -> Self {
-        BasicOutputBuilder {
+        Self {
             amount: OutputBuilderAmount::Amount(output.amount),
             native_tokens: output.native_tokens.to_vec(),
             unlock_conditions: output.unlock_conditions.to_vec(),
@@ -391,7 +391,7 @@ pub mod dto {
             Ok(builder)
         }
 
-        pub fn try_from_dto(value: &BasicOutputDto, token_supply: u64) -> Result<BasicOutput, DtoError> {
+        pub fn try_from_dto(value: &BasicOutputDto, token_supply: u64) -> Result<Self, DtoError> {
             let mut builder = Self::_try_from_dto(value)?;
 
             for u in &value.unlock_conditions {
@@ -401,7 +401,7 @@ pub mod dto {
             Ok(builder.finish(token_supply)?)
         }
 
-        pub fn try_from_dto_unverified(value: &BasicOutputDto) -> Result<BasicOutput, DtoError> {
+        pub fn try_from_dto_unverified(value: &BasicOutputDto) -> Result<Self, DtoError> {
             let mut builder = Self::_try_from_dto(value)?;
 
             for u in &value.unlock_conditions {
@@ -417,7 +417,7 @@ pub mod dto {
             unlock_conditions: Vec<UnlockConditionDto>,
             features: Option<Vec<FeatureDto>>,
             token_supply: u64,
-        ) -> Result<BasicOutput, DtoError> {
+        ) -> Result<Self, DtoError> {
             let mut builder = match amount {
                 OutputBuilderAmountDto::Amount(amount) => {
                     BasicOutputBuilder::new_with_amount(amount.parse().map_err(|_| DtoError::InvalidField("amount"))?)?

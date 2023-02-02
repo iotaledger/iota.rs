@@ -194,7 +194,7 @@ impl Output {
     /// Gets the output as an actual [`TreasuryOutput`].
     /// PANIC: do not call on a non-treasury output.
     pub fn as_treasury(&self) -> &TreasuryOutput {
-        if let Output::Treasury(output) = self {
+        if let Self::Treasury(output) = self {
             output
         } else {
             panic!("as_treasury called on a non-treasury output");
@@ -209,7 +209,7 @@ impl Output {
     /// Gets the output as an actual [`BasicOutput`].
     /// PANIC: do not call on a non-basic output.
     pub fn as_basic(&self) -> &BasicOutput {
-        if let Output::Basic(output) = self {
+        if let Self::Basic(output) = self {
             output
         } else {
             panic!("as_basic called on a non-basic output");
@@ -224,7 +224,7 @@ impl Output {
     /// Gets the output as an actual [`AliasOutput`].
     /// PANIC: do not call on a non-alias output.
     pub fn as_alias(&self) -> &AliasOutput {
-        if let Output::Alias(output) = self {
+        if let Self::Alias(output) = self {
             output
         } else {
             panic!("as_alias called on a non-alias output");
@@ -239,7 +239,7 @@ impl Output {
     /// Gets the output as an actual [`FoundryOutput`].
     /// PANIC: do not call on a non-foundry output.
     pub fn as_foundry(&self) -> &FoundryOutput {
-        if let Output::Foundry(output) = self {
+        if let Self::Foundry(output) = self {
             output
         } else {
             panic!("as_foundry called on a non-foundry output");
@@ -254,7 +254,7 @@ impl Output {
     /// Gets the output as an actual [`NftOutput`].
     /// PANIC: do not call on a non-nft output.
     pub fn as_nft(&self) -> &NftOutput {
-        if let Output::Nft(output) = self {
+        if let Self::Nft(output) = self {
             output
         } else {
             panic!("as_nft called on a non-nft output");
@@ -270,7 +270,7 @@ impl Output {
         alias_state_transition: bool,
     ) -> Result<(Address, Option<Address>), Error> {
         match self {
-            Output::Alias(output) => {
+            Self::Alias(output) => {
                 if alias_state_transition {
                     // Alias address is only unlocked if it's a state transition
                     Ok((
@@ -281,13 +281,13 @@ impl Output {
                     Ok((*output.governor_address(), None))
                 }
             }
-            Output::Basic(output) => Ok((
+            Self::Basic(output) => Ok((
                 *output
                     .unlock_conditions()
                     .locked_address(output.address(), current_time),
                 None,
             )),
-            Output::Nft(output) => Ok((
+            Self::Nft(output) => Ok((
                 *output
                     .unlock_conditions()
                     .locked_address(output.address(), current_time),
@@ -300,31 +300,31 @@ impl Output {
 
     ///
     pub fn verify_state_transition(
-        current_state: Option<&Output>,
-        next_state: Option<&Output>,
+        current_state: Option<&Self>,
+        next_state: Option<&Self>,
         context: &ValidationContext,
     ) -> Result<(), StateTransitionError> {
         match (current_state, next_state) {
             // Creations.
-            (None, Some(Output::Alias(next_state))) => AliasOutput::creation(next_state, context),
-            (None, Some(Output::Foundry(next_state))) => FoundryOutput::creation(next_state, context),
-            (None, Some(Output::Nft(next_state))) => NftOutput::creation(next_state, context),
+            (None, Some(Self::Alias(next_state))) => AliasOutput::creation(next_state, context),
+            (None, Some(Self::Foundry(next_state))) => FoundryOutput::creation(next_state, context),
+            (None, Some(Self::Nft(next_state))) => NftOutput::creation(next_state, context),
 
             // Transitions.
-            (Some(Output::Alias(current_state)), Some(Output::Alias(next_state))) => {
+            (Some(Self::Alias(current_state)), Some(Self::Alias(next_state))) => {
                 AliasOutput::transition(current_state, next_state, context)
             }
-            (Some(Output::Foundry(current_state)), Some(Output::Foundry(next_state))) => {
+            (Some(Self::Foundry(current_state)), Some(Self::Foundry(next_state))) => {
                 FoundryOutput::transition(current_state, next_state, context)
             }
-            (Some(Output::Nft(current_state)), Some(Output::Nft(next_state))) => {
+            (Some(Self::Nft(current_state)), Some(Self::Nft(next_state))) => {
                 NftOutput::transition(current_state, next_state, context)
             }
 
             // Destructions.
-            (Some(Output::Alias(current_state)), None) => AliasOutput::destruction(current_state, context),
-            (Some(Output::Foundry(current_state)), None) => FoundryOutput::destruction(current_state, context),
-            (Some(Output::Nft(current_state)), None) => NftOutput::destruction(current_state, context),
+            (Some(Self::Alias(current_state)), None) => AliasOutput::destruction(current_state, context),
+            (Some(Self::Foundry(current_state)), None) => FoundryOutput::destruction(current_state, context),
+            (Some(Self::Nft(current_state)), None) => NftOutput::destruction(current_state, context),
 
             // Unsupported.
             _ => Err(StateTransitionError::UnsupportedStateTransition),
@@ -380,23 +380,23 @@ impl Packable for Output {
 
     fn pack<P: Packer>(&self, packer: &mut P) -> Result<(), P::Error> {
         match self {
-            Output::Treasury(output) => {
+            Self::Treasury(output) => {
                 TreasuryOutput::KIND.pack(packer)?;
                 output.pack(packer)
             }
-            Output::Basic(output) => {
+            Self::Basic(output) => {
                 BasicOutput::KIND.pack(packer)?;
                 output.pack(packer)
             }
-            Output::Alias(output) => {
+            Self::Alias(output) => {
                 AliasOutput::KIND.pack(packer)?;
                 output.pack(packer)
             }
-            Output::Foundry(output) => {
+            Self::Foundry(output) => {
                 FoundryOutput::KIND.pack(packer)?;
                 output.pack(packer)
             }
-            Output::Nft(output) => {
+            Self::Nft(output) => {
                 NftOutput::KIND.pack(packer)?;
                 output.pack(packer)
             }
@@ -410,11 +410,11 @@ impl Packable for Output {
         visitor: &Self::UnpackVisitor,
     ) -> Result<Self, UnpackError<Self::UnpackError, U::Error>> {
         Ok(match u8::unpack::<_, VERIFY>(unpacker, &()).coerce()? {
-            TreasuryOutput::KIND => Output::from(TreasuryOutput::unpack::<_, VERIFY>(unpacker, visitor).coerce()?),
-            BasicOutput::KIND => Output::from(BasicOutput::unpack::<_, VERIFY>(unpacker, visitor).coerce()?),
-            AliasOutput::KIND => Output::from(AliasOutput::unpack::<_, VERIFY>(unpacker, visitor).coerce()?),
-            FoundryOutput::KIND => Output::from(FoundryOutput::unpack::<_, VERIFY>(unpacker, visitor).coerce()?),
-            NftOutput::KIND => Output::from(NftOutput::unpack::<_, VERIFY>(unpacker, visitor).coerce()?),
+            TreasuryOutput::KIND => Self::from(TreasuryOutput::unpack::<_, VERIFY>(unpacker, visitor).coerce()?),
+            BasicOutput::KIND => Self::from(BasicOutput::unpack::<_, VERIFY>(unpacker, visitor).coerce()?),
+            AliasOutput::KIND => Self::from(AliasOutput::unpack::<_, VERIFY>(unpacker, visitor).coerce()?),
+            FoundryOutput::KIND => Self::from(FoundryOutput::unpack::<_, VERIFY>(unpacker, visitor).coerce()?),
+            NftOutput::KIND => Self::from(NftOutput::unpack::<_, VERIFY>(unpacker, visitor).coerce()?),
             k => return Err(Error::InvalidOutputKind(k)).map_err(UnpackError::Packable),
         })
     }
@@ -497,33 +497,33 @@ pub mod dto {
     impl From<&Output> for OutputDto {
         fn from(value: &Output) -> Self {
             match value {
-                Output::Treasury(o) => OutputDto::Treasury(o.into()),
-                Output::Basic(o) => OutputDto::Basic(o.into()),
-                Output::Alias(o) => OutputDto::Alias(o.into()),
-                Output::Foundry(o) => OutputDto::Foundry(o.into()),
-                Output::Nft(o) => OutputDto::Nft(o.into()),
+                Output::Treasury(o) => Self::Treasury(o.into()),
+                Output::Basic(o) => Self::Basic(o.into()),
+                Output::Alias(o) => Self::Alias(o.into()),
+                Output::Foundry(o) => Self::Foundry(o.into()),
+                Output::Nft(o) => Self::Nft(o.into()),
             }
         }
     }
 
     impl Output {
-        pub fn try_from_dto(value: &OutputDto, token_supply: u64) -> Result<Output, DtoError> {
+        pub fn try_from_dto(value: &OutputDto, token_supply: u64) -> Result<Self, DtoError> {
             Ok(match value {
-                OutputDto::Treasury(o) => Output::Treasury(TreasuryOutput::try_from_dto(o, token_supply)?),
-                OutputDto::Basic(o) => Output::Basic(BasicOutput::try_from_dto(o, token_supply)?),
-                OutputDto::Alias(o) => Output::Alias(AliasOutput::try_from_dto(o, token_supply)?),
-                OutputDto::Foundry(o) => Output::Foundry(FoundryOutput::try_from_dto(o, token_supply)?),
-                OutputDto::Nft(o) => Output::Nft(NftOutput::try_from_dto(o, token_supply)?),
+                OutputDto::Treasury(o) => Self::Treasury(TreasuryOutput::try_from_dto(o, token_supply)?),
+                OutputDto::Basic(o) => Self::Basic(BasicOutput::try_from_dto(o, token_supply)?),
+                OutputDto::Alias(o) => Self::Alias(AliasOutput::try_from_dto(o, token_supply)?),
+                OutputDto::Foundry(o) => Self::Foundry(FoundryOutput::try_from_dto(o, token_supply)?),
+                OutputDto::Nft(o) => Self::Nft(NftOutput::try_from_dto(o, token_supply)?),
             })
         }
 
-        pub fn try_from_dto_unverified(value: &OutputDto) -> Result<Output, DtoError> {
+        pub fn try_from_dto_unverified(value: &OutputDto) -> Result<Self, DtoError> {
             Ok(match value {
-                OutputDto::Treasury(o) => Output::Treasury(TreasuryOutput::try_from_dto_unverified(o)?),
-                OutputDto::Basic(o) => Output::Basic(BasicOutput::try_from_dto_unverified(o)?),
-                OutputDto::Alias(o) => Output::Alias(AliasOutput::try_from_dto_unverified(o)?),
-                OutputDto::Foundry(o) => Output::Foundry(FoundryOutput::try_from_dto_unverified(o)?),
-                OutputDto::Nft(o) => Output::Nft(NftOutput::try_from_dto_unverified(o)?),
+                OutputDto::Treasury(o) => Self::Treasury(TreasuryOutput::try_from_dto_unverified(o)?),
+                OutputDto::Basic(o) => Self::Basic(BasicOutput::try_from_dto_unverified(o)?),
+                OutputDto::Alias(o) => Self::Alias(AliasOutput::try_from_dto_unverified(o)?),
+                OutputDto::Foundry(o) => Self::Foundry(FoundryOutput::try_from_dto_unverified(o)?),
+                OutputDto::Nft(o) => Self::Nft(NftOutput::try_from_dto_unverified(o)?),
             })
         }
     }
@@ -538,23 +538,23 @@ pub mod dto {
                     .ok_or_else(|| serde::de::Error::custom("invalid output type"))? as u8
                 {
                     TreasuryOutput::KIND => {
-                        OutputDto::Treasury(TreasuryOutputDto::deserialize(value).map_err(|e| {
+                        Self::Treasury(TreasuryOutputDto::deserialize(value).map_err(|e| {
                             serde::de::Error::custom(format!("cannot deserialize treasury output: {e}"))
                         })?)
                     }
-                    BasicOutput::KIND => OutputDto::Basic(
+                    BasicOutput::KIND => Self::Basic(
                         BasicOutputDto::deserialize(value)
                             .map_err(|e| serde::de::Error::custom(format!("cannot deserialize basic output: {e}")))?,
                     ),
-                    AliasOutput::KIND => OutputDto::Alias(
+                    AliasOutput::KIND => Self::Alias(
                         AliasOutputDto::deserialize(value)
                             .map_err(|e| serde::de::Error::custom(format!("cannot deserialize alias output: {e}")))?,
                     ),
-                    FoundryOutput::KIND => OutputDto::Foundry(
+                    FoundryOutput::KIND => Self::Foundry(
                         FoundryOutputDto::deserialize(value)
                             .map_err(|e| serde::de::Error::custom(format!("cannot deserialize foundry output: {e}")))?,
                     ),
-                    NftOutput::KIND => OutputDto::Nft(
+                    NftOutput::KIND => Self::Nft(
                         NftOutputDto::deserialize(value)
                             .map_err(|e| serde::de::Error::custom(format!("cannot deserialize NFT output: {e}")))?,
                     ),
@@ -584,19 +584,19 @@ pub mod dto {
                 output: OutputDto_<'a>,
             }
             let output = match self {
-                OutputDto::Treasury(o) => TypedOutput {
+                Self::Treasury(o) => TypedOutput {
                     output: OutputDto_::T1(o),
                 },
-                OutputDto::Basic(o) => TypedOutput {
+                Self::Basic(o) => TypedOutput {
                     output: OutputDto_::T2(o),
                 },
-                OutputDto::Alias(o) => TypedOutput {
+                Self::Alias(o) => TypedOutput {
                     output: OutputDto_::T3(o),
                 },
-                OutputDto::Foundry(o) => TypedOutput {
+                Self::Foundry(o) => TypedOutput {
                     output: OutputDto_::T4(o),
                 },
-                OutputDto::Nft(o) => TypedOutput {
+                Self::Nft(o) => TypedOutput {
                     output: OutputDto_::T5(o),
                 },
             };

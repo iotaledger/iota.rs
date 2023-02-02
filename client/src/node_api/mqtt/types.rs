@@ -152,12 +152,12 @@ impl TryFrom<String> for Topic {
 }
 
 impl<'de> Deserialize<'de> for Topic {
-    fn deserialize<D>(deserializer: D) -> std::result::Result<Topic, D::Error>
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
     where
         D: Deserializer<'de>,
     {
         let s: String = Deserialize::deserialize(deserializer)?;
-        Topic::try_from(s).map_err(|err| D::Error::custom(format!("{err}")))
+        Self::try_from(s).map_err(|err| D::Error::custom(format!("{err}")))
     }
 }
 

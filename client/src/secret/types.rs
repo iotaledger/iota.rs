@@ -166,7 +166,7 @@ pub struct InputSigningDataDto {
 }
 
 impl InputSigningData {
-    pub(crate) fn try_from_dto(input: &InputSigningDataDto, token_supply: u64) -> Result<InputSigningData> {
+    pub(crate) fn try_from_dto(input: &InputSigningDataDto, token_supply: u64) -> Result<Self> {
         Ok(Self {
             output: Output::try_from_dto(&input.output, token_supply)?,
             output_metadata: input.output_metadata.clone(),
@@ -175,7 +175,7 @@ impl InputSigningData {
         })
     }
 
-    pub(crate) fn try_from_dto_unverified(input: &InputSigningDataDto) -> Result<InputSigningData> {
+    pub(crate) fn try_from_dto_unverified(input: &InputSigningDataDto) -> Result<Self> {
         Ok(Self {
             output: Output::try_from_dto_unverified(&input.output)?,
             output_metadata: input.output_metadata.clone(),

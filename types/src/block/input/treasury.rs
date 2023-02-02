@@ -34,7 +34,7 @@ impl FromStr for TreasuryInput {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(TreasuryInput(MilestoneId::from_str(s)?))
+        Ok(Self(MilestoneId::from_str(s)?))
     }
 }
 
@@ -69,7 +69,7 @@ pub mod dto {
 
     impl From<&TreasuryInput> for TreasuryInputDto {
         fn from(value: &TreasuryInput) -> Self {
-            TreasuryInputDto {
+            Self {
                 kind: TreasuryInput::KIND,
                 milestone_id: value.milestone_id().to_string(),
             }
@@ -80,7 +80,7 @@ pub mod dto {
         type Error = DtoError;
 
         fn try_from(value: &TreasuryInputDto) -> Result<Self, Self::Error> {
-            Ok(TreasuryInput::new(
+            Ok(Self::new(
                 value
                     .milestone_id
                     .parse::<MilestoneId>()

@@ -42,10 +42,7 @@ pub mod dto {
         type Error = DtoError;
 
         fn try_from(value: &AliasIdDto) -> Result<Self, Self::Error> {
-            value
-                .0
-                .parse::<AliasId>()
-                .map_err(|_| DtoError::InvalidField("alias id"))
+            value.0.parse::<Self>().map_err(|_| DtoError::InvalidField("alias id"))
         }
     }
 }

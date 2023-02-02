@@ -42,7 +42,7 @@ pub enum MilestoneValidationError {
 
 impl From<CryptoError> for MilestoneValidationError {
     fn from(error: CryptoError) -> Self {
-        MilestoneValidationError::Crypto(error)
+        Self::Crypto(error)
     }
 }
 
@@ -202,7 +202,7 @@ pub mod dto {
 
     impl From<&MilestonePayload> for MilestonePayloadDto {
         fn from(value: &MilestonePayload) -> Self {
-            MilestonePayloadDto {
+            Self {
                 kind: MilestonePayload::KIND,
                 index: *value.essence().index(),
                 timestamp: value.essence().timestamp(),
@@ -223,7 +223,7 @@ pub mod dto {
         pub fn try_from_dto(
             value: &MilestonePayloadDto,
             protocol_parameters: &ProtocolParameters,
-        ) -> Result<MilestonePayload, DtoError> {
+        ) -> Result<Self, DtoError> {
             let essence = {
                 let index = value.index;
                 let timestamp = value.timestamp;
@@ -274,10 +274,10 @@ pub mod dto {
                 signatures.push(v.try_into().map_err(|_| DtoError::InvalidField("signatures"))?)
             }
 
-            Ok(MilestonePayload::new(essence, signatures)?)
+            Ok(Self::new(essence, signatures)?)
         }
 
-        pub fn try_from_dto_unverified(value: &MilestonePayloadDto) -> Result<MilestonePayload, DtoError> {
+        pub fn try_from_dto_unverified(value: &MilestonePayloadDto) -> Result<Self, DtoError> {
             let essence = {
                 let index = value.index;
                 let timestamp = value.timestamp;
@@ -329,7 +329,7 @@ pub mod dto {
                 signatures.push(v.try_into().map_err(|_| DtoError::InvalidField("signatures"))?)
             }
 
-            Ok(MilestonePayload::new(essence, signatures)?)
+            Ok(Self::new(essence, signatures)?)
         }
     }
 }

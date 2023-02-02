@@ -24,7 +24,7 @@ pub enum ConflictError {
 impl fmt::Display for ConflictError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            ConflictError::InvalidConflict(byte) => write!(f, "invalid conflict byte {byte}"),
+            Self::InvalidConflict(byte) => write!(f, "invalid conflict byte {byte}"),
         }
     }
 }

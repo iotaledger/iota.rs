@@ -72,7 +72,7 @@ impl Participations {
     }
 
     /// Deserialize from bytes.
-    pub fn from_bytes<R: Read + ?Sized>(bytes: &mut R) -> crate::Result<Participations> {
+    pub fn from_bytes<R: Read + ?Sized>(bytes: &mut R) -> crate::Result<Self> {
         let mut participations = Vec::new();
         let mut participations_len = [0u8; 1];
         bytes.read_exact(&mut participations_len)?;
@@ -97,7 +97,7 @@ impl Participations {
             });
         }
 
-        Ok(Participations { participations })
+        Ok(Self { participations })
     }
 }
 
