@@ -67,7 +67,7 @@ impl InputSelection {
         &mut self,
         alias_id: AliasId,
         state_transition: bool,
-    ) -> Result<(Vec<InputSigningData>, Option<Requirement>)> {
+    ) -> Result<(Vec<(InputSigningData, bool)>, Option<Requirement>)> {
         // Check that the alias is not burned when a state transition is required.
         if state_transition
             && self
@@ -109,7 +109,10 @@ impl InputSelection {
         if !state_transition {
             // Remove the output from the available inputs and return it, swap to make it O(1).
             // PANIC: safe to unwrap as it's been checked that it can't be None when a state transition is not required.
-            return Ok((vec![self.available_inputs.swap_remove(available_index.unwrap())], None));
+            return Ok((
+                vec![(self.available_inputs.swap_remove(available_index.unwrap()), false)],
+                None,
+            ));
         }
 
         // At this point, a state transition is required so we need to verify that an alias output describing a
@@ -127,7 +130,7 @@ impl InputSelection {
 
         if let Some(available_index) = available_index {
             // Remove the output from the available inputs and return it, swap to make it O(1).
-            return Ok((vec![self.available_inputs.swap_remove(available_index)], None));
+            return Ok((vec![(self.available_inputs.swap_remove(available_index), false)], None));
         }
 
         Ok((Vec::new(), None))

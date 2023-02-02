@@ -16,7 +16,12 @@ use crate::{
 
 impl InputSelection {
     /// Transitions an alias input by creating a new alias output if required.
-    fn transition_alias_input(&mut self, input: &AliasOutput, output_id: &OutputId) -> Result<Option<Output>> {
+    fn transition_alias_input(
+        &mut self,
+        input: &AliasOutput,
+        output_id: &OutputId,
+        governance_transition: bool,
+    ) -> Result<Option<Output>> {
         let alias_id = input.alias_id_non_null(output_id);
 
         // Do not create an alias output if the alias input is to be burned.
@@ -38,10 +43,13 @@ impl InputSelection {
             return Ok(None);
         }
 
-        let output = AliasOutputBuilder::from(input)
-            .with_alias_id(alias_id)
-            .with_state_index(input.state_index() + 1)
-            .finish_output(self.protocol_parameters.token_supply())?;
+        let mut builder = AliasOutputBuilder::from(input).with_alias_id(alias_id);
+
+        if !governance_transition {
+            builder = builder.with_state_index(input.state_index() + 1)
+        };
+
+        let output = builder.finish_output(self.protocol_parameters.token_supply())?;
 
         self.automatically_transitioned.insert(ChainId::from(alias_id));
 
@@ -111,9 +119,15 @@ impl InputSelection {
     }
 
     /// Transitions an input by creating a new output if required.
-    pub(crate) fn transition_input(&mut self, input: &InputSigningData) -> Result<Option<Output>> {
+    pub(crate) fn transition_input(
+        &mut self,
+        input: &InputSigningData,
+        governance_transition: bool,
+    ) -> Result<Option<Output>> {
         match &input.output {
-            Output::Alias(alias_input) => self.transition_alias_input(alias_input, input.output_id()),
+            Output::Alias(alias_input) => {
+                self.transition_alias_input(alias_input, input.output_id(), governance_transition)
+            }
             Output::Nft(nft_input) => self.transition_nft_input(nft_input, input.output_id()),
             Output::Foundry(foundry_input) => self.transition_foundry_input(foundry_input),
             _ => Ok(None),

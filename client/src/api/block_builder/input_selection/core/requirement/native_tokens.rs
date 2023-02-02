@@ -114,7 +114,9 @@ pub(crate) fn get_native_tokens_diff(
 }
 
 impl InputSelection {
-    pub(crate) fn fulfill_native_tokens_requirement(&mut self) -> Result<(Vec<InputSigningData>, Option<Requirement>)> {
+    pub(crate) fn fulfill_native_tokens_requirement(
+        &mut self,
+    ) -> Result<(Vec<(InputSigningData, bool)>, Option<Requirement>)> {
         let mut newly_selected_inputs = Vec::new();
         let mut newly_selected_ids = HashSet::new();
 
@@ -152,7 +154,7 @@ impl InputSelection {
                         .amount();
 
                     if newly_selected_ids.insert(*input.output_id()) {
-                        newly_selected_inputs.push(input.clone());
+                        newly_selected_inputs.push((input.clone(), false));
                     }
 
                     if amount >= diff.amount() {

@@ -74,8 +74,8 @@ impl InputSelection {
         }
     }
 
-    fn select_input(&mut self, input: InputSigningData) -> Result<()> {
-        if let Some(output) = self.transition_input(&input)? {
+    fn select_input(&mut self, input: InputSigningData, governance_transition: bool) -> Result<()> {
+        if let Some(output) = self.transition_input(&input, governance_transition)? {
             // TODO is this really necessary?
             // TODO should input be pushed before ? probably
             self.outputs_requirements(Some(&output));
@@ -122,7 +122,7 @@ impl InputSelection {
                         let input = self.available_inputs.swap_remove(index);
 
                         // Selects required input.
-                        self.select_input(input)?
+                        self.select_input(input, false)?
                     }
                     None => return Err(Error::RequiredInputIsNotAvailable(required_input)),
                 }
@@ -262,8 +262,8 @@ impl InputSelection {
             }
 
             // Select suggested inputs.
-            for input in inputs {
-                self.select_input(input)?;
+            for (input, governance_transition) in inputs {
+                self.select_input(input, governance_transition)?;
             }
         }
 

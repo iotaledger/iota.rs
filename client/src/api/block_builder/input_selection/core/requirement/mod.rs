@@ -45,7 +45,7 @@ impl InputSelection {
     pub(crate) fn fulfill_requirement(
         &mut self,
         requirement: Requirement,
-    ) -> Result<(Vec<InputSigningData>, Option<Requirement>)> {
+    ) -> Result<(Vec<(InputSigningData, bool)>, Option<Requirement>)> {
         match requirement {
             Requirement::Sender(address) => self.fulfill_sender_requirement(address),
             Requirement::Issuer(address) => self.fulfill_issuer_requirement(address),
