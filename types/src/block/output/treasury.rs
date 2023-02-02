@@ -72,8 +72,8 @@ pub mod dto {
     }
 
     impl TreasuryOutput {
-        pub fn try_from_dto(value: &TreasuryOutputDto, token_supply: u64) -> Result<TreasuryOutput, DtoError> {
-            Ok(TreasuryOutput::new(
+        pub fn try_from_dto(value: &TreasuryOutputDto, token_supply: u64) -> Result<Self, DtoError> {
+            Ok(Self::new(
                 value
                     .amount
                     .parse::<u64>()
@@ -82,8 +82,8 @@ pub mod dto {
             )?)
         }
 
-        pub fn try_from_dto_unverified(value: &TreasuryOutputDto) -> Result<TreasuryOutput, DtoError> {
-            Ok(TreasuryOutput {
+        pub fn try_from_dto_unverified(value: &TreasuryOutputDto) -> Result<Self, DtoError> {
+            Ok(Self {
                 amount: value
                     .amount
                     .parse::<u64>()

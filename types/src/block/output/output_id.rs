@@ -68,10 +68,10 @@ impl OutputId {
 #[cfg(feature = "serde")]
 string_serde_impl!(OutputId);
 
-impl TryFrom<[u8; OutputId::LENGTH]> for OutputId {
+impl TryFrom<[u8; Self::LENGTH]> for OutputId {
     type Error = Error;
 
-    fn try_from(bytes: [u8; OutputId::LENGTH]) -> Result<Self, Self::Error> {
+    fn try_from(bytes: [u8; Self::LENGTH]) -> Result<Self, Self::Error> {
         let (transaction_id, index) = bytes.split_at(TransactionId::LENGTH);
 
         Self::new(
@@ -87,14 +87,14 @@ impl FromStr for OutputId {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let bytes: [u8; OutputId::LENGTH] = prefix_hex::decode(s).map_err(Error::Hex)?;
+        let bytes: [u8; Self::LENGTH] = prefix_hex::decode(s).map_err(Error::Hex)?;
         Self::try_from(bytes)
     }
 }
 
 impl core::fmt::Display for OutputId {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
-        let mut buffer = [0u8; OutputId::LENGTH];
+        let mut buffer = [0u8; Self::LENGTH];
         let (transaction_id, index) = buffer.split_at_mut(TransactionId::LENGTH);
         transaction_id.copy_from_slice(self.transaction_id.as_ref());
         index.copy_from_slice(&self.index().to_le_bytes());

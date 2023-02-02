@@ -78,7 +78,7 @@ pub mod dto {
 
     impl From<&StorageDepositReturnUnlockCondition> for StorageDepositReturnUnlockConditionDto {
         fn from(value: &StorageDepositReturnUnlockCondition) -> Self {
-            StorageDepositReturnUnlockConditionDto {
+            Self {
                 kind: StorageDepositReturnUnlockCondition::KIND,
                 return_address: AddressDto::from(value.return_address()),
                 amount: value.amount().to_string(),
@@ -90,8 +90,8 @@ pub mod dto {
         pub fn try_from_dto(
             value: &StorageDepositReturnUnlockConditionDto,
             token_supply: u64,
-        ) -> Result<StorageDepositReturnUnlockCondition, DtoError> {
-            Ok(StorageDepositReturnUnlockCondition::new(
+        ) -> Result<Self, DtoError> {
+            Ok(Self::new(
                 Address::try_from(&value.return_address)?,
                 value
                     .amount
@@ -101,10 +101,8 @@ pub mod dto {
             )?)
         }
 
-        pub fn try_from_dto_unverified(
-            value: &StorageDepositReturnUnlockConditionDto,
-        ) -> Result<StorageDepositReturnUnlockCondition, DtoError> {
-            Ok(StorageDepositReturnUnlockCondition {
+        pub fn try_from_dto_unverified(value: &StorageDepositReturnUnlockConditionDto) -> Result<Self, DtoError> {
+            Ok(Self {
                 return_address: Address::try_from(&value.return_address)?,
                 amount: value
                     .amount

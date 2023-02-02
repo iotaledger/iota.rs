@@ -229,7 +229,7 @@ impl Packable for Block {
                 block.packed_len()
             };
 
-            if block_len > Block::LENGTH_MAX {
+            if block_len > Self::LENGTH_MAX {
                 return Err(UnpackError::Packable(Error::InvalidBlockLength(block_len)));
             }
         }
@@ -275,7 +275,7 @@ pub mod dto {
 
     impl From<&Block> for BlockDto {
         fn from(value: &Block) -> Self {
-            BlockDto {
+            Self {
                 protocol_version: value.protocol_version(),
                 parents: value.parents().iter().map(BlockId::to_string).collect(),
                 payload: value.payload().map(Into::into),
@@ -306,7 +306,7 @@ pub mod dto {
             Ok(builder)
         }
 
-        pub fn try_from_dto(value: &BlockDto, protocol_parameters: &ProtocolParameters) -> Result<Block, DtoError> {
+        pub fn try_from_dto(value: &BlockDto, protocol_parameters: &ProtocolParameters) -> Result<Self, DtoError> {
             let mut builder = Self::_try_from_dto(value)?;
 
             if let Some(p) = value.payload.as_ref() {
@@ -316,7 +316,7 @@ pub mod dto {
             Ok(builder.finish()?)
         }
 
-        pub fn try_from_dto_unverified(value: &BlockDto) -> Result<Block, DtoError> {
+        pub fn try_from_dto_unverified(value: &BlockDto) -> Result<Self, DtoError> {
             let mut builder = Self::_try_from_dto(value)?;
 
             if let Some(p) = value.payload.as_ref() {

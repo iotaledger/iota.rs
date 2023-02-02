@@ -10,7 +10,7 @@ string_serde_impl!(TokenId);
 
 impl From<FoundryId> for TokenId {
     fn from(foundry_id: FoundryId) -> Self {
-        TokenId::new(*foundry_id)
+        Self::new(*foundry_id)
     }
 }
 
@@ -36,9 +36,9 @@ pub mod dto {
         type Error = DtoError;
 
         fn try_from(value: &TokenIdDto) -> Result<Self, Self::Error> {
-            let token_id: [u8; TokenId::LENGTH] =
+            let token_id: [u8; Self::LENGTH] =
                 prefix_hex::decode(&value.0).map_err(|_e| DtoError::InvalidField("tokenId"))?;
-            Ok(TokenId::new(token_id))
+            Ok(Self::new(token_id))
         }
     }
 }

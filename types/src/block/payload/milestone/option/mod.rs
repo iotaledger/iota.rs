@@ -170,15 +170,15 @@ pub mod dto {
                     as u8
                 {
                     ReceiptMilestoneOption::KIND => {
-                        MilestoneOptionDto::Receipt(ReceiptMilestoneOptionDto::deserialize(value).map_err(|e| {
+                        Self::Receipt(ReceiptMilestoneOptionDto::deserialize(value).map_err(|e| {
                             serde::de::Error::custom(format!("cannot deserialize receipt milestone option: {e}"))
                         })?)
                     }
-                    ParametersMilestoneOption::KIND => MilestoneOptionDto::Parameters(
-                        ParametersMilestoneOptionDto::deserialize(value).map_err(|e| {
+                    ParametersMilestoneOption::KIND => {
+                        Self::Parameters(ParametersMilestoneOptionDto::deserialize(value).map_err(|e| {
                             serde::de::Error::custom(format!("cannot deserialize parameters milestone option: {e}"))
-                        })?,
-                    ),
+                        })?)
+                    }
                     _ => return Err(serde::de::Error::custom("invalid milestone option type")),
                 },
             )
@@ -202,10 +202,10 @@ pub mod dto {
                 milestone_option: MilestoneOptionDto_<'a>,
             }
             let milestone_option = match self {
-                MilestoneOptionDto::Receipt(o) => TypedMilestoneOption {
+                Self::Receipt(o) => TypedMilestoneOption {
                     milestone_option: MilestoneOptionDto_::T1(o),
                 },
-                MilestoneOptionDto::Parameters(o) => TypedMilestoneOption {
+                Self::Parameters(o) => TypedMilestoneOption {
                     milestone_option: MilestoneOptionDto_::T2(o),
                 },
             };
@@ -223,21 +223,17 @@ pub mod dto {
     }
 
     impl MilestoneOption {
-        pub fn try_from_dto(value: &MilestoneOptionDto, token_supply: u64) -> Result<MilestoneOption, DtoError> {
+        pub fn try_from_dto(value: &MilestoneOptionDto, token_supply: u64) -> Result<Self, DtoError> {
             Ok(match value {
-                MilestoneOptionDto::Receipt(v) => {
-                    MilestoneOption::Receipt(ReceiptMilestoneOption::try_from_dto(v, token_supply)?)
-                }
-                MilestoneOptionDto::Parameters(v) => MilestoneOption::Parameters(v.try_into()?),
+                MilestoneOptionDto::Receipt(v) => Self::Receipt(ReceiptMilestoneOption::try_from_dto(v, token_supply)?),
+                MilestoneOptionDto::Parameters(v) => Self::Parameters(v.try_into()?),
             })
         }
 
-        pub fn try_from_dto_unverified(value: &MilestoneOptionDto) -> Result<MilestoneOption, DtoError> {
+        pub fn try_from_dto_unverified(value: &MilestoneOptionDto) -> Result<Self, DtoError> {
             Ok(match value {
-                MilestoneOptionDto::Receipt(v) => {
-                    MilestoneOption::Receipt(ReceiptMilestoneOption::try_from_dto_unverified(v)?)
-                }
-                MilestoneOptionDto::Parameters(v) => MilestoneOption::Parameters(v.try_into()?),
+                MilestoneOptionDto::Receipt(v) => Self::Receipt(ReceiptMilestoneOption::try_from_dto_unverified(v)?),
+                MilestoneOptionDto::Parameters(v) => Self::Parameters(v.try_into()?),
             })
         }
     }

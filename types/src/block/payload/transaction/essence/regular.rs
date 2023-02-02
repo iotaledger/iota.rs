@@ -349,7 +349,7 @@ pub mod dto {
 
     impl From<&RegularTransactionEssence> for RegularTransactionEssenceDto {
         fn from(value: &RegularTransactionEssence) -> Self {
-            RegularTransactionEssenceDto {
+            Self {
                 kind: RegularTransactionEssence::KIND,
                 network_id: value.network_id().to_string(),
                 inputs: value.inputs().iter().map(Into::into).collect::<Vec<_>>(),
@@ -379,10 +379,9 @@ pub mod dto {
                 .map(TryInto::try_into)
                 .collect::<Result<Vec<Input>, DtoError>>()?;
 
-            let mut builder =
-                RegularTransactionEssence::builder(network_id, InputsCommitment::from_str(&value.inputs_commitment)?)
-                    .with_inputs(inputs)
-                    .with_outputs(outputs);
+            let mut builder = Self::builder(network_id, InputsCommitment::from_str(&value.inputs_commitment)?)
+                .with_inputs(inputs)
+                .with_outputs(outputs);
 
             builder = if let Some(p) = &value.payload {
                 if let PayloadDto::TaggedData(i) = p {
@@ -400,7 +399,7 @@ pub mod dto {
         pub fn try_from_dto(
             value: &RegularTransactionEssenceDto,
             protocol_parameters: &ProtocolParameters,
-        ) -> Result<RegularTransactionEssence, DtoError> {
+        ) -> Result<Self, DtoError> {
             let outputs = value
                 .outputs
                 .iter()
@@ -412,9 +411,7 @@ pub mod dto {
             builder.finish(protocol_parameters).map_err(Into::into)
         }
 
-        pub fn try_from_dto_unverified(
-            value: &RegularTransactionEssenceDto,
-        ) -> Result<RegularTransactionEssence, DtoError> {
+        pub fn try_from_dto_unverified(value: &RegularTransactionEssenceDto) -> Result<Self, DtoError> {
             let outputs = value
                 .outputs
                 .iter()

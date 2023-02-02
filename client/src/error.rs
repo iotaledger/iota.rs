@@ -349,11 +349,11 @@ impl From<iota_ledger_nano::api::errors::APIError> for Error {
     fn from(error: iota_ledger_nano::api::errors::APIError) -> Self {
         log::info!("ledger error: {}", error);
         match error {
-            iota_ledger_nano::api::errors::APIError::ConditionsOfUseNotSatisfied => Error::LedgerDeniedByUser,
-            iota_ledger_nano::api::errors::APIError::EssenceTooLarge => Error::LedgerEssenceTooLarge,
-            iota_ledger_nano::api::errors::APIError::SecurityStatusNotSatisfied => Error::LedgerDongleLocked,
-            iota_ledger_nano::api::errors::APIError::TransportError => Error::LedgerDeviceNotFound,
-            _ => Error::LedgerMiscError,
+            iota_ledger_nano::api::errors::APIError::ConditionsOfUseNotSatisfied => Self::LedgerDeniedByUser,
+            iota_ledger_nano::api::errors::APIError::EssenceTooLarge => Self::LedgerEssenceTooLarge,
+            iota_ledger_nano::api::errors::APIError::SecurityStatusNotSatisfied => Self::LedgerDongleLocked,
+            iota_ledger_nano::api::errors::APIError::TransportError => Self::LedgerDeviceNotFound,
+            _ => Self::LedgerMiscError,
         }
     }
 }

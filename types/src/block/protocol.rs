@@ -71,8 +71,8 @@ impl ProtocolParameters {
         below_max_depth: u8,
         rent_structure: RentStructure,
         token_supply: u64,
-    ) -> Result<ProtocolParameters, Error> {
-        Ok(ProtocolParameters {
+    ) -> Result<Self, Error> {
+        Ok(Self {
             protocol_version,
             network_name: <StringPrefix<u8>>::try_from(network_name).map_err(Error::InvalidStringPrefix)?,
             bech32_hrp: <StringPrefix<u8>>::try_from(bech32_hrp).map_err(Error::InvalidStringPrefix)?,
@@ -167,7 +167,7 @@ pub mod dto {
         type Error = DtoError;
 
         fn try_from(value: ProtocolParametersDto) -> Result<Self, Self::Error> {
-            Ok(ProtocolParameters::new(
+            Ok(Self::new(
                 value.protocol_version,
                 value.network_name,
                 value.bech32_hrp,

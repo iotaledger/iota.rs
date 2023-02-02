@@ -157,7 +157,7 @@ pub mod dto {
         type Error = DtoError;
 
         fn try_from(response: &OutputMetadataDto) -> Result<Self, Self::Error> {
-            Ok(OutputMetadata {
+            Ok(Self {
                 block_id: BlockId::from_str(&response.block_id)?,
                 output_id: OutputId::new(
                     TransactionId::from_str(&response.transaction_id)?,

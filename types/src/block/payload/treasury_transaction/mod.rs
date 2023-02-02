@@ -89,7 +89,7 @@ pub mod dto {
 
     impl From<&TreasuryTransactionPayload> for TreasuryTransactionPayloadDto {
         fn from(value: &TreasuryTransactionPayload) -> Self {
-            TreasuryTransactionPayloadDto {
+            Self {
                 kind: TreasuryTransactionPayload::KIND,
                 input: InputDto::Treasury(TreasuryInputDto::from(value.input())),
                 output: OutputDto::Treasury(TreasuryOutputDto::from(value.output())),
@@ -98,11 +98,8 @@ pub mod dto {
     }
 
     impl TreasuryTransactionPayload {
-        fn _try_from_dto(
-            value: &TreasuryTransactionPayloadDto,
-            output: TreasuryOutput,
-        ) -> Result<TreasuryTransactionPayload, DtoError> {
-            Ok(TreasuryTransactionPayload::new(
+        fn _try_from_dto(value: &TreasuryTransactionPayloadDto, output: TreasuryOutput) -> Result<Self, DtoError> {
+            Ok(Self::new(
                 if let InputDto::Treasury(ref input) = value.input {
                     input.try_into()?
                 } else {
@@ -112,10 +109,7 @@ pub mod dto {
             )?)
         }
 
-        pub fn try_from_dto(
-            value: &TreasuryTransactionPayloadDto,
-            token_supply: u64,
-        ) -> Result<TreasuryTransactionPayload, DtoError> {
+        pub fn try_from_dto(value: &TreasuryTransactionPayloadDto, token_supply: u64) -> Result<Self, DtoError> {
             Self::_try_from_dto(
                 value,
                 if let OutputDto::Treasury(ref output) = value.output {
@@ -126,9 +120,7 @@ pub mod dto {
             )
         }
 
-        pub fn try_from_dto_unverified(
-            value: &TreasuryTransactionPayloadDto,
-        ) -> Result<TreasuryTransactionPayload, DtoError> {
+        pub fn try_from_dto_unverified(value: &TreasuryTransactionPayloadDto) -> Result<Self, DtoError> {
             Self::_try_from_dto(
                 value,
                 if let OutputDto::Treasury(ref output) = value.output {

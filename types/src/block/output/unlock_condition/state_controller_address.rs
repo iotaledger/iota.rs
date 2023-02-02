@@ -46,7 +46,7 @@ pub mod dto {
 
     impl From<&StateControllerAddressUnlockCondition> for StateControllerAddressUnlockConditionDto {
         fn from(value: &StateControllerAddressUnlockCondition) -> Self {
-            StateControllerAddressUnlockConditionDto {
+            Self {
                 kind: StateControllerAddressUnlockCondition::KIND,
                 address: value.address().into(),
             }
@@ -56,14 +56,10 @@ pub mod dto {
     impl TryFrom<&StateControllerAddressUnlockConditionDto> for StateControllerAddressUnlockCondition {
         type Error = DtoError;
 
-        fn try_from(
-            value: &StateControllerAddressUnlockConditionDto,
-        ) -> Result<StateControllerAddressUnlockCondition, DtoError> {
-            Ok(StateControllerAddressUnlockCondition::new(
-                (&value.address)
-                    .try_into()
-                    .map_err(|_e| DtoError::InvalidField("stateControllerAddressUnlockCondition"))?,
-            ))
+        fn try_from(value: &StateControllerAddressUnlockConditionDto) -> Result<Self, DtoError> {
+            Ok(Self::new((&value.address).try_into().map_err(|_e| {
+                DtoError::InvalidField("stateControllerAddressUnlockCondition")
+            })?))
         }
     }
 }

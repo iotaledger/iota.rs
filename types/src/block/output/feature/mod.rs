@@ -238,20 +238,20 @@ pub mod dto {
                     .and_then(Value::as_u64)
                     .ok_or_else(|| serde::de::Error::custom("invalid feature type"))? as u8
                 {
-                    SenderFeature::KIND => FeatureDto::Sender(
+                    SenderFeature::KIND => Self::Sender(
                         SenderFeatureDto::deserialize(value)
                             .map_err(|e| serde::de::Error::custom(format!("cannot deserialize sender feature: {e}")))?,
                     ),
-                    IssuerFeature::KIND => FeatureDto::Issuer(
+                    IssuerFeature::KIND => Self::Issuer(
                         IssuerFeatureDto::deserialize(value)
                             .map_err(|e| serde::de::Error::custom(format!("cannot deserialize issuer feature: {e}")))?,
                     ),
                     MetadataFeature::KIND => {
-                        FeatureDto::Metadata(MetadataFeatureDto::deserialize(value).map_err(|e| {
+                        Self::Metadata(MetadataFeatureDto::deserialize(value).map_err(|e| {
                             serde::de::Error::custom(format!("cannot deserialize metadata feature: {e}"))
                         })?)
                     }
-                    TagFeature::KIND => FeatureDto::Tag(
+                    TagFeature::KIND => Self::Tag(
                         TagFeatureDto::deserialize(value)
                             .map_err(|e| serde::de::Error::custom(format!("cannot deserialize tag feature: {e}")))?,
                     ),
@@ -280,16 +280,16 @@ pub mod dto {
                 feature: FeatureDto_<'a>,
             }
             let feature = match self {
-                FeatureDto::Sender(o) => TypedFeature {
+                Self::Sender(o) => TypedFeature {
                     feature: FeatureDto_::T1(o),
                 },
-                FeatureDto::Issuer(o) => TypedFeature {
+                Self::Issuer(o) => TypedFeature {
                     feature: FeatureDto_::T2(o),
                 },
-                FeatureDto::Metadata(o) => TypedFeature {
+                Self::Metadata(o) => TypedFeature {
                     feature: FeatureDto_::T3(o),
                 },
-                FeatureDto::Tag(o) => TypedFeature {
+                Self::Tag(o) => TypedFeature {
                     feature: FeatureDto_::T4(o),
                 },
             };
