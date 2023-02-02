@@ -32,13 +32,15 @@ fn available_has_ed25519_address(input: &InputSigningData, address: &Address) ->
     let unlock_conditions = input.output.unlock_conditions().unwrap();
 
     if input.output.is_alias() {
-        if let Some(unlock_condition) = unlock_conditions.state_controller_address() {
-            (unlock_condition.address() == address, false)
-        } else if let Some(unlock_condition) = unlock_conditions.governor_address() {
-            (unlock_condition.address() == address, true)
-        } else {
-            (false, false)
+        if unlock_conditions.state_controller_address().unwrap().address() == address {
+            return (true, false);
         }
+
+        if unlock_conditions.governor_address().unwrap().address() == address {
+            return (true, true);
+        }
+
+        (false, false)
     } else if let Some(unlock_condition) = unlock_conditions.address() {
         (unlock_condition.address() == address, false)
     } else {
