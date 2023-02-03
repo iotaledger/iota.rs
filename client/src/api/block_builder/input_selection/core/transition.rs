@@ -7,8 +7,8 @@ use super::{
 };
 use crate::{
     block::output::{
-        AliasOutput, AliasOutputBuilder, ChainId, FoundryOutput, FoundryOutputBuilder, NftOutput, NftOutputBuilder,
-        Output, OutputId,
+        AliasOutput, AliasOutputBuilder, AliasTransition, ChainId, FoundryOutput, FoundryOutputBuilder, NftOutput,
+        NftOutputBuilder, Output, OutputId,
     },
     error::Result,
     secret::types::InputSigningData,
@@ -20,7 +20,7 @@ impl InputSelection {
         &mut self,
         input: &AliasOutput,
         output_id: &OutputId,
-        governance_transition: bool,
+        alias_transition: AliasTransition,
     ) -> Result<Option<Output>> {
         let alias_id = input.alias_id_non_null(output_id);
 
@@ -50,7 +50,7 @@ impl InputSelection {
             .with_alias_id(alias_id)
             .with_features(features);
 
-        if !governance_transition {
+        if alias_transition == AliasTransition::State {
             builder = builder.with_state_index(input.state_index() + 1)
         };
 
@@ -131,12 +131,14 @@ impl InputSelection {
     pub(crate) fn transition_input(
         &mut self,
         input: &InputSigningData,
-        governance_transition: bool,
+        alias_transition: Option<AliasTransition>,
     ) -> Result<Option<Output>> {
         match &input.output {
-            Output::Alias(alias_input) => {
-                self.transition_alias_input(alias_input, input.output_id(), governance_transition)
-            }
+            Output::Alias(alias_input) => self.transition_alias_input(
+                alias_input,
+                input.output_id(),
+                alias_transition.unwrap_or(AliasTransition::State),
+            ),
             Output::Nft(nft_input) => self.transition_nft_input(nft_input, input.output_id()),
             Output::Foundry(foundry_input) => self.transition_foundry_input(foundry_input),
             _ => Ok(None),

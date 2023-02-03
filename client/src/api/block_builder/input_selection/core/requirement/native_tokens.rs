@@ -7,7 +7,7 @@ use primitive_types::U256;
 
 use super::{InputSelection, Requirement};
 use crate::{
-    block::output::{NativeToken, NativeTokens, NativeTokensBuilder, Output, TokenScheme},
+    block::output::{AliasTransition, NativeToken, NativeTokens, NativeTokensBuilder, Output, TokenScheme},
     error::Result,
     secret::types::InputSigningData,
     Error,
@@ -116,7 +116,7 @@ pub(crate) fn get_native_tokens_diff(
 impl InputSelection {
     pub(crate) fn fulfill_native_tokens_requirement(
         &mut self,
-    ) -> Result<(Vec<(InputSigningData, bool)>, Option<Requirement>)> {
+    ) -> Result<(Vec<(InputSigningData, Option<AliasTransition>)>, Option<Requirement>)> {
         let mut newly_selected_inputs = Vec::new();
         let mut newly_selected_ids = HashSet::new();
 
@@ -154,7 +154,7 @@ impl InputSelection {
                         .amount();
 
                     if newly_selected_ids.insert(*input.output_id()) {
-                        newly_selected_inputs.push((input.clone(), false));
+                        newly_selected_inputs.push((input.clone(), None));
                     }
 
                     if amount >= diff.amount() {

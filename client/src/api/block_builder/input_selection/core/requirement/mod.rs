@@ -16,7 +16,7 @@ use super::InputSelection;
 use crate::{
     block::{
         address::Address,
-        output::{AliasId, ChainId, Features, FoundryId, NftId, Output},
+        output::{AliasId, AliasTransition, ChainId, Features, FoundryId, NftId, Output},
     },
     error::{Error, Result},
     secret::types::InputSigningData,
@@ -47,7 +47,7 @@ impl InputSelection {
     pub(crate) fn fulfill_requirement(
         &mut self,
         requirement: Requirement,
-    ) -> Result<(Vec<(InputSigningData, bool)>, Option<Requirement>)> {
+    ) -> Result<(Vec<(InputSigningData, Option<AliasTransition>)>, Option<Requirement>)> {
         match requirement {
             Requirement::Sender(address) => self.fulfill_sender_requirement(address),
             Requirement::Issuer(address) => self.fulfill_issuer_requirement(address),

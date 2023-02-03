@@ -3,7 +3,7 @@
 
 use super::{InputSelection, Requirement};
 use crate::{
-    block::output::{NftId, Output, OutputId},
+    block::output::{AliasTransition, NftId, Output, OutputId},
     error::{Error, Result},
     secret::types::InputSigningData,
 };
@@ -32,7 +32,7 @@ impl InputSelection {
     pub(crate) fn fulfill_nft_requirement(
         &mut self,
         nft_id: NftId,
-    ) -> Result<(Vec<(InputSigningData, bool)>, Option<Requirement>)> {
+    ) -> Result<(Vec<(InputSigningData, Option<AliasTransition>)>, Option<Requirement>)> {
         // Check if the requirement is already fulfilled.
         if self
             .selected_inputs
@@ -50,6 +50,6 @@ impl InputSelection {
             .ok_or(Error::UnfulfillableRequirement(Requirement::Nft(nft_id)))?;
 
         // Remove the output from the available inputs and return it, swap to make it O(1).
-        Ok((vec![(self.available_inputs.swap_remove(index), false)], None))
+        Ok((vec![(self.available_inputs.swap_remove(index), None)], None))
     }
 }

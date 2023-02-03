@@ -26,6 +26,15 @@ use crate::block::{
     Error,
 };
 
+/// Types of alias transition.
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub enum AliasTransition {
+    /// State transition.
+    State,
+    /// Governance transition.
+    Governance,
+}
+
 ///
 #[derive(Clone)]
 #[must_use]

@@ -17,7 +17,7 @@ use crate::{
     api::{block_builder::input_selection::helpers::sort_input_signing_data, types::RemainderData},
     block::{
         address::{Address, AliasAddress, NftAddress},
-        output::{ChainId, Output, OutputId},
+        output::{AliasTransition, ChainId, Output, OutputId},
         protocol::ProtocolParameters,
     },
     error::{Error, Result},
@@ -74,8 +74,8 @@ impl InputSelection {
         }
     }
 
-    fn select_input(&mut self, input: InputSigningData, governance_transition: bool) -> Result<()> {
-        if let Some(output) = self.transition_input(&input, governance_transition)? {
+    fn select_input(&mut self, input: InputSigningData, alias_transition: Option<AliasTransition>) -> Result<()> {
+        if let Some(output) = self.transition_input(&input, alias_transition)? {
             // No need to check for `outputs_requirements` because
             // - the sender feature doesn't need to be verified as it has been removed
             // - the issuer feature doesn't need to be verified as the chain is not new
@@ -124,7 +124,7 @@ impl InputSelection {
                         let input = self.available_inputs.swap_remove(index);
 
                         // Selects required input.
-                        self.select_input(input, false)?
+                        self.select_input(input, None)?
                     }
                     None => return Err(Error::RequiredInputIsNotAvailable(required_input)),
                 }
@@ -264,8 +264,8 @@ impl InputSelection {
             }
 
             // Select suggested inputs.
-            for (input, governance_transition) in inputs {
-                self.select_input(input, governance_transition)?;
+            for (input, alias_transition) in inputs {
+                self.select_input(input, alias_transition)?;
             }
         }
 

@@ -3,7 +3,10 @@
 
 use super::{alias::is_alias_state_transition, InputSelection, Requirement};
 use crate::{
-    block::{address::Address, output::Output},
+    block::{
+        address::Address,
+        output::{AliasTransition, Output},
+    },
     error::{Error, Result},
     secret::types::InputSigningData,
 };
@@ -27,26 +30,30 @@ fn selected_has_ed25519_address(
     &required_address == address
 }
 
-fn available_has_ed25519_address(input: &InputSigningData, address: &Address, timestamp: u32) -> (bool, bool) {
+fn available_has_ed25519_address(
+    input: &InputSigningData,
+    address: &Address,
+    timestamp: u32,
+) -> (bool, Option<AliasTransition>) {
     // PANIC: safe to unwrap as outputs without unlock conditions have been filtered out already.
     let unlock_conditions = input.output.unlock_conditions().unwrap();
 
     if input.output.is_alias() {
         if unlock_conditions.state_controller_address().unwrap().address() == address {
-            return (true, false);
+            return (true, Some(AliasTransition::State));
         }
 
         if unlock_conditions.governor_address().unwrap().address() == address {
-            return (true, true);
+            return (true, Some(AliasTransition::Governance));
         }
 
-        (false, false)
+        (false, None)
     } else {
         let (required_address, _) = input
             .output
             .required_and_unlocked_address(timestamp, input.output_id(), false)
             .unwrap();
-        (&required_address == address, false)
+        (&required_address == address, None)
     }
 }
 
@@ -54,7 +61,7 @@ impl InputSelection {
     fn fulfill_ed25519_address_requirement(
         &mut self,
         address: Address,
-    ) -> Result<(Vec<(InputSigningData, bool)>, Option<Requirement>)> {
+    ) -> Result<(Vec<(InputSigningData, Option<AliasTransition>)>, Option<Requirement>)> {
         // Checks if the requirement is already fulfilled.
         if self
             .selected_inputs
@@ -73,18 +80,14 @@ impl InputSelection {
         let found = if let Some((index, _)) = self.available_inputs.iter().enumerate().find(|(_, input)| {
             input.output.is_basic() && available_has_ed25519_address(input, &address, self.timestamp).0
         }) {
-            Some((index, false))
+            Some((index, None))
         } else {
             // TODO any preference between alias and NFT?
             // If no basic output has been found, tries the other kinds of output.
             self.available_inputs.iter().enumerate().find_map(|(index, input)| {
                 if !input.output.is_basic() {
-                    let (found, governance_transition) = available_has_ed25519_address(input, &address, self.timestamp);
-                    if found {
-                        Some((index, governance_transition))
-                    } else {
-                        None
-                    }
+                    let (found, alias_transition) = available_has_ed25519_address(input, &address, self.timestamp);
+                    if found { Some((index, alias_transition)) } else { None }
                 } else {
                     None
                 }
@@ -92,10 +95,9 @@ impl InputSelection {
         };
 
         match found {
-            Some((index, governance_transition)) => Ok((
-                vec![(self.available_inputs.swap_remove(index), governance_transition)],
-                None,
-            )),
+            Some((index, alias_transition)) => {
+                Ok((vec![(self.available_inputs.swap_remove(index), alias_transition)], None))
+            }
             None => Err(Error::UnfulfillableRequirement(Requirement::Sender(address))),
         }
     }
@@ -104,7 +106,7 @@ impl InputSelection {
     pub(crate) fn fulfill_sender_requirement(
         &mut self,
         address: Address,
-    ) -> Result<(Vec<(InputSigningData, bool)>, Option<Requirement>)> {
+    ) -> Result<(Vec<(InputSigningData, Option<AliasTransition>)>, Option<Requirement>)> {
         match address {
             Address::Ed25519(_) => self.fulfill_ed25519_address_requirement(address),
             Address::Alias(alias_address) => {

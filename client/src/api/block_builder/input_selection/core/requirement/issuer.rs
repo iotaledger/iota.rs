@@ -3,7 +3,7 @@
 
 use super::{InputSelection, Requirement};
 use crate::{
-    block::address::Address,
+    block::{address::Address, output::AliasTransition},
     error::{Error, Result},
     secret::types::InputSigningData,
 };
@@ -14,7 +14,7 @@ impl InputSelection {
     pub(crate) fn fulfill_issuer_requirement(
         &mut self,
         address: Address,
-    ) -> Result<(Vec<(InputSigningData, bool)>, Option<Requirement>)> {
+    ) -> Result<(Vec<(InputSigningData, Option<AliasTransition>)>, Option<Requirement>)> {
         match self.fulfill_sender_requirement(address) {
             Ok(res) => Ok(res),
             Err(Error::UnfulfillableRequirement(Requirement::Sender(_))) => {

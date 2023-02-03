@@ -9,7 +9,7 @@ use crate::{
         address::Address,
         output::{
             unlock_condition::{StorageDepositReturnUnlockCondition, UnlockCondition, UnlockConditions},
-            AliasOutputBuilder, FoundryOutputBuilder, NftOutputBuilder, Output, Rent,
+            AliasOutputBuilder, AliasTransition, FoundryOutputBuilder, NftOutputBuilder, Output, Rent,
         },
     },
     error::{Error, Result},
@@ -99,7 +99,7 @@ fn missing_amount(inputs_sum: u64, outputs_sum: u64, remainder_amount: u64, nati
 impl InputSelection {
     pub(crate) fn fulfill_amount_requirement(
         &mut self,
-    ) -> Result<(Vec<(InputSigningData, bool)>, Option<Requirement>)> {
+    ) -> Result<(Vec<(InputSigningData, Option<AliasTransition>)>, Option<Requirement>)> {
         let (mut inputs_sum, mut outputs_sum, mut inputs_sdr, mut outputs_sdr) =
             amount_sums(&self.selected_inputs, &self.outputs, self.timestamp);
 
@@ -131,7 +131,7 @@ impl InputSelection {
 
                 for input in inputs {
                     inputs_sum += input.output.amount();
-                    newly_selected_inputs.push((input.clone(), false));
+                    newly_selected_inputs.push((input.clone(), None));
                     newly_selected_ids.insert(*input.output_id());
 
                     if missing_amount(inputs_sum, outputs_sum, remainder_amount, native_tokens_remainder) == 0 {
@@ -169,7 +169,7 @@ impl InputSelection {
                         .unwrap();
 
                     inputs_sum += input.output.amount();
-                    newly_selected_inputs.push((input.clone(), false));
+                    newly_selected_inputs.push((input.clone(), None));
                     newly_selected_ids.insert(*input.output_id());
 
                     let input_sdr = inputs_sdr.get(sdruc.return_address()).unwrap_or(&0) + sdruc.amount();
@@ -205,7 +205,7 @@ impl InputSelection {
 
                 for input in inputs {
                     inputs_sum += input.output.amount();
-                    newly_selected_inputs.push((input.clone(), false));
+                    newly_selected_inputs.push((input.clone(), None));
                     newly_selected_ids.insert(*input.output_id());
 
                     if inputs_sum >= outputs_sum + remainder_amount {
@@ -225,7 +225,7 @@ impl InputSelection {
                 if inputs.peek().is_some() {
                     for input in inputs {
                         inputs_sum += input.output.amount();
-                        newly_selected_inputs.push((input.clone(), false));
+                        newly_selected_inputs.push((input.clone(), None));
                         newly_selected_ids.insert(*input.output_id());
 
                         if inputs_sum >= outputs_sum + remainder_amount {
