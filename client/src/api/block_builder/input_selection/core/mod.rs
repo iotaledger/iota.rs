@@ -76,9 +76,11 @@ impl InputSelection {
 
     fn select_input(&mut self, input: InputSigningData, governance_transition: bool) -> Result<()> {
         if let Some(output) = self.transition_input(&input, governance_transition)? {
-            // TODO is this really necessary?
-            // TODO should input be pushed before ? probably
-            self.outputs_requirements(Some(&output));
+            // No need to check for `outputs_requirements` because
+            // - the sender feature doesn't need to be verified as it has been removed
+            // - the issuer feature doesn't need to be verified as the chain is not new
+            // - input doesn't need to be checked for as we just transitioned it
+            // - foundry alias requirement should have been met already by a prior `required_alias_nft_addresses`
             self.outputs.push(output);
         }
 
@@ -131,7 +133,7 @@ impl InputSelection {
 
         // Gets requirements from outputs.
         // TODO this may re-evaluate outputs added by inputs
-        self.outputs_requirements(None);
+        self.outputs_requirements();
 
         // Gets requirements from burn.
         self.burn_requirements()?;

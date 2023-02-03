@@ -62,13 +62,10 @@ impl InputSelection {
     }
 
     /// Gets requirements from outputs.
-    pub(crate) fn outputs_requirements(&mut self, output: Option<&Output>) {
+    pub(crate) fn outputs_requirements(&mut self) {
         // TODO do we really need to chain?
         let inputs = self.available_inputs.iter().chain(self.selected_inputs.iter());
-        let outputs: Box<dyn Iterator<Item = &Output>> = match output {
-            Some(output) => Box::new(std::iter::once(output)),
-            None => Box::new(self.outputs.iter()),
-        };
+        let outputs = self.outputs.iter();
 
         for output in outputs {
             let is_created = match output {
