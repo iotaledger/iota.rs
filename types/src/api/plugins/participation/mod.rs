@@ -4,17 +4,6 @@
 //! Node participation API.
 //! https://github.com/iota-community/treasury/blob/main/specifications/hornet-participation-plugin.md
 
+pub mod error;
 pub mod responses;
 pub mod types;
-
-use thiserror::Error;
-
-#[derive(Debug, Error)]
-pub enum Error {
-    /// Invalid participations error
-    #[error("invalid participations")]
-    InvalidParticipations,
-    /// IO error
-    #[error("`{0}`")]
-    Io(#[from] std::io::Error),
-}

@@ -5,19 +5,15 @@
 
 #![allow(missing_docs)]
 
-use std::{convert::TryInto, io::Read};
-
-use packable::PackableExt;
-use serde::{Deserialize, Serialize};
-
-use super::Error;
 extern crate alloc;
-use std::collections::HashMap;
+use std::{collections::HashMap, convert::TryInto, io::Read};
 
 use getset::Getters;
+use packable::PackableExt;
+use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 
-use crate::{impl_id, string_serde_impl};
+use crate::{api::plugins::participation::error::Error, impl_id, string_serde_impl};
 
 /// Participation tag.
 pub const PARTICIPATION_TAG: &str = "PARTICIPATE";

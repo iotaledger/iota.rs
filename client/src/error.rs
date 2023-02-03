@@ -251,7 +251,7 @@ pub enum Error {
     #[cfg(feature = "participation")]
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
-    Participation(#[from] iota_types::api::plugins::participation::Error),
+    Participation(#[from] iota_types::api::plugins::participation::error::Error),
 
     //////////////////////////////////////////////////////////////////////
     // Ledger Nano

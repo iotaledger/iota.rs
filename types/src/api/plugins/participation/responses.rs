@@ -8,8 +8,10 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
-use super::types::ParticipationEventId;
-use crate::block::{output::OutputId, BlockId};
+use crate::{
+    api::plugins::participation::types::ParticipationEventId,
+    block::{output::OutputId, BlockId},
+};
 
 /// EventsResponse defines the response of a GET RouteParticipationEvents REST API call.
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
