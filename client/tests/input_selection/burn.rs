@@ -32,6 +32,7 @@ fn burn_alias_present() {
         Alias(
             1_000_000,
             alias_id_1,
+            0,
             BECH32_ADDRESS_ED25519_0,
             BECH32_ADDRESS_ED25519_0,
             None,
@@ -149,6 +150,7 @@ fn burn_aliases_present() {
         Alias(
             1_000_000,
             alias_id_1,
+            0,
             BECH32_ADDRESS_ED25519_0,
             BECH32_ADDRESS_ED25519_0,
             None,
@@ -158,6 +160,7 @@ fn burn_aliases_present() {
         Alias(
             1_000_000,
             alias_id_2,
+            0,
             BECH32_ADDRESS_ED25519_0,
             BECH32_ADDRESS_ED25519_0,
             None,
@@ -199,6 +202,7 @@ fn burn_alias_in_outputs() {
         Alias(
             1_000_000,
             alias_id_1,
+            0,
             BECH32_ADDRESS_ED25519_0,
             BECH32_ADDRESS_ED25519_0,
             None,
@@ -211,6 +215,7 @@ fn burn_alias_in_outputs() {
         Alias(
             1_000_000,
             alias_id_1,
+            0,
             BECH32_ADDRESS_ED25519_0,
             BECH32_ADDRESS_ED25519_0,
             None,
@@ -278,6 +283,7 @@ fn burn_nft_id_zero() {
         Alias(
             1_000_000,
             alias_id_0,
+            0,
             BECH32_ADDRESS_ED25519_0,
             BECH32_ADDRESS_ED25519_0,
             None,
@@ -431,6 +437,7 @@ fn burn_foundry_present() {
         Alias(
             1_000_000,
             alias_id_1,
+            0,
             BECH32_ADDRESS_ED25519_0,
             BECH32_ADDRESS_ED25519_0,
             None,
@@ -514,6 +521,7 @@ fn burn_foundry_absent() {
         Alias(
             1_000_000,
             alias_id_1,
+            0,
             BECH32_ADDRESS_ED25519_0,
             BECH32_ADDRESS_ED25519_0,
             None,
@@ -570,6 +578,7 @@ fn burn_foundries_present() {
         Alias(
             1_000_000,
             alias_id_1,
+            0,
             BECH32_ADDRESS_ED25519_0,
             BECH32_ADDRESS_ED25519_0,
             None,

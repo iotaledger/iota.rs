@@ -64,6 +64,7 @@ fn existing_input_alias_for_foundry_alias() {
     let inputs = build_inputs(vec![Alias(
         1_251_500,
         alias_id_2,
+        0,
         BECH32_ADDRESS_ED25519_0,
         BECH32_ADDRESS_ED25519_0,
         None,
@@ -109,6 +110,7 @@ fn minted_native_tokens_in_new_remainder() {
         Alias(
             1_000_000,
             alias_id_2,
+            0,
             BECH32_ADDRESS_ED25519_0,
             BECH32_ADDRESS_ED25519_0,
             None,
@@ -161,6 +163,7 @@ fn minted_native_tokens_in_provided_output() {
         Alias(
             1_000_000,
             alias_id_2,
+            0,
             BECH32_ADDRESS_ED25519_0,
             BECH32_ADDRESS_ED25519_0,
             None,
@@ -213,6 +216,7 @@ fn melt_native_tokens() {
         Alias(
             1_000_000,
             alias_id_1,
+            0,
             BECH32_ADDRESS_ED25519_0,
             BECH32_ADDRESS_ED25519_0,
             None,
@@ -273,6 +277,7 @@ fn destroy_foundry_with_alias_state_transition() {
         Alias(
             50_300,
             alias_id_2,
+            0,
             BECH32_ADDRESS_ED25519_0,
             BECH32_ADDRESS_ED25519_0,
             None,
@@ -320,6 +325,7 @@ fn destroy_foundry_with_alias_governance_transition() {
         Alias(
             1_000_000,
             alias_id_2,
+            0,
             BECH32_ADDRESS_ED25519_0,
             BECH32_ADDRESS_ED25519_0,
             None,
@@ -360,6 +366,7 @@ fn destroy_foundry_with_alias_burn() {
         Alias(
             1_000_000,
             alias_id_2,
+            0,
             BECH32_ADDRESS_ED25519_0,
             BECH32_ADDRESS_ED25519_0,
             None,
@@ -412,6 +419,7 @@ fn prefer_basic_to_foundry() {
         Alias(
             1_000_000,
             alias_id_1,
+            0,
             BECH32_ADDRESS_ED25519_0,
             BECH32_ADDRESS_ED25519_0,
             None,
@@ -468,6 +476,7 @@ fn simple_foundry_transition_basic_not_needed() {
         Alias(
             2_000_000,
             alias_id_1,
+            0,
             BECH32_ADDRESS_ED25519_0,
             BECH32_ADDRESS_ED25519_0,
             None,
@@ -535,6 +544,7 @@ fn simple_foundry_transition_basic_not_needed_with_remainder() {
         Alias(
             2_000_000,
             alias_id_1,
+            0,
             BECH32_ADDRESS_ED25519_0,
             BECH32_ADDRESS_ED25519_0,
             None,
@@ -673,6 +683,7 @@ fn mint_and_burn_at_the_same_time() {
         Alias(
             2_000_000,
             alias_id_1,
+            0,
             BECH32_ADDRESS_ED25519_0,
             BECH32_ADDRESS_ED25519_0,
             None,
@@ -744,6 +755,7 @@ fn take_amount_from_alias_and_foundry_to_fund_basic() {
         Alias(
             2_000_000,
             alias_id_1,
+            0,
             BECH32_ADDRESS_ED25519_0,
             BECH32_ADDRESS_ED25519_0,
             None,
@@ -800,6 +812,7 @@ fn mint_native_tokens_but_burn_alias() {
         Alias(
             2_000_000,
             alias_id_1,
+            0,
             BECH32_ADDRESS_ED25519_0,
             BECH32_ADDRESS_ED25519_0,
             None,
@@ -848,6 +861,7 @@ fn melted_tokens_not_provided() {
         Alias(
             2_000_000,
             alias_id_1,
+            0,
             BECH32_ADDRESS_ED25519_0,
             BECH32_ADDRESS_ED25519_0,
             None,
@@ -898,6 +912,7 @@ fn burned_tokens_not_provided() {
         Alias(
             2_000_000,
             alias_id_1,
+            0,
             BECH32_ADDRESS_ED25519_0,
             BECH32_ADDRESS_ED25519_0,
             None,
@@ -947,6 +962,7 @@ fn foundry_in_outputs_and_required() {
         Alias(
             1_251_500,
             alias_id_2,
+            0,
             BECH32_ADDRESS_ED25519_0,
             BECH32_ADDRESS_ED25519_0,
             None,

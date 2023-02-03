@@ -28,6 +28,7 @@ fn input_alias_eq_output_alias() {
     let inputs = build_inputs(vec![Alias(
         1_000_000,
         alias_id_2,
+        0,
         BECH32_ADDRESS_ED25519_0,
         BECH32_ADDRESS_ED25519_0,
         None,
@@ -37,6 +38,7 @@ fn input_alias_eq_output_alias() {
     let outputs = build_outputs(vec![Alias(
         1_000_000,
         alias_id_2,
+        0,
         BECH32_ADDRESS_ED25519_0,
         BECH32_ADDRESS_ED25519_0,
         None,
@@ -65,6 +67,7 @@ fn transition_alias_id_zero() {
     let inputs = build_inputs(vec![Alias(
         1_000_000,
         alias_id_0,
+        0,
         BECH32_ADDRESS_ED25519_0,
         BECH32_ADDRESS_ED25519_0,
         None,
@@ -75,6 +78,7 @@ fn transition_alias_id_zero() {
     let outputs = build_outputs(vec![Alias(
         1_000_000,
         alias_id,
+        0,
         BECH32_ADDRESS_ED25519_0,
         BECH32_ADDRESS_ED25519_0,
         None,
@@ -103,6 +107,7 @@ fn input_amount_lt_output_amount() {
     let inputs = build_inputs(vec![Alias(
         1_000_000,
         alias_id_2,
+        0,
         BECH32_ADDRESS_ED25519_0,
         BECH32_ADDRESS_ED25519_0,
         None,
@@ -146,6 +151,7 @@ fn input_amount_lt_output_amount_2() {
         Alias(
             2_000_000,
             alias_id_2,
+            0,
             BECH32_ADDRESS_ED25519_0,
             BECH32_ADDRESS_ED25519_0,
             None,
@@ -190,6 +196,7 @@ fn basic_output_with_alias_input() {
     let inputs = build_inputs(vec![Alias(
         2_251_500,
         alias_id_2,
+        0,
         BECH32_ADDRESS_ED25519_0,
         BECH32_ADDRESS_ED25519_0,
         None,
@@ -237,6 +244,7 @@ fn create_alias() {
     let outputs = build_outputs(vec![Alias(
         1_000_000,
         alias_id_0,
+        0,
         BECH32_ADDRESS_ED25519_0,
         BECH32_ADDRESS_ED25519_0,
         None,
@@ -274,6 +282,7 @@ fn burn_alias() {
     let inputs = build_inputs(vec![Alias(
         2_000_000,
         alias_id_2,
+        0,
         BECH32_ADDRESS_ED25519_0,
         BECH32_ADDRESS_ED25519_0,
         None,
@@ -312,6 +321,7 @@ fn not_enough_storage_deposit_for_remainder() {
     let inputs = build_inputs(vec![Alias(
         1_000_001,
         alias_id_2,
+        0,
         BECH32_ADDRESS_ED25519_0,
         BECH32_ADDRESS_ED25519_0,
         None,
@@ -321,6 +331,7 @@ fn not_enough_storage_deposit_for_remainder() {
     let outputs = build_outputs(vec![Alias(
         1_000_000,
         alias_id_2,
+        0,
         BECH32_ADDRESS_ED25519_0,
         BECH32_ADDRESS_ED25519_0,
         None,
@@ -362,6 +373,7 @@ fn missing_input_for_alias_output() {
     let outputs = build_outputs(vec![Alias(
         1_000_000,
         alias_id_2,
+        0,
         BECH32_ADDRESS_ED25519_0,
         BECH32_ADDRESS_ED25519_0,
         None,
@@ -393,6 +405,7 @@ fn missing_input_for_alias_output_2() {
         Alias(
             2_000_000,
             alias_id_1,
+            0,
             BECH32_ADDRESS_ED25519_0,
             BECH32_ADDRESS_ED25519_0,
             None,
@@ -404,6 +417,7 @@ fn missing_input_for_alias_output_2() {
     let outputs = build_outputs(vec![Alias(
         1_000_000,
         alias_id_2,
+        0,
         BECH32_ADDRESS_ED25519_0,
         BECH32_ADDRESS_ED25519_0,
         None,
@@ -442,6 +456,7 @@ fn missing_input_for_alias_output_but_created() {
     let outputs = build_outputs(vec![Alias(
         1_000_000,
         alias_id_0,
+        0,
         BECH32_ADDRESS_ED25519_0,
         BECH32_ADDRESS_ED25519_0,
         None,
@@ -469,6 +484,7 @@ fn alias_in_output_and_sender() {
         Alias(
             1_000_000,
             alias_id_1,
+            0,
             BECH32_ADDRESS_ED25519_0,
             BECH32_ADDRESS_ED25519_0,
             None,
@@ -513,6 +529,7 @@ fn missing_ed25519_sender() {
     let inputs = build_inputs(vec![Alias(
         1_000_000,
         alias_id_2,
+        0,
         BECH32_ADDRESS_ED25519_0,
         BECH32_ADDRESS_ED25519_0,
         None,
@@ -522,6 +539,7 @@ fn missing_ed25519_sender() {
     let outputs = build_outputs(vec![Alias(
         1_000_000,
         alias_id_2,
+        0,
         BECH32_ADDRESS_ED25519_0,
         BECH32_ADDRESS_ED25519_0,
         None,
@@ -560,6 +578,7 @@ fn missing_ed25519_issuer_created() {
     let outputs = build_outputs(vec![Alias(
         1_000_000,
         alias_id_0,
+        0,
         BECH32_ADDRESS_ED25519_0,
         BECH32_ADDRESS_ED25519_0,
         None,
@@ -589,6 +608,7 @@ fn missing_ed25519_issuer_transition() {
     let inputs = build_inputs(vec![Alias(
         1_000_000,
         alias_id_2,
+        0,
         BECH32_ADDRESS_ED25519_0,
         BECH32_ADDRESS_ED25519_0,
         None,
@@ -598,6 +618,7 @@ fn missing_ed25519_issuer_transition() {
     let outputs = build_outputs(vec![Alias(
         1_000_000,
         alias_id_2,
+        0,
         BECH32_ADDRESS_ED25519_0,
         BECH32_ADDRESS_ED25519_0,
         None,
@@ -624,6 +645,7 @@ fn missing_alias_sender() {
     let inputs = build_inputs(vec![Alias(
         1_000_000,
         alias_id_2,
+        0,
         BECH32_ADDRESS_ED25519_0,
         BECH32_ADDRESS_ED25519_0,
         None,
@@ -633,6 +655,7 @@ fn missing_alias_sender() {
     let outputs = build_outputs(vec![Alias(
         1_000_000,
         alias_id_2,
+        0,
         BECH32_ADDRESS_ED25519_0,
         BECH32_ADDRESS_ED25519_0,
         None,
@@ -671,6 +694,7 @@ fn missing_alias_issuer_created() {
     let outputs = build_outputs(vec![Alias(
         1_000_000,
         alias_id_0,
+        0,
         BECH32_ADDRESS_ED25519_0,
         BECH32_ADDRESS_ED25519_0,
         None,
@@ -700,6 +724,7 @@ fn missing_alias_issuer_transition() {
     let inputs = build_inputs(vec![Alias(
         1_000_000,
         alias_id_2,
+        0,
         BECH32_ADDRESS_ED25519_0,
         BECH32_ADDRESS_ED25519_0,
         None,
@@ -709,6 +734,7 @@ fn missing_alias_issuer_transition() {
     let outputs = build_outputs(vec![Alias(
         1_000_000,
         alias_id_2,
+        0,
         BECH32_ADDRESS_ED25519_0,
         BECH32_ADDRESS_ED25519_0,
         None,
@@ -735,6 +761,7 @@ fn missing_nft_sender() {
     let inputs = build_inputs(vec![Alias(
         1_000_000,
         alias_id_2,
+        0,
         BECH32_ADDRESS_ED25519_0,
         BECH32_ADDRESS_ED25519_0,
         None,
@@ -744,6 +771,7 @@ fn missing_nft_sender() {
     let outputs = build_outputs(vec![Alias(
         1_000_000,
         alias_id_2,
+        0,
         BECH32_ADDRESS_ED25519_0,
         BECH32_ADDRESS_ED25519_0,
         None,
@@ -782,6 +810,7 @@ fn missing_nft_issuer_created() {
     let outputs = build_outputs(vec![Alias(
         1_000_000,
         alias_id_0,
+        0,
         BECH32_ADDRESS_ED25519_0,
         BECH32_ADDRESS_ED25519_0,
         None,
@@ -811,6 +840,7 @@ fn missing_nft_issuer_transition() {
     let inputs = build_inputs(vec![Alias(
         1_000_000,
         alias_id_2,
+        0,
         BECH32_ADDRESS_ED25519_0,
         BECH32_ADDRESS_ED25519_0,
         None,
@@ -820,6 +850,7 @@ fn missing_nft_issuer_transition() {
     let outputs = build_outputs(vec![Alias(
         1_000_000,
         alias_id_2,
+        0,
         BECH32_ADDRESS_ED25519_0,
         BECH32_ADDRESS_ED25519_0,
         None,
@@ -847,6 +878,7 @@ fn increase_alias_amount() {
         Alias(
             2_000_000,
             alias_id_1,
+            0,
             BECH32_ADDRESS_ED25519_0,
             BECH32_ADDRESS_ED25519_0,
             None,
@@ -858,6 +890,7 @@ fn increase_alias_amount() {
     let outputs = build_outputs(vec![Alias(
         3_000_000,
         alias_id_1,
+        0,
         BECH32_ADDRESS_ED25519_0,
         BECH32_ADDRESS_ED25519_0,
         None,
@@ -887,6 +920,7 @@ fn decrease_alias_amount() {
         Alias(
             2_000_000,
             alias_id_1,
+            0,
             BECH32_ADDRESS_ED25519_0,
             BECH32_ADDRESS_ED25519_0,
             None,
@@ -898,6 +932,7 @@ fn decrease_alias_amount() {
     let outputs = build_outputs(vec![Alias(
         1_000_000,
         alias_id_1,
+        0,
         BECH32_ADDRESS_ED25519_0,
         BECH32_ADDRESS_ED25519_0,
         None,
@@ -939,6 +974,7 @@ fn prefer_basic_to_alias() {
         Alias(
             1_000_000,
             alias_id_1,
+            0,
             BECH32_ADDRESS_ED25519_0,
             BECH32_ADDRESS_ED25519_0,
             None,
@@ -980,6 +1016,7 @@ fn take_amount_from_alias_to_fund_basic() {
         Alias(
             2_000_000,
             alias_id_1,
+            0,
             BECH32_ADDRESS_ED25519_0,
             BECH32_ADDRESS_ED25519_0,
             None,
@@ -1041,6 +1078,7 @@ fn alias_burn_should_not_validate_alias_sender() {
         Alias(
             1_000_000,
             alias_id_1,
+            0,
             BECH32_ADDRESS_ED25519_0,
             BECH32_ADDRESS_ED25519_0,
             None,
@@ -1083,6 +1121,7 @@ fn alias_burn_should_not_validate_alias_address() {
         Alias(
             1_000_000,
             alias_id_1,
+            0,
             BECH32_ADDRESS_ED25519_0,
             BECH32_ADDRESS_ED25519_0,
             None,
@@ -1125,6 +1164,7 @@ fn alias_governance_transition_should_not_validate_alias_sender() {
         Alias(
             1_000_000,
             alias_id_1,
+            0,
             BECH32_ADDRESS_ED25519_0,
             BECH32_ADDRESS_ED25519_0,
             None,
@@ -1167,6 +1207,7 @@ fn alias_governance_transition_should_not_validate_alias_address() {
         Alias(
             1_000_000,
             alias_id_1,
+            0,
             BECH32_ADDRESS_ED25519_0,
             BECH32_ADDRESS_ED25519_0,
             None,
@@ -1207,6 +1248,7 @@ fn transitioned_zero_alias_id_no_longer_is_zero() {
     let inputs = build_inputs(vec![Alias(
         2_000_000,
         alias_id_0,
+        0,
         BECH32_ADDRESS_ED25519_0,
         BECH32_ADDRESS_ED25519_0,
         None,
@@ -1266,6 +1308,7 @@ fn two_aliases_required() {
         Alias(
             2_000_000,
             alias_id_1,
+            0,
             BECH32_ADDRESS_ED25519_0,
             BECH32_ADDRESS_ED25519_0,
             None,
@@ -1275,6 +1318,7 @@ fn two_aliases_required() {
         Alias(
             2_000_000,
             alias_id_2,
+            0,
             BECH32_ADDRESS_ED25519_0,
             BECH32_ADDRESS_ED25519_0,
             None,
@@ -1334,6 +1378,7 @@ fn state_controller_sender_required() {
     let inputs = build_inputs(vec![Alias(
         2_000_000,
         alias_id_1,
+        0,
         BECH32_ADDRESS_ED25519_0,
         BECH32_ADDRESS_ED25519_1,
         None,
@@ -1382,6 +1427,7 @@ fn governor_sender_required() {
     let inputs = build_inputs(vec![Alias(
         2_000_000,
         alias_id_1,
+        0,
         BECH32_ADDRESS_ED25519_0,
         BECH32_ADDRESS_ED25519_1,
         None,

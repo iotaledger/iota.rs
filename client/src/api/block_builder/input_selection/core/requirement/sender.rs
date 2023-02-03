@@ -91,11 +91,7 @@ impl InputSelection {
             self.available_inputs.iter().enumerate().find_map(|(index, input)| {
                 if !input.output.is_basic() {
                     let (found, alias_transition) = available_has_ed25519_address(input, &address, self.timestamp);
-                    if found {
-                        Some((index, alias_transition))
-                    } else {
-                        None
-                    }
+                    if found { Some((index, alias_transition)) } else { None }
                 } else {
                     None
                 }

@@ -535,6 +535,7 @@ fn alias_sender() {
         Alias(
             1_000_000,
             alias_id_1,
+            0,
             BECH32_ADDRESS_ED25519_0,
             BECH32_ADDRESS_ED25519_0,
             None,
@@ -587,6 +588,7 @@ fn alias_sender_zero_id() {
         Alias(
             1_000_000,
             alias_id_0,
+            0,
             BECH32_ADDRESS_ED25519_0,
             BECH32_ADDRESS_ED25519_0,
             None,

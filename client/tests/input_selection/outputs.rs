@@ -75,6 +75,7 @@ fn no_outputs_but_burn() {
     let inputs = build_inputs(vec![Alias(
         2_000_000,
         alias_id_2,
+        0,
         BECH32_ADDRESS_ED25519_0,
         BECH32_ADDRESS_ED25519_0,
         None,
