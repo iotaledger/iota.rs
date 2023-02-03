@@ -176,7 +176,7 @@ impl<'a> ClientBlockBuilder<'a> {
                             .required_and_unlocked_address(
                                 current_time,
                                 &output_response.metadata.output_id()?,
-                                false,
+                                None,
                             )?;
                         if required_unlock_address == address {
                             available_inputs.push(InputSigningData {

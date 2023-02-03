@@ -59,13 +59,19 @@ impl InputSelection {
     fn required_alias_nft_addresses(&self, input: &InputSigningData) -> Result<Option<Requirement>> {
         // TODO burn?
         // TODO unwrap or false?
-        let is_alias_state_transition = is_alias_state_transition(input, &self.outputs)
-            .unwrap_or((false, false))
-            .0;
+        let alias_transition = if input.output.is_alias() {
+            Some(
+                is_alias_state_transition(input, &self.outputs)
+                    .unwrap_or((AliasTransition::Governance, false))
+                    .0,
+            )
+        } else {
+            None
+        };
         let (required_address, _) =
             input
                 .output
-                .required_and_unlocked_address(self.timestamp, input.output_id(), is_alias_state_transition)?;
+                .required_and_unlocked_address(self.timestamp, input.output_id(), alias_transition)?;
 
         match required_address {
             Address::Alias(alias_address) => Ok(Some(Requirement::Alias(*alias_address.alias_id(), true))),
@@ -229,8 +235,8 @@ impl InputSelection {
 
             let required_address = input
                 .output
-                // True is irrelevant here as we keep aliases anyway.
-                .required_and_unlocked_address(self.timestamp, input.output_id(), true)
+                // Alias transition is irrelevant here as we keep aliases anyway.
+                .required_and_unlocked_address(self.timestamp, input.output_id(), None)
                 // PANIC: safe to unwrap as non basic/alias/foundry/nft outputs are already filtered out.
                 .unwrap()
                 .0;

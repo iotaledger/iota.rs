@@ -18,9 +18,13 @@ fn selected_has_ed25519_address(
     timestamp: u32,
 ) -> bool {
     let alias_state_transition = if input.output.is_alias() {
-        is_alias_state_transition(input, outputs).unwrap_or((false, false)).0
+        Some(
+            is_alias_state_transition(input, outputs)
+                .unwrap_or((AliasTransition::Governance, false))
+                .0,
+        )
     } else {
-        false
+        None
     };
     // PANIC: safe to unwrap as outputs with no address have been filtered out already.
     let required_address = input
@@ -55,7 +59,7 @@ fn available_has_ed25519_address(
     } else {
         let (required_address, _) = input
             .output
-            .required_and_unlocked_address(timestamp, input.output_id(), false)
+            .required_and_unlocked_address(timestamp, input.output_id(), None)
             .unwrap();
         (&required_address == address, None)
     }

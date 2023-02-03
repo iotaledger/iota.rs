@@ -267,11 +267,11 @@ impl Output {
         &self,
         current_time: u32,
         output_id: &OutputId,
-        alias_state_transition: bool,
+        alias_transition: Option<AliasTransition>,
     ) -> Result<(Address, Option<Address>), Error> {
         match self {
             Self::Alias(output) => {
-                if alias_state_transition {
+                if alias_transition.unwrap_or(AliasTransition::State) == AliasTransition::State {
                     // Alias address is only unlocked if it's a state transition
                     Ok((
                         *output.state_controller_address(),
