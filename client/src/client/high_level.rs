@@ -4,7 +4,7 @@
 use std::{collections::HashSet, str::FromStr};
 
 use iota_types::{
-    api::{dto::LedgerInclusionStateDto, response::OutputWithMetadataResponse},
+    api::core::{dto::LedgerInclusionStateDto, response::OutputWithMetadataResponse},
     block::{
         input::{Input, UtxoInput, INPUT_COUNT_MAX},
         output::{Output, OutputId},

@@ -1079,7 +1079,6 @@ dependencies = [
  "dotenv",
  "fern-logger",
  "futures",
- "getset",
  "gloo-timers",
  "hashbrown 0.13.2",
  "instant",
@@ -1099,7 +1098,6 @@ dependencies = [
  "rumqttc",
  "serde",
  "serde_json",
- "serde_repr",
  "thiserror",
  "tokio",
  "url",
@@ -1173,6 +1171,7 @@ dependencies = [
  "bitflags",
  "bytemuck",
  "derive_more",
+ "getset",
  "hashbrown 0.13.2",
  "hex",
  "iota-crypto",
@@ -1186,6 +1185,7 @@ dependencies = [
  "serde",
  "serde-big-array",
  "serde_json",
+ "serde_repr",
  "thiserror",
 ]
 
