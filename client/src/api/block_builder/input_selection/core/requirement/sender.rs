@@ -27,7 +27,7 @@ fn selected_has_ed25519_address(
     &required_address == address
 }
 
-fn available_has_ed25519_address(input: &InputSigningData, address: &Address) -> (bool, bool) {
+fn available_has_ed25519_address(input: &InputSigningData, address: &Address, timestamp: u32) -> (bool, bool) {
     // PANIC: safe to unwrap as outputs without unlock conditions have been filtered out already.
     let unlock_conditions = input.output.unlock_conditions().unwrap();
 
@@ -41,10 +41,12 @@ fn available_has_ed25519_address(input: &InputSigningData, address: &Address) ->
         }
 
         (false, false)
-    } else if let Some(unlock_condition) = unlock_conditions.address() {
-        (unlock_condition.address() == address, false)
     } else {
-        (false, false)
+        let (required_address, _) = input
+            .output
+            .required_and_unlocked_address(timestamp, input.output_id(), false)
+            .unwrap();
+        (&required_address == address, false)
     }
 }
 
@@ -68,19 +70,16 @@ impl InputSelection {
 
         // TODO check that the enumeration index is kept original and not filtered.
         // Tries to find a basic output first.
-        let found = if let Some((index, _)) = self
-            .available_inputs
-            .iter()
-            .enumerate()
-            .find(|(_, input)| input.output.is_basic() && available_has_ed25519_address(input, &address).0)
-        {
+        let found = if let Some((index, _)) = self.available_inputs.iter().enumerate().find(|(_, input)| {
+            input.output.is_basic() && available_has_ed25519_address(input, &address, self.timestamp).0
+        }) {
             Some((index, false))
         } else {
             // TODO any preference between alias and NFT?
             // If no basic output has been found, tries the other kinds of output.
             self.available_inputs.iter().enumerate().find_map(|(index, input)| {
                 if !input.output.is_basic() {
-                    let (found, governance_transition) = available_has_ed25519_address(input, &address);
+                    let (found, governance_transition) = available_has_ed25519_address(input, &address, self.timestamp);
                     if found {
                         Some((index, governance_transition))
                     } else {

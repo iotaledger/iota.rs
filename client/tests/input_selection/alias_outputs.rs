@@ -1304,26 +1304,30 @@ fn two_aliases_required() {
     assert!(unsorted_eq(&selected.inputs, &inputs));
     assert_eq!(selected.outputs.len(), 3);
     assert!(selected.outputs.contains(&outputs[0]));
-    assert!(selected
-        .outputs
-        .iter()
-        .any(|output| if let Output::Alias(output) = output {
-            output.alias_id() == &alias_id_1
-        } else {
-            false
-        }));
-    assert!(selected
-        .outputs
-        .iter()
-        .any(|output| if let Output::Alias(output) = output {
-            output.alias_id() == &alias_id_2
-        } else {
-            false
-        }))
+    assert!(
+        selected
+            .outputs
+            .iter()
+            .any(|output| if let Output::Alias(output) = output {
+                output.alias_id() == &alias_id_1
+            } else {
+                false
+            })
+    );
+    assert!(
+        selected
+            .outputs
+            .iter()
+            .any(|output| if let Output::Alias(output) = output {
+                output.alias_id() == &alias_id_2
+            } else {
+                false
+            })
+    )
 }
 
 #[test]
-fn state_controller_required() {
+fn state_controller_sender_required() {
     let protocol_parameters = protocol_parameters();
     let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
 
@@ -1358,18 +1362,20 @@ fn state_controller_required() {
     assert!(unsorted_eq(&selected.inputs, &inputs));
     assert_eq!(selected.outputs.len(), 2);
     assert!(selected.outputs.contains(&outputs[0]));
-    assert!(selected
-        .outputs
-        .iter()
-        .any(|output| if let Output::Alias(output) = output {
-            output.state_index() == inputs[0].output.as_alias().state_index() + 1
-        } else {
-            false
-        }))
+    assert!(
+        selected
+            .outputs
+            .iter()
+            .any(|output| if let Output::Alias(output) = output {
+                output.state_index() == inputs[0].output.as_alias().state_index() + 1
+            } else {
+                false
+            })
+    )
 }
 
 #[test]
-fn governor_required() {
+fn governor_sender_required() {
     let protocol_parameters = protocol_parameters();
     let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
 
@@ -1404,12 +1410,14 @@ fn governor_required() {
     assert!(unsorted_eq(&selected.inputs, &inputs));
     assert_eq!(selected.outputs.len(), 2);
     assert!(selected.outputs.contains(&outputs[0]));
-    assert!(selected
-        .outputs
-        .iter()
-        .any(|output| if let Output::Alias(output) = output {
-            output.state_index() == inputs[0].output.as_alias().state_index()
-        } else {
-            false
-        }))
+    assert!(
+        selected
+            .outputs
+            .iter()
+            .any(|output| if let Output::Alias(output) = output {
+                output.state_index() == inputs[0].output.as_alias().state_index()
+            } else {
+                false
+            })
+    )
 }
