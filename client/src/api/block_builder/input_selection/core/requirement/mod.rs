@@ -1,6 +1,8 @@
 // Copyright 2023 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+#![allow(clippy::type_complexity)]
+
 pub(crate) mod alias;
 pub(crate) mod amount;
 pub(crate) mod foundry;
