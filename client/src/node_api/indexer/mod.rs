@@ -4,17 +4,13 @@
 //! Node indexer API.
 
 pub mod query_parameters;
-pub mod responses;
 pub mod routes;
 
 use std::str::FromStr;
 
-use iota_types::block::output::OutputId;
+use iota_types::{api::plugins::indexer::OutputIdsResponse, block::output::OutputId};
 
-pub(crate) use self::{
-    query_parameters::{QueryParameter, QueryParameters},
-    responses::OutputIdsResponse,
-};
+pub(crate) use self::query_parameters::{QueryParameter, QueryParameters};
 use crate::{Client, Result};
 
 impl Client {

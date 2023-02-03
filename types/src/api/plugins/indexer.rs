@@ -1,11 +1,13 @@
-// Copyright 2022 IOTA Stiftung
+// Copyright 2023 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
 //! Node indexer responses.
 
+use serde::{Deserialize, Serialize};
+
 /// Response of GET /api/indexer/v1/*
 /// Returns the output_ids for the provided query parameters.
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct OutputIdsResponse {
     /// The ledger index at which the outputs were collected
     #[serde(rename = "ledgerIndex")]

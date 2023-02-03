@@ -54,7 +54,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-- `OutputMetadata`, moved to `iota-types`;
+- `participation`, `indexer` plugin API types and `OutputMetadata`, moved to `iota-types`;
 
 ### Fixed
 

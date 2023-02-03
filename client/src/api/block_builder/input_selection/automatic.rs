@@ -7,7 +7,7 @@ use std::collections::HashSet;
 
 use crypto::keys::slip10::Chain;
 use iota_types::{
-    api::response::OutputWithMetadataResponse,
+    api::core::response::OutputWithMetadataResponse,
     block::{
         address::Address,
         output::{Output, OutputMetadata},
