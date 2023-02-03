@@ -1,7 +1,7 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use std::str::FromStr;
+use std::{collections::HashSet, str::FromStr};
 
 use iota_client::{
     api::input_selection::{Burn, InputSelection, Requirement},
@@ -1420,6 +1420,109 @@ fn state_controller_sender_required() {
 }
 
 #[test]
+fn state_controller_sender_required_already_selected() {
+    let protocol_parameters = protocol_parameters();
+    let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
+
+    let inputs = build_inputs(vec![Alias(
+        2_000_000,
+        alias_id_1,
+        0,
+        BECH32_ADDRESS_ED25519_0,
+        BECH32_ADDRESS_ED25519_1,
+        None,
+        None,
+        None,
+    )]);
+    let outputs = build_outputs(vec![
+        Alias(
+            1_000_000,
+            alias_id_1,
+            1,
+            BECH32_ADDRESS_ED25519_0,
+            BECH32_ADDRESS_ED25519_1,
+            None,
+            None,
+            None,
+        ),
+        Basic(
+            1_000_000,
+            BECH32_ADDRESS_ED25519_0,
+            None,
+            Some(BECH32_ADDRESS_ED25519_0),
+            None,
+            None,
+            None,
+        ),
+    ]);
+
+    let selected = InputSelection::new(
+        inputs.clone(),
+        outputs.clone(),
+        addresses(vec![BECH32_ADDRESS_ED25519_0]),
+        protocol_parameters,
+    )
+    .required_inputs(HashSet::from_iter([*inputs[0].output_id()]))
+    .select()
+    .unwrap();
+
+    assert!(unsorted_eq(&selected.inputs, &inputs));
+    assert!(unsorted_eq(&selected.outputs, &outputs));
+}
+
+#[test]
+fn state_controller_sender_required_but_governance() {
+    let protocol_parameters = protocol_parameters();
+    let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
+
+    let inputs = build_inputs(vec![Alias(
+        2_000_000,
+        alias_id_1,
+        0,
+        BECH32_ADDRESS_ED25519_0,
+        BECH32_ADDRESS_ED25519_1,
+        None,
+        None,
+        None,
+    )]);
+    let outputs = build_outputs(vec![
+        Alias(
+            1_000_000,
+            alias_id_1,
+            0,
+            BECH32_ADDRESS_ED25519_0,
+            BECH32_ADDRESS_ED25519_1,
+            None,
+            None,
+            None,
+        ),
+        Basic(
+            1_000_000,
+            BECH32_ADDRESS_ED25519_0,
+            None,
+            Some(BECH32_ADDRESS_ED25519_0),
+            None,
+            None,
+            None,
+        ),
+    ]);
+
+    let selected = InputSelection::new(
+        inputs.clone(),
+        outputs.clone(),
+        addresses(vec![BECH32_ADDRESS_ED25519_0]),
+        protocol_parameters,
+    )
+    .required_inputs(HashSet::from_iter([*inputs[0].output_id()]))
+    .select();
+
+    assert!(matches!(
+        selected,
+        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender.is_ed25519() && sender == Address::try_from_bech32(BECH32_ADDRESS_ED25519_0).unwrap().1
+    ));
+}
+
+#[test]
 fn governor_sender_required() {
     let protocol_parameters = protocol_parameters();
     let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
@@ -1466,4 +1569,107 @@ fn governor_sender_required() {
                 false
             })
     )
+}
+
+#[test]
+fn governor_sender_required_already_selected() {
+    let protocol_parameters = protocol_parameters();
+    let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
+
+    let inputs = build_inputs(vec![Alias(
+        2_000_000,
+        alias_id_1,
+        0,
+        BECH32_ADDRESS_ED25519_0,
+        BECH32_ADDRESS_ED25519_1,
+        None,
+        None,
+        None,
+    )]);
+    let outputs = build_outputs(vec![
+        Alias(
+            1_000_000,
+            alias_id_1,
+            0,
+            BECH32_ADDRESS_ED25519_0,
+            BECH32_ADDRESS_ED25519_1,
+            None,
+            None,
+            None,
+        ),
+        Basic(
+            1_000_000,
+            BECH32_ADDRESS_ED25519_0,
+            None,
+            Some(BECH32_ADDRESS_ED25519_1),
+            None,
+            None,
+            None,
+        ),
+    ]);
+
+    let selected = InputSelection::new(
+        inputs.clone(),
+        outputs.clone(),
+        addresses(vec![BECH32_ADDRESS_ED25519_0]),
+        protocol_parameters,
+    )
+    .required_inputs(HashSet::from_iter([*inputs[0].output_id()]))
+    .select()
+    .unwrap();
+
+    assert!(unsorted_eq(&selected.inputs, &inputs));
+    assert!(unsorted_eq(&selected.outputs, &outputs));
+}
+
+#[test]
+fn governor_sender_required_but_state() {
+    let protocol_parameters = protocol_parameters();
+    let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
+
+    let inputs = build_inputs(vec![Alias(
+        2_000_000,
+        alias_id_1,
+        0,
+        BECH32_ADDRESS_ED25519_0,
+        BECH32_ADDRESS_ED25519_1,
+        None,
+        None,
+        None,
+    )]);
+    let outputs = build_outputs(vec![
+        Alias(
+            1_000_000,
+            alias_id_1,
+            1,
+            BECH32_ADDRESS_ED25519_0,
+            BECH32_ADDRESS_ED25519_1,
+            None,
+            None,
+            None,
+        ),
+        Basic(
+            1_000_000,
+            BECH32_ADDRESS_ED25519_0,
+            None,
+            Some(BECH32_ADDRESS_ED25519_1),
+            None,
+            None,
+            None,
+        ),
+    ]);
+
+    let selected = InputSelection::new(
+        inputs.clone(),
+        outputs.clone(),
+        addresses(vec![BECH32_ADDRESS_ED25519_0]),
+        protocol_parameters,
+    )
+    .required_inputs(HashSet::from_iter([*inputs[0].output_id()]))
+    .select();
+
+    assert!(matches!(
+        selected,
+        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender.is_ed25519() && sender == Address::try_from_bech32(BECH32_ADDRESS_ED25519_1).unwrap().1
+    ));
 }
