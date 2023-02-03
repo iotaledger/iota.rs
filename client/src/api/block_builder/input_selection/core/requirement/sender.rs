@@ -22,10 +22,12 @@ fn selected_has_ed25519_address(
     } else {
         false
     };
-    let (required_address, _) = input
+    // PANIC: safe to unwrap as outputs with no address have been filtered out already.
+    let required_address = input
         .output
         .required_and_unlocked_address(timestamp, input.output_id(), alias_state_transition)
-        .unwrap();
+        .unwrap()
+        .0;
 
     &required_address == address
 }
@@ -39,10 +41,12 @@ fn available_has_ed25519_address(
     let unlock_conditions = input.output.unlock_conditions().unwrap();
 
     if input.output.is_alias() {
+        // PANIC: safe to unwrap as aliases have a state controller address.
         if unlock_conditions.state_controller_address().unwrap().address() == address {
             return (true, Some(AliasTransition::State));
         }
 
+        // PANIC: safe to unwrap as aliases have a governor address.
         if unlock_conditions.governor_address().unwrap().address() == address {
             return (true, Some(AliasTransition::Governance));
         }
@@ -87,7 +91,11 @@ impl InputSelection {
             self.available_inputs.iter().enumerate().find_map(|(index, input)| {
                 if !input.output.is_basic() {
                     let (found, alias_transition) = available_has_ed25519_address(input, &address, self.timestamp);
-                    if found { Some((index, alias_transition)) } else { None }
+                    if found {
+                        Some((index, alias_transition))
+                    } else {
+                        None
+                    }
                 } else {
                     None
                 }

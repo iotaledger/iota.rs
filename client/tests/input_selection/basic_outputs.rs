@@ -1,7 +1,7 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use std::str::FromStr;
+use std::{collections::HashSet, str::FromStr};
 
 use iota_client::{
     api::input_selection::{InputSelection, Requirement},
@@ -1091,4 +1091,41 @@ fn another_input_required_to_cover_remainder_rent() {
             assert!(is_remainder_or_return(output, 800_000, BECH32_ADDRESS_ED25519_0, None));
         }
     });
+}
+
+#[test]
+fn sender_already_selected() {
+    let protocol_parameters = protocol_parameters();
+
+    let inputs = build_inputs(vec![Basic(
+        1_000_000,
+        BECH32_ADDRESS_ED25519_1,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )]);
+    let outputs = build_outputs(vec![Basic(
+        1_000_000,
+        BECH32_ADDRESS_ED25519_0,
+        None,
+        Some(BECH32_ADDRESS_ED25519_1),
+        None,
+        None,
+        None,
+    )]);
+
+    let selected = InputSelection::new(
+        inputs.clone(),
+        outputs.clone(),
+        addresses(vec![BECH32_ADDRESS_ED25519_0, BECH32_ADDRESS_ED25519_1]),
+        protocol_parameters,
+    )
+    .required_inputs(HashSet::from_iter([*inputs[0].output_id()]))
+    .select()
+    .unwrap();
+
+    assert!(unsorted_eq(&selected.inputs, &inputs));
+    assert!(unsorted_eq(&selected.outputs, &outputs));
 }
