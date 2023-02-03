@@ -5,8 +5,7 @@
 
 use iota_client::{
     api_types::plugins::participation::types::{
-        participation::{Participation, Participations},
-        ParticipationEventId, PARTICIPATION_TAG,
+        Participation, ParticipationEventId, Participations, PARTICIPATION_TAG,
     },
     block::output::{unlock_condition::AddressUnlockCondition, BasicOutputBuilder, UnlockCondition},
     node_api::indexer::query_parameters::QueryParameter,
