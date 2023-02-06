@@ -261,7 +261,7 @@ async fn main() -> Result<()> {
     let block = client
         .block()
         .with_secret_manager(&secret_manager)
-        .with_burn(Burn::new())
+        .with_burn(Burn::new().add_native_token(token_id, 20))
         .with_input(basic_output_id.into())?
         .with_outputs(outputs)?
         .finish()
