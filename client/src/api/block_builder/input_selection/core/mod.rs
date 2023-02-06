@@ -58,16 +58,7 @@ pub struct Selected {
 impl InputSelection {
     fn required_alias_nft_addresses(&self, input: &InputSigningData) -> Result<Option<Requirement>> {
         // TODO burn?
-        // TODO unwrap or false?
-        let alias_transition = if input.output.is_alias() {
-            Some(
-                is_alias_transition(input, &self.outputs)
-                    .unwrap_or((AliasTransition::Governance, false))
-                    .0,
-            )
-        } else {
-            None
-        };
+        let alias_transition = is_alias_transition(input, &self.outputs).map(|(alias_transition, _)| alias_transition);
         let (required_address, _) =
             input
                 .output
