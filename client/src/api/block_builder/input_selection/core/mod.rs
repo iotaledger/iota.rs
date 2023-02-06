@@ -8,7 +8,7 @@ pub(crate) mod transition;
 
 use std::collections::HashSet;
 
-use self::requirement::alias::is_alias_state_transition;
+use self::requirement::alias::alias_transition;
 pub use self::{
     burn::{Burn, BurnDto},
     requirement::Requirement,
@@ -61,7 +61,7 @@ impl InputSelection {
         // TODO unwrap or false?
         let alias_transition = if input.output.is_alias() {
             Some(
-                is_alias_state_transition(input, &self.outputs)
+                alias_transition(input, &self.outputs)
                     .unwrap_or((AliasTransition::Governance, false))
                     .0,
             )

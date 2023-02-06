@@ -1,7 +1,7 @@
 // Copyright 2023 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use super::{alias::is_alias_state_transition, InputSelection, Requirement};
+use super::{alias::alias_transition, InputSelection, Requirement};
 use crate::{
     block::{
         address::Address,
@@ -17,9 +17,9 @@ fn selected_has_ed25519_address(
     address: &Address,
     timestamp: u32,
 ) -> bool {
-    let alias_state_transition = if input.output.is_alias() {
+    let alias_transition = if input.output.is_alias() {
         Some(
-            is_alias_state_transition(input, outputs)
+            alias_transition(input, outputs)
                 .unwrap_or((AliasTransition::Governance, false))
                 .0,
         )
@@ -29,7 +29,7 @@ fn selected_has_ed25519_address(
     // PANIC: safe to unwrap as outputs with no address have been filtered out already.
     let required_address = input
         .output
-        .required_and_unlocked_address(timestamp, input.output_id(), alias_state_transition)
+        .required_and_unlocked_address(timestamp, input.output_id(), alias_transition)
         .unwrap()
         .0;
 
