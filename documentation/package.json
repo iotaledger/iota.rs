@@ -25,6 +25,7 @@
     "got": "^11.8.5",
     "loader-utils": "^2.0.4",
     "json5": "^2.2.2",
-    "eta": "^2.0.0"
+    "eta": "^2.0.0",
+    "http-cache-semantics": "^4.1.1"
   }
 }
