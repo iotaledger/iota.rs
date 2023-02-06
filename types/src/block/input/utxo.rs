@@ -33,7 +33,7 @@ impl FromStr for UtxoInput {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(UtxoInput(OutputId::from_str(s)?))
+        Ok(Self(OutputId::from_str(s)?))
     }
 }
 
@@ -70,7 +70,7 @@ pub mod dto {
 
     impl From<&UtxoInput> for UtxoInputDto {
         fn from(value: &UtxoInput) -> Self {
-            UtxoInputDto {
+            Self {
                 kind: UtxoInput::KIND,
                 transaction_id: value.output_id().transaction_id().to_string(),
                 transaction_output_index: value.output_id().index(),
@@ -82,7 +82,7 @@ pub mod dto {
         type Error = DtoError;
 
         fn try_from(value: &UtxoInputDto) -> Result<Self, Self::Error> {
-            Ok(UtxoInput::new(
+            Ok(Self::new(
                 value
                     .transaction_id
                     .parse::<TransactionId>()

@@ -166,7 +166,7 @@ pub mod dto {
         fn from(value: &Unlock) -> Self {
             match value {
                 Unlock::Signature(signature) => match signature.signature() {
-                    Signature::Ed25519(ed) => UnlockDto::Signature(SignatureUnlockDto {
+                    Signature::Ed25519(ed) => Self::Signature(SignatureUnlockDto {
                         kind: SignatureUnlock::KIND,
                         signature: SignatureDto::Ed25519(Ed25519SignatureDto {
                             kind: Ed25519Signature::KIND,
@@ -175,15 +175,15 @@ pub mod dto {
                         }),
                     }),
                 },
-                Unlock::Reference(r) => UnlockDto::Reference(ReferenceUnlockDto {
+                Unlock::Reference(r) => Self::Reference(ReferenceUnlockDto {
                     kind: ReferenceUnlock::KIND,
                     index: r.index(),
                 }),
-                Unlock::Alias(a) => UnlockDto::Alias(AliasUnlockDto {
+                Unlock::Alias(a) => Self::Alias(AliasUnlockDto {
                     kind: AliasUnlock::KIND,
                     index: a.index(),
                 }),
-                Unlock::Nft(n) => UnlockDto::Nft(NftUnlockDto {
+                Unlock::Nft(n) => Self::Nft(NftUnlockDto {
                     kind: NftUnlock::KIND,
                     index: n.index(),
                 }),
@@ -202,14 +202,14 @@ pub mod dto {
                             prefix_hex::decode(&ed.public_key).map_err(|_| DtoError::InvalidField("publicKey"))?;
                         let signature =
                             prefix_hex::decode(&ed.signature).map_err(|_| DtoError::InvalidField("signature"))?;
-                        Ok(Unlock::Signature(SignatureUnlock::from(Signature::Ed25519(
+                        Ok(Self::Signature(SignatureUnlock::from(Signature::Ed25519(
                             Ed25519Signature::new(public_key, signature),
                         ))))
                     }
                 },
-                UnlockDto::Reference(r) => Ok(Unlock::Reference(ReferenceUnlock::new(r.index)?)),
-                UnlockDto::Alias(a) => Ok(Unlock::Alias(AliasUnlock::new(a.index)?)),
-                UnlockDto::Nft(n) => Ok(Unlock::Nft(NftUnlock::new(n.index)?)),
+                UnlockDto::Reference(r) => Ok(Self::Reference(ReferenceUnlock::new(r.index)?)),
+                UnlockDto::Alias(a) => Ok(Self::Alias(AliasUnlock::new(a.index)?)),
+                UnlockDto::Nft(n) => Ok(Self::Nft(NftUnlock::new(n.index)?)),
             }
         }
     }
@@ -224,20 +224,20 @@ pub mod dto {
                     .ok_or_else(|| serde::de::Error::custom("invalid unlock type"))? as u8
                 {
                     SignatureUnlock::KIND => {
-                        UnlockDto::Signature(SignatureUnlockDto::deserialize(value).map_err(|e| {
+                        Self::Signature(SignatureUnlockDto::deserialize(value).map_err(|e| {
                             serde::de::Error::custom(format!("cannot deserialize signature unlock: {e}"))
                         })?)
                     }
                     ReferenceUnlock::KIND => {
-                        UnlockDto::Reference(ReferenceUnlockDto::deserialize(value).map_err(|e| {
+                        Self::Reference(ReferenceUnlockDto::deserialize(value).map_err(|e| {
                             serde::de::Error::custom(format!("cannot deserialize reference unlock: {e}"))
                         })?)
                     }
-                    AliasUnlock::KIND => UnlockDto::Alias(
+                    AliasUnlock::KIND => Self::Alias(
                         AliasUnlockDto::deserialize(value)
                             .map_err(|e| serde::de::Error::custom(format!("cannot deserialize alias unlock: {e}")))?,
                     ),
-                    NftUnlock::KIND => UnlockDto::Nft(
+                    NftUnlock::KIND => Self::Nft(
                         NftUnlockDto::deserialize(value)
                             .map_err(|e| serde::de::Error::custom(format!("cannot deserialize NFT unlock: {e}")))?,
                     ),
@@ -266,16 +266,16 @@ pub mod dto {
                 unlock: UnlockDto_<'a>,
             }
             let unlock = match self {
-                UnlockDto::Signature(o) => TypedUnlock {
+                Self::Signature(o) => TypedUnlock {
                     unlock: UnlockDto_::T1(o),
                 },
-                UnlockDto::Reference(o) => TypedUnlock {
+                Self::Reference(o) => TypedUnlock {
                     unlock: UnlockDto_::T2(o),
                 },
-                UnlockDto::Alias(o) => TypedUnlock {
+                Self::Alias(o) => TypedUnlock {
                     unlock: UnlockDto_::T3(o),
                 },
-                UnlockDto::Nft(o) => TypedUnlock {
+                Self::Nft(o) => TypedUnlock {
                     unlock: UnlockDto_::T4(o),
                 },
             };

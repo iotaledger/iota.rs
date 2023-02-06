@@ -38,20 +38,17 @@ pub struct NftOutputBuilder {
 
 impl NftOutputBuilder {
     /// Creates an [`NftOutputBuilder`] with a provided amount.
-    pub fn new_with_amount(amount: u64, nft_id: NftId) -> Result<NftOutputBuilder, Error> {
+    pub fn new_with_amount(amount: u64, nft_id: NftId) -> Result<Self, Error> {
         Self::new(OutputBuilderAmount::Amount(amount), nft_id)
     }
 
     /// Creates an [`NftOutputBuilder`] with a provided rent structure.
     /// The amount will be set to the minimum storage deposit.
-    pub fn new_with_minimum_storage_deposit(
-        rent_structure: RentStructure,
-        nft_id: NftId,
-    ) -> Result<NftOutputBuilder, Error> {
+    pub fn new_with_minimum_storage_deposit(rent_structure: RentStructure, nft_id: NftId) -> Result<Self, Error> {
         Self::new(OutputBuilderAmount::MinimumStorageDeposit(rent_structure), nft_id)
     }
 
-    fn new(amount: OutputBuilderAmount, nft_id: NftId) -> Result<NftOutputBuilder, Error> {
+    fn new(amount: OutputBuilderAmount, nft_id: NftId) -> Result<Self, Error> {
         Ok(Self {
             amount,
             native_tokens: Vec::new(),
@@ -224,7 +221,7 @@ impl NftOutputBuilder {
 
 impl From<&NftOutput> for NftOutputBuilder {
     fn from(output: &NftOutput) -> Self {
-        NftOutputBuilder {
+        Self {
             amount: OutputBuilderAmount::Amount(output.amount),
             native_tokens: output.native_tokens.to_vec(),
             nft_id: output.nft_id,
@@ -453,13 +450,13 @@ impl Packable for NftOutput {
         let features = Features::unpack::<_, VERIFY>(unpacker, &())?;
 
         if VERIFY {
-            verify_allowed_features(&features, NftOutput::ALLOWED_FEATURES).map_err(UnpackError::Packable)?;
+            verify_allowed_features(&features, Self::ALLOWED_FEATURES).map_err(UnpackError::Packable)?;
         }
 
         let immutable_features = Features::unpack::<_, VERIFY>(unpacker, &())?;
 
         if VERIFY {
-            verify_allowed_features(&immutable_features, NftOutput::ALLOWED_IMMUTABLE_FEATURES)
+            verify_allowed_features(&immutable_features, Self::ALLOWED_IMMUTABLE_FEATURES)
                 .map_err(UnpackError::Packable)?;
         }
 
@@ -562,7 +559,7 @@ pub mod dto {
             Ok(builder)
         }
 
-        pub fn try_from_dto(value: &NftOutputDto, token_supply: u64) -> Result<NftOutput, DtoError> {
+        pub fn try_from_dto(value: &NftOutputDto, token_supply: u64) -> Result<Self, DtoError> {
             let mut builder = Self::_try_from_dto(value)?;
 
             for u in &value.unlock_conditions {
@@ -572,7 +569,7 @@ pub mod dto {
             Ok(builder.finish(token_supply)?)
         }
 
-        pub fn try_from_dto_unverified(value: &NftOutputDto) -> Result<NftOutput, DtoError> {
+        pub fn try_from_dto_unverified(value: &NftOutputDto) -> Result<Self, DtoError> {
             let mut builder = Self::_try_from_dto(value)?;
 
             for u in &value.unlock_conditions {
@@ -590,7 +587,7 @@ pub mod dto {
             features: Option<Vec<FeatureDto>>,
             immutable_features: Option<Vec<FeatureDto>>,
             token_supply: u64,
-        ) -> Result<NftOutput, DtoError> {
+        ) -> Result<Self, DtoError> {
             let nft_id = NftId::try_from(nft_id)?;
 
             let mut builder = match amount {

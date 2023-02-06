@@ -13,7 +13,7 @@ use iota_types::block::{
 
 use crate::{
     api::{
-        address::search_address, block_builder::input_selection::core::requirement::alias::is_alias_state_transition,
+        address::search_address, block_builder::input_selection::core::requirement::alias::is_alias_transition,
         ClientBlockBuilder,
     },
     constants::HD_WALLET_TYPE,
@@ -62,7 +62,7 @@ impl<'a> ClientBlockBuilder<'a> {
                             .required_and_unlocked_address(
                                 current_time,
                                 &output_response.metadata.output_id()?,
-                                false,
+                                None,
                             )?;
 
                         if required_unlock_address == sender_or_issuer_address {
@@ -230,12 +230,12 @@ fn get_required_addresses_for_sender_and_issuer(
     // Addresses in the inputs that will be unlocked in the transaction
     let mut unlocked_addresses = HashSet::new();
     for input_signing_data in selected_inputs {
-        let alias_state_transition = is_alias_state_transition(input_signing_data, outputs)?;
+        let alias_transition = is_alias_transition(input_signing_data, outputs);
         let (required_unlock_address, unlocked_alias_or_nft_address) =
             input_signing_data.output.required_and_unlocked_address(
                 current_time,
                 input_signing_data.output_id(),
-                alias_state_transition.unwrap_or((false, false)).0,
+                alias_transition.map(|(alias_transition, _)| alias_transition),
             )?;
         unlocked_addresses.insert(required_unlock_address);
         if let Some(unlocked_alias_or_nft_address) = unlocked_alias_or_nft_address {

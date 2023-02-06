@@ -55,7 +55,7 @@ pub mod dto {
     impl From<&Signature> for SignatureDto {
         fn from(value: &Signature) -> Self {
             match value {
-                Signature::Ed25519(s) => SignatureDto::Ed25519(s.into()),
+                Signature::Ed25519(s) => Self::Ed25519(s.into()),
             }
         }
     }
@@ -65,7 +65,7 @@ pub mod dto {
 
         fn try_from(value: &SignatureDto) -> Result<Self, Self::Error> {
             match value {
-                SignatureDto::Ed25519(s) => Ok(Signature::Ed25519(s.try_into()?)),
+                SignatureDto::Ed25519(s) => Ok(Self::Ed25519(s.try_into()?)),
             }
         }
     }

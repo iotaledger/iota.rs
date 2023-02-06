@@ -150,7 +150,7 @@ impl Miner {
             let _pow_digest = pow_digest.clone();
 
             workers.push(thread::spawn(move || {
-                Miner::worker(_cancel, _pow_digest, start_nonce, target_zeros)
+                Self::worker(_cancel, _pow_digest, start_nonce, target_zeros)
             }));
         }
 

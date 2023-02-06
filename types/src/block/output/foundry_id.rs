@@ -15,14 +15,14 @@ string_serde_impl!(FoundryId);
 
 impl From<TokenId> for FoundryId {
     fn from(token_id: TokenId) -> Self {
-        FoundryId::new(*token_id)
+        Self::new(*token_id)
     }
 }
 
 impl FoundryId {
     /// Builds a new [`FoundryId`] from its components.
     pub fn build(alias_address: &AliasAddress, serial_number: u32, token_scheme_kind: u8) -> Self {
-        let mut bytes = [0u8; FoundryId::LENGTH];
+        let mut bytes = [0u8; Self::LENGTH];
         let mut packer = SlicePacker::new(&mut bytes);
 
         // PANIC: packing to an array of the correct length can't fail.
@@ -30,7 +30,7 @@ impl FoundryId {
         serial_number.pack(&mut packer).unwrap();
         token_scheme_kind.pack(&mut packer).unwrap();
 
-        FoundryId::new(bytes)
+        Self::new(bytes)
     }
 
     /// Returns the [`AliasAddress`] of the [`FoundryId`].

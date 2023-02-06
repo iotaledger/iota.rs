@@ -67,7 +67,7 @@ pub struct NetworkInfoDto {
 
 impl From<NetworkInfo> for NetworkInfoDto {
     fn from(info: NetworkInfo) -> Self {
-        NetworkInfoDto {
+        Self {
             protocol_parameters: ProtocolParametersDto {
                 protocol_version: info.protocol_parameters.protocol_version(),
                 network_name: info.protocol_parameters.network_name().to_string(),

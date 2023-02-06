@@ -91,19 +91,19 @@ impl Packable for Payload {
 
     fn pack<P: Packer>(&self, packer: &mut P) -> Result<(), P::Error> {
         match self {
-            Payload::Transaction(transaction) => {
+            Self::Transaction(transaction) => {
                 TransactionPayload::KIND.pack(packer)?;
                 transaction.pack(packer)
             }
-            Payload::Milestone(milestone) => {
+            Self::Milestone(milestone) => {
                 MilestonePayload::KIND.pack(packer)?;
                 milestone.pack(packer)
             }
-            Payload::TreasuryTransaction(treasury_transaction) => {
+            Self::TreasuryTransaction(treasury_transaction) => {
                 TreasuryTransactionPayload::KIND.pack(packer)?;
                 treasury_transaction.pack(packer)
             }
-            Payload::TaggedData(tagged_data) => {
+            Self::TaggedData(tagged_data) => {
                 TaggedDataPayload::KIND.pack(packer)?;
                 tagged_data.pack(packer)
             }
@@ -118,13 +118,13 @@ impl Packable for Payload {
     ) -> Result<Self, UnpackError<Self::UnpackError, U::Error>> {
         Ok(match u32::unpack::<_, VERIFY>(unpacker, &()).coerce()? {
             TransactionPayload::KIND => {
-                Payload::from(TransactionPayload::unpack::<_, VERIFY>(unpacker, visitor).coerce()?)
+                Self::from(TransactionPayload::unpack::<_, VERIFY>(unpacker, visitor).coerce()?)
             }
-            MilestonePayload::KIND => Payload::from(MilestonePayload::unpack::<_, VERIFY>(unpacker, visitor).coerce()?),
+            MilestonePayload::KIND => Self::from(MilestonePayload::unpack::<_, VERIFY>(unpacker, visitor).coerce()?),
             TreasuryTransactionPayload::KIND => {
-                Payload::from(TreasuryTransactionPayload::unpack::<_, VERIFY>(unpacker, visitor).coerce()?)
+                Self::from(TreasuryTransactionPayload::unpack::<_, VERIFY>(unpacker, visitor).coerce()?)
             }
-            TaggedDataPayload::KIND => Payload::from(TaggedDataPayload::unpack::<_, VERIFY>(unpacker, &()).coerce()?),
+            TaggedDataPayload::KIND => Self::from(TaggedDataPayload::unpack::<_, VERIFY>(unpacker, &()).coerce()?),
             k => return Err(Error::InvalidPayloadKind(k)).map_err(UnpackError::Packable),
         })
     }
@@ -258,41 +258,41 @@ pub mod dto {
     impl From<&Payload> for PayloadDto {
         fn from(value: &Payload) -> Self {
             match value {
-                Payload::Transaction(p) => PayloadDto::Transaction(Box::new(TransactionPayloadDto::from(p.as_ref()))),
-                Payload::Milestone(p) => PayloadDto::Milestone(Box::new(MilestonePayloadDto::from(p.as_ref()))),
+                Payload::Transaction(p) => Self::Transaction(Box::new(TransactionPayloadDto::from(p.as_ref()))),
+                Payload::Milestone(p) => Self::Milestone(Box::new(MilestonePayloadDto::from(p.as_ref()))),
                 Payload::TreasuryTransaction(p) => {
-                    PayloadDto::TreasuryTransaction(Box::new(TreasuryTransactionPayloadDto::from(p.as_ref())))
+                    Self::TreasuryTransaction(Box::new(TreasuryTransactionPayloadDto::from(p.as_ref())))
                 }
-                Payload::TaggedData(p) => PayloadDto::TaggedData(Box::new(TaggedDataPayloadDto::from(p.as_ref()))),
+                Payload::TaggedData(p) => Self::TaggedData(Box::new(TaggedDataPayloadDto::from(p.as_ref()))),
             }
         }
     }
 
     impl Payload {
-        pub fn try_from_dto(value: &PayloadDto, protocol_parameters: &ProtocolParameters) -> Result<Payload, DtoError> {
+        pub fn try_from_dto(value: &PayloadDto, protocol_parameters: &ProtocolParameters) -> Result<Self, DtoError> {
             Ok(match value {
                 PayloadDto::Transaction(p) => {
-                    Payload::from(TransactionPayload::try_from_dto(p.as_ref(), protocol_parameters)?)
+                    Self::from(TransactionPayload::try_from_dto(p.as_ref(), protocol_parameters)?)
                 }
                 PayloadDto::Milestone(p) => {
-                    Payload::from(MilestonePayload::try_from_dto(p.as_ref(), protocol_parameters)?)
+                    Self::from(MilestonePayload::try_from_dto(p.as_ref(), protocol_parameters)?)
                 }
-                PayloadDto::TreasuryTransaction(p) => Payload::from(TreasuryTransactionPayload::try_from_dto(
+                PayloadDto::TreasuryTransaction(p) => Self::from(TreasuryTransactionPayload::try_from_dto(
                     p.as_ref(),
                     protocol_parameters.token_supply(),
                 )?),
-                PayloadDto::TaggedData(p) => Payload::from(TaggedDataPayload::try_from(p.as_ref())?),
+                PayloadDto::TaggedData(p) => Self::from(TaggedDataPayload::try_from(p.as_ref())?),
             })
         }
 
-        pub fn try_from_dto_unverified(value: &PayloadDto) -> Result<Payload, DtoError> {
+        pub fn try_from_dto_unverified(value: &PayloadDto) -> Result<Self, DtoError> {
             Ok(match value {
-                PayloadDto::Transaction(p) => Payload::from(TransactionPayload::try_from_dto_unverified(p.as_ref())?),
-                PayloadDto::Milestone(p) => Payload::from(MilestonePayload::try_from_dto_unverified(p.as_ref())?),
+                PayloadDto::Transaction(p) => Self::from(TransactionPayload::try_from_dto_unverified(p.as_ref())?),
+                PayloadDto::Milestone(p) => Self::from(MilestonePayload::try_from_dto_unverified(p.as_ref())?),
                 PayloadDto::TreasuryTransaction(p) => {
-                    Payload::from(TreasuryTransactionPayload::try_from_dto_unverified(p.as_ref())?)
+                    Self::from(TreasuryTransactionPayload::try_from_dto_unverified(p.as_ref())?)
                 }
-                PayloadDto::TaggedData(p) => Payload::from(TaggedDataPayload::try_from(p.as_ref())?),
+                PayloadDto::TaggedData(p) => Self::from(TaggedDataPayload::try_from(p.as_ref())?),
             })
         }
     }

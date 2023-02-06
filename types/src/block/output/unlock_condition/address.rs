@@ -44,7 +44,7 @@ pub mod dto {
 
     impl From<&AddressUnlockCondition> for AddressUnlockConditionDto {
         fn from(value: &AddressUnlockCondition) -> Self {
-            AddressUnlockConditionDto {
+            Self {
                 kind: AddressUnlockCondition::KIND,
                 address: value.address().into(),
             }
@@ -54,8 +54,8 @@ pub mod dto {
     impl TryFrom<&AddressUnlockConditionDto> for AddressUnlockCondition {
         type Error = DtoError;
 
-        fn try_from(value: &AddressUnlockConditionDto) -> Result<AddressUnlockCondition, DtoError> {
-            Ok(AddressUnlockCondition::new(
+        fn try_from(value: &AddressUnlockConditionDto) -> Result<Self, DtoError> {
+            Ok(Self::new(
                 (&value.address)
                     .try_into()
                     .map_err(|_e| DtoError::InvalidField("addressUnlockCondition"))?,

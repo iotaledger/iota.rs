@@ -33,7 +33,7 @@ impl FromStr for Ed25519Address {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(Ed25519Address::new(prefix_hex::decode(s).map_err(Error::Hex)?))
+        Ok(Self::new(prefix_hex::decode(s).map_err(Error::Hex)?))
     }
 }
 
@@ -81,7 +81,7 @@ pub mod dto {
         fn try_from(value: &Ed25519AddressDto) -> Result<Self, Self::Error> {
             value
                 .pub_key_hash
-                .parse::<Ed25519Address>()
+                .parse::<Self>()
                 .map_err(|_| DtoError::InvalidField("pubKeyHash"))
         }
     }

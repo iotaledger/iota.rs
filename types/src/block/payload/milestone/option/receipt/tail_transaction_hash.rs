@@ -25,16 +25,16 @@ impl TailTransactionHash {
     pub const LENGTH: usize = 49;
 
     /// Creates a new [`TailTransactionHash`].
-    pub fn new(bytes: [u8; TailTransactionHash::LENGTH]) -> Result<Self, Error> {
+    pub fn new(bytes: [u8; Self::LENGTH]) -> Result<Self, Error> {
         bytes.try_into()
     }
 }
 
-impl TryFrom<[u8; TailTransactionHash::LENGTH]> for TailTransactionHash {
+impl TryFrom<[u8; Self::LENGTH]> for TailTransactionHash {
     type Error = Error;
 
-    fn try_from(bytes: [u8; TailTransactionHash::LENGTH]) -> Result<Self, Error> {
-        Ok(TailTransactionHash(
+    fn try_from(bytes: [u8; Self::LENGTH]) -> Result<Self, Error> {
+        Ok(Self(
             Trits::<T5B1>::try_from_raw(cast_slice(&bytes), 243)
                 .map_err(|_| Error::InvalidTailTransactionHash)?
                 .to_buf(),
@@ -72,7 +72,6 @@ impl Packable for TailTransactionHash {
         unpacker: &mut U,
         visitor: &Self::UnpackVisitor,
     ) -> Result<Self, UnpackError<Self::UnpackError, U::Error>> {
-        Self::new(<[u8; TailTransactionHash::LENGTH]>::unpack::<_, VERIFY>(unpacker, visitor).coerce()?)
-            .map_err(UnpackError::Packable)
+        Self::new(<[u8; Self::LENGTH]>::unpack::<_, VERIFY>(unpacker, visitor).coerce()?).map_err(UnpackError::Packable)
     }
 }

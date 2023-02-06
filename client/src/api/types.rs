@@ -46,7 +46,7 @@ pub struct PreparedTransactionDataDto {
 
 impl From<&PreparedTransactionData> for PreparedTransactionDataDto {
     fn from(value: &PreparedTransactionData) -> Self {
-        PreparedTransactionDataDto {
+        Self {
             essence: TransactionEssenceDto::from(&value.essence),
             inputs_data: value.inputs_data.iter().map(InputSigningDataDto::from).collect(),
             remainder: value.remainder.as_ref().map(RemainderDataDto::from),
@@ -60,7 +60,7 @@ impl PreparedTransactionData {
         value: &PreparedTransactionDataDto,
         protocol_parameters: &ProtocolParameters,
     ) -> Result<Self, DtoError> {
-        Ok(PreparedTransactionData {
+        Ok(Self {
             essence: TransactionEssence::try_from_dto(&value.essence, protocol_parameters)
                 .map_err(|_| DtoError::InvalidField("essence"))?,
             inputs_data: value
@@ -81,7 +81,7 @@ impl PreparedTransactionData {
 
     /// Unverified conversion from [`PreparedTransactionDataDto`] to [`PreparedTransactionData`].
     pub fn try_from_dto_unverified(value: &PreparedTransactionDataDto) -> Result<Self, DtoError> {
-        Ok(PreparedTransactionData {
+        Ok(Self {
             essence: TransactionEssence::try_from_dto_unverified(&value.essence)
                 .map_err(|_| DtoError::InvalidField("essence"))?,
             inputs_data: value
@@ -125,7 +125,7 @@ pub struct SignedTransactionDataDto {
 
 impl From<&SignedTransactionData> for SignedTransactionDataDto {
     fn from(value: &SignedTransactionData) -> Self {
-        SignedTransactionDataDto {
+        Self {
             transaction_payload: TransactionPayloadDto::from(&value.transaction_payload),
             inputs_data: value.inputs_data.iter().map(InputSigningDataDto::from).collect(),
         }
@@ -138,7 +138,7 @@ impl SignedTransactionData {
         value: &SignedTransactionDataDto,
         protocol_parameters: &ProtocolParameters,
     ) -> Result<Self, DtoError> {
-        Ok(SignedTransactionData {
+        Ok(Self {
             transaction_payload: TransactionPayload::try_from_dto(&value.transaction_payload, protocol_parameters)
                 .map_err(|_| DtoError::InvalidField("transaction_payload"))?,
             inputs_data: value
@@ -152,7 +152,7 @@ impl SignedTransactionData {
 
     /// Unverified conversion from [`SignedTransactionDataDto`] to [`SignedTransactionData`].
     pub fn try_from_dto_unverified(value: &SignedTransactionDataDto) -> Result<Self, DtoError> {
-        Ok(SignedTransactionData {
+        Ok(Self {
             transaction_payload: TransactionPayload::try_from_dto_unverified(&value.transaction_payload)
                 .map_err(|_| DtoError::InvalidField("transaction_payload"))?,
             inputs_data: value

@@ -188,6 +188,6 @@ impl Client {
 
     /// UTF-8 encodes both the `tag` and `data` of a given TaggedDataPayload.
     pub fn tagged_data_to_utf8(payload: &TaggedDataPayload) -> Result<(String, String)> {
-        Ok((Client::tag_to_utf8(payload)?, Client::data_to_utf8(payload)?))
+        Ok((Self::tag_to_utf8(payload)?, Self::data_to_utf8(payload)?))
     }
 }

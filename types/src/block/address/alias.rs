@@ -44,7 +44,7 @@ impl FromStr for AliasAddress {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(AliasAddress::new(AliasId::from_str(s)?))
+        Ok(Self::new(AliasId::from_str(s)?))
     }
 }
 
@@ -92,7 +92,7 @@ pub mod dto {
         fn try_from(value: &AliasAddressDto) -> Result<Self, Self::Error> {
             value
                 .alias_id
-                .parse::<AliasAddress>()
+                .parse::<Self>()
                 .map_err(|_| DtoError::InvalidField("aliasId"))
         }
     }

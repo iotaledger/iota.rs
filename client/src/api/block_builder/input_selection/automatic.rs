@@ -7,7 +7,7 @@ use std::collections::HashSet;
 
 use crypto::keys::slip10::Chain;
 use iota_types::{
-    api::response::OutputWithMetadataResponse,
+    api::core::response::OutputWithMetadataResponse,
     block::{
         address::Address,
         output::{Output, OutputMetadata},
@@ -176,7 +176,7 @@ impl<'a> ClientBlockBuilder<'a> {
                             .required_and_unlocked_address(
                                 current_time,
                                 &output_response.metadata.output_id()?,
-                                false,
+                                None,
                             )?;
                         if required_unlock_address == address {
                             available_inputs.push(InputSigningData {

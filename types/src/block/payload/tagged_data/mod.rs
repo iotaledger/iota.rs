@@ -92,7 +92,7 @@ pub mod dto {
 
     impl From<&TaggedDataPayload> for TaggedDataPayloadDto {
         fn from(value: &TaggedDataPayload) -> Self {
-            TaggedDataPayloadDto {
+            Self {
                 kind: TaggedDataPayload::KIND,
                 tag: prefix_hex::encode(value.tag()),
                 data: prefix_hex::encode(value.data()),
@@ -104,7 +104,7 @@ pub mod dto {
         type Error = DtoError;
 
         fn try_from(value: &TaggedDataPayloadDto) -> Result<Self, Self::Error> {
-            Ok(TaggedDataPayload::new(
+            Ok(Self::new(
                 if !value.tag.is_empty() {
                     prefix_hex::decode(&value.tag).map_err(|_| DtoError::InvalidField("tag"))?
                 } else {

@@ -92,7 +92,7 @@ pub mod dto {
 
     impl From<&MigratedFundsEntry> for MigratedFundsEntryDto {
         fn from(value: &MigratedFundsEntry) -> Self {
-            MigratedFundsEntryDto {
+            Self {
                 tail_transaction_hash: prefix_hex::encode(value.tail_transaction_hash().as_ref()),
                 address: value.address().into(),
                 deposit: value.amount(),
@@ -101,11 +101,11 @@ pub mod dto {
     }
 
     impl MigratedFundsEntry {
-        pub fn try_from_dto(value: &MigratedFundsEntryDto, token_supply: u64) -> Result<MigratedFundsEntry, DtoError> {
+        pub fn try_from_dto(value: &MigratedFundsEntryDto, token_supply: u64) -> Result<Self, DtoError> {
             let tail_transaction_hash = prefix_hex::decode(&value.tail_transaction_hash)
                 .map_err(|_| DtoError::InvalidField("tailTransactionHash"))?;
 
-            Ok(MigratedFundsEntry::new(
+            Ok(Self::new(
                 TailTransactionHash::new(tail_transaction_hash)?,
                 (&value.address).try_into()?,
                 value.deposit,
@@ -113,7 +113,7 @@ pub mod dto {
             )?)
         }
 
-        pub fn try_from_dto_unverified(value: &MigratedFundsEntryDto) -> Result<MigratedFundsEntry, DtoError> {
+        pub fn try_from_dto_unverified(value: &MigratedFundsEntryDto) -> Result<Self, DtoError> {
             let tail_transaction_hash = prefix_hex::decode(&value.tail_transaction_hash)
                 .map_err(|_| DtoError::InvalidField("tailTransactionHash"))?;
 

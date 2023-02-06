@@ -55,7 +55,7 @@ impl Input {
     /// Gets the input as an actual [`UtxoInput`].
     /// PANIC: do not call on a non-utxo input.
     pub fn as_utxo(&self) -> &UtxoInput {
-        if let Input::Utxo(input) = self {
+        if let Self::Utxo(input) = self {
             input
         } else {
             panic!("as_utxo called on a non-utxo input");
@@ -70,7 +70,7 @@ impl Input {
     /// Gets the input as an actual [`TreasuryInput`].
     /// PANIC: do not call on a non-treasury input.
     pub fn as_treasury(&self) -> &TreasuryInput {
-        if let Input::Treasury(input) = self {
+        if let Self::Treasury(input) = self {
             input
         } else {
             panic!("as_treasury called on a non-treasury input");
@@ -98,8 +98,8 @@ pub mod dto {
     impl From<&Input> for InputDto {
         fn from(value: &Input) -> Self {
             match value {
-                Input::Utxo(u) => InputDto::Utxo(u.into()),
-                Input::Treasury(t) => InputDto::Treasury(t.into()),
+                Input::Utxo(u) => Self::Utxo(u.into()),
+                Input::Treasury(t) => Self::Treasury(t.into()),
             }
         }
     }
@@ -109,8 +109,8 @@ pub mod dto {
 
         fn try_from(value: &InputDto) -> Result<Self, Self::Error> {
             match value {
-                InputDto::Utxo(u) => Ok(Input::Utxo(u.try_into()?)),
-                InputDto::Treasury(t) => Ok(Input::Treasury(t.try_into()?)),
+                InputDto::Utxo(u) => Ok(Self::Utxo(u.try_into()?)),
+                InputDto::Treasury(t) => Ok(Self::Treasury(t.try_into()?)),
             }
         }
     }

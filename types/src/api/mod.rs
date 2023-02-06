@@ -1,10 +1,9 @@
-// Copyright 2020-2022 IOTA Stiftung
+// Copyright 2023 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
 //! API-related types like responses and DTOs.
 
 #![allow(missing_docs)]
 
-pub mod dto;
-pub mod error;
-pub mod response;
+pub mod core;
+pub mod plugins;

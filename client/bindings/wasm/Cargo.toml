@@ -21,11 +21,11 @@ crate-type = [ "cdylib" ]
 iota-client = { path = "../../", default-features = false, features = [ "message_interface", "tls" ] }
 
 console_error_panic_hook = { version = "0.1.7", default-features = false }
-js-sys = { version = "0.3.60", default-features = false, features = [] }
+js-sys = { version = "0.3.61", default-features = false, features = [] }
 serde_json = { version = "1.0.91", default-features = false }
 tokio = { version = "1.24.2", default-features = false, features = [ "sync" ] }
-wasm-bindgen = { version = "0.2.83", default-features = false, features = [ "spans", "std", "serde-serialize" ] }
-wasm-bindgen-futures = { version = "0.4.33", default-features = false }
+wasm-bindgen = { version = "0.2.84", default-features = false, features = [ "spans", "std", "serde-serialize" ] }
+wasm-bindgen-futures = { version = "0.4.34", default-features = false }
 
 [target.'cfg(all(target_arch = "wasm32", not(target_os = "wasi")))'.dependencies]
 getrandom = { version = "0.2.8", default-features = false, features = [ "js" ] }

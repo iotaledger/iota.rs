@@ -26,6 +26,28 @@ use crate::block::{
     Error,
 };
 
+/// Types of alias transition.
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub enum AliasTransition {
+    /// State transition.
+    State,
+    /// Governance transition.
+    Governance,
+}
+
+impl AliasTransition {
+    /// Checks whether the alias transition is a state one.
+    pub fn is_state(&self) -> bool {
+        matches!(self, Self::State)
+    }
+
+    /// Checks whether the alias transition is a governance one.
+    pub fn is_governance(&self) -> bool {
+        matches!(self, Self::Governance)
+    }
+}
+
 ///
 #[derive(Clone)]
 #[must_use]
@@ -43,20 +65,17 @@ pub struct AliasOutputBuilder {
 
 impl AliasOutputBuilder {
     /// Creates an [`AliasOutputBuilder`] with a provided amount.
-    pub fn new_with_amount(amount: u64, alias_id: AliasId) -> Result<AliasOutputBuilder, Error> {
+    pub fn new_with_amount(amount: u64, alias_id: AliasId) -> Result<Self, Error> {
         Self::new(OutputBuilderAmount::Amount(amount), alias_id)
     }
 
     /// Creates an [`AliasOutputBuilder`] with a provided rent structure.
     /// The amount will be set to the minimum storage deposit.
-    pub fn new_with_minimum_storage_deposit(
-        rent_structure: RentStructure,
-        alias_id: AliasId,
-    ) -> Result<AliasOutputBuilder, Error> {
+    pub fn new_with_minimum_storage_deposit(rent_structure: RentStructure, alias_id: AliasId) -> Result<Self, Error> {
         Self::new(OutputBuilderAmount::MinimumStorageDeposit(rent_structure), alias_id)
     }
 
-    fn new(amount: OutputBuilderAmount, alias_id: AliasId) -> Result<AliasOutputBuilder, Error> {
+    fn new(amount: OutputBuilderAmount, alias_id: AliasId) -> Result<Self, Error> {
         Ok(Self {
             amount,
             native_tokens: Vec::new(),
@@ -267,7 +286,7 @@ impl AliasOutputBuilder {
 
 impl From<&AliasOutput> for AliasOutputBuilder {
     fn from(output: &AliasOutput) -> Self {
-        AliasOutputBuilder {
+        Self {
             amount: OutputBuilderAmount::Amount(output.amount),
             native_tokens: output.native_tokens.to_vec(),
             alias_id: output.alias_id,
@@ -611,13 +630,13 @@ impl Packable for AliasOutput {
         let features = Features::unpack::<_, VERIFY>(unpacker, &())?;
 
         if VERIFY {
-            verify_allowed_features(&features, AliasOutput::ALLOWED_FEATURES).map_err(UnpackError::Packable)?;
+            verify_allowed_features(&features, Self::ALLOWED_FEATURES).map_err(UnpackError::Packable)?;
         }
 
         let immutable_features = Features::unpack::<_, VERIFY>(unpacker, &())?;
 
         if VERIFY {
-            verify_allowed_features(&immutable_features, AliasOutput::ALLOWED_IMMUTABLE_FEATURES)
+            verify_allowed_features(&immutable_features, Self::ALLOWED_IMMUTABLE_FEATURES)
                 .map_err(UnpackError::Packable)?;
         }
 
@@ -767,7 +786,7 @@ pub mod dto {
             Ok(builder)
         }
 
-        pub fn try_from_dto(value: &AliasOutputDto, token_supply: u64) -> Result<AliasOutput, DtoError> {
+        pub fn try_from_dto(value: &AliasOutputDto, token_supply: u64) -> Result<Self, DtoError> {
             let mut builder = Self::_try_from_dto(value)?;
 
             for u in &value.unlock_conditions {
@@ -777,7 +796,7 @@ pub mod dto {
             Ok(builder.finish(token_supply)?)
         }
 
-        pub fn try_from_dto_unverified(value: &AliasOutputDto) -> Result<AliasOutput, DtoError> {
+        pub fn try_from_dto_unverified(value: &AliasOutputDto) -> Result<Self, DtoError> {
             let mut builder = Self::_try_from_dto(value)?;
 
             for u in &value.unlock_conditions {
@@ -799,7 +818,7 @@ pub mod dto {
             features: Option<Vec<FeatureDto>>,
             immutable_features: Option<Vec<FeatureDto>>,
             token_supply: u64,
-        ) -> Result<AliasOutput, DtoError> {
+        ) -> Result<Self, DtoError> {
             let alias_id = AliasId::try_from(alias_id)?;
 
             let mut builder = match amount {

@@ -6,7 +6,7 @@
 pub mod routes;
 
 use iota_types::{
-    api::response::OutputWithMetadataResponse,
+    api::core::response::OutputWithMetadataResponse,
     block::output::{dto::OutputMetadataDto, OutputId},
 };
 

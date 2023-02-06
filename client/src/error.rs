@@ -26,7 +26,7 @@ pub enum Error {
     /// Block dtos error
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
-    ApiTypes(#[from] iota_types::api::error::Error),
+    ApiTypes(#[from] iota_types::api::core::error::Error),
     /// Blake2b256 Error
     #[error("{0}")]
     Blake2b256(&'static str),
@@ -247,18 +247,11 @@ pub enum Error {
     #[error("can't burn and transition an output at the same time, chain ID: {0}")]
     BurnAndTransition(ChainId),
 
-    //////////////////////////////////////////////////////////////////////
-    // Participation
-    //////////////////////////////////////////////////////////////////////
-    /// Invalid participations error
+    /// Participation error
     #[cfg(feature = "participation")]
-    #[error("invalid participations")]
-    InvalidParticipations,
-    /// IO error
-    #[cfg(feature = "participation")]
-    #[error("`{0}`")]
+    #[error("{0}")]
     #[serde(serialize_with = "display_string")]
-    Io(#[from] std::io::Error),
+    Participation(#[from] iota_types::api::plugins::participation::error::Error),
 
     //////////////////////////////////////////////////////////////////////
     // Ledger Nano
@@ -349,11 +342,11 @@ impl From<iota_ledger_nano::api::errors::APIError> for Error {
     fn from(error: iota_ledger_nano::api::errors::APIError) -> Self {
         log::info!("ledger error: {}", error);
         match error {
-            iota_ledger_nano::api::errors::APIError::ConditionsOfUseNotSatisfied => Error::LedgerDeniedByUser,
-            iota_ledger_nano::api::errors::APIError::EssenceTooLarge => Error::LedgerEssenceTooLarge,
-            iota_ledger_nano::api::errors::APIError::SecurityStatusNotSatisfied => Error::LedgerDongleLocked,
-            iota_ledger_nano::api::errors::APIError::TransportError => Error::LedgerDeviceNotFound,
-            _ => Error::LedgerMiscError,
+            iota_ledger_nano::api::errors::APIError::ConditionsOfUseNotSatisfied => Self::LedgerDeniedByUser,
+            iota_ledger_nano::api::errors::APIError::EssenceTooLarge => Self::LedgerEssenceTooLarge,
+            iota_ledger_nano::api::errors::APIError::SecurityStatusNotSatisfied => Self::LedgerDongleLocked,
+            iota_ledger_nano::api::errors::APIError::TransportError => Self::LedgerDeviceNotFound,
+            _ => Self::LedgerMiscError,
         }
     }
 }

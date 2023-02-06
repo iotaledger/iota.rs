@@ -45,6 +45,9 @@ inputs:
 runs:
   using: composite
   steps:
+    - run: rustup set auto-self-update disable
+      if: contains(runner.os, 'windows')
+      shell: bash
     - id: install
       name: Install Rust Toolchain
       uses: actions-rs/toolchain@v1
