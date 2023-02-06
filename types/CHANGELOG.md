@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Derive `Copy` on `UtxoInput`;
 - `Feature::{is_sender, as_sender, is_issuer, as_issuer, is_metadata, as_metadata, is_tag, as_tag}`;
 - `participation` and `indexer` plugin API types from `iota-client`;
+- `AliasTransition` enum;
 
 ### Changed
 

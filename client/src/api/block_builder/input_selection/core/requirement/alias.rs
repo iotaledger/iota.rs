@@ -3,16 +3,16 @@
 
 use super::{InputSelection, Requirement};
 use crate::{
-    block::output::{AliasId, Output, OutputId},
+    block::output::{AliasId, AliasTransition, Output, OutputId},
     error::{Error, Result},
     secret::types::InputSigningData,
 };
 
 // Returns
-// - if alias transition is a state transition with the provided outputs for a given input
-// - if the output was provided, to differentiate a burn from a proper governance transition
-pub(crate) fn is_alias_state_transition(input: &InputSigningData, outputs: &[Output]) -> Result<Option<(bool, bool)>> {
-    Ok(if let Output::Alias(alias_input) = &input.output {
+// - the alias transition type of a given input and outputs
+// - whether the output was provided or not, to differentiate a burn from a proper governance transition
+pub(crate) fn is_alias_transition(input: &InputSigningData, outputs: &[Output]) -> Option<(AliasTransition, bool)> {
+    if let Output::Alias(alias_input) = &input.output {
         let alias_id = alias_input.alias_id_non_null(input.output_id());
         // Checks if the alias exists in the outputs and gets the transition type.
         outputs
@@ -22,10 +22,10 @@ pub(crate) fn is_alias_state_transition(input: &InputSigningData, outputs: &[Out
                     if *alias_output.alias_id() == alias_id {
                         if alias_output.state_index() == alias_input.state_index() {
                             // Governance transition.
-                            Some(Some((false, true)))
+                            Some(Some((AliasTransition::Governance, true)))
                         } else {
                             // State transition.
-                            Some(Some((true, true)))
+                            Some(Some((AliasTransition::State, true)))
                         }
                     } else {
                         None
@@ -35,11 +35,11 @@ pub(crate) fn is_alias_state_transition(input: &InputSigningData, outputs: &[Out
                 }
             })
             // If the alias was not found in the outputs, it gets burned which is a governance transition.
-            .unwrap_or(Some((false, false)))
+            .unwrap_or(Some((AliasTransition::Governance, false)))
     } else {
         // Not an alias transition.
         None
-    })
+    }
 }
 
 /// Checks if an output is an alias with a given non null alias ID.
@@ -66,10 +66,10 @@ impl InputSelection {
     pub(crate) fn fulfill_alias_requirement(
         &mut self,
         alias_id: AliasId,
-        state_transition: bool,
-    ) -> Result<(Vec<InputSigningData>, Option<Requirement>)> {
+        alias_transition: AliasTransition,
+    ) -> Result<(Vec<(InputSigningData, Option<AliasTransition>)>, Option<Requirement>)> {
         // Check that the alias is not burned when a state transition is required.
-        if state_transition
+        if alias_transition.is_state()
             && self
                 .burn
                 .as_ref()
@@ -77,7 +77,7 @@ impl InputSelection {
         {
             return Err(Error::UnfulfillableRequirement(Requirement::Alias(
                 alias_id,
-                state_transition,
+                alias_transition,
             )));
         }
 
@@ -88,7 +88,7 @@ impl InputSelection {
 
         // If a state transition is not required and the alias has already been selected, no additional check has to be
         // performed.
-        if !state_transition && selected_input.is_some() {
+        if !alias_transition.is_state() && selected_input.is_some() {
             return Ok((Vec::new(), None));
         }
 
@@ -101,15 +101,18 @@ impl InputSelection {
         if selected_input.is_none() && available_index.is_none() {
             return Err(Error::UnfulfillableRequirement(Requirement::Alias(
                 alias_id,
-                state_transition,
+                alias_transition,
             )));
         }
 
         // If a state transition is not required, we can simply select the alias.
-        if !state_transition {
+        if !alias_transition.is_state() {
             // Remove the output from the available inputs and return it, swap to make it O(1).
             // PANIC: safe to unwrap as it's been checked that it can't be None when a state transition is not required.
-            return Ok((vec![self.available_inputs.swap_remove(available_index.unwrap())], None));
+            return Ok((
+                vec![(self.available_inputs.swap_remove(available_index.unwrap()), None)],
+                None,
+            ));
         }
 
         // At this point, a state transition is required so we need to verify that an alias output describing a
@@ -118,16 +121,16 @@ impl InputSelection {
         // PANIC: safe to unwrap as it's been checked that both can't be None at the same time.
         let input = selected_input.unwrap_or_else(|| &self.available_inputs[available_index.unwrap()]);
 
-        if is_alias_state_transition(input, &self.outputs)? == Some((false, true)) {
+        if is_alias_transition(input, &self.outputs) == Some((AliasTransition::Governance, true)) {
             return Err(Error::UnfulfillableRequirement(Requirement::Alias(
                 alias_id,
-                state_transition,
+                alias_transition,
             )));
         }
 
         if let Some(available_index) = available_index {
             // Remove the output from the available inputs and return it, swap to make it O(1).
-            return Ok((vec![self.available_inputs.swap_remove(available_index)], None));
+            return Ok((vec![(self.available_inputs.swap_remove(available_index), None)], None));
         }
 
         Ok((Vec::new(), None))

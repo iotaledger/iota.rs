@@ -7,8 +7,8 @@ use super::{
 };
 use crate::{
     block::output::{
-        AliasOutput, AliasOutputBuilder, ChainId, FoundryOutput, FoundryOutputBuilder, NftOutput, NftOutputBuilder,
-        Output, OutputId,
+        AliasOutput, AliasOutputBuilder, AliasTransition, ChainId, FoundryOutput, FoundryOutputBuilder, NftOutput,
+        NftOutputBuilder, Output, OutputId,
     },
     error::Result,
     secret::types::InputSigningData,
@@ -16,7 +16,12 @@ use crate::{
 
 impl InputSelection {
     /// Transitions an alias input by creating a new alias output if required.
-    fn transition_alias_input(&mut self, input: &AliasOutput, output_id: &OutputId) -> Result<Option<Output>> {
+    fn transition_alias_input(
+        &mut self,
+        input: &AliasOutput,
+        output_id: &OutputId,
+        alias_transition: AliasTransition,
+    ) -> Result<Option<Output>> {
         let alias_id = input.alias_id_non_null(output_id);
 
         // Do not create an alias output if the alias input is to be burned.
@@ -41,11 +46,15 @@ impl InputSelection {
         // Remove potential sender feature because it will not be needed anymore as it only needs to be verified once.
         let features = input.features().iter().cloned().filter(|feature| !feature.is_sender());
 
-        let output = AliasOutputBuilder::from(input)
+        let mut builder = AliasOutputBuilder::from(input)
             .with_alias_id(alias_id)
-            .with_state_index(input.state_index() + 1)
-            .with_features(features)
-            .finish_output(self.protocol_parameters.token_supply())?;
+            .with_features(features);
+
+        if alias_transition.is_state() {
+            builder = builder.with_state_index(input.state_index() + 1)
+        };
+
+        let output = builder.finish_output(self.protocol_parameters.token_supply())?;
 
         self.automatically_transitioned.insert(ChainId::from(alias_id));
 
@@ -119,9 +128,18 @@ impl InputSelection {
     }
 
     /// Transitions an input by creating a new output if required.
-    pub(crate) fn transition_input(&mut self, input: &InputSigningData) -> Result<Option<Output>> {
+    /// If no `alias_transition` is provided, assumes a state transition.
+    pub(crate) fn transition_input(
+        &mut self,
+        input: &InputSigningData,
+        alias_transition: Option<AliasTransition>,
+    ) -> Result<Option<Output>> {
         match &input.output {
-            Output::Alias(alias_input) => self.transition_alias_input(alias_input, input.output_id()),
+            Output::Alias(alias_input) => self.transition_alias_input(
+                alias_input,
+                input.output_id(),
+                alias_transition.unwrap_or(AliasTransition::State),
+            ),
             Output::Nft(nft_input) => self.transition_nft_input(nft_input, input.output_id()),
             Output::Foundry(foundry_input) => self.transition_foundry_input(foundry_input),
             _ => Ok(None),

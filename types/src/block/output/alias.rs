@@ -26,6 +26,28 @@ use crate::block::{
     Error,
 };
 
+/// Types of alias transition.
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub enum AliasTransition {
+    /// State transition.
+    State,
+    /// Governance transition.
+    Governance,
+}
+
+impl AliasTransition {
+    /// Checks whether the alias transition is a state one.
+    pub fn is_state(&self) -> bool {
+        matches!(self, Self::State)
+    }
+
+    /// Checks whether the alias transition is a governance one.
+    pub fn is_governance(&self) -> bool {
+        matches!(self, Self::Governance)
+    }
+}
+
 ///
 #[derive(Clone)]
 #[must_use]

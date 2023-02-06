@@ -10,7 +10,7 @@ use iota_client::{
     api::input_selection::{Burn, InputSelection, Requirement},
     block::{
         address::Address,
-        output::{AliasId, ChainId, NftId, SimpleTokenScheme, TokenId},
+        output::{AliasId, AliasTransition, ChainId, NftId, SimpleTokenScheme, TokenId},
         protocol::protocol_parameters,
     },
     Error,
@@ -32,6 +32,7 @@ fn burn_alias_present() {
         Alias(
             1_000_000,
             alias_id_1,
+            0,
             BECH32_ADDRESS_ED25519_0,
             BECH32_ADDRESS_ED25519_0,
             None,
@@ -57,6 +58,50 @@ fn burn_alias_present() {
         protocol_parameters,
     )
     .burn(Burn::new().add_alias(alias_id_1))
+    .select()
+    .unwrap();
+
+    assert_eq!(selected.inputs.len(), 1);
+    assert_eq!(selected.inputs[0], inputs[0]);
+    assert_eq!(selected.outputs, outputs);
+}
+
+#[test]
+fn burn_alias_present_and_required() {
+    let protocol_parameters = protocol_parameters();
+    let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
+
+    let inputs = build_inputs(vec![
+        Alias(
+            1_000_000,
+            alias_id_1,
+            0,
+            BECH32_ADDRESS_ED25519_0,
+            BECH32_ADDRESS_ED25519_0,
+            None,
+            None,
+            None,
+        ),
+        Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None, None),
+    ]);
+    let outputs = build_outputs(vec![Basic(
+        1_000_000,
+        BECH32_ADDRESS_ED25519_0,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )]);
+
+    let selected = InputSelection::new(
+        inputs.clone(),
+        outputs.clone(),
+        addresses(vec![BECH32_ADDRESS_ED25519_0]),
+        protocol_parameters,
+    )
+    .burn(Burn::new().add_alias(alias_id_1))
+    .required_inputs(HashSet::from_iter([*inputs[0].output_id()]))
     .select()
     .unwrap();
 
@@ -135,7 +180,7 @@ fn burn_alias_absent() {
 
     assert!(matches!(
         selected,
-        Err(Error::UnfulfillableRequirement(Requirement::Alias(alias_id, false))) if alias_id == alias_id_1
+        Err(Error::UnfulfillableRequirement(Requirement::Alias(alias_id, AliasTransition::Governance))) if alias_id == alias_id_1
     ));
 }
 
@@ -149,6 +194,7 @@ fn burn_aliases_present() {
         Alias(
             1_000_000,
             alias_id_1,
+            0,
             BECH32_ADDRESS_ED25519_0,
             BECH32_ADDRESS_ED25519_0,
             None,
@@ -158,6 +204,7 @@ fn burn_aliases_present() {
         Alias(
             1_000_000,
             alias_id_2,
+            0,
             BECH32_ADDRESS_ED25519_0,
             BECH32_ADDRESS_ED25519_0,
             None,
@@ -199,6 +246,7 @@ fn burn_alias_in_outputs() {
         Alias(
             1_000_000,
             alias_id_1,
+            0,
             BECH32_ADDRESS_ED25519_0,
             BECH32_ADDRESS_ED25519_0,
             None,
@@ -211,6 +259,7 @@ fn burn_alias_in_outputs() {
         Alias(
             1_000_000,
             alias_id_1,
+            0,
             BECH32_ADDRESS_ED25519_0,
             BECH32_ADDRESS_ED25519_0,
             None,
@@ -270,6 +319,41 @@ fn burn_nft_present() {
 }
 
 #[test]
+fn burn_nft_present_and_required() {
+    let protocol_parameters = protocol_parameters();
+    let nft_id_1 = NftId::from_str(NFT_ID_1).unwrap();
+
+    let inputs = build_inputs(vec![
+        Nft(1_000_000, nft_id_1, BECH32_ADDRESS_ED25519_0, None, None, None, None),
+        Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None, None),
+    ]);
+    let outputs = build_outputs(vec![Basic(
+        1_000_000,
+        BECH32_ADDRESS_ED25519_0,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )]);
+
+    let selected = InputSelection::new(
+        inputs.clone(),
+        outputs.clone(),
+        addresses(vec![BECH32_ADDRESS_ED25519_0]),
+        protocol_parameters,
+    )
+    .burn(Burn::new().add_nft(nft_id_1))
+    .required_inputs(HashSet::from_iter([*inputs[0].output_id()]))
+    .select()
+    .unwrap();
+
+    assert_eq!(selected.inputs.len(), 1);
+    assert_eq!(selected.inputs[0], inputs[0]);
+    assert_eq!(selected.outputs, outputs);
+}
+
+#[test]
 fn burn_nft_id_zero() {
     let protocol_parameters = protocol_parameters();
     let alias_id_0 = AliasId::from_str(ALIAS_ID_0).unwrap();
@@ -278,6 +362,7 @@ fn burn_nft_id_zero() {
         Alias(
             1_000_000,
             alias_id_0,
+            0,
             BECH32_ADDRESS_ED25519_0,
             BECH32_ADDRESS_ED25519_0,
             None,
@@ -431,6 +516,7 @@ fn burn_foundry_present() {
         Alias(
             1_000_000,
             alias_id_1,
+            0,
             BECH32_ADDRESS_ED25519_0,
             BECH32_ADDRESS_ED25519_0,
             None,
@@ -514,6 +600,7 @@ fn burn_foundry_absent() {
         Alias(
             1_000_000,
             alias_id_1,
+            0,
             BECH32_ADDRESS_ED25519_0,
             BECH32_ADDRESS_ED25519_0,
             None,
@@ -570,6 +657,7 @@ fn burn_foundries_present() {
         Alias(
             1_000_000,
             alias_id_1,
+            0,
             BECH32_ADDRESS_ED25519_0,
             BECH32_ADDRESS_ED25519_0,
             None,

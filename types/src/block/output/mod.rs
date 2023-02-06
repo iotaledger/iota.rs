@@ -48,7 +48,7 @@ pub(crate) use self::{
     unlock_condition::AddressUnlockCondition,
 };
 pub use self::{
-    alias::{AliasOutput, AliasOutputBuilder},
+    alias::{AliasOutput, AliasOutputBuilder, AliasTransition},
     alias_id::AliasId,
     basic::{BasicOutput, BasicOutputBuilder},
     chain_id::ChainId,
@@ -263,15 +263,16 @@ impl Output {
 
     /// Returns the address that is required to unlock this [`Output`] and the alias or nft address that gets
     /// unlocked by it, if it's an alias or nft.
+    /// If no `alias_transition` has been provided, assumes a state transition.
     pub fn required_and_unlocked_address(
         &self,
         current_time: u32,
         output_id: &OutputId,
-        alias_state_transition: bool,
+        alias_transition: Option<AliasTransition>,
     ) -> Result<(Address, Option<Address>), Error> {
         match self {
             Self::Alias(output) => {
-                if alias_state_transition {
+                if alias_transition.unwrap_or(AliasTransition::State) == AliasTransition::State {
                     // Alias address is only unlocked if it's a state transition
                     Ok((
                         *output.state_controller_address(),
