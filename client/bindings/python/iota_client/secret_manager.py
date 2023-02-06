@@ -20,6 +20,14 @@ class MnemonicSecretManager(dict):
         dict.__init__(self, mnemonic=mnemonic)
 
 
+class SeedSecretManager(dict):
+    def __init__(self, seed):
+        """Initialize a seed secret manager.
+        """
+
+        dict.__init__(self, hexSeed=seed)
+
+
 class StrongholdSecretManager(dict):
     """Secret manager that uses Stronghold.
     """
