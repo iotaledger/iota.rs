@@ -8,7 +8,7 @@ use std::collections::HashSet;
 use crypto::keys::slip10::Chain;
 use iota_types::block::{
     address::Address,
-    output::{dto::OutputDto, feature::Features, AliasOutput, AliasTransition, NftOutput, Output, OutputMetadata},
+    output::{dto::OutputDto, feature::Features, AliasOutput, NftOutput, Output, OutputMetadata},
 };
 
 use crate::{
@@ -235,7 +235,7 @@ fn get_required_addresses_for_sender_and_issuer(
             input_signing_data.output.required_and_unlocked_address(
                 current_time,
                 input_signing_data.output_id(),
-                Some(alias_transition.unwrap_or((AliasTransition::Governance, false)).0),
+                alias_transition.map(|(alias_transition, _)| alias_transition),
             )?;
         unlocked_addresses.insert(required_unlock_address);
         if let Some(unlocked_alias_or_nft_address) = unlocked_alias_or_nft_address {
