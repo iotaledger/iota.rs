@@ -1623,6 +1623,46 @@ fn governor_sender_required_already_selected() {
 }
 
 #[test]
+fn governance_transition_and_required() {
+    let protocol_parameters = protocol_parameters();
+    let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
+
+    let inputs = build_inputs(vec![Alias(
+        2_000_000,
+        alias_id_1,
+        0,
+        BECH32_ADDRESS_ED25519_0,
+        BECH32_ADDRESS_ED25519_1,
+        None,
+        None,
+        None,
+    )]);
+    let outputs = build_outputs(vec![Alias(
+        2_000_000,
+        alias_id_1,
+        0,
+        BECH32_ADDRESS_ED25519_0,
+        BECH32_ADDRESS_ED25519_1,
+        None,
+        None,
+        None,
+    )]);
+
+    let selected = InputSelection::new(
+        inputs.clone(),
+        outputs.clone(),
+        addresses(vec![BECH32_ADDRESS_ED25519_0]),
+        protocol_parameters,
+    )
+    .required_inputs(HashSet::from_iter([*inputs[0].output_id()]))
+    .select()
+    .unwrap();
+
+    assert!(unsorted_eq(&selected.inputs, &inputs));
+    assert!(unsorted_eq(&selected.outputs, &outputs));
+}
+
+#[test]
 fn governor_sender_required_but_state() {
     let protocol_parameters = protocol_parameters();
     let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
