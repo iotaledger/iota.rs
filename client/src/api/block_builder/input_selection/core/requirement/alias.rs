@@ -9,8 +9,8 @@ use crate::{
 };
 
 // Returns
-// - if alias transition is a state transition with the provided outputs for a given input
-// - if the output was provided, to differentiate a burn from a proper governance transition
+// - the alias transition type of a given input and outputs
+// - whether the output was provided or not, to differentiate a burn from a proper governance transition
 pub(crate) fn is_alias_transition(input: &InputSigningData, outputs: &[Output]) -> Option<(AliasTransition, bool)> {
     if let Output::Alias(alias_input) = &input.output {
         let alias_id = alias_input.alias_id_non_null(input.output_id());
