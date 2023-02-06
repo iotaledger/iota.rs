@@ -50,7 +50,7 @@ impl InputSelection {
             .with_alias_id(alias_id)
             .with_features(features);
 
-        if alias_transition == AliasTransition::State {
+        if alias_transition.is_state() {
             builder = builder.with_state_index(input.state_index() + 1)
         };
 
@@ -128,6 +128,7 @@ impl InputSelection {
     }
 
     /// Transitions an input by creating a new output if required.
+    /// If no `alias_transition` is provided, assumes a state transition.
     pub(crate) fn transition_input(
         &mut self,
         input: &InputSigningData,
