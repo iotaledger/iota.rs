@@ -263,6 +263,7 @@ impl Output {
 
     /// Returns the address that is required to unlock this [`Output`] and the alias or nft address that gets
     /// unlocked by it, if it's an alias or nft.
+    /// If no `alias_transition` has been provided, assumes a state transition.
     pub fn required_and_unlocked_address(
         &self,
         current_time: u32,
