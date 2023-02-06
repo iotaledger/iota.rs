@@ -11,7 +11,7 @@ use crate::{
 // Returns
 // - if alias transition is a state transition with the provided outputs for a given input
 // - if the output was provided, to differentiate a burn from a proper governance transition
-pub(crate) fn alias_transition(input: &InputSigningData, outputs: &[Output]) -> Option<(AliasTransition, bool)> {
+pub(crate) fn is_alias_transition(input: &InputSigningData, outputs: &[Output]) -> Option<(AliasTransition, bool)> {
     if let Output::Alias(alias_input) = &input.output {
         let alias_id = alias_input.alias_id_non_null(input.output_id());
         // Checks if the alias exists in the outputs and gets the transition type.
@@ -66,10 +66,10 @@ impl InputSelection {
     pub(crate) fn fulfill_alias_requirement(
         &mut self,
         alias_id: AliasId,
-        state_transition: bool,
+        alias_transition: AliasTransition,
     ) -> Result<(Vec<(InputSigningData, Option<AliasTransition>)>, Option<Requirement>)> {
         // Check that the alias is not burned when a state transition is required.
-        if state_transition
+        if alias_transition.is_state()
             && self
                 .burn
                 .as_ref()
@@ -77,7 +77,7 @@ impl InputSelection {
         {
             return Err(Error::UnfulfillableRequirement(Requirement::Alias(
                 alias_id,
-                state_transition,
+                alias_transition,
             )));
         }
 
@@ -88,7 +88,7 @@ impl InputSelection {
 
         // If a state transition is not required and the alias has already been selected, no additional check has to be
         // performed.
-        if !state_transition && selected_input.is_some() {
+        if !alias_transition.is_state() && selected_input.is_some() {
             return Ok((Vec::new(), None));
         }
 
@@ -101,12 +101,12 @@ impl InputSelection {
         if selected_input.is_none() && available_index.is_none() {
             return Err(Error::UnfulfillableRequirement(Requirement::Alias(
                 alias_id,
-                state_transition,
+                alias_transition,
             )));
         }
 
         // If a state transition is not required, we can simply select the alias.
-        if !state_transition {
+        if !alias_transition.is_state() {
             // Remove the output from the available inputs and return it, swap to make it O(1).
             // PANIC: safe to unwrap as it's been checked that it can't be None when a state transition is not required.
             return Ok((
@@ -121,10 +121,10 @@ impl InputSelection {
         // PANIC: safe to unwrap as it's been checked that both can't be None at the same time.
         let input = selected_input.unwrap_or_else(|| &self.available_inputs[available_index.unwrap()]);
 
-        if alias_transition(input, &self.outputs) == Some((AliasTransition::Governance, true)) {
+        if is_alias_transition(input, &self.outputs) == Some((AliasTransition::Governance, true)) {
             return Err(Error::UnfulfillableRequirement(Requirement::Alias(
                 alias_id,
-                state_transition,
+                alias_transition,
             )));
         }
 

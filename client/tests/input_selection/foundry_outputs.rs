@@ -7,7 +7,7 @@ use iota_client::{
     api::input_selection::{Burn, InputSelection, Requirement},
     block::{
         address::{Address, AliasAddress},
-        output::{AliasId, AliasOutputBuilder, FoundryId, Output, SimpleTokenScheme, TokenId},
+        output::{AliasId, AliasOutputBuilder, AliasTransition, FoundryId, Output, SimpleTokenScheme, TokenId},
         protocol::protocol_parameters,
     },
     Error,
@@ -52,7 +52,7 @@ fn missing_input_alias_for_foundry() {
 
     assert!(matches!(
         selected,
-        Err(Error::UnfulfillableRequirement(Requirement::Alias(alias_id, true))) if alias_id == alias_id_2
+        Err(Error::UnfulfillableRequirement(Requirement::Alias(alias_id, AliasTransition::State))) if alias_id == alias_id_2
     ));
 }
 
@@ -353,7 +353,7 @@ fn destroy_foundry_with_alias_governance_transition() {
 
     assert!(matches!(
         selected,
-        Err(Error::UnfulfillableRequirement(Requirement::Alias(alias_id, true))) if alias_id == alias_id_2
+        Err(Error::UnfulfillableRequirement(Requirement::Alias(alias_id, AliasTransition::State))) if alias_id == alias_id_2
     ));
 }
 
@@ -406,7 +406,7 @@ fn destroy_foundry_with_alias_burn() {
 
     assert!(matches!(
         selected,
-        Err(Error::UnfulfillableRequirement(Requirement::Alias(alias_id, true))) if alias_id == alias_id_2
+        Err(Error::UnfulfillableRequirement(Requirement::Alias(alias_id, AliasTransition::State))) if alias_id == alias_id_2
     ));
 }
 
@@ -846,7 +846,7 @@ fn mint_native_tokens_but_burn_alias() {
 
     assert!(matches!(
         selected,
-        Err(Error::UnfulfillableRequirement(Requirement::Alias(alias_id, true))) if alias_id == alias_id_1
+        Err(Error::UnfulfillableRequirement(Requirement::Alias(alias_id, AliasTransition::State))) if alias_id == alias_id_1
     ));
 }
 

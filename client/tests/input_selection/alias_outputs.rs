@@ -7,7 +7,7 @@ use iota_client::{
     api::input_selection::{Burn, InputSelection, Requirement},
     block::{
         address::Address,
-        output::{AliasId, AliasOutputBuilder, Output},
+        output::{AliasId, AliasOutputBuilder, AliasTransition, Output},
         protocol::protocol_parameters,
     },
     Error,
@@ -391,7 +391,7 @@ fn missing_input_for_alias_output() {
 
     assert!(matches!(
         selected,
-        Err(Error::UnfulfillableRequirement(Requirement::Alias(alias_id, false))) if alias_id == alias_id_2
+        Err(Error::UnfulfillableRequirement(Requirement::Alias(alias_id, AliasTransition::Governance))) if alias_id == alias_id_2
     ));
 }
 
@@ -435,7 +435,7 @@ fn missing_input_for_alias_output_2() {
 
     assert!(matches!(
         selected,
-        Err(Error::UnfulfillableRequirement(Requirement::Alias(alias_id, false))) if alias_id == alias_id_2
+        Err(Error::UnfulfillableRequirement(Requirement::Alias(alias_id, AliasTransition::Governance))) if alias_id == alias_id_2
     ));
 }
 
@@ -1150,7 +1150,7 @@ fn alias_burn_should_not_validate_alias_address() {
 
     assert!(matches!(
         selected,
-        Err(Error::UnfulfillableRequirement(Requirement::Alias(alias_id, true))) if alias_id == alias_id_1
+        Err(Error::UnfulfillableRequirement(Requirement::Alias(alias_id, AliasTransition::State))) if alias_id == alias_id_1
     ));
 }
 
@@ -1236,7 +1236,7 @@ fn alias_governance_transition_should_not_validate_alias_address() {
 
     assert!(matches!(
         selected,
-        Err(Error::UnfulfillableRequirement(Requirement::Alias(alias_id, true))) if alias_id == alias_id_1
+        Err(Error::UnfulfillableRequirement(Requirement::Alias(alias_id, AliasTransition::State))) if alias_id == alias_id_1
     ));
 }
 

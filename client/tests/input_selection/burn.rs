@@ -10,7 +10,7 @@ use iota_client::{
     api::input_selection::{Burn, InputSelection, Requirement},
     block::{
         address::Address,
-        output::{AliasId, ChainId, NftId, SimpleTokenScheme, TokenId},
+        output::{AliasId, AliasTransition, ChainId, NftId, SimpleTokenScheme, TokenId},
         protocol::protocol_parameters,
     },
     Error,
@@ -136,7 +136,7 @@ fn burn_alias_absent() {
 
     assert!(matches!(
         selected,
-        Err(Error::UnfulfillableRequirement(Requirement::Alias(alias_id, false))) if alias_id == alias_id_1
+        Err(Error::UnfulfillableRequirement(Requirement::Alias(alias_id, AliasTransition::Governance))) if alias_id == alias_id_1
     ));
 }
 

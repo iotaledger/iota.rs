@@ -8,7 +8,7 @@ pub(crate) mod transition;
 
 use std::collections::HashSet;
 
-use self::requirement::alias::alias_transition;
+use self::requirement::alias::is_alias_transition;
 pub use self::{
     burn::{Burn, BurnDto},
     requirement::Requirement,
@@ -61,7 +61,7 @@ impl InputSelection {
         // TODO unwrap or false?
         let alias_transition = if input.output.is_alias() {
             Some(
-                alias_transition(input, &self.outputs)
+                is_alias_transition(input, &self.outputs)
                     .unwrap_or((AliasTransition::Governance, false))
                     .0,
             )
@@ -74,7 +74,10 @@ impl InputSelection {
                 .required_and_unlocked_address(self.timestamp, input.output_id(), alias_transition)?;
 
         match required_address {
-            Address::Alias(alias_address) => Ok(Some(Requirement::Alias(*alias_address.alias_id(), true))),
+            Address::Alias(alias_address) => Ok(Some(Requirement::Alias(
+                *alias_address.alias_id(),
+                AliasTransition::State,
+            ))),
             Address::Nft(nft_address) => Ok(Some(Requirement::Nft(*nft_address.nft_id()))),
             _ => Ok(None),
         }

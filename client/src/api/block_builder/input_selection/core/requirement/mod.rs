@@ -32,7 +32,7 @@ pub enum Requirement {
     /// Foundry requirement.
     Foundry(FoundryId),
     /// Alias requirement and whether it needs to be state transitioned (true) or not (false).
-    Alias(AliasId, bool),
+    Alias(AliasId, AliasTransition),
     /// Nft requirement.
     Nft(NftId),
     /// Native tokens requirement.
@@ -52,8 +52,8 @@ impl InputSelection {
             Requirement::Sender(address) => self.fulfill_sender_requirement(address),
             Requirement::Issuer(address) => self.fulfill_issuer_requirement(address),
             Requirement::Foundry(foundry_id) => self.fulfill_foundry_requirement(foundry_id),
-            Requirement::Alias(alias_id, state_transition) => {
-                self.fulfill_alias_requirement(alias_id, state_transition)
+            Requirement::Alias(alias_id, alias_transition) => {
+                self.fulfill_alias_requirement(alias_id, alias_transition)
             }
             Requirement::Nft(nft_id) => self.fulfill_nft_requirement(nft_id),
             Requirement::NativeTokens => self.fulfill_native_tokens_requirement(),
@@ -74,8 +74,10 @@ impl InputSelection {
                     let is_created = alias_output.alias_id().is_null();
 
                     if !is_created {
-                        self.requirements
-                            .push(Requirement::Alias(*alias_output.alias_id(), false));
+                        self.requirements.push(Requirement::Alias(
+                            *alias_output.alias_id(),
+                            AliasTransition::Governance,
+                        ));
                     }
 
                     is_created
@@ -106,8 +108,10 @@ impl InputSelection {
                         self.requirements.push(Requirement::Foundry(foundry_output.id()));
                     }
 
-                    self.requirements
-                        .push(Requirement::Alias(*foundry_output.alias_address().alias_id(), true));
+                    self.requirements.push(Requirement::Alias(
+                        *foundry_output.alias_address().alias_id(),
+                        AliasTransition::State,
+                    ));
 
                     is_created
                 }
@@ -140,7 +144,8 @@ impl InputSelection {
                     return Err(Error::BurnAndTransition(ChainId::from(*alias_id)));
                 }
 
-                self.requirements.push(Requirement::Alias(*alias_id, false));
+                self.requirements
+                    .push(Requirement::Alias(*alias_id, AliasTransition::Governance));
             }
 
             for nft_id in &burn.nfts {
