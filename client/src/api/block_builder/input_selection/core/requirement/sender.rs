@@ -17,15 +17,7 @@ fn selected_has_ed25519_address(
     address: &Address,
     timestamp: u32,
 ) -> bool {
-    let alias_transition = if input.output.is_alias() {
-        Some(
-            is_alias_transition(input, outputs)
-                .unwrap_or((AliasTransition::Governance, false))
-                .0,
-        )
-    } else {
-        None
-    };
+    let alias_transition = is_alias_transition(input, outputs).map(|(alias_transition, _)| alias_transition);
     // PANIC: safe to unwrap as outputs with no address have been filtered out already.
     let required_address = input
         .output
@@ -41,10 +33,10 @@ fn available_has_ed25519_address(
     address: &Address,
     timestamp: u32,
 ) -> (bool, Option<AliasTransition>) {
-    // PANIC: safe to unwrap as outputs without unlock conditions have been filtered out already.
-    let unlock_conditions = input.output.unlock_conditions().unwrap();
-
     if input.output.is_alias() {
+        // PANIC: safe to unwrap as outputs without unlock conditions have been filtered out already.
+        let unlock_conditions = input.output.unlock_conditions().unwrap();
+
         // PANIC: safe to unwrap as aliases have a state controller address.
         if unlock_conditions.state_controller_address().unwrap().address() == address {
             return (true, Some(AliasTransition::State));
