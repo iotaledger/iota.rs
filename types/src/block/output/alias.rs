@@ -42,7 +42,7 @@ impl AliasTransition {
         matches!(self, Self::State)
     }
 
-    /// Checks whether the governance transition is a state one.
+    /// Checks whether the alias transition is a governance one.
     pub fn is_governance(&self) -> bool {
         matches!(self, Self::Governance)
     }
