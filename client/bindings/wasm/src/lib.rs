@@ -16,7 +16,7 @@ pub fn start() -> Result<(), JsValue> {
 
 /// The Wasm bindings do not support internal logging yet.
 ///
-/// Calling this is a no-op, only included for compatibility with the Neon Node.js bindings TypeScript definitions.
+/// Calling this is a no-op, only included for compatibility with the Node.js bindings TypeScript definitions.
 #[wasm_bindgen(js_name = initLogger)]
 pub fn init_logger(_config: JsValue) {
     // TODO

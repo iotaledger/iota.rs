@@ -72,7 +72,7 @@ async fn send_message_inner(handler: &ClientMessageHandler, serialized_message: 
 /// MQTT is not supported for WebAssembly bindings.
 ///
 /// Throws an error if called, only included for compatibility
-/// with the Neon Node.js bindings TypeScript definitions.
+/// with the Node.js bindings TypeScript definitions.
 #[wasm_bindgen]
 pub fn listen(_topics: ArrayString, _callback: &js_sys::Function) -> Result<(), JsValue> {
     let js_error = js_sys::Error::new("Client MQTT not supported for WebAssembly");
