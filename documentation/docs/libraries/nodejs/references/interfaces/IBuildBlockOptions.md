@@ -9,7 +9,7 @@ Options to build a new block, possibly with payloads
 - [output](IBuildBlockOptions.md#output)
 - [outputHex](IBuildBlockOptions.md#outputhex)
 - [parents](IBuildBlockOptions.md#parents)
-- [allowBurning](IBuildBlockOptions.md#allowburning)
+- [burn](IBuildBlockOptions.md#burn)
 
 ## Properties
 
@@ -37,8 +37,8 @@ Parent block IDs
 
 ___
 
-### allowBurning
+### burn
 
-• `Optional` **allowBurning**: `boolean`
+• `Optional` **burn**: [`Burn`](Burn.md)
 
-Allow burning of native tokens
+Explicit burning of aliases, nfts, foundries and native tokens

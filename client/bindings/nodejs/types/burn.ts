@@ -3,7 +3,7 @@
 
 import type { INativeToken } from '@iota/types';
 
-/// A DTO for [`Burn`].
+/** A DTO for [`Burn`] */
 export interface Burn {
     /** Aliases to burn */
     aliases: string[];
@@ -12,5 +12,5 @@ export interface Burn {
     /** Foundries to burn */
     foundries: string[];
     /** Amounts of native tokens to burn */
-    native_tokens: INativeToken;
+    nativeTokens: INativeToken;
 }
