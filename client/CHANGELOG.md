@@ -54,6 +54,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `ClientBlockBuilder::allow_burning: bool` to `ClientBlockBuilder::burn: Option<Burn>`;
 - `ClientBlockBuilder::with_burning_allowed` to `ClientBlockBuilder::with_burn`;
 - `ClientBlockBuilderOptions::allow_burning: Option<bool>` to `ClientBlockBuilderOptions::burn: Option<Burn>`;
+- `InputSigningDataDto::output_metadata` from `OutputMetadata` to `OutputMetadataDto`;
 
 ### Removed
 

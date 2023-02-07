@@ -90,18 +90,7 @@ jobs:
         # The GitHub hosted Windows 2022 image comes with Visual Studio 2022, but node-gyp
         # (which is used by neon-sys) sadly fails to recognize it. As a mitigation, we still run the
         # tests on Windows 2019, until we can figure out a way to fix the problem.
-        # NOTE: Using Ubuntu 18.04 to provide glibc compatibility. (#588)
-        os: [ubuntu-18.04, ubuntu-latest, macos-latest, windows-2019]
-        node-version: ['14.x', '16.x', '18.x']
-        exclude:
-          # GLIBC_2.28 is only available with a newer ubuntu version
-          - os: ubuntu-18.04
-            node-version: '18.x'
-          # ubuntu-18.04 is needed for for node 14.x and 16.x
-          - os: ubuntu-latest
-            node-version: '14.x'
-          - os: ubuntu-latest
-            node-version: '16.x'
+        os: [ubuntu-latest, macos-latest, windows-2019]
 
     steps:
       - name: Checkout the Source Code
@@ -113,10 +102,10 @@ jobs:
           toolchain: stable
           cache: false
 
-      - name: Set up Node.js ${{ matrix.node-version }}
+      - name: Set up Node.js 16.x
         uses: actions/setup-node@v2
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: '16.x'
 
       - name: Install required packages (Ubuntu)
         if: ${{ startsWith(matrix.os, 'ubuntu') }}
@@ -137,54 +126,7 @@ jobs:
 
       - name: Build Node.js Prebuilds
         working-directory: client/bindings/nodejs/
-        run: yarn prebuild:node
-
-      - name: Upload Prebuilds to GitHub Release
-        working-directory: client/bindings/nodejs/
-        run: yarn prebuild --upload-all ${{ secrets.GITHUB_TOKEN }} --tag-prefix nodejs-binding-v
-
-  electron-binding-prebuild:
-    name: Build Prebuilt Binaries for Electron
-    if: needs.version-or-publish.outputs.successfulPublish == 'true'
-    needs: version-or-publish
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        # The GitHub hosted Windows 2022 image comes with Visual Studio 2022, but node-gyp
-        # (which is used by neon-sys) sadly fails to recognize it. As a mitigation, we still run the
-        # tests on Windows 2019, until we can figure out a way to fix the problem.
-        # NOTE: Using Ubuntu 18.04 to provide glibc compatibility. (#588)
-        os: [ubuntu-18.04, macos-latest, windows-2019]
-
-    steps:
-      - name: Checkout the Source Code
-        uses: actions/checkout@v3
-
-      - name: Set Up Stable Rust
-        uses: ./.github/actions/setup-rust
-        with:
-          toolchain: stable
-          cache: false
-
-      - name: Set up Node.js 14
-        uses: actions/setup-node@v2
-        with:
-          node-version: '14'
-
-      - name: Install required packages (Ubuntu)
-        if: ${{ startsWith(matrix.os, 'ubuntu') }}
-        run: |
-          sudo apt-get update
-          sudo apt-get install libudev-dev libusb-1.0-0-dev
-
-      - name: Run Yarn Install
-        working-directory: client/bindings/nodejs/
-        run: yarn install
-
-      - name: Build Electron Prebuilds
-        working-directory: client/bindings/nodejs/
-        run: yarn prebuild:electron
+        run: yarn prebuild
 
       - name: Upload Prebuilds to GitHub Release
         working-directory: client/bindings/nodejs/
