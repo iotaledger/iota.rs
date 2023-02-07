@@ -8,6 +8,7 @@ import org.iota.types.JsonUtils;
 import org.iota.types.Output;
 import org.iota.types.UtxoInput;
 import org.iota.types.ids.BlockId;
+import org.iota.types.Burn;
 
 public class BuildBlockOptions {
 
@@ -23,7 +24,7 @@ public class BuildBlockOptions {
     private String tag;
     private String data;
     private BlockId[] parents;
-    private Boolean allowBurning;
+    private Burn burn;
 
     public BuildBlockOptions withCoinType(Integer coinType) {
         this.coinType = coinType;
@@ -85,8 +86,8 @@ public class BuildBlockOptions {
         return this;
     }
 
-    public BuildBlockOptions withAllowBurning(Boolean allowBurning) {
-        this.allowBurning = allowBurning;
+    public BuildBlockOptions withBurn(Burn burn) {
+        this.burn = burn;
         return this;
     }
 
@@ -122,7 +123,7 @@ public class BuildBlockOptions {
         o.addProperty("tag", tag);
         o.addProperty("data", data);
         o.add("parents", JsonUtils.toJson(parents));
-        o.addProperty("allowBurning", allowBurning);
+        o.addProperty("burn", burn);
 
         return o;
     }
