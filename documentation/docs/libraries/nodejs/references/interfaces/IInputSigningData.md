@@ -7,7 +7,7 @@ Data for transaction inputs for signing and ordering of unlock blocks
 ### Properties
 
 - [output](IInputSigningData.md#output)
-- [outputMetaData](IInputSigningData.md#outputmetadata)
+- [outputMetadata](IInputSigningData.md#outputmetadata)
 - [chain](IInputSigningData.md#chain)
 - [bech32Address](IInputSigningData.md#bech32address)
 
@@ -21,9 +21,9 @@ The output
 
 ___
 
-### outputMetaData
+### outputMetadata
 
-• **outputMetaData**: `IOutputMetadataResponse`
+• **outputMetadata**: `IOutputMetadataResponse`
 
 The output metadata
 

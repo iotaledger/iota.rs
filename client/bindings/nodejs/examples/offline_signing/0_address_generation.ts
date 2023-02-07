@@ -9,7 +9,7 @@ import {
 } from '@iota/client';
 import { writeFile } from 'fs/promises';
 
-require('dotenv').config({ path: '../../../.env' });
+require('dotenv').config({ path: '../../../../.env' });
 
 // From examples directory, run with:
 // node ./dist/offline_signing/0_address_generation.js
