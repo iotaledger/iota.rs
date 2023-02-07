@@ -1,7 +1,7 @@
 // Copyright 2021-2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { Client, initLogger, IPreparedTransactionData } from '@iota/client';
+import { Client, initLogger } from '@iota/client';
 import { writeFile, readFile } from 'fs/promises';
 
 require('dotenv').config({ path: '../../../../.env' });
