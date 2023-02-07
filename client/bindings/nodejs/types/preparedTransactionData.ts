@@ -37,7 +37,7 @@ export interface IInputSigningData {
     /**
      * The output metadata
      */
-    outputMetaData: IOutputMetadataResponse;
+    outputMetadata: IOutputMetadataResponse;
     /**
      * The chain derived from seed, only for ed25519 addresses
      */
@@ -65,5 +65,5 @@ export interface IRemainder {
 }
 export interface ISegment {
     hardened: boolean;
-    bs: Uint8Array;
+    bs: number[];
 }
