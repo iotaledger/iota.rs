@@ -51,9 +51,9 @@ fn panic_to_response_message(panic: Box<dyn Any>) -> Response {
     Response::Panic(format!("{msg}\n\n{current_backtrace:?}"))
 }
 
-async fn convert_async_panics<F>(f: impl FnOnce() -> F) -> Result<Response>
+async fn convert_async_panics<F>(f: impl FnOnce() -> F + Send) -> Result<Response>
 where
-    F: Future<Output = Result<Response>>,
+    F: Future<Output = Result<Response>> + Send,
 {
     match AssertUnwindSafe(f()).catch_unwind().await {
         Ok(result) => result,
