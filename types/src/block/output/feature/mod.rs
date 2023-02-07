@@ -70,7 +70,7 @@ impl Feature {
     /// Gets the feature as an actual [`SenderFeature`].
     /// PANIC: do not call on a non-sender feature.
     pub fn as_sender(&self) -> &SenderFeature {
-        if let Feature::Sender(feature) = self {
+        if let Self::Sender(feature) = self {
             feature
         } else {
             panic!("as_sender called on a non-sender feature");
@@ -85,7 +85,7 @@ impl Feature {
     /// Gets the feature as an actual [`IssuerFeature`].
     /// PANIC: do not call on a non-issuer feature.
     pub fn as_issuer(&self) -> &IssuerFeature {
-        if let Feature::Issuer(feature) = self {
+        if let Self::Issuer(feature) = self {
             feature
         } else {
             panic!("as_issuer called on a non-issuer feature");
@@ -100,7 +100,7 @@ impl Feature {
     /// Gets the feature as an actual [`MetadataFeature`].
     /// PANIC: do not call on a non-metadata feature.
     pub fn as_metadata(&self) -> &MetadataFeature {
-        if let Feature::Metadata(feature) = self {
+        if let Self::Metadata(feature) = self {
             feature
         } else {
             panic!("as_metadata called on a non-metadata feature");
@@ -115,7 +115,7 @@ impl Feature {
     /// Gets the feature as an actual [`TagFeature`].
     /// PANIC: do not call on a non-tag feature.
     pub fn as_tag(&self) -> &TagFeature {
-        if let Feature::Tag(feature) = self {
+        if let Self::Tag(feature) = self {
             feature
         } else {
             panic!("as_tag called on a non-tag feature");
