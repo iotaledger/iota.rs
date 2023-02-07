@@ -90,8 +90,7 @@ jobs:
         # The GitHub hosted Windows 2022 image comes with Visual Studio 2022, but node-gyp
         # (which is used by neon-sys) sadly fails to recognize it. As a mitigation, we still run the
         # tests on Windows 2019, until we can figure out a way to fix the problem.
-        # NOTE: Using Ubuntu 18.04 to provide glibc compatibility. (#588)
-        os: [ubuntu-18.04, ubuntu-latest, macos-latest, windows-2019]
+        os: [ubuntu-latest, macos-latest, windows-2019]
 
     steps:
       - name: Checkout the Source Code
@@ -103,10 +102,10 @@ jobs:
           toolchain: stable
           cache: false
 
-      - name: Set up Node.js ${{ matrix.node-version }}
+      - name: Set up Node.js 16.x
         uses: actions/setup-node@v2
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: '16.x'
 
       - name: Install required packages (Ubuntu)
         if: ${{ startsWith(matrix.os, 'ubuntu') }}
