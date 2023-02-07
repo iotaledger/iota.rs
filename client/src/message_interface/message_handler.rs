@@ -38,13 +38,15 @@ use crate::{
 };
 
 fn panic_to_response_message(panic: Box<dyn Any>) -> Response {
-    let msg = if let Some(message) = panic.downcast_ref::<String>() {
-        format!("Internal error: {message}")
-    } else if let Some(message) = panic.downcast_ref::<&str>() {
-        format!("Internal error: {message}")
-    } else {
-        "Internal error".to_string()
-    };
+    let msg = panic.downcast_ref::<String>().map_or_else(
+        || {
+            panic.downcast_ref::<&str>().map_or_else(
+                || "Internal error".to_string(),
+                |message| format!("Internal error: {message}"),
+            )
+        },
+        |message| format!("Internal error: {message}"),
+    );
     let current_backtrace = Backtrace::new();
     Response::Panic(format!("{msg}\n\n{current_backtrace:?}"))
 }

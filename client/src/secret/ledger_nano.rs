@@ -345,24 +345,21 @@ impl LedgerSecretManager {
         // if IOTA or Shimmer app is opened, the call will always succeed, returning information like
         // device, debug-flag, version number, lock-state but here we only are interested in a
         // successful call and the locked-flag
-        let (connected_, locked, blind_signing_enabled, device) = match get_app_config(&transport_type) {
-            Ok(config) => (
-                true,
-                // locked flag
-                config.flags & (1 << 0) != 0,
-                // blind signing enabled flag
-                config.flags & (1 << 1) != 0,
-                LedgerDeviceType::try_from(config.device).ok(),
-            ),
-            Err(_) => (false, false, false, None),
-        };
+        let (connected_, locked, blind_signing_enabled, device) =
+            get_app_config(&transport_type).map_or((false, false, false, None), |config| {
+                (
+                    true,
+                    // locked flag
+                    config.flags & (1 << 0) != 0,
+                    // blind signing enabled flag
+                    config.flags & (1 << 1) != 0,
+                    LedgerDeviceType::try_from(config.device).ok(),
+                )
+            });
 
         log::debug!("get_buffer_size");
         // get buffer size of connected device
-        let buffer_size = match get_buffer_size(&transport_type) {
-            Ok(size) => Some(size),
-            Err(_) => None,
-        };
+        let buffer_size = get_buffer_size(&transport_type).ok();
 
         // We get the app info also if not the iota app is open, but another one
         // connected_ is in this case false, even tough the ledger is connected, that's why we always return true if we
