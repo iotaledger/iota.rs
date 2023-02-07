@@ -51,6 +51,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Error::Pow` to `Error::NonceNotFound`;
 - `finish_nonce` takes a `F: Fn(&[u8]) -> Option<u64>` instead of a `F: Fn(&[u8]) -> Result<u64, PowError>`;
 - Remove `Error` suffix on some `Error` variants;
+- `ClientBlockBuilder::allow_burning: bool` to `ClientBlockBuilder::burn: Option<Burn>`;
+- `ClientBlockBuilder::with_burning_allowed` to `ClientBlockBuilder::with_burn`;
+- `ClientBlockBuilderOptions::allow_burning: Option<bool>` to `ClientBlockBuilderOptions::burn: Option<Burn>`;
 - `InputSigningDataDto::output_metadata` from `OutputMetadata` to `OutputMetadataDto`;
 
 ### Removed

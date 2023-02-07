@@ -15,7 +15,7 @@ use iota_types::block::{
 use crate::{
     api::{
         address::search_address,
-        block_builder::input_selection::{InputSelection, Selected},
+        block_builder::input_selection::{Burn, InputSelection, Selected},
         ClientBlockBuilder,
     },
     constants::HD_WALLET_TYPE,
@@ -27,14 +27,12 @@ impl<'a> ClientBlockBuilder<'a> {
     /// If custom inputs are provided we check if they are unspent, get the balance and search the Ed25519 addresses for
     /// them with the provided input_range so we can later sign them.
     /// Forwards to [try_select_inputs()] with all inputs in `mandatory_inputs`, so they will all be included in the
-    /// transaction, even if not required for the provided outputs. Careful with setting `allow_burning` to `true`,
-    /// native tokens, nfts or alias outputs can get easily burned by accident.
+    /// transaction, even if not required for the provided outputs.
     pub(crate) async fn get_custom_inputs(
         &self,
         governance_transition: Option<HashSet<AliasId>>,
         protocol_parameters: &ProtocolParameters,
-        // TODO Replace with a Burn struct
-        _allow_burning: bool,
+        burn: Option<Burn>,
     ) -> Result<Selected> {
         log::debug!("[get_custom_inputs]");
 
@@ -117,6 +115,10 @@ impl<'a> ClientBlockBuilder<'a> {
 
         if let Some(address) = self.custom_remainder_address {
             input_selection = input_selection.remainder_address(address);
+        }
+
+        if let Some(burn) = burn {
+            input_selection = input_selection.burn(burn);
         }
 
         input_selection.select()
