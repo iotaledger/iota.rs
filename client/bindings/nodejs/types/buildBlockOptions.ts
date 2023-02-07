@@ -32,4 +32,3 @@ export interface IClientBlockBuilderOutputAddress {
     address: string;
     amount: string;
 }
-
