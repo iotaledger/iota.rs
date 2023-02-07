@@ -34,7 +34,7 @@ pub struct TrackedParticipation {
     /// Milestone index the participation ended. 0 if the participation is still active.
     pub end_milestone_index: u32,
     /// IDs of the answers to the questions of a ballot, in the same order.
-    pub answers: Vec<u8>,
+    pub answers: Option<Vec<u8>>,
 }
 
 /// OutputStatusResponse defines the response of a GET RouteOutputStatus REST API call.
