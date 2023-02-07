@@ -73,6 +73,7 @@ import type {
     __BuildFoundryOutputMessage__,
     __BuildNftOutputMessage__,
     __ClearListenersMessage__,
+    __SignatureUnlockMessage__,
 } from './client';
 
 export type __ClientMessages__ =
@@ -97,6 +98,7 @@ export type __ClientMessages__ =
     | __GetLedgerNanoStatusMessage__
     | __PrepareTransactionMessage__
     | __SignTransactionMessage__
+    | __SignatureUnlockMessage__
     | __StoreMnemonicMessage__
     | __PostBlockPayloadMessage__
     | __ParseBech32AddressMessage__

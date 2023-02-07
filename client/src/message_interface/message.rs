@@ -23,11 +23,11 @@ use crate::Topic;
 use crate::{
     api::{
         ClientBlockBuilderOptions as BuildBlockOptions, GetAddressesBuilderOptions as GenerateAddressesOptions,
-        PreparedTransactionDataDto,
+        PreparedTransactionDataDto, RemainderDataDto,
     },
     node_api::indexer::query_parameters::QueryParameter,
     node_manager::node::NodeAuth,
-    secret::SecretManagerDto,
+    secret::{types::InputSigningDataDto, SecretManagerDto},
 };
 
 /// Each public client method.
@@ -170,6 +170,21 @@ pub enum Message {
         /// Prepared transaction data
         #[serde(rename = "preparedTransactionData")]
         prepared_transaction_data: PreparedTransactionDataDto,
+    },
+    /// Create a single Signature Unlock.
+    SignatureUnlock {
+        /// Secret manager
+        #[serde(rename = "secretManager")]
+        secret_manager: SecretManagerDto,
+        /// Input Signing Data
+        #[serde(rename = "inputSigningData")]
+        input_signing_data: InputSigningDataDto,
+        /// Transaction Essence Hash
+        #[serde(rename = "transactionEssenceHash")]
+        transaction_essence_hash: Vec<u8>,
+        /// Metadata for Ledger Nano signing
+        #[serde(rename = "remainderData")]
+        remainder_data: Option<RemainderDataDto>,
     },
     /// Store a mnemonic in the Stronghold vault
     #[cfg(feature = "stronghold")]

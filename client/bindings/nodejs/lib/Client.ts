@@ -20,6 +20,7 @@ import type {
     NftQueryParameter,
     AliasQueryParameter,
     LedgerNanoStatus,
+    IInputSigningData,
 } from '../types';
 import type {
     IUTXOInput,
@@ -39,6 +40,7 @@ import type {
     IFoundryOutput,
     INftOutput,
     INodeInfoProtocol,
+    UnlockTypes,
 } from '@iota/types';
 import type { INodeInfoWrapper } from '../types/nodeInfo';
 
@@ -367,6 +369,29 @@ export class Client {
             data: {
                 secretManager,
                 preparedTransactionData,
+            },
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Create a signature unlock using the provided `secretManager`.
+     */
+    async signatureUnlock(
+        secretManager: SecretManager,
+        inputSigningData: IInputSigningData,
+        // Uses `Array<number>` instead of `Uint8Array` because the latter serializes
+        // as an object rather than an array, which results in errors with serde.
+        transactionEssenceHash: Array<number>,
+    ): Promise<UnlockTypes> {
+        const response = await this.messageHandler.sendMessage({
+            name: 'signatureUnlock',
+            data: {
+                secretManager,
+                inputSigningData,
+                transactionEssenceHash,
+                remainderData: undefined,
             },
         });
 
