@@ -123,7 +123,7 @@ public class BuildBlockOptions {
         o.addProperty("tag", tag);
         o.addProperty("data", data);
         o.add("parents", JsonUtils.toJson(parents));
-        o.add("burn", burn.toJson());
+        o.add("burn", burn != null ? burn.toJson() : null);
 
         return o;
     }
