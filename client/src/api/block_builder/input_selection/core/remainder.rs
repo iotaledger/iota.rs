@@ -149,6 +149,7 @@ impl InputSelection {
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(remainder_address)));
 
         if let Some(native_tokens) = native_tokens_diff {
+            log::debug!("Adding {native_tokens:?} to remainder output for {remainder_address:?}");
             remainder_builder = remainder_builder.with_native_tokens(native_tokens);
         }
 
