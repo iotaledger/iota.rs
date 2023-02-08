@@ -56,10 +56,10 @@ async fn convert_async_panics<F>(f: impl FnOnce() -> F + Send) -> Result<Respons
 where
     F: Future<Output = Result<Response>> + Send,
 {
-    match AssertUnwindSafe(f()).catch_unwind().await {
-        Ok(result) => result,
-        Err(panic) => Ok(panic_to_response_message(panic)),
-    }
+    AssertUnwindSafe(f())
+        .catch_unwind()
+        .await
+        .unwrap_or_else(|panic| Ok(panic_to_response_message(panic)))
 }
 
 #[cfg(target_family = "wasm")]
@@ -68,10 +68,10 @@ async fn convert_async_panics<F>(f: impl FnOnce() -> F) -> Result<Response>
 where
     F: Future<Output = Result<Response>>,
 {
-    match AssertUnwindSafe(f()).catch_unwind().await {
-        Ok(result) => result,
-        Err(panic) => Ok(panic_to_response_message(panic)),
-    }
+    AssertUnwindSafe(f())
+        .catch_unwind()
+        .await
+        .unwrap_or_else(|panic| Ok(panic_to_response_message(panic)))
 }
 
 /// The Client message handler.
