@@ -60,13 +60,9 @@ async fn send_message_inner(handler: &ClientMessageHandler, serialized_message: 
         Err(err) => return Ok(Response::Error(iota_client::Error::Json(err))),
     };
 
-    let (response_tx, mut response_rx) = unbounded_channel();
-    handler.handle(message, response_tx).await;
+    let response = handler.send_message(message).await;
 
-    response_rx
-        .recv()
-        .await
-        .ok_or_else(|| JsValue::from(js_sys::Error::new("Client MessageHandler receive failed:")))
+    Ok(response)
 }
 
 /// MQTT is not supported for WebAssembly bindings.

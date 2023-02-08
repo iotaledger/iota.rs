@@ -11,7 +11,7 @@ use jni::{
 };
 use lazy_static::lazy_static;
 use once_cell::sync::OnceCell;
-use tokio::{runtime::Runtime, sync::mpsc::unbounded_channel};
+use tokio::runtime::Runtime;
 
 lazy_static! {
     static ref MESSAGE_HANDLER: Mutex<Option<ClientMessageHandler>> = Mutex::new(None);
@@ -80,12 +80,9 @@ pub extern "system" fn Java_org_iota_apis_NativeApi_sendCommand(
 
     let message = serde_json::from_str::<Message>(&command).unwrap();
 
-    let (sender, mut receiver) = unbounded_channel();
-
     let guard = MESSAGE_HANDLER.lock().unwrap();
-    block_on(guard.as_ref().unwrap().handle(message, sender));
 
-    let response = block_on(receiver.recv()).unwrap();
+    let response = block_on(guard.as_ref().unwrap().send_message(message));
 
     let output = env
         .new_string(serde_json::to_string(&response).unwrap())

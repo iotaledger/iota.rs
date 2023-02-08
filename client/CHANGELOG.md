@@ -55,10 +55,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `ClientBlockBuilder::with_burning_allowed` to `ClientBlockBuilder::with_burn`;
 - `ClientBlockBuilderOptions::allow_burning: Option<bool>` to `ClientBlockBuilderOptions::burn: Option<Burn>`;
 - `InputSigningDataDto::output_metadata` from `OutputMetadata` to `OutputMetadataDto`;
+- Renamed `MessageHandler::handle()` to `MessageHandler::send_message()`, removed the `response_tx` parameter and returned the `Response`;
 
 ### Removed
 
 - `participation`, `indexer` plugin API types and `OutputMetadata`, moved to `iota-types`;
+- `message_handler::send_message()`;
 
 ### Fixed
 

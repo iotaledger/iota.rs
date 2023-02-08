@@ -19,7 +19,6 @@ use iota_types::block::{
     protocol::dto::ProtocolParametersDto,
     Block, BlockDto,
 };
-use tokio::sync::mpsc::UnboundedSender;
 use zeroize::Zeroize;
 #[cfg(feature = "mqtt")]
 use {
@@ -116,8 +115,8 @@ impl ClientMessageHandler {
             .expect("failed to listen to MQTT events");
     }
 
-    /// Handle messages
-    pub async fn handle(&self, message: Message, response_tx: UnboundedSender<Response>) {
+    /// Send a message.
+    pub async fn send_message(&self, message: Message) -> Response {
         match &message {
             // Don't log secrets
             Message::GenerateAddresses {
@@ -182,7 +181,7 @@ impl ClientMessageHandler {
             _ => log::debug!("Response: {:?}", response),
         }
 
-        let _ = response_tx.send(response);
+        response
     }
 
     // If cfg(not(feature = "stronghold")) then secret_manager doesn't necessarily to be mutable, but otherwise it has
