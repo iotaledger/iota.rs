@@ -76,10 +76,9 @@ impl InputSelection {
                     let is_created = alias_output.alias_id().is_null();
 
                     if !is_created {
-                        self.requirements.push(Requirement::Alias(
-                            *alias_output.alias_id(),
-                            AliasTransition::Governance,
-                        ));
+                        let requirement = Requirement::Alias(*alias_output.alias_id(), AliasTransition::Governance);
+                        log::debug!("Adding {requirement:?} from output");
+                        self.requirements.push(requirement);
                     }
 
                     is_created
@@ -89,7 +88,9 @@ impl InputSelection {
                     let is_created = nft_output.nft_id().is_null();
 
                     if !is_created {
-                        self.requirements.push(Requirement::Nft(*nft_output.nft_id()));
+                        let requirement = Requirement::Nft(*nft_output.nft_id());
+                        log::debug!("Adding {requirement:?} from output");
+                        self.requirements.push(requirement);
                     }
 
                     is_created
@@ -107,13 +108,15 @@ impl InputSelection {
                     });
 
                     if !is_created {
-                        self.requirements.push(Requirement::Foundry(foundry_output.id()));
+                        let requirement = Requirement::Foundry(foundry_output.id());
+                        log::debug!("Adding {requirement:?} from output");
+                        self.requirements.push(requirement);
                     }
 
-                    self.requirements.push(Requirement::Alias(
-                        *foundry_output.alias_address().alias_id(),
-                        AliasTransition::State,
-                    ));
+                    let requirement =
+                        Requirement::Alias(*foundry_output.alias_address().alias_id(), AliasTransition::State);
+                    log::debug!("Adding {requirement:?} from output");
+                    self.requirements.push(requirement);
 
                     is_created
                 }
@@ -122,13 +125,17 @@ impl InputSelection {
 
             // Add a sender requirement if the sender feature is present.
             if let Some(sender) = output.features().and_then(Features::sender) {
-                self.requirements.push(Requirement::Sender(*sender.address()));
+                let requirement = Requirement::Sender(*sender.address());
+                log::debug!("Adding {requirement:?} from output");
+                self.requirements.push(requirement);
             }
 
             // Add an issuer requirement if the issuer feature is present and the chain output is created.
             if is_created {
                 if let Some(issuer) = output.immutable_features().and_then(Features::issuer) {
-                    self.requirements.push(Requirement::Issuer(*issuer.address()));
+                    let requirement = Requirement::Issuer(*issuer.address());
+                    log::debug!("Adding {requirement:?} from output");
+                    self.requirements.push(requirement);
                 }
             }
         }
@@ -146,8 +153,9 @@ impl InputSelection {
                     return Err(Error::BurnAndTransition(ChainId::from(*alias_id)));
                 }
 
-                self.requirements
-                    .push(Requirement::Alias(*alias_id, AliasTransition::Governance));
+                let requirement = Requirement::Alias(*alias_id, AliasTransition::Governance);
+                log::debug!("Adding {requirement:?} from burn");
+                self.requirements.push(requirement);
             }
 
             for nft_id in &burn.nfts {
@@ -159,7 +167,9 @@ impl InputSelection {
                     return Err(Error::BurnAndTransition(ChainId::from(*nft_id)));
                 }
 
-                self.requirements.push(Requirement::Nft(*nft_id));
+                let requirement = Requirement::Nft(*nft_id);
+                log::debug!("Adding {requirement:?} from burn");
+                self.requirements.push(requirement);
             }
 
             for foundry_id in &burn.foundries {
@@ -167,7 +177,9 @@ impl InputSelection {
                     return Err(Error::BurnAndTransition(ChainId::from(*foundry_id)));
                 }
 
-                self.requirements.push(Requirement::Foundry(*foundry_id));
+                let requirement = Requirement::Foundry(*foundry_id);
+                log::debug!("Adding {requirement:?} from burn");
+                self.requirements.push(requirement);
             }
         }
 
