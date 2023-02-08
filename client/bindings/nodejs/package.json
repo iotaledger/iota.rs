@@ -33,6 +33,7 @@
     "@types/jest": "^27.5.2",
     "@typescript-eslint/eslint-plugin": "^5.31.0",
     "@typescript-eslint/parser": "^5.31.0",
+    "@iota/iota.js": "^2.0.0-rc.2",
     "dotenv": "^16.0.1",
     "electron-build-env": "^0.2.0",
     "eslint": "^8.20.0",

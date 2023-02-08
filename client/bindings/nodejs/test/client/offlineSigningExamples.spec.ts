@@ -1,9 +1,15 @@
-import { Client, SHIMMER_TESTNET_BECH32_HRP } from '../../lib';
+import {
+    Client,
+    IPreparedTransactionData,
+    SHIMMER_TESTNET_BECH32_HRP,
+} from '../../lib';
 import '../customMatchers';
 import 'dotenv/config';
 import { addresses } from '../fixtures/addresses';
 import * as signedTransactionJson from '../fixtures/signedTransaction.json';
+import * as sigUnlockPreparedTx from '../fixtures/sigUnlockPreparedTx.json';
 import type { PayloadTypes } from '@iota/types';
+import { TransactionHelper } from '@iota/iota.js';
 
 const onlineClient = new Client({
     nodes: [
@@ -78,5 +84,33 @@ describe('Offline signing examples', () => {
 
         expect(blockId).toBe(blockIdAndBlock[0]);
         expect(blockId).toBeValidBlockId;
+    });
+    it('create a signature unlock', async () => {
+        // Verifies that an unlock created in Rust matches that created by the binding when the mnemonic is identical.
+        const secretManager = {
+            mnemonic:
+                'good reason pipe keen price glory mystery illegal loud isolate wolf trash raise guilt inflict guide modify bachelor length galaxy lottery there mango comfort',
+        };
+        const preparedTx = sigUnlockPreparedTx as IPreparedTransactionData;
+        const txHash = Array.from(
+            TransactionHelper.getTransactionEssenceHash(preparedTx.essence),
+        );
+
+        const unlock = await offlineClient.signatureUnlock(
+            secretManager,
+            preparedTx.inputsData[0],
+            txHash,
+        );
+
+        expect(unlock).toStrictEqual({
+            type: 0,
+            signature: {
+                type: 0,
+                publicKey:
+                    '0xb76a23de43b8132ae18a4a479cb158563e76d89bd1e20d3ccdc7fd1db2a009d4',
+                signature:
+                    '0xcd905dae45010980e95ddddaebede830d9b8d7489c67e4d91a0cbfbdb03b02d337dc8162f15582ad18ee0e953cd517e32f809d533f9ccfb4beee5cb2cba16d0c',
+            },
+        });
     });
 });
