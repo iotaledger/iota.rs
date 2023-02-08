@@ -112,6 +112,8 @@ impl InputSelection {
 
                 // TODO verify_storage_deposit ?
 
+                log::debug!("Created storage deposit return output of {diff} for {address:?}");
+
                 storage_deposit_returns.push(srd_output);
             }
         }
@@ -131,24 +133,29 @@ impl InputSelection {
         let native_tokens_diff = get_native_tokens_diff(&input_native_tokens, &output_native_tokens)?;
 
         if inputs_sum == outputs_sum && native_tokens_diff.is_none() {
+            log::debug!("No remainder required");
             return Ok((None, storage_deposit_returns));
         }
 
         let Some((remainder_address, chain)) = self.get_remainder_address() else {
-                return Err(Error::MissingInputWithEd25519Address);
+            return Err(Error::MissingInputWithEd25519Address);
         };
 
         // TODO checked ops ?
-        let mut remainder_builder = BasicOutputBuilder::new_with_amount(inputs_sum - outputs_sum)?;
+        let diff = inputs_sum - outputs_sum;
+        let mut remainder_builder = BasicOutputBuilder::new_with_amount(diff)?;
 
         remainder_builder = remainder_builder
             .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(remainder_address)));
 
         if let Some(native_tokens) = native_tokens_diff {
+            log::debug!("Adding {native_tokens:?} to remainder output for {remainder_address:?}");
             remainder_builder = remainder_builder.with_native_tokens(native_tokens);
         }
 
         let remainder = remainder_builder.finish_output(self.protocol_parameters.token_supply())?;
+
+        log::debug!("Created remainder output of {diff} for {remainder_address:?}");
 
         remainder.verify_storage_deposit(
             self.protocol_parameters.rent_structure().clone(),

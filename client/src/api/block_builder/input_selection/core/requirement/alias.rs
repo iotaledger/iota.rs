@@ -89,6 +89,10 @@ impl InputSelection {
         // If a state transition is not required and the alias has already been selected, no additional check has to be
         // performed.
         if !alias_transition.is_state() && selected_input.is_some() {
+            log::debug!(
+                "{alias_id:?}/{alias_transition:?} requirement already fulfilled by {:?}",
+                selected_input.unwrap().output_id()
+            );
             return Ok((Vec::new(), None));
         }
 
@@ -107,12 +111,16 @@ impl InputSelection {
 
         // If a state transition is not required, we can simply select the alias.
         if !alias_transition.is_state() {
-            // Remove the output from the available inputs and return it, swap to make it O(1).
+            // Remove the output from the available inputs, swap to make it O(1).
+            let input = self.available_inputs.swap_remove(available_index.unwrap());
+
+            log::debug!(
+                "{alias_id:?}/{alias_transition:?} requirement fulfilled by {:?}",
+                input.output_id()
+            );
+
             // PANIC: safe to unwrap as it's been checked that it can't be None when a state transition is not required.
-            return Ok((
-                vec![(self.available_inputs.swap_remove(available_index.unwrap()), None)],
-                None,
-            ));
+            return Ok((vec![(input, None)], None));
         }
 
         // At this point, a state transition is required so we need to verify that an alias output describing a
@@ -129,9 +137,21 @@ impl InputSelection {
         }
 
         if let Some(available_index) = available_index {
-            // Remove the output from the available inputs and return it, swap to make it O(1).
-            return Ok((vec![(self.available_inputs.swap_remove(available_index), None)], None));
+            // Remove the output from the available inputs, swap to make it O(1).
+            let input = self.available_inputs.swap_remove(available_index);
+
+            log::debug!(
+                "{alias_id:?}/{alias_transition:?} requirement fulfilled by {:?}",
+                input.output_id()
+            );
+
+            return Ok((vec![(input, None)], None));
         }
+
+        log::debug!(
+            "{alias_id:?}/{alias_transition:?} requirement already fulfilled by {:?}",
+            selected_input.unwrap().output_id()
+        );
 
         Ok((Vec::new(), None))
     }

@@ -31,6 +31,7 @@ impl InputSelection {
             .map(|burn| burn.aliases.contains(&alias_id))
             .unwrap_or(false)
         {
+            log::debug!("No transition of {output_id:?}/{alias_id:?} as it needs to be burned");
             return Ok(None);
         }
 
@@ -40,6 +41,7 @@ impl InputSelection {
             .iter()
             .any(|output| is_alias_with_id_non_null(output, &alias_id))
         {
+            log::debug!("No transition of {output_id:?}/{alias_id:?} as output already exists");
             return Ok(None);
         }
 
@@ -58,6 +60,8 @@ impl InputSelection {
 
         self.automatically_transitioned.insert(ChainId::from(alias_id));
 
+        log::debug!("Automatic {alias_transition} transition of {output_id:?}/{alias_id:?}");
+
         Ok(Some(output))
     }
 
@@ -72,6 +76,7 @@ impl InputSelection {
             .map(|burn| burn.nfts.contains(&nft_id))
             .unwrap_or(false)
         {
+            log::debug!("No transition of {output_id:?}/{nft_id:?} as it needs to be burned");
             return Ok(None);
         }
 
@@ -81,6 +86,7 @@ impl InputSelection {
             .iter()
             .any(|output| is_nft_with_id_non_null(output, &nft_id))
         {
+            log::debug!("No transition of {output_id:?}/{nft_id:?} as output already exists");
             return Ok(None);
         }
 
@@ -94,11 +100,13 @@ impl InputSelection {
 
         self.automatically_transitioned.insert(ChainId::from(nft_id));
 
+        log::debug!("Automatic transition of {output_id:?}/{nft_id:?}");
+
         Ok(Some(output))
     }
 
     /// Transitions a foundry input by creating a new foundry output if required.
-    fn transition_foundry_input(&mut self, input: &FoundryOutput) -> Result<Option<Output>> {
+    fn transition_foundry_input(&mut self, input: &FoundryOutput, output_id: &OutputId) -> Result<Option<Output>> {
         let foundry_id = input.id();
 
         // Do not create a foundry output if the foundry input is to be burned.
@@ -108,6 +116,7 @@ impl InputSelection {
             .map(|burn| burn.foundries.contains(&foundry_id))
             .unwrap_or(false)
         {
+            log::debug!("No transition of {output_id:?}/{foundry_id:?} as it needs to be burned");
             return Ok(None);
         }
 
@@ -117,12 +126,15 @@ impl InputSelection {
             .iter()
             .any(|output| is_foundry_with_id(output, &foundry_id))
         {
+            log::debug!("No transition of {output_id:?}/{foundry_id:?} as output already exists");
             return Ok(None);
         }
 
         let output = FoundryOutputBuilder::from(input).finish_output(self.protocol_parameters.token_supply())?;
 
         self.automatically_transitioned.insert(ChainId::from(foundry_id));
+
+        log::debug!("Automatic transition of {output_id:?}/{foundry_id:?}");
 
         Ok(Some(output))
     }
@@ -141,7 +153,7 @@ impl InputSelection {
                 alias_transition.unwrap_or(AliasTransition::State),
             ),
             Output::Nft(nft_input) => self.transition_nft_input(nft_input, input.output_id()),
-            Output::Foundry(foundry_input) => self.transition_foundry_input(foundry_input),
+            Output::Foundry(foundry_input) => self.transition_foundry_input(foundry_input, input.output_id()),
             _ => Ok(None),
         }
     }

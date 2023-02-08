@@ -75,6 +75,8 @@ impl InputSelection {
     }
 
     fn select_input(&mut self, input: InputSigningData, alias_transition: Option<AliasTransition>) -> Result<()> {
+        log::debug!("Selecting input {:?}", input.output_id());
+
         if let Some(output) = self.transition_input(&input, alias_transition)? {
             // No need to check for `outputs_requirements` because
             // - the sender feature doesn't need to be verified as it has been removed
@@ -85,6 +87,7 @@ impl InputSelection {
         }
 
         if let Some(requirement) = self.required_alias_nft_addresses(&input)? {
+            log::debug!("Adding {requirement:?} from input {:?}", input.output_id());
             self.requirements.push(requirement);
         }
 
@@ -260,6 +263,7 @@ impl InputSelection {
             let (inputs, new_requirement) = self.fulfill_requirement(requirement)?;
 
             if let Some(new_requirement) = new_requirement {
+                log::debug!("Adding new {new_requirement:?} from evaluating {requirement:?}");
                 self.requirements.push(new_requirement);
             }
 

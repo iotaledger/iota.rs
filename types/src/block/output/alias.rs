@@ -48,6 +48,15 @@ impl AliasTransition {
     }
 }
 
+impl std::fmt::Display for AliasTransition {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Self::State => write!(f, "state"),
+            Self::Governance => write!(f, "governance"),
+        }
+    }
+}
+
 ///
 #[derive(Clone)]
 #[must_use]

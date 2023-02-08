@@ -15,6 +15,8 @@ impl InputSelection {
         &mut self,
         address: Address,
     ) -> Result<(Vec<(InputSigningData, Option<AliasTransition>)>, Option<Requirement>)> {
+        log::debug!("Treating {address:?} issuer requirement as a sender requirement");
+
         match self.fulfill_sender_requirement(address) {
             Ok(res) => Ok(res),
             Err(Error::UnfulfillableRequirement(Requirement::Sender(_))) => {

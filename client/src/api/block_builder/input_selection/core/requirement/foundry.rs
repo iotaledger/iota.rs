@@ -24,11 +24,15 @@ impl InputSelection {
         foundry_id: FoundryId,
     ) -> Result<(Vec<(InputSigningData, Option<AliasTransition>)>, Option<Requirement>)> {
         // Check if the requirement is already fulfilled.
-        if self
+        if let Some(output) = self
             .selected_inputs
             .iter()
-            .any(|input| is_foundry_with_id(&input.output, &foundry_id))
+            .find(|input| is_foundry_with_id(&input.output, &foundry_id))
         {
+            log::debug!(
+                "{foundry_id:?} requirement already fulfilled by {:?}",
+                output.output_id()
+            );
             return Ok((Vec::new(), None));
         }
 
@@ -38,8 +42,11 @@ impl InputSelection {
             .iter()
             .position(|input| is_foundry_with_id(&input.output, &foundry_id))
             .ok_or(Error::UnfulfillableRequirement(Requirement::Foundry(foundry_id)))?;
+        // Remove the output from the available inputs, swap to make it O(1).
+        let input = self.available_inputs.swap_remove(index);
 
-        // Remove the output from the available inputs and return it, swap to make it O(1).
-        Ok((vec![(self.available_inputs.swap_remove(index), None)], None))
+        log::debug!("{foundry_id:?} requirement fulfilled by {:?}", input.output_id());
+
+        Ok((vec![(input, None)], None))
     }
 }
