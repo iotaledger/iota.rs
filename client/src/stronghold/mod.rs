@@ -160,11 +160,7 @@ impl StrongholdAdapterBuilder {
     /// [`timeout()`]: Self::timeout()
     pub fn build<P: AsRef<Path>>(mut self, snapshot_path: P) -> Result<StrongholdAdapter> {
         // In any case, Stronghold - as a necessary component - needs to be present at this point.
-        let stronghold = if let Some(stronghold) = self.stronghold {
-            stronghold
-        } else {
-            Stronghold::default()
-        };
+        let stronghold = self.stronghold.unwrap_or_default();
 
         if let Some(key_provider) = &self.key_provider {
             check_or_create_snapshot(&stronghold, key_provider, &SnapshotPath::from_path(&snapshot_path))?;

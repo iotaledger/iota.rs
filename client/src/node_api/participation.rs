@@ -23,15 +23,10 @@ impl Client {
     pub async fn events(&self, event_type: Option<ParticipationEventType>) -> Result<EventsResponse> {
         let route = "api/participation/v1/events";
 
-        let query = if let Some(event_type) = event_type {
-            let query_string = match event_type {
-                ParticipationEventType::Voting => "type=0",
-                ParticipationEventType::Staking => "type=1",
-            };
-            Some(query_string)
-        } else {
-            None
-        };
+        let query = event_type.map(|event_type| match event_type {
+            ParticipationEventType::Voting => "type=0",
+            ParticipationEventType::Staking => "type=1",
+        });
 
         self.node_manager
             .get_request(route, query, self.get_timeout(), false, false)

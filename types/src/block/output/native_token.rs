@@ -113,6 +113,7 @@ impl NativeTokensBuilder {
     }
 }
 
+#[allow(clippy::fallible_impl_from)]
 impl From<NativeTokens> for NativeTokensBuilder {
     fn from(native_tokens: NativeTokens) -> Self {
         let mut builder = Self::new();
@@ -185,14 +186,9 @@ impl NativeTokens {
     /// Gets the native token associated with the provided token ID if contained.
     pub fn get(&self, token_id: &TokenId) -> Option<&NativeToken> {
         // Binary search is possible because native tokens are always ordered by token ID.
-        if let Ok(index) = self
-            .0
+        self.0
             .binary_search_by_key(token_id, |native_token| native_token.token_id)
-        {
-            Some(&self.0[index])
-        } else {
-            None
-        }
+            .map_or(None, |index| Some(&self.0[index]))
     }
 }
 

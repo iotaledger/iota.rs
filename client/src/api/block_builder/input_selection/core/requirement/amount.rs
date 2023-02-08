@@ -23,18 +23,14 @@ pub(crate) fn sdruc_not_expired(output: &Output, current_time: u32) -> Option<&S
     // PANIC: safe to unwrap as outputs without unlock conditions have been filtered out already.
     let unlock_conditions = output.unlock_conditions().unwrap();
 
-    if let Some(sdr) = unlock_conditions.storage_deposit_return() {
-        let expired = if let Some(expiration) = unlock_conditions.expiration() {
-            current_time >= expiration.timestamp()
-        } else {
-            false
-        };
+    unlock_conditions.storage_deposit_return().and_then(|sdr| {
+        let expired = unlock_conditions
+            .expiration()
+            .map_or(false, |expiration| current_time >= expiration.timestamp());
 
         // We only have to send the storage deposit return back if the output is not expired
         if !expired { Some(sdr) } else { None }
-    } else {
-        None
-    }
+    })
 }
 
 pub(crate) fn amount_sums(
@@ -145,13 +141,12 @@ impl InputSelection {
                 let inputs = self.available_inputs.iter().filter(|input| {
                     if let Output::Basic(output) = &input.output {
                         if output.address().is_ed25519() {
-                            if let Some(sdr) = output.unlock_conditions().storage_deposit_return() {
-                                // Filter out outputs that have to send back their full amount as they contribute to
-                                // nothing.
-                                sdr.amount() != input.output.amount()
-                            } else {
-                                false
-                            }
+                            // Filter out outputs that have to send back their full amount as they contribute to
+                            // nothing.
+                            output
+                                .unlock_conditions()
+                                .storage_deposit_return()
+                                .map_or(false, |sdr| sdr.amount() != input.output.amount())
                         } else {
                             false
                         }

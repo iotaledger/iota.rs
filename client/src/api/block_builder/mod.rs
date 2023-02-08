@@ -352,11 +352,9 @@ impl<'a> ClientBlockBuilder<'a> {
                 (output.amount(), *address.address(), output.unlock_conditions())
             }
             Output::Alias(ref output) => {
-                let is_governance_transition = if let Some(governance_transition) = governance_transition {
+                let is_governance_transition = governance_transition.map_or(false, |governance_transition| {
                     governance_transition.contains(output.alias_id())
-                } else {
-                    false
-                };
+                });
 
                 if is_governance_transition {
                     (output.amount(), *output.governor_address(), output.unlock_conditions())

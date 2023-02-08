@@ -86,7 +86,6 @@ pub trait SecretManageExt {
 
 // Boxes make this type clumsy to use.
 #[allow(clippy::large_enum_variant)]
-
 pub enum SecretManager {
     /// Secret manager that uses [`iota_stronghold`] as the backing storage.
     #[cfg(feature = "stronghold")]
