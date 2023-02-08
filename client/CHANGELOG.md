@@ -35,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `#[derive(Eq, PartialEq, Deserialize)]` to `TopicEvent, MqttPayload`;
 - `#[derive(Serialize)]` to ` Topic`;
 - `impl<'de> Deserialize<'de> for Topic`;
+- Added `Message::SignatureUnlock`;
 
 ### Changed
 
