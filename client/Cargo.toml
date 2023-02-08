@@ -29,7 +29,7 @@ primitive-types = { version = "0.12.1", default-features = false }
 regex = { version = "1.7.1", default-features = false, features = [ "std", "unicode-perl" ], optional = true }
 reqwest = { version = "0.11.14", default-features = false, features = [ "json" ] }
 serde = { version = "1.0.152", default-features = false, features = [ "derive" ] }
-serde_json = { version = "1.0.91", default-features = false }
+serde_json = { version = "1.0.92", default-features = false }
 thiserror = { version = "1.0.38", default-features = false }
 url = { version = "2.3.1", default-features = false, features = [ "serde" ] }
 zeroize = { version = "1.5.7", default-features = false, features = [ "zeroize_derive" ] }
