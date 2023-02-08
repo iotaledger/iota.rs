@@ -48,6 +48,8 @@ impl InputSelection {
         &mut self,
         requirement: Requirement,
     ) -> Result<(Vec<(InputSigningData, Option<AliasTransition>)>, Option<Requirement>)> {
+        log::debug!("Fulfilling requirement {requirement:?}");
+
         match requirement {
             Requirement::Sender(address) => self.fulfill_sender_requirement(address),
             Requirement::Issuer(address) => self.fulfill_issuer_requirement(address),

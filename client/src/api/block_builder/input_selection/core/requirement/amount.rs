@@ -108,7 +108,12 @@ impl InputSelection {
         let mut newly_selected_ids = HashSet::new();
 
         if missing_amount(inputs_sum, outputs_sum, remainder_amount, native_tokens_remainder) == 0 {
+            log::debug!("Amount requirement already fulfilled");
             return Ok((newly_selected_inputs, None));
+        } else {
+            log::debug!(
+                "Fulfilling amount requirement with input {inputs_sum}, output {outputs_sum}, input sdrs {inputs_sdr:?} and output sdrs {outputs_sdr:?}"
+            );
         }
 
         // TODO don't pick burned things
@@ -121,6 +126,8 @@ impl InputSelection {
         'overall: {
             // 1. Basic with ED25519 address without SDRUC or expired SDRUC
             {
+                log::debug!("Trying basic outputs with ed25519 address and no or expired SDRUC");
+
                 let inputs = self.available_inputs.iter().filter(|input| {
                     if let Output::Basic(output) = &input.output {
                         output.address().is_ed25519() && sdruc_not_expired(&input.output, self.timestamp).is_none()
@@ -142,6 +149,8 @@ impl InputSelection {
 
             // 2. Basic with ED25519 address and unexpired SDRUC
             {
+                log::debug!("Trying basic outputs with ed25519 address and unexpired SDRUC");
+
                 let inputs = self.available_inputs.iter().filter(|input| {
                     if let Output::Basic(output) = &input.output {
                         if output.address().is_ed25519() {
@@ -191,6 +200,8 @@ impl InputSelection {
 
             // 3. Basic with other kind of address
             {
+                log::debug!("Trying basic outputs with other types of address");
+
                 let inputs = self.available_inputs.iter().filter(|input| {
                     if let Output::Basic(output) = &input.output {
                         if let [UnlockCondition::Address(address)] = output.unlock_conditions().as_ref() {
@@ -216,6 +227,8 @@ impl InputSelection {
 
             // 4. Other kinds of outputs
             {
+                log::debug!("Trying other types of outputs");
+
                 let mut inputs = self
                     .available_inputs
                     .iter()
@@ -232,6 +245,9 @@ impl InputSelection {
                             break;
                         }
                     }
+
+                    log::debug!("Outputs {newly_selected_ids:?} selected to fulfill the amount requirement");
+                    log::debug!("Triggering another amount round as non-basic outputs need to be transitioned first");
 
                     self.available_inputs
                         .retain(|input| !newly_selected_ids.contains(input.output_id()));
@@ -262,6 +278,13 @@ impl InputSelection {
 
                     // TODO check that new_amount is enough for the rent
 
+                    // PANIC: unwrap is fine as non-chain outputs have been filtered out already.
+                    log::debug!(
+                        "Reducing amount of {} to {} to fulfill amount requirement",
+                        output.chain_id().unwrap(),
+                        new_amount
+                    );
+
                     let new_output = match output {
                         Output::Alias(output) => AliasOutputBuilder::from(&*output)
                             .with_amount(new_amount)?
@@ -290,6 +313,8 @@ impl InputSelection {
                 });
             }
         }
+
+        log::debug!("Outputs {newly_selected_ids:?} selected to fulfill the amount requirement");
 
         self.available_inputs
             .retain(|input| !newly_selected_ids.contains(input.output_id()));
