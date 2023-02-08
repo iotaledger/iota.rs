@@ -44,9 +44,9 @@ impl ChainId {
 impl core::fmt::Display for ChainId {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
         match self {
-            ChainId::Alias(id) => write!(f, "{id}"),
-            ChainId::Foundry(id) => write!(f, "{id}"),
-            ChainId::Nft(id) => write!(f, "{id}"),
+            Self::Alias(id) => write!(f, "{id}"),
+            Self::Foundry(id) => write!(f, "{id}"),
+            Self::Nft(id) => write!(f, "{id}"),
         }
     }
 }
@@ -54,9 +54,9 @@ impl core::fmt::Display for ChainId {
 impl core::fmt::Debug for ChainId {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
         match self {
-            ChainId::Alias(id) => write!(f, "ChainId({id:?})"),
-            ChainId::Foundry(id) => write!(f, "ChainId({id:?})"),
-            ChainId::Nft(id) => write!(f, "ChainId({id:?})"),
+            Self::Alias(id) => write!(f, "ChainId({id:?})"),
+            Self::Foundry(id) => write!(f, "ChainId({id:?})"),
+            Self::Nft(id) => write!(f, "ChainId({id:?})"),
         }
     }
 }

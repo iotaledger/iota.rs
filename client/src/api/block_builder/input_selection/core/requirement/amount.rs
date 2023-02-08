@@ -9,7 +9,7 @@ use crate::{
         address::Address,
         output::{
             unlock_condition::{StorageDepositReturnUnlockCondition, UnlockCondition, UnlockConditions},
-            AliasOutputBuilder, FoundryOutputBuilder, NftOutputBuilder, Output, Rent,
+            AliasOutputBuilder, AliasTransition, FoundryOutputBuilder, NftOutputBuilder, Output, Rent,
         },
     },
     error::{Error, Result},
@@ -23,18 +23,14 @@ pub(crate) fn sdruc_not_expired(output: &Output, current_time: u32) -> Option<&S
     // PANIC: safe to unwrap as outputs without unlock conditions have been filtered out already.
     let unlock_conditions = output.unlock_conditions().unwrap();
 
-    if let Some(sdr) = unlock_conditions.storage_deposit_return() {
-        let expired = if let Some(expiration) = unlock_conditions.expiration() {
-            current_time >= expiration.timestamp()
-        } else {
-            false
-        };
+    unlock_conditions.storage_deposit_return().and_then(|sdr| {
+        let expired = unlock_conditions
+            .expiration()
+            .map_or(false, |expiration| current_time >= expiration.timestamp());
 
         // We only have to send the storage deposit return back if the output is not expired
         if !expired { Some(sdr) } else { None }
-    } else {
-        None
-    }
+    })
 }
 
 pub(crate) fn amount_sums(
@@ -97,7 +93,9 @@ fn missing_amount(inputs_sum: u64, outputs_sum: u64, remainder_amount: u64, nati
 }
 
 impl InputSelection {
-    pub(crate) fn fulfill_amount_requirement(&mut self) -> Result<(Vec<InputSigningData>, Option<Requirement>)> {
+    pub(crate) fn fulfill_amount_requirement(
+        &mut self,
+    ) -> Result<(Vec<(InputSigningData, Option<AliasTransition>)>, Option<Requirement>)> {
         let (mut inputs_sum, mut outputs_sum, mut inputs_sdr, mut outputs_sdr) =
             amount_sums(&self.selected_inputs, &self.outputs, self.timestamp);
 
@@ -106,7 +104,12 @@ impl InputSelection {
         let mut newly_selected_ids = HashSet::new();
 
         if missing_amount(inputs_sum, outputs_sum, remainder_amount, native_tokens_remainder) == 0 {
+            log::debug!("Amount requirement already fulfilled");
             return Ok((newly_selected_inputs, None));
+        } else {
+            log::debug!(
+                "Fulfilling amount requirement with input {inputs_sum}, output {outputs_sum}, input sdrs {inputs_sdr:?} and output sdrs {outputs_sdr:?}"
+            );
         }
 
         // TODO don't pick burned things
@@ -119,6 +122,8 @@ impl InputSelection {
         'overall: {
             // 1. Basic with ED25519 address without SDRUC or expired SDRUC
             {
+                log::debug!("Trying basic outputs with ed25519 address and no or expired SDRUC");
+
                 let inputs = self.available_inputs.iter().filter(|input| {
                     if let Output::Basic(output) = &input.output {
                         output.address().is_ed25519() && sdruc_not_expired(&input.output, self.timestamp).is_none()
@@ -129,7 +134,7 @@ impl InputSelection {
 
                 for input in inputs {
                     inputs_sum += input.output.amount();
-                    newly_selected_inputs.push(input.clone());
+                    newly_selected_inputs.push((input.clone(), None));
                     newly_selected_ids.insert(*input.output_id());
 
                     if missing_amount(inputs_sum, outputs_sum, remainder_amount, native_tokens_remainder) == 0 {
@@ -140,16 +145,17 @@ impl InputSelection {
 
             // 2. Basic with ED25519 address and unexpired SDRUC
             {
+                log::debug!("Trying basic outputs with ed25519 address and unexpired SDRUC");
+
                 let inputs = self.available_inputs.iter().filter(|input| {
                     if let Output::Basic(output) = &input.output {
                         if output.address().is_ed25519() {
-                            if let Some(sdr) = output.unlock_conditions().storage_deposit_return() {
-                                // Filter out outputs that have to send back their full amount as they contribute to
-                                // nothing.
-                                sdr.amount() != input.output.amount()
-                            } else {
-                                false
-                            }
+                            // Filter out outputs that have to send back their full amount as they contribute to
+                            // nothing.
+                            output
+                                .unlock_conditions()
+                                .storage_deposit_return()
+                                .map_or(false, |sdr| sdr.amount() != input.output.amount())
                         } else {
                             false
                         }
@@ -167,7 +173,7 @@ impl InputSelection {
                         .unwrap();
 
                     inputs_sum += input.output.amount();
-                    newly_selected_inputs.push(input.clone());
+                    newly_selected_inputs.push((input.clone(), None));
                     newly_selected_ids.insert(*input.output_id());
 
                     let input_sdr = inputs_sdr.get(sdruc.return_address()).unwrap_or(&0) + sdruc.amount();
@@ -189,6 +195,8 @@ impl InputSelection {
 
             // 3. Basic with other kind of address
             {
+                log::debug!("Trying basic outputs with other types of address");
+
                 let inputs = self.available_inputs.iter().filter(|input| {
                     if let Output::Basic(output) = &input.output {
                         if let [UnlockCondition::Address(address)] = output.unlock_conditions().as_ref() {
@@ -203,7 +211,7 @@ impl InputSelection {
 
                 for input in inputs {
                     inputs_sum += input.output.amount();
-                    newly_selected_inputs.push(input.clone());
+                    newly_selected_inputs.push((input.clone(), None));
                     newly_selected_ids.insert(*input.output_id());
 
                     if inputs_sum >= outputs_sum + remainder_amount {
@@ -214,6 +222,8 @@ impl InputSelection {
 
             // 4. Other kinds of outputs
             {
+                log::debug!("Trying other types of outputs");
+
                 let mut inputs = self
                     .available_inputs
                     .iter()
@@ -223,13 +233,16 @@ impl InputSelection {
                 if inputs.peek().is_some() {
                     for input in inputs {
                         inputs_sum += input.output.amount();
-                        newly_selected_inputs.push(input.clone());
+                        newly_selected_inputs.push((input.clone(), None));
                         newly_selected_ids.insert(*input.output_id());
 
                         if inputs_sum >= outputs_sum + remainder_amount {
                             break;
                         }
                     }
+
+                    log::debug!("Outputs {newly_selected_ids:?} selected to fulfill the amount requirement");
+                    log::debug!("Triggering another amount round as non-basic outputs need to be transitioned first");
 
                     self.available_inputs
                         .retain(|input| !newly_selected_ids.contains(input.output_id()));
@@ -260,6 +273,13 @@ impl InputSelection {
 
                     // TODO check that new_amount is enough for the rent
 
+                    // PANIC: unwrap is fine as non-chain outputs have been filtered out already.
+                    log::debug!(
+                        "Reducing amount of {} to {} to fulfill amount requirement",
+                        output.chain_id().unwrap(),
+                        new_amount
+                    );
+
                     let new_output = match output {
                         Output::Alias(output) => AliasOutputBuilder::from(&*output)
                             .with_amount(new_amount)?
@@ -288,6 +308,8 @@ impl InputSelection {
                 });
             }
         }
+
+        log::debug!("Outputs {newly_selected_ids:?} selected to fulfill the amount requirement");
 
         self.available_inputs
             .retain(|input| !newly_selected_ids.contains(input.output_id()));

@@ -48,10 +48,6 @@ iota_stronghold = { version = "1.0.5", default-features = false, features = [ "s
 backtrace = { version = "0.3.67", default-features = false, features = [ "std" ], optional = true }
 tokio = { version = "1.25.0", default-features = false, features = [ "sync" ], optional = true }
 
-# participation
-getset = { version = "0.1.2", default-features = false, optional = true }
-serde_repr = { version = "0.1.10", default-features = false, optional = true }
-
 [target.'cfg(not(target_family = "wasm"))'.dependencies]
 tokio = { version = "1.25.0", default-features = false, features = [ "macros", "rt-multi-thread", "time", "sync" ] }
 
@@ -70,7 +66,7 @@ ledger_nano = [ "iota-ledger-nano" ]
 tls = [ "reqwest/rustls-tls" ]
 stronghold = [ "iota_stronghold" ]
 message_interface = [ "backtrace", "tokio" ]
-participation = [ "getset", "serde_repr" ]
+participation = [ ]
 
 [package.metadata.cargo-udeps.ignore]
 normal = [ "async-trait", "derive_builder" ]

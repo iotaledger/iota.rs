@@ -25,6 +25,7 @@
 
 #![deny(unused_extern_crates)]
 #![warn(missing_docs, rust_2018_idioms, unreachable_pub)]
+#![allow(clippy::redundant_pub_crate)]
 
 #[macro_use]
 extern crate serde;

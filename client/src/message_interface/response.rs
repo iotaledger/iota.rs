@@ -5,7 +5,7 @@
 use std::collections::HashSet;
 
 use iota_types::{
-    api::{
+    api::core::{
         dto::{PeerDto, ReceiptDto},
         response::{
             BlockMetadataResponse, InfoResponse as NodeInfo, OutputWithMetadataResponse, TreasuryResponse,
@@ -24,6 +24,7 @@ use iota_types::{
             transaction::TransactionId,
         },
         protocol::dto::ProtocolParametersDto,
+        unlock::dto::UnlockDto,
         BlockDto, BlockId,
     },
 };
@@ -83,6 +84,9 @@ pub enum Response {
     /// Response for:
     /// - [`SignTransaction`](crate::message_interface::Message::SignTransaction)
     SignedTransaction(PayloadDto),
+    /// Response for:
+    /// - [`SignatureUnlock`](crate::message_interface::Message::SignatureUnlock)
+    SignatureUnlock(UnlockDto),
     /// Response for:
     /// - [`UnhealthyNodes`](crate::message_interface::Message::UnhealthyNodes)
     #[cfg(not(target_family = "wasm"))]

@@ -22,7 +22,10 @@ use iota_types::block::{
 use packable::bounded::TryIntoBoundedU16Error;
 
 pub use self::transaction::verify_semantic;
-use crate::{constants::SHIMMER_COIN_TYPE, secret::SecretManager, Client, Error, Result};
+use crate::{
+    api::block_builder::input_selection::Burn, constants::SHIMMER_COIN_TYPE, secret::SecretManager, Client, Error,
+    Result,
+};
 
 /// Builder of the block API
 #[must_use]
@@ -39,7 +42,7 @@ pub struct ClientBlockBuilder<'a> {
     tag: Option<Vec<u8>>,
     data: Option<Vec<u8>>,
     parents: Option<Parents>,
-    allow_burning: bool,
+    burn: Option<Burn>,
 }
 
 /// Block output address
@@ -81,8 +84,8 @@ pub struct ClientBlockBuilderOptions {
     pub data: Option<String>,
     /// Parents
     pub parents: Option<Vec<BlockId>>,
-    /// Allow burning of native tokens
-    pub allow_burning: Option<bool>,
+    /// Explicit burning of aliases, nfts, foundries and native tokens
+    pub burn: Option<Burn>,
 }
 
 impl<'a> ClientBlockBuilder<'a> {
@@ -101,13 +104,13 @@ impl<'a> ClientBlockBuilder<'a> {
             tag: None,
             data: None,
             parents: None,
-            allow_burning: false,
+            burn: None,
         }
     }
 
-    /// Allow burning of native tokens when custom inputs are provided.
-    pub fn with_burning_allowed(mut self, allow_burning: bool) -> Self {
-        self.allow_burning = allow_burning;
+    /// Sets explicit burning of aliases, nfts, foundries and native tokens.
+    pub fn with_burn(mut self, burn: Burn) -> Self {
+        self.burn.replace(burn);
         self
     }
 
@@ -300,8 +303,8 @@ impl<'a> ClientBlockBuilder<'a> {
         if let Some(parents) = options.parents {
             self = self.with_parents(parents)?;
         }
-        if let Some(allow_burning) = options.allow_burning {
-            self = self.with_burning_allowed(allow_burning);
+        if let Some(burn) = options.burn {
+            self = self.with_burn(burn);
         }
 
         Ok(self)
@@ -349,11 +352,9 @@ impl<'a> ClientBlockBuilder<'a> {
                 (output.amount(), *address.address(), output.unlock_conditions())
             }
             Output::Alias(ref output) => {
-                let is_governance_transition = if let Some(governance_transition) = governance_transition {
+                let is_governance_transition = governance_transition.map_or(false, |governance_transition| {
                     governance_transition.contains(output.alias_id())
-                } else {
-                    false
-                };
+                });
 
                 if is_governance_transition {
                     (output.amount(), *output.governor_address(), output.unlock_conditions())

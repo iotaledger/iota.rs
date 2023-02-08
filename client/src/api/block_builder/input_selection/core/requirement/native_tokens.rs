@@ -7,7 +7,7 @@ use primitive_types::U256;
 
 use super::{InputSelection, Requirement};
 use crate::{
-    block::output::{NativeToken, NativeTokens, NativeTokensBuilder, Output, TokenScheme},
+    block::output::{AliasTransition, NativeToken, NativeTokens, NativeTokensBuilder, Output, TokenScheme},
     error::Result,
     secret::types::InputSigningData,
     Error,
@@ -114,10 +114,9 @@ pub(crate) fn get_native_tokens_diff(
 }
 
 impl InputSelection {
-    pub(crate) fn fulfill_native_tokens_requirement(&mut self) -> Result<(Vec<InputSigningData>, Option<Requirement>)> {
-        let mut newly_selected_inputs = Vec::new();
-        let mut newly_selected_ids = HashSet::new();
-
+    pub(crate) fn fulfill_native_tokens_requirement(
+        &mut self,
+    ) -> Result<(Vec<(InputSigningData, Option<AliasTransition>)>, Option<Requirement>)> {
         let mut input_native_tokens = get_native_tokens(self.selected_inputs.iter().map(|input| &input.output))?;
         let mut output_native_tokens = get_native_tokens(self.outputs.iter())?;
         let (minted_native_tokens, melted_native_tokens) =
@@ -132,6 +131,13 @@ impl InputSelection {
 
         // TODO weird that it happens in this direction?
         if let Some(diffs) = get_native_tokens_diff(&output_native_tokens, &input_native_tokens)? {
+            log::debug!(
+                "Fulfilling native tokens requirement with input {input_native_tokens:?} and output {output_native_tokens:?}"
+            );
+
+            let mut newly_selected_inputs = Vec::new();
+            let mut newly_selected_ids = HashSet::new();
+
             for diff in diffs.iter() {
                 let mut amount = U256::zero();
                 // TODO sort ?
@@ -152,7 +158,7 @@ impl InputSelection {
                         .amount();
 
                     if newly_selected_ids.insert(*input.output_id()) {
-                        newly_selected_inputs.push(input.clone());
+                        newly_selected_inputs.push((input.clone(), None));
                     }
 
                     if amount >= diff.amount() {
@@ -168,11 +174,17 @@ impl InputSelection {
                     });
                 }
             }
+
+            log::debug!("Outputs {newly_selected_ids:?} selected to fulfill the native tokens requirement");
+
+            self.available_inputs
+                .retain(|input| !newly_selected_ids.contains(input.output_id()));
+
+            Ok((newly_selected_inputs, None))
+        } else {
+            log::debug!("Native tokens requirement already fulfilled");
+
+            Ok((Vec::new(), None))
         }
-
-        self.available_inputs
-            .retain(|input| !newly_selected_ids.contains(input.output_id()));
-
-        Ok((newly_selected_inputs, None))
     }
 }

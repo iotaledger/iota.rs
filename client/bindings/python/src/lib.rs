@@ -55,9 +55,7 @@ pub fn send_message(handle: &ClientMessageHandler, message: String) -> Result<St
             panic!("Wrong message type! {e:?}");
         }
     };
-    let response = crate::block_on(async {
-        ::iota_client::message_interface::send_message(&handle.client_message_handler, message).await
-    });
+    let response = crate::block_on(async { handle.client_message_handler.send_message(message).await });
 
     Ok(serde_json::to_string(&response)?)
 }

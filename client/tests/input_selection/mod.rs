@@ -76,6 +76,7 @@ enum Build<'a> {
     Alias(
         u64,
         AliasId,
+        u32,
         &'a str,
         &'a str,
         Option<Vec<(&'a str, u64)>>,
@@ -189,9 +190,11 @@ fn build_nft_output(
     builder.finish_output(TOKEN_SUPPLY).unwrap()
 }
 
+#[allow(clippy::too_many_arguments)]
 fn build_alias_output(
     amount: u64,
     alias_id: AliasId,
+    state_index: u32,
     state_address: &str,
     governor_address: &str,
     native_tokens: Option<Vec<(&str, u64)>>,
@@ -203,6 +206,7 @@ fn build_alias_output(
 
     let mut builder = AliasOutputBuilder::new_with_amount(amount, alias_id)
         .unwrap()
+        .with_state_index(state_index)
         .add_unlock_condition(UnlockCondition::StateControllerAddress(
             StateControllerAddressUnlockCondition::new(state_address),
         ))
@@ -286,6 +290,7 @@ fn build_output_inner(build: Build) -> (Output, String) {
         Build::Alias(
             amount,
             alias_id,
+            state_index,
             state_address,
             governor_address,
             native_tokens,
@@ -295,6 +300,7 @@ fn build_output_inner(build: Build) -> (Output, String) {
             build_alias_output(
                 amount,
                 alias_id,
+                state_index,
                 state_address,
                 governor_address,
                 native_tokens,

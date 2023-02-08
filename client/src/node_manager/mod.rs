@@ -15,7 +15,7 @@ use std::{
     time::Duration,
 };
 
-use iota_types::api::response::InfoResponse;
+use iota_types::api::core::response::InfoResponse;
 use serde_json::Value;
 
 use self::{http_client::HttpClient, node::Node};
@@ -189,15 +189,16 @@ impl NodeManager {
                 }
                 for res in futures::future::try_join_all(tasks).await? {
                     match res {
-                        Ok(res) => {
-                            if let Ok(res_text) = res.into_text().await {
-                                let counters = result.entry(res_text.to_string()).or_insert(0);
+                        Ok(res) => (res.into_text().await).map_or_else(
+                            |_| {
+                                log::warn!("couldn't convert node response to text");
+                            },
+                            |res_text| {
+                                let counters = result.entry(res_text).or_insert(0);
                                 *counters += 1;
                                 result_counter += 1;
-                            } else {
-                                log::warn!("couldn't convert node response to text");
-                            }
-                        }
+                            },
+                        ),
                         Err(Error::ResponseError { code: 404, url, .. }) => {
                             error.replace(crate::Error::NotFound(url));
                         }

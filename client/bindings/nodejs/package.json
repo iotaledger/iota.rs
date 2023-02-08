@@ -21,12 +21,11 @@
     "lint": "eslint --ignore-path .eslintignore --ext .js,.ts .",
     "format": "prettier --ignore-path .eslintignore -w {,*/**/}*.{ts,js,json}",
     "format-check": "prettier --ignore-path .eslintignore -c {,*/**/}*.{ts,js,json}",
-    "install": "prebuild-install --tag-prefix nodejs-binding-v || npm run rebuild",
+    "install": "prebuild-install --runtime napi --tag-prefix nodejs-binding-v || npm run rebuild",
     "build": "npm run build:neon && tsc",
     "build:neon": "cargo-cp-artifact -nc ./index.node -- cargo build --release --message-format=json-render-diagnostics",
-    "rebuild": "npm run build:neon && tsc && node scripts/node-neon-build.js --strip && node scripts/strip.js",
-    "prebuild:node": "prebuild --prepack scripts/node-neon-build.js --strip",
-    "prebuild:electron": "node scripts/electron-prebuild.js",
+    "rebuild": "npm run build:neon && tsc && node scripts/neon-build.js --strip && node scripts/strip.js",
+    "prebuild": "prebuild --runtime napi --target 6 --prepack scripts/neon-build.js --strip",
     "docs-wiki-build": "typedoc --githubPages false --disableSources --excludePrivate --excludeInternal --excludeNotDocumented --plugin typedoc-plugin-markdown --theme markdown --hideBreadcrumbs --entryDocument api_ref.md --readme none --hideGenerator --sort source-order --exclude ./**/src/index.ts --out ../../../documentation/docs/libraries/nodejs/references/ ./lib/index.ts",
     "test": "jest --forceExit"
   },
@@ -34,6 +33,7 @@
     "@types/jest": "^27.5.2",
     "@typescript-eslint/eslint-plugin": "^5.31.0",
     "@typescript-eslint/parser": "^5.31.0",
+    "@iota/iota.js": "^2.0.0-rc.2",
     "dotenv": "^16.0.1",
     "electron-build-env": "^0.2.0",
     "eslint": "^8.20.0",
@@ -55,5 +55,10 @@
     "tar": "^4.4.19",
     "simple-get": "^2.8.2",
     "json5": "^2.2.2"
+  },
+  "binary": {
+    "napi_versions": [
+      6
+    ]
   }
 }

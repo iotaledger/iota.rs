@@ -71,8 +71,8 @@ impl ProtocolParameters {
         below_max_depth: u8,
         rent_structure: RentStructure,
         token_supply: u64,
-    ) -> Result<ProtocolParameters, Error> {
-        Ok(ProtocolParameters {
+    ) -> Result<Self, Error> {
+        Ok(Self {
             protocol_version,
             network_name: <StringPrefix<u8>>::try_from(network_name).map_err(Error::InvalidStringPrefix)?,
             bech32_hrp: <StringPrefix<u8>>::try_from(bech32_hrp).map_err(Error::InvalidStringPrefix)?,
@@ -167,7 +167,7 @@ pub mod dto {
         type Error = DtoError;
 
         fn try_from(value: ProtocolParametersDto) -> Result<Self, Self::Error> {
-            Ok(ProtocolParameters::new(
+            Ok(Self::new(
                 value.protocol_version,
                 value.network_name,
                 value.bech32_hrp,
@@ -179,31 +179,6 @@ pub mod dto {
                     .parse()
                     .map_err(|_| DtoError::InvalidField("token_supply"))?,
             )?)
-        }
-    }
-}
-
-#[cfg(feature = "inx")]
-mod inx {
-    use packable::PackableExt;
-
-    use super::*;
-    use crate::block::InxError;
-
-    impl TryFrom<::inx::proto::RawProtocolParameters> for ProtocolParameters {
-        type Error = crate::block::error::inx::InxError;
-
-        fn try_from(value: ::inx::proto::RawProtocolParameters) -> Result<Self, Self::Error> {
-            Self::unpack_verified(value.params, &()).map_err(|e| InxError::InvalidRawBytes(format!("{e:?}")))
-        }
-    }
-
-    impl From<ProtocolParameters> for ::inx::proto::RawProtocolParameters {
-        fn from(value: ProtocolParameters) -> Self {
-            Self {
-                protocol_version: value.protocol_version() as u32,
-                params: value.pack_to_vec(),
-            }
         }
     }
 }

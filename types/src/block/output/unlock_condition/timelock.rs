@@ -57,7 +57,7 @@ pub mod dto {
 
     impl From<&TimelockUnlockCondition> for TimelockUnlockConditionDto {
         fn from(value: &TimelockUnlockCondition) -> Self {
-            TimelockUnlockConditionDto {
+            Self {
                 kind: TimelockUnlockCondition::KIND,
                 timestamp: value.timestamp(),
             }
@@ -67,8 +67,8 @@ pub mod dto {
     impl TryFrom<&TimelockUnlockConditionDto> for TimelockUnlockCondition {
         type Error = DtoError;
 
-        fn try_from(value: &TimelockUnlockConditionDto) -> Result<TimelockUnlockCondition, DtoError> {
-            TimelockUnlockCondition::new(value.timestamp).map_err(|_| DtoError::InvalidField("timelockUnlockCondition"))
+        fn try_from(value: &TimelockUnlockConditionDto) -> Result<Self, DtoError> {
+            Self::new(value.timestamp).map_err(|_| DtoError::InvalidField("timelockUnlockCondition"))
         }
     }
 }

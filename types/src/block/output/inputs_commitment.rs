@@ -30,7 +30,7 @@ impl core::str::FromStr for InputsCommitment {
     type Err = crate::block::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(InputsCommitment::from(
+        Ok(Self::from(
             prefix_hex::decode::<[u8; 32]>(s).map_err(crate::block::Error::Hex)?,
         ))
     }

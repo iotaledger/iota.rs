@@ -65,7 +65,7 @@ pub mod dto {
 
     impl From<&ImmutableAliasAddressUnlockCondition> for ImmutableAliasAddressUnlockConditionDto {
         fn from(value: &ImmutableAliasAddressUnlockCondition) -> Self {
-            ImmutableAliasAddressUnlockConditionDto {
+            Self {
                 kind: ImmutableAliasAddressUnlockCondition::KIND,
                 address: value.address().into(),
             }
@@ -75,16 +75,14 @@ pub mod dto {
     impl TryFrom<&ImmutableAliasAddressUnlockConditionDto> for ImmutableAliasAddressUnlockCondition {
         type Error = DtoError;
 
-        fn try_from(
-            value: &ImmutableAliasAddressUnlockConditionDto,
-        ) -> Result<ImmutableAliasAddressUnlockCondition, DtoError> {
+        fn try_from(value: &ImmutableAliasAddressUnlockConditionDto) -> Result<Self, DtoError> {
             let address: Address = (&value.address)
                 .try_into()
                 .map_err(|_e| DtoError::InvalidField("immutableAliasAddressUnlockCondition"))?;
 
             // An ImmutableAliasAddressUnlockCondition must have an AliasAddress.
             if let Address::Alias(alias_address) = &address {
-                Ok(ImmutableAliasAddressUnlockCondition::new(*alias_address))
+                Ok(Self::new(*alias_address))
             } else {
                 Err(DtoError::InvalidField("immutableAliasAddressUnlockCondition"))
             }

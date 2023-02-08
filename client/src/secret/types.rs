@@ -6,7 +6,10 @@
 use crypto::keys::slip10::Chain;
 use iota_types::block::{
     address::Address,
-    output::{dto::OutputDto, Output, OutputId, OutputMetadata},
+    output::{
+        dto::{OutputDto, OutputMetadataDto},
+        Output, OutputId, OutputMetadata,
+    },
 };
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "stronghold")]
@@ -156,7 +159,7 @@ pub struct InputSigningDataDto {
     pub output: OutputDto,
     /// The output metadata
     #[serde(rename = "outputMetadata")]
-    pub output_metadata: OutputMetadata,
+    pub output_metadata: OutputMetadataDto,
     /// The chain derived from seed, only for ed25519 addresses
     pub chain: Option<Chain>,
     /// The bech32 encoded address, required because of alias outputs where we have multiple possible unlock
@@ -166,19 +169,19 @@ pub struct InputSigningDataDto {
 }
 
 impl InputSigningData {
-    pub(crate) fn try_from_dto(input: &InputSigningDataDto, token_supply: u64) -> Result<InputSigningData> {
+    pub(crate) fn try_from_dto(input: &InputSigningDataDto, token_supply: u64) -> Result<Self> {
         Ok(Self {
             output: Output::try_from_dto(&input.output, token_supply)?,
-            output_metadata: input.output_metadata.clone(),
+            output_metadata: OutputMetadata::try_from(&input.output_metadata)?,
             chain: input.chain.clone(),
             bech32_address: input.bech32_address.clone(),
         })
     }
 
-    pub(crate) fn try_from_dto_unverified(input: &InputSigningDataDto) -> Result<InputSigningData> {
+    pub(crate) fn try_from_dto_unverified(input: &InputSigningDataDto) -> Result<Self> {
         Ok(Self {
             output: Output::try_from_dto_unverified(&input.output)?,
-            output_metadata: input.output_metadata.clone(),
+            output_metadata: OutputMetadata::try_from(&input.output_metadata)?,
             chain: input.chain.clone(),
             bech32_address: input.bech32_address.clone(),
         })
@@ -189,7 +192,7 @@ impl From<&InputSigningData> for InputSigningDataDto {
     fn from(input: &InputSigningData) -> Self {
         Self {
             output: OutputDto::from(&input.output),
-            output_metadata: input.output_metadata.clone(),
+            output_metadata: OutputMetadataDto::from(&input.output_metadata),
             chain: input.chain.clone(),
             bech32_address: input.bech32_address.clone(),
         }

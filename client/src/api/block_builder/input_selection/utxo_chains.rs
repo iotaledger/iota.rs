@@ -7,7 +7,7 @@ use std::str::FromStr;
 
 use crypto::keys::slip10::Chain;
 use iota_types::{
-    api::response::OutputWithMetadataResponse,
+    api::core::response::OutputWithMetadataResponse,
     block::{
         address::Address,
         output::{dto::OutputDto, AliasOutput, FoundryOutput, NftOutput, Output, OutputId, OutputMetadata},
@@ -111,7 +111,7 @@ impl<'a> ClientBlockBuilder<'a> {
     /// Get inputs for utxo chains
     pub(crate) async fn get_utxo_chains_inputs(
         &self,
-        outputs: impl Iterator<Item = &'a Output> + Clone,
+        outputs: impl Iterator<Item = &'a Output> + Clone + Send,
     ) -> Result<Vec<InputSigningData>> {
         log::debug!("[get_utxo_chains_inputs]");
         let client = self.client;

@@ -99,7 +99,7 @@ pub mod dto {
 
     impl From<&Ed25519Signature> for Ed25519SignatureDto {
         fn from(value: &Ed25519Signature) -> Self {
-            Ed25519SignatureDto {
+            Self {
                 kind: Ed25519Signature::KIND,
                 public_key: prefix_hex::encode(value.public_key),
                 signature: prefix_hex::encode(value.signature),
@@ -111,7 +111,7 @@ pub mod dto {
         type Error = DtoError;
 
         fn try_from(value: &Ed25519SignatureDto) -> Result<Self, Self::Error> {
-            Ok(Ed25519Signature::new(
+            Ok(Self::new(
                 prefix_hex::decode(&value.public_key).map_err(|_| DtoError::InvalidField("publicKey"))?,
                 prefix_hex::decode(&value.signature).map_err(|_| DtoError::InvalidField("signature"))?,
             ))

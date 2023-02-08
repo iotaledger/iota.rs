@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `NodeCoreAPI::get_included_block_metadata`;
+- `SeedSecretManager` class;
 
 ### Changed
 

@@ -1,6 +1,8 @@
 // Copyright 2023 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+#![allow(clippy::type_complexity)]
+
 pub(crate) mod alias;
 pub(crate) mod amount;
 pub(crate) mod foundry;
@@ -14,14 +16,14 @@ use super::InputSelection;
 use crate::{
     block::{
         address::Address,
-        output::{AliasId, ChainId, Features, FoundryId, NftId, Output},
+        output::{AliasId, AliasTransition, ChainId, Features, FoundryId, NftId, Output},
     },
     error::{Error, Result},
     secret::types::InputSigningData,
 };
 
 /// A requirement, imposed by outputs, that needs to be resolved by selected inputs.
-#[derive(Debug, serde::Serialize, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone, serde::Serialize, Eq, PartialEq)]
 pub enum Requirement {
     /// Sender requirement.
     Sender(Address),
@@ -30,7 +32,7 @@ pub enum Requirement {
     /// Foundry requirement.
     Foundry(FoundryId),
     /// Alias requirement and whether it needs to be state transitioned (true) or not (false).
-    Alias(AliasId, bool),
+    Alias(AliasId, AliasTransition),
     /// Nft requirement.
     Nft(NftId),
     /// Native tokens requirement.
@@ -45,13 +47,15 @@ impl InputSelection {
     pub(crate) fn fulfill_requirement(
         &mut self,
         requirement: Requirement,
-    ) -> Result<(Vec<InputSigningData>, Option<Requirement>)> {
+    ) -> Result<(Vec<(InputSigningData, Option<AliasTransition>)>, Option<Requirement>)> {
+        log::debug!("Fulfilling requirement {requirement:?}");
+
         match requirement {
             Requirement::Sender(address) => self.fulfill_sender_requirement(address),
             Requirement::Issuer(address) => self.fulfill_issuer_requirement(address),
             Requirement::Foundry(foundry_id) => self.fulfill_foundry_requirement(foundry_id),
-            Requirement::Alias(alias_id, state_transition) => {
-                self.fulfill_alias_requirement(alias_id, state_transition)
+            Requirement::Alias(alias_id, alias_transition) => {
+                self.fulfill_alias_requirement(alias_id, alias_transition)
             }
             Requirement::Nft(nft_id) => self.fulfill_nft_requirement(nft_id),
             Requirement::NativeTokens => self.fulfill_native_tokens_requirement(),
@@ -60,13 +64,10 @@ impl InputSelection {
     }
 
     /// Gets requirements from outputs.
-    pub(crate) fn outputs_requirements(&mut self, output: Option<&Output>) {
+    pub(crate) fn outputs_requirements(&mut self) {
         // TODO do we really need to chain?
         let inputs = self.available_inputs.iter().chain(self.selected_inputs.iter());
-        let outputs: Box<dyn Iterator<Item = &Output>> = match output {
-            Some(output) => Box::new(std::iter::once(output)),
-            None => Box::new(self.outputs.iter()),
-        };
+        let outputs = self.outputs.iter();
 
         for output in outputs {
             let is_created = match output {
@@ -75,8 +76,9 @@ impl InputSelection {
                     let is_created = alias_output.alias_id().is_null();
 
                     if !is_created {
-                        self.requirements
-                            .push(Requirement::Alias(*alias_output.alias_id(), false));
+                        let requirement = Requirement::Alias(*alias_output.alias_id(), AliasTransition::Governance);
+                        log::debug!("Adding {requirement:?} from output");
+                        self.requirements.push(requirement);
                     }
 
                     is_created
@@ -86,7 +88,9 @@ impl InputSelection {
                     let is_created = nft_output.nft_id().is_null();
 
                     if !is_created {
-                        self.requirements.push(Requirement::Nft(*nft_output.nft_id()));
+                        let requirement = Requirement::Nft(*nft_output.nft_id());
+                        log::debug!("Adding {requirement:?} from output");
+                        self.requirements.push(requirement);
                     }
 
                     is_created
@@ -104,11 +108,15 @@ impl InputSelection {
                     });
 
                     if !is_created {
-                        self.requirements.push(Requirement::Foundry(foundry_output.id()));
+                        let requirement = Requirement::Foundry(foundry_output.id());
+                        log::debug!("Adding {requirement:?} from output");
+                        self.requirements.push(requirement);
                     }
 
-                    self.requirements
-                        .push(Requirement::Alias(*foundry_output.alias_address().alias_id(), true));
+                    let requirement =
+                        Requirement::Alias(*foundry_output.alias_address().alias_id(), AliasTransition::State);
+                    log::debug!("Adding {requirement:?} from output");
+                    self.requirements.push(requirement);
 
                     is_created
                 }
@@ -117,13 +125,17 @@ impl InputSelection {
 
             // Add a sender requirement if the sender feature is present.
             if let Some(sender) = output.features().and_then(Features::sender) {
-                self.requirements.push(Requirement::Sender(*sender.address()));
+                let requirement = Requirement::Sender(*sender.address());
+                log::debug!("Adding {requirement:?} from output");
+                self.requirements.push(requirement);
             }
 
             // Add an issuer requirement if the issuer feature is present and the chain output is created.
             if is_created {
                 if let Some(issuer) = output.immutable_features().and_then(Features::issuer) {
-                    self.requirements.push(Requirement::Issuer(*issuer.address()));
+                    let requirement = Requirement::Issuer(*issuer.address());
+                    log::debug!("Adding {requirement:?} from output");
+                    self.requirements.push(requirement);
                 }
             }
         }
@@ -141,7 +153,9 @@ impl InputSelection {
                     return Err(Error::BurnAndTransition(ChainId::from(*alias_id)));
                 }
 
-                self.requirements.push(Requirement::Alias(*alias_id, false));
+                let requirement = Requirement::Alias(*alias_id, AliasTransition::Governance);
+                log::debug!("Adding {requirement:?} from burn");
+                self.requirements.push(requirement);
             }
 
             for nft_id in &burn.nfts {
@@ -153,7 +167,9 @@ impl InputSelection {
                     return Err(Error::BurnAndTransition(ChainId::from(*nft_id)));
                 }
 
-                self.requirements.push(Requirement::Nft(*nft_id));
+                let requirement = Requirement::Nft(*nft_id);
+                log::debug!("Adding {requirement:?} from burn");
+                self.requirements.push(requirement);
             }
 
             for foundry_id in &burn.foundries {
@@ -161,7 +177,9 @@ impl InputSelection {
                     return Err(Error::BurnAndTransition(ChainId::from(*foundry_id)));
                 }
 
-                self.requirements.push(Requirement::Foundry(*foundry_id));
+                let requirement = Requirement::Foundry(*foundry_id);
+                log::debug!("Adding {requirement:?} from burn");
+                self.requirements.push(requirement);
             }
         }
 

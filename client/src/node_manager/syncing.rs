@@ -4,7 +4,7 @@
 #[cfg(not(target_family = "wasm"))]
 use {
     crate::NetworkInfo,
-    iota_types::{api::response::InfoResponse, block::protocol::ProtocolParameters},
+    iota_types::{api::core::response::InfoResponse, block::protocol::ProtocolParameters},
     std::collections::HashMap,
     std::{
         collections::HashSet,
@@ -59,7 +59,7 @@ impl Client {
                 // Delay first since the first `sync_nodes` call is made by the builder to ensure the node list is
                 // filled before the client is used.
                 sleep(node_sync_interval).await;
-                if let Err(e) = Client::sync_nodes(&sync, &nodes, &network_info, ignore_node_health).await {
+                if let Err(e) = Self::sync_nodes(&sync, &nodes, &network_info, ignore_node_health).await {
                     log::warn!("Syncing nodes failed: {e}");
                 }
             }
@@ -79,7 +79,7 @@ impl Client {
 
         for node in nodes {
             // Put the healthy node url into the network_nodes
-            if let Ok(info) = Client::get_node_info(node.url.as_ref(), None).await {
+            if let Ok(info) = Self::get_node_info(node.url.as_ref(), None).await {
                 if info.status.is_healthy || ignore_node_health {
                     match network_nodes.get_mut(&info.protocol.network_name) {
                         Some(network_node_entry) => {

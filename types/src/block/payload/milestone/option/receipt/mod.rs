@@ -176,7 +176,7 @@ pub mod dto {
 
     impl From<&ReceiptMilestoneOption> for ReceiptMilestoneOptionDto {
         fn from(value: &ReceiptMilestoneOption) -> Self {
-            ReceiptMilestoneOptionDto {
+            Self {
                 kind: ReceiptMilestoneOption::KIND,
                 migrated_at: *value.migrated_at(),
                 last: value.last(),
@@ -189,11 +189,8 @@ pub mod dto {
     }
 
     impl ReceiptMilestoneOption {
-        pub fn try_from_dto(
-            value: &ReceiptMilestoneOptionDto,
-            token_supply: u64,
-        ) -> Result<ReceiptMilestoneOption, DtoError> {
-            Ok(ReceiptMilestoneOption::new(
+        pub fn try_from_dto(value: &ReceiptMilestoneOptionDto, token_supply: u64) -> Result<Self, DtoError> {
+            Ok(Self::new(
                 MilestoneIndex(value.migrated_at),
                 value.last,
                 value
@@ -210,14 +207,14 @@ pub mod dto {
             )?)
         }
 
-        pub fn try_from_dto_unverified(value: &ReceiptMilestoneOptionDto) -> Result<ReceiptMilestoneOption, DtoError> {
+        pub fn try_from_dto_unverified(value: &ReceiptMilestoneOptionDto) -> Result<Self, DtoError> {
             let funds = value
                 .funds
                 .iter()
                 .map(MigratedFundsEntry::try_from_dto_unverified)
                 .collect::<Result<Vec<_>, _>>()?;
 
-            Ok(ReceiptMilestoneOption {
+            Ok(Self {
                 migrated_at: MilestoneIndex(value.migrated_at),
                 last: value.last,
                 funds: VecPrefix::<MigratedFundsEntry, ReceiptFundsCount>::try_from(funds)

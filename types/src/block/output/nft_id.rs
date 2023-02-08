@@ -42,7 +42,7 @@ pub mod dto {
         type Error = DtoError;
 
         fn try_from(value: &NftIdDto) -> Result<Self, Self::Error> {
-            value.0.parse::<NftId>().map_err(|_| DtoError::InvalidField("NFT id"))
+            value.0.parse::<Self>().map_err(|_| DtoError::InvalidField("NFT id"))
         }
     }
 }

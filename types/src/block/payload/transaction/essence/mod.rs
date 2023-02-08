@@ -59,7 +59,7 @@ pub mod dto {
     impl From<&TransactionEssence> for TransactionEssenceDto {
         fn from(value: &TransactionEssence) -> Self {
             match value {
-                TransactionEssence::Regular(r) => TransactionEssenceDto::Regular(r.into()),
+                TransactionEssence::Regular(r) => Self::Regular(r.into()),
             }
         }
     }
@@ -68,19 +68,20 @@ pub mod dto {
         pub fn try_from_dto(
             value: &TransactionEssenceDto,
             protocol_parameters: &ProtocolParameters,
-        ) -> Result<TransactionEssence, DtoError> {
+        ) -> Result<Self, DtoError> {
             match value {
-                TransactionEssenceDto::Regular(r) => Ok(TransactionEssence::Regular(
-                    RegularTransactionEssence::try_from_dto(r, protocol_parameters)?,
-                )),
+                TransactionEssenceDto::Regular(r) => Ok(Self::Regular(RegularTransactionEssence::try_from_dto(
+                    r,
+                    protocol_parameters,
+                )?)),
             }
         }
 
-        pub fn try_from_dto_unverified(value: &TransactionEssenceDto) -> Result<TransactionEssence, DtoError> {
+        pub fn try_from_dto_unverified(value: &TransactionEssenceDto) -> Result<Self, DtoError> {
             match value {
-                TransactionEssenceDto::Regular(r) => Ok(TransactionEssence::Regular(
-                    RegularTransactionEssence::try_from_dto_unverified(r)?,
-                )),
+                TransactionEssenceDto::Regular(r) => {
+                    Ok(Self::Regular(RegularTransactionEssence::try_from_dto_unverified(r)?))
+                }
             }
         }
     }

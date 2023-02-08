@@ -29,10 +29,10 @@ impl TransactionPayload {
     pub const KIND: u32 = 6;
 
     /// Creates a new [`TransactionPayload`].
-    pub fn new(essence: TransactionEssence, unlocks: Unlocks) -> Result<TransactionPayload, Error> {
+    pub fn new(essence: TransactionEssence, unlocks: Unlocks) -> Result<Self, Error> {
         verify_essence_unlocks(&essence, &unlocks)?;
 
-        Ok(TransactionPayload { essence, unlocks })
+        Ok(Self { essence, unlocks })
     }
 
     /// Return the essence of a [`TransactionPayload`].
@@ -78,7 +78,7 @@ impl Packable for TransactionPayload {
             verify_essence_unlocks(&essence, &unlocks).map_err(UnpackError::Packable)?;
         }
 
-        Ok(TransactionPayload { essence, unlocks })
+        Ok(Self { essence, unlocks })
     }
 }
 
@@ -117,7 +117,7 @@ pub mod dto {
 
     impl From<&TransactionPayload> for TransactionPayloadDto {
         fn from(value: &TransactionPayload) -> Self {
-            TransactionPayloadDto {
+            Self {
                 kind: TransactionPayload::KIND,
                 essence: value.essence().into(),
                 unlocks: value.unlocks().iter().map(Into::into).collect::<Vec<_>>(),
@@ -129,27 +129,27 @@ pub mod dto {
         fn _try_from_dto(
             value: &TransactionPayloadDto,
             transaction_essence: TransactionEssence,
-        ) -> Result<TransactionPayload, DtoError> {
+        ) -> Result<Self, DtoError> {
             let mut unlocks = Vec::new();
 
             for b in &value.unlocks {
                 unlocks.push(b.try_into()?);
             }
 
-            Ok(TransactionPayload::new(transaction_essence, Unlocks::new(unlocks)?)?)
+            Ok(Self::new(transaction_essence, Unlocks::new(unlocks)?)?)
         }
 
         pub fn try_from_dto(
             value: &TransactionPayloadDto,
             protocol_parameters: &ProtocolParameters,
-        ) -> Result<TransactionPayload, DtoError> {
+        ) -> Result<Self, DtoError> {
             Self::_try_from_dto(
                 value,
                 TransactionEssence::try_from_dto(&value.essence, protocol_parameters)?,
             )
         }
 
-        pub fn try_from_dto_unverified(value: &TransactionPayloadDto) -> Result<TransactionPayload, DtoError> {
+        pub fn try_from_dto_unverified(value: &TransactionPayloadDto) -> Result<Self, DtoError> {
             Self::_try_from_dto(value, TransactionEssence::try_from_dto_unverified(&value.essence)?)
         }
     }

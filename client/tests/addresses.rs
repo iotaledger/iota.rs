@@ -237,7 +237,7 @@ async fn address_generation() {
                 options,
             };
 
-            let response = message_interface::send_message(&message_handler, message).await;
+            let response = message_handler.send_message(message).await;
             match response {
                 Response::GeneratedAddresses(addresses) => {
                     assert_eq!(addresses[0], address.bech32_address);
@@ -268,7 +268,7 @@ async fn address_generation() {
                 secret_manager: SecretManagerDto::Stronghold(secret_manager_dto.clone()),
                 mnemonic: address.mnemonic,
             };
-            let _response = message_interface::send_message(&message_handler, message).await;
+            let _response = message_handler.send_message(message).await;
 
             let options = GetAddressesBuilderOptions {
                 coin_type: Some(address.coin_type),
@@ -286,7 +286,7 @@ async fn address_generation() {
                 options,
             };
 
-            let response = message_interface::send_message(&message_handler, message).await;
+            let response = message_handler.send_message(message).await;
             match response {
                 Response::GeneratedAddresses(addresses) => {
                     assert_eq!(addresses[0], address.bech32_address);

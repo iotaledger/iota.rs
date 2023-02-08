@@ -44,7 +44,7 @@ impl FromStr for NftAddress {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(NftAddress::from(NftId::from_str(s)?))
+        Ok(Self::from(NftId::from_str(s)?))
     }
 }
 
@@ -92,7 +92,7 @@ pub mod dto {
         fn try_from(value: &NftAddressDto) -> Result<Self, Self::Error> {
             value
                 .nft_id
-                .parse::<NftAddress>()
+                .parse::<Self>()
                 .map_err(|_| DtoError::InvalidField("nftId"))
         }
     }

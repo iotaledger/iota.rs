@@ -40,11 +40,7 @@ pub struct FoundryOutputBuilder {
 
 impl FoundryOutputBuilder {
     /// Creates a [`FoundryOutputBuilder`] with a provided amount.
-    pub fn new_with_amount(
-        amount: u64,
-        serial_number: u32,
-        token_scheme: TokenScheme,
-    ) -> Result<FoundryOutputBuilder, Error> {
+    pub fn new_with_amount(amount: u64, serial_number: u32, token_scheme: TokenScheme) -> Result<Self, Error> {
         Self::new(OutputBuilderAmount::Amount(amount), serial_number, token_scheme)
     }
 
@@ -54,7 +50,7 @@ impl FoundryOutputBuilder {
         rent_structure: RentStructure,
         serial_number: u32,
         token_scheme: TokenScheme,
-    ) -> Result<FoundryOutputBuilder, Error> {
+    ) -> Result<Self, Error> {
         Self::new(
             OutputBuilderAmount::MinimumStorageDeposit(rent_structure),
             serial_number,
@@ -62,11 +58,7 @@ impl FoundryOutputBuilder {
         )
     }
 
-    fn new(
-        amount: OutputBuilderAmount,
-        serial_number: u32,
-        token_scheme: TokenScheme,
-    ) -> Result<FoundryOutputBuilder, Error> {
+    fn new(amount: OutputBuilderAmount, serial_number: u32, token_scheme: TokenScheme) -> Result<Self, Error> {
         Ok(Self {
             amount,
             native_tokens: Vec::new(),
@@ -248,7 +240,7 @@ impl FoundryOutputBuilder {
 
 impl From<&FoundryOutput> for FoundryOutputBuilder {
     fn from(output: &FoundryOutput) -> Self {
-        FoundryOutputBuilder {
+        Self {
             amount: OutputBuilderAmount::Amount(output.amount),
             native_tokens: output.native_tokens.to_vec(),
             serial_number: output.serial_number,
@@ -579,13 +571,13 @@ impl Packable for FoundryOutput {
         let features = Features::unpack::<_, VERIFY>(unpacker, &())?;
 
         if VERIFY {
-            verify_allowed_features(&features, FoundryOutput::ALLOWED_FEATURES).map_err(UnpackError::Packable)?;
+            verify_allowed_features(&features, Self::ALLOWED_FEATURES).map_err(UnpackError::Packable)?;
         }
 
         let immutable_features = Features::unpack::<_, VERIFY>(unpacker, &())?;
 
         if VERIFY {
-            verify_allowed_features(&immutable_features, FoundryOutput::ALLOWED_IMMUTABLE_FEATURES)
+            verify_allowed_features(&immutable_features, Self::ALLOWED_IMMUTABLE_FEATURES)
                 .map_err(UnpackError::Packable)?;
         }
 
@@ -687,7 +679,7 @@ pub mod dto {
             Ok(builder)
         }
 
-        pub fn try_from_dto(value: &FoundryOutputDto, token_supply: u64) -> Result<FoundryOutput, DtoError> {
+        pub fn try_from_dto(value: &FoundryOutputDto, token_supply: u64) -> Result<Self, DtoError> {
             let mut builder = Self::_try_from_dto(value)?;
 
             for u in &value.unlock_conditions {
@@ -697,7 +689,7 @@ pub mod dto {
             Ok(builder.finish(token_supply)?)
         }
 
-        pub fn try_from_dto_unverified(value: &FoundryOutputDto) -> Result<FoundryOutput, DtoError> {
+        pub fn try_from_dto_unverified(value: &FoundryOutputDto) -> Result<Self, DtoError> {
             let mut builder = Self::_try_from_dto(value)?;
 
             for u in &value.unlock_conditions {
@@ -717,7 +709,7 @@ pub mod dto {
             features: Option<Vec<FeatureDto>>,
             immutable_features: Option<Vec<FeatureDto>>,
             token_supply: u64,
-        ) -> Result<FoundryOutput, DtoError> {
+        ) -> Result<Self, DtoError> {
             let token_scheme = TokenScheme::try_from(token_scheme)?;
 
             let mut builder = match amount {

@@ -8,7 +8,6 @@ use iota_client::{
     Topic,
 };
 use neon::prelude::*;
-use tokio::sync::mpsc::unbounded_channel;
 
 type JsCallback = Root<JsFunction<JsObject>>;
 
@@ -32,26 +31,19 @@ impl MessageHandler {
     async fn send_message(&self, serialized_message: String) -> (String, bool) {
         match serde_json::from_str::<Message>(&serialized_message) {
             Ok(message) => {
-                let (response_tx, mut response_rx) = unbounded_channel();
+                let res = self.client_message_handler.send_message(message).await;
+                let mut is_err = matches!(res, Response::Error(_) | Response::Panic(_));
 
-                self.client_message_handler.handle(message, response_tx).await;
-                let response = response_rx.recv().await;
-                if let Some(res) = response {
-                    let mut is_err = matches!(res, Response::Error(_) | Response::Panic(_));
+                let msg = match serde_json::to_string(&res) {
+                    Ok(msg) => msg,
+                    Err(e) => {
+                        is_err = true;
+                        serde_json::to_string(&Response::Error(e.into()))
+                            .expect("the response is generated manually, so unwrap is safe.")
+                    }
+                };
 
-                    let msg = match serde_json::to_string(&res) {
-                        Ok(msg) => msg,
-                        Err(e) => {
-                            is_err = true;
-                            serde_json::to_string(&Response::Error(e.into()))
-                                .expect("the response is generated manually, so unwrap is safe.")
-                        }
-                    };
-
-                    (msg, is_err)
-                } else {
-                    ("No response".to_string(), true)
-                }
+                (msg, is_err)
             }
             Err(e) => {
                 log::debug!("{:?}", e);

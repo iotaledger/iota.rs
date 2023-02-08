@@ -361,6 +361,7 @@ impl<'a> MqttTopicManager<'a> {
             let mqtt_topic_handlers = &self.client.mqtt_topic_handlers;
             let mut mqtt_topic_handlers = mqtt_topic_handlers.write().await;
             for topic in self.topics {
+                #[allow(clippy::option_if_let_else)]
                 match mqtt_topic_handlers.get_mut(&topic) {
                     Some(handlers) => handlers.push(cb.clone()),
                     None => {

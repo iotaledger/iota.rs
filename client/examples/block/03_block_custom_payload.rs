@@ -22,7 +22,7 @@ async fn main() -> Result<()> {
     let client = Client::builder().with_node(&node_url)?.finish()?;
 
     // Create a custom payload.
-    let tagged_data_payload = TaggedDataPayload::new("Your tag".as_bytes().to_vec(), "Your data".as_bytes().to_vec())?;
+    let tagged_data_payload = TaggedDataPayload::new(b"Your tag".to_vec(), b"Your data".to_vec())?;
 
     // Create and send the block with the custom payload.
     let block = client

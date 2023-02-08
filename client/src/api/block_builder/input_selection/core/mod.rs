@@ -8,7 +8,7 @@ pub(crate) mod transition;
 
 use std::collections::HashSet;
 
-use self::requirement::alias::is_alias_state_transition;
+use self::requirement::alias::is_alias_transition;
 pub use self::{
     burn::{Burn, BurnDto},
     requirement::Requirement,
@@ -17,7 +17,7 @@ use crate::{
     api::{block_builder::input_selection::helpers::sort_input_signing_data, types::RemainderData},
     block::{
         address::{Address, AliasAddress, NftAddress},
-        output::{ChainId, Output, OutputId},
+        output::{AliasTransition, ChainId, Output, OutputId},
         protocol::ProtocolParameters,
     },
     error::{Error, Result},
@@ -58,31 +58,36 @@ pub struct Selected {
 impl InputSelection {
     fn required_alias_nft_addresses(&self, input: &InputSigningData) -> Result<Option<Requirement>> {
         // TODO burn?
-        // TODO unwrap or false?
-        let is_alias_state_transition = is_alias_state_transition(input, &self.outputs)?
-            .unwrap_or((false, false))
-            .0;
+        let alias_transition = is_alias_transition(input, &self.outputs).map(|(alias_transition, _)| alias_transition);
         let (required_address, _) =
             input
                 .output
-                .required_and_unlocked_address(self.timestamp, input.output_id(), is_alias_state_transition)?;
+                .required_and_unlocked_address(self.timestamp, input.output_id(), alias_transition)?;
 
         match required_address {
-            Address::Alias(alias_address) => Ok(Some(Requirement::Alias(*alias_address.alias_id(), true))),
+            Address::Alias(alias_address) => Ok(Some(Requirement::Alias(
+                *alias_address.alias_id(),
+                AliasTransition::State,
+            ))),
             Address::Nft(nft_address) => Ok(Some(Requirement::Nft(*nft_address.nft_id()))),
             _ => Ok(None),
         }
     }
 
-    fn select_input(&mut self, input: InputSigningData) -> Result<()> {
-        if let Some(output) = self.transition_input(&input)? {
-            // TODO is this really necessary?
-            // TODO should input be pushed before ? probably
-            self.outputs_requirements(Some(&output));
+    fn select_input(&mut self, input: InputSigningData, alias_transition: Option<AliasTransition>) -> Result<()> {
+        log::debug!("Selecting input {:?}", input.output_id());
+
+        if let Some(output) = self.transition_input(&input, alias_transition)? {
+            // No need to check for `outputs_requirements` because
+            // - the sender feature doesn't need to be verified as it has been removed
+            // - the issuer feature doesn't need to be verified as the chain is not new
+            // - input doesn't need to be checked for as we just transitioned it
+            // - foundry alias requirement should have been met already by a prior `required_alias_nft_addresses`
             self.outputs.push(output);
         }
 
         if let Some(requirement) = self.required_alias_nft_addresses(&input)? {
+            log::debug!("Adding {requirement:?} from input {:?}", input.output_id());
             self.requirements.push(requirement);
         }
 
@@ -122,7 +127,7 @@ impl InputSelection {
                         let input = self.available_inputs.swap_remove(index);
 
                         // Selects required input.
-                        self.select_input(input)?
+                        self.select_input(input, None)?
                     }
                     None => return Err(Error::RequiredInputIsNotAvailable(required_input)),
                 }
@@ -131,7 +136,7 @@ impl InputSelection {
 
         // Gets requirements from outputs.
         // TODO this may re-evaluate outputs added by inputs
-        self.outputs_requirements(None);
+        self.outputs_requirements();
 
         // Gets requirements from burn.
         self.burn_requirements()?;
@@ -227,8 +232,8 @@ impl InputSelection {
 
             let required_address = input
                 .output
-                // True is irrelevant here as we keep aliases anyway.
-                .required_and_unlocked_address(self.timestamp, input.output_id(), true)
+                // Alias transition is irrelevant here as we keep aliases anyway.
+                .required_and_unlocked_address(self.timestamp, input.output_id(), None)
                 // PANIC: safe to unwrap as non basic/alias/foundry/nft outputs are already filtered out.
                 .unwrap()
                 .0;
@@ -258,12 +263,13 @@ impl InputSelection {
             let (inputs, new_requirement) = self.fulfill_requirement(requirement)?;
 
             if let Some(new_requirement) = new_requirement {
+                log::debug!("Adding new {new_requirement:?} from evaluating {requirement:?}");
                 self.requirements.push(new_requirement);
             }
 
             // Select suggested inputs.
-            for input in inputs {
-                self.select_input(input)?;
+            for (input, alias_transition) in inputs {
+                self.select_input(input, alias_transition)?;
             }
         }
 

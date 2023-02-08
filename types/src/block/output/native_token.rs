@@ -86,7 +86,7 @@ impl NativeTokensBuilder {
     }
 
     /// Merges another [`NativeTokensBuilder`] into this one.
-    pub fn merge(&mut self, other: NativeTokensBuilder) -> Result<(), Error> {
+    pub fn merge(&mut self, other: Self) -> Result<(), Error> {
         for (token_id, amount) in other.0.into_iter() {
             self.add_native_token(NativeToken::new(token_id, amount)?)?;
         }
@@ -113,9 +113,10 @@ impl NativeTokensBuilder {
     }
 }
 
+#[allow(clippy::fallible_impl_from)]
 impl From<NativeTokens> for NativeTokensBuilder {
     fn from(native_tokens: NativeTokens) -> Self {
-        let mut builder = NativeTokensBuilder::new();
+        let mut builder = Self::new();
 
         // PANIC: safe as `native_tokens` was already built and then valid.
         builder.add_native_tokens(native_tokens).unwrap();
@@ -185,14 +186,9 @@ impl NativeTokens {
     /// Gets the native token associated with the provided token ID if contained.
     pub fn get(&self, token_id: &TokenId) -> Option<&NativeToken> {
         // Binary search is possible because native tokens are always ordered by token ID.
-        if let Ok(index) = self
-            .0
+        self.0
             .binary_search_by_key(token_id, |native_token| native_token.token_id)
-        {
-            Some(&self.0[index])
-        } else {
-            None
-        }
+            .map_or(None, |index| Some(&self.0[index]))
     }
 }
 

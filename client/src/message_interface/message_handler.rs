@@ -17,9 +17,9 @@ use iota_types::block::{
         Payload, TransactionPayload,
     },
     protocol::dto::ProtocolParametersDto,
-    Block, BlockDto,
+    unlock::Unlock,
+    Block, BlockDto, DtoError,
 };
-use tokio::sync::mpsc::UnboundedSender;
 use zeroize::Zeroize;
 #[cfg(feature = "mqtt")]
 use {
@@ -29,34 +29,49 @@ use {
 
 #[cfg(feature = "ledger_nano")]
 use crate::secret::ledger_nano::LedgerSecretManager;
-#[cfg(feature = "stronghold")]
-use crate::secret::SecretManager;
 use crate::{
-    api::{PreparedTransactionData, PreparedTransactionDataDto},
+    api::{PreparedTransactionData, PreparedTransactionDataDto, RemainderData},
     message_interface::{message::Message, response::Response},
-    request_funds_from_faucet, Client, Result,
+    request_funds_from_faucet,
+    secret::{types::InputSigningData, SecretManage, SecretManager},
+    Client, Result,
 };
 
 fn panic_to_response_message(panic: Box<dyn Any>) -> Response {
-    let msg = if let Some(message) = panic.downcast_ref::<String>() {
-        format!("Internal error: {message}")
-    } else if let Some(message) = panic.downcast_ref::<&str>() {
-        format!("Internal error: {message}")
-    } else {
-        "Internal error".to_string()
-    };
+    let msg = panic.downcast_ref::<String>().map_or_else(
+        || {
+            panic.downcast_ref::<&str>().map_or_else(
+                || "Internal error".to_string(),
+                |message| format!("Internal error: {message}"),
+            )
+        },
+        |message| format!("Internal error: {message}"),
+    );
     let current_backtrace = Backtrace::new();
     Response::Panic(format!("{msg}\n\n{current_backtrace:?}"))
 }
 
+#[cfg(not(target_family = "wasm"))]
+async fn convert_async_panics<F>(f: impl FnOnce() -> F + Send) -> Result<Response>
+where
+    F: Future<Output = Result<Response>> + Send,
+{
+    AssertUnwindSafe(f())
+        .catch_unwind()
+        .await
+        .unwrap_or_else(|panic| Ok(panic_to_response_message(panic)))
+}
+
+#[cfg(target_family = "wasm")]
+#[allow(clippy::future_not_send)]
 async fn convert_async_panics<F>(f: impl FnOnce() -> F) -> Result<Response>
 where
     F: Future<Output = Result<Response>>,
 {
-    match AssertUnwindSafe(f()).catch_unwind().await {
-        Ok(result) => result,
-        Err(panic) => Ok(panic_to_response_message(panic)),
-    }
+    AssertUnwindSafe(f())
+        .catch_unwind()
+        .await
+        .unwrap_or_else(|panic| Ok(panic_to_response_message(panic)))
 }
 
 /// The Client message handler.
@@ -116,8 +131,8 @@ impl ClientMessageHandler {
             .expect("failed to listen to MQTT events");
     }
 
-    /// Handle messages
-    pub async fn handle(&self, message: Message, response_tx: UnboundedSender<Response>) {
+    /// Send a message.
+    pub async fn send_message(&self, message: Message) -> Response {
         match &message {
             // Don't log secrets
             Message::GenerateAddresses {
@@ -182,7 +197,7 @@ impl ClientMessageHandler {
             _ => log::debug!("Response: {:?}", response),
         }
 
-        let _ = response_tx.send(response);
+        response
     }
 
     // If cfg(not(feature = "stronghold")) then secret_manager doesn't necessarily to be mutable, but otherwise it has
@@ -404,6 +419,29 @@ impl ClientMessageHandler {
                         )?)
                         .await?,
                 )))
+            }
+            Message::SignatureUnlock {
+                secret_manager,
+                input_signing_data,
+                transaction_essence_hash,
+                remainder_data,
+            } => {
+                let token_supply: u64 = self.client.get_token_supply().await?;
+                let secret_manager: SecretManager = (&secret_manager).try_into()?;
+                let input_signing_data: InputSigningData =
+                    InputSigningData::try_from_dto(&input_signing_data, token_supply)?;
+                let transaction_essence_hash: [u8; 32] = transaction_essence_hash
+                    .try_into()
+                    .map_err(|_| DtoError::InvalidField("expected 32 bytes for transactionEssenceHash"))?;
+                let remainder_data: Option<RemainderData> = remainder_data
+                    .map(|remainder| RemainderData::try_from_dto(&remainder, token_supply))
+                    .transpose()?;
+
+                let unlock: Unlock = secret_manager
+                    .signature_unlock(&input_signing_data, &transaction_essence_hash, &remainder_data)
+                    .await?;
+
+                Ok(Response::SignatureUnlock((&unlock).into()))
             }
             #[cfg(feature = "stronghold")]
             Message::StoreMnemonic {

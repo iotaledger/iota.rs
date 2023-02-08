@@ -1,0 +1,132 @@
+{
+    "essence": {
+        "type": 1,
+        "networkId": "8342982141227064571",
+        "inputs": [
+            {
+                "type": 0,
+                "transactionId": "0xa973c248bcd1cd230f1d36952f69d59e20371aef10a0c6aa4e7c8f9b14fa13e0",
+                "transactionOutputIndex": 0
+            }
+        ],
+        "inputsCommitment": "0x300fe5b1ed771286c608574e0372a1c936bed1c43725f462ca6d90e11afad005",
+        "outputs": [
+            {
+                "type": 3,
+                "amount": "1000000",
+                "unlockConditions": [
+                    {
+                        "type": 0,
+                        "address": {
+                            "type": 0,
+                            "pubKeyHash": "0xf8208cdcda8b1afc710fbcb2e822fe70661c3213172189b845d49a64dd52a7a4"
+                        }
+                    }
+                ]
+            },
+            {
+                "type": 3,
+                "amount": "999000000",
+                "unlockConditions": [
+                    {
+                        "type": 0,
+                        "address": {
+                            "type": 0,
+                            "pubKeyHash": "0x9f618504d1a5a0f9b61a0a68fb8479c838ce29ef1eac377e077e8f1260c41c47"
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "inputsData": [
+        {
+            "output": {
+                "type": 3,
+                "amount": "1000000000",
+                "unlockConditions": [
+                    {
+                        "type": 0,
+                        "address": {
+                            "type": 0,
+                            "pubKeyHash": "0x9f618504d1a5a0f9b61a0a68fb8479c838ce29ef1eac377e077e8f1260c41c47"
+                        }
+                    }
+                ]
+            },
+            "outputMetadata": {
+                "blockId": "0x7b7b0b7f5f8e04e052e3d9c2f3f8a67a6a1724b6afbde50a1804c5fa9800f282",
+                "transactionId": "0xa973c248bcd1cd230f1d36952f69d59e20371aef10a0c6aa4e7c8f9b14fa13e0",
+                "outputIndex": 0,
+                "isSpent": false,
+                "milestoneIndexBooked": 3422369,
+                "milestoneTimestampBooked": 1675248149,
+                "ledgerIndex": 3527507
+            },
+            "chain": [
+                {
+                    "hardened": true,
+                    "bs": [128, 0, 0, 44]
+                },
+                {
+                    "hardened": true,
+                    "bs": [128, 0, 16, 123]
+                },
+                {
+                    "hardened": true,
+                    "bs": [128, 0, 0, 0]
+                },
+                {
+                    "hardened": true,
+                    "bs": [128, 0, 0, 0]
+                },
+                {
+                    "hardened": true,
+                    "bs": [128, 0, 0, 0]
+                }
+            ],
+            "bech32Address": "rms1qz0krpgy6xj6p7dkrg9x37uy08yr3n3fau02cdm7qalg7ynqcswywncmd9p"
+        }
+    ],
+    "remainder": {
+        "output": {
+            "type": 3,
+            "amount": "999000000",
+            "unlockConditions": [
+                {
+                    "type": 0,
+                    "address": {
+                        "type": 0,
+                        "pubKeyHash": "0x9f618504d1a5a0f9b61a0a68fb8479c838ce29ef1eac377e077e8f1260c41c47"
+                    }
+                }
+            ]
+        },
+        "chain": [
+            {
+                "hardened": true,
+                "bs": [128, 0, 0, 44]
+            },
+            {
+                "hardened": true,
+                "bs": [128, 0, 16, 123]
+            },
+            {
+                "hardened": true,
+                "bs": [128, 0, 0, 0]
+            },
+            {
+                "hardened": true,
+                "bs": [128, 0, 0, 0]
+            },
+            {
+                "hardened": true,
+                "bs": [128, 0, 0, 0]
+            }
+        ],
+        "address": {
+            "type": 0,
+            "pubKeyHash": "0x9f618504d1a5a0f9b61a0a68fb8479c838ce29ef1eac377e077e8f1260c41c47"
+        }
+    }
+}

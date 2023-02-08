@@ -6,6 +6,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![cfg_attr(doc_cfg, feature(doc_cfg))]
 #![deny(missing_docs, warnings)]
+#![allow(clippy::redundant_pub_crate)]
 
 extern crate alloc;
 #[cfg(feature = "std")]

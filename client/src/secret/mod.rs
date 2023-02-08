@@ -86,7 +86,6 @@ pub trait SecretManageExt {
 
 // Boxes make this type clumsy to use.
 #[allow(clippy::large_enum_variant)]
-
 pub enum SecretManager {
     /// Secret manager that uses [`iota_stronghold`] as the backing storage.
     #[cfg(feature = "stronghold")]
@@ -124,7 +123,7 @@ impl FromStr for SecretManager {
     type Err = crate::Error;
 
     fn from_str(s: &str) -> crate::Result<Self> {
-        SecretManager::try_from(&serde_json::from_str::<SecretManagerDto>(s)?)
+        Self::try_from(&serde_json::from_str::<SecretManagerDto>(s)?)
     }
 }
 
@@ -221,23 +220,23 @@ impl SecretManage for SecretManager {
     ) -> crate::Result<Vec<Address>> {
         match self {
             #[cfg(feature = "stronghold")]
-            SecretManager::Stronghold(secret_manager) => {
+            Self::Stronghold(secret_manager) => {
                 secret_manager
                     .generate_addresses(coin_type, account_index, address_indexes, internal, options)
                     .await
             }
             #[cfg(feature = "ledger_nano")]
-            SecretManager::LedgerNano(secret_manager) => {
+            Self::LedgerNano(secret_manager) => {
                 secret_manager
                     .generate_addresses(coin_type, account_index, address_indexes, internal, options)
                     .await
             }
-            SecretManager::Mnemonic(secret_manager) => {
+            Self::Mnemonic(secret_manager) => {
                 secret_manager
                     .generate_addresses(coin_type, account_index, address_indexes, internal, options)
                     .await
             }
-            SecretManager::Placeholder(secret_manager) => {
+            Self::Placeholder(secret_manager) => {
                 secret_manager
                     .generate_addresses(coin_type, account_index, address_indexes, internal, options)
                     .await
@@ -253,19 +252,11 @@ impl SecretManage for SecretManager {
     ) -> crate::Result<Unlock> {
         match self {
             #[cfg(feature = "stronghold")]
-            SecretManager::Stronghold(secret_manager) => {
-                secret_manager.signature_unlock(input, essence_hash, metadata).await
-            }
+            Self::Stronghold(secret_manager) => secret_manager.signature_unlock(input, essence_hash, metadata).await,
             #[cfg(feature = "ledger_nano")]
-            SecretManager::LedgerNano(secret_manager) => {
-                secret_manager.signature_unlock(input, essence_hash, metadata).await
-            }
-            SecretManager::Mnemonic(secret_manager) => {
-                secret_manager.signature_unlock(input, essence_hash, metadata).await
-            }
-            SecretManager::Placeholder(secret_manager) => {
-                secret_manager.signature_unlock(input, essence_hash, metadata).await
-            }
+            Self::LedgerNano(secret_manager) => secret_manager.signature_unlock(input, essence_hash, metadata).await,
+            Self::Mnemonic(secret_manager) => secret_manager.signature_unlock(input, essence_hash, metadata).await,
+            Self::Placeholder(secret_manager) => secret_manager.signature_unlock(input, essence_hash, metadata).await,
         }
     }
 }
@@ -278,13 +269,13 @@ impl SecretManageExt for SecretManager {
     ) -> crate::Result<Unlocks> {
         match self {
             #[cfg(feature = "stronghold")]
-            SecretManager::Stronghold(_) => self.default_sign_transaction_essence(prepared_transaction_data).await,
+            Self::Stronghold(_) => self.default_sign_transaction_essence(prepared_transaction_data).await,
             #[cfg(feature = "ledger_nano")]
-            SecretManager::LedgerNano(secret_manager) => {
+            Self::LedgerNano(secret_manager) => {
                 secret_manager.sign_transaction_essence(prepared_transaction_data).await
             }
-            SecretManager::Mnemonic(_) => self.default_sign_transaction_essence(prepared_transaction_data).await,
-            SecretManager::Placeholder(_) => self.sign_transaction_essence(prepared_transaction_data).await,
+            Self::Mnemonic(_) => self.default_sign_transaction_essence(prepared_transaction_data).await,
+            Self::Placeholder(_) => self.sign_transaction_essence(prepared_transaction_data).await,
         }
     }
 }

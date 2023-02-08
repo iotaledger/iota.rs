@@ -59,7 +59,7 @@ impl Address {
     /// Gets the address as an actual [`Ed25519Address`].
     /// PANIC: do not call on a non-ed25519 address.
     pub fn as_ed25519(&self) -> &Ed25519Address {
-        if let Address::Ed25519(address) = self {
+        if let Self::Ed25519(address) = self {
             address
         } else {
             panic!("as_ed25519 called on a non-ed25519 address");
@@ -74,7 +74,7 @@ impl Address {
     /// Gets the address as an actual [`AliasAddress`].
     /// PANIC: do not call on a non-alias address.
     pub fn as_alias(&self) -> &AliasAddress {
-        if let Address::Alias(address) = self {
+        if let Self::Alias(address) = self {
             address
         } else {
             panic!("as_alias called on a non-alias address");
@@ -89,7 +89,7 @@ impl Address {
     /// Gets the address as an actual [`NftAddress`].
     /// PANIC: do not call on a non-nft address.
     pub fn as_nft(&self) -> &NftAddress {
-        if let Address::Nft(address) = self {
+        if let Self::Nft(address) = self {
             address
         } else {
             panic!("as_nft called on a non-nft address");
@@ -123,7 +123,7 @@ impl Address {
         context: &mut ValidationContext,
     ) -> Result<(), ConflictReason> {
         match (self, unlock) {
-            (Address::Ed25519(ed25519_address), Unlock::Signature(unlock)) => {
+            (Self::Ed25519(ed25519_address), Unlock::Signature(unlock)) => {
                 if context.unlocked_addresses.contains(self) {
                     return Err(ConflictReason::InvalidUnlock);
                 }
@@ -136,13 +136,13 @@ impl Address {
 
                 context.unlocked_addresses.insert(*self);
             }
-            (Address::Ed25519(_ed25519_address), Unlock::Reference(_unlock)) => {
+            (Self::Ed25519(_ed25519_address), Unlock::Reference(_unlock)) => {
                 // TODO actually check that it was unlocked by the same signature.
                 if !context.unlocked_addresses.contains(self) {
                     return Err(ConflictReason::InvalidUnlock);
                 }
             }
-            (Address::Alias(alias_address), Unlock::Alias(unlock)) => {
+            (Self::Alias(alias_address), Unlock::Alias(unlock)) => {
                 // PANIC: indexing is fine as it is already syntactically verified that indexes reference below.
                 if let (output_id, Output::Alias(alias_output)) = inputs[unlock.index() as usize] {
                     if &alias_output.alias_id_non_null(&output_id) != alias_address.alias_id() {
@@ -155,7 +155,7 @@ impl Address {
                     return Err(ConflictReason::InvalidUnlock);
                 }
             }
-            (Address::Nft(nft_address), Unlock::Nft(unlock)) => {
+            (Self::Nft(nft_address), Unlock::Nft(unlock)) => {
                 // PANIC: indexing is fine as it is already syntactically verified that indexes reference below.
                 if let (output_id, Output::Nft(nft_output)) = inputs[unlock.index() as usize] {
                     if &nft_output.nft_id_non_null(&output_id) != nft_address.nft_id() {
@@ -199,9 +199,9 @@ pub mod dto {
     impl From<&Address> for AddressDto {
         fn from(value: &Address) -> Self {
             match value {
-                Address::Ed25519(a) => AddressDto::Ed25519(a.into()),
-                Address::Alias(a) => AddressDto::Alias(a.into()),
-                Address::Nft(a) => AddressDto::Nft(a.into()),
+                Address::Ed25519(a) => Self::Ed25519(a.into()),
+                Address::Alias(a) => Self::Alias(a.into()),
+                Address::Nft(a) => Self::Nft(a.into()),
             }
         }
     }
@@ -211,9 +211,9 @@ pub mod dto {
 
         fn try_from(value: &AddressDto) -> Result<Self, Self::Error> {
             match value {
-                AddressDto::Ed25519(a) => Ok(Address::Ed25519(a.try_into()?)),
-                AddressDto::Alias(a) => Ok(Address::Alias(a.try_into()?)),
-                AddressDto::Nft(a) => Ok(Address::Nft(a.try_into()?)),
+                AddressDto::Ed25519(a) => Ok(Self::Ed25519(a.try_into()?)),
+                AddressDto::Alias(a) => Ok(Self::Alias(a.try_into()?)),
+                AddressDto::Nft(a) => Ok(Self::Nft(a.try_into()?)),
             }
         }
     }
@@ -228,15 +228,15 @@ pub mod dto {
                     .ok_or_else(|| serde::de::Error::custom("invalid address type"))? as u8
                 {
                     Ed25519Address::KIND => {
-                        AddressDto::Ed25519(Ed25519AddressDto::deserialize(value).map_err(|e| {
+                        Self::Ed25519(Ed25519AddressDto::deserialize(value).map_err(|e| {
                             serde::de::Error::custom(format!("cannot deserialize ed25519 address: {e}"))
                         })?)
                     }
-                    AliasAddress::KIND => AddressDto::Alias(
+                    AliasAddress::KIND => Self::Alias(
                         AliasAddressDto::deserialize(value)
                             .map_err(|e| serde::de::Error::custom(format!("cannot deserialize alias address: {e}")))?,
                     ),
-                    NftAddress::KIND => AddressDto::Nft(
+                    NftAddress::KIND => Self::Nft(
                         NftAddressDto::deserialize(value)
                             .map_err(|e| serde::de::Error::custom(format!("cannot deserialize NFT address: {e}")))?,
                     ),
@@ -264,13 +264,13 @@ pub mod dto {
                 address: AddressDto_<'a>,
             }
             let address = match self {
-                AddressDto::Ed25519(o) => TypedAddress {
+                Self::Ed25519(o) => TypedAddress {
                     address: AddressDto_::T1(o),
                 },
-                AddressDto::Alias(o) => TypedAddress {
+                Self::Alias(o) => TypedAddress {
                     address: AddressDto_::T2(o),
                 },
-                AddressDto::Nft(o) => TypedAddress {
+                Self::Nft(o) => TypedAddress {
                     address: AddressDto_::T3(o),
                 },
             };

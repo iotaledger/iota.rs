@@ -85,7 +85,7 @@ pub mod dto {
 
     impl From<&ExpirationUnlockCondition> for ExpirationUnlockConditionDto {
         fn from(value: &ExpirationUnlockCondition) -> Self {
-            ExpirationUnlockConditionDto {
+            Self {
                 kind: ExpirationUnlockCondition::KIND,
                 return_address: value.return_address().into(),
                 timestamp: value.timestamp(),
@@ -96,8 +96,8 @@ pub mod dto {
     impl TryFrom<&ExpirationUnlockConditionDto> for ExpirationUnlockCondition {
         type Error = DtoError;
 
-        fn try_from(value: &ExpirationUnlockConditionDto) -> Result<ExpirationUnlockCondition, DtoError> {
-            ExpirationUnlockCondition::new(
+        fn try_from(value: &ExpirationUnlockConditionDto) -> Result<Self, DtoError> {
+            Self::new(
                 (&value.return_address)
                     .try_into()
                     .map_err(|_e| DtoError::InvalidField("expirationUnlockCondition"))?,

@@ -96,7 +96,7 @@ impl Default for RentStructure {
 
 impl RentStructure {
     /// Creates a new [`RentStructure`].
-    pub fn new(byte_cost: u32, byte_factor_key: u8, byte_factor_data: u8) -> RentStructure {
+    pub fn new(byte_cost: u32, byte_factor_key: u8, byte_factor_data: u8) -> Self {
         Self::build()
             .byte_cost(byte_cost)
             .byte_factor_key(byte_factor_key)

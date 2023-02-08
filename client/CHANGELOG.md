@@ -35,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `#[derive(Eq, PartialEq, Deserialize)]` to `TopicEvent, MqttPayload`;
 - `#[derive(Serialize)]` to ` Topic`;
 - `impl<'de> Deserialize<'de> for Topic`;
+- `Message::SignatureUnlock`;
 
 ### Changed
 
@@ -51,10 +52,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Error::Pow` to `Error::NonceNotFound`;
 - `finish_nonce` takes a `F: Fn(&[u8]) -> Option<u64>` instead of a `F: Fn(&[u8]) -> Result<u64, PowError>`;
 - Remove `Error` suffix on some `Error` variants;
+- `ClientBlockBuilder::allow_burning: bool` to `ClientBlockBuilder::burn: Option<Burn>`;
+- `ClientBlockBuilder::with_burning_allowed` to `ClientBlockBuilder::with_burn`;
+- `ClientBlockBuilderOptions::allow_burning: Option<bool>` to `ClientBlockBuilderOptions::burn: Option<Burn>`;
+- `InputSigningDataDto::output_metadata` from `OutputMetadata` to `OutputMetadataDto`;
+- Renamed `MessageHandler::handle()` to `MessageHandler::send_message()`, removed the `response_tx` parameter and returned the `Response`;
 
 ### Removed
 
-- `OutputMetadata`, moved to `iota-types`;
+- `participation`, `indexer` plugin API types and `OutputMetadata`, moved to `iota-types`;
+- `message_handler::send_message()`;
 
 ### Fixed
 

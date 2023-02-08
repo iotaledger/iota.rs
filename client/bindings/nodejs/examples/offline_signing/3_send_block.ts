@@ -4,7 +4,7 @@
 import { Client, initLogger } from '@iota/client';
 import { readFile } from 'fs/promises';
 
-require('dotenv').config({ path: '../../../.env' });
+require('dotenv').config({ path: '../../../../.env' });
 
 // From examples directory, run with:
 // node ./dist/offline_signing/3_send_block.js
