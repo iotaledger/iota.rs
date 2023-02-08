@@ -30,12 +30,11 @@ use {
 
 #[cfg(feature = "ledger_nano")]
 use crate::secret::ledger_nano::LedgerSecretManager;
-use crate::secret::SecretManager;
 use crate::{
     api::{PreparedTransactionData, PreparedTransactionDataDto, RemainderData},
     message_interface::{message::Message, response::Response},
     request_funds_from_faucet,
-    secret::{types::InputSigningData, SecretManage},
+    secret::{types::InputSigningData, SecretManage, SecretManager},
     Client, Result,
 };
 
