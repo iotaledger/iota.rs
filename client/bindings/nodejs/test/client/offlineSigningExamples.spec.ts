@@ -1,7 +1,5 @@
 import {
     Client,
-    IInputSigningData,
-    initLogger,
     IPreparedTransactionData,
     SHIMMER_TESTNET_BECH32_HRP,
 } from '../../lib';
@@ -10,7 +8,7 @@ import 'dotenv/config';
 import { addresses } from '../fixtures/addresses';
 import * as signedTransactionJson from '../fixtures/signedTransaction.json';
 import * as sigUnlockPreparedTx from '../fixtures/sigUnlockPreparedTx.json';
-import type { ITransactionEssence, PayloadTypes } from '@iota/types';
+import type { PayloadTypes } from '@iota/types';
 import { TransactionHelper } from '@iota/iota.js';
 
 const onlineClient = new Client({
