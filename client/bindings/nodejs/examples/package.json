@@ -8,8 +8,7 @@
     },
     "dependencies": {
         "@iota/client": "../",
-        "dotenv": "^16.0.0",
-        "@iota/iota.js": "^2.0.0-rc.2"
+        "dotenv": "^16.0.0"
     },
     "devDependencies": {
         "@types/node": "^17.0.26",
