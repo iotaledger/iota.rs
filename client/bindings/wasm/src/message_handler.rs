@@ -4,7 +4,6 @@
 use std::rc::Rc;
 
 use iota_client::message_interface::{create_message_handler, ClientMessageHandler, Message, Response};
-use tokio::sync::mpsc::unbounded_channel;
 use wasm_bindgen::{prelude::wasm_bindgen, JsCast, JsValue};
 use wasm_bindgen_futures::future_to_promise;
 
