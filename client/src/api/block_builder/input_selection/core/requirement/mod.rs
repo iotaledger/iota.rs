@@ -23,7 +23,7 @@ use crate::{
 };
 
 /// A requirement, imposed by outputs, that needs to be resolved by selected inputs.
-#[derive(Debug, serde::Serialize, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone, serde::Serialize, Eq, PartialEq)]
 pub enum Requirement {
     /// Sender requirement.
     Sender(Address),
