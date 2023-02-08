@@ -177,8 +177,9 @@ pub enum Message {
         #[serde(rename = "secretManager")]
         secret_manager: SecretManagerDto,
         /// Input Signing Data
+        // This field is boxed to not inflate the enum's size.
         #[serde(rename = "inputSigningData")]
-        input_signing_data: InputSigningDataDto,
+        input_signing_data: Box<InputSigningDataDto>,
         /// Transaction Essence Hash
         #[serde(rename = "transactionEssenceHash")]
         transaction_essence_hash: Vec<u8>,

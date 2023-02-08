@@ -30,7 +30,6 @@ use {
 
 #[cfg(feature = "ledger_nano")]
 use crate::secret::ledger_nano::LedgerSecretManager;
-#[cfg(feature = "stronghold")]
 use crate::secret::SecretManager;
 use crate::{
     api::{PreparedTransactionData, PreparedTransactionDataDto, RemainderData},

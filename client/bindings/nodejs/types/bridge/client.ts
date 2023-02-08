@@ -3,7 +3,10 @@ import type { SecretManager } from '../secretManager';
 import type { IGenerateAddressesOptions } from '../generateAddressesOptions';
 import type { IBuildBlockOptions } from '../buildBlockOptions';
 import type { BlockId } from '../blockId';
-import type { IInputSigningData, IPreparedTransactionData } from '../preparedTransactionData';
+import type {
+    IInputSigningData,
+    IPreparedTransactionData,
+} from '../preparedTransactionData';
 import type {
     AliasQueryParameter,
     FoundryQueryParameter,
@@ -163,11 +166,11 @@ export interface __SignatureUnlockMessage__ {
     name: 'signatureUnlock';
     data: {
         secretManager: SecretManager;
-        inputSigningData: IInputSigningData,
-        transactionEssenceHash: Array<number>,
+        inputSigningData: IInputSigningData;
+        transactionEssenceHash: Array<number>;
         //TODO: Expose `RemainderData`.
-        remainderData: undefined
-    }
+        remainderData: undefined;
+    };
 }
 
 export interface __StoreMnemonicMessage__ {
