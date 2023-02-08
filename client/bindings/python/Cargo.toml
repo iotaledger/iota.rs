@@ -22,8 +22,8 @@ crate-type = [ "cdylib" ]
 iota-client = { path = "../../", default-features = false, features = [ "ledger_nano", "message_interface", "stronghold", "tls" ] }
 
 fern-logger = { version = "0.5.0", default-features = false }
-futures = { version = "0.3.25", default-features = false }
+futures = { version = "0.3.26", default-features = false }
 once_cell = { version = "1.17.0", default-features = false, features = [ "std" ] }
-pyo3 = { version = "0.18.0", default-features = false, features = [ "macros", "extension-module" ] }
-serde_json = { version = "1.0.91", default-features = false }
-tokio = { version = "1.24.2", default-features = false, features = [ "macros" ] }
+pyo3 = { version = "0.18.1", default-features = false, features = [ "macros", "extension-module" ] }
+serde_json = { version = "1.0.92", default-features = false }
+tokio = { version = "1.25.0", default-features = false, features = [ "macros" ] }
