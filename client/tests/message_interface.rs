@@ -40,7 +40,7 @@ async fn generate_addresses() {
         options,
     };
 
-    let response = message_interface::send_message(&message_handler, message).await;
+    let response = message_handler.send_message(message).await;
     match response {
         Response::GeneratedAddresses(addresses) => println!("{:?}", serde_json::to_string(&addresses).unwrap()),
         _ => panic!("Unexpected response type"),
@@ -88,7 +88,7 @@ async fn build_and_post_block() {
         options,
     };
 
-    let response = message_interface::send_message(&message_handler, generate_addresses_message).await;
+    let response = message_handler.send_message(generate_addresses_message).await;
     let addresses = match response {
         Response::GeneratedAddresses(addresses) => addresses,
         _ => panic!("Unexpected response type"),
@@ -104,7 +104,7 @@ async fn build_and_post_block() {
         amount,
     };
 
-    let response = message_interface::send_message(&message_handler, find_inputs_message).await;
+    let response = message_handler.send_message(find_inputs_message).await;
     let inputs = match response {
         Response::Inputs(inputs) => inputs,
         response_type => panic!("Unexpected response type: {response_type:?}"),
@@ -122,7 +122,7 @@ async fn build_and_post_block() {
         options: Some(options),
     };
 
-    let response = message_interface::send_message(&message_handler, build_and_post_block).await;
+    let response = message_handler.send_message(build_and_post_block).await;
     match response {
         Response::BlockIdWithBlock(block_id, block_data) => {
             println!("{block_id}: {}", serde_json::to_string(&block_data).unwrap());
@@ -158,7 +158,7 @@ async fn get_block_id() {
     let block_dto: BlockDto = serde_json::from_str(block).unwrap();
     let message = Message::BlockId { block: block_dto };
 
-    let response = message_interface::send_message(&message_handler, message).await;
+    let response = message_handler.send_message(message).await;
 
     match response {
         Response::BlockId(block_id) => {
@@ -185,7 +185,7 @@ async fn stronghold() {
         secret_manager: serde_json::from_str(secret_manager_dto).unwrap(),
         mnemonic,
     };
-    let _response = message_interface::send_message(&message_handler, message).await;
+    let _response = message_handler.send_message(message).await;
 
     // Generate an address with the stored mnemonic to verify that it's usable
     let options = GenerateAddressesOptions {
@@ -200,7 +200,7 @@ async fn stronghold() {
         secret_manager: serde_json::from_str(secret_manager_dto).unwrap(),
         options,
     };
-    let response = message_interface::send_message(&message_handler, message).await;
+    let response = message_handler.send_message(message).await;
 
     match response {
         Response::GeneratedAddresses(addresses) => {
