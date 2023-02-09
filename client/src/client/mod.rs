@@ -4,7 +4,6 @@
 //! The Client module to connect through HORNET or Bee with API usages
 
 mod builder;
-mod high_level;
 
 use std::{
     sync::{Arc, RwLock},
