@@ -5,7 +5,8 @@
 //! TIP <https://github.com/iotaledger/tips/blob/main/tips/TIP-0012/tip-0012.md>.
 
 #![cfg_attr(doc_cfg, feature(doc_cfg))]
-#![warn(missing_docs)]
+#![deny(missing_docs, warnings)]
+#![allow(clippy::redundant_pub_crate, clippy::module_name_repetitions)]
 
 pub mod miner;
 pub mod score;
