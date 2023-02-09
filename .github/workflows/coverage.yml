@@ -63,9 +63,16 @@ jobs:
     - name: Install binutils and rustfilt
       run: cargo install cargo-binutils rustfilt
 
+    - name: Start private tangle
+      uses: './.github/actions/private-tangle/setup'
+
     - name: Run tests and collect coverage
       run: bash ./coverage.sh
       timeout-minutes: 40
+
+    - name: Tear down private tangle
+      if: always()
+      uses: './.github/actions/private-tangle/tear-down'
 
     - name: Upload coverage data to Coveralls
       uses: coverallsapp/github-action@v1.1.2

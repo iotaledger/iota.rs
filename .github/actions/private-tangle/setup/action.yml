@@ -1,0 +1,47 @@
+name: 'private-tangle-setup'
+description: 'Setup a private tangle'
+runs:
+  using: "composite"
+  steps:
+    - name: Clone private tangle files
+      uses: actions/checkout@v3
+      with:
+        repository: iotaledger/hornet
+        path: hornet
+
+    - name: Setup private tangle
+      shell: bash
+      run: |
+        # TODO: use next lines when a working hornet release is published
+        # # Download the private_tangle setup from the hornet repo.
+        # mkdir private_tangle
+        # cd private_tangle
+        # # Use the output of https://api.github.com/repos/iotaledger/hornet/releases/latest once there's a 2.0 Hornet release.
+        # DOWNLOAD_URL=$(curl "https://api.github.com/repos/iotaledger/hornet/releases" | jq -r '.[0].assets[] | select(.name | contains("private_tangle")) | .browser_download_url')
+        # echo "Downloading private tangle from $DOWNLOAD_URL"
+        # curl -L -o private_tangle.tar.gz $DOWNLOAD_URL
+        # tar -xf private_tangle.tar.gz
+        # TODO: remove next lines when a working hornet release is published
+        # Set protocol_parameters to the same values as in the shimmer network
+        jq '.tokenSupply="1813620509061365" | .rentStructure.vByteCost=100 | .bech32HRP="rms"' protocol_parameters.json > tmp.json && mv tmp.json protocol_parameters.json
+        jq --color-output . protocol_parameters.json
+        
+        # Reduce milestone interval to 1 second
+        yq eval '.services.inx-coordinator.command += "--coordinator.interval=1s"' docker-compose.yml > tmp.yml && mv tmp.yml docker-compose.yml
+        jq --color-output . config_private_tangle.json
+        # Start Tangle
+        sudo ./cleanup.sh
+        sudo ./bootstrap.sh
+        sudo ./run.sh -d --quiet-pull
+      working-directory: hornet/private_tangle
+
+    - name: Wait for tangle to start
+      shell: bash
+      run: wget -qO- https://raw.githubusercontent.com/eficode/wait-for/$WAIT_FOR_VERSION/wait-for | sh -s -- -t 60 http://localhost:14265/health -- echo "Tangle is up"
+      env:
+        WAIT_FOR_VERSION: 4df3f9262d84cab0039c07bf861045fbb3c20ab7 # v2.2.3
+    - name: Wait for faucet to start
+      shell: bash
+      run: wget -qO- https://raw.githubusercontent.com/eficode/wait-for/$WAIT_FOR_VERSION/wait-for | sh -s -- -t 60 http://localhost:8091/api/info -- echo "Faucet is up"
+      env:
+        WAIT_FOR_VERSION: 4df3f9262d84cab0039c07bf861045fbb3c20ab7 # v2.2.3

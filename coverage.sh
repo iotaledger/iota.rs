@@ -7,7 +7,7 @@ mkdir coverage
 
 # Run tests with profiling instrumentation
 echo "Running instrumented unit tests..."
-RUSTFLAGS="-C instrument-coverage" LLVM_PROFILE_FILE="iota-%m.profraw" cargo +nightly test --all --all-features
+RUSTFLAGS="-C instrument-coverage" LLVM_PROFILE_FILE="iota-%m.profraw" cargo +nightly test --all --all-features -- --include-ignored
 
 # Merge all .profraw files into "iota.profdata"
 echo "Merging coverage data..."
@@ -27,7 +27,7 @@ BINARIES=""
 for file in \
   $( \
     RUSTFLAGS="-C instrument-coverage" \
-      cargo +nightly test --tests --all --all-features --no-run --message-format=json \
+      cargo +nightly test --tests --all --all-features --no-run --message-format=json -- --include-ignored \
         | jq -r "select(.profile.test == true) | .filenames[]" \
         | grep -v dSYM - \
   ); \
