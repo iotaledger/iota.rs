@@ -1160,7 +1160,6 @@ dependencies = [
  "iota-crypto",
  "iota-types",
  "num_cpus",
- "thiserror",
 ]
 
 [[package]]
