@@ -2,9 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 mod alias_id;
-
 mod chain_id;
-
 mod foundry_id;
 mod inputs_commitment;
 mod metadata;

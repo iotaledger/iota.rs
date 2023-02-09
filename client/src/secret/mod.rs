@@ -25,13 +25,13 @@ use iota_types::block::{
     output::Output,
     unlock::{AliasUnlock, NftUnlock, ReferenceUnlock, Unlock, Unlocks},
 };
-pub use types::{GenerateAddressOptions, LedgerNanoStatus};
 use zeroize::ZeroizeOnDrop;
 
 #[cfg(feature = "ledger_nano")]
 use self::ledger_nano::LedgerSecretManager;
 #[cfg(feature = "stronghold")]
 use self::stronghold::StrongholdSecretManager;
+pub use self::types::{GenerateAddressOptions, LedgerNanoStatus};
 use self::{mnemonic::MnemonicSecretManager, placeholder::PlaceholderSecretManager};
 #[cfg(feature = "stronghold")]
 use crate::secret::types::StrongholdDto;
