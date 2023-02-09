@@ -16,7 +16,7 @@ use iota_types::block::{
 };
 
 const DEFAULT_DEVNET_NODE_URL: &str = "http://localhost:14265";
-const DEFAULT_DEVNET_FAUCET_URL: &str = "http://localhost:14265";
+static FAUCET_URL: &str = "http://localhost:8091/api/enqueue";
 // THIS SEED SERVES FOR TESTING PURPOSES! DON'T USE THIS SEED IN PRODUCTION!
 const DEFAULT_DEVELOPMENT_SEED: &str = "0x256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2";
 
@@ -59,16 +59,26 @@ async fn setup_transaction_block() -> (BlockId, TransactionId) {
         .get_raw()
         .await
         .unwrap();
-    println!(
-        "{}",
-        request_funds_from_faucet(
-            DEFAULT_DEVNET_FAUCET_URL,
-            &addresses[0].to_bech32(client.get_bech32_hrp().await.unwrap()),
-        )
-        .await
-        .unwrap()
-    );
-    tokio::time::sleep(std::time::Duration::from_secs(20)).await;
+    let address = addresses[0].to_bech32(client.get_bech32_hrp().await.unwrap());
+    println!("{}", request_funds_from_faucet(FAUCET_URL, &address,).await.unwrap());
+
+    // Continue only after funds are received
+    for _ in 0..30 {
+        tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+        let output_ids = client
+            .basic_output_ids(vec![
+                QueryParameter::Address(address.clone()),
+                QueryParameter::HasExpiration(false),
+                QueryParameter::HasTimelock(false),
+                QueryParameter::HasStorageDepositReturn(false),
+            ])
+            .await
+            .unwrap();
+
+        if !output_ids.is_empty() {
+            break;
+        }
+    }
 
     let block_id = client
         .block()
