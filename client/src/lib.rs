@@ -44,13 +44,13 @@ macro_rules! lazy_static {
 pub mod api;
 pub mod client;
 pub mod constants;
-pub mod db;
 pub mod error;
 #[cfg(feature = "message_interface")]
 pub mod message_interface;
 pub mod node_api;
 pub mod node_manager;
 pub mod secret;
+pub mod storage;
 #[cfg(feature = "stronghold")]
 pub mod stronghold;
 pub mod utils;
