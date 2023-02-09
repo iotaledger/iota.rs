@@ -1186,7 +1186,6 @@ dependencies = [
  "serde-big-array",
  "serde_json",
  "serde_repr",
- "thiserror",
 ]
 
 [[package]]
