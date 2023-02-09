@@ -4,12 +4,14 @@
     ".changes/alias-nft-unlock.md",
     ".changes/aliasIdToBech32.md",
     ".changes/build-fix.md",
+    ".changes/burn-interface.md",
     ".changes/computeAlias-NftId.md",
     ".changes/computeFoundryId.md",
     ".changes/enum-serialization-attributes.md",
     ".changes/fix-build-script.md",
     ".changes/fix-rebuild-script.md",
     ".changes/get-included-block-metadata.md",
+    ".changes/input-signing-data.md",
     ".changes/ledger-nano-prompt.md",
     ".changes/mqtt.md",
     ".changes/networkinfo.md",
@@ -18,6 +20,8 @@
     ".changes/pow.md",
     ".changes/prebuilds.md",
     ".changes/protocol-parameters.md",
+    ".changes/signatureUnlock.md",
+    ".changes/switch-to-napi-6.md",
     ".changes/unhealthy-nodes.md"
   ]
 }

@@ -1,5 +1,19 @@
 # Changelog
 
+## \[3.0.0-rc.8]
+
+- Add `Burn` interface.
+  Replace `IBuildBlockOptions::allowBurning` with `IBuildBlockOptions::burn`.
+  - [2ba6566](https://github.com/iotaledger/iota.rs/commit/2ba65666264007514fe1ec319388725719d0830b) Prepare releases ([#1537](https://github.com/iotaledger/iota.rs/pull/1537)) on 2023-02-08
+- Fixed returned JSON value for `IInputSigningData`;
+  Renamed `IInputSigningData::outputMetaData` to `IInputSigningData::outputMetadata`;
+  Changed `ISegment::bs` from `Uint8Array` to `number[]` so that the serialization corresponds to what is expected;
+  - [2ba6566](https://github.com/iotaledger/iota.rs/commit/2ba65666264007514fe1ec319388725719d0830b) Prepare releases ([#1537](https://github.com/iotaledger/iota.rs/pull/1537)) on 2023-02-08
+- Add `signatureUnlock()`.
+  - [2ba6566](https://github.com/iotaledger/iota.rs/commit/2ba65666264007514fe1ec319388725719d0830b) Prepare releases ([#1537](https://github.com/iotaledger/iota.rs/pull/1537)) on 2023-02-08
+- Move to N-API 6 builds.
+  - [2ba6566](https://github.com/iotaledger/iota.rs/commit/2ba65666264007514fe1ec319388725719d0830b) Prepare releases ([#1537](https://github.com/iotaledger/iota.rs/pull/1537)) on 2023-02-08
+
 ## \[3.0.0-rc.7]
 
 - Fix MQTT multiple events when .listen() is called multiple times.
