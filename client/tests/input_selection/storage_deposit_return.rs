@@ -3,7 +3,7 @@
 
 use iota_client::{api::input_selection::InputSelection, block::protocol::protocol_parameters, Error};
 
-use crate::input_selection::{
+use crate::{
     addresses, build_inputs, build_outputs, is_remainder_or_return, unsorted_eq, Build::Basic,
     BECH32_ADDRESS_ED25519_0, BECH32_ADDRESS_ED25519_1, BECH32_ADDRESS_ED25519_2,
 };
@@ -20,10 +20,12 @@ fn sdruc_output_not_provided_no_remainder() {
         Some((BECH32_ADDRESS_ED25519_1, 1_000_000)),
         None,
         None,
+        None,
     )]);
     let outputs = build_outputs(vec![Basic(
         1_000_000,
         BECH32_ADDRESS_ED25519_0,
+        None,
         None,
         None,
         None,
@@ -67,10 +69,11 @@ fn sdruc_output_provided_no_remainder() {
         Some((BECH32_ADDRESS_ED25519_1, 1_000_000)),
         None,
         None,
+        None,
     )]);
     let outputs = build_outputs(vec![
-        Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None, None),
-        Basic(1_000_000, BECH32_ADDRESS_ED25519_1, None, None, None, None, None),
+        Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None, None, None),
+        Basic(1_000_000, BECH32_ADDRESS_ED25519_1, None, None, None, None, None, None),
     ]);
 
     let selected = InputSelection::new(
@@ -98,10 +101,12 @@ fn sdruc_output_provided_remainder() {
         Some((BECH32_ADDRESS_ED25519_1, 1_000_000)),
         None,
         None,
+        None,
     )]);
     let outputs = build_outputs(vec![Basic(
         1_000_000,
         BECH32_ADDRESS_ED25519_1,
+        None,
         None,
         None,
         None,
@@ -146,6 +151,7 @@ fn two_sdrucs_to_the_same_address_both_needed() {
             Some((BECH32_ADDRESS_ED25519_1, 1_000_000)),
             None,
             None,
+            None,
         ),
         Basic(
             2_000_000,
@@ -155,11 +161,13 @@ fn two_sdrucs_to_the_same_address_both_needed() {
             Some((BECH32_ADDRESS_ED25519_1, 1_000_000)),
             None,
             None,
+            None,
         ),
     ]);
     let outputs = build_outputs(vec![Basic(
         2_000_000,
         BECH32_ADDRESS_ED25519_0,
+        None,
         None,
         None,
         None,
@@ -204,6 +212,7 @@ fn two_sdrucs_to_the_same_address_one_needed() {
             Some((BECH32_ADDRESS_ED25519_1, 1_000_000)),
             None,
             None,
+            None,
         ),
         Basic(
             1_000_000,
@@ -213,11 +222,13 @@ fn two_sdrucs_to_the_same_address_one_needed() {
             Some((BECH32_ADDRESS_ED25519_1, 1_000_000)),
             None,
             None,
+            None,
         ),
     ]);
     let outputs = build_outputs(vec![Basic(
         1_000_000,
         BECH32_ADDRESS_ED25519_0,
+        None,
         None,
         None,
         None,
@@ -263,6 +274,7 @@ fn two_sdrucs_to_different_addresses_both_needed() {
             Some((BECH32_ADDRESS_ED25519_1, 1_000_000)),
             None,
             None,
+            None,
         ),
         Basic(
             2_000_000,
@@ -272,11 +284,13 @@ fn two_sdrucs_to_different_addresses_both_needed() {
             Some((BECH32_ADDRESS_ED25519_2, 1_000_000)),
             None,
             None,
+            None,
         ),
     ]);
     let outputs = build_outputs(vec![Basic(
         2_000_000,
         BECH32_ADDRESS_ED25519_0,
+        None,
         None,
         None,
         None,
@@ -323,6 +337,7 @@ fn two_sdrucs_to_different_addresses_one_needed() {
             Some((BECH32_ADDRESS_ED25519_1, 1_000_000)),
             None,
             None,
+            None,
         ),
         Basic(
             1_000_000,
@@ -332,11 +347,13 @@ fn two_sdrucs_to_different_addresses_one_needed() {
             Some((BECH32_ADDRESS_ED25519_2, 1_000_000)),
             None,
             None,
+            None,
         ),
     ]);
     let outputs = build_outputs(vec![Basic(
         1_000_000,
         BECH32_ADDRESS_ED25519_0,
+        None,
         None,
         None,
         None,
@@ -381,10 +398,12 @@ fn insufficient_amount_because_of_sdruc() {
         Some((BECH32_ADDRESS_ED25519_1, 1_000_000)),
         None,
         None,
+        None,
     )]);
     let outputs = build_outputs(vec![Basic(
         2_000_000,
         BECH32_ADDRESS_ED25519_0,
+        None,
         None,
         None,
         None,
@@ -422,14 +441,16 @@ fn useless_sdruc_required_for_sender_feature() {
             Some((BECH32_ADDRESS_ED25519_2, 1_000_000)),
             None,
             None,
+            None,
         ),
-        Basic(1_000_000, BECH32_ADDRESS_ED25519_1, None, None, None, None, None),
+        Basic(1_000_000, BECH32_ADDRESS_ED25519_1, None, None, None, None, None, None),
     ]);
     let outputs = build_outputs(vec![Basic(
         1_000_000,
         BECH32_ADDRESS_ED25519_0,
         None,
         Some(BECH32_ADDRESS_ED25519_0),
+        None,
         None,
         None,
         None,

@@ -3,7 +3,7 @@
 
 use iota_client::{api::input_selection::InputSelection, block::protocol::protocol_parameters, Error};
 
-use crate::input_selection::{
+use crate::{
     addresses, build_inputs, build_outputs, unsorted_eq, Build::Basic, BECH32_ADDRESS_ED25519_0,
     BECH32_ADDRESS_ED25519_1,
 };
@@ -20,10 +20,12 @@ fn one_output_timelock_not_expired() {
         None,
         Some(200),
         None,
+        None,
     )]);
     let outputs = build_outputs(vec![Basic(
         1_000_000,
         BECH32_ADDRESS_ED25519_1,
+        None,
         None,
         None,
         None,
@@ -55,10 +57,12 @@ fn timelock_equal_timestamp() {
         None,
         Some(200),
         None,
+        None,
     )]);
     let outputs = build_outputs(vec![Basic(
         2_000_000,
         BECH32_ADDRESS_ED25519_1,
+        None,
         None,
         None,
         None,
@@ -85,12 +89,31 @@ fn two_outputs_one_timelock_expired() {
     let protocol_parameters = protocol_parameters();
 
     let inputs = build_inputs(vec![
-        Basic(2_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, Some(200), None),
-        Basic(2_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, Some(50), None),
+        Basic(
+            2_000_000,
+            BECH32_ADDRESS_ED25519_0,
+            None,
+            None,
+            None,
+            Some(200),
+            None,
+            None,
+        ),
+        Basic(
+            2_000_000,
+            BECH32_ADDRESS_ED25519_0,
+            None,
+            None,
+            None,
+            Some(50),
+            None,
+            None,
+        ),
     ]);
     let outputs = build_outputs(vec![Basic(
         2_000_000,
         BECH32_ADDRESS_ED25519_1,
+        None,
         None,
         None,
         None,
@@ -118,12 +141,22 @@ fn two_outputs_one_timelocked_one_missing() {
     let protocol_parameters = protocol_parameters();
 
     let inputs = build_inputs(vec![
-        Basic(2_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, Some(200), None),
-        Basic(2_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None, None),
+        Basic(
+            2_000_000,
+            BECH32_ADDRESS_ED25519_0,
+            None,
+            None,
+            None,
+            Some(200),
+            None,
+            None,
+        ),
+        Basic(2_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None, None, None),
     ]);
     let outputs = build_outputs(vec![Basic(
         2_000_000,
         BECH32_ADDRESS_ED25519_1,
+        None,
         None,
         None,
         None,
@@ -158,10 +191,12 @@ fn one_output_timelock_expired() {
         None,
         Some(50),
         None,
+        None,
     )]);
     let outputs = build_outputs(vec![Basic(
         2_000_000,
         BECH32_ADDRESS_ED25519_1,
+        None,
         None,
         None,
         None,

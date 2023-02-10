@@ -9,7 +9,7 @@ use iota_client::{
     Error,
 };
 
-use crate::input_selection::{
+use crate::{
     addresses, build_inputs, build_outputs, is_remainder_or_return, unsorted_eq,
     Build::{Alias, Basic},
     ALIAS_ID_2, BECH32_ADDRESS_ED25519_0, BECH32_ADDRESS_ED25519_1,
@@ -23,6 +23,7 @@ fn no_inputs() {
     let outputs = build_outputs(vec![Basic(
         1_000_000,
         BECH32_ADDRESS_ED25519_0,
+        None,
         None,
         None,
         None,
@@ -53,6 +54,7 @@ fn no_outputs() {
         None,
         None,
         None,
+        None,
     )]);
     let outputs = Vec::new();
 
@@ -78,6 +80,7 @@ fn no_outputs_but_burn() {
         0,
         BECH32_ADDRESS_ED25519_0,
         BECH32_ADDRESS_ED25519_0,
+        None,
         None,
         None,
         None,
@@ -116,10 +119,12 @@ fn no_address_provided() {
         None,
         None,
         None,
+        None,
     )]);
     let outputs = build_outputs(vec![Basic(
         1_000_000,
         BECH32_ADDRESS_ED25519_0,
+        None,
         None,
         None,
         None,
@@ -144,10 +149,12 @@ fn no_matching_address_provided() {
         None,
         None,
         None,
+        None,
     )]);
     let outputs = build_outputs(vec![Basic(
         1_000_000,
         BECH32_ADDRESS_ED25519_0,
+        None,
         None,
         None,
         None,
@@ -171,12 +178,13 @@ fn two_addresses_one_missing() {
     let protocol_parameters = protocol_parameters();
 
     let inputs = build_inputs(vec![
-        Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None, None),
-        Basic(1_000_000, BECH32_ADDRESS_ED25519_1, None, None, None, None, None),
+        Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None, None, None),
+        Basic(1_000_000, BECH32_ADDRESS_ED25519_1, None, None, None, None, None, None),
     ]);
     let outputs = build_outputs(vec![Basic(
         2_000_000,
         BECH32_ADDRESS_ED25519_0,
+        None,
         None,
         None,
         None,
@@ -206,12 +214,13 @@ fn two_addresses() {
     let protocol_parameters = protocol_parameters();
 
     let inputs = build_inputs(vec![
-        Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None, None),
-        Basic(1_000_000, BECH32_ADDRESS_ED25519_1, None, None, None, None, None),
+        Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None, None, None),
+        Basic(1_000_000, BECH32_ADDRESS_ED25519_1, None, None, None, None, None, None),
     ]);
     let outputs = build_outputs(vec![Basic(
         2_000_000,
         BECH32_ADDRESS_ED25519_0,
+        None,
         None,
         None,
         None,
