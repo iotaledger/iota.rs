@@ -1066,7 +1066,6 @@ dependencies = [
  "instant",
  "iota-crypto",
  "num_cpus",
- "thiserror",
 ]
 
 [[package]]
@@ -1090,7 +1089,6 @@ dependencies = [
  "serde-big-array",
  "serde_json",
  "serde_repr",
- "thiserror",
 ]
 
 [[package]]
