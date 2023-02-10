@@ -11,6 +11,7 @@ use crate::{
     secret::types::InputSigningData,
 };
 
+// Checks if a selected input unlocks a given ED25519 address.
 fn selected_has_ed25519_address(
     input: &InputSigningData,
     outputs: &[Output],
@@ -28,6 +29,8 @@ fn selected_has_ed25519_address(
     &required_address == address
 }
 
+// Checks if an available input can unlock a given ED25519 address.
+// In case an alias input is selected, also tells if it needs to be state or governance transitioned.
 fn available_has_ed25519_address(
     input: &InputSigningData,
     address: &Address,
@@ -53,45 +56,44 @@ fn available_has_ed25519_address(
             .output
             .required_and_unlocked_address(timestamp, input.output_id(), None)
             .unwrap();
+
         (&required_address == address, None)
     }
 }
 
 impl InputSelection {
+    /// Fulfills an ed25519 sender requirement by selecting an available input that unlocks its address.
     fn fulfill_ed25519_address_requirement(
         &mut self,
         address: Address,
     ) -> Result<Vec<(InputSigningData, Option<AliasTransition>)>> {
         // Checks if the requirement is already fulfilled.
-        if let Some(output) = self
+        if let Some(input) = self
             .selected_inputs
             .iter()
             .find(|input| selected_has_ed25519_address(input, self.outputs.as_slice(), &address, self.timestamp))
         {
             log::debug!(
                 "{address:?} sender requirement already fulfilled by {:?}",
-                output.output_id()
+                input.output_id()
             );
-            return Ok(Vec::new());
+            return Ok(vec![]);
         }
 
-        // Checks if the requirement can be fulfilled.
-
-        // TODO bit dumb atm, need to add more possible strategies.
-
-        // TODO check that the enumeration index is kept original and not filtered.
-        // Tries to find a basic output first.
+        // Checks if the requirement can be fulfilled by a basic output.
         let found = if let Some((index, _)) = self.available_inputs.iter().enumerate().find(|(_, input)| {
             input.output.is_basic() && available_has_ed25519_address(input, &address, self.timestamp).0
         }) {
             Some((index, None))
         } else {
-            // TODO any preference between alias and NFT?
-            // If no basic output has been found, tries the other kinds of output.
+            // Otherwise, checks if the requirement can be fulfilled by a non-basic output.
             self.available_inputs.iter().enumerate().find_map(|(index, input)| {
                 if !input.output.is_basic() {
-                    let (found, alias_transition) = available_has_ed25519_address(input, &address, self.timestamp);
-                    if found { Some((index, alias_transition)) } else { None }
+                    if let (true, alias_transition) = available_has_ed25519_address(input, &address, self.timestamp) {
+                        Some((index, alias_transition))
+                    } else {
+                        None
+                    }
                 } else {
                     None
                 }
@@ -100,7 +102,7 @@ impl InputSelection {
 
         match found {
             Some((index, alias_transition)) => {
-                // Remove the output from the available inputs, swap to make it O(1).
+                // Remove the input from the available inputs, swap to make it O(1).
                 let input = self.available_inputs.swap_remove(index);
 
                 log::debug!(
@@ -115,7 +117,7 @@ impl InputSelection {
         }
     }
 
-    /// Fulfills a sender requirement.
+    /// Fulfills a sender requirement by selecting an available input that unlocks its address.
     pub(crate) fn fulfill_sender_requirement(
         &mut self,
         address: Address,
@@ -125,6 +127,7 @@ impl InputSelection {
             Address::Alias(alias_address) => {
                 log::debug!("Treating {address:?} sender requirement as an alias requirement");
 
+                // A state transition is required to unlock the alias address.
                 match self.fulfill_alias_requirement(alias_address.into_alias_id(), AliasTransition::State) {
                     Ok(res) => Ok(res),
                     Err(Error::UnfulfillableRequirement(Requirement::Alias(_, _))) => {
