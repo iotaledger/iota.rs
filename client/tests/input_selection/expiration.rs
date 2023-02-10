@@ -6,8 +6,8 @@ use std::collections::HashSet;
 use iota_client::{api::input_selection::InputSelection, block::protocol::protocol_parameters, Error};
 
 use crate::input_selection::{
-    addresses, build_inputs, build_outputs, unsorted_eq, Build::Basic, BECH32_ADDRESS_ED25519_0,
-    BECH32_ADDRESS_ED25519_1, BECH32_ADDRESS_ED25519_2,
+    addresses, build_inputs, build_outputs, is_remainder_or_return, unsorted_eq, Build::Basic, BECH32_ADDRESS_ALIAS_1,
+    BECH32_ADDRESS_ED25519_0, BECH32_ADDRESS_ED25519_1, BECH32_ADDRESS_ED25519_2,
 };
 
 #[test]
@@ -535,4 +535,52 @@ fn sender_in_expiration_already_selected() {
 
     assert!(unsorted_eq(&selected.inputs, &inputs));
     assert!(unsorted_eq(&selected.outputs, &outputs));
+}
+
+#[test]
+fn remainder_in_expiration() {
+    let protocol_parameters = protocol_parameters();
+
+    let inputs = build_inputs(vec![Basic(
+        2_000_000,
+        BECH32_ADDRESS_ALIAS_1,
+        None,
+        None,
+        None,
+        None,
+        Some((BECH32_ADDRESS_ED25519_1, 50)),
+    )]);
+    let outputs = build_outputs(vec![Basic(
+        1_000_000,
+        BECH32_ADDRESS_ED25519_0,
+        None,
+        Some(BECH32_ADDRESS_ED25519_1),
+        None,
+        None,
+        None,
+    )]);
+
+    let selected = InputSelection::new(
+        inputs.clone(),
+        outputs.clone(),
+        addresses(vec![BECH32_ADDRESS_ED25519_0, BECH32_ADDRESS_ED25519_1]),
+        protocol_parameters,
+    )
+    .timestamp(100)
+    .select()
+    .unwrap();
+
+    assert!(unsorted_eq(&selected.inputs, &inputs));
+    assert_eq!(selected.outputs.len(), 2);
+    assert!(selected.outputs.contains(&outputs[0]));
+    selected.outputs.iter().for_each(|output| {
+        if !outputs.contains(output) {
+            assert!(is_remainder_or_return(
+                output,
+                1_000_000,
+                BECH32_ADDRESS_ED25519_1,
+                None
+            ));
+        }
+    });
 }
