@@ -60,7 +60,7 @@ You can see examples using the library in the [examples](client/examples/) direc
 cargo run --example node_api_core_get_info
 ```
 
-For examples where a seed is required (e.g. `03_generate_addresses`) you need to create a `.env` file under the current directory. You can do so by renaming [`.env.example`](.env.example) to `.env`.
+For examples where a seed is required (e.g. `01_generate_addresses`) you need to create a `.env` file under the current directory. You can do so by renaming [`.env.example`](.env.example) to `.env`.
 
 ## API reference
 
