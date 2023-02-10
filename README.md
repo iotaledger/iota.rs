@@ -24,13 +24,13 @@ rustup update stable
 
 The nightly Rust compiler should be fine but some changes might not be compatible.
 
-Also for Linux `libudev` is needed and can be installed with `apt install libudev-dev`.
+Also for Linux `libudev` is needed for the `ledger_nano` feature and can be installed with `apt install libudev-dev`.
 
 Add `iota-client` as a dependency in `Cargo.toml`:
 
 ```toml
 [dependencies]
-iota-client = "1.1.1"
+iota-client = "2.0.1-rc.6"
 ```
 
 Or, for the latest changes:
@@ -57,10 +57,10 @@ You can see examples using the library in the [examples](client/examples/) direc
 
 ```shell
 # cargo run --example <name of the example without .rs>
-cargo run --example 01_get_info
+cargo run --example node_api_core_get_info
 ```
 
-For examples where a seed is required (e.g. `03_generate_addresses`) you need to create a `.env` file under the current directory. You can do so by renaming [`.env.example`](.env.example) to `.env`.
+For examples where a seed is required (e.g. `01_generate_addresses`) you need to create a `.env` file under the current directory. You can do so by renaming [`.env.example`](.env.example) to `.env`.
 
 ## API reference
 
@@ -79,10 +79,11 @@ Bindings to other programming languages are available under the folder [bindings
 * [Node.js binding](client/bindings/nodejs/)
 * [Python binding](client/bindings/python/)
 * [Java binding](client/bindings/java/)
+* [Wasm binding](client/bindings/wasm/)
 
 ## Joining the discussion
 
-If you want to get involved in the community, need help with setting up, have any issues or just want to discuss IOTA with other people, feel free to join our [Discord](https://discord.iota.org/) in the #client-libraries and #client-discussion channels.
+If you want to get involved in the community, need help with setting up, have any issues or just want to discuss IOTA with other people, feel free to join our [Discord](https://discord.iota.org/) in the #client-libs channel.
 
 ## License
 
