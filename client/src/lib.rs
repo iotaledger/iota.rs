@@ -24,8 +24,8 @@
 //! ```
 
 #![deny(unused_extern_crates)]
-#![warn(missing_docs, rust_2018_idioms, unreachable_pub)]
-#![allow(clippy::redundant_pub_crate)]
+#![warn(missing_docs, warnings, rust_2018_idioms, unreachable_pub)]
+#![allow(clippy::redundant_pub_crate, clippy::module_name_repetitions)]
 
 #[macro_use]
 extern crate serde;
@@ -42,15 +42,16 @@ macro_rules! lazy_static {
 }
 
 pub mod api;
+pub mod builder;
 pub mod client;
 pub mod constants;
-pub mod db;
 pub mod error;
 #[cfg(feature = "message_interface")]
 pub mod message_interface;
 pub mod node_api;
 pub mod node_manager;
 pub mod secret;
+pub mod storage;
 #[cfg(feature = "stronghold")]
 pub mod stronghold;
 pub mod utils;
@@ -63,7 +64,13 @@ pub use url::Url;
 
 #[cfg(feature = "mqtt")]
 pub use self::node_api::mqtt::*;
-pub use self::{client::*, error::*, node_api::core::routes::NodeInfoWrapper, utils::*};
+pub use self::{
+    builder::{ClientBuilder, NetworkInfo, NetworkInfoDto},
+    client::*,
+    error::*,
+    node_api::core::routes::NodeInfoWrapper,
+    utils::*,
+};
 
 #[cfg(feature = "mqtt")]
 mod async_runtime {

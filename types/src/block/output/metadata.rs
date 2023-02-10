@@ -3,7 +3,7 @@
 
 use crate::block::{output::OutputId, payload::transaction::TransactionId, BlockId};
 
-/// Metadata of an [`Output`].
+/// Metadata of an [`Output`](crate::block::output::Output).
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 #[cfg_attr(
     feature = "serde",
@@ -81,7 +81,7 @@ impl OutputMetadata {
         self.output_id.index()
     }
 
-    /// Returns whether the [`Output`] is spent ot not.
+    /// Returns whether the output is spent ot not.
     pub fn is_spent(&self) -> bool {
         self.is_spent
     }

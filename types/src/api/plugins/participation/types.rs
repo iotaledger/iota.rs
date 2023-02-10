@@ -170,7 +170,7 @@ pub struct Participation {
 }
 
 /// Participations information.
-/// https://github.com/iota-community/treasury/blob/main/specifications/hornet-participation-plugin.md#structure-of-the-participation
+/// <https://github.com/iota-community/treasury/blob/main/specifications/hornet-participation-plugin.md#structure-of-the-participation>
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Participations {
     /// Multiple participations that happen at the same time.

@@ -8,4 +8,4 @@ use crate::stronghold::StrongholdAdapter;
 /// Stronghold as a database provider.
 ///
 /// This is just an alias to the all-in-one [StrongholdAdapter].
-pub type StrongholdDatabaseProvider = StrongholdAdapter;
+pub type StrongholdStorageProvider = StrongholdAdapter;

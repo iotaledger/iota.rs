@@ -9,12 +9,12 @@ mod stronghold;
 use async_trait::async_trait;
 
 #[cfg(feature = "stronghold")]
-pub use self::stronghold::StrongholdDatabaseProvider;
+pub use self::stronghold::StrongholdStorageProvider;
 use crate::Result;
 
 /// The interface for database providers.
 #[async_trait]
-pub trait DatabaseProvider {
+pub trait StorageProvider {
     /// Get a value out of the database.
     async fn get(&mut self, k: &[u8]) -> Result<Option<Vec<u8>>>;
 

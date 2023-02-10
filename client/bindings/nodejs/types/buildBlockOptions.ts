@@ -1,7 +1,7 @@
 // Copyright 2021-2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import type { IUTXOInput, OutputTypes, INativeToken } from '@iota/types';
+import type { IUTXOInput, OutputTypes } from '@iota/types';
 import type { CoinType } from '../lib';
 import type { IRange } from './range';
 import type { Burn } from './burn';
