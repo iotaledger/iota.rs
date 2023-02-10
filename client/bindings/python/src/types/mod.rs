@@ -4,5 +4,4 @@
 mod error;
 mod handler;
 
-pub use error::*;
-pub use handler::*;
+pub use self::{error::*, handler::*};

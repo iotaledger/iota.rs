@@ -8,15 +8,14 @@ mod r#macro;
 mod block_id;
 mod error;
 
-/// A module that provides DTOs.
-#[cfg(feature = "dto")]
-pub mod dto;
-
 /// A module that provides types and syntactic validations of addresses.
 pub mod address;
 /// A module that provides types and syntactic validations of blocks.
 #[allow(clippy::module_inception)]
 pub mod block;
+/// A module that provides DTOs.
+#[cfg(feature = "dto")]
+pub mod dto;
 /// A module that contains helper functions and types.
 pub mod helper;
 /// A module that provides types and syntactic validations of inputs.

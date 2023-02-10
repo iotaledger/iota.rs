@@ -6,6 +6,7 @@
 mod address;
 mod block_builder;
 mod consolidation;
+mod high_level;
 mod types;
 
 pub use self::{address::*, block_builder::*, types::*};

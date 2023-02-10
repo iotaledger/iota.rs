@@ -36,7 +36,6 @@ serde = { version = "1.0.152", default-features = false, features = [ "derive" ]
 serde-big-array = { version = "0.4.1", default-features = false, optional = true }
 serde_json = { version = "1.0.92", default-features = false, features = [ "alloc" ], optional = true }
 serde_repr = { version = "0.1.10", default-features = false, optional = true }
-thiserror = { version = "1.0.38", default-features = false }
 
 [dev-dependencies]
 num_cpus = { version = "1.15.0", default-features = false }

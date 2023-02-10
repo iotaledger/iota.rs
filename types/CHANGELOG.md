@@ -19,6 +19,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security -->
 
+## 1.0.0-rc.6 - 2023-XX-XX
+
+### Changed
+
+- Core and participation api `Error`s don't use `thiserror` anymore for `no_std` support;
+
 ## 1.0.0-rc.5 - 2023-02-08
 
 ### Added

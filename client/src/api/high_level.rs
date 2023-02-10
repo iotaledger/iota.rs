@@ -17,7 +17,6 @@ use iota_types::{
     },
 };
 
-use super::Client;
 use crate::{
     api::{ClientBlockBuilder, GetAddressesBuilder},
     constants::{
@@ -26,6 +25,7 @@ use crate::{
     error::{Error, Result},
     node_api::indexer::query_parameters::QueryParameter,
     secret::SecretManager,
+    Client,
 };
 
 impl Client {

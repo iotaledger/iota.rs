@@ -1,7 +1,7 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! The `DatabaseProvider` implementation for `StrongholdAdapter`.
+//! The `StorageProvider` implementation for `StrongholdAdapter`.
 
 use std::ops::Deref;
 
@@ -9,10 +9,10 @@ use async_trait::async_trait;
 use crypto::ciphers::chacha;
 
 use super::{common::PRIVATE_DATA_CLIENT_PATH, StrongholdAdapter};
-use crate::{db::DatabaseProvider, Error, Result};
+use crate::{storage::StorageProvider, Error, Result};
 
 #[async_trait]
-impl DatabaseProvider for StrongholdAdapter {
+impl StorageProvider for StrongholdAdapter {
     async fn get(&mut self, k: &[u8]) -> Result<Option<Vec<u8>>> {
         let data = match self
             .stronghold
@@ -78,7 +78,7 @@ mod tests {
         use std::fs;
 
         use super::StrongholdAdapter;
-        use crate::db::DatabaseProvider;
+        use crate::storage::StorageProvider;
 
         let snapshot_path = "test_stronghold_db.stronghold";
         let mut stronghold = StrongholdAdapter::builder()
