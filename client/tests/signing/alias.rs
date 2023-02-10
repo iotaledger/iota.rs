@@ -7,6 +7,7 @@ use crypto::keys::slip10::Chain;
 use iota_client::{
     api::{transaction::validate_transaction_payload_length, verify_semantic, PreparedTransactionData},
     block::{
+        address::{Address, AliasAddress},
         input::{Input, UtxoInput},
         output::InputsCommitment,
         payload::{
@@ -15,6 +16,7 @@ use iota_client::{
         },
         protocol::protocol_parameters,
         semantic::ConflictReason,
+        unlock::{AliasUnlock, SignatureUnlock},
     },
     constants::{HD_WALLET_TYPE, SHIMMER_COIN_TYPE, SHIMMER_TESTNET_BECH32_HRP},
     secret::{mnemonic::MnemonicSecretManager, SecretManage, SecretManageExt, SecretManager},
@@ -22,7 +24,11 @@ use iota_client::{
 };
 use iota_types::block::output::AliasId;
 
-use crate::{build_inputs, build_outputs, Build::Alias, ALIAS_ID_2};
+use crate::{
+    build_inputs, build_outputs,
+    Build::{Alias, Basic},
+    ALIAS_ID_1,
+};
 
 #[tokio::test]
 async fn sign_alias_state_transition() -> Result<()> {
@@ -39,11 +45,11 @@ async fn sign_alias_state_transition() -> Result<()> {
         .to_bech32(SHIMMER_TESTNET_BECH32_HRP);
 
     let protocol_parameters = protocol_parameters();
-    let alias_id_2 = AliasId::from_str(ALIAS_ID_2)?;
+    let alias_id = AliasId::from_str(ALIAS_ID_1)?;
 
     let inputs = build_inputs(vec![Alias(
         1_000_000,
-        alias_id_2,
+        alias_id,
         0,
         bech32_address_0,
         bech32_address_1,
@@ -61,7 +67,7 @@ async fn sign_alias_state_transition() -> Result<()> {
 
     let outputs = build_outputs(vec![Alias(
         1_000_000,
-        alias_id_2,
+        alias_id,
         1,
         bech32_address_0,
         bech32_address_1,
@@ -95,6 +101,10 @@ async fn sign_alias_state_transition() -> Result<()> {
     let unlocks = secret_manager
         .sign_transaction_essence(&prepared_transaction_data)
         .await?;
+
+    assert_eq!(unlocks.len(), 1);
+    assert_eq!((*unlocks).get(0).unwrap().kind(), SignatureUnlock::KIND);
+
     let tx_payload = TransactionPayload::new(prepared_transaction_data.essence.clone(), unlocks)?;
 
     validate_transaction_payload_length(&tx_payload)?;
@@ -125,11 +135,11 @@ async fn sign_alias_governance_transition() -> Result<()> {
         .to_bech32(SHIMMER_TESTNET_BECH32_HRP);
 
     let protocol_parameters = protocol_parameters();
-    let alias_id_2 = AliasId::from_str(ALIAS_ID_2)?;
+    let alias_id = AliasId::from_str(ALIAS_ID_1)?;
 
     let inputs = build_inputs(vec![Alias(
         1_000_000,
-        alias_id_2,
+        alias_id,
         0,
         bech32_address_0,
         bech32_address_1,
@@ -147,7 +157,7 @@ async fn sign_alias_governance_transition() -> Result<()> {
 
     let outputs = build_outputs(vec![Alias(
         1_000_000,
-        alias_id_2,
+        alias_id,
         0,
         bech32_address_0,
         bech32_address_1,
@@ -181,6 +191,138 @@ async fn sign_alias_governance_transition() -> Result<()> {
     let unlocks = secret_manager
         .sign_transaction_essence(&prepared_transaction_data)
         .await?;
+
+    assert_eq!(unlocks.len(), 1);
+    assert_eq!((*unlocks).get(0).unwrap().kind(), SignatureUnlock::KIND);
+
+    let tx_payload = TransactionPayload::new(prepared_transaction_data.essence.clone(), unlocks)?;
+
+    validate_transaction_payload_length(&tx_payload)?;
+
+    let current_time = 100;
+
+    let conflict = verify_semantic(&prepared_transaction_data.inputs_data, &tx_payload, current_time)?;
+
+    if conflict != ConflictReason::None {
+        panic!("{conflict:?}, with {tx_payload:#?}");
+    }
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn alias_reference_unlock() -> Result<()> {
+    let secret_manager =
+        SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(&Client::generate_mnemonic()?)?);
+
+    let bech32_address_0 = &secret_manager
+        .generate_addresses(SHIMMER_COIN_TYPE, 0, 0..1, false, None)
+        .await?[0]
+        .to_bech32(SHIMMER_TESTNET_BECH32_HRP);
+    let bech32_address_1 = &secret_manager
+        .generate_addresses(SHIMMER_COIN_TYPE, 0, 1..2, false, None)
+        .await?[0]
+        .to_bech32(SHIMMER_TESTNET_BECH32_HRP);
+
+    let protocol_parameters = protocol_parameters();
+    let alias_id = AliasId::from_str(ALIAS_ID_1)?;
+    let alias_bech32_address = &Address::Alias(AliasAddress::new(alias_id)).to_bech32(SHIMMER_TESTNET_BECH32_HRP);
+
+    let inputs = build_inputs(vec![
+        Alias(
+            1_000_000,
+            alias_id,
+            0,
+            bech32_address_0,
+            bech32_address_1,
+            None,
+            None,
+            None,
+            Some(Chain::from_u32_hardened(vec![
+                HD_WALLET_TYPE,
+                SHIMMER_COIN_TYPE,
+                0,
+                0,
+                0,
+            ])),
+        ),
+        Basic(
+            1_000_000,
+            alias_bech32_address,
+            None,
+            None,
+            None,
+            None,
+            None,
+            Some(Chain::from_u32_hardened(vec![
+                HD_WALLET_TYPE,
+                SHIMMER_COIN_TYPE,
+                0,
+                0,
+                0,
+            ])),
+        ),
+    ]);
+
+    let outputs = build_outputs(vec![
+        Alias(
+            1_000_000,
+            alias_id,
+            1,
+            bech32_address_0,
+            bech32_address_1,
+            None,
+            None,
+            None,
+            None,
+        ),
+        Basic(
+            1_000_000,
+            alias_bech32_address,
+            None,
+            None,
+            None,
+            None,
+            None,
+            Some(Chain::from_u32_hardened(vec![
+                HD_WALLET_TYPE,
+                SHIMMER_COIN_TYPE,
+                0,
+                0,
+                0,
+            ])),
+        ),
+    ]);
+
+    let essence = TransactionEssence::Regular(
+        RegularTransactionEssence::builder(
+            protocol_parameters.network_id(),
+            InputsCommitment::new(inputs.iter().map(|i| &i.output)),
+        )
+        .with_inputs(
+            inputs
+                .iter()
+                .map(|i| Input::Utxo(UtxoInput::from(*i.output_metadata.output_id())))
+                .collect(),
+        )
+        .with_outputs(outputs)
+        .finish(&protocol_parameters)?,
+    );
+
+    let prepared_transaction_data = PreparedTransactionData {
+        essence,
+        inputs_data: inputs,
+        remainder: None,
+    };
+
+    let unlocks = secret_manager
+        .sign_transaction_essence(&prepared_transaction_data)
+        .await?;
+
+    assert_eq!(unlocks.len(), 2);
+    assert_eq!((*unlocks).get(0).unwrap().kind(), SignatureUnlock::KIND);
+    assert_eq!((*unlocks).get(1).unwrap().kind(), AliasUnlock::KIND);
+
     let tx_payload = TransactionPayload::new(prepared_transaction_data.essence.clone(), unlocks)?;
 
     validate_transaction_payload_length(&tx_payload)?;
