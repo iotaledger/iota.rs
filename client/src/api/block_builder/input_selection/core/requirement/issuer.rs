@@ -14,7 +14,7 @@ impl InputSelection {
     pub(crate) fn fulfill_issuer_requirement(
         &mut self,
         address: Address,
-    ) -> Result<(Vec<(InputSigningData, Option<AliasTransition>)>, Option<Requirement>)> {
+    ) -> Result<Vec<(InputSigningData, Option<AliasTransition>)>> {
         log::debug!("Treating {address:?} issuer requirement as a sender requirement");
 
         match self.fulfill_sender_requirement(address) {

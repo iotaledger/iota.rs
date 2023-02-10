@@ -32,7 +32,7 @@ impl InputSelection {
     pub(crate) fn fulfill_nft_requirement(
         &mut self,
         nft_id: NftId,
-    ) -> Result<(Vec<(InputSigningData, Option<AliasTransition>)>, Option<Requirement>)> {
+    ) -> Result<Vec<(InputSigningData, Option<AliasTransition>)>> {
         // Check if the requirement is already fulfilled.
         if let Some(output) = self
             .selected_inputs
@@ -40,7 +40,7 @@ impl InputSelection {
             .find(|input| is_nft_with_id(&input.output, input.output_id(), &nft_id))
         {
             log::debug!("{nft_id:?} requirement already fulfilled by {:?}", output.output_id());
-            return Ok((Vec::new(), None));
+            return Ok(Vec::new());
         }
 
         // Check if the requirement can be fulfilled.
@@ -54,6 +54,6 @@ impl InputSelection {
 
         log::debug!("{nft_id:?} requirement fulfilled by {:?}", input.output_id());
 
-        Ok((vec![(input, None)], None))
+        Ok(vec![(input, None)])
     }
 }

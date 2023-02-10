@@ -93,9 +93,7 @@ fn missing_amount(inputs_sum: u64, outputs_sum: u64, remainder_amount: u64, nati
 }
 
 impl InputSelection {
-    pub(crate) fn fulfill_amount_requirement(
-        &mut self,
-    ) -> Result<(Vec<(InputSigningData, Option<AliasTransition>)>, Option<Requirement>)> {
+    pub(crate) fn fulfill_amount_requirement(&mut self) -> Result<Vec<(InputSigningData, Option<AliasTransition>)>> {
         let (mut inputs_sum, mut outputs_sum, mut inputs_sdr, mut outputs_sdr) =
             amount_sums(&self.selected_inputs, &self.outputs, self.timestamp);
 
@@ -105,7 +103,7 @@ impl InputSelection {
 
         if missing_amount(inputs_sum, outputs_sum, remainder_amount, native_tokens_remainder) == 0 {
             log::debug!("Amount requirement already fulfilled");
-            return Ok((newly_selected_inputs, None));
+            return Ok(newly_selected_inputs);
         } else {
             log::debug!(
                 "Fulfilling amount requirement with input {inputs_sum}, output {outputs_sum}, input sdrs {inputs_sdr:?} and output sdrs {outputs_sdr:?}"
@@ -248,7 +246,9 @@ impl InputSelection {
                         .retain(|input| !newly_selected_ids.contains(input.output_id()));
 
                     // TODO explanation of Amount
-                    return Ok((newly_selected_inputs, Some(Requirement::Amount)));
+                    self.requirements.push(Requirement::Amount);
+
+                    return Ok(newly_selected_inputs);
                 }
             }
         }
@@ -314,6 +314,6 @@ impl InputSelection {
         self.available_inputs
             .retain(|input| !newly_selected_ids.contains(input.output_id()));
 
-        Ok((newly_selected_inputs, None))
+        Ok(newly_selected_inputs)
     }
 }

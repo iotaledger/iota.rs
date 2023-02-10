@@ -260,12 +260,7 @@ impl InputSelection {
         // Process all the requirements until there are no more.
         while let Some(requirement) = self.requirements.pop() {
             // Fulfill the requirement.
-            let (inputs, new_requirement) = self.fulfill_requirement(requirement)?;
-
-            if let Some(new_requirement) = new_requirement {
-                log::debug!("Adding new {new_requirement:?} from evaluating {requirement:?}");
-                self.requirements.push(new_requirement);
-            }
+            let inputs = self.fulfill_requirement(requirement)?;
 
             // Select suggested inputs.
             for (input, alias_transition) in inputs {

@@ -22,7 +22,7 @@ impl InputSelection {
     pub(crate) fn fulfill_foundry_requirement(
         &mut self,
         foundry_id: FoundryId,
-    ) -> Result<(Vec<(InputSigningData, Option<AliasTransition>)>, Option<Requirement>)> {
+    ) -> Result<Vec<(InputSigningData, Option<AliasTransition>)>> {
         // Check if the requirement is already fulfilled.
         if let Some(output) = self
             .selected_inputs
@@ -33,7 +33,7 @@ impl InputSelection {
                 "{foundry_id:?} requirement already fulfilled by {:?}",
                 output.output_id()
             );
-            return Ok((Vec::new(), None));
+            return Ok(Vec::new());
         }
 
         // Check if the requirement can be fulfilled.
@@ -47,6 +47,6 @@ impl InputSelection {
 
         log::debug!("{foundry_id:?} requirement fulfilled by {:?}", input.output_id());
 
-        Ok((vec![(input, None)], None))
+        Ok(vec![(input, None)])
     }
 }

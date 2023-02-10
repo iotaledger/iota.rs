@@ -61,7 +61,7 @@ impl InputSelection {
     fn fulfill_ed25519_address_requirement(
         &mut self,
         address: Address,
-    ) -> Result<(Vec<(InputSigningData, Option<AliasTransition>)>, Option<Requirement>)> {
+    ) -> Result<Vec<(InputSigningData, Option<AliasTransition>)>> {
         // Checks if the requirement is already fulfilled.
         if let Some(output) = self
             .selected_inputs
@@ -72,7 +72,7 @@ impl InputSelection {
                 "{address:?} sender requirement already fulfilled by {:?}",
                 output.output_id()
             );
-            return Ok((Vec::new(), None));
+            return Ok(Vec::new());
         }
 
         // Checks if the requirement can be fulfilled.
@@ -109,7 +109,7 @@ impl InputSelection {
                     alias_transition
                 );
 
-                Ok((vec![(input, alias_transition)], None))
+                Ok(vec![(input, alias_transition)])
             }
             None => Err(Error::UnfulfillableRequirement(Requirement::Sender(address))),
         }
@@ -119,7 +119,7 @@ impl InputSelection {
     pub(crate) fn fulfill_sender_requirement(
         &mut self,
         address: Address,
-    ) -> Result<(Vec<(InputSigningData, Option<AliasTransition>)>, Option<Requirement>)> {
+    ) -> Result<Vec<(InputSigningData, Option<AliasTransition>)>> {
         match address {
             Address::Ed25519(_) => self.fulfill_ed25519_address_requirement(address),
             Address::Alias(alias_address) => {
