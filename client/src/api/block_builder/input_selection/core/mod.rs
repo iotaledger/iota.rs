@@ -14,9 +14,9 @@ pub use self::{
     requirement::Requirement,
 };
 use crate::{
-    api::{block_builder::input_selection::helpers::sort_input_signing_data, types::RemainderData},
+    api::types::RemainderData,
     block::{
-        address::{Address, AliasAddress, NftAddress},
+        address::{Address, AliasAddress, Ed25519Address, NftAddress},
         output::{AliasTransition, ChainId, Output, OutputId},
         protocol::ProtocolParameters,
     },
@@ -242,6 +242,80 @@ impl InputSelection {
         })
     }
 
+    // Inputs need to be sorted before signing, because the reference unlock conditions can only reference a lower index
+    pub(crate) fn sort_input_signing_data(inputs: Vec<InputSigningData>) -> crate::Result<Vec<InputSigningData>> {
+        // filter for ed25519 address first, safe to unwrap since we encoded it before
+        let (mut sorted_inputs, alias_nft_address_inputs): (Vec<InputSigningData>, Vec<InputSigningData>) = inputs
+            .into_iter()
+            // PANIC: safe to unwrap as we encoded the address before
+            .partition(|input| {
+                Address::try_from_bech32(&input.bech32_address).unwrap().1.kind() == Ed25519Address::KIND
+            });
+
+        for input in alias_nft_address_inputs {
+            let input_address = Address::try_from_bech32(&input.bech32_address);
+            match sorted_inputs.iter().position(|input_signing_data| match input_address {
+                Ok((_, unlock_address)) => match unlock_address {
+                    Address::Alias(unlock_address) => {
+                        if let Output::Alias(alias_output) = &input_signing_data.output {
+                            *unlock_address.alias_id() == alias_output.alias_id_non_null(input_signing_data.output_id())
+                        } else {
+                            false
+                        }
+                    }
+                    Address::Nft(unlock_address) => {
+                        if let Output::Nft(nft_output) = &input_signing_data.output {
+                            *unlock_address.nft_id() == nft_output.nft_id_non_null(input_signing_data.output_id())
+                        } else {
+                            false
+                        }
+                    }
+                    _ => false,
+                },
+                _ => false,
+            }) {
+                Some(position) => {
+                    // Insert after the output we need
+                    sorted_inputs.insert(position + 1, input);
+                }
+                None => {
+                    // insert before address
+                    let alias_or_nft_address = match &input.output {
+                        Output::Alias(alias_output) => Some(Address::Alias(AliasAddress::new(
+                            alias_output.alias_id_non_null(input.output_id()),
+                        ))),
+                        Output::Nft(nft_output) => Some(Address::Nft(NftAddress::new(
+                            nft_output.nft_id_non_null(input.output_id()),
+                        ))),
+                        _ => None,
+                    };
+
+                    if let Some(alias_or_nft_address) = alias_or_nft_address {
+                        // Check for existing outputs for this address, and insert before
+                        match sorted_inputs.iter().position(|input_signing_data| {
+                            Address::try_from_bech32(&input_signing_data.bech32_address)
+                                .expect("safe to unwrap, we encoded it before")
+                                .1
+                                == alias_or_nft_address
+                        }) {
+                            Some(position) => {
+                                // Insert before the output with this address required for unlocking
+                                sorted_inputs.insert(position, input);
+                            }
+                            // just push output
+                            None => sorted_inputs.push(input),
+                        }
+                    } else {
+                        // just push basic or foundry output
+                        sorted_inputs.push(input);
+                    }
+                }
+            }
+        }
+
+        Ok(sorted_inputs)
+    }
+
     /// Selects inputs that meet the requirements of the outputs to satisfy the semantic validation of the overall
     /// transaction. Also creates a remainder output and chain transition outputs if required.
     pub fn select(mut self) -> Result<Selected> {
@@ -260,12 +334,7 @@ impl InputSelection {
         // Process all the requirements until there are no more.
         while let Some(requirement) = self.requirements.pop() {
             // Fulfill the requirement.
-            let (inputs, new_requirement) = self.fulfill_requirement(requirement)?;
-
-            if let Some(new_requirement) = new_requirement {
-                log::debug!("Adding new {new_requirement:?} from evaluating {requirement:?}");
-                self.requirements.push(new_requirement);
-            }
+            let inputs = self.fulfill_requirement(requirement)?;
 
             // Select suggested inputs.
             for (input, alias_transition) in inputs {
@@ -282,7 +351,7 @@ impl InputSelection {
         self.outputs.extend(storage_deposit_returns);
 
         Ok(Selected {
-            inputs: sort_input_signing_data(self.selected_inputs)?,
+            inputs: Self::sort_input_signing_data(self.selected_inputs)?,
             outputs: self.outputs,
             remainder,
         })

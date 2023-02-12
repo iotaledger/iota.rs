@@ -5,7 +5,7 @@ use std::{cmp::Ordering, collections::HashSet};
 
 use primitive_types::U256;
 
-use super::{InputSelection, Requirement};
+use super::InputSelection;
 use crate::{
     block::output::{AliasTransition, NativeToken, NativeTokens, NativeTokensBuilder, Output, TokenScheme},
     error::Result,
@@ -116,7 +116,7 @@ pub(crate) fn get_native_tokens_diff(
 impl InputSelection {
     pub(crate) fn fulfill_native_tokens_requirement(
         &mut self,
-    ) -> Result<(Vec<(InputSigningData, Option<AliasTransition>)>, Option<Requirement>)> {
+    ) -> Result<Vec<(InputSigningData, Option<AliasTransition>)>> {
         let mut input_native_tokens = get_native_tokens(self.selected_inputs.iter().map(|input| &input.output))?;
         let mut output_native_tokens = get_native_tokens(self.outputs.iter())?;
         let (minted_native_tokens, melted_native_tokens) =
@@ -180,11 +180,11 @@ impl InputSelection {
             self.available_inputs
                 .retain(|input| !newly_selected_ids.contains(input.output_id()));
 
-            Ok((newly_selected_inputs, None))
+            Ok(newly_selected_inputs)
         } else {
             log::debug!("Native tokens requirement already fulfilled");
 
-            Ok((Vec::new(), None))
+            Ok(Vec::new())
         }
     }
 }

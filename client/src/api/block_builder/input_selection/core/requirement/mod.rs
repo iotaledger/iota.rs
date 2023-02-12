@@ -1,8 +1,6 @@
 // Copyright 2023 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-#![allow(clippy::type_complexity)]
-
 pub(crate) mod alias;
 pub(crate) mod amount;
 pub(crate) mod foundry;
@@ -47,7 +45,7 @@ impl InputSelection {
     pub(crate) fn fulfill_requirement(
         &mut self,
         requirement: Requirement,
-    ) -> Result<(Vec<(InputSigningData, Option<AliasTransition>)>, Option<Requirement>)> {
+    ) -> Result<Vec<(InputSigningData, Option<AliasTransition>)>> {
         log::debug!("Fulfilling requirement {requirement:?}");
 
         match requirement {

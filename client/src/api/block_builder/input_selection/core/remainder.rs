@@ -3,6 +3,7 @@
 
 use super::{
     requirement::{
+        alias::is_alias_transition,
         amount::amount_sums,
         native_tokens::{get_minted_and_melted_native_tokens, get_native_tokens, get_native_tokens_diff},
     },
@@ -23,39 +24,23 @@ use crate::{
 
 impl InputSelection {
     // Gets the remainder address from configuration of finds one from the inputs.
-    // TODO should this also look for non-ed25519 addresses?
-    // TODO should this also check available inputs ? not only selected.
     fn get_remainder_address(&self) -> Option<(Address, Option<Chain>)> {
         if self.remainder_address.is_some() {
             return self.remainder_address.map(|address| (address, None));
         }
 
-        // TODO need to check timelock/expiration
-
         for input in &self.selected_inputs {
-            if let Some(unlock_conditions) = input.output.unlock_conditions() {
-                if let Some(address_unlock_condition) = unlock_conditions.address() {
-                    if address_unlock_condition.address().is_ed25519() {
-                        return Some((*address_unlock_condition.address(), input.chain.clone()));
-                    }
-                }
+            let alias_transition =
+                is_alias_transition(input, self.outputs.as_slice()).map(|(alias_transition, _)| alias_transition);
+            // PANIC: safe to unwrap as outputs with no address have been filtered out already.
+            let required_address = input
+                .output
+                .required_and_unlocked_address(self.timestamp, input.output_id(), alias_transition)
+                .unwrap()
+                .0;
 
-                // TODO check transition type
-
-                if let Some(governor_address_unlock_condition) = unlock_conditions.governor_address() {
-                    if governor_address_unlock_condition.address().is_ed25519() {
-                        return Some((*governor_address_unlock_condition.address(), input.chain.clone()));
-                    }
-                }
-
-                if let Some(state_controller_address_unlock_condition) = unlock_conditions.state_controller_address() {
-                    if state_controller_address_unlock_condition.address().is_ed25519() {
-                        return Some((
-                            *state_controller_address_unlock_condition.address(),
-                            input.chain.clone(),
-                        ));
-                    }
-                }
+            if required_address.is_ed25519() {
+                return Some((required_address, input.chain.clone()));
             }
         }
 
