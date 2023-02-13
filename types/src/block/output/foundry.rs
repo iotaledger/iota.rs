@@ -397,14 +397,14 @@ impl FoundryOutput {
         _output_id: &OutputId,
         unlock: &Unlock,
         inputs: &[(OutputId, &Output)],
-        context: &mut ValidationContext,
+        context: &mut ValidationContext<'_>,
     ) -> Result<(), ConflictReason> {
         Address::from(*self.alias_address()).unlock(unlock, inputs, context)
     }
 }
 
 impl StateTransitionVerifier for FoundryOutput {
-    fn creation(next_state: &Self, context: &ValidationContext) -> Result<(), StateTransitionError> {
+    fn creation(next_state: &Self, context: &ValidationContext<'_>) -> Result<(), StateTransitionError> {
         let alias_chain_id = ChainId::from(*next_state.alias_address().alias_id());
 
         if let (Some(Output::Alias(input_alias)), Some(Output::Alias(output_alias))) = (
@@ -439,7 +439,7 @@ impl StateTransitionVerifier for FoundryOutput {
     fn transition(
         current_state: &Self,
         next_state: &Self,
-        context: &ValidationContext,
+        context: &ValidationContext<'_>,
     ) -> Result<(), StateTransitionError> {
         if current_state.alias_address() != next_state.alias_address()
             || current_state.serial_number != next_state.serial_number
@@ -513,7 +513,7 @@ impl StateTransitionVerifier for FoundryOutput {
         Ok(())
     }
 
-    fn destruction(current_state: &Self, context: &ValidationContext) -> Result<(), StateTransitionError> {
+    fn destruction(current_state: &Self, context: &ValidationContext<'_>) -> Result<(), StateTransitionError> {
         let token_id = current_state.token_id();
         let input_tokens = context.input_native_tokens.get(&token_id).copied().unwrap_or_default();
         let TokenScheme::Simple(ref current_token_scheme) = current_state.token_scheme;

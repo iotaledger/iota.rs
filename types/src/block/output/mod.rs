@@ -301,7 +301,7 @@ impl Output {
     pub fn verify_state_transition(
         current_state: Option<&Self>,
         next_state: Option<&Self>,
-        context: &ValidationContext,
+        context: &ValidationContext<'_>,
     ) -> Result<(), StateTransitionError> {
         match (current_state, next_state) {
             // Creations.

@@ -39,13 +39,13 @@ impl FromStr for TreasuryInput {
 }
 
 impl core::fmt::Display for TreasuryInput {
-    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(f, "{}", self.0)
     }
 }
 
 impl core::fmt::Debug for TreasuryInput {
-    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(f, "TreasuryInput({})", self.0)
     }
 }

@@ -364,7 +364,7 @@ impl NftOutput {
         output_id: &OutputId,
         unlock: &Unlock,
         inputs: &[(OutputId, &Output)],
-        context: &mut ValidationContext,
+        context: &mut ValidationContext<'_>,
     ) -> Result<(), ConflictReason> {
         self.unlock_conditions()
             .locked_address(self.address(), context.milestone_timestamp)
@@ -385,7 +385,7 @@ impl NftOutput {
 }
 
 impl StateTransitionVerifier for NftOutput {
-    fn creation(next_state: &Self, context: &ValidationContext) -> Result<(), StateTransitionError> {
+    fn creation(next_state: &Self, context: &ValidationContext<'_>) -> Result<(), StateTransitionError> {
         if !next_state.nft_id.is_null() {
             return Err(StateTransitionError::NonZeroCreatedId);
         }
@@ -402,7 +402,7 @@ impl StateTransitionVerifier for NftOutput {
     fn transition(
         current_state: &Self,
         next_state: &Self,
-        _context: &ValidationContext,
+        _context: &ValidationContext<'_>,
     ) -> Result<(), StateTransitionError> {
         if current_state.immutable_features != next_state.immutable_features {
             return Err(StateTransitionError::MutatedImmutableField);
@@ -411,7 +411,7 @@ impl StateTransitionVerifier for NftOutput {
         Ok(())
     }
 
-    fn destruction(_current_state: &Self, _context: &ValidationContext) -> Result<(), StateTransitionError> {
+    fn destruction(_current_state: &Self, _context: &ValidationContext<'_>) -> Result<(), StateTransitionError> {
         Ok(())
     }
 }

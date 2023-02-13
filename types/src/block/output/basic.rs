@@ -280,7 +280,7 @@ impl BasicOutput {
         _output_id: &OutputId,
         unlock: &Unlock,
         inputs: &[(OutputId, &Output)],
-        context: &mut ValidationContext,
+        context: &mut ValidationContext<'_>,
     ) -> Result<(), ConflictReason> {
         self.unlock_conditions()
             .locked_address(self.address(), context.milestone_timestamp)

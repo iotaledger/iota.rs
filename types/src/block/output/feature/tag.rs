@@ -51,13 +51,13 @@ impl TagFeature {
 }
 
 impl core::fmt::Display for TagFeature {
-    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(f, "{}", prefix_hex::encode(self.tag()))
     }
 }
 
 impl core::fmt::Debug for TagFeature {
-    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(f, "TagFeature({self})")
     }
 }

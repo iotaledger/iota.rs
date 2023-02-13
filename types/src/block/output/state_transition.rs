@@ -30,15 +30,15 @@ pub enum StateTransitionError {
 ///
 pub trait StateTransitionVerifier {
     ///
-    fn creation(next_state: &Self, context: &ValidationContext) -> Result<(), StateTransitionError>;
+    fn creation(next_state: &Self, context: &ValidationContext<'_>) -> Result<(), StateTransitionError>;
 
     ///
     fn transition(
         current_state: &Self,
         next_state: &Self,
-        context: &ValidationContext,
+        context: &ValidationContext<'_>,
     ) -> Result<(), StateTransitionError>;
 
     ///
-    fn destruction(current_state: &Self, context: &ValidationContext) -> Result<(), StateTransitionError>;
+    fn destruction(current_state: &Self, context: &ValidationContext<'_>) -> Result<(), StateTransitionError>;
 }
