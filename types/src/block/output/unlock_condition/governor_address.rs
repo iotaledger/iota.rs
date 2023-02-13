@@ -12,16 +12,16 @@ use crate::block::address::Address;
 pub struct GovernorAddressUnlockCondition(Address);
 
 impl GovernorAddressUnlockCondition {
-    /// The [`UnlockCondition`](crate::block::output::UnlockCondition) kind of an [ GovernorAddressUnlockCondition`].
+    /// The [`UnlockCondition`](crate::block::output::UnlockCondition) kind of an [`GovernorAddressUnlockCondition`].
     pub const KIND: u8 = 5;
 
-    /// Creates a new [ GovernorAddressUnlockCondition`].
+    /// Creates a new [`GovernorAddressUnlockCondition`].
     #[inline(always)]
     pub fn new(address: Address) -> Self {
         Self(address)
     }
 
-    /// Returns the address of a [ GovernorAddressUnlockCondition`].
+    /// Returns the address of a [`GovernorAddressUnlockCondition`].
     #[inline(always)]
     pub fn address(&self) -> &Address {
         &self.0
