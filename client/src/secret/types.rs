@@ -140,10 +140,6 @@ pub struct InputSigningData {
     pub output_metadata: OutputMetadata,
     /// The chain derived from seed, only for ed25519 addresses
     pub chain: Option<Chain>,
-    /// The bech32 encoded address, required because of alias outputs where we have multiple possible unlock
-    /// conditions, because we otherwise don't know which one we need
-    #[serde(rename = "bech32Address")]
-    pub bech32_address: String,
 }
 
 impl InputSigningData {
@@ -163,10 +159,6 @@ pub struct InputSigningDataDto {
     pub output_metadata: OutputMetadataDto,
     /// The chain derived from seed, only for ed25519 addresses
     pub chain: Option<Chain>,
-    /// The bech32 encoded address, required because of alias outputs where we have multiple possible unlock
-    /// conditions, because we otherwise don't know which one we need
-    #[serde(rename = "bech32Address")]
-    pub bech32_address: String,
 }
 
 impl InputSigningData {
@@ -175,7 +167,6 @@ impl InputSigningData {
             output: Output::try_from_dto(&input.output, token_supply)?,
             output_metadata: OutputMetadata::try_from(&input.output_metadata)?,
             chain: input.chain.clone(),
-            bech32_address: input.bech32_address.clone(),
         })
     }
 
@@ -184,7 +175,6 @@ impl InputSigningData {
             output: Output::try_from_dto_unverified(&input.output)?,
             output_metadata: OutputMetadata::try_from(&input.output_metadata)?,
             chain: input.chain.clone(),
-            bech32_address: input.bech32_address.clone(),
         })
     }
 }
@@ -195,7 +185,6 @@ impl From<&InputSigningData> for InputSigningDataDto {
             output: OutputDto::from(&input.output),
             output_metadata: OutputMetadataDto::from(&input.output_metadata),
             chain: input.chain.clone(),
-            bech32_address: input.bech32_address.clone(),
         }
     }
 }

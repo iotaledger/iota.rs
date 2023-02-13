@@ -46,6 +46,7 @@ impl SecretManageExt for PlaceholderSecretManager {
     async fn sign_transaction_essence(
         &self,
         _prepared_transaction_data: &PreparedTransactionData,
+        _time: u32,
     ) -> crate::Result<Unlocks> {
         return Err(crate::Error::PlaceholderSecretManager);
     }

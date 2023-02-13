@@ -89,14 +89,14 @@ impl<'a> ClientBlockBuilder<'a> {
     pub async fn sign_transaction(&self, prepared_transaction_data: PreparedTransactionData) -> Result<Payload> {
         log::debug!("[sign_transaction] {:?}", prepared_transaction_data);
         let secret_manager = self.secret_manager.ok_or(Error::MissingParameter("secret manager"))?;
+        let current_time = self.client.get_time_checked().await?;
+
         let unlocks = secret_manager
-            .sign_transaction_essence(&prepared_transaction_data)
+            .sign_transaction_essence(&prepared_transaction_data, current_time)
             .await?;
         let tx_payload = TransactionPayload::new(prepared_transaction_data.essence.clone(), unlocks)?;
 
         validate_transaction_payload_length(&tx_payload)?;
-
-        let current_time = self.client.get_time_checked().await?;
 
         let conflict = verify_semantic(&prepared_transaction_data.inputs_data, &tx_payload, current_time)?;
 

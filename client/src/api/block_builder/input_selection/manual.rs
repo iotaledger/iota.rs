@@ -16,7 +16,7 @@ use crate::{
     api::{
         address::search_address,
         block_builder::input_selection::{Burn, InputSelection, Selected},
-        input_selection::core::requirement::alias::is_alias_transition_internal,
+        input_selection::{core::requirement::alias::is_alias_transition_internal, is_alias_transition},
         ClientBlockBuilder,
     },
     constants::HD_WALLET_TYPE,
@@ -88,7 +88,6 @@ impl<'a> ClientBlockBuilder<'a> {
                                 address_index,
                             ])
                         }),
-                        bech32_address: unlock_address.to_bech32(&bech32_hrp),
                     });
                 }
             }
@@ -100,10 +99,19 @@ impl<'a> ClientBlockBuilder<'a> {
             .collect::<HashSet<_>>();
 
         // Assume that we own the addresses for inputs that are provided
-        let available_input_addresses = inputs_data
-            .iter()
-            .map(|input| Ok(Address::try_from_bech32(&input.bech32_address)?.1))
-            .collect::<Result<Vec<Address>>>()?;
+        let mut available_input_addresses = Vec::new();
+        for input in &inputs_data {
+            let alias_transition = is_alias_transition(&input, &self.outputs);
+            let (required_unlock_address, unlocked_alias_or_nft_address) = input.output.required_and_unlocked_address(
+                current_time,
+                input.output_id(),
+                alias_transition.map(|(alias_transition, _)| alias_transition),
+            )?;
+            available_input_addresses.push(required_unlock_address);
+            if let Some(unlocked_alias_or_nft_address) = unlocked_alias_or_nft_address {
+                available_input_addresses.push(unlocked_alias_or_nft_address);
+            }
+        }
 
         inputs_data.sort_unstable_by_key(|input| *input.output_id());
         inputs_data.dedup_by_key(|input| *input.output_id());

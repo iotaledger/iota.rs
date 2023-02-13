@@ -18,6 +18,7 @@ use iota_types::{
 use crate::{
     api::{
         block_builder::input_selection::core::{Error as InputSelectionError, InputSelection, Selected},
+        input_selection::is_alias_transition,
         ClientBlockBuilder, ADDRESS_GAP_RANGE,
     },
     constants::HD_WALLET_TYPE,
@@ -83,17 +84,21 @@ impl<'a> ClientBlockBuilder<'a> {
             .map(|input| *input.output_id())
             .collect::<HashSet<_>>();
 
-        available_inputs.extend(required_inputs_for_sender_or_issuer);
-        available_inputs.sort_unstable_by_key(|input| *input.output_id());
-        available_inputs.dedup_by_key(|input| *input.output_id());
-
-        // Assume that we own the addresses for inputs that are required for the provided outputs
-        let mut available_input_addresses = available_inputs
-            .iter()
-            .map(|input| Ok(Address::try_from_bech32(&input.bech32_address)?.1))
-            .collect::<Result<Vec<Address>>>()?;
-
         let current_time = self.client.get_time_checked().await?;
+        // Assume that we own the addresses for inputs that are required for the provided outputs
+        let mut available_input_addresses = Vec::new();
+        for input in &available_inputs {
+            let alias_transition = is_alias_transition(&input, &self.outputs);
+            let (required_unlock_address, unlocked_alias_or_nft_address) = input.output.required_and_unlocked_address(
+                current_time,
+                input.output_id(),
+                alias_transition.map(|(alias_transition, _)| alias_transition),
+            )?;
+            available_input_addresses.push(required_unlock_address);
+            if let Some(unlocked_alias_or_nft_address) = unlocked_alias_or_nft_address {
+                available_input_addresses.push(unlocked_alias_or_nft_address);
+            }
+        }
 
         // Try to select inputs with required inputs for utxo chains alone before requesting more inputs from addresses.
         let mut input_selection = InputSelection::new(
@@ -193,7 +198,6 @@ impl<'a> ClientBlockBuilder<'a> {
                                     *internal as u32,
                                     address_index,
                                 ])),
-                                bech32_address: str_address.clone(),
                             });
                         }
                     }

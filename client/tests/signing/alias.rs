@@ -98,7 +98,7 @@ async fn sign_alias_state_transition() -> Result<()> {
     };
 
     let unlocks = secret_manager
-        .sign_transaction_essence(&prepared_transaction_data)
+        .sign_transaction_essence(&prepared_transaction_data, 0)
         .await?;
 
     assert_eq!(unlocks.len(), 1);
@@ -187,7 +187,7 @@ async fn sign_alias_governance_transition() -> Result<()> {
     };
 
     let unlocks = secret_manager
-        .sign_transaction_essence(&prepared_transaction_data)
+        .sign_transaction_essence(&prepared_transaction_data, 0)
         .await?;
 
     assert_eq!(unlocks.len(), 1);
@@ -313,7 +313,7 @@ async fn alias_reference_unlock() -> Result<()> {
     };
 
     let unlocks = secret_manager
-        .sign_transaction_essence(&prepared_transaction_data)
+        .sign_transaction_essence(&prepared_transaction_data, 0)
         .await?;
 
     assert_eq!(unlocks.len(), 2);

@@ -9,7 +9,8 @@ pub(crate) mod transition;
 
 use std::collections::{HashMap, HashSet};
 
-use self::requirement::alias::is_alias_transition;
+pub(crate) use requirement::is_alias_transition;
+
 pub use self::{
     burn::{Burn, BurnDto},
     error::Error,
@@ -254,35 +255,55 @@ impl InputSelection {
     }
 
     // Inputs need to be sorted before signing, because the reference unlock conditions can only reference a lower index
-    pub(crate) fn sort_input_signing_data(inputs: Vec<InputSigningData>) -> Result<Vec<InputSigningData>, Error> {
+    pub(crate) fn sort_input_signing_data(
+        inputs: Vec<InputSigningData>,
+        outputs: &[Output],
+        time: u32,
+    ) -> Result<Vec<InputSigningData>, Error> {
         // filter for ed25519 address first, safe to unwrap since we encoded it before
         let (mut sorted_inputs, alias_nft_address_inputs): (Vec<InputSigningData>, Vec<InputSigningData>) = inputs
             .into_iter()
             // PANIC: safe to unwrap as we encoded the address before
-            .partition(|input| {
-                Address::try_from_bech32(&input.bech32_address).unwrap().1.kind() == Ed25519Address::KIND
+            .partition(|input_signing_data| {
+                let alias_transition = is_alias_transition(input_signing_data, outputs);
+                let (input_address, _) = input_signing_data
+                    .output
+                    .required_and_unlocked_address(
+                        time,
+                        input_signing_data.output_id(),
+                        alias_transition.map(|(alias_transition, _)| alias_transition),
+                    )
+                    .unwrap();
+
+                input_address.kind() == Ed25519Address::KIND
             });
 
         for input in alias_nft_address_inputs {
-            let input_address = Address::try_from_bech32(&input.bech32_address);
+            let alias_transition = is_alias_transition(&input, outputs);
+            let (input_address, _) = input
+                .output
+                .required_and_unlocked_address(
+                    time,
+                    input.output_id(),
+                    alias_transition.map(|(alias_transition, _)| alias_transition),
+                )
+                .unwrap();
+
             match sorted_inputs.iter().position(|input_signing_data| match input_address {
-                Ok((_, unlock_address)) => match unlock_address {
-                    Address::Alias(unlock_address) => {
-                        if let Output::Alias(alias_output) = &input_signing_data.output {
-                            *unlock_address.alias_id() == alias_output.alias_id_non_null(input_signing_data.output_id())
-                        } else {
-                            false
-                        }
+                Address::Alias(unlock_address) => {
+                    if let Output::Alias(alias_output) = &input_signing_data.output {
+                        *unlock_address.alias_id() == alias_output.alias_id_non_null(input_signing_data.output_id())
+                    } else {
+                        false
                     }
-                    Address::Nft(unlock_address) => {
-                        if let Output::Nft(nft_output) = &input_signing_data.output {
-                            *unlock_address.nft_id() == nft_output.nft_id_non_null(input_signing_data.output_id())
-                        } else {
-                            false
-                        }
+                }
+                Address::Nft(unlock_address) => {
+                    if let Output::Nft(nft_output) = &input_signing_data.output {
+                        *unlock_address.nft_id() == nft_output.nft_id_non_null(input_signing_data.output_id())
+                    } else {
+                        false
                     }
-                    _ => false,
-                },
+                }
                 _ => false,
             }) {
                 Some(position) => {
@@ -304,10 +325,17 @@ impl InputSelection {
                     if let Some(alias_or_nft_address) = alias_or_nft_address {
                         // Check for existing outputs for this address, and insert before
                         match sorted_inputs.iter().position(|input_signing_data| {
-                            Address::try_from_bech32(&input_signing_data.bech32_address)
-                                .expect("safe to unwrap, we encoded it before")
-                                .1
-                                == alias_or_nft_address
+                            let alias_transition = is_alias_transition(&input_signing_data, outputs);
+                            let (input_address, _) = input_signing_data
+                                .output
+                                .required_and_unlocked_address(
+                                    time,
+                                    input.output_id(),
+                                    alias_transition.map(|(alias_transition, _)| alias_transition),
+                                )
+                                .unwrap();
+
+                            input_address == alias_or_nft_address
                         }) {
                             Some(position) => {
                                 // Insert before the output with this address required for unlocking
@@ -362,7 +390,7 @@ impl InputSelection {
         self.outputs.extend(storage_deposit_returns);
 
         Ok(Selected {
-            inputs: Self::sort_input_signing_data(self.selected_inputs)?,
+            inputs: Self::sort_input_signing_data(self.selected_inputs, &self.outputs, self.timestamp)?,
             outputs: self.outputs,
             remainder,
         })

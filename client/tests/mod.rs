@@ -23,7 +23,6 @@ use iota_client::{
         },
         rand::{block::rand_block_id, transaction::rand_transaction_id},
     },
-    constants::SHIMMER_TESTNET_BECH32_HRP,
     secret::types::InputSigningData,
 };
 use primitive_types::U256;
@@ -256,7 +255,7 @@ fn build_foundry_output(
     builder.finish_output(TOKEN_SUPPLY).unwrap()
 }
 
-fn build_output_inner(build: Build) -> (Output, String, Option<Chain>) {
+fn build_output_inner(build: Build) -> (Output, Option<Chain>) {
     match build {
         Build::Basic(amount, bech32_address, native_tokens, bech32_sender, sdruc, timelock, expiration, chain) => (
             build_basic_output(
@@ -268,7 +267,6 @@ fn build_output_inner(build: Build) -> (Output, String, Option<Chain>) {
                 timelock,
                 expiration,
             ),
-            bech32_address.to_string(),
             chain,
         ),
         Build::Nft(amount, nft_id, bech32_address, native_tokens, bech32_sender, bech32_issuer, sdruc, chain) => (
@@ -281,7 +279,6 @@ fn build_output_inner(build: Build) -> (Output, String, Option<Chain>) {
                 bech32_issuer,
                 sdruc,
             ),
-            bech32_address.to_string(),
             chain,
         ),
         Build::Alias(
@@ -305,12 +302,10 @@ fn build_output_inner(build: Build) -> (Output, String, Option<Chain>) {
                 bech32_sender,
                 bech32_issuer,
             ),
-            state_address.to_string(),
             chain,
         ),
         Build::Foundry(amount, alias_id, serial_number, token_scheme, native_tokens) => (
             build_foundry_output(amount, alias_id, serial_number, token_scheme, native_tokens),
-            Address::Alias(AliasAddress::new(alias_id)).to_bech32(SHIMMER_TESTNET_BECH32_HRP),
             None,
         ),
     }
@@ -320,7 +315,7 @@ fn build_inputs(outputs: Vec<Build>) -> Vec<InputSigningData> {
     outputs
         .into_iter()
         .map(|build| {
-            let (output, bech32_address, chain) = build_output_inner(build);
+            let (output, chain) = build_output_inner(build);
 
             InputSigningData {
                 output,
@@ -336,7 +331,6 @@ fn build_inputs(outputs: Vec<Build>) -> Vec<InputSigningData> {
                     0,
                 ),
                 chain,
-                bech32_address,
             }
         })
         .collect()
