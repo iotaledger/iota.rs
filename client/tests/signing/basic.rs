@@ -13,7 +13,7 @@ use iota_client::{
         },
         protocol::protocol_parameters,
         semantic::ConflictReason,
-        unlock::{ReferenceUnlock, SignatureUnlock},
+        unlock::{SignatureUnlock, Unlock},
     },
     constants::{HD_WALLET_TYPE, SHIMMER_COIN_TYPE, SHIMMER_TESTNET_BECH32_HRP},
     secret::{mnemonic::MnemonicSecretManager, SecretManage, SecretManageExt, SecretManager},
@@ -218,8 +218,18 @@ async fn ed25519_reference_unlocks() -> Result<()> {
 
     assert_eq!(unlocks.len(), 3);
     assert_eq!((*unlocks).get(0).unwrap().kind(), SignatureUnlock::KIND);
-    assert_eq!((*unlocks).get(1).unwrap().kind(), ReferenceUnlock::KIND);
-    assert_eq!((*unlocks).get(2).unwrap().kind(), ReferenceUnlock::KIND);
+    match (*unlocks).get(1).unwrap() {
+        Unlock::Reference(r) => {
+            assert_eq!(r.index(), 0);
+        }
+        _ => panic!("Invalid unlock"),
+    }
+    match (*unlocks).get(2).unwrap() {
+        Unlock::Reference(r) => {
+            assert_eq!(r.index(), 0);
+        }
+        _ => panic!("Invalid unlock"),
+    }
 
     let tx_payload = TransactionPayload::new(prepared_transaction_data.essence.clone(), unlocks)?;
 
