@@ -49,7 +49,7 @@ impl AliasTransition {
 }
 
 impl std::fmt::Display for AliasTransition {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::State => write!(f, "state"),
             Self::Governance => write!(f, "governance"),
@@ -477,7 +477,7 @@ impl AliasOutput {
         output_id: &OutputId,
         unlock: &Unlock,
         inputs: &[(OutputId, &Output)],
-        context: &mut ValidationContext,
+        context: &mut ValidationContext<'_>,
     ) -> Result<(), ConflictReason> {
         let alias_id = if self.alias_id().is_null() {
             AliasId::from(output_id)
@@ -509,7 +509,7 @@ impl AliasOutput {
 }
 
 impl StateTransitionVerifier for AliasOutput {
-    fn creation(next_state: &Self, context: &ValidationContext) -> Result<(), StateTransitionError> {
+    fn creation(next_state: &Self, context: &ValidationContext<'_>) -> Result<(), StateTransitionError> {
         if !next_state.alias_id.is_null() {
             return Err(StateTransitionError::NonZeroCreatedId);
         }
@@ -526,7 +526,7 @@ impl StateTransitionVerifier for AliasOutput {
     fn transition(
         current_state: &Self,
         next_state: &Self,
-        context: &ValidationContext,
+        context: &ValidationContext<'_>,
     ) -> Result<(), StateTransitionError> {
         if current_state.immutable_features != next_state.immutable_features {
             return Err(StateTransitionError::MutatedImmutableField);
@@ -587,7 +587,7 @@ impl StateTransitionVerifier for AliasOutput {
         Ok(())
     }
 
-    fn destruction(_current_state: &Self, _context: &ValidationContext) -> Result<(), StateTransitionError> {
+    fn destruction(_current_state: &Self, _context: &ValidationContext<'_>) -> Result<(), StateTransitionError> {
         Ok(())
     }
 }

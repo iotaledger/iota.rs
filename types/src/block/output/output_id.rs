@@ -93,7 +93,7 @@ impl FromStr for OutputId {
 }
 
 impl core::fmt::Display for OutputId {
-    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         let mut buffer = [0u8; Self::LENGTH];
         let (transaction_id, index) = buffer.split_at_mut(TransactionId::LENGTH);
         transaction_id.copy_from_slice(self.transaction_id.as_ref());
@@ -103,7 +103,7 @@ impl core::fmt::Display for OutputId {
 }
 
 impl core::fmt::Debug for OutputId {
-    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(f, "OutputId({self})")
     }
 }

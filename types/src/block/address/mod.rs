@@ -120,7 +120,7 @@ impl Address {
         &self,
         unlock: &Unlock,
         inputs: &[(OutputId, &Output)],
-        context: &mut ValidationContext,
+        context: &mut ValidationContext<'_>,
     ) -> Result<(), ConflictReason> {
         match (self, unlock) {
             (Self::Ed25519(ed25519_address), Unlock::Signature(unlock)) => {

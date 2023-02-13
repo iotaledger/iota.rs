@@ -37,13 +37,13 @@ impl core::str::FromStr for InputsCommitment {
 }
 
 impl core::fmt::Display for InputsCommitment {
-    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(f, "{}", prefix_hex::encode(self.0))
     }
 }
 
 impl core::fmt::Debug for InputsCommitment {
-    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(f, "InputsCommitment({self})")
     }
 }

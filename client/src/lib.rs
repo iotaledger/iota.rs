@@ -23,9 +23,13 @@
 //! # Ok(())}
 //! ```
 
-#![deny(unused_extern_crates)]
-#![warn(missing_docs, warnings, rust_2018_idioms, unreachable_pub)]
-#![allow(clippy::redundant_pub_crate, clippy::module_name_repetitions)]
+#![cfg_attr(doc_cfg, feature(doc_cfg))]
+#![deny(clippy::nursery, missing_docs, rust_2018_idioms, warnings)]
+#![allow(
+    clippy::redundant_pub_crate,
+    clippy::module_name_repetitions,
+    clippy::missing_const_for_fn
+)]
 
 #[macro_use]
 extern crate serde;

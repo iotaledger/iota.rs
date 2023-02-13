@@ -38,13 +38,13 @@ impl FromStr for UtxoInput {
 }
 
 impl core::fmt::Display for UtxoInput {
-    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(f, "{}", self.0)
     }
 }
 
 impl core::fmt::Debug for UtxoInput {
-    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(f, "UtxoInput({})", self.0)
     }
 }

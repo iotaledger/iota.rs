@@ -38,13 +38,13 @@ impl FromStr for Ed25519Address {
 }
 
 impl core::fmt::Display for Ed25519Address {
-    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(f, "{}", prefix_hex::encode(self.0))
     }
 }
 
 impl core::fmt::Debug for Ed25519Address {
-    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(f, "Ed25519Address({self})")
     }
 }
