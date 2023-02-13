@@ -929,12 +929,12 @@ public class Client extends NativeApi {
      * @throws NoFundsReceivedFromFaucetException when the faucet didn't fund the address.
      */
     public void requestTestFundsFromFaucet(String address) throws ClientException, NoFundsReceivedFromFaucetException {
-        int maxAttempts = 5;
+        int maxAttempts = 60;
         for(int i = 0; i < maxAttempts; i++) {
             if(getBasicOutputIds(new NodeIndexerApi.QueryParams().withParam("address", address)).length == 0) {
                 utilsApi.requestFundsFromFaucet(TESTNET_FAUCET_URL, address);
                 try {
-                    Thread.sleep(1000 * 25);
+                    Thread.sleep(1000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }

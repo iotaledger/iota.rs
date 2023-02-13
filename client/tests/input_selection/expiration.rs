@@ -5,7 +5,7 @@ use std::collections::HashSet;
 
 use iota_client::{api::input_selection::InputSelection, block::protocol::protocol_parameters, Error};
 
-use crate::input_selection::{
+use crate::{
     addresses, build_inputs, build_outputs, is_remainder_or_return, unsorted_eq, Build::Basic, BECH32_ADDRESS_ALIAS_1,
     BECH32_ADDRESS_ED25519_0, BECH32_ADDRESS_ED25519_1, BECH32_ADDRESS_ED25519_2,
 };
@@ -22,10 +22,12 @@ fn one_output_expiration_not_expired() {
         None,
         None,
         Some((BECH32_ADDRESS_ED25519_0, 200)),
+        None,
     )]);
     let outputs = build_outputs(vec![Basic(
         2_000_000,
         BECH32_ADDRESS_ED25519_0,
+        None,
         None,
         None,
         None,
@@ -57,10 +59,12 @@ fn expiration_equal_timestamp() {
         None,
         None,
         Some((BECH32_ADDRESS_ED25519_0, 200)),
+        None,
     )]);
     let outputs = build_outputs(vec![Basic(
         2_000_000,
         BECH32_ADDRESS_ED25519_0,
+        None,
         None,
         None,
         None,
@@ -94,10 +98,12 @@ fn one_output_expiration_expired() {
         None,
         None,
         Some((BECH32_ADDRESS_ED25519_0, 50)),
+        None,
     )]);
     let outputs = build_outputs(vec![Basic(
         2_000_000,
         BECH32_ADDRESS_ED25519_0,
+        None,
         None,
         None,
         None,
@@ -132,6 +138,7 @@ fn two_outputs_one_expiration_expired() {
             None,
             None,
             Some((BECH32_ADDRESS_ED25519_0, 200)),
+            None,
         ),
         Basic(
             2_000_000,
@@ -141,11 +148,13 @@ fn two_outputs_one_expiration_expired() {
             None,
             None,
             Some((BECH32_ADDRESS_ED25519_0, 50)),
+            None,
         ),
     ]);
     let outputs = build_outputs(vec![Basic(
         2_000_000,
         BECH32_ADDRESS_ED25519_1,
+        None,
         None,
         None,
         None,
@@ -181,12 +190,14 @@ fn two_outputs_one_unexpired_one_missing() {
             None,
             None,
             Some((BECH32_ADDRESS_ED25519_0, 200)),
+            None,
         ),
-        Basic(2_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None, None),
+        Basic(2_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None, None, None),
     ]);
     let outputs = build_outputs(vec![Basic(
         2_000_000,
         BECH32_ADDRESS_ED25519_1,
+        None,
         None,
         None,
         None,
@@ -222,6 +233,7 @@ fn two_outputs_two_expired() {
             None,
             None,
             Some((BECH32_ADDRESS_ED25519_0, 100)),
+            None,
         ),
         Basic(
             2_000_000,
@@ -231,12 +243,14 @@ fn two_outputs_two_expired() {
             None,
             None,
             Some((BECH32_ADDRESS_ED25519_2, 100)),
+            None,
         ),
-        Basic(2_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None, None),
+        Basic(2_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None, None, None),
     ]);
     let outputs = build_outputs(vec![Basic(
         2_000_000,
         BECH32_ADDRESS_ED25519_1,
+        None,
         None,
         None,
         None,
@@ -272,6 +286,7 @@ fn two_outputs_two_expired_2() {
             None,
             None,
             Some((BECH32_ADDRESS_ED25519_1, 100)),
+            None,
         ),
         Basic(
             2_000_000,
@@ -281,11 +296,13 @@ fn two_outputs_two_expired_2() {
             None,
             None,
             Some((BECH32_ADDRESS_ED25519_2, 100)),
+            None,
         ),
     ]);
     let outputs = build_outputs(vec![Basic(
         4_000_000,
         BECH32_ADDRESS_ED25519_1,
+        None,
         None,
         None,
         None,
@@ -319,10 +336,12 @@ fn expiration_expired_with_sdr() {
         Some((BECH32_ADDRESS_ED25519_1, 1_000_000)),
         None,
         Some((BECH32_ADDRESS_ED25519_0, 50)),
+        None,
     )]);
     let outputs = build_outputs(vec![Basic(
         2_000_000,
         BECH32_ADDRESS_ED25519_1,
+        None,
         None,
         None,
         None,
@@ -356,10 +375,12 @@ fn expiration_expired_with_sdr_2() {
         Some((BECH32_ADDRESS_ED25519_1, 1_000_000)),
         None,
         Some((BECH32_ADDRESS_ED25519_0, 50)),
+        None,
     )]);
     let outputs = build_outputs(vec![Basic(
         2_000_000,
         BECH32_ADDRESS_ED25519_0,
+        None,
         None,
         None,
         None,
@@ -393,10 +414,12 @@ fn expiration_expired_with_sdr_and_timelock() {
         Some((BECH32_ADDRESS_ED25519_0, 1_000_000)),
         Some(50),
         Some((BECH32_ADDRESS_ED25519_0, 50)),
+        None,
     )]);
     let outputs = build_outputs(vec![Basic(
         2_000_000,
         BECH32_ADDRESS_ED25519_1,
+        None,
         None,
         None,
         None,
@@ -430,10 +453,12 @@ fn expiration_expired_with_sdr_and_timelock_2() {
         Some((BECH32_ADDRESS_ED25519_1, 1_000_000)),
         Some(50),
         Some((BECH32_ADDRESS_ED25519_0, 50)),
+        None,
     )]);
     let outputs = build_outputs(vec![Basic(
         2_000_000,
         BECH32_ADDRESS_ED25519_1,
+        None,
         None,
         None,
         None,
@@ -460,8 +485,8 @@ fn sender_in_expiration() {
     let protocol_parameters = protocol_parameters();
 
     let inputs = build_inputs(vec![
-        Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None, None),
-        Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None, None),
+        Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None, None, None),
+        Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None, None, None),
         Basic(
             1_000_000,
             BECH32_ADDRESS_ED25519_0,
@@ -470,15 +495,17 @@ fn sender_in_expiration() {
             None,
             None,
             Some((BECH32_ADDRESS_ED25519_1, 50)),
+            None,
         ),
-        Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None, None),
-        Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None, None),
+        Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None, None, None),
+        Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None, None, None),
     ]);
     let outputs = build_outputs(vec![Basic(
         1_000_000,
         BECH32_ADDRESS_ED25519_0,
         None,
         Some(BECH32_ADDRESS_ED25519_1),
+        None,
         None,
         None,
         None,
@@ -511,12 +538,14 @@ fn sender_in_expiration_already_selected() {
         None,
         None,
         Some((BECH32_ADDRESS_ED25519_1, 50)),
+        None,
     )]);
     let outputs = build_outputs(vec![Basic(
         1_000_000,
         BECH32_ADDRESS_ED25519_0,
         None,
         Some(BECH32_ADDRESS_ED25519_1),
+        None,
         None,
         None,
         None,
@@ -549,12 +578,14 @@ fn remainder_in_expiration() {
         None,
         None,
         Some((BECH32_ADDRESS_ED25519_1, 50)),
+        None,
     )]);
     let outputs = build_outputs(vec![Basic(
         1_000_000,
         BECH32_ADDRESS_ED25519_0,
         None,
         Some(BECH32_ADDRESS_ED25519_1),
+        None,
         None,
         None,
         None,

@@ -15,6 +15,7 @@ import org.iota.types.secret.*;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -47,8 +48,8 @@ public class IndexerApiTest extends ApiTest {
 
         Output aliasOutput = client.buildAliasOutput(params);
 
-        client.buildAndPostBlock(s, new BuildBlockOptions().withOutputs(new Output[] { aliasOutput }));
-        Thread.sleep(1000 * 25);
+        Map.Entry<BlockId, Block> entry = client.buildAndPostBlock(s, new BuildBlockOptions().withOutputs(new Output[] { aliasOutput }));
+        client.retryUntilIncluded(entry.getKey(), 2, 15);
 
         for (OutputId outputId : client.getAliasOutputIds(new NodeIndexerApi.QueryParams().withParam("governor", address)))
             System.out.println(outputId);
@@ -71,8 +72,8 @@ public class IndexerApiTest extends ApiTest {
 
         Output aliasOutput = client.buildNftOutput(params);
 
-        client.buildAndPostBlock(s, new BuildBlockOptions().withOutputs(new Output[] { aliasOutput }));
-        Thread.sleep(1000 * 25);
+        Map.Entry<BlockId, Block> entry = client.buildAndPostBlock(s, new BuildBlockOptions().withOutputs(new Output[] { aliasOutput }));
+        client.retryUntilIncluded(entry.getKey(), 2, 15);
 
         for (OutputId outputId : client.getNftOutputIds(new NodeIndexerApi.QueryParams().withParam("address", address)))
             System.out.println(outputId);
@@ -94,7 +95,7 @@ public class IndexerApiTest extends ApiTest {
                 });
 
         Map.Entry<BlockId, Block> response = client.buildAndPostBlock(s, new BuildBlockOptions().withOutputs(new Output[] { client.buildAliasOutput(p) }));
-        Thread.sleep(1000 * 25);
+        client.retryUntilIncluded(response.getKey(), 2, 15);
         TransactionId transactionId = client.getTransactionId(new TransactionPayload(response.getValue().toJson().get("payload").getAsJsonObject()));
 
         // Build the Foundry Output
@@ -120,14 +121,14 @@ public class IndexerApiTest extends ApiTest {
                 }));
 
         // Create the transaction and use the outputs
-        client.buildAndPostBlock(s, new BuildBlockOptions()
+        Map.Entry<BlockId, Block> entry = client.buildAndPostBlock(s, new BuildBlockOptions()
                 .withOutputs(new Output[] {
                         foundryOutput,
                         newAliasOutput
                 })
         );
 
-        Thread.sleep(1000 * 25);
+        client.retryUntilIncluded(entry.getKey(), 2, 15);
 
         for (OutputId outputId : client.getFoundryOutputIds(new NodeIndexerApi.QueryParams().withParam("aliasAddress", client.aliasIdToBech32(aliasId, client.getBech32Hrp()))))
             System.out.println(outputId);
