@@ -93,6 +93,7 @@ fn missing_amount(inputs_sum: u64, outputs_sum: u64, remainder_amount: u64, nati
 }
 
 impl InputSelection {
+    #[allow(clippy::cognitive_complexity)]
     pub(crate) fn fulfill_amount_requirement(&mut self) -> Result<Vec<(InputSigningData, Option<AliasTransition>)>> {
         let (mut inputs_sum, mut outputs_sum, mut inputs_sdr, mut outputs_sdr) =
             amount_sums(&self.selected_inputs, &self.outputs, self.timestamp);
@@ -124,7 +125,11 @@ impl InputSelection {
 
                 let inputs = self.available_inputs.iter().filter(|input| {
                     if let Output::Basic(output) = &input.output {
-                        output.address().is_ed25519() && sdruc_not_expired(&input.output, self.timestamp).is_none()
+                        output
+                            .unlock_conditions()
+                            .locked_address(output.address(), self.timestamp)
+                            .is_ed25519()
+                            && sdruc_not_expired(&input.output, self.timestamp).is_none()
                     } else {
                         false
                     }
@@ -218,7 +223,30 @@ impl InputSelection {
                 }
             }
 
-            // 4. Other kinds of outputs
+            // 4. Basic with other kind of address and multiple unlock conditions
+            {
+                log::debug!("Trying basic outputs with other types of address and multiple unlock conditions");
+
+                let inputs = self.available_inputs.iter().filter(|input| {
+                    if let Output::Basic(output) = &input.output {
+                        !output.address().is_ed25519() && output.unlock_conditions().len() > 1
+                    } else {
+                        false
+                    }
+                });
+
+                for input in inputs {
+                    inputs_sum += input.output.amount();
+                    newly_selected_inputs.push((input.clone(), None));
+                    newly_selected_ids.insert(*input.output_id());
+
+                    if inputs_sum >= outputs_sum + remainder_amount {
+                        break 'overall;
+                    }
+                }
+            }
+
+            // 5. Other kinds of outputs
             {
                 log::debug!("Trying other types of outputs");
 
