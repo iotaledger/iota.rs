@@ -702,7 +702,7 @@ fn expiration_expired_only_alias_addresses() {
 
     let selected = InputSelection::new(
         inputs.clone(),
-        outputs.clone(),
+        outputs,
         addresses(vec![BECH32_ADDRESS_ED25519_0]),
         protocol_parameters,
     )
