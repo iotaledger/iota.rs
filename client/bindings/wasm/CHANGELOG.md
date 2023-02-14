@@ -19,6 +19,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security -->
 
+## 1.0.0-rc.3 - 2023-MM-DD
+
+### Changed
+
+- Changes from the Rust library;
+- Merged `IAuth::{username, password}` into `IAuth::basicAuthNamePwd`;
+
 ## 1.0.0-alpha.2 - 2023-02-08
 
 ### Added

@@ -26,10 +26,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `DatabaseProvider` renamed to `StorageProvider`;
 - `StrongholdDatabaseProvider` renamed to `StrongholdStorageProvider`;
 - `high_level` module moved to `api`;
+- Added `#[serde(rename_all = "camelCase")]` to `NodeAuth`;
 
 ### Fixed
 
 - Input selection can find remainder addresses in expirations and alias state controller or governor;
+- Set basic auth when provided;
 
 ## 2.0.1-rc.6 - 2023-02-08
 
