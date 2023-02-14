@@ -4,6 +4,7 @@
 //! Secret manager module enabling address generation and transaction essence signing.
 
 #[cfg(feature = "ledger_nano")]
+#[cfg_attr(docsrs, doc(cfg(feature = "ledger_nano")))]
 pub mod ledger_nano;
 /// Module for signing with a mnemonic or seed
 pub mod mnemonic;
@@ -11,6 +12,7 @@ pub mod mnemonic;
 pub mod placeholder;
 /// Module for signing with a Stronghold vault
 #[cfg(feature = "stronghold")]
+#[cfg_attr(docsrs, doc(cfg(feature = "stronghold")))]
 pub mod stronghold;
 /// Signing related types
 pub mod types;
@@ -137,6 +139,7 @@ pub enum SecretManagerDto {
     Stronghold(StrongholdDto),
     /// Ledger Device, bool specifies if it's a simulator or not
     #[cfg(feature = "ledger_nano")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "ledger_nano")))]
     #[serde(alias = "ledgerNano")]
     LedgerNano(bool),
     /// Mnemonic

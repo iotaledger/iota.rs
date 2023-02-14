@@ -28,12 +28,14 @@ use crate::{Client, NetworkInfo, Result};
 impl Client {
     /// Returns a handle to the MQTT topics manager.
     #[cfg(feature = "mqtt")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "mqtt")))]
     pub fn subscriber(&self) -> MqttManager<'_> {
         MqttManager::new(self)
     }
 
     /// Subscribe to MQTT events with a callback.
     #[cfg(feature = "mqtt")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "mqtt")))]
     pub async fn subscribe<C: Fn(&TopicEvent) + Send + Sync + 'static>(
         &self,
         topics: Vec<Topic>,
@@ -44,12 +46,14 @@ impl Client {
 
     /// Unsubscribe from MQTT events.
     #[cfg(feature = "mqtt")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "mqtt")))]
     pub async fn unsubscribe(&self, topics: Vec<Topic>) -> crate::Result<()> {
         MqttManager::new(self).with_topics(topics).unsubscribe().await
     }
 
     /// Returns the mqtt event receiver.
     #[cfg(feature = "mqtt")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "mqtt")))]
     pub fn mqtt_event_receiver(&self) -> WatchReceiver<MqttEvent> {
         self.mqtt_event_channel.1.clone()
     }

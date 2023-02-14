@@ -4,7 +4,7 @@
 //! Common types required by nodes and clients APIs like blocks, responses and DTOs.
 
 #![cfg_attr(not(feature = "std"), no_std)]
-#![cfg_attr(doc_cfg, feature(doc_cfg))]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 #![deny(clippy::nursery, missing_docs, rust_2018_idioms, warnings)]
 #![allow(
     clippy::redundant_pub_crate,

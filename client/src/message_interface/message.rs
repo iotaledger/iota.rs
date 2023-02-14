@@ -105,6 +105,7 @@ pub enum Message {
     /// Removes all listeners for the provided topics.
     /// Expected response: [`Ok`](crate::message_interface::Response::Ok)
     #[cfg(feature = "mqtt")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "mqtt")))]
     ClearListeners {
         /// Topics for which listeners should be removed.
         topics: Vec<Topic>,
@@ -149,6 +150,7 @@ pub enum Message {
     /// Get the ledger status
     /// Expected response: [`LedgerNanoStatus`](crate::message_interface::Response::LedgerNanoStatus)
     #[cfg(feature = "ledger_nano")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "ledger_nano")))]
     GetLedgerNanoStatus {
         /// To use a Ledger Speculos simulator, pass `true` to `is_simulator`; `false` otherwise.
         #[serde(rename = "isSimulator")]
@@ -189,6 +191,7 @@ pub enum Message {
     },
     /// Store a mnemonic in the Stronghold vault
     #[cfg(feature = "stronghold")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "stronghold")))]
     StoreMnemonic {
         /// Stronghold secret manager
         #[serde(rename = "secretManager")]

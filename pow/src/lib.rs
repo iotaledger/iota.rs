@@ -4,7 +4,7 @@
 //! Provides proof of work implementations and scoring for the IOTA protocol.
 //! TIP <https://github.com/iotaledger/tips/blob/main/tips/TIP-0012/tip-0012.md>.
 
-#![cfg_attr(doc_cfg, feature(doc_cfg))]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 #![deny(clippy::nursery, missing_docs, rust_2018_idioms, warnings)]
 #![allow(
     clippy::redundant_pub_crate,

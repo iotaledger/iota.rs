@@ -116,6 +116,7 @@ pub struct ClientBuilder {
     pub node_manager_builder: crate::node_manager::builder::NodeManagerBuilder,
     /// Options for the MQTT broker
     #[cfg(feature = "mqtt")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "mqtt")))]
     #[serde(flatten, rename = "brokerOptions")]
     pub broker_options: BrokerOptions,
     /// Data related to the used network
@@ -275,6 +276,7 @@ impl ClientBuilder {
 
     /// Sets the MQTT broker options.
     #[cfg(feature = "mqtt")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "mqtt")))]
     pub fn with_mqtt_broker_options(mut self, options: BrokerOptions) -> Self {
         self.broker_options = options;
         self
