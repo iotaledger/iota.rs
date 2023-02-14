@@ -77,6 +77,7 @@ pub enum Response {
     /// Response for:
     /// - [`GetLedgerNanoStatus`](crate::message_interface::Message::GetLedgerNanoStatus)
     #[cfg(feature = "ledger_nano")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "ledger_nano")))]
     LedgerNanoStatus(LedgerNanoStatus),
     /// Response for:
     /// - [`PrepareTransaction`](crate::message_interface::Message::PrepareTransaction)

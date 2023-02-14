@@ -4,6 +4,7 @@
 //! Database provider interfaces and implementations.
 
 #[cfg(feature = "stronghold")]
+#[cfg_attr(docsrs, doc(cfg(feature = "stronghold")))]
 mod stronghold;
 
 use async_trait::async_trait;

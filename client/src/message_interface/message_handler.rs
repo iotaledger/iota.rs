@@ -96,6 +96,7 @@ impl ClientMessageHandler {
 
     /// Listen to MQTT events
     #[cfg(feature = "mqtt")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "mqtt")))]
     pub async fn listen<F>(&self, topics: Vec<Topic>, handler: F)
     where
         F: Fn(String) + 'static + Clone + Send + Sync,

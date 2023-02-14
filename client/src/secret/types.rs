@@ -20,6 +20,7 @@ use crate::Result;
 /// Stronghold DTO to allow the creation of a Stronghold secret manager from bindings
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, ZeroizeOnDrop)]
 #[cfg(feature = "stronghold")]
+#[cfg_attr(docsrs, doc(cfg(feature = "stronghold")))]
 pub struct StrongholdDto {
     /// The Stronghold password
     pub password: Option<String>,

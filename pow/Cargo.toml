@@ -11,10 +11,9 @@ keywords = [ "iota", "tangle", "client", "pow" ]
 homepage = "https://www.iota.org"
 
 [package.metadata.docs.rs]
-# To build locally:
-# RUSTDOCFLAGS="--cfg doc_cfg" cargo +nightly doc --all-features --no-deps --open
+# To build locally: `RUSTDOCFLAGS="--cfg docsrs" cargo +nightly doc --all-features --no-deps --open`
 all-features = true
-rustdoc-args = [ "--cfg", "doc_cfg" ]
+rustdoc-args = [ "--cfg", "docsrs" ]
 
 [dependencies]
 iota-crypto = { version = "0.15.3", default-features = false, features = [ "blake2b", "digest", "curl-p", "ternary_encoding" ] }

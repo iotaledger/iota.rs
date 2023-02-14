@@ -12,10 +12,9 @@ keywords = [ "iota", "tangle", "client", "types", "api" ]
 categories = [ "cryptography::cryptocurrencies" ]
 
 [package.metadata.docs.rs]
-# To build locally:
-# RUSTDOCFLAGS="--cfg doc_cfg" cargo +nightly doc --all-features --no-deps --open
+# To build locally: `RUSTDOCFLAGS="--cfg docsrs" cargo +nightly doc --all-features --no-deps --open`
 all-features = true
-rustdoc-args = [ "--cfg", "doc_cfg" ]
+rustdoc-args = [ "--cfg", "docsrs" ]
 
 [dependencies]
 bech32 = { version = "0.9.1", default-features = false }

@@ -23,7 +23,7 @@
 //! # Ok(())}
 //! ```
 
-#![cfg_attr(doc_cfg, feature(doc_cfg))]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 #![deny(clippy::nursery, missing_docs, rust_2018_idioms, warnings)]
 #![allow(
     clippy::redundant_pub_crate,
@@ -51,12 +51,14 @@ pub mod client;
 pub mod constants;
 pub mod error;
 #[cfg(feature = "message_interface")]
+#[cfg_attr(docsrs, doc(cfg(feature = "message_interface")))]
 pub mod message_interface;
 pub mod node_api;
 pub mod node_manager;
 pub mod secret;
 pub mod storage;
 #[cfg(feature = "stronghold")]
+#[cfg_attr(docsrs, doc(cfg(feature = "stronghold")))]
 pub mod stronghold;
 pub mod utils;
 

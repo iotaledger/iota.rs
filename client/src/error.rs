@@ -18,8 +18,8 @@ use crate::{api::input_selection::Requirement, node_api::indexer::QueryParameter
 /// Type alias of `Result` in iota-client
 pub type Result<T> = std::result::Result<T, Error>;
 
-#[derive(Debug, thiserror::Error, Serialize)]
 /// Error type of the iota client crate.
+#[derive(Debug, thiserror::Error, Serialize)]
 #[allow(clippy::large_enum_variant)]
 #[serde(tag = "type", content = "error", rename_all = "camelCase")]
 pub enum Error {
@@ -249,6 +249,7 @@ pub enum Error {
 
     /// Participation error
     #[cfg(feature = "participation")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "participation")))]
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
     Participation(#[from] iota_types::api::plugins::participation::error::Error),
@@ -258,22 +259,27 @@ pub enum Error {
     //////////////////////////////////////////////////////////////////////
     /// Denied by User
     #[cfg(feature = "ledger_nano")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "ledger_nano")))]
     #[error("denied by user")]
     LedgerDeniedByUser,
     /// Dongle Locked
     #[cfg(feature = "ledger_nano")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "ledger_nano")))]
     #[error("ledger locked")]
     LedgerDongleLocked,
     /// Ledger Device not found
     #[cfg(feature = "ledger_nano")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "ledger_nano")))]
     #[error("ledger device not found")]
     LedgerDeviceNotFound,
     /// Ledger Essence Too Large
     #[cfg(feature = "ledger_nano")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "ledger_nano")))]
     #[error("ledger essence too large")]
     LedgerEssenceTooLarge,
     /// Ledger transport error
     #[cfg(feature = "ledger_nano")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "ledger_nano")))]
     #[error("ledger transport error")]
     LedgerMiscError,
 
@@ -282,15 +288,18 @@ pub enum Error {
     //////////////////////////////////////////////////////////////////////
     /// Invalid MQTT topic.
     #[cfg(feature = "mqtt")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "mqtt")))]
     #[error("the MQTT topic {0} is invalid")]
     InvalidMqttTopic(String),
     /// Mqtt client error
     #[cfg(feature = "mqtt")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "mqtt")))]
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
     MqttClient(#[from] rumqttc::ClientError),
     /// MQTT connection not found (all nodes MQTT's are disabled)
     #[cfg(feature = "mqtt")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "mqtt")))]
     #[error("mQTT connection not found (all nodes have the MQTT plugin disabled)")]
     MqttConnectionNotFound,
 
@@ -299,32 +308,39 @@ pub enum Error {
     //////////////////////////////////////////////////////////////////////
     /// Stronghold client error
     #[cfg(feature = "stronghold")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "stronghold")))]
     #[error("stronghold client error: {0}")]
     #[serde(serialize_with = "display_string")]
     StrongholdClient(#[from] iota_stronghold::ClientError),
     /// Invalid stronghold password.
     #[cfg(feature = "stronghold")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "stronghold")))]
     #[error("invalid stronghold password")]
     StrongholdInvalidPassword,
     /// No password has been supplied to a Stronghold vault, or it has been cleared
     #[cfg(feature = "stronghold")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "stronghold")))]
     #[error("no password has been supplied, or the key has been cleared from the memory")]
     StrongholdKeyCleared,
     /// Stronghold memory error
     #[cfg(feature = "stronghold")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "stronghold")))]
     #[error("stronghold memory error: {0}")]
     #[serde(serialize_with = "display_string")]
     StrongholdMemory(#[from] iota_stronghold::MemoryError),
     /// A mnemonic has been already stored into a Stronghold vault
     #[cfg(feature = "stronghold")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "stronghold")))]
     #[error("a mnemonic has already been stored in the Stronghold vault")]
     StrongholdMnemonicAlreadyStored,
     /// No mnemonic has been stored into the Stronghold vault
     #[cfg(feature = "stronghold")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "stronghold")))]
     #[error("no mnemonic has been stored into the Stronghold vault")]
     StrongholdMnemonicMissing,
     /// Procedure execution error from Stronghold
     #[cfg(feature = "stronghold")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "stronghold")))]
     #[error("Stronghold reported a procedure error: {0}")]
     #[serde(serialize_with = "display_string")]
     StrongholdProcedure(#[from] iota_stronghold::procedures::ProcedureError),
