@@ -1164,7 +1164,7 @@ dependencies = [
 
 [[package]]
 name = "iota-types"
-version = "1.0.0-rc.5"
+version = "1.0.0-rc.6"
 dependencies = [
  "bech32 0.9.1",
  "bitflags",
