@@ -1013,7 +1013,7 @@ dependencies = [
 
 [[package]]
 name = "iota-client"
-version = "1.0.0-rc.1"
+version = "1.0.0-rc.2"
 dependencies = [
  "fern-logger",
  "futures",
@@ -1110,7 +1110,6 @@ dependencies = [
  "instant",
  "iota-crypto",
  "num_cpus",
- "thiserror",
 ]
 
 [[package]]
@@ -1134,7 +1133,6 @@ dependencies = [
  "serde-big-array",
  "serde_json",
  "serde_repr",
- "thiserror",
 ]
 
 [[package]]

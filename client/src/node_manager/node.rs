@@ -8,6 +8,7 @@ pub use url::Url;
 
 /// Node authentication object.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[serde(rename_all = "camelCase")]
 pub struct NodeAuth {
     /// JWT.
     pub jwt: Option<String>,

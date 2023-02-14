@@ -142,10 +142,20 @@ impl NodeManager {
         }
 
         // Set path and query parameters
-        nodes_with_modified_url.iter_mut().for_each(|node| {
+        for node in &mut nodes_with_modified_url {
             node.url.set_path(path);
             node.url.set_query(query);
-        });
+            if let Some(auth) = &node.auth {
+                if let Some((name, password)) = &auth.basic_auth_name_pwd {
+                    node.url
+                        .set_username(name)
+                        .map_err(|_| crate::Error::UrlAuth("username"))?;
+                    node.url
+                        .set_password(Some(password))
+                        .map_err(|_| crate::Error::UrlAuth("password"))?;
+                }
+            }
+        }
 
         Ok(nodes_with_modified_url)
     }
