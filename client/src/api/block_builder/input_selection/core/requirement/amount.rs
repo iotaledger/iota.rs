@@ -216,19 +216,8 @@ impl InputSelection {
                     }
                 });
 
-                for input in inputs {
-                    if amount_selection.newly_selected_ids.contains(input.output_id()) {
-                        continue;
-                    }
-
-                    log::debug!("1. adding {}", input.output_id());
-                    amount_selection.inputs_sum += input.output.amount();
-                    amount_selection.newly_selected_inputs.push((input.clone(), None));
-                    amount_selection.newly_selected_ids.insert(*input.output_id());
-
-                    if amount_selection.missing_amount() == 0 {
-                        break 'overall;
-                    }
+                if amount_selection.plop(inputs) {
+                    break 'overall;
                 }
             }
 
@@ -309,19 +298,8 @@ impl InputSelection {
                     }
                 });
 
-                for input in inputs {
-                    if amount_selection.newly_selected_ids.contains(input.output_id()) {
-                        continue;
-                    }
-
-                    log::debug!("3. adding {}", input.output_id());
-                    amount_selection.inputs_sum += input.output.amount();
-                    amount_selection.newly_selected_inputs.push((input.clone(), None));
-                    amount_selection.newly_selected_ids.insert(*input.output_id());
-
-                    if amount_selection.inputs_sum >= amount_selection.outputs_sum + amount_selection.remainder_amount {
-                        break 'overall;
-                    }
+                if amount_selection.plop(inputs) {
+                    break 'overall;
                 }
             }
 
