@@ -129,31 +129,27 @@ impl AmountSelection {
             0
         }
     }
-}
 
-impl InputSelection {
-    fn plop<'a>(
-        &self,
-        inputs: impl Iterator<Item = &'a InputSigningData>,
-        amount_selection: &mut AmountSelection,
-    ) -> bool {
+    fn plop<'a>(&mut self, inputs: impl Iterator<Item = &'a InputSigningData>) -> bool {
         for input in inputs {
-            if amount_selection.newly_selected_ids.contains(input.output_id()) {
+            if self.newly_selected_ids.contains(input.output_id()) {
                 continue;
             }
 
-            amount_selection.inputs_sum += input.output.amount();
-            amount_selection.newly_selected_inputs.push((input.clone(), None));
-            amount_selection.newly_selected_ids.insert(*input.output_id());
+            self.inputs_sum += input.output.amount();
+            self.newly_selected_inputs.push((input.clone(), None));
+            self.newly_selected_ids.insert(*input.output_id());
 
-            if amount_selection.missing_amount() == 0 {
+            if self.missing_amount() == 0 {
                 return true;
             }
         }
 
         false
     }
+}
 
+impl InputSelection {
     #[allow(clippy::cognitive_complexity)]
     pub(crate) fn fulfill_amount_requirement(&mut self) -> Result<Vec<(InputSigningData, Option<AliasTransition>)>> {
         let mut amount_selection = AmountSelection::new(self)?;
@@ -196,7 +192,7 @@ impl InputSelection {
                     }
                 });
 
-                if self.plop(inputs, &mut amount_selection) {
+                if amount_selection.plop(inputs) {
                     break 'overall;
                 }
             }
