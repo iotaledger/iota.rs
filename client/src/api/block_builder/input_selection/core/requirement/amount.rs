@@ -3,15 +3,13 @@
 
 use std::collections::{HashMap, HashSet};
 
-use iota_types::block::output::OutputId;
-
 use super::{InputSelection, Requirement};
 use crate::{
     block::{
         address::Address,
         output::{
             unlock_condition::{StorageDepositReturnUnlockCondition, UnlockCondition},
-            AliasOutputBuilder, AliasTransition, FoundryOutputBuilder, NftOutputBuilder, Output, Rent,
+            AliasOutputBuilder, AliasTransition, FoundryOutputBuilder, NftOutputBuilder, Output, OutputId, Rent,
         },
     },
     error::{Error, Result},
