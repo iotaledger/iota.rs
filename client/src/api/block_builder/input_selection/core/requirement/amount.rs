@@ -111,8 +111,6 @@ impl InputSelection {
             );
         }
 
-        // TODO don't pick burned things
-
         // TODO if consolidate strategy: sum all the lowest amount until diff is covered.
         // TODO this would be lowest amount of input strategy.
         self.available_inputs
@@ -139,6 +137,10 @@ impl InputSelection {
                 });
 
                 for input in inputs {
+                    if newly_selected_ids.contains(input.output_id()) {
+                        continue;
+                    }
+                    log::debug!("0. adding {}", input.output_id());
                     inputs_sum += input.output.amount();
                     newly_selected_inputs.push((input.clone(), None));
                     newly_selected_ids.insert(*input.output_id());
@@ -169,6 +171,10 @@ impl InputSelection {
                 });
 
                 for input in inputs {
+                    if newly_selected_ids.contains(input.output_id()) {
+                        continue;
+                    }
+                    log::debug!("1. adding {}", input.output_id());
                     inputs_sum += input.output.amount();
                     newly_selected_inputs.push((input.clone(), None));
                     newly_selected_ids.insert(*input.output_id());
@@ -201,6 +207,10 @@ impl InputSelection {
                 });
 
                 for input in inputs {
+                    if newly_selected_ids.contains(input.output_id()) {
+                        continue;
+                    }
+                    log::debug!("2. adding {}", input.output_id());
                     let sdruc = input
                         .output
                         .unlock_conditions()
@@ -251,6 +261,10 @@ impl InputSelection {
                 });
 
                 for input in inputs {
+                    if newly_selected_ids.contains(input.output_id()) {
+                        continue;
+                    }
+                    log::debug!("3. adding {}", input.output_id());
                     inputs_sum += input.output.amount();
                     newly_selected_inputs.push((input.clone(), None));
                     newly_selected_ids.insert(*input.output_id());
@@ -267,13 +281,21 @@ impl InputSelection {
 
                 let inputs = self.available_inputs.iter().filter(|input| {
                     if let Output::Basic(output) = &input.output {
-                        !output.address().is_ed25519() && output.unlock_conditions().len() > 1
+                        !output
+                            .unlock_conditions()
+                            .locked_address(output.address(), self.timestamp)
+                            .is_ed25519()
+                            && output.unlock_conditions().len() > 1
                     } else {
                         false
                     }
                 });
 
                 for input in inputs {
+                    if newly_selected_ids.contains(input.output_id()) {
+                        continue;
+                    }
+                    log::debug!("4. adding {}", input.output_id());
                     match input
                         .output
                         .unlock_conditions()
@@ -329,6 +351,10 @@ impl InputSelection {
 
                 if inputs.peek().is_some() {
                     for input in inputs {
+                        if newly_selected_ids.contains(input.output_id()) {
+                            continue;
+                        }
+                        log::debug!("5. adding {}", input.output_id());
                         inputs_sum += input.output.amount();
                         newly_selected_inputs.push((input.clone(), None));
                         newly_selected_ids.insert(*input.output_id());
