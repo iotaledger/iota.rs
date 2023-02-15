@@ -1,13 +1,18 @@
 // Copyright 2023 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use std::collections::HashSet;
+use std::{collections::HashSet, str::FromStr};
 
-use iota_client::{api::input_selection::InputSelection, block::protocol::protocol_parameters, Error};
+use iota_client::{
+    api::input_selection::InputSelection,
+    block::{output::AliasId, protocol::protocol_parameters},
+    Error,
+};
 
 use crate::{
-    addresses, build_inputs, build_outputs, is_remainder_or_return, unsorted_eq, Build::Basic, BECH32_ADDRESS_ALIAS_1,
-    BECH32_ADDRESS_ED25519_0, BECH32_ADDRESS_ED25519_1, BECH32_ADDRESS_ED25519_2,
+    addresses, build_inputs, build_outputs, is_remainder_or_return, unsorted_eq,
+    Build::{Alias, Basic},
+    ALIAS_ID_1, BECH32_ADDRESS_ALIAS_1, BECH32_ADDRESS_ED25519_0, BECH32_ADDRESS_ED25519_1, BECH32_ADDRESS_ED25519_2,
 };
 
 #[test]
@@ -614,4 +619,97 @@ fn remainder_in_expiration() {
             ));
         }
     });
+}
+
+#[test]
+fn expiration_expired_non_ed25519_in_address_unlock_condition() {
+    let protocol_parameters = protocol_parameters();
+
+    let inputs = build_inputs(vec![Basic(
+        2_000_000,
+        BECH32_ADDRESS_ALIAS_1,
+        None,
+        None,
+        None,
+        None,
+        Some((BECH32_ADDRESS_ED25519_0, 50)),
+        None,
+    )]);
+    let outputs = build_outputs(vec![Basic(
+        2_000_000,
+        BECH32_ADDRESS_ED25519_0,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )]);
+
+    let selected = InputSelection::new(
+        inputs.clone(),
+        outputs.clone(),
+        addresses(vec![BECH32_ADDRESS_ED25519_0]),
+        protocol_parameters,
+    )
+    .timestamp(100)
+    .select()
+    .unwrap();
+
+    assert!(unsorted_eq(&selected.inputs, &inputs));
+    assert!(unsorted_eq(&selected.outputs, &outputs));
+}
+
+#[test]
+fn expiration_expired_only_alias_addresses() {
+    let protocol_parameters = protocol_parameters();
+    let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
+
+    let inputs = build_inputs(vec![
+        Basic(
+            2_000_000,
+            BECH32_ADDRESS_ALIAS_1,
+            None,
+            None,
+            None,
+            None,
+            Some((BECH32_ADDRESS_ALIAS_1, 50)),
+            None,
+        ),
+        Alias(
+            1_000_000,
+            alias_id_1,
+            0,
+            BECH32_ADDRESS_ED25519_0,
+            BECH32_ADDRESS_ED25519_0,
+            None,
+            None,
+            None,
+            None,
+        ),
+    ]);
+
+    let outputs = build_outputs(vec![Basic(
+        2_000_000,
+        BECH32_ADDRESS_ED25519_0,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )]);
+
+    let selected = InputSelection::new(
+        inputs.clone(),
+        outputs,
+        addresses(vec![BECH32_ADDRESS_ED25519_0]),
+        protocol_parameters,
+    )
+    .timestamp(100)
+    .select()
+    .unwrap();
+
+    assert!(unsorted_eq(&selected.inputs, &inputs));
+    assert_eq!(selected.outputs.len(), 2);
 }

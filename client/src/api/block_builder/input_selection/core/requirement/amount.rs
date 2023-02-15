@@ -93,6 +93,7 @@ fn missing_amount(inputs_sum: u64, outputs_sum: u64, remainder_amount: u64, nati
 }
 
 impl InputSelection {
+    #[allow(clippy::cognitive_complexity)]
     pub(crate) fn fulfill_amount_requirement(&mut self) -> Result<Vec<(InputSigningData, Option<AliasTransition>)>> {
         let (mut inputs_sum, mut outputs_sum, mut inputs_sdr, mut outputs_sdr) =
             amount_sums(&self.selected_inputs, &self.outputs, self.timestamp);
@@ -110,27 +111,70 @@ impl InputSelection {
             );
         }
 
-        // TODO don't pick burned things
-
         // TODO if consolidate strategy: sum all the lowest amount until diff is covered.
         // TODO this would be lowest amount of input strategy.
         self.available_inputs
             .sort_by(|left, right| left.output.amount().cmp(&right.output.amount()));
 
         'overall: {
-            // 1. Basic with ED25519 address without SDRUC or expired SDRUC
+            // 0. Basic with ED25519 address without SDRUC or expired SDRUC, without NTs, without unexpired expiration
             {
-                log::debug!("Trying basic outputs with ed25519 address and no or expired SDRUC");
+                log::debug!(
+                    "Trying basic outputs with ed25519 address and no or expired SDRUC, without NTs, without unexpired expiration"
+                );
 
                 let inputs = self.available_inputs.iter().filter(|input| {
                     if let Output::Basic(output) = &input.output {
-                        output.address().is_ed25519() && sdruc_not_expired(&input.output, self.timestamp).is_none()
+                        output
+                            .unlock_conditions()
+                            .locked_address(output.address(), self.timestamp)
+                            .is_ed25519()
+                            && sdruc_not_expired(&input.output, self.timestamp).is_none()
+                            && output.native_tokens().is_empty()
                     } else {
                         false
                     }
                 });
 
                 for input in inputs {
+                    if newly_selected_ids.contains(input.output_id()) {
+                        continue;
+                    }
+                    log::debug!("0. adding {}", input.output_id());
+                    inputs_sum += input.output.amount();
+                    newly_selected_inputs.push((input.clone(), None));
+                    newly_selected_ids.insert(*input.output_id());
+
+                    if missing_amount(inputs_sum, outputs_sum, remainder_amount, native_tokens_remainder) == 0 {
+                        break 'overall;
+                    }
+                }
+            }
+
+            // 1. Basic with ED25519 address without SDRUC or expired SDRUC
+            {
+                log::debug!(
+                    "Trying basic outputs with ed25519 address and no or expired SDRUC, with NTs, without unexpired expiration"
+                );
+
+                let inputs = self.available_inputs.iter().filter(|input| {
+                    if let Output::Basic(output) = &input.output {
+                        output
+                            .unlock_conditions()
+                            .locked_address(output.address(), self.timestamp)
+                            .is_ed25519()
+                            && sdruc_not_expired(&input.output, self.timestamp).is_none()
+                            && !output.native_tokens().is_empty()
+                    } else {
+                        false
+                    }
+                });
+
+                for input in inputs {
+                    if newly_selected_ids.contains(input.output_id()) {
+                        continue;
+                    }
+                    log::debug!("1. adding {}", input.output_id());
                     inputs_sum += input.output.amount();
                     newly_selected_inputs.push((input.clone(), None));
                     newly_selected_ids.insert(*input.output_id());
@@ -163,12 +207,21 @@ impl InputSelection {
                 });
 
                 for input in inputs {
+                    if newly_selected_ids.contains(input.output_id()) {
+                        continue;
+                    }
+                    log::debug!("2. adding {}", input.output_id());
                     let sdruc = input
                         .output
                         .unlock_conditions()
                         .and_then(UnlockConditions::storage_deposit_return)
                         // PANIC: safe to unwrap as the filter guarantees outputs with SDRUC only.
                         .unwrap();
+
+                    // Skip if no additional amount is made available
+                    if input.output.amount() == sdruc.amount() {
+                        continue;
+                    }
 
                     inputs_sum += input.output.amount();
                     newly_selected_inputs.push((input.clone(), None));
@@ -208,6 +261,10 @@ impl InputSelection {
                 });
 
                 for input in inputs {
+                    if newly_selected_ids.contains(input.output_id()) {
+                        continue;
+                    }
+                    log::debug!("3. adding {}", input.output_id());
                     inputs_sum += input.output.amount();
                     newly_selected_inputs.push((input.clone(), None));
                     newly_selected_ids.insert(*input.output_id());
@@ -218,7 +275,71 @@ impl InputSelection {
                 }
             }
 
-            // 4. Other kinds of outputs
+            // 4. Basic with other kind of address and multiple unlock conditions
+            {
+                log::debug!("Trying basic outputs with other types of address and multiple unlock conditions");
+
+                let inputs = self.available_inputs.iter().filter(|input| {
+                    if let Output::Basic(output) = &input.output {
+                        !output
+                            .unlock_conditions()
+                            .locked_address(output.address(), self.timestamp)
+                            .is_ed25519()
+                            && output.unlock_conditions().len() > 1
+                    } else {
+                        false
+                    }
+                });
+
+                for input in inputs {
+                    if newly_selected_ids.contains(input.output_id()) {
+                        continue;
+                    }
+                    log::debug!("4. adding {}", input.output_id());
+                    match input
+                        .output
+                        .unlock_conditions()
+                        .and_then(UnlockConditions::storage_deposit_return)
+                    {
+                        Some(sdruc) => {
+                            // Skip if no additional amount is made available
+                            if input.output.amount() == sdruc.amount() {
+                                continue;
+                            }
+
+                            inputs_sum += input.output.amount();
+                            newly_selected_inputs.push((input.clone(), None));
+                            newly_selected_ids.insert(*input.output_id());
+
+                            let input_sdr = inputs_sdr.get(sdruc.return_address()).unwrap_or(&0) + sdruc.amount();
+                            let output_sdr = *outputs_sdr.get(sdruc.return_address()).unwrap_or(&0);
+
+                            if input_sdr > output_sdr {
+                                let diff = input_sdr - output_sdr;
+                                outputs_sum += diff;
+                                *outputs_sdr.entry(*sdruc.return_address()).or_default() += sdruc.amount();
+                            }
+
+                            *inputs_sdr.entry(*sdruc.return_address()).or_default() += sdruc.amount();
+
+                            if missing_amount(inputs_sum, outputs_sum, remainder_amount, native_tokens_remainder) == 0 {
+                                break 'overall;
+                            }
+                        }
+                        None => {
+                            inputs_sum += input.output.amount();
+                            newly_selected_inputs.push((input.clone(), None));
+                            newly_selected_ids.insert(*input.output_id());
+
+                            if inputs_sum >= outputs_sum + remainder_amount {
+                                break 'overall;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 5. Other kinds of outputs
             {
                 log::debug!("Trying other types of outputs");
 
@@ -230,6 +351,10 @@ impl InputSelection {
 
                 if inputs.peek().is_some() {
                     for input in inputs {
+                        if newly_selected_ids.contains(input.output_id()) {
+                            continue;
+                        }
+                        log::debug!("5. adding {}", input.output_id());
                         inputs_sum += input.output.amount();
                         newly_selected_inputs.push((input.clone(), None));
                         newly_selected_ids.insert(*input.output_id());
