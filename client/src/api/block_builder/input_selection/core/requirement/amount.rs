@@ -175,6 +175,11 @@ impl InputSelection {
                         // PANIC: safe to unwrap as the filter guarantees outputs with SDRUC only.
                         .unwrap();
 
+                    // Skip if no additional amount is made available
+                    if input.output.amount() == sdruc.amount() {
+                        continue;
+                    }
+
                     inputs_sum += input.output.amount();
                     newly_selected_inputs.push((input.clone(), None));
                     newly_selected_ids.insert(*input.output_id());
@@ -236,12 +241,45 @@ impl InputSelection {
                 });
 
                 for input in inputs {
-                    inputs_sum += input.output.amount();
-                    newly_selected_inputs.push((input.clone(), None));
-                    newly_selected_ids.insert(*input.output_id());
+                    match input
+                        .output
+                        .unlock_conditions()
+                        .and_then(UnlockConditions::storage_deposit_return)
+                    {
+                        Some(sdruc) => {
+                            // Skip if no additional amount is made available
+                            if input.output.amount() == sdruc.amount() {
+                                continue;
+                            }
 
-                    if inputs_sum >= outputs_sum + remainder_amount {
-                        break 'overall;
+                            inputs_sum += input.output.amount();
+                            newly_selected_inputs.push((input.clone(), None));
+                            newly_selected_ids.insert(*input.output_id());
+
+                            let input_sdr = inputs_sdr.get(sdruc.return_address()).unwrap_or(&0) + sdruc.amount();
+                            let output_sdr = *outputs_sdr.get(sdruc.return_address()).unwrap_or(&0);
+
+                            if input_sdr > output_sdr {
+                                let diff = input_sdr - output_sdr;
+                                outputs_sum += diff;
+                                *outputs_sdr.entry(*sdruc.return_address()).or_default() += sdruc.amount();
+                            }
+
+                            *inputs_sdr.entry(*sdruc.return_address()).or_default() += sdruc.amount();
+
+                            if missing_amount(inputs_sum, outputs_sum, remainder_amount, native_tokens_remainder) == 0 {
+                                break 'overall;
+                            }
+                        }
+                        None => {
+                            inputs_sum += input.output.amount();
+                            newly_selected_inputs.push((input.clone(), None));
+                            newly_selected_ids.insert(*input.output_id());
+
+                            if inputs_sum >= outputs_sum + remainder_amount {
+                                break 'overall;
+                            }
+                        }
                     }
                 }
             }
