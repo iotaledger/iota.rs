@@ -132,7 +132,7 @@ impl AmountSelection {
         }
     }
 
-    fn plop<'a>(&mut self, inputs: impl Iterator<Item = &'a InputSigningData>) -> bool {
+    fn fulfil<'a>(&mut self, inputs: impl Iterator<Item = &'a InputSigningData>) -> bool {
         for input in inputs {
             if self.newly_selected_ids.contains(input.output_id()) {
                 continue;
@@ -211,7 +211,7 @@ impl InputSelection {
                     }
                 });
 
-                if amount_selection.plop(inputs) {
+                if amount_selection.fulfil(inputs) {
                     break 'overall;
                 }
             }
@@ -235,7 +235,7 @@ impl InputSelection {
                     }
                 });
 
-                if amount_selection.plop(inputs) {
+                if amount_selection.fulfil(inputs) {
                     break 'overall;
                 }
             }
@@ -261,7 +261,7 @@ impl InputSelection {
                     }
                 });
 
-                if amount_selection.plop(inputs) {
+                if amount_selection.fulfil(inputs) {
                     break 'overall;
                 }
             }
@@ -282,7 +282,7 @@ impl InputSelection {
                     }
                 });
 
-                if amount_selection.plop(inputs) {
+                if amount_selection.fulfil(inputs) {
                     break 'overall;
                 }
             }
@@ -303,7 +303,7 @@ impl InputSelection {
                     }
                 });
 
-                if amount_selection.plop(inputs) {
+                if amount_selection.fulfil(inputs) {
                     break 'overall;
                 }
             }
@@ -319,7 +319,7 @@ impl InputSelection {
                     .peekable();
 
                 if inputs.peek().is_some() {
-                    amount_selection.plop(inputs);
+                    amount_selection.fulfil(inputs);
 
                     log::debug!(
                         "Outputs {:?} selected to fulfill the amount requirement",
