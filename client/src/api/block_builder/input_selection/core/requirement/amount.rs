@@ -31,11 +31,7 @@ pub(crate) fn sdruc_not_expired(output: &Output, current_time: u32) -> Option<&S
             .map_or(false, |expiration| current_time >= expiration.timestamp());
 
         // We only have to send the storage deposit return back if the output is not expired
-        if !expired {
-            Some(sdr)
-        } else {
-            None
-        }
+        if !expired { Some(sdr) } else { None }
     })
 }
 
@@ -169,7 +165,6 @@ impl AmountSelection {
 }
 
 impl InputSelection {
-    #[allow(clippy::cognitive_complexity)]
     pub(crate) fn fulfill_amount_requirement(&mut self) -> Result<Vec<(InputSigningData, Option<AliasTransition>)>> {
         let mut amount_selection = AmountSelection::new(self)?;
 
