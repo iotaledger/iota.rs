@@ -1,7 +1,7 @@
 // Copyright 2023 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 use super::{InputSelection, Requirement};
 use crate::{
@@ -74,8 +74,7 @@ pub(crate) fn amount_sums(
 }
 
 struct AmountSelection {
-    newly_selected_ids: HashSet<OutputId>,
-    newly_selected_inputs: Vec<(InputSigningData, Option<AliasTransition>)>,
+    newly_selected_inputs: HashMap<OutputId, (InputSigningData, Option<AliasTransition>)>,
     inputs_sum: u64,
     outputs_sum: u64,
     inputs_sdr: HashMap<Address, u64>,
@@ -95,8 +94,7 @@ impl AmountSelection {
         let (remainder_amount, native_tokens_remainder) = input_selection.remainder_amount()?;
 
         Ok(Self {
-            newly_selected_ids: HashSet::new(),
-            newly_selected_inputs: Vec::new(),
+            newly_selected_inputs: HashMap::new(),
             inputs_sum,
             outputs_sum,
             inputs_sdr,
@@ -128,7 +126,7 @@ impl AmountSelection {
 
     fn fulfil<'a>(&mut self, inputs: impl Iterator<Item = &'a InputSigningData>) -> bool {
         for input in inputs {
-            if self.newly_selected_ids.contains(input.output_id()) {
+            if self.newly_selected_inputs.contains_key(input.output_id()) {
                 continue;
             }
 
@@ -150,8 +148,8 @@ impl AmountSelection {
             }
 
             self.inputs_sum += input.output.amount();
-            self.newly_selected_inputs.push((input.clone(), None));
-            self.newly_selected_ids.insert(*input.output_id());
+            self.newly_selected_inputs
+                .insert(*input.output_id(), (input.clone(), None));
 
             if self.missing_amount() == 0 {
                 return true;
@@ -159,6 +157,10 @@ impl AmountSelection {
         }
 
         false
+    }
+
+    fn into_newly_selected_inputs(self) -> Vec<(InputSigningData, Option<AliasTransition>)> {
+        self.newly_selected_inputs.into_values().collect()
     }
 }
 
@@ -168,7 +170,7 @@ impl InputSelection {
 
         if amount_selection.missing_amount() == 0 {
             log::debug!("Amount requirement already fulfilled");
-            return Ok(amount_selection.newly_selected_inputs);
+            return Ok(amount_selection.into_newly_selected_inputs());
         } else {
             log::debug!(
                 "Fulfilling amount requirement with input {}, output {}, input sdrs {:?} and output sdrs {:?}",
@@ -316,17 +318,17 @@ impl InputSelection {
 
                     log::debug!(
                         "Outputs {:?} selected to fulfill the amount requirement",
-                        amount_selection.newly_selected_ids
+                        amount_selection.newly_selected_inputs
                     );
                     log::debug!("Triggering another amount round as non-basic outputs need to be transitioned first");
 
                     self.available_inputs
-                        .retain(|input| !amount_selection.newly_selected_ids.contains(input.output_id()));
+                        .retain(|input| !amount_selection.newly_selected_inputs.contains_key(input.output_id()));
 
                     // TODO explanation of Amount
                     self.requirements.push(Requirement::Amount);
 
-                    return Ok(amount_selection.newly_selected_inputs);
+                    return Ok(amount_selection.into_newly_selected_inputs());
                 }
             }
         }
@@ -388,12 +390,12 @@ impl InputSelection {
 
         log::debug!(
             "Outputs {:?} selected to fulfill the amount requirement",
-            amount_selection.newly_selected_ids
+            amount_selection.newly_selected_inputs
         );
 
         self.available_inputs
-            .retain(|input| !amount_selection.newly_selected_ids.contains(input.output_id()));
+            .retain(|input| !amount_selection.newly_selected_inputs.contains_key(input.output_id()));
 
-        Ok(amount_selection.newly_selected_inputs)
+        Ok(amount_selection.into_newly_selected_inputs())
     }
 }
