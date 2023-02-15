@@ -1457,7 +1457,6 @@ fn two_basic_outputs_native_tokens_not_needed() {
     .unwrap();
 
     assert_eq!(selected.inputs.len(), 1);
-    println!("{:#?}", selected.inputs);
     assert!(selected.inputs.contains(&inputs[1]));
     assert_eq!(selected.outputs.len(), 2);
     assert!(selected.outputs.contains(&outputs[0]));

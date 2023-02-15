@@ -591,7 +591,7 @@ fn useless_sdruc_non_ed25519_in_address_unlock() {
     )]);
 
     let selected = InputSelection::new(
-        inputs,
+        inputs.clone(),
         outputs.clone(),
         addresses(vec![BECH32_ADDRESS_ED25519_0]),
         protocol_parameters,
@@ -600,6 +600,8 @@ fn useless_sdruc_non_ed25519_in_address_unlock() {
     .unwrap();
 
     assert_eq!(selected.inputs.len(), 2);
+    assert!(selected.inputs.contains(&inputs[1]));
+    assert!(selected.inputs.contains(&inputs[2]));
     assert_eq!(selected.outputs.len(), 2);
     assert!(selected.outputs.contains(&outputs[0]));
     selected.outputs.iter().for_each(|output| {
