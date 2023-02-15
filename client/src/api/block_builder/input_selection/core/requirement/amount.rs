@@ -119,9 +119,11 @@ impl InputSelection {
             .sort_by(|left, right| left.output.amount().cmp(&right.output.amount()));
 
         'overall: {
-            // 1. Basic with ED25519 address without SDRUC or expired SDRUC
+            // 0. Basic with ED25519 address without SDRUC or expired SDRUC, without NTs, without unexpired expiration
             {
-                log::debug!("Trying basic outputs with ed25519 address and no or expired SDRUC");
+                log::debug!(
+                    "Trying basic outputs with ed25519 address and no or expired SDRUC, without NTs, without unexpired expiration"
+                );
 
                 let inputs = self.available_inputs.iter().filter(|input| {
                     if let Output::Basic(output) = &input.output {
@@ -130,6 +132,37 @@ impl InputSelection {
                             .locked_address(output.address(), self.timestamp)
                             .is_ed25519()
                             && sdruc_not_expired(&input.output, self.timestamp).is_none()
+                            && output.native_tokens().is_empty()
+                    } else {
+                        false
+                    }
+                });
+
+                for input in inputs {
+                    inputs_sum += input.output.amount();
+                    newly_selected_inputs.push((input.clone(), None));
+                    newly_selected_ids.insert(*input.output_id());
+
+                    if missing_amount(inputs_sum, outputs_sum, remainder_amount, native_tokens_remainder) == 0 {
+                        break 'overall;
+                    }
+                }
+            }
+
+            // 1. Basic with ED25519 address without SDRUC or expired SDRUC
+            {
+                log::debug!(
+                    "Trying basic outputs with ed25519 address and no or expired SDRUC, with NTs, without unexpired expiration"
+                );
+
+                let inputs = self.available_inputs.iter().filter(|input| {
+                    if let Output::Basic(output) = &input.output {
+                        output
+                            .unlock_conditions()
+                            .locked_address(output.address(), self.timestamp)
+                            .is_ed25519()
+                            && sdruc_not_expired(&input.output, self.timestamp).is_none()
+                            && !output.native_tokens().is_empty()
                     } else {
                         false
                     }
