@@ -605,13 +605,8 @@ fn useless_sdruc_non_ed25519_in_address_unlock() {
     assert_eq!(selected.outputs.len(), 2);
     assert!(selected.outputs.contains(&outputs[0]));
     selected.outputs.iter().for_each(|output| {
-        if !outputs.contains(output) && !output.is_alias() {
-            assert!(is_remainder_or_return(
-                output,
-                1_000_000,
-                BECH32_ADDRESS_ED25519_2,
-                None
-            ));
+        if !outputs.contains(output) {
+            assert!(output.is_alias());
         }
     });
 }
