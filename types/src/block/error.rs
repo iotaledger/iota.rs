@@ -23,7 +23,7 @@ use crate::block::{
 };
 
 /// Error occurring when creating/parsing/validating blocks.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 #[allow(missing_docs)]
 pub enum Error {
     CannotReplaceMissingField,

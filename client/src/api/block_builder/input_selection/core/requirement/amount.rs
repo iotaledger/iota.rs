@@ -10,7 +10,7 @@ use crate::{
     block::{
         address::Address,
         output::{
-            unlock_condition::{StorageDepositReturnUnlockCondition, UnlockCondition, UnlockConditions},
+            unlock_condition::{StorageDepositReturnUnlockCondition, UnlockCondition},
             AliasOutputBuilder, AliasTransition, FoundryOutputBuilder, NftOutputBuilder, Output, Rent,
         },
     },
@@ -88,6 +88,7 @@ struct AmountSelection {
     outputs_sdr: HashMap<Address, u64>,
     remainder_amount: u64,
     native_tokens_remainder: bool,
+    timestamp: u32,
 }
 
 impl AmountSelection {
@@ -108,6 +109,7 @@ impl AmountSelection {
             outputs_sdr,
             remainder_amount,
             native_tokens_remainder,
+            timestamp: input_selection.timestamp,
         })
     }
 
@@ -134,6 +136,23 @@ impl AmountSelection {
         for input in inputs {
             if self.newly_selected_ids.contains(input.output_id()) {
                 continue;
+            }
+
+            if let Some(sdruc) = sdruc_not_expired(&input.output, self.timestamp) {
+                // Skip if no additional amount is made available
+                if input.output.amount() == sdruc.amount() {
+                    continue;
+                }
+                let input_sdr = self.inputs_sdr.get(sdruc.return_address()).unwrap_or(&0) + sdruc.amount();
+                let output_sdr = *self.outputs_sdr.get(sdruc.return_address()).unwrap_or(&0);
+
+                if input_sdr > output_sdr {
+                    let diff = input_sdr - output_sdr;
+                    self.outputs_sum += diff;
+                    *self.outputs_sdr.entry(*sdruc.return_address()).or_default() += sdruc.amount();
+                }
+
+                *self.inputs_sdr.entry(*sdruc.return_address()).or_default() += sdruc.amount();
             }
 
             self.inputs_sum += input.output.amount();
@@ -242,43 +261,8 @@ impl InputSelection {
                     }
                 });
 
-                for input in inputs {
-                    if amount_selection.newly_selected_ids.contains(input.output_id()) {
-                        continue;
-                    }
-
-                    log::debug!("2. adding {}", input.output_id());
-                    let sdruc = input
-                        .output
-                        .unlock_conditions()
-                        .and_then(UnlockConditions::storage_deposit_return)
-                        // PANIC: safe to unwrap as the filter guarantees outputs with SDRUC only.
-                        .unwrap();
-
-                    // Skip if no additional amount is made available
-                    if input.output.amount() == sdruc.amount() {
-                        continue;
-                    }
-
-                    amount_selection.inputs_sum += input.output.amount();
-                    amount_selection.newly_selected_inputs.push((input.clone(), None));
-                    amount_selection.newly_selected_ids.insert(*input.output_id());
-
-                    let input_sdr =
-                        amount_selection.inputs_sdr.get(sdruc.return_address()).unwrap_or(&0) + sdruc.amount();
-                    let output_sdr = *amount_selection.outputs_sdr.get(sdruc.return_address()).unwrap_or(&0);
-
-                    if input_sdr > output_sdr {
-                        let diff = input_sdr - output_sdr;
-                        amount_selection.outputs_sum += diff;
-                        *amount_selection.outputs_sdr.entry(*sdruc.return_address()).or_default() += sdruc.amount();
-                    }
-
-                    *amount_selection.inputs_sdr.entry(*sdruc.return_address()).or_default() += sdruc.amount();
-
-                    if amount_selection.missing_amount() == 0 {
-                        break 'overall;
-                    }
+                if amount_selection.plop(inputs) {
+                    break 'overall;
                 }
             }
 
@@ -319,56 +303,8 @@ impl InputSelection {
                     }
                 });
 
-                for input in inputs {
-                    if amount_selection.newly_selected_ids.contains(input.output_id()) {
-                        continue;
-                    }
-
-                    log::debug!("4. adding {}", input.output_id());
-                    match input
-                        .output
-                        .unlock_conditions()
-                        .and_then(UnlockConditions::storage_deposit_return)
-                    {
-                        Some(sdruc) => {
-                            // Skip if no additional amount is made available
-                            if input.output.amount() == sdruc.amount() {
-                                continue;
-                            }
-
-                            amount_selection.inputs_sum += input.output.amount();
-                            amount_selection.newly_selected_inputs.push((input.clone(), None));
-                            amount_selection.newly_selected_ids.insert(*input.output_id());
-
-                            let input_sdr =
-                                amount_selection.inputs_sdr.get(sdruc.return_address()).unwrap_or(&0) + sdruc.amount();
-                            let output_sdr = *amount_selection.outputs_sdr.get(sdruc.return_address()).unwrap_or(&0);
-
-                            if input_sdr > output_sdr {
-                                let diff = input_sdr - output_sdr;
-                                amount_selection.outputs_sum += diff;
-                                *amount_selection.outputs_sdr.entry(*sdruc.return_address()).or_default() +=
-                                    sdruc.amount();
-                            }
-
-                            *amount_selection.inputs_sdr.entry(*sdruc.return_address()).or_default() += sdruc.amount();
-
-                            if amount_selection.missing_amount() == 0 {
-                                break 'overall;
-                            }
-                        }
-                        None => {
-                            amount_selection.inputs_sum += input.output.amount();
-                            amount_selection.newly_selected_inputs.push((input.clone(), None));
-                            amount_selection.newly_selected_ids.insert(*input.output_id());
-
-                            if amount_selection.inputs_sum
-                                >= amount_selection.outputs_sum + amount_selection.remainder_amount
-                            {
-                                break 'overall;
-                            }
-                        }
-                    }
+                if amount_selection.plop(inputs) {
+                    break 'overall;
                 }
             }
 
@@ -383,22 +319,7 @@ impl InputSelection {
                     .peekable();
 
                 if inputs.peek().is_some() {
-                    for input in inputs {
-                        if amount_selection.newly_selected_ids.contains(input.output_id()) {
-                            continue;
-                        }
-
-                        log::debug!("5. adding {}", input.output_id());
-                        amount_selection.inputs_sum += input.output.amount();
-                        amount_selection.newly_selected_inputs.push((input.clone(), None));
-                        amount_selection.newly_selected_ids.insert(*input.output_id());
-
-                        if amount_selection.inputs_sum
-                            >= amount_selection.outputs_sum + amount_selection.remainder_amount
-                        {
-                            break;
-                        }
-                    }
+                    amount_selection.plop(inputs);
 
                     log::debug!(
                         "Outputs {:?} selected to fulfill the amount requirement",
