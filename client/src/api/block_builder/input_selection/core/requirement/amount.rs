@@ -1,15 +1,15 @@
 // Copyright 2023 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 use super::{InputSelection, Requirement};
 use crate::{
     block::{
         address::Address,
         output::{
-            unlock_condition::{StorageDepositReturnUnlockCondition, UnlockCondition, UnlockConditions},
-            AliasOutputBuilder, AliasTransition, FoundryOutputBuilder, NftOutputBuilder, Output, Rent,
+            unlock_condition::{StorageDepositReturnUnlockCondition, UnlockCondition},
+            AliasOutputBuilder, AliasTransition, FoundryOutputBuilder, NftOutputBuilder, Output, OutputId, Rent,
         },
     },
     error::{Error, Result},
@@ -73,41 +73,111 @@ pub(crate) fn amount_sums(
     (inputs_sum, outputs_sum, inputs_sdr, outputs_sdr)
 }
 
-fn missing_amount(inputs_sum: u64, outputs_sum: u64, remainder_amount: u64, native_tokens_remainder: bool) -> u64 {
-    // If there is already a remainder, make sure it's enough to cover the storage deposit.
-    if inputs_sum > outputs_sum {
-        let diff = inputs_sum - outputs_sum;
+struct AmountSelection {
+    newly_selected_inputs: HashMap<OutputId, (InputSigningData, Option<AliasTransition>)>,
+    inputs_sum: u64,
+    outputs_sum: u64,
+    inputs_sdr: HashMap<Address, u64>,
+    outputs_sdr: HashMap<Address, u64>,
+    remainder_amount: u64,
+    native_tokens_remainder: bool,
+    timestamp: u32,
+}
 
-        if remainder_amount > diff {
-            remainder_amount - diff
+impl AmountSelection {
+    fn new(input_selection: &InputSelection) -> Result<Self> {
+        let (inputs_sum, outputs_sum, inputs_sdr, outputs_sdr) = amount_sums(
+            &input_selection.selected_inputs,
+            &input_selection.outputs,
+            input_selection.timestamp,
+        );
+        let (remainder_amount, native_tokens_remainder) = input_selection.remainder_amount()?;
+
+        Ok(Self {
+            newly_selected_inputs: HashMap::new(),
+            inputs_sum,
+            outputs_sum,
+            inputs_sdr,
+            outputs_sdr,
+            remainder_amount,
+            native_tokens_remainder,
+            timestamp: input_selection.timestamp,
+        })
+    }
+
+    fn missing_amount(&self) -> u64 {
+        // If there is already a remainder, make sure it's enough to cover the storage deposit.
+        if self.inputs_sum > self.outputs_sum {
+            let diff = self.inputs_sum - self.outputs_sum;
+
+            if self.remainder_amount > diff {
+                self.remainder_amount - diff
+            } else {
+                0
+            }
+        } else if self.inputs_sum < self.outputs_sum {
+            self.outputs_sum - self.inputs_sum
+        } else if self.native_tokens_remainder {
+            self.remainder_amount
         } else {
             0
         }
-    } else if inputs_sum < outputs_sum {
-        outputs_sum - inputs_sum
-    } else if native_tokens_remainder {
-        remainder_amount
-    } else {
-        0
+    }
+
+    fn fulfil<'a>(&mut self, inputs: impl Iterator<Item = &'a InputSigningData>) -> bool {
+        for input in inputs {
+            if self.newly_selected_inputs.contains_key(input.output_id()) {
+                continue;
+            }
+
+            if let Some(sdruc) = sdruc_not_expired(&input.output, self.timestamp) {
+                // Skip if no additional amount is made available
+                if input.output.amount() == sdruc.amount() {
+                    continue;
+                }
+                let input_sdr = self.inputs_sdr.get(sdruc.return_address()).unwrap_or(&0) + sdruc.amount();
+                let output_sdr = *self.outputs_sdr.get(sdruc.return_address()).unwrap_or(&0);
+
+                if input_sdr > output_sdr {
+                    let diff = input_sdr - output_sdr;
+                    self.outputs_sum += diff;
+                    *self.outputs_sdr.entry(*sdruc.return_address()).or_default() += sdruc.amount();
+                }
+
+                *self.inputs_sdr.entry(*sdruc.return_address()).or_default() += sdruc.amount();
+            }
+
+            self.inputs_sum += input.output.amount();
+            self.newly_selected_inputs
+                .insert(*input.output_id(), (input.clone(), None));
+
+            if self.missing_amount() == 0 {
+                return true;
+            }
+        }
+
+        false
+    }
+
+    fn into_newly_selected_inputs(self) -> Vec<(InputSigningData, Option<AliasTransition>)> {
+        self.newly_selected_inputs.into_values().collect()
     }
 }
 
 impl InputSelection {
-    #[allow(clippy::cognitive_complexity)]
     pub(crate) fn fulfill_amount_requirement(&mut self) -> Result<Vec<(InputSigningData, Option<AliasTransition>)>> {
-        let (mut inputs_sum, mut outputs_sum, mut inputs_sdr, mut outputs_sdr) =
-            amount_sums(&self.selected_inputs, &self.outputs, self.timestamp);
+        let mut amount_selection = AmountSelection::new(self)?;
 
-        let (remainder_amount, native_tokens_remainder) = self.remainder_amount()?;
-        let mut newly_selected_inputs = Vec::new();
-        let mut newly_selected_ids = HashSet::new();
-
-        if missing_amount(inputs_sum, outputs_sum, remainder_amount, native_tokens_remainder) == 0 {
+        if amount_selection.missing_amount() == 0 {
             log::debug!("Amount requirement already fulfilled");
-            return Ok(newly_selected_inputs);
+            return Ok(amount_selection.into_newly_selected_inputs());
         } else {
             log::debug!(
-                "Fulfilling amount requirement with input {inputs_sum}, output {outputs_sum}, input sdrs {inputs_sdr:?} and output sdrs {outputs_sdr:?}"
+                "Fulfilling amount requirement with input {}, output {}, input sdrs {:?} and output sdrs {:?}",
+                amount_selection.inputs_sum,
+                amount_selection.outputs_sum,
+                amount_selection.inputs_sdr,
+                amount_selection.outputs_sdr
             );
         }
 
@@ -136,18 +206,8 @@ impl InputSelection {
                     }
                 });
 
-                for input in inputs {
-                    if newly_selected_ids.contains(input.output_id()) {
-                        continue;
-                    }
-                    log::debug!("0. adding {}", input.output_id());
-                    inputs_sum += input.output.amount();
-                    newly_selected_inputs.push((input.clone(), None));
-                    newly_selected_ids.insert(*input.output_id());
-
-                    if missing_amount(inputs_sum, outputs_sum, remainder_amount, native_tokens_remainder) == 0 {
-                        break 'overall;
-                    }
+                if amount_selection.fulfil(inputs) {
+                    break 'overall;
                 }
             }
 
@@ -170,18 +230,8 @@ impl InputSelection {
                     }
                 });
 
-                for input in inputs {
-                    if newly_selected_ids.contains(input.output_id()) {
-                        continue;
-                    }
-                    log::debug!("1. adding {}", input.output_id());
-                    inputs_sum += input.output.amount();
-                    newly_selected_inputs.push((input.clone(), None));
-                    newly_selected_ids.insert(*input.output_id());
-
-                    if missing_amount(inputs_sum, outputs_sum, remainder_amount, native_tokens_remainder) == 0 {
-                        break 'overall;
-                    }
+                if amount_selection.fulfil(inputs) {
+                    break 'overall;
                 }
             }
 
@@ -206,41 +256,8 @@ impl InputSelection {
                     }
                 });
 
-                for input in inputs {
-                    if newly_selected_ids.contains(input.output_id()) {
-                        continue;
-                    }
-                    log::debug!("2. adding {}", input.output_id());
-                    let sdruc = input
-                        .output
-                        .unlock_conditions()
-                        .and_then(UnlockConditions::storage_deposit_return)
-                        // PANIC: safe to unwrap as the filter guarantees outputs with SDRUC only.
-                        .unwrap();
-
-                    // Skip if no additional amount is made available
-                    if input.output.amount() == sdruc.amount() {
-                        continue;
-                    }
-
-                    inputs_sum += input.output.amount();
-                    newly_selected_inputs.push((input.clone(), None));
-                    newly_selected_ids.insert(*input.output_id());
-
-                    let input_sdr = inputs_sdr.get(sdruc.return_address()).unwrap_or(&0) + sdruc.amount();
-                    let output_sdr = *outputs_sdr.get(sdruc.return_address()).unwrap_or(&0);
-
-                    if input_sdr > output_sdr {
-                        let diff = input_sdr - output_sdr;
-                        outputs_sum += diff;
-                        *outputs_sdr.entry(*sdruc.return_address()).or_default() += sdruc.amount();
-                    }
-
-                    *inputs_sdr.entry(*sdruc.return_address()).or_default() += sdruc.amount();
-
-                    if missing_amount(inputs_sum, outputs_sum, remainder_amount, native_tokens_remainder) == 0 {
-                        break 'overall;
-                    }
+                if amount_selection.fulfil(inputs) {
+                    break 'overall;
                 }
             }
 
@@ -260,18 +277,8 @@ impl InputSelection {
                     }
                 });
 
-                for input in inputs {
-                    if newly_selected_ids.contains(input.output_id()) {
-                        continue;
-                    }
-                    log::debug!("3. adding {}", input.output_id());
-                    inputs_sum += input.output.amount();
-                    newly_selected_inputs.push((input.clone(), None));
-                    newly_selected_ids.insert(*input.output_id());
-
-                    if inputs_sum >= outputs_sum + remainder_amount {
-                        break 'overall;
-                    }
+                if amount_selection.fulfil(inputs) {
+                    break 'overall;
                 }
             }
 
@@ -291,51 +298,8 @@ impl InputSelection {
                     }
                 });
 
-                for input in inputs {
-                    if newly_selected_ids.contains(input.output_id()) {
-                        continue;
-                    }
-                    log::debug!("4. adding {}", input.output_id());
-                    match input
-                        .output
-                        .unlock_conditions()
-                        .and_then(UnlockConditions::storage_deposit_return)
-                    {
-                        Some(sdruc) => {
-                            // Skip if no additional amount is made available
-                            if input.output.amount() == sdruc.amount() {
-                                continue;
-                            }
-
-                            inputs_sum += input.output.amount();
-                            newly_selected_inputs.push((input.clone(), None));
-                            newly_selected_ids.insert(*input.output_id());
-
-                            let input_sdr = inputs_sdr.get(sdruc.return_address()).unwrap_or(&0) + sdruc.amount();
-                            let output_sdr = *outputs_sdr.get(sdruc.return_address()).unwrap_or(&0);
-
-                            if input_sdr > output_sdr {
-                                let diff = input_sdr - output_sdr;
-                                outputs_sum += diff;
-                                *outputs_sdr.entry(*sdruc.return_address()).or_default() += sdruc.amount();
-                            }
-
-                            *inputs_sdr.entry(*sdruc.return_address()).or_default() += sdruc.amount();
-
-                            if missing_amount(inputs_sum, outputs_sum, remainder_amount, native_tokens_remainder) == 0 {
-                                break 'overall;
-                            }
-                        }
-                        None => {
-                            inputs_sum += input.output.amount();
-                            newly_selected_inputs.push((input.clone(), None));
-                            newly_selected_ids.insert(*input.output_id());
-
-                            if inputs_sum >= outputs_sum + remainder_amount {
-                                break 'overall;
-                            }
-                        }
-                    }
+                if amount_selection.fulfil(inputs) {
+                    break 'overall;
                 }
             }
 
@@ -350,36 +314,27 @@ impl InputSelection {
                     .peekable();
 
                 if inputs.peek().is_some() {
-                    for input in inputs {
-                        if newly_selected_ids.contains(input.output_id()) {
-                            continue;
-                        }
-                        log::debug!("5. adding {}", input.output_id());
-                        inputs_sum += input.output.amount();
-                        newly_selected_inputs.push((input.clone(), None));
-                        newly_selected_ids.insert(*input.output_id());
+                    amount_selection.fulfil(inputs);
 
-                        if inputs_sum >= outputs_sum + remainder_amount {
-                            break;
-                        }
-                    }
-
-                    log::debug!("Outputs {newly_selected_ids:?} selected to fulfill the amount requirement");
+                    log::debug!(
+                        "Outputs {:?} selected to fulfill the amount requirement",
+                        amount_selection.newly_selected_inputs
+                    );
                     log::debug!("Triggering another amount round as non-basic outputs need to be transitioned first");
 
                     self.available_inputs
-                        .retain(|input| !newly_selected_ids.contains(input.output_id()));
+                        .retain(|input| !amount_selection.newly_selected_inputs.contains_key(input.output_id()));
 
                     // TODO explanation of Amount
                     self.requirements.push(Requirement::Amount);
 
-                    return Ok(newly_selected_inputs);
+                    return Ok(amount_selection.into_newly_selected_inputs());
                 }
             }
         }
 
         'ici: {
-            if missing_amount(inputs_sum, outputs_sum, remainder_amount, native_tokens_remainder) != 0 {
+            if amount_selection.missing_amount() != 0 {
                 // Moving funds of already transitioned other outputs ?
                 let outputs = self.outputs.iter_mut().filter(|output| {
                     output
@@ -390,7 +345,7 @@ impl InputSelection {
                 });
 
                 for output in outputs {
-                    let diff = missing_amount(inputs_sum, outputs_sum, remainder_amount, native_tokens_remainder);
+                    let diff = amount_selection.missing_amount();
                     let amount = output.amount();
                     let rent = output.rent_cost(self.protocol_parameters.rent_structure());
 
@@ -418,27 +373,29 @@ impl InputSelection {
                         _ => panic!("only alias, nft and foundry can be automatically created"),
                     };
 
-                    outputs_sum -= amount - new_amount;
+                    amount_selection.outputs_sum -= amount - new_amount;
                     *output = new_output;
 
-                    if missing_amount(inputs_sum, outputs_sum, remainder_amount, native_tokens_remainder) == 0 {
+                    if amount_selection.missing_amount() == 0 {
                         break 'ici;
                     }
                 }
 
                 return Err(Error::InsufficientAmount {
-                    found: inputs_sum,
-                    required: inputs_sum
-                        + missing_amount(inputs_sum, outputs_sum, remainder_amount, native_tokens_remainder),
+                    found: amount_selection.inputs_sum,
+                    required: amount_selection.inputs_sum + amount_selection.missing_amount(),
                 });
             }
         }
 
-        log::debug!("Outputs {newly_selected_ids:?} selected to fulfill the amount requirement");
+        log::debug!(
+            "Outputs {:?} selected to fulfill the amount requirement",
+            amount_selection.newly_selected_inputs
+        );
 
         self.available_inputs
-            .retain(|input| !newly_selected_ids.contains(input.output_id()));
+            .retain(|input| !amount_selection.newly_selected_inputs.contains_key(input.output_id()));
 
-        Ok(newly_selected_inputs)
+        Ok(amount_selection.into_newly_selected_inputs())
     }
 }
