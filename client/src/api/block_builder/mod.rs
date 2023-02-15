@@ -5,7 +5,7 @@ pub mod input_selection;
 pub mod pow;
 pub mod transaction;
 
-use std::{collections::HashSet, ops::Range};
+use std::ops::Range;
 
 use iota_types::block::{
     address::{Address, Ed25519Address},
@@ -13,7 +13,7 @@ use iota_types::block::{
     output::{
         dto::OutputDto,
         unlock_condition::{AddressUnlockCondition, UnlockCondition},
-        AliasId, BasicOutputBuilder, Output, OUTPUT_COUNT_RANGE,
+        BasicOutputBuilder, Output, OUTPUT_COUNT_RANGE,
     },
     parent::Parents,
     payload::{Payload, TaggedDataPayload},
@@ -334,47 +334,6 @@ impl<'a> ClientBlockBuilder<'a> {
             // Send block without payload
             self.finish_block(None).await
         }
-    }
-
-    /// Get output amount and address from an OutputDto, governance_transition for Alias Outputs so we get the unlock
-    /// condition we're interested in
-    pub fn get_output_amount_and_address(
-        output: &Output,
-        governance_transition: Option<HashSet<AliasId>>,
-        current_time: u32,
-    ) -> Result<(u64, Address)> {
-        let (amount, address, unlock_conditions) = match output {
-            Output::Treasury(_) => return Err(Error::Output("Treasury output is no supported")),
-            Output::Basic(ref output) => {
-                // PANIC: safe to unwrap as BasicOutput has to have an AddressUnlockCondition.
-                let address = output.unlock_conditions().address().unwrap();
-
-                (output.amount(), *address.address(), output.unlock_conditions())
-            }
-            Output::Alias(ref output) => {
-                let is_governance_transition = governance_transition.map_or(false, |governance_transition| {
-                    governance_transition.contains(output.alias_id())
-                });
-
-                if is_governance_transition {
-                    (output.amount(), *output.governor_address(), output.unlock_conditions())
-                } else {
-                    (
-                        output.amount(),
-                        *output.state_controller_address(),
-                        output.unlock_conditions(),
-                    )
-                }
-            }
-            Output::Foundry(ref output) => (
-                output.amount(),
-                Address::Alias(*output.alias_address()),
-                output.unlock_conditions(),
-            ),
-            Output::Nft(ref output) => (output.amount(), *output.address(), output.unlock_conditions()),
-        };
-
-        Ok((amount, *unlock_conditions.locked_address(&address, current_time)))
     }
 
     /// Consume the builder and get the API result

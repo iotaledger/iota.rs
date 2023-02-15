@@ -63,33 +63,33 @@ pub(crate) async fn get_alias_and_nft_outputs_recursively(
         if processed_alias_nft_addresses.insert(unlock_address) {
             match unlock_address {
                 Address::Alias(address) => {
-                    let output_id = client.alias_output_id(*address.alias_id()).await?;
-                    let output_response = client.get_output(&output_id).await?;
-                    if let OutputDto::Alias(alias_output_dto) = &output_response.output {
-                        let alias_output = AliasOutput::try_from_dto(alias_output_dto, token_supply)?;
+                    let input_id = client.alias_output_id(*address.alias_id()).await?;
+                    let input_response = client.get_output(&input_id).await?;
+                    if let OutputDto::Alias(alias_input_dto) = &input_response.output {
+                        let alias_input = AliasOutput::try_from_dto(alias_input_dto, token_supply)?;
                         // State transition if we add them to inputs
-                        let alias_unlock_address = alias_output.state_controller_address();
+                        let alias_unlock_address = alias_input.state_controller_address();
                         // Add address to unprocessed_alias_nft_addresses so we get the required output there
                         // also
                         if alias_unlock_address.is_alias() || alias_unlock_address.is_nft() {
                             utxo_chain_optional_response.push((*alias_unlock_address, None));
                         }
-                        processed_utxo_chains.push((*alias_unlock_address, output_response));
+                        processed_utxo_chains.push((*alias_unlock_address, input_response));
                     }
                 }
                 Address::Nft(address) => {
-                    let output_id = client.nft_output_id(*address.nft_id()).await?;
-                    let output_response = client.get_output(&output_id).await?;
-                    if let OutputDto::Nft(nft_output) = &output_response.output {
-                        let nft_output = NftOutput::try_from_dto(nft_output, token_supply)?;
-                        let unlock_address = nft_output
+                    let input_id = client.nft_output_id(*address.nft_id()).await?;
+                    let input_response = client.get_output(&input_id).await?;
+                    if let OutputDto::Nft(nft_input) = &input_response.output {
+                        let nft_input = NftOutput::try_from_dto(nft_input, token_supply)?;
+                        let unlock_address = nft_input
                             .unlock_conditions()
-                            .locked_address(nft_output.address(), current_time);
+                            .locked_address(nft_input.address(), current_time);
                         // Add address to unprocessed_alias_nft_addresses so we get the required output there also
                         if unlock_address.is_alias() || unlock_address.is_nft() {
                             utxo_chain_optional_response.push((*unlock_address, None));
                         }
-                        processed_utxo_chains.push((*unlock_address, output_response));
+                        processed_utxo_chains.push((*unlock_address, input_response));
                     }
                 }
                 _ => {}
@@ -129,16 +129,16 @@ impl<'a> ClientBlockBuilder<'a> {
                         // Check if the transaction is a governance_transition, by checking if the new index is the same
                         // as the previous index
                         let output_id = client.alias_output_id(*alias_output.alias_id()).await?;
-                        let output_response = client.get_output(&output_id).await?;
-                        if let OutputDto::Alias(alias_output_dto) = &output_response.output {
-                            let alias_output = AliasOutput::try_from_dto(alias_output_dto, token_supply)?;
+                        let input_response = client.get_output(&output_id).await?;
+                        if let OutputDto::Alias(alias_input_dto) = &input_response.output {
+                            let alias_input = AliasOutput::try_from_dto(alias_input_dto, token_supply)?;
 
                             // A governance transition is identified by an unchanged State Index in next
                             // state.
-                            if alias_output.state_index() == alias_output.state_index() {
-                                utxo_chains.push((*alias_output.governor_address(), output_response));
+                            if alias_output.state_index() == alias_input.state_index() {
+                                utxo_chains.push((*alias_input.governor_address(), input_response));
                             } else {
-                                utxo_chains.push((*alias_output.state_controller_address(), output_response));
+                                utxo_chains.push((*alias_input.state_controller_address(), input_response));
                             }
                         }
                     }
@@ -147,25 +147,25 @@ impl<'a> ClientBlockBuilder<'a> {
                     // If the id is null then this output creates it and we can't have a previous output
                     if !nft_output.nft_id().is_null() {
                         let output_id = client.nft_output_id(*nft_output.nft_id()).await?;
-                        let output_response = client.get_output(&output_id).await?;
-                        if let OutputDto::Nft(nft_output) = &output_response.output {
-                            let nft_output = NftOutput::try_from_dto(nft_output, token_supply)?;
+                        let input_response = client.get_output(&output_id).await?;
+                        if let OutputDto::Nft(nft_input_dto) = &input_response.output {
+                            let nft_input = NftOutput::try_from_dto(nft_input_dto, token_supply)?;
 
-                            let unlock_address = nft_output
+                            let unlock_address = nft_input
                                 .unlock_conditions()
                                 .locked_address(nft_output.address(), current_time);
 
-                            utxo_chains.push((*unlock_address, output_response));
+                            utxo_chains.push((*unlock_address, input_response));
                         }
                     }
                 }
                 Output::Foundry(foundry_output) => {
                     // if it's the first foundry output, then we can't have it as input
                     if let Ok(output_id) = client.foundry_output_id(foundry_output.id()).await {
-                        let output_response = client.get_output(&output_id).await?;
-                        if let OutputDto::Foundry(foundry_output_dto) = &output_response.output {
-                            let foundry_output = FoundryOutput::try_from_dto(foundry_output_dto, token_supply)?;
-                            utxo_chains.push((Address::Alias(*foundry_output.alias_address()), output_response));
+                        let input_response = client.get_output(&output_id).await?;
+                        if let OutputDto::Foundry(foundry_output_dto) = &input_response.output {
+                            let foundry_input = FoundryOutput::try_from_dto(foundry_output_dto, token_supply)?;
+                            utxo_chains.push((Address::Alias(*foundry_input.alias_address()), input_response));
                         }
                     }
                 }

@@ -8,7 +8,7 @@ use std::collections::HashSet;
 use crypto::keys::slip10::Chain;
 use iota_types::block::{
     address::Address,
-    output::{AliasId, Output, OutputMetadata},
+    output::{Output, OutputMetadata},
     protocol::ProtocolParameters,
 };
 
@@ -16,6 +16,7 @@ use crate::{
     api::{
         address::search_address,
         block_builder::input_selection::{Burn, InputSelection, Selected},
+        input_selection::core::requirement::alias::is_alias_transition_internal,
         ClientBlockBuilder,
     },
     constants::HD_WALLET_TYPE,
@@ -30,7 +31,6 @@ impl<'a> ClientBlockBuilder<'a> {
     /// transaction, even if not required for the provided outputs.
     pub(crate) async fn get_custom_inputs(
         &self,
-        governance_transition: Option<HashSet<AliasId>>,
         protocol_parameters: &ProtocolParameters,
         burn: Option<Burn>,
     ) -> Result<Selected> {
@@ -46,16 +46,17 @@ impl<'a> ClientBlockBuilder<'a> {
                 let output = Output::try_from_dto(&output_response.output, token_supply)?;
 
                 if !output_response.metadata.is_spent {
-                    let (_output_amount, output_address) = ClientBlockBuilder::get_output_amount_and_address(
-                        &output,
-                        governance_transition.clone(),
+                    let alias_transition = is_alias_transition_internal(&output, *input.output_id(), &self.outputs);
+                    let (unlock_address, _) = output.required_and_unlocked_address(
                         current_time,
+                        input.output_id(),
+                        alias_transition.map(|g| g.0),
                     )?;
 
                     let bech32_hrp = self.client.get_bech32_hrp().await?;
                     let address_index_internal = match self.secret_manager {
                         Some(secret_manager) => {
-                            match output_address {
+                            match unlock_address {
                                 Address::Ed25519(_) => Some(
                                     search_address(
                                         secret_manager,
@@ -63,7 +64,7 @@ impl<'a> ClientBlockBuilder<'a> {
                                         self.coin_type,
                                         self.account_index,
                                         self.input_range.clone(),
-                                        &output_address,
+                                        &unlock_address,
                                     )
                                     .await?,
                                 ),
@@ -87,7 +88,7 @@ impl<'a> ClientBlockBuilder<'a> {
                                 address_index,
                             ])
                         }),
-                        bech32_address: output_address.to_bech32(&bech32_hrp),
+                        bech32_address: unlock_address.to_bech32(&bech32_hrp),
                     });
                 }
             }
@@ -103,6 +104,9 @@ impl<'a> ClientBlockBuilder<'a> {
             .iter()
             .map(|input| Ok(Address::try_from_bech32(&input.bech32_address)?.1))
             .collect::<Result<Vec<Address>>>()?;
+
+        inputs_data.sort_unstable_by_key(|input| *input.output_id());
+        inputs_data.dedup_by_key(|input| *input.output_id());
 
         let mut input_selection = InputSelection::new(
             inputs_data,
