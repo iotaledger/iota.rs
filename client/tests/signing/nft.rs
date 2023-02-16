@@ -94,7 +94,7 @@ async fn nft_reference_unlocks() -> Result<()> {
     let current_time = 100;
 
     let unlocks = secret_manager
-        .sign_transaction_essence(&prepared_transaction_data, current_time)
+        .sign_transaction_essence(&prepared_transaction_data, Some(current_time))
         .await?;
 
     assert_eq!(unlocks.len(), 3);

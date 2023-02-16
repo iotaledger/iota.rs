@@ -259,8 +259,14 @@ impl InputSelection {
     pub(crate) fn sort_input_signing_data(
         mut inputs: Vec<InputSigningData>,
         outputs: &[Output],
-        time: u32,
+        time: Option<u32>,
     ) -> Result<Vec<InputSigningData>, Error> {
+        let time = time.unwrap_or_else(|| {
+            instant::SystemTime::now()
+                .duration_since(instant::SystemTime::UNIX_EPOCH)
+                .expect("time went backwards")
+                .as_secs() as u32
+        });
         // initially sort by output to make it deterministic
         inputs.sort_by_key(|i| i.output.pack_to_vec());
         // filter for ed25519 address first, safe to unwrap since we encoded it before
@@ -393,7 +399,7 @@ impl InputSelection {
         self.outputs.extend(storage_deposit_returns);
 
         Ok(Selected {
-            inputs: Self::sort_input_signing_data(self.selected_inputs, &self.outputs, self.timestamp)?,
+            inputs: Self::sort_input_signing_data(self.selected_inputs, &self.outputs, Some(self.timestamp))?,
             outputs: self.outputs,
             remainder,
         })

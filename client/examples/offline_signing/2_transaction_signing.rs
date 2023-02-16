@@ -30,14 +30,9 @@ async fn main() -> Result<()> {
 
     let prepared_transaction_data = read_prepared_transaction_from_file(PREPARED_TRANSACTION_FILE_NAME)?;
 
-    let current_time = instant::SystemTime::now()
-        .duration_since(instant::SystemTime::UNIX_EPOCH)
-        .expect("time went backwards")
-        .as_secs() as u32;
-
     // Signs the prepared transaction offline.
     let unlocks = secret_manager
-        .sign_transaction_essence(&prepared_transaction_data, current_time)
+        .sign_transaction_essence(&prepared_transaction_data, None)
         .await?;
     let signed_transaction = TransactionPayload::new(prepared_transaction_data.essence.clone(), unlocks)?;
 

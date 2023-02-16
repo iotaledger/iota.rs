@@ -143,7 +143,7 @@ impl SecretManageExt for LedgerSecretManager {
     async fn sign_transaction_essence(
         &self,
         prepared_transaction: &PreparedTransactionData,
-        time: u32,
+        time: Option<u32>,
     ) -> crate::Result<Unlocks> {
         // lock the mutex to prevent multiple simultaneous requests to a ledger
         let _lock = self.mutex.lock().await;
@@ -386,10 +386,17 @@ impl LedgerSecretManager {
 fn merge_unlocks(
     prepared_transaction_data: &PreparedTransactionData,
     mut unlocks: impl Iterator<Item = Unlock>,
-    time: u32,
+    time: Option<u32>,
 ) -> crate::Result<Vec<Unlock>> {
     // The hashed_essence gets signed
     let hashed_essence = prepared_transaction_data.essence.hash();
+
+    let time = time.unwrap_or_else(|| {
+        instant::SystemTime::now()
+            .duration_since(instant::SystemTime::UNIX_EPOCH)
+            .expect("time went backwards")
+            .as_secs() as u32
+    });
 
     let mut merged_unlocks = Vec::new();
     let mut block_indexes = HashMap::<Address, usize>::new();

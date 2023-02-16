@@ -85,7 +85,7 @@ pub trait SecretManageExt {
     async fn sign_transaction_essence(
         &self,
         prepared_transaction_data: &PreparedTransactionData,
-        time: u32,
+        time: Option<u32>,
     ) -> crate::Result<Unlocks>;
 }
 
@@ -274,7 +274,7 @@ impl SecretManageExt for SecretManager {
     async fn sign_transaction_essence(
         &self,
         prepared_transaction_data: &PreparedTransactionData,
-        time: u32,
+        time: Option<u32>,
     ) -> crate::Result<Unlocks> {
         match self {
             #[cfg(feature = "stronghold")]
@@ -312,7 +312,7 @@ impl SecretManager {
     async fn default_sign_transaction_essence<'a>(
         &self,
         prepared_transaction_data: &PreparedTransactionData,
-        time: u32,
+        time: Option<u32>,
     ) -> crate::Result<Unlocks> {
         // The hashed_essence gets signed
         let hashed_essence = prepared_transaction_data.essence.hash();
@@ -331,7 +331,12 @@ impl SecretManager {
                 }
             };
             let (input_address, _) = input.output.required_and_unlocked_address(
-                time,
+                time.unwrap_or_else(|| {
+                    instant::SystemTime::now()
+                        .duration_since(instant::SystemTime::UNIX_EPOCH)
+                        .expect("time went backwards")
+                        .as_secs() as u32
+                }),
                 input.output_metadata.output_id(),
                 alias_transition,
             )?;

@@ -92,7 +92,7 @@ impl<'a> ClientBlockBuilder<'a> {
         let current_time = self.client.get_time_checked().await?;
 
         let unlocks = secret_manager
-            .sign_transaction_essence(&prepared_transaction_data, current_time)
+            .sign_transaction_essence(&prepared_transaction_data, Some(current_time))
             .await?;
         let tx_payload = TransactionPayload::new(prepared_transaction_data.essence.clone(), unlocks)?;
 
