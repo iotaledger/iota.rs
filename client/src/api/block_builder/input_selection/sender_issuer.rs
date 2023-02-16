@@ -94,7 +94,7 @@ impl<'a> ClientBlockBuilder<'a> {
                     // check if already found or request new.
                     if !utxo_chain_inputs.iter().chain(required_inputs.iter()).any(|input| {
                         if let Output::Alias(alias_output) = &input.output {
-                            alias_id == alias_output.alias_id()
+                            *alias_id == alias_output.alias_id_non_null(input.output_id())
                         } else {
                             false
                         }
