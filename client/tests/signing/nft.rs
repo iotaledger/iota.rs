@@ -91,8 +91,10 @@ async fn nft_reference_unlocks() -> Result<()> {
         remainder: None,
     };
 
+    let current_time = 100;
+
     let unlocks = secret_manager
-        .sign_transaction_essence(&prepared_transaction_data)
+        .sign_transaction_essence(&prepared_transaction_data, current_time)
         .await?;
 
     assert_eq!(unlocks.len(), 3);
@@ -113,8 +115,6 @@ async fn nft_reference_unlocks() -> Result<()> {
     let tx_payload = TransactionPayload::new(prepared_transaction_data.essence.clone(), unlocks)?;
 
     validate_transaction_payload_length(&tx_payload)?;
-
-    let current_time = 100;
 
     let conflict = verify_semantic(&prepared_transaction_data.inputs_data, &tx_payload, current_time)?;
 

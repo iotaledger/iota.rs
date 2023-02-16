@@ -364,7 +364,7 @@ async fn all_combined() -> Result<()> {
     };
 
     let unlocks = secret_manager
-        .sign_transaction_essence(&prepared_transaction_data)
+        .sign_transaction_essence(&prepared_transaction_data, current_time)
         .await?;
 
     assert_eq!(unlocks.len(), 15);

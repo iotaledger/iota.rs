@@ -9,9 +9,8 @@ pub(crate) mod transition;
 
 use std::collections::{HashMap, HashSet};
 
-pub(crate) use requirement::is_alias_transition;
-
 use packable::PackableExt;
+pub(crate) use requirement::is_alias_transition;
 
 pub use self::{
     burn::{Burn, BurnDto},
@@ -258,7 +257,7 @@ impl InputSelection {
 
     // Inputs need to be sorted before signing, because the reference unlock conditions can only reference a lower index
     pub(crate) fn sort_input_signing_data(
-        inputs: Vec<InputSigningData>,
+        mut inputs: Vec<InputSigningData>,
         outputs: &[Output],
         time: u32,
     ) -> Result<Vec<InputSigningData>, Error> {
@@ -329,7 +328,7 @@ impl InputSelection {
                     if let Some(alias_or_nft_address) = alias_or_nft_address {
                         // Check for existing outputs for this address, and insert before
                         match sorted_inputs.iter().position(|input_signing_data| {
-                            let alias_transition = is_alias_transition(&input_signing_data, outputs);
+                            let alias_transition = is_alias_transition(input_signing_data, outputs);
                             let (input_address, _) = input_signing_data
                                 .output
                                 .required_and_unlocked_address(
@@ -392,18 +391,6 @@ impl InputSelection {
         }
 
         self.outputs.extend(storage_deposit_returns);
-
-        // Update the bech32 addresses to the correct one
-        for input in &mut self.selected_inputs {
-            let alias_transition =
-                is_alias_transition(input, self.outputs.as_slice()).map(|(alias_transition, _)| alias_transition);
-            let (required_address, _) =
-                input
-                    .output
-                    .required_and_unlocked_address(self.timestamp, input.output_id(), alias_transition)?;
-            let (bech32_hrp, _) = Address::try_from_bech32(&input.bech32_address)?;
-            input.bech32_address = required_address.to_bech32(bech32_hrp);
-        }
 
         Ok(Selected {
             inputs: Self::sort_input_signing_data(self.selected_inputs, &self.outputs, self.timestamp)?,

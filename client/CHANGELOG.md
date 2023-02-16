@@ -38,6 +38,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - `ClientBlockBuilder::get_output_amount_and_address()`;
+- `{InputSigningData, InputSigningDataDto}::bech32_address`;
+- Added time parameter to `SecretManageExt::sign_transaction_essence()` and `SecretManager::default_sign_transaction_essence()`;
 
 ### Fixed
 
