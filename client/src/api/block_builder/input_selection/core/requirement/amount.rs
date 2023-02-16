@@ -174,7 +174,7 @@ impl InputSelection {
         base_inputs: impl Iterator<Item = &'a InputSigningData> + Clone,
         amount_selection: &mut AmountSelection,
     ) -> bool {
-        // 1. no NTs; expired expiration or only address unlock
+        // No native tokens, expired SDRUC.
         let inputs = base_inputs.clone().filter(|input| {
             input.output.native_tokens().unwrap().is_empty()
                 && sdruc_not_expired(&input.output, self.timestamp).is_none()
@@ -184,7 +184,7 @@ impl InputSelection {
             return true;
         }
 
-        // 2. no NTs; with unexpired SDRUC
+        // No native tokens, unexpired SDRUC.
         let inputs = base_inputs.clone().filter(|input| {
             input.output.native_tokens().unwrap().is_empty()
                 && sdruc_not_expired(&input.output, self.timestamp).is_some()
@@ -194,7 +194,7 @@ impl InputSelection {
             return true;
         }
 
-        // 3. with NTs; expired expiration
+        // Native tokens, expired SDRUC.
         let inputs = base_inputs.clone().filter(|input| {
             !input.output.native_tokens().unwrap().is_empty()
                 && sdruc_not_expired(&input.output, self.timestamp).is_none()
@@ -204,7 +204,7 @@ impl InputSelection {
             return true;
         }
 
-        // 4. with NTs; with unexpired SDRUC
+        // Native tokens, unexpired SDRUC.
         let inputs = base_inputs.clone().filter(|input| {
             !input.output.native_tokens().unwrap().is_empty()
                 && sdruc_not_expired(&input.output, self.timestamp).is_some()
@@ -214,7 +214,7 @@ impl InputSelection {
             return true;
         }
 
-        // 5. Basic outputs; ed25519 address; everything remaining
+        // Everything else.
         if amount_selection.fulfil(base_inputs) {
             return true;
         }
@@ -333,7 +333,7 @@ impl InputSelection {
                 break 'fulfil;
             }
 
-            // 5. Other kinds of outputs
+            // Other kinds of outputs.
 
             log::debug!("Trying other types of outputs");
 
