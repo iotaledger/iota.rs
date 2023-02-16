@@ -223,11 +223,18 @@ impl InputSelection {
     }
 
     fn reduce_funds_of_chains(&mut self, amount_selection: &mut AmountSelection) -> Result<()> {
+        // Only consider automatically transitioned outputs, except for alias governance transitions.
         let outputs = self.outputs.iter_mut().filter(|output| {
             output
                 .chain_id()
                 .as_ref()
-                .map(|chain_id| self.automatically_transitioned.contains(chain_id))
+                .map(|chain_id| {
+                    self.automatically_transitioned
+                        .get(chain_id)
+                        .map_or(false, |alias_transition| {
+                            alias_transition.map_or(true, |alias_transition| alias_transition.is_state())
+                        })
+                })
                 .unwrap_or(false)
         });
 
