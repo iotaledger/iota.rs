@@ -10,8 +10,7 @@ pub(crate) mod native_tokens;
 pub(crate) mod nft;
 pub(crate) mod sender;
 
-pub(crate) use alias::is_alias_transition;
-
+pub(crate) use self::alias::is_alias_transition;
 use self::{alias::is_alias_with_id_non_null, foundry::is_foundry_with_id, nft::is_nft_with_id_non_null};
 use super::{Error, InputSelection};
 use crate::{
