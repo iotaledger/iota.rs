@@ -6,7 +6,7 @@ pub(crate) mod remainder;
 pub(crate) mod requirement;
 pub(crate) mod transition;
 
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use self::requirement::alias::is_alias_transition;
 pub use self::{
@@ -41,7 +41,7 @@ pub struct InputSelection {
     protocol_parameters: ProtocolParameters,
     timestamp: u32,
     requirements: Vec<Requirement>,
-    automatically_transitioned: HashSet<ChainId>,
+    automatically_transitioned: HashMap<ChainId, Option<AliasTransition>>,
 }
 
 /// Result of the input selection algorithm.
@@ -178,7 +178,7 @@ impl InputSelection {
                 .expect("time went backwards")
                 .as_secs() as u32,
             requirements: Vec::new(),
-            automatically_transitioned: HashSet::new(),
+            automatically_transitioned: HashMap::new(),
         }
     }
 

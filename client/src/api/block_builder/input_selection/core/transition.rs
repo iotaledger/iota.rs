@@ -58,7 +58,8 @@ impl InputSelection {
 
         let output = builder.finish_output(self.protocol_parameters.token_supply())?;
 
-        self.automatically_transitioned.insert(ChainId::from(alias_id));
+        self.automatically_transitioned
+            .insert(ChainId::from(alias_id), Some(alias_transition));
 
         log::debug!("Automatic {alias_transition} transition of {output_id:?}/{alias_id:?}");
 
@@ -98,7 +99,7 @@ impl InputSelection {
             .with_features(features)
             .finish_output(self.protocol_parameters.token_supply())?;
 
-        self.automatically_transitioned.insert(ChainId::from(nft_id));
+        self.automatically_transitioned.insert(ChainId::from(nft_id), None);
 
         log::debug!("Automatic transition of {output_id:?}/{nft_id:?}");
 
@@ -132,7 +133,7 @@ impl InputSelection {
 
         let output = FoundryOutputBuilder::from(input).finish_output(self.protocol_parameters.token_supply())?;
 
-        self.automatically_transitioned.insert(ChainId::from(foundry_id));
+        self.automatically_transitioned.insert(ChainId::from(foundry_id), None);
 
         log::debug!("Automatic transition of {output_id:?}/{foundry_id:?}");
 

@@ -38,6 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Set basic auth when provided;
 - Input selection can select basic outputs without ed25519 address in the address unlock condition;
 - Automatic input selection with sender and issuer features;
+- Automatic alias governance transition does not change output amount in input selection;
 
 ## 2.0.1-rc.6 - 2023-02-08
 
