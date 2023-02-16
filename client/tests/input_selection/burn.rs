@@ -128,6 +128,7 @@ fn burn_alias_id_zero() {
             None,
             None,
             None,
+            None,
         ),
         Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None, None, None),
     ]);
@@ -319,6 +320,7 @@ fn burn_nft_present() {
             None,
             None,
             None,
+            None,
         ),
         Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None, None, None),
     ]);
@@ -358,6 +360,7 @@ fn burn_nft_present_and_required() {
             1_000_000,
             nft_id_1,
             BECH32_ADDRESS_ED25519_0,
+            None,
             None,
             None,
             None,
@@ -496,11 +499,13 @@ fn burn_nfts_present() {
             None,
             None,
             None,
+            None,
         ),
         Nft(
             1_000_000,
             nft_id_2,
             BECH32_ADDRESS_ED25519_0,
+            None,
             None,
             None,
             None,
@@ -549,6 +554,7 @@ fn burn_nft_in_outputs() {
             None,
             None,
             None,
+            None,
         ),
         Basic(1_000_000, BECH32_ADDRESS_ED25519_0, None, None, None, None, None, None),
     ]);
@@ -557,6 +563,7 @@ fn burn_nft_in_outputs() {
             1_000_000,
             nft_id_1,
             BECH32_ADDRESS_ED25519_0,
+            None,
             None,
             None,
             None,

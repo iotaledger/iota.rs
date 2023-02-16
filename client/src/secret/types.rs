@@ -131,7 +131,7 @@ impl LedgerNanoStatus {
 }
 
 /// Data for transaction inputs for signing and ordering of unlock blocks
-#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, Serialize, Deserialize)]
 pub struct InputSigningData {
     /// The output
     pub output: Output,
@@ -140,6 +140,25 @@ pub struct InputSigningData {
     pub output_metadata: OutputMetadata,
     /// The chain derived from seed, only for ed25519 addresses
     pub chain: Option<Chain>,
+}
+
+// Ignore bech32_address
+impl std::hash::Hash for InputSigningData {
+    fn hash<H>(&self, state: &mut H)
+    where
+        H: std::hash::Hasher,
+    {
+        self.output.hash(state);
+        self.output_metadata.hash(state);
+        self.chain.hash(state);
+        state.finish();
+    }
+}
+// Ignore bech32_address
+impl PartialEq for InputSigningData {
+    fn eq(&self, other: &Self) -> bool {
+        self.output == other.output && self.chain == other.chain && self.output_metadata == other.output_metadata
+    }
 }
 
 impl InputSigningData {

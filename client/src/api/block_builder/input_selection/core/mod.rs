@@ -11,6 +11,8 @@ use std::collections::{HashMap, HashSet};
 
 pub(crate) use requirement::is_alias_transition;
 
+use packable::PackableExt;
+
 pub use self::{
     burn::{Burn, BurnDto},
     error::Error,
@@ -260,6 +262,8 @@ impl InputSelection {
         outputs: &[Output],
         time: u32,
     ) -> Result<Vec<InputSigningData>, Error> {
+        // initially sort by output to make it deterministic
+        inputs.sort_by_key(|i| i.output.pack_to_vec());
         // filter for ed25519 address first, safe to unwrap since we encoded it before
         let (mut sorted_inputs, alias_nft_address_inputs): (Vec<InputSigningData>, Vec<InputSigningData>) = inputs
             .into_iter()
@@ -388,6 +392,18 @@ impl InputSelection {
         }
 
         self.outputs.extend(storage_deposit_returns);
+
+        // Update the bech32 addresses to the correct one
+        for input in &mut self.selected_inputs {
+            let alias_transition =
+                is_alias_transition(input, self.outputs.as_slice()).map(|(alias_transition, _)| alias_transition);
+            let (required_address, _) =
+                input
+                    .output
+                    .required_and_unlocked_address(self.timestamp, input.output_id(), alias_transition)?;
+            let (bech32_hrp, _) = Address::try_from_bech32(&input.bech32_address)?;
+            input.bech32_address = required_address.to_bech32(bech32_hrp);
+        }
 
         Ok(Selected {
             inputs: Self::sort_input_signing_data(self.selected_inputs, &self.outputs, self.timestamp)?,
