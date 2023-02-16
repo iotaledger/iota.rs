@@ -3,11 +3,9 @@
 
 //! Transaction preparation and signing
 
-use std::collections::HashSet;
-
 use iota_types::block::{
     input::{Input, UtxoInput},
-    output::{dto::OutputDto, AliasId, InputsCommitment, Output, OutputId},
+    output::{InputsCommitment, Output, OutputId},
     payload::{
         transaction::{RegularTransactionEssence, TransactionEssence, TransactionPayload},
         Payload, TaggedDataPayload,
@@ -38,32 +36,14 @@ impl<'a> ClientBlockBuilder<'a> {
         let protocol_parameters = self.client.get_protocol_parameters().await?;
         let token_supply = self.client.get_token_supply().await?;
 
-        let mut governance_transition: Option<HashSet<AliasId>> = None;
         for output in &self.outputs {
             // Check if the outputs have enough amount to cover the storage deposit
             output.verify_storage_deposit(protocol_parameters.rent_structure().clone(), token_supply)?;
-            if let Output::Alias(x) = output {
-                if x.state_index() > 0 {
-                    // Check if the transaction is a governance_transition, by checking if the new index is the same as
-                    // the previous index
-                    let output_id = self.client.alias_output_id(*x.alias_id()).await?;
-                    let output_response = self.client.get_output(&output_id).await?;
-                    if let OutputDto::Alias(output) = output_response.output {
-                        // A governance transition is identified by an unchanged State Index in next state.
-                        if x.state_index() == output.state_index {
-                            let mut transitions = HashSet::new();
-                            transitions.insert(AliasId::try_from(&output.alias_id)?);
-                            governance_transition.replace(transitions);
-                        }
-                    }
-                }
-            }
         }
 
         // Input selection
         let selected_transaction_data = if self.inputs.is_some() {
-            self.get_custom_inputs(governance_transition, &protocol_parameters, self.burn.clone())
-                .await?
+            self.get_custom_inputs(&protocol_parameters, self.burn.clone()).await?
         } else {
             self.get_inputs(&protocol_parameters).await?
         };

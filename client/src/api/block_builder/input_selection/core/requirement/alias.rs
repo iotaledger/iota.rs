@@ -12,8 +12,16 @@ use crate::{
 // - the alias transition type of a given input and outputs
 // - whether the output was provided or not, to differentiate a burn from a proper governance transition
 pub(crate) fn is_alias_transition(input: &InputSigningData, outputs: &[Output]) -> Option<(AliasTransition, bool)> {
-    if let Output::Alias(alias_input) = &input.output {
-        let alias_id = alias_input.alias_id_non_null(input.output_id());
+    is_alias_transition_internal(&input.output, *input.output_id(), outputs)
+}
+
+pub(crate) fn is_alias_transition_internal(
+    input: &Output,
+    input_id: OutputId,
+    outputs: &[Output],
+) -> Option<(AliasTransition, bool)> {
+    if let Output::Alias(alias_input) = &input {
+        let alias_id = alias_input.alias_id_non_null(&input_id);
         // Checks if the alias exists in the outputs and gets the transition type.
         outputs
             .iter()

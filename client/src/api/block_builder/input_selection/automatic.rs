@@ -77,12 +77,16 @@ impl<'a> ClientBlockBuilder<'a> {
 
         // First get inputs for utxo chains (Alias, Foundry, NFT outputs).
         let mut available_inputs = self.get_utxo_chains_inputs(self.outputs.iter()).await?;
-        let required_inputs_for_sender_or_issuer = self
-            .get_inputs_for_sender_and_issuer(&available_inputs)
-            .await?
+        let required_inputs_for_sender_or_issuer = self.get_inputs_for_sender_and_issuer(&available_inputs).await?;
+        let required_inputs_for_sender_or_issuer_ids = required_inputs_for_sender_or_issuer
             .iter()
             .map(|input| *input.output_id())
             .collect::<HashSet<_>>();
+
+        available_inputs.extend(required_inputs_for_sender_or_issuer);
+        available_inputs.sort_unstable_by_key(|input| *input.output_id());
+        available_inputs.dedup_by_key(|input| *input.output_id());
+
         // Assume that we own the addresses for inputs that are required for the provided outputs
         let mut available_input_addresses = available_inputs
             .iter()
@@ -98,7 +102,7 @@ impl<'a> ClientBlockBuilder<'a> {
             available_input_addresses.clone(),
             protocol_parameters.clone(),
         )
-        .required_inputs(required_inputs_for_sender_or_issuer.clone())
+        .required_inputs(required_inputs_for_sender_or_issuer_ids.clone())
         .timestamp(current_time);
 
         if let Some(address) = self.custom_remainder_address {
@@ -194,13 +198,16 @@ impl<'a> ClientBlockBuilder<'a> {
                         }
                     }
 
+                    available_inputs.sort_unstable_by_key(|input| *input.output_id());
+                    available_inputs.dedup_by_key(|input| *input.output_id());
+
                     let mut input_selection = InputSelection::new(
                         available_inputs.clone(),
                         self.outputs.clone(),
                         available_input_addresses.clone(),
                         protocol_parameters.clone(),
                     )
-                    .required_inputs(required_inputs_for_sender_or_issuer.clone())
+                    .required_inputs(required_inputs_for_sender_or_issuer_ids.clone())
                     .timestamp(current_time);
 
                     if let Some(address) = self.custom_remainder_address {

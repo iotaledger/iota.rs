@@ -28,11 +28,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `high_level` module moved to `api`;
 - Added `#[serde(rename_all = "camelCase")]` to `NodeAuth`;
 
+### Removed
+
+- `ClientBlockBuilder::get_output_amount_and_address()`;
+
 ### Fixed
 
 - Input selection can find remainder addresses in expirations and alias state controller or governor;
 - Set basic auth when provided;
 - Input selection can select basic outputs without ed25519 address in the address unlock condition;
+- Automatic input selection with sender and issuer features;
 
 ## 2.0.1-rc.6 - 2023-02-08
 

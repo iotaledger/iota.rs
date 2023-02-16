@@ -204,15 +204,10 @@ impl Client {
         }
 
         let mut basic_outputs = Vec::new();
-        let current_time = self.get_time_checked().await?;
         let token_supply = self.get_token_supply().await?;
 
         for output_resp in available_outputs {
-            let (amount, _) = ClientBlockBuilder::get_output_amount_and_address(
-                &Output::try_from_dto(&output_resp.output, token_supply)?,
-                None,
-                current_time,
-            )?;
+            let amount = Output::try_from_dto(&output_resp.output, token_supply)?.amount();
             basic_outputs.push((
                 UtxoInput::new(
                     TransactionId::from_str(&output_resp.metadata.transaction_id)?,
