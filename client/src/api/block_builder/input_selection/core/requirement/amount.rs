@@ -8,8 +8,8 @@ use crate::{
     block::{
         address::Address,
         output::{
-            unlock_condition::{StorageDepositReturnUnlockCondition, UnlockCondition},
-            AliasOutputBuilder, AliasTransition, FoundryOutputBuilder, NftOutputBuilder, Output, OutputId, Rent,
+            unlock_condition::StorageDepositReturnUnlockCondition, AliasOutputBuilder, AliasTransition,
+            FoundryOutputBuilder, NftOutputBuilder, Output, OutputId, Rent,
         },
     },
     error::{Error, Result},
@@ -29,7 +29,11 @@ pub(crate) fn sdruc_not_expired(output: &Output, current_time: u32) -> Option<&S
             .map_or(false, |expiration| current_time >= expiration.timestamp());
 
         // We only have to send the storage deposit return back if the output is not expired
-        if !expired { Some(sdr) } else { None }
+        if !expired {
+            Some(sdr)
+        } else {
+            None
+        }
     })
 }
 
@@ -165,6 +169,111 @@ impl AmountSelection {
 }
 
 impl InputSelection {
+    fn fulfil<'a>(
+        &self,
+        base_inputs: impl Iterator<Item = &'a InputSigningData> + Clone,
+        amount_selection: &mut AmountSelection,
+    ) -> bool {
+        // 1. no NTs; expired expiration or only address unlock
+        let inputs = base_inputs.clone().filter(|input| {
+            input.output.native_tokens().unwrap().is_empty()
+                && sdruc_not_expired(&input.output, self.timestamp).is_none()
+        });
+
+        if amount_selection.fulfil(inputs) {
+            return true;
+        }
+
+        // 2. no NTs; with unexpired SDRUC
+        let inputs = base_inputs.clone().filter(|input| {
+            input.output.native_tokens().unwrap().is_empty()
+                && sdruc_not_expired(&input.output, self.timestamp).is_some()
+        });
+
+        if amount_selection.fulfil(inputs) {
+            return true;
+        }
+
+        // 3. with NTs; expired expiration
+        let inputs = base_inputs.clone().filter(|input| {
+            !input.output.native_tokens().unwrap().is_empty()
+                && sdruc_not_expired(&input.output, self.timestamp).is_none()
+        });
+
+        if amount_selection.fulfil(inputs) {
+            return true;
+        }
+
+        // 4. with NTs; with unexpired SDRUC
+        let inputs = base_inputs.clone().filter(|input| {
+            !input.output.native_tokens().unwrap().is_empty()
+                && sdruc_not_expired(&input.output, self.timestamp).is_some()
+        });
+
+        if amount_selection.fulfil(inputs) {
+            return true;
+        }
+
+        // 5. Basic outputs; ed25519 address; everything remaining
+        if amount_selection.fulfil(base_inputs) {
+            return true;
+        }
+
+        false
+    }
+
+    fn reduce_funds_of_chains(&mut self, amount_selection: &mut AmountSelection) -> Result<()> {
+        let outputs = self.outputs.iter_mut().filter(|output| {
+            output
+                .chain_id()
+                .as_ref()
+                .map(|chain_id| self.automatically_transitioned.contains(chain_id))
+                .unwrap_or(false)
+        });
+
+        for output in outputs {
+            let diff = amount_selection.missing_amount();
+            let amount = output.amount();
+            let rent = output.rent_cost(self.protocol_parameters.rent_structure());
+
+            let new_amount = if amount >= diff + rent { amount - diff } else { rent };
+
+            // TODO check that new_amount is enough for the rent
+
+            // PANIC: unwrap is fine as non-chain outputs have been filtered out already.
+            log::debug!(
+                "Reducing amount of {} to {} to fulfill amount requirement",
+                output.chain_id().unwrap(),
+                new_amount
+            );
+
+            let new_output = match output {
+                Output::Alias(output) => AliasOutputBuilder::from(&*output)
+                    .with_amount(new_amount)?
+                    .finish_output(self.protocol_parameters.token_supply())?,
+                Output::Nft(output) => NftOutputBuilder::from(&*output)
+                    .with_amount(new_amount)?
+                    .finish_output(self.protocol_parameters.token_supply())?,
+                Output::Foundry(output) => FoundryOutputBuilder::from(&*output)
+                    .with_amount(new_amount)?
+                    .finish_output(self.protocol_parameters.token_supply())?,
+                _ => panic!("only alias, nft and foundry can be automatically created"),
+            };
+
+            amount_selection.outputs_sum -= amount - new_amount;
+            *output = new_output;
+
+            if amount_selection.missing_amount() == 0 {
+                return Ok(());
+            }
+        }
+
+        Err(Error::InsufficientAmount {
+            found: amount_selection.inputs_sum,
+            required: amount_selection.inputs_sum + amount_selection.missing_amount(),
+        })
+    }
+
     pub(crate) fn fulfill_amount_requirement(&mut self) -> Result<Vec<(InputSigningData, Option<AliasTransition>)>> {
         let mut amount_selection = AmountSelection::new(self)?;
 
@@ -186,206 +295,68 @@ impl InputSelection {
         self.available_inputs
             .sort_by(|left, right| left.output.amount().cmp(&right.output.amount()));
 
-        'overall: {
-            // 0. Basic with ED25519 address without SDRUC or expired SDRUC, without NTs, without unexpired expiration
-            {
-                log::debug!(
-                    "Trying basic outputs with ed25519 address and no or expired SDRUC, without NTs, without unexpired expiration"
-                );
-
-                let inputs = self.available_inputs.iter().filter(|input| {
-                    if let Output::Basic(output) = &input.output {
-                        output
-                            .unlock_conditions()
-                            .locked_address(output.address(), self.timestamp)
-                            .is_ed25519()
-                            && sdruc_not_expired(&input.output, self.timestamp).is_none()
-                            && output.native_tokens().is_empty()
-                    } else {
-                        false
-                    }
-                });
-
-                if amount_selection.fulfil(inputs) {
-                    break 'overall;
+        'fulfil: {
+            let basic_ed25519_inputs = self.available_inputs.iter().filter(|input| {
+                if let Output::Basic(output) = &input.output {
+                    output
+                        .unlock_conditions()
+                        .locked_address(output.address(), self.timestamp)
+                        .is_ed25519()
+                } else {
+                    false
                 }
+            });
+
+            if self.fulfil(basic_ed25519_inputs, &mut amount_selection) {
+                break 'fulfil;
             }
 
-            // 1. Basic with ED25519 address without SDRUC or expired SDRUC
-            {
-                log::debug!(
-                    "Trying basic outputs with ed25519 address and no or expired SDRUC, with NTs, without unexpired expiration"
-                );
-
-                let inputs = self.available_inputs.iter().filter(|input| {
-                    if let Output::Basic(output) = &input.output {
-                        output
-                            .unlock_conditions()
-                            .locked_address(output.address(), self.timestamp)
-                            .is_ed25519()
-                            && sdruc_not_expired(&input.output, self.timestamp).is_none()
-                            && !output.native_tokens().is_empty()
-                    } else {
-                        false
-                    }
-                });
-
-                if amount_selection.fulfil(inputs) {
-                    break 'overall;
+            let basic_non_ed25519_inputs = self.available_inputs.iter().filter(|input| {
+                if let Output::Basic(output) = &input.output {
+                    !output
+                        .unlock_conditions()
+                        .locked_address(output.address(), self.timestamp)
+                        .is_ed25519()
+                } else {
+                    false
                 }
-            }
+            });
 
-            // 2. Basic with ED25519 address and unexpired SDRUC
-            {
-                log::debug!("Trying basic outputs with ed25519 address and unexpired SDRUC");
-
-                let inputs = self.available_inputs.iter().filter(|input| {
-                    if let Output::Basic(output) = &input.output {
-                        if output.address().is_ed25519() {
-                            // Filter out outputs that have to send back their full amount as they contribute to
-                            // nothing.
-                            output
-                                .unlock_conditions()
-                                .storage_deposit_return()
-                                .map_or(false, |sdr| sdr.amount() != input.output.amount())
-                        } else {
-                            false
-                        }
-                    } else {
-                        false
-                    }
-                });
-
-                if amount_selection.fulfil(inputs) {
-                    break 'overall;
-                }
-            }
-
-            // 3. Basic with other kind of address
-            {
-                log::debug!("Trying basic outputs with other types of address");
-
-                let inputs = self.available_inputs.iter().filter(|input| {
-                    if let Output::Basic(output) = &input.output {
-                        if let [UnlockCondition::Address(address)] = output.unlock_conditions().as_ref() {
-                            !address.address().is_ed25519()
-                        } else {
-                            false
-                        }
-                    } else {
-                        false
-                    }
-                });
-
-                if amount_selection.fulfil(inputs) {
-                    break 'overall;
-                }
-            }
-
-            // 4. Basic with other kind of address and multiple unlock conditions
-            {
-                log::debug!("Trying basic outputs with other types of address and multiple unlock conditions");
-
-                let inputs = self.available_inputs.iter().filter(|input| {
-                    if let Output::Basic(output) = &input.output {
-                        !output
-                            .unlock_conditions()
-                            .locked_address(output.address(), self.timestamp)
-                            .is_ed25519()
-                            && output.unlock_conditions().len() > 1
-                    } else {
-                        false
-                    }
-                });
-
-                if amount_selection.fulfil(inputs) {
-                    break 'overall;
-                }
+            if self.fulfil(basic_non_ed25519_inputs, &mut amount_selection) {
+                break 'fulfil;
             }
 
             // 5. Other kinds of outputs
-            {
-                log::debug!("Trying other types of outputs");
 
-                let mut inputs = self
-                    .available_inputs
-                    .iter()
-                    .filter(|input| !input.output.is_basic())
-                    .peekable();
+            log::debug!("Trying other types of outputs");
 
-                if inputs.peek().is_some() {
-                    amount_selection.fulfil(inputs);
+            let mut inputs = self
+                .available_inputs
+                .iter()
+                .filter(|input| !input.output.is_basic())
+                .peekable();
 
-                    log::debug!(
-                        "Outputs {:?} selected to fulfill the amount requirement",
-                        amount_selection.newly_selected_inputs
-                    );
-                    log::debug!("Triggering another amount round as non-basic outputs need to be transitioned first");
+            if inputs.peek().is_some() {
+                amount_selection.fulfil(inputs);
 
-                    self.available_inputs
-                        .retain(|input| !amount_selection.newly_selected_inputs.contains_key(input.output_id()));
+                log::debug!(
+                    "Outputs {:?} selected to fulfill the amount requirement",
+                    amount_selection.newly_selected_inputs
+                );
+                log::debug!("Triggering another amount round as non-basic outputs need to be transitioned first");
 
-                    // TODO explanation of Amount
-                    self.requirements.push(Requirement::Amount);
+                self.available_inputs
+                    .retain(|input| !amount_selection.newly_selected_inputs.contains_key(input.output_id()));
 
-                    return Ok(amount_selection.into_newly_selected_inputs());
-                }
+                // TODO explanation of Amount
+                self.requirements.push(Requirement::Amount);
+
+                return Ok(amount_selection.into_newly_selected_inputs());
             }
         }
 
-        'ici: {
-            if amount_selection.missing_amount() != 0 {
-                // Moving funds of already transitioned other outputs ?
-                let outputs = self.outputs.iter_mut().filter(|output| {
-                    output
-                        .chain_id()
-                        .as_ref()
-                        .map(|chain_id| self.automatically_transitioned.contains(chain_id))
-                        .unwrap_or(false)
-                });
-
-                for output in outputs {
-                    let diff = amount_selection.missing_amount();
-                    let amount = output.amount();
-                    let rent = output.rent_cost(self.protocol_parameters.rent_structure());
-
-                    let new_amount = if amount >= diff + rent { amount - diff } else { rent };
-
-                    // TODO check that new_amount is enough for the rent
-
-                    // PANIC: unwrap is fine as non-chain outputs have been filtered out already.
-                    log::debug!(
-                        "Reducing amount of {} to {} to fulfill amount requirement",
-                        output.chain_id().unwrap(),
-                        new_amount
-                    );
-
-                    let new_output = match output {
-                        Output::Alias(output) => AliasOutputBuilder::from(&*output)
-                            .with_amount(new_amount)?
-                            .finish_output(self.protocol_parameters.token_supply())?,
-                        Output::Nft(output) => NftOutputBuilder::from(&*output)
-                            .with_amount(new_amount)?
-                            .finish_output(self.protocol_parameters.token_supply())?,
-                        Output::Foundry(output) => FoundryOutputBuilder::from(&*output)
-                            .with_amount(new_amount)?
-                            .finish_output(self.protocol_parameters.token_supply())?,
-                        _ => panic!("only alias, nft and foundry can be automatically created"),
-                    };
-
-                    amount_selection.outputs_sum -= amount - new_amount;
-                    *output = new_output;
-
-                    if amount_selection.missing_amount() == 0 {
-                        break 'ici;
-                    }
-                }
-
-                return Err(Error::InsufficientAmount {
-                    found: amount_selection.inputs_sum,
-                    required: amount_selection.inputs_sum + amount_selection.missing_amount(),
-                });
-            }
+        if amount_selection.missing_amount() != 0 {
+            self.reduce_funds_of_chains(&mut amount_selection)?;
         }
 
         log::debug!(
