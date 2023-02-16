@@ -78,11 +78,16 @@ impl<'a> ClientBlockBuilder<'a> {
 
         // First get inputs for utxo chains (Alias, Foundry, NFT outputs).
         let mut available_inputs = self.get_utxo_chains_inputs(self.outputs.iter()).await?;
+
         let required_inputs_for_sender_or_issuer = self.get_inputs_for_sender_and_issuer(&available_inputs).await?;
         let required_inputs_for_sender_or_issuer_ids = required_inputs_for_sender_or_issuer
             .iter()
             .map(|input| *input.output_id())
             .collect::<HashSet<_>>();
+
+        available_inputs.extend(required_inputs_for_sender_or_issuer);
+        available_inputs.sort_unstable_by_key(|input| *input.output_id());
+        available_inputs.dedup_by_key(|input| *input.output_id());
 
         let current_time = self.client.get_time_checked().await?;
         // Assume that we own the addresses for inputs that are required for the provided outputs
