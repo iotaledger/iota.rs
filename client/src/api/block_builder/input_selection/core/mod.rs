@@ -342,6 +342,8 @@ impl InputSelection {
             }
         }
 
+        self.reduce_funds_of_chains()?;
+
         let (remainder, storage_deposit_returns) = self.remainder_and_storage_deposit_return_outputs()?;
 
         if let Some(remainder) = &remainder {

@@ -3,7 +3,7 @@
 
 use std::collections::HashMap;
 
-use super::{InputSelection, Requirement};
+use super::InputSelection;
 use crate::{
     block::{
         address::Address,
@@ -11,6 +11,7 @@ use crate::{
             unlock_condition::StorageDepositReturnUnlockCondition, AliasOutputBuilder, AliasTransition,
             FoundryOutputBuilder, NftOutputBuilder, Output, OutputId, Rent,
         },
+        protocol::ProtocolParameters,
     },
     error::{Error, Result},
     secret::types::InputSigningData,
@@ -82,6 +83,7 @@ struct AmountSelection {
     remainder_amount: u64,
     native_tokens_remainder: bool,
     timestamp: u32,
+    protocol_parameters: ProtocolParameters,
 }
 
 impl AmountSelection {
@@ -102,6 +104,7 @@ impl AmountSelection {
             remainder_amount,
             native_tokens_remainder,
             timestamp: input_selection.timestamp,
+            protocol_parameters: input_selection.protocol_parameters.clone(),
         })
     }
 
@@ -147,6 +150,14 @@ impl AmountSelection {
                 *self.inputs_sdr.entry(*sdruc.return_address()).or_default() += sdruc.amount();
             }
 
+            if !input.output.is_basic() {
+                let diff = self.missing_amount();
+                let amount = input.output.amount();
+                let rent = input.output.rent_cost(self.protocol_parameters.rent_structure());
+
+                let new_amount = if amount >= diff + rent { amount - diff } else { rent };
+                self.outputs_sum += new_amount;
+            }
             self.inputs_sum += input.output.amount();
             self.newly_selected_inputs
                 .insert(*input.output_id(), (input.clone(), None));
@@ -218,7 +229,13 @@ impl InputSelection {
         false
     }
 
-    fn reduce_funds_of_chains(&mut self, amount_selection: &mut AmountSelection) -> Result<()> {
+    pub(crate) fn reduce_funds_of_chains(&mut self) -> Result<()> {
+        let mut amount_selection = AmountSelection::new(self)?;
+
+        if amount_selection.missing_amount() == 0 {
+            return Ok(());
+        }
+
         // Only consider automatically transitioned outputs, except for alias governance transitions.
         let outputs = self.outputs.iter_mut().filter(|output| {
             output
@@ -240,8 +257,6 @@ impl InputSelection {
             let rent = output.rent_cost(self.protocol_parameters.rent_structure());
 
             let new_amount = if amount >= diff + rent { amount - diff } else { rent };
-
-            // TODO check that new_amount is enough for the rent
 
             // PANIC: unwrap is fine as non-chain outputs have been filtered out already.
             log::debug!(
@@ -331,35 +346,11 @@ impl InputSelection {
 
             // Other kinds of outputs.
 
-            log::debug!("Trying other types of outputs");
+            let inputs = self.available_inputs.iter().filter(|input| !input.output.is_basic());
 
-            let mut inputs = self
-                .available_inputs
-                .iter()
-                .filter(|input| !input.output.is_basic())
-                .peekable();
-
-            if inputs.peek().is_some() {
-                amount_selection.fulfil(inputs);
-
-                log::debug!(
-                    "Outputs {:?} selected to fulfill the amount requirement",
-                    amount_selection.newly_selected_inputs
-                );
-                log::debug!("Triggering another amount round as non-basic outputs need to be transitioned first");
-
-                self.available_inputs
-                    .retain(|input| !amount_selection.newly_selected_inputs.contains_key(input.output_id()));
-
-                // TODO explanation of Amount
-                self.requirements.push(Requirement::Amount);
-
-                return Ok(amount_selection.into_newly_selected_inputs());
+            if self.fulfil(inputs, &mut amount_selection) {
+                break 'fulfil;
             }
-        }
-
-        if amount_selection.missing_amount() != 0 {
-            self.reduce_funds_of_chains(&mut amount_selection)?;
         }
 
         log::debug!(
