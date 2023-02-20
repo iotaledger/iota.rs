@@ -269,7 +269,7 @@ impl InputSelection {
         });
         // initially sort by output to make it deterministic
         inputs.sort_by_key(|i| i.output.pack_to_vec());
-        // filter for ed25519 address first, safe to unwrap since we encoded it before
+        // filter for ed25519 address first
         let (mut sorted_inputs, alias_nft_address_inputs): (Vec<InputSigningData>, Vec<InputSigningData>) =
             inputs.into_iter().partition(|input_signing_data| {
                 let alias_transition = is_alias_transition(input_signing_data, outputs);
