@@ -20,7 +20,7 @@ pub use self::{
 use crate::{
     api::types::RemainderData,
     block::{
-        address::{Address, AliasAddress, Ed25519Address, NftAddress},
+        address::{Address, AliasAddress, NftAddress},
         output::{AliasTransition, ChainId, Output, OutputId},
         protocol::ProtocolParameters,
     },
@@ -270,10 +270,8 @@ impl InputSelection {
         // initially sort by output to make it deterministic
         inputs.sort_by_key(|i| i.output.pack_to_vec());
         // filter for ed25519 address first, safe to unwrap since we encoded it before
-        let (mut sorted_inputs, alias_nft_address_inputs): (Vec<InputSigningData>, Vec<InputSigningData>) = inputs
-            .into_iter()
-            // PANIC: safe to unwrap as we encoded the address before
-            .partition(|input_signing_data| {
+        let (mut sorted_inputs, alias_nft_address_inputs): (Vec<InputSigningData>, Vec<InputSigningData>) =
+            inputs.into_iter().partition(|input_signing_data| {
                 let alias_transition = is_alias_transition(input_signing_data, outputs);
                 let (input_address, _) = input_signing_data
                     .output
@@ -282,21 +280,19 @@ impl InputSelection {
                         input_signing_data.output_id(),
                         alias_transition.map(|(alias_transition, _)| alias_transition),
                     )
+                    // PANIC: safe to unwrap, because we filtered treasury outputs out before
                     .unwrap();
 
-                input_address.kind() == Ed25519Address::KIND
+                input_address.is_ed25519()
             });
 
         for input in alias_nft_address_inputs {
             let alias_transition = is_alias_transition(&input, outputs);
-            let (input_address, _) = input
-                .output
-                .required_and_unlocked_address(
-                    time,
-                    input.output_id(),
-                    alias_transition.map(|(alias_transition, _)| alias_transition),
-                )
-                .unwrap();
+            let (input_address, _) = input.output.required_and_unlocked_address(
+                time,
+                input.output_id(),
+                alias_transition.map(|(alias_transition, _)| alias_transition),
+            )?;
 
             match sorted_inputs.iter().position(|input_signing_data| match input_address {
                 Address::Alias(unlock_address) => {
@@ -342,6 +338,7 @@ impl InputSelection {
                                     input.output_id(),
                                     alias_transition.map(|(alias_transition, _)| alias_transition),
                                 )
+                                // PANIC: safe to unwrap, because we filtered treasury outputs out before
                                 .unwrap();
 
                             input_address == alias_or_nft_address
