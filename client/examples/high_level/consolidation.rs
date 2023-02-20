@@ -24,9 +24,8 @@ async fn main() -> Result<()> {
     // Create a client instance
     let client = Client::builder().with_node(&node_url)?.finish()?;
 
-    let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_hex_seed(
-        &std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap(),
-    )?);
+    let secret_manager =
+        SecretManager::try_from_hex_seed(&std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap())?;
 
     // Here all funds will be send to the address with the lowest index in the range
     let address = client

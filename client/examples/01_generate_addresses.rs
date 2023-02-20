@@ -3,11 +3,7 @@
 
 //! cargo run --example generate_addresses --release -- [NODE URL]
 
-use iota_client::{
-    api::GetAddressesBuilder,
-    secret::{mnemonic::MnemonicSecretManager, SecretManager},
-    Client, Result,
-};
+use iota_client::{api::GetAddressesBuilder, secret::SecretManager, Client, Result};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -24,9 +20,8 @@ async fn main() -> Result<()> {
         .with_node(&node_url)? // Insert your node URL here
         .finish()?;
 
-    let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
-        &std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
-    )?);
+    let secret_manager =
+        SecretManager::try_from_mnemonic(&std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap())?;
 
     // Generate addresses with default account index and range
     let addresses = client.get_addresses(&secret_manager).finish().await?;

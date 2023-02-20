@@ -13,7 +13,7 @@ use iota_client::{
         BasicOutputBuilder,
     },
     request_funds_from_faucet,
-    secret::{mnemonic::MnemonicSecretManager, SecretManager},
+    secret::SecretManager,
     Client, Result,
 };
 
@@ -36,9 +36,8 @@ async fn main() -> Result<()> {
     // Create a client instance.
     let client = Client::builder().with_node(&node_url)?.finish()?;
 
-    let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
-        &std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
-    )?);
+    let secret_manager =
+        SecretManager::try_from_mnemonic(&std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap())?;
 
     let addresses = client.get_addresses(&secret_manager).with_range(0..2).get_raw().await?;
     let sender_address = addresses[0];

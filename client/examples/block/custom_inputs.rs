@@ -6,11 +6,8 @@
 //! Run: `cargo run --example custom_inputs --release`.
 
 use iota_client::{
-    block::input::UtxoInput,
-    node_api::indexer::query_parameters::QueryParameter,
-    request_funds_from_faucet,
-    secret::{mnemonic::MnemonicSecretManager, SecretManager},
-    Client, Result,
+    block::input::UtxoInput, node_api::indexer::query_parameters::QueryParameter, request_funds_from_faucet,
+    secret::SecretManager, Client, Result,
 };
 
 #[tokio::main]
@@ -27,9 +24,8 @@ async fn main() -> Result<()> {
         .finish()?;
 
     // First address from the seed below is atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r
-    let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_hex_seed(
-        &std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap(),
-    )?);
+    let secret_manager =
+        SecretManager::try_from_hex_seed(&std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_SEED_1").unwrap())?;
 
     let addresses = client.get_addresses(&secret_manager).with_range(0..1).finish().await?;
     println!("{:?}", addresses[0]);

@@ -10,7 +10,7 @@ use iota_client::{
         unlock_condition::AddressUnlockCondition, BasicOutputBuilder, NativeTokensBuilder, Output, UnlockCondition,
     },
     node_api::indexer::query_parameters::QueryParameter,
-    secret::{mnemonic::MnemonicSecretManager, SecretManager},
+    secret::SecretManager,
     Client, Result,
 };
 
@@ -28,12 +28,10 @@ async fn main() -> Result<()> {
         .with_node(&node_url)? // Insert your node URL here
         .finish()?;
 
-    let secret_manager_1 = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
-        &std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
-    )?);
-    let secret_manager_2 = SecretManager::Mnemonic(MnemonicSecretManager::try_from_hex_seed(
-        &std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_SEED_2").unwrap(),
-    )?);
+    let secret_manager_1 =
+        SecretManager::try_from_mnemonic(&std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap())?;
+    let secret_manager_2 =
+        SecretManager::try_from_hex_seed(&std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_SEED_2").unwrap())?;
 
     let token_supply = client.get_token_supply().await?;
 

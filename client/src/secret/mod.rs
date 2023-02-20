@@ -284,6 +284,16 @@ impl SecretManageExt for SecretManager {
 }
 
 impl SecretManager {
+    /// Tries to create a [`SecretManager`] from a mnemonic string.
+    pub fn try_from_mnemonic(mnemonic: &str) -> crate::Result<Self> {
+        Ok(Self::Mnemonic(MnemonicSecretManager::try_from_mnemonic(mnemonic)?))
+    }
+
+    /// Tries to create a [`SecretManager`] from a seed hex string.
+    pub fn try_from_hex_seed(seed: &str) -> crate::Result<Self> {
+        Ok(Self::Mnemonic(MnemonicSecretManager::try_from_hex_seed(seed)?))
+    }
+
     // Shared implementation for MnemonicSecretManager and StrongholdSecretManager
     async fn default_sign_transaction_essence<'a>(
         &self,
