@@ -336,7 +336,12 @@ impl InputSelection {
             let mut inputs = self
                 .available_inputs
                 .iter()
-                .filter(|input| !input.output.is_basic())
+                .filter(|input| match &input.output {
+                    Output::Basic(_) => false,
+                    // If alias, we are only interested in state transitions as governance can't move funds.
+                    Output::Alias(alias) => self.addresses.contains(alias.state_controller_address()),
+                    _ => true,
+                })
                 .peekable();
 
             if inputs.peek().is_some() {
