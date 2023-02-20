@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 mod input_selection;
+mod mqtt;
 mod signing;
 
 use std::{collections::HashMap, hash::Hash, str::FromStr};

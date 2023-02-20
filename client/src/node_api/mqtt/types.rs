@@ -163,35 +163,35 @@ impl<'de> Deserialize<'de> for Topic {
 
 impl Topic {
     /// Creates a new topic and checks if it's valid.
-    pub fn try_new(topic: String) -> Result<Self> {
+    pub fn try_new(topic: impl Into<String>) -> Result<Self> {
         let valid_topics = lazy_static!(
         RegexSet::new([
-            // Milestone topics
+            // Milestone topics.
             r"^milestone-info/latest$",
             r"^milestone-info/confirmed$",
             r"^milestones$",
-            // Block topics
+            // Block topics.
             r"^blocks$",
             r"^blocks/transaction$",
             r"^blocks/transaction/tagged-data$",
-            r"^blocks/transaction/tagged-data/0x([a-f0-9]{128})$",
+            r"^blocks/transaction/tagged-data/0x((?:[a-f0-9]{2}){1,64})$",
             r"^blocks/tagged-data$",
-            r"^blocks/tagged-data/0x([a-f0-9]{64})$",
+            r"^blocks/tagged-data/0x((?:[a-f0-9]{2}){1,64})$",
             r"^block-metadata/0x([a-f0-9]{64})",
             r"^block-metadata/referenced$",
-            // Transaction topics
+            // Transaction topics.
             r"^transactions/0x([a-f0-9]{64})/included-block$",
-            // Output topics
-            r"^outputs/([a-f0-9]{64})(\d{4})$",
-            r"^outputs/alias/0x([a-f0-9]{40})$",
-            r"^outputs/nft/0x([a-f0-9]{40})$",
-            r"^outputs/foundry/0x([a-f0-9]{52})$",
-            // BIP-173 compliant bech32 address
+            // Output topics.
+            r"^outputs/0x([a-f0-9]{64})(\d{4})$",
+            r"^outputs/alias/0x([a-f0-9]{64})",
+            r"^outputs/nft/0x([a-f0-9]{64})",
+            r"^outputs/foundry/0x([a-f0-9]{76})$",
             r"^outputs/unlock/(\+|address|storage-return|expiration|state-controller|governor|immutable-alias)/[\x21-\x7E]{1,30}1[A-Za-z0-9]+$",
-            // BIP-173 compliant bech32 address
             r"^outputs/unlock/(\+|address|storage-return|expiration|state-controller|governor|immutable-alias)/[\x21-\x7E]{1,30}1[A-Za-z0-9]+/spent$",
+            // Receipt topics.
             r"^receipts$",
         ]).expect("cannot build regex set") => RegexSet);
+        let topic = topic.into();
 
         if valid_topics.is_match(&topic) {
             Ok(Self(topic))
