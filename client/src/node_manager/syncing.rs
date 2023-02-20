@@ -79,7 +79,7 @@ impl Client {
 
         for node in nodes {
             // Put the healthy node url into the network_nodes
-            if let Ok(info) = Self::get_node_info(node.url.as_ref(), None).await {
+            if let Ok(info) = Self::get_node_info(node.url.as_ref(), node.auth.clone()).await {
                 if info.status.is_healthy || ignore_node_health {
                     match network_nodes.get_mut(&info.protocol.network_name) {
                         Some(network_node_entry) => {
