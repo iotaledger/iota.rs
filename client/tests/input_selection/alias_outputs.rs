@@ -17,7 +17,7 @@ use crate::{
     addresses, build_inputs, build_outputs, is_remainder_or_return, unsorted_eq,
     Build::{Alias, Basic},
     ALIAS_ID_0, ALIAS_ID_1, ALIAS_ID_2, BECH32_ADDRESS_ALIAS_1, BECH32_ADDRESS_ALIAS_2, BECH32_ADDRESS_ED25519_0,
-    BECH32_ADDRESS_ED25519_1, BECH32_ADDRESS_ED25519_2, BECH32_ADDRESS_NFT_1, TOKEN_SUPPLY,
+    BECH32_ADDRESS_ED25519_1, BECH32_ADDRESS_NFT_1, TOKEN_SUPPLY,
 };
 
 #[test]
@@ -2071,7 +2071,7 @@ fn state_transition_required_but_state_controller_not_provided() {
     let selected = InputSelection::new(
         inputs,
         outputs,
-        addresses(vec![BECH32_ADDRESS_ED25519_1, BECH32_ADDRESS_ED25519_2]),
+        addresses(vec![BECH32_ADDRESS_ED25519_1]),
         protocol_parameters,
     )
     .select();
