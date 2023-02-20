@@ -26,7 +26,7 @@ use iota_client::{
         unlock::{SignatureUnlock, Unlock},
     },
     constants::{HD_WALLET_TYPE, SHIMMER_COIN_TYPE, SHIMMER_TESTNET_BECH32_HRP},
-    secret::{mnemonic::MnemonicSecretManager, SecretManage, SecretManageExt, SecretManager},
+    secret::{SecretManage, SecretManageExt, SecretManager},
     Result,
 };
 use iota_types::block::output::AliasId;
@@ -39,10 +39,10 @@ use crate::{
 
 #[tokio::test]
 async fn all_combined() -> Result<()> {
-    let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
+    let secret_manager = SecretManager::try_from_mnemonic(
         // mnemonic needs to be hardcoded to make the ordering deterministic
         "mirror add nothing long orphan hat this rough scare gallery fork twelve old shrug voyage job table obscure mimic holiday possible proud giraffe fan",
-    )?);
+    )?;
 
     let protocol_parameters = protocol_parameters();
 
