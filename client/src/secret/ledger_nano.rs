@@ -404,14 +404,8 @@ fn merge_unlocks(
     // Assuming inputs_data is ordered by address type
     for (current_block_index, input) in prepared_transaction_data.inputs_data.iter().enumerate() {
         // Get the address that is required to unlock the input
-        let alias_transition = {
-            if input.output.is_alias() {
-                let TransactionEssence::Regular(regular) = &prepared_transaction_data.essence;
-                is_alias_transition(input, regular.outputs()).map(|t| t.0)
-            } else {
-                None
-            }
-        };
+        let TransactionEssence::Regular(regular) = &prepared_transaction_data.essence;
+        let alias_transition = is_alias_transition(input, regular.outputs()).map(|t| t.0);
         let (input_address, _) =
             input
                 .output
