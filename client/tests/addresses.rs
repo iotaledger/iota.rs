@@ -67,7 +67,7 @@ async fn public_key_to_address() {
 #[tokio::test]
 async fn mnemonic_address_generation_iota() {
     let mnemonic = "acoustic trophy damage hint search taste love bicycle foster cradle brown govern endless depend situate athlete pudding blame question genius transfer van random vast";
-    let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(mnemonic).unwrap());
+    let secret_manager = SecretManager::try_from_mnemonic(mnemonic).unwrap();
 
     // account 0, address 0 and 1
     let addresses = GetAddressesBuilder::new(&secret_manager)
@@ -107,7 +107,7 @@ async fn mnemonic_address_generation_iota() {
 #[tokio::test]
 async fn mnemonic_address_generation_shimmer() {
     let mnemonic = "acoustic trophy damage hint search taste love bicycle foster cradle brown govern endless depend situate athlete pudding blame question genius transfer van random vast";
-    let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(mnemonic).unwrap());
+    let secret_manager = SecretManager::try_from_mnemonic(mnemonic).unwrap();
 
     // account 0, address 0 and 1
     let addresses = GetAddressesBuilder::new(&secret_manager)
@@ -165,8 +165,7 @@ async fn address_generation() {
         serde_json::from_value(general.get("address_generations").unwrap().clone()).unwrap();
 
     for address in &addresses_data {
-        let secret_manager =
-            SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(&address.mnemonic).unwrap());
+        let secret_manager = SecretManager::try_from_mnemonic(&address.mnemonic).unwrap();
         let addresses = GetAddressesBuilder::new(&secret_manager)
             .with_bech32_hrp(address.bech32_hrp.to_string())
             .with_coin_type(address.coin_type)

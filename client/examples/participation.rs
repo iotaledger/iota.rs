@@ -10,7 +10,7 @@ use iota_client::{
     block::output::{unlock_condition::AddressUnlockCondition, BasicOutputBuilder, UnlockCondition},
     node_api::indexer::query_parameters::QueryParameter,
     request_funds_from_faucet,
-    secret::{mnemonic::MnemonicSecretManager, SecretManager},
+    secret::SecretManager,
     Client, Result,
 };
 
@@ -43,9 +43,8 @@ async fn main() -> Result<()> {
         println!("{event_status:#?}");
     }
 
-    let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
-        &std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
-    )?);
+    let secret_manager =
+        SecretManager::try_from_mnemonic(&std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap())?;
     let address = client.get_addresses(&secret_manager).with_range(0..1).get_raw().await?[0];
 
     let bech32_address = address.to_bech32(client.get_bech32_hrp().await?);
@@ -88,9 +87,8 @@ async fn main() -> Result<()> {
 }
 
 async fn participate(client: &Client, event_id: ParticipationEventId, node_url: String) -> Result<()> {
-    let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
-        &std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
-    )?);
+    let secret_manager =
+        SecretManager::try_from_mnemonic(&std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap())?;
 
     let token_supply = client.get_token_supply().await?;
     let rent_structure = client.get_rent_structure().await?;

@@ -4,10 +4,7 @@
 //! In this example we will send a transaction.
 //! Run: `cargo run --example transaction --release`.
 
-use iota_client::{
-    secret::{mnemonic::MnemonicSecretManager, SecretManager},
-    Client, Result,
-};
+use iota_client::{secret::SecretManager, Client, Result};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -20,9 +17,8 @@ async fn main() -> Result<()> {
 
     let client = Client::builder().with_node(&node_url)?.finish()?;
 
-    let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
-        &std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
-    )?);
+    let secret_manager =
+        SecretManager::try_from_mnemonic(&std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap())?;
 
     let block = client
         .block()

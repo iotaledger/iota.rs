@@ -11,11 +11,7 @@ use std::{
     path::Path,
 };
 
-use iota_client::{
-    constants::SHIMMER_TESTNET_BECH32_HRP,
-    secret::{mnemonic::MnemonicSecretManager, SecretManager},
-    Client, Result,
-};
+use iota_client::{constants::SHIMMER_TESTNET_BECH32_HRP, secret::SecretManager, Client, Result};
 
 const ADDRESS_FILE_NAME: &str = "examples/offline_signing/address.json";
 
@@ -25,9 +21,8 @@ async fn main() -> Result<()> {
 
     // Creates a client instance.
     let offline_client = Client::builder().finish()?;
-    let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
-        &std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
-    )?);
+    let secret_manager =
+        SecretManager::try_from_mnemonic(&std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap())?;
 
     // Generates an address offline.
     let address = offline_client

@@ -21,6 +21,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 2.0.1-rc.7 - 2023-XX-XX
 
+### Added
+
+- `SecretManager::{try_from_mnemonic, try_from_hex_seed}`;
+
 ### Changed
 
 - `DatabaseProvider` renamed to `StorageProvider`;

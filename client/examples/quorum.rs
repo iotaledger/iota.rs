@@ -4,11 +4,7 @@
 //! cargo run --example quorum --release
 //! In this example we will get outputs with quorum, which will compare the responses from the nodes.
 
-use iota_client::{
-    node_api::indexer::query_parameters::QueryParameter,
-    secret::{mnemonic::MnemonicSecretManager, SecretManager},
-    Client, Result,
-};
+use iota_client::{node_api::indexer::query_parameters::QueryParameter, secret::SecretManager, Client, Result};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -26,9 +22,8 @@ async fn main() -> Result<()> {
         .with_quorum_threshold(66)
         .finish()?;
 
-    let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(
-        &std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap(),
-    )?);
+    let secret_manager =
+        SecretManager::try_from_mnemonic(&std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap())?;
 
     // Generate the first address
     let addresses = client

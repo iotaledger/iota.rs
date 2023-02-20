@@ -24,9 +24,8 @@ async fn main() -> Result<()> {
         .with_node(&node_url)? // Insert your node URL here
         .finish()?;
 
-    let secret_manager = SecretManager::Mnemonic(MnemonicSecretManager::try_from_mnemonic(&std::env::var(
-        "NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1",
-    )?)?);
+    let secret_manager =
+        SecretManager::try_from_mnemonic(&std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap())?;
 
     let addresses = client
         .get_addresses(&secret_manager)
