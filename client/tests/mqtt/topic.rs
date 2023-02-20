@@ -29,8 +29,14 @@ fn valid_topics() {
         "outputs/foundry/0x08e10a5c7bcfdce48ff500156040f7548ca511d79a6e253a22759116c2ae8c818d0100000000"
     )
     .is_ok());
-    // assert!(Topic::try_new("outputs/unlock/(\+|address|storage-return|expiration|state-controller|governor|immutable-alias)/[\x21-\x7E]{1,30}1[A-Za-z0-9]+").is_ok());
-    // assert!(Topic::try_new("outputs/unlock/(\+|address|storage-return|expiration|state-controller|governor|immutable-alias)/[\x21-\x7E]{1,30}1[A-Za-z0-9]+/spent").is_ok());
+    assert!(
+        Topic::try_new("outputs/unlock/address/iota1qrwfnskm4f7utdrxqnkfntfqxehtpj8s0kf68zkcwm0yrhuemzjp5sjfw5v")
+            .is_ok()
+    );
+    assert!(Topic::try_new(
+        "outputs/unlock/address/iota1qrwfnskm4f7utdrxqnkfntfqxehtpj8s0kf68zkcwm0yrhuemzjp5sjfw5v/spent"
+    )
+    .is_ok());
     assert!(Topic::try_new("receipts").is_ok());
 }
 
