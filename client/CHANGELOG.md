@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `StrongholdDatabaseProvider` renamed to `StrongholdStorageProvider`;
 - `high_level` module moved to `api`;
 - Added `#[serde(rename_all = "camelCase")]` to `NodeAuth`;
+- `Topic::try_new` parameter from `String` to `impl Into<String>`;
 
 ### Removed
 
@@ -44,6 +45,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Automatic input selection with sender and issuer features;
 - Automatic alias governance transition does not change output amount in input selection;
 - ISA does not select aliases it can't unlock for amount;
+- Regex of several MQTT topics;
 
 ## 2.0.1-rc.6 - 2023-02-08
 
