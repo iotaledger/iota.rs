@@ -539,7 +539,7 @@ fn missing_ed25519_sender() {
 
     assert!(matches!(
         selected,
-        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender.is_ed25519() && sender == Address::try_from_bech32(BECH32_ADDRESS_ED25519_1).unwrap().1
+        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender == Address::try_from_bech32(BECH32_ADDRESS_ED25519_1).unwrap().1
     ));
 }
 
@@ -684,7 +684,7 @@ fn missing_alias_sender() {
 
     assert!(matches!(
         selected,
-        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender.is_alias() && sender == Address::try_from_bech32(BECH32_ADDRESS_ALIAS_1).unwrap().1
+        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if  sender == Address::try_from_bech32(BECH32_ADDRESS_ALIAS_1).unwrap().1
     ));
 }
 
@@ -827,7 +827,7 @@ fn missing_nft_sender() {
 
     assert!(matches!(
         selected,
-        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender.is_nft() && sender == Address::try_from_bech32(BECH32_ADDRESS_NFT_1).unwrap().1
+        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if  sender == Address::try_from_bech32(BECH32_ADDRESS_NFT_1).unwrap().1
     ));
 }
 

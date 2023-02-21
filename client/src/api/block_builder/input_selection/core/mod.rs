@@ -68,6 +68,7 @@ impl InputSelection {
                 if alias_transition.is_some() {
                     // Only add the requirement if the output is an alias because other types of output have been
                     // filtered by address already.
+                    println!("{required_address:?} {alias_transition:?} HMMMMMMMMMM");
                     Ok(Some(Requirement::Ed25519(required_address)))
                 } else {
                     Ok(None)

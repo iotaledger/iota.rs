@@ -43,12 +43,12 @@ impl InputSelection {
 
             // PANIC: safe to unwrap as aliases have a state controller address.
             if unlock_conditions.state_controller_address().unwrap().address() == address {
-                return (true, Some(AliasTransition::State));
+                return (self.addresses.contains(address), Some(AliasTransition::State));
             }
 
             // PANIC: safe to unwrap as aliases have a governor address.
             if unlock_conditions.governor_address().unwrap().address() == address {
-                return (true, Some(AliasTransition::Governance));
+                return (self.addresses.contains(address), Some(AliasTransition::Governance));
             }
 
             (false, None)
