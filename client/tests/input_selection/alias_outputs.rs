@@ -624,7 +624,7 @@ fn missing_ed25519_issuer_created() {
 
     assert!(matches!(
         selected,
-        Err(Error::UnfulfillableRequirement(Requirement::Issuer(issuer))) if  issuer == Address::try_from_bech32(BECH32_ADDRESS_ED25519_1).unwrap().1
+        Err(Error::UnfulfillableRequirement(Requirement::Issuer(issuer))) if issuer == Address::try_from_bech32(BECH32_ADDRESS_ED25519_1).unwrap().1
     ));
 }
 
@@ -705,7 +705,7 @@ fn missing_alias_sender() {
 
     assert!(matches!(
         selected,
-        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if  sender == Address::try_from_bech32(BECH32_ADDRESS_ALIAS_1).unwrap().1
+        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender == Address::try_from_bech32(BECH32_ADDRESS_ALIAS_1).unwrap().1
     ));
 }
 
@@ -746,7 +746,7 @@ fn missing_alias_issuer_created() {
 
     assert!(matches!(
         selected,
-        Err(Error::UnfulfillableRequirement(Requirement::Issuer(issuer))) if  issuer == Address::try_from_bech32(BECH32_ADDRESS_ALIAS_1).unwrap().1
+        Err(Error::UnfulfillableRequirement(Requirement::Issuer(issuer))) if issuer == Address::try_from_bech32(BECH32_ADDRESS_ALIAS_1).unwrap().1
     ));
 }
 
@@ -827,7 +827,7 @@ fn missing_nft_sender() {
 
     assert!(matches!(
         selected,
-        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if  sender == Address::try_from_bech32(BECH32_ADDRESS_NFT_1).unwrap().1
+        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender == Address::try_from_bech32(BECH32_ADDRESS_NFT_1).unwrap().1
     ));
 }
 
@@ -868,7 +868,7 @@ fn missing_nft_issuer_created() {
 
     assert!(matches!(
         selected,
-        Err(Error::UnfulfillableRequirement(Requirement::Issuer(issuer))) if  issuer == Address::try_from_bech32(BECH32_ADDRESS_NFT_1).unwrap().1
+        Err(Error::UnfulfillableRequirement(Requirement::Issuer(issuer))) if issuer == Address::try_from_bech32(BECH32_ADDRESS_NFT_1).unwrap().1
     ));
 }
 
@@ -1159,7 +1159,7 @@ fn alias_burn_should_not_validate_alias_sender() {
 
     assert!(matches!(
         selected,
-        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if  sender == Address::try_from_bech32(BECH32_ADDRESS_ALIAS_1).unwrap().1
+        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender == Address::try_from_bech32(BECH32_ADDRESS_ALIAS_1).unwrap().1
     ));
 }
 
@@ -1249,7 +1249,7 @@ fn alias_governance_transition_should_not_validate_alias_sender() {
 
     assert!(matches!(
         selected,
-        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if  sender == Address::try_from_bech32(BECH32_ADDRESS_ALIAS_1).unwrap().1
+        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender == Address::try_from_bech32(BECH32_ADDRESS_ALIAS_1).unwrap().1
     ));
 }
 
@@ -1589,7 +1589,7 @@ fn state_controller_sender_required_but_governance() {
 
     assert!(matches!(
         selected,
-        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if  sender == Address::try_from_bech32(BECH32_ADDRESS_ED25519_0).unwrap().1
+        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender == Address::try_from_bech32(BECH32_ADDRESS_ED25519_0).unwrap().1
     ));
 }
 
