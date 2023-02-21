@@ -100,14 +100,14 @@ async fn main() -> Result<()> {
             .clone()
             .with_alias_id(alias_id_1)
             // add a sender feature with the first alias
-            .replace_feature(Feature::Sender(SenderFeature::new(alias_0_address)))?
+            .replace_feature(Feature::Sender(SenderFeature::new(alias_0_address)))
             .with_state_index(0)
             .replace_unlock_condition(UnlockCondition::StateControllerAddress(
                 StateControllerAddressUnlockCondition::new(alias_0_address),
-            ))?
+            ))
             .replace_unlock_condition(UnlockCondition::GovernorAddress(GovernorAddressUnlockCondition::new(
                 alias_0_address,
-            )))?
+            )))
             .finish_output(token_supply)?,
         // make third alias output be controlled by the second one (indirectly also by the first one)
         alias_output_builder
@@ -116,10 +116,10 @@ async fn main() -> Result<()> {
             .with_state_index(0)
             .replace_unlock_condition(UnlockCondition::StateControllerAddress(
                 StateControllerAddressUnlockCondition::new(alias_1_address),
-            ))?
+            ))
             .replace_unlock_condition(UnlockCondition::GovernorAddress(GovernorAddressUnlockCondition::new(
                 alias_1_address,
-            )))?
+            )))
             .finish_output(token_supply)?,
     ];
 
@@ -146,10 +146,10 @@ async fn main() -> Result<()> {
             .with_state_metadata(vec![3, 2, 1])
             .replace_unlock_condition(UnlockCondition::StateControllerAddress(
                 StateControllerAddressUnlockCondition::new(alias_1_address),
-            ))?
+            ))
             .replace_unlock_condition(UnlockCondition::GovernorAddress(GovernorAddressUnlockCondition::new(
                 alias_1_address,
-            )))?
+            )))
             .finish_output(token_supply)?,
     ];
 
@@ -175,10 +175,10 @@ async fn main() -> Result<()> {
             .with_state_metadata(vec![2, 1, 3])
             .replace_unlock_condition(UnlockCondition::StateControllerAddress(
                 StateControllerAddressUnlockCondition::new(alias_1_address),
-            ))?
+            ))
             .replace_unlock_condition(UnlockCondition::GovernorAddress(GovernorAddressUnlockCondition::new(
                 alias_1_address,
-            )))?
+            )))
             .finish_output(token_supply)?,
     ];
 
