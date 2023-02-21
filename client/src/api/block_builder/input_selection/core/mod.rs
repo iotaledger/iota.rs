@@ -57,20 +57,27 @@ pub struct Selected {
 
 impl InputSelection {
     fn required_alias_nft_addresses(&self, input: &InputSigningData) -> Result<Option<Requirement>> {
-        // TODO burn?
-        let alias_transition = is_alias_transition(input, &self.outputs).map(|(alias_transition, _)| alias_transition);
-        let (required_address, _) =
-            input
-                .output
-                .required_and_unlocked_address(self.timestamp, input.output_id(), alias_transition)?;
+        let alias_transition = is_alias_transition(input, &self.outputs).map(|transition| transition.0);
+        let required_address = input
+            .output
+            .required_and_unlocked_address(self.timestamp, input.output_id(), alias_transition)?
+            .0;
 
         match required_address {
+            Address::Ed25519(_) => {
+                if alias_transition.is_some() {
+                    // Only add the requirement if the output is an alias because other types of output have been
+                    // filtered by address already.
+                    Ok(Some(Requirement::Ed25519(required_address)))
+                } else {
+                    Ok(None)
+                }
+            }
             Address::Alias(alias_address) => Ok(Some(Requirement::Alias(
                 *alias_address.alias_id(),
                 AliasTransition::State,
             ))),
             Address::Nft(nft_address) => Ok(Some(Requirement::Nft(*nft_address.nft_id()))),
-            _ => Ok(None),
         }
     }
 

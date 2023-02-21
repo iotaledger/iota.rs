@@ -3,6 +3,7 @@
 
 pub(crate) mod alias;
 pub(crate) mod amount;
+pub(crate) mod ed25519;
 pub(crate) mod foundry;
 pub(crate) mod issuer;
 pub(crate) mod native_tokens;
@@ -27,6 +28,8 @@ pub enum Requirement {
     Sender(Address),
     /// Issuer requirement.
     Issuer(Address),
+    /// Ed25519 requirement.
+    Ed25519(Address),
     /// Foundry requirement.
     Foundry(FoundryId),
     /// Alias requirement and whether it needs to be state transitioned (true) or not (false).
@@ -51,6 +54,7 @@ impl InputSelection {
         match requirement {
             Requirement::Sender(address) => self.fulfill_sender_requirement(address),
             Requirement::Issuer(address) => self.fulfill_issuer_requirement(address),
+            Requirement::Ed25519(address) => self.fulfill_ed25519_requirement(address),
             Requirement::Foundry(foundry_id) => self.fulfill_foundry_requirement(foundry_id),
             Requirement::Alias(alias_id, alias_transition) => {
                 self.fulfill_alias_requirement(alias_id, alias_transition)
