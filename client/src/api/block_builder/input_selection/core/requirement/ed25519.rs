@@ -10,7 +10,7 @@ use crate::{
 
 impl InputSelection {
     // Checks if a selected input unlocks a given ED25519 address.
-    fn selected_has_ed25519_address(&self, input: &InputSigningData, address: &Address) -> bool {
+    fn selected_unlocks_ed25519_address(&self, input: &InputSigningData, address: &Address) -> bool {
         let alias_transition =
             is_alias_transition(input, self.outputs.as_slice()).map(|(alias_transition, _)| alias_transition);
 
@@ -71,7 +71,7 @@ impl InputSelection {
         if let Some(input) = self
             .selected_inputs
             .iter()
-            .find(|input| self.selected_has_ed25519_address(input, &address))
+            .find(|input| self.selected_unlocks_ed25519_address(input, &address))
         {
             log::debug!(
                 "{address:?} sender requirement already fulfilled by {:?}",
