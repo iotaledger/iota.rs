@@ -95,16 +95,16 @@ impl BasicOutputBuilder {
     }
 
     ///
-    pub fn replace_unlock_condition(mut self, unlock_condition: UnlockCondition) -> Result<Self, Error> {
+    pub fn replace_unlock_condition(mut self, unlock_condition: UnlockCondition) -> Self {
         match self
             .unlock_conditions
             .iter_mut()
             .find(|u| u.kind() == unlock_condition.kind())
         {
             Some(u) => *u = unlock_condition,
-            None => return Err(Error::CannotReplaceMissingField),
+            None => self.unlock_conditions.push(unlock_condition),
         }
-        Ok(self)
+        self
     }
 
     ///
@@ -122,12 +122,12 @@ impl BasicOutputBuilder {
     }
 
     ///
-    pub fn replace_feature(mut self, feature: Feature) -> Result<Self, Error> {
+    pub fn replace_feature(mut self, feature: Feature) -> Self {
         match self.features.iter_mut().find(|f| f.kind() == feature.kind()) {
             Some(f) => *f = feature,
-            None => return Err(Error::CannotReplaceMissingField),
+            None => self.features.push(feature),
         }
-        Ok(self)
+        self
     }
 
     ///

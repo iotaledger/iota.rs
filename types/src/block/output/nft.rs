@@ -109,16 +109,16 @@ impl NftOutputBuilder {
     }
 
     ///
-    pub fn replace_unlock_condition(mut self, unlock_condition: UnlockCondition) -> Result<Self, Error> {
+    pub fn replace_unlock_condition(mut self, unlock_condition: UnlockCondition) -> Self {
         match self
             .unlock_conditions
             .iter_mut()
             .find(|u| u.kind() == unlock_condition.kind())
         {
             Some(u) => *u = unlock_condition,
-            None => return Err(Error::CannotReplaceMissingField),
+            None => self.unlock_conditions.push(unlock_condition),
         }
-        Ok(self)
+        self
     }
 
     ///
@@ -136,12 +136,12 @@ impl NftOutputBuilder {
     }
 
     ///
-    pub fn replace_feature(mut self, feature: Feature) -> Result<Self, Error> {
+    pub fn replace_feature(mut self, feature: Feature) -> Self {
         match self.features.iter_mut().find(|f| f.kind() == feature.kind()) {
             Some(f) => *f = feature,
-            None => return Err(Error::CannotReplaceMissingField),
+            None => self.features.push(feature),
         }
-        Ok(self)
+        self
     }
 
     ///
@@ -159,16 +159,16 @@ impl NftOutputBuilder {
     }
 
     ///
-    pub fn replace_immutable_feature(mut self, immutable_feature: Feature) -> Result<Self, Error> {
+    pub fn replace_immutable_feature(mut self, immutable_feature: Feature) -> Self {
         match self
             .immutable_features
             .iter_mut()
             .find(|f| f.kind() == immutable_feature.kind())
         {
             Some(f) => *f = immutable_feature,
-            None => return Err(Error::CannotReplaceMissingField),
+            None => self.immutable_features.push(immutable_feature),
         }
-        Ok(self)
+        self
     }
 
     ///
