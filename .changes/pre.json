@@ -3,6 +3,7 @@
   "changes": [
     ".changes/alias-nft-unlock.md",
     ".changes/aliasIdToBech32.md",
+    ".changes/basic-auth.md",
     ".changes/build-fix.md",
     ".changes/burn-interface.md",
     ".changes/computeAlias-NftId.md",
