@@ -46,6 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Automatic alias governance transition does not change output amount in input selection;
 - ISA does not select aliases it can't unlock for amount;
 - Regex of several MQTT topics;
+- ISA makes sure the address is owned on alias Ed25519 requirements;
 
 ## 2.0.1-rc.6 - 2023-02-08
 
