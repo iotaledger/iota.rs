@@ -1,5 +1,11 @@
 # Changelog
 
+## \[3.0.0-rc.9]
+
+- Merged `IAuth::{username, password}` into `IAuth::basicAuthNamePwd`;
+  Set basic auth when provided;
+  - [7c7b9b7](https://github.com/iotaledger/iota.rs/commit/7c7b9b7a6ccd3215edeecb6056e59db40e47e307) Fix regex of several MQTT topics ([#1594](https://github.com/iotaledger/iota.rs/pull/1594)) on 2023-02-21
+
 ## \[3.0.0-rc.8]
 
 - Add `Burn` interface.
