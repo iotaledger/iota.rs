@@ -19,22 +19,9 @@ pub enum Error {
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
     Block(#[from] iota_types::block::Error),
-    /// Required input is forbidden.
-    #[error("required input {0} is forbidden")]
-    RequiredInputIsForbidden(OutputId),
-    /// Required input is not available.
-    #[error("required input {0} is not available")]
-    RequiredInputIsNotAvailable(OutputId),
-    /// Unfulfillable requirement.
-    #[error("unfulfillable requirement {0:?}")]
-    // TODO better name?
-    UnfulfillableRequirement(Requirement),
-    /// No available inputs were provided to input selection
-    #[error("no available inputs provided")]
-    NoAvailableInputsProvided,
-    /// No outputs were provided to input selection
-    #[error("no outputs provided")]
-    NoOutputsProvided,
+    /// Can't burn and transition an output at the same time.
+    #[error("can't burn and transition an output at the same time, chain ID: {0}")]
+    BurnAndTransition(ChainId),
     /// Insufficient amount provided.
     #[error("insufficient amount: found {found}, required {required}")]
     InsufficientAmount {
@@ -53,10 +40,22 @@ pub enum Error {
         /// The required amount.
         required: U256,
     },
-    /// Can't burn and transition an output at the same time.
-    #[error("can't burn and transition an output at the same time, chain ID: {0}")]
-    BurnAndTransition(ChainId),
     /// No input with matching ed25519 address provided
     #[error("no input with matching ed25519 address provided")]
     MissingInputWithEd25519Address,
+    /// No available inputs were provided to input selection
+    #[error("no available inputs provided")]
+    NoAvailableInputsProvided,
+    /// No outputs were provided to input selection
+    #[error("no outputs provided")]
+    NoOutputsProvided,
+    /// Required input is forbidden.
+    #[error("required input {0} is forbidden")]
+    RequiredInputIsForbidden(OutputId),
+    /// Required input is not available.
+    #[error("required input {0} is not available")]
+    RequiredInputIsNotAvailable(OutputId),
+    /// Unfulfillable requirement.
+    #[error("unfulfillable requirement {0:?}")]
+    UnfulfillableRequirement(Requirement),
 }
