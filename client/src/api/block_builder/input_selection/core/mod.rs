@@ -25,7 +25,6 @@ use crate::{
     secret::types::InputSigningData,
 };
 
-// TODO should ISA have its own error type? At least review errors.
 // TODO make methods actually take self? There was a mut issue.
 
 /// Working state for the input selection algorithm.
