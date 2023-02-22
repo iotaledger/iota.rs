@@ -2116,7 +2116,7 @@ fn state_transition_but_state_controller_not_owned() {
     let selected = InputSelection::new(
         inputs,
         outputs,
-        addresses(vec![BECH32_ADDRESS_ED25519_2]),
+        addresses(vec![BECH32_ADDRESS_ED25519_1]),
         protocol_parameters,
     )
     .select();
@@ -2158,7 +2158,7 @@ fn governance_transition_but_governor_not_owned() {
     let selected = InputSelection::new(
         inputs,
         outputs,
-        addresses(vec![BECH32_ADDRESS_ED25519_2]),
+        addresses(vec![BECH32_ADDRESS_ED25519_0]),
         protocol_parameters,
     )
     .select();
