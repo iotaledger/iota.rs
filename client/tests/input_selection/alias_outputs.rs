@@ -17,7 +17,7 @@ use crate::{
     addresses, build_inputs, build_outputs, is_remainder_or_return, unsorted_eq,
     Build::{Alias, Basic},
     ALIAS_ID_0, ALIAS_ID_1, ALIAS_ID_2, BECH32_ADDRESS_ALIAS_1, BECH32_ADDRESS_ALIAS_2, BECH32_ADDRESS_ED25519_0,
-    BECH32_ADDRESS_ED25519_1, BECH32_ADDRESS_NFT_1, TOKEN_SUPPLY,
+    BECH32_ADDRESS_ED25519_1, BECH32_ADDRESS_ED25519_2, BECH32_ADDRESS_NFT_1, TOKEN_SUPPLY,
 };
 
 #[test]
@@ -583,7 +583,7 @@ fn missing_ed25519_sender() {
 
     assert!(matches!(
         selected,
-        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender.is_ed25519() && sender == Address::try_from_bech32(BECH32_ADDRESS_ED25519_1).unwrap().1
+        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender == Address::try_from_bech32(BECH32_ADDRESS_ED25519_1).unwrap().1
     ));
 }
 
@@ -624,7 +624,7 @@ fn missing_ed25519_issuer_created() {
 
     assert!(matches!(
         selected,
-        Err(Error::UnfulfillableRequirement(Requirement::Issuer(issuer))) if issuer.is_ed25519() && issuer == Address::try_from_bech32(BECH32_ADDRESS_ED25519_1).unwrap().1
+        Err(Error::UnfulfillableRequirement(Requirement::Issuer(issuer))) if issuer == Address::try_from_bech32(BECH32_ADDRESS_ED25519_1).unwrap().1
     ));
 }
 
@@ -705,7 +705,7 @@ fn missing_alias_sender() {
 
     assert!(matches!(
         selected,
-        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender.is_alias() && sender == Address::try_from_bech32(BECH32_ADDRESS_ALIAS_1).unwrap().1
+        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender == Address::try_from_bech32(BECH32_ADDRESS_ALIAS_1).unwrap().1
     ));
 }
 
@@ -746,7 +746,7 @@ fn missing_alias_issuer_created() {
 
     assert!(matches!(
         selected,
-        Err(Error::UnfulfillableRequirement(Requirement::Issuer(issuer))) if issuer.is_alias() && issuer == Address::try_from_bech32(BECH32_ADDRESS_ALIAS_1).unwrap().1
+        Err(Error::UnfulfillableRequirement(Requirement::Issuer(issuer))) if issuer == Address::try_from_bech32(BECH32_ADDRESS_ALIAS_1).unwrap().1
     ));
 }
 
@@ -827,7 +827,7 @@ fn missing_nft_sender() {
 
     assert!(matches!(
         selected,
-        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender.is_nft() && sender == Address::try_from_bech32(BECH32_ADDRESS_NFT_1).unwrap().1
+        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender == Address::try_from_bech32(BECH32_ADDRESS_NFT_1).unwrap().1
     ));
 }
 
@@ -868,7 +868,7 @@ fn missing_nft_issuer_created() {
 
     assert!(matches!(
         selected,
-        Err(Error::UnfulfillableRequirement(Requirement::Issuer(issuer))) if issuer.is_nft() && issuer == Address::try_from_bech32(BECH32_ADDRESS_NFT_1).unwrap().1
+        Err(Error::UnfulfillableRequirement(Requirement::Issuer(issuer))) if issuer == Address::try_from_bech32(BECH32_ADDRESS_NFT_1).unwrap().1
     ));
 }
 
@@ -1159,7 +1159,7 @@ fn alias_burn_should_not_validate_alias_sender() {
 
     assert!(matches!(
         selected,
-        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender.is_alias() && sender == Address::try_from_bech32(BECH32_ADDRESS_ALIAS_1).unwrap().1
+        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender == Address::try_from_bech32(BECH32_ADDRESS_ALIAS_1).unwrap().1
     ));
 }
 
@@ -1249,7 +1249,7 @@ fn alias_governance_transition_should_not_validate_alias_sender() {
 
     assert!(matches!(
         selected,
-        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender.is_alias() && sender == Address::try_from_bech32(BECH32_ADDRESS_ALIAS_1).unwrap().1
+        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender == Address::try_from_bech32(BECH32_ADDRESS_ALIAS_1).unwrap().1
     ));
 }
 
@@ -1589,7 +1589,7 @@ fn state_controller_sender_required_but_governance() {
 
     assert!(matches!(
         selected,
-        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender.is_ed25519() && sender == Address::try_from_bech32(BECH32_ADDRESS_ED25519_0).unwrap().1
+        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender == Address::try_from_bech32(BECH32_ADDRESS_ED25519_0).unwrap().1
     ));
 }
 
@@ -1626,7 +1626,7 @@ fn governor_sender_required() {
     let selected = InputSelection::new(
         inputs.clone(),
         outputs.clone(),
-        addresses(vec![BECH32_ADDRESS_ED25519_0]),
+        addresses(vec![BECH32_ADDRESS_ED25519_0, BECH32_ADDRESS_ED25519_1]),
         protocol_parameters,
     )
     .select()
@@ -1690,7 +1690,7 @@ fn governor_sender_required_already_selected() {
     let selected = InputSelection::new(
         inputs.clone(),
         outputs.clone(),
-        addresses(vec![BECH32_ADDRESS_ED25519_0]),
+        addresses(vec![BECH32_ADDRESS_ED25519_1]),
         protocol_parameters,
     )
     .required_inputs(HashSet::from_iter([*inputs[0].output_id()]))
@@ -1732,7 +1732,7 @@ fn governance_transition_and_required() {
     let selected = InputSelection::new(
         inputs.clone(),
         outputs.clone(),
-        addresses(vec![BECH32_ADDRESS_ED25519_0]),
+        addresses(vec![BECH32_ADDRESS_ED25519_1]),
         protocol_parameters,
     )
     .required_inputs(HashSet::from_iter([*inputs[0].output_id()]))
@@ -1836,7 +1836,7 @@ fn governor_sender_required_but_state() {
 
     assert!(matches!(
         selected,
-        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender.is_ed25519() && sender == Address::try_from_bech32(BECH32_ADDRESS_ED25519_1).unwrap().1
+        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender == Address::try_from_bech32(BECH32_ADDRESS_ED25519_1).unwrap().1
     ));
 }
 
@@ -1882,14 +1882,14 @@ fn both_state_controller_and_governor_sender() {
     let selected = InputSelection::new(
         inputs,
         outputs,
-        addresses(vec![BECH32_ADDRESS_ED25519_0]),
+        addresses(vec![BECH32_ADDRESS_ED25519_0, BECH32_ADDRESS_ED25519_1]),
         protocol_parameters,
     )
     .select();
 
     assert!(matches!(
         selected,
-        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender.is_ed25519()
+        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender == Address::try_from_bech32(BECH32_ADDRESS_ED25519_0).unwrap().1
     ));
 }
 
@@ -2027,7 +2027,7 @@ fn do_not_change_amount_of_governance_transition() {
     let selected = InputSelection::new(
         inputs,
         outputs,
-        addresses(vec![BECH32_ADDRESS_ED25519_0]),
+        addresses(vec![BECH32_ADDRESS_ED25519_1]),
         protocol_parameters,
     )
     .select();
@@ -2082,5 +2082,213 @@ fn state_transition_required_but_state_controller_not_provided() {
             found: 0,
             required: 1_000_000,
         })
+    ));
+}
+
+#[test]
+fn state_transition_but_state_controller_not_owned() {
+    let protocol_parameters = protocol_parameters();
+    let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
+
+    let inputs = build_inputs(vec![Alias(
+        2_000_000,
+        alias_id_1,
+        0,
+        BECH32_ADDRESS_ED25519_0,
+        BECH32_ADDRESS_ED25519_1,
+        None,
+        None,
+        None,
+        None,
+    )]);
+    let outputs = build_outputs(vec![Alias(
+        2_000_000,
+        alias_id_1,
+        1,
+        BECH32_ADDRESS_ED25519_0,
+        BECH32_ADDRESS_ED25519_1,
+        None,
+        None,
+        None,
+        None,
+    )]);
+
+    let selected = InputSelection::new(
+        inputs,
+        outputs,
+        addresses(vec![BECH32_ADDRESS_ED25519_1]),
+        protocol_parameters,
+    )
+    .select();
+
+    assert!(matches!(
+        selected,
+        Err(Error::UnfulfillableRequirement(Requirement::Ed25519(address))) if address == Address::try_from_bech32(BECH32_ADDRESS_ED25519_0).unwrap().1
+    ));
+}
+
+#[test]
+fn governance_transition_but_governor_not_owned() {
+    let protocol_parameters = protocol_parameters();
+    let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
+
+    let inputs = build_inputs(vec![Alias(
+        2_000_000,
+        alias_id_1,
+        0,
+        BECH32_ADDRESS_ED25519_0,
+        BECH32_ADDRESS_ED25519_1,
+        None,
+        None,
+        None,
+        None,
+    )]);
+    let outputs = build_outputs(vec![Alias(
+        2_000_000,
+        alias_id_1,
+        0,
+        BECH32_ADDRESS_ED25519_0,
+        BECH32_ADDRESS_ED25519_1,
+        None,
+        None,
+        None,
+        None,
+    )]);
+
+    let selected = InputSelection::new(
+        inputs,
+        outputs,
+        addresses(vec![BECH32_ADDRESS_ED25519_0]),
+        protocol_parameters,
+    )
+    .select();
+
+    assert!(matches!(
+        selected,
+        Err(Error::UnfulfillableRequirement(Requirement::Ed25519(address))) if address == Address::try_from_bech32(BECH32_ADDRESS_ED25519_1).unwrap().1
+    ));
+}
+
+#[test]
+fn burn_alias_but_governor_not_owned() {
+    let protocol_parameters = protocol_parameters();
+    let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
+
+    let inputs = build_inputs(vec![Alias(
+        2_000_000,
+        alias_id_1,
+        0,
+        BECH32_ADDRESS_ED25519_0,
+        BECH32_ADDRESS_ED25519_1,
+        None,
+        None,
+        None,
+        None,
+    )]);
+    let outputs = build_outputs(vec![Basic(
+        1_000_000,
+        BECH32_ADDRESS_ED25519_0,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )]);
+
+    let selected = InputSelection::new(
+        inputs,
+        outputs,
+        addresses(vec![BECH32_ADDRESS_ED25519_2]),
+        protocol_parameters,
+    )
+    .burn(Burn::new().add_alias(alias_id_1))
+    .select();
+
+    assert!(matches!(
+        selected,
+        Err(Error::UnfulfillableRequirement(Requirement::Ed25519(address))) if address == Address::try_from_bech32(BECH32_ADDRESS_ED25519_1).unwrap().1
+    ));
+}
+
+#[test]
+fn sender_in_state_controller_but_not_owned() {
+    let protocol_parameters = protocol_parameters();
+    let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
+
+    let inputs = build_inputs(vec![Alias(
+        2_000_000,
+        alias_id_1,
+        0,
+        BECH32_ADDRESS_ED25519_0,
+        BECH32_ADDRESS_ED25519_1,
+        None,
+        None,
+        None,
+        None,
+    )]);
+    let outputs = build_outputs(vec![Basic(
+        1_000_000,
+        BECH32_ADDRESS_ED25519_0,
+        None,
+        Some(BECH32_ADDRESS_ED25519_0),
+        None,
+        None,
+        None,
+        None,
+    )]);
+
+    let selected = InputSelection::new(
+        inputs,
+        outputs,
+        addresses(vec![BECH32_ADDRESS_ED25519_2]),
+        protocol_parameters,
+    )
+    .select();
+
+    assert!(matches!(
+        selected,
+        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender == Address::try_from_bech32(BECH32_ADDRESS_ED25519_0).unwrap().1
+    ));
+}
+
+#[test]
+fn sender_in_governor_but_not_owned() {
+    let protocol_parameters = protocol_parameters();
+    let alias_id_1 = AliasId::from_str(ALIAS_ID_1).unwrap();
+
+    let inputs = build_inputs(vec![Alias(
+        2_000_000,
+        alias_id_1,
+        0,
+        BECH32_ADDRESS_ED25519_0,
+        BECH32_ADDRESS_ED25519_1,
+        None,
+        None,
+        None,
+        None,
+    )]);
+    let outputs = build_outputs(vec![Basic(
+        1_000_000,
+        BECH32_ADDRESS_ED25519_0,
+        None,
+        Some(BECH32_ADDRESS_ED25519_1),
+        None,
+        None,
+        None,
+        None,
+    )]);
+
+    let selected = InputSelection::new(
+        inputs,
+        outputs,
+        addresses(vec![BECH32_ADDRESS_ED25519_2]),
+        protocol_parameters,
+    )
+    .select();
+
+    assert!(matches!(
+        selected,
+        Err(Error::UnfulfillableRequirement(Requirement::Sender(sender))) if sender == Address::try_from_bech32(BECH32_ADDRESS_ED25519_1).unwrap().1
     ));
 }
