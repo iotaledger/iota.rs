@@ -46,7 +46,7 @@ pub struct ClientBlockBuilder<'a> {
 }
 
 /// Block output address
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ClientBlockBuilderOutputAddress {
     /// Address
@@ -57,7 +57,7 @@ pub struct ClientBlockBuilderOutputAddress {
 }
 
 /// Options for generating block
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ClientBlockBuilderOptions {
     /// Coin type

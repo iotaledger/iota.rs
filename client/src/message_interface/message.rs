@@ -31,7 +31,7 @@ use crate::{
 };
 
 /// Each public client method.
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(tag = "name", content = "data", rename_all = "camelCase")]
 pub enum Message {
     /// Build an AliasOutput.
