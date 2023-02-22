@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `SecretManager::{try_from_mnemonic, try_from_hex_seed}`;
+- Derive `Serialize` for `GetAddressesBuilderOptions`, `ClientBlockBuilderOutputAddress`, `ClientBlockBuilderOptions` and `Message`;
 
 ### Changed
 
