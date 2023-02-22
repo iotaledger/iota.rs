@@ -40,13 +40,13 @@ pub enum Error {
         /// The required amount.
         required: U256,
     },
-    /// No input with matching ed25519 address provided
+    /// No input with matching ed25519 address provided.
     #[error("no input with matching ed25519 address provided")]
     MissingInputWithEd25519Address,
-    /// No available inputs were provided to input selection
+    /// No available inputs were provided to input selection.
     #[error("no available inputs provided")]
     NoAvailableInputsProvided,
-    /// No outputs were provided to input selection
+    /// No outputs were provided to input selection.
     #[error("no outputs provided")]
     NoOutputsProvided,
     /// Required input is forbidden.
