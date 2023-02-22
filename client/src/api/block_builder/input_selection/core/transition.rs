@@ -3,14 +3,13 @@
 
 use super::{
     requirement::{alias::is_alias_with_id_non_null, foundry::is_foundry_with_id, nft::is_nft_with_id_non_null},
-    InputSelection,
+    Error, InputSelection,
 };
 use crate::{
     block::output::{
         AliasOutput, AliasOutputBuilder, AliasTransition, ChainId, FoundryOutput, FoundryOutputBuilder, NftOutput,
         NftOutputBuilder, Output, OutputId,
     },
-    error::Result,
     secret::types::InputSigningData,
 };
 
@@ -21,7 +20,7 @@ impl InputSelection {
         input: &AliasOutput,
         output_id: &OutputId,
         alias_transition: AliasTransition,
-    ) -> Result<Option<Output>> {
+    ) -> Result<Option<Output>, Error> {
         let alias_id = input.alias_id_non_null(output_id);
 
         // Do not create an alias output if the alias input is to be burned.
@@ -67,7 +66,7 @@ impl InputSelection {
     }
 
     /// Transitions an nft input by creating a new nft output if required.
-    fn transition_nft_input(&mut self, input: &NftOutput, output_id: &OutputId) -> Result<Option<Output>> {
+    fn transition_nft_input(&mut self, input: &NftOutput, output_id: &OutputId) -> Result<Option<Output>, Error> {
         let nft_id = input.nft_id_non_null(output_id);
 
         // Do not create an nft output if the nft input is to be burned.
@@ -107,7 +106,11 @@ impl InputSelection {
     }
 
     /// Transitions a foundry input by creating a new foundry output if required.
-    fn transition_foundry_input(&mut self, input: &FoundryOutput, output_id: &OutputId) -> Result<Option<Output>> {
+    fn transition_foundry_input(
+        &mut self,
+        input: &FoundryOutput,
+        output_id: &OutputId,
+    ) -> Result<Option<Output>, Error> {
         let foundry_id = input.id();
 
         // Do not create a foundry output if the foundry input is to be burned.
@@ -146,7 +149,7 @@ impl InputSelection {
         &mut self,
         input: &InputSigningData,
         alias_transition: Option<AliasTransition>,
-    ) -> Result<Option<Output>> {
+    ) -> Result<Option<Output>, Error> {
         match &input.output {
             Output::Alias(alias_input) => self.transition_alias_input(
                 alias_input,

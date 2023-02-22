@@ -7,13 +7,12 @@ use std::{
 };
 
 use iota_client::{
-    api::input_selection::{Burn, InputSelection, Requirement},
+    api::input_selection::{Burn, Error, InputSelection, Requirement},
     block::{
         address::Address,
         output::{AliasId, AliasTransition, ChainId, NftId, SimpleTokenScheme, TokenId},
         protocol::protocol_parameters,
     },
-    Error,
 };
 use primitive_types::U256;
 

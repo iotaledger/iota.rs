@@ -5,15 +5,13 @@ use std::{cmp::Ordering, collections::HashSet};
 
 use primitive_types::U256;
 
-use super::InputSelection;
+use super::{Error, InputSelection};
 use crate::{
     block::output::{AliasTransition, NativeToken, NativeTokens, NativeTokensBuilder, Output, TokenScheme},
-    error::Result,
     secret::types::InputSigningData,
-    Error,
 };
 
-pub(crate) fn get_native_tokens<'a>(outputs: impl Iterator<Item = &'a Output>) -> Result<NativeTokensBuilder> {
+pub(crate) fn get_native_tokens<'a>(outputs: impl Iterator<Item = &'a Output>) -> Result<NativeTokensBuilder, Error> {
     let mut required_native_tokens = NativeTokensBuilder::new();
 
     for output in outputs {
@@ -28,7 +26,7 @@ pub(crate) fn get_native_tokens<'a>(outputs: impl Iterator<Item = &'a Output>) -
 pub(crate) fn get_minted_and_melted_native_tokens(
     inputs: &[InputSigningData],
     outputs: &[Output],
-) -> Result<(NativeTokensBuilder, NativeTokensBuilder)> {
+) -> Result<(NativeTokensBuilder, NativeTokensBuilder), Error> {
     let mut minted_native_tokens = NativeTokensBuilder::new();
     let mut melted_native_tokens = NativeTokensBuilder::new();
 
@@ -90,7 +88,7 @@ pub(crate) fn get_minted_and_melted_native_tokens(
 pub(crate) fn get_native_tokens_diff(
     inputs: &NativeTokensBuilder,
     outputs: &NativeTokensBuilder,
-) -> Result<Option<NativeTokens>> {
+) -> Result<Option<NativeTokens>, Error> {
     let mut native_tokens_diff = NativeTokensBuilder::new();
 
     for (token_id, input_amount) in inputs.iter() {
@@ -116,7 +114,7 @@ pub(crate) fn get_native_tokens_diff(
 impl InputSelection {
     pub(crate) fn fulfill_native_tokens_requirement(
         &mut self,
-    ) -> Result<Vec<(InputSigningData, Option<AliasTransition>)>> {
+    ) -> Result<Vec<(InputSigningData, Option<AliasTransition>)>, Error> {
         let mut input_native_tokens = get_native_tokens(self.selected_inputs.iter().map(|input| &input.output))?;
         let mut output_native_tokens = get_native_tokens(self.outputs.iter())?;
         let (minted_native_tokens, melted_native_tokens) =

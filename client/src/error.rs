@@ -5,15 +5,11 @@
 
 use std::fmt::{Debug, Display};
 
-use iota_types::block::{
-    output::{ChainId, NativeTokens, OutputId, TokenId},
-    semantic::ConflictReason,
-};
+use iota_types::block::{output::NativeTokens, semantic::ConflictReason};
 use packable::error::UnexpectedEOF;
-use primitive_types::U256;
 use serde::{ser::Serializer, Serialize};
 
-use crate::{api::input_selection::Requirement, node_api::indexer::QueryParameter};
+use crate::{api::input_selection::Error as InputSelectionError, node_api::indexer::QueryParameter};
 
 /// Type alias of `Result` in iota-client
 pub type Result<T> = std::result::Result<T, Error>;
@@ -205,47 +201,9 @@ pub enum Error {
     /// URL validation error
     #[error("{0}")]
     UrlValidation(String),
-
-    //////////////////////////////////////////////////////////////////////
-    // Input Selection
-    //////////////////////////////////////////////////////////////////////
-    /// Required input is forbidden.
-    #[error("required input {0} is forbidden")]
-    RequiredInputIsForbidden(OutputId),
-    /// Required input is not available.
-    #[error("required input {0} is not available")]
-    RequiredInputIsNotAvailable(OutputId),
-    /// Unfulfillable requirement.
-    #[error("unfulfillable requirement {0:?}")]
-    // TODO better name?
-    UnfulfillableRequirement(Requirement),
-    /// No available inputs were provided to input selection
-    #[error("no available inputs provided")]
-    NoAvailableInputsProvided,
-    /// No outputs were provided to input selection
-    #[error("no outputs provided")]
-    NoOutputsProvided,
-    /// Insufficient amount provided.
-    #[error("insufficient amount: found {found}, required {required}")]
-    InsufficientAmount {
-        /// The amount found.
-        found: u64,
-        /// The required amount.
-        required: u64,
-    },
-    /// Insufficient native token amount provided.
-    #[error("insufficient native token amount: found {found}, required {required}")]
-    InsufficientNativeTokenAmount {
-        /// The token ID.
-        token_id: TokenId,
-        /// The amount found.
-        found: U256,
-        /// The required amount.
-        required: U256,
-    },
-    /// Can't burn and transition an output at the same time.
-    #[error("can't burn and transition an output at the same time, chain ID: {0}")]
-    BurnAndTransition(ChainId),
+    /// Input selection error.
+    #[error("{0}")]
+    InputSelection(#[from] InputSelectionError),
 
     /// Participation error
     #[cfg(feature = "participation")]
@@ -368,7 +326,7 @@ impl From<iota_ledger_nano::api::errors::APIError> for Error {
 }
 
 /// Use this to serialize Error variants that implements Debug but not Serialize
-fn display_string<T, S>(value: &T, serializer: S) -> std::result::Result<S::Ok, S::Error>
+pub(crate) fn display_string<T, S>(value: &T, serializer: S) -> std::result::Result<S::Ok, S::Error>
 where
     T: Display,
     S: Serializer,

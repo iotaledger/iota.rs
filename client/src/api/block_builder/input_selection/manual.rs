@@ -125,6 +125,6 @@ impl<'a> ClientBlockBuilder<'a> {
             input_selection = input_selection.burn(burn);
         }
 
-        input_selection.select()
+        Ok(input_selection.select()?)
     }
 }

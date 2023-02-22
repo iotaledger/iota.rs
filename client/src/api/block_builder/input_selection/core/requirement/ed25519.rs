@@ -1,10 +1,9 @@
 // Copyright 2023 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use super::{alias::is_alias_transition, InputSelection, Requirement};
+use super::{alias::is_alias_transition, Error, InputSelection, Requirement};
 use crate::{
     block::{address::Address, output::AliasTransition},
-    error::{Error, Result},
     secret::types::InputSigningData,
 };
 
@@ -66,7 +65,7 @@ impl InputSelection {
     pub(crate) fn fulfill_ed25519_requirement(
         &mut self,
         address: Address,
-    ) -> Result<Vec<(InputSigningData, Option<AliasTransition>)>> {
+    ) -> Result<Vec<(InputSigningData, Option<AliasTransition>)>, Error> {
         // Checks if the requirement is already fulfilled.
         if let Some(input) = self
             .selected_inputs

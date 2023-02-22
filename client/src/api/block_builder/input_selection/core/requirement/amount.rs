@@ -3,7 +3,7 @@
 
 use std::collections::HashMap;
 
-use super::{InputSelection, Requirement};
+use super::{Error, InputSelection, Requirement};
 use crate::{
     block::{
         address::Address,
@@ -12,7 +12,6 @@ use crate::{
             FoundryOutputBuilder, NftOutputBuilder, Output, OutputId, Rent,
         },
     },
-    error::{Error, Result},
     secret::types::InputSigningData,
 };
 
@@ -85,7 +84,7 @@ struct AmountSelection {
 }
 
 impl AmountSelection {
-    fn new(input_selection: &InputSelection) -> Result<Self> {
+    fn new(input_selection: &InputSelection) -> Result<Self, Error> {
         let (inputs_sum, outputs_sum, inputs_sdr, outputs_sdr) = amount_sums(
             &input_selection.selected_inputs,
             &input_selection.outputs,
@@ -218,7 +217,7 @@ impl InputSelection {
         false
     }
 
-    fn reduce_funds_of_chains(&mut self, amount_selection: &mut AmountSelection) -> Result<()> {
+    fn reduce_funds_of_chains(&mut self, amount_selection: &mut AmountSelection) -> Result<(), Error> {
         // Only consider automatically transitioned outputs, except for alias governance transitions.
         let outputs = self.outputs.iter_mut().filter(|output| {
             output
@@ -277,7 +276,9 @@ impl InputSelection {
         })
     }
 
-    pub(crate) fn fulfill_amount_requirement(&mut self) -> Result<Vec<(InputSigningData, Option<AliasTransition>)>> {
+    pub(crate) fn fulfill_amount_requirement(
+        &mut self,
+    ) -> Result<Vec<(InputSigningData, Option<AliasTransition>)>, Error> {
         let mut amount_selection = AmountSelection::new(self)?;
 
         if amount_selection.missing_amount() == 0 {

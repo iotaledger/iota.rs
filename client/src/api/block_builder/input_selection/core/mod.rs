@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 pub(crate) mod burn;
+pub(crate) mod error;
 pub(crate) mod remainder;
 pub(crate) mod requirement;
 pub(crate) mod transition;
@@ -11,6 +12,7 @@ use std::collections::{HashMap, HashSet};
 use self::requirement::alias::is_alias_transition;
 pub use self::{
     burn::{Burn, BurnDto},
+    error::Error,
     requirement::Requirement,
 };
 use crate::{
@@ -20,7 +22,6 @@ use crate::{
         output::{AliasTransition, ChainId, Output, OutputId},
         protocol::ProtocolParameters,
     },
-    error::{Error, Result},
     secret::types::InputSigningData,
 };
 
@@ -56,7 +57,7 @@ pub struct Selected {
 }
 
 impl InputSelection {
-    fn required_alias_nft_addresses(&self, input: &InputSigningData) -> Result<Option<Requirement>> {
+    fn required_alias_nft_addresses(&self, input: &InputSigningData) -> Result<Option<Requirement>, Error> {
         let alias_transition = is_alias_transition(input, &self.outputs).map(|transition| transition.0);
         let required_address = input
             .output
@@ -81,7 +82,11 @@ impl InputSelection {
         }
     }
 
-    fn select_input(&mut self, input: InputSigningData, alias_transition: Option<AliasTransition>) -> Result<()> {
+    fn select_input(
+        &mut self,
+        input: InputSigningData,
+        alias_transition: Option<AliasTransition>,
+    ) -> Result<(), Error> {
         log::debug!("Selecting input {:?}", input.output_id());
 
         if let Some(output) = self.transition_input(&input, alias_transition)? {
@@ -104,7 +109,7 @@ impl InputSelection {
     }
 
     // TODO rename
-    fn init(&mut self) -> Result<()> {
+    fn init(&mut self) -> Result<(), Error> {
         // Adds an initial amount requirement.
         self.requirements.push(Requirement::Amount);
         // Adds an initial native tokens requirement.
@@ -250,7 +255,7 @@ impl InputSelection {
     }
 
     // Inputs need to be sorted before signing, because the reference unlock conditions can only reference a lower index
-    pub(crate) fn sort_input_signing_data(inputs: Vec<InputSigningData>) -> crate::Result<Vec<InputSigningData>> {
+    pub(crate) fn sort_input_signing_data(inputs: Vec<InputSigningData>) -> Result<Vec<InputSigningData>, Error> {
         // filter for ed25519 address first, safe to unwrap since we encoded it before
         let (mut sorted_inputs, alias_nft_address_inputs): (Vec<InputSigningData>, Vec<InputSigningData>) = inputs
             .into_iter()
@@ -325,7 +330,7 @@ impl InputSelection {
 
     /// Selects inputs that meet the requirements of the outputs to satisfy the semantic validation of the overall
     /// transaction. Also creates a remainder output and chain transition outputs if required.
-    pub fn select(mut self) -> Result<Selected> {
+    pub fn select(mut self) -> Result<Selected, Error> {
         self.filter_inputs();
 
         if self.available_inputs.is_empty() {

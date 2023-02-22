@@ -7,7 +7,7 @@ use super::{
         amount::amount_sums,
         native_tokens::{get_minted_and_melted_native_tokens, get_native_tokens, get_native_tokens_diff},
     },
-    InputSelection,
+    Error, InputSelection,
 };
 use crate::{
     api::RemainderData,
@@ -19,7 +19,6 @@ use crate::{
         },
     },
     crypto::keys::slip10::Chain,
-    error::{Error, Result},
 };
 
 impl InputSelection {
@@ -47,7 +46,7 @@ impl InputSelection {
         None
     }
 
-    pub(crate) fn remainder_amount(&self) -> Result<(u64, bool)> {
+    pub(crate) fn remainder_amount(&self) -> Result<(u64, bool), Error> {
         let mut input_native_tokens = get_native_tokens(self.selected_inputs.iter().map(|input| &input.output))?;
         let mut output_native_tokens = get_native_tokens(self.outputs.iter())?;
         let (minted_native_tokens, melted_native_tokens) =
@@ -81,7 +80,9 @@ impl InputSelection {
         ))
     }
 
-    pub(crate) fn remainder_and_storage_deposit_return_outputs(&self) -> Result<(Option<RemainderData>, Vec<Output>)> {
+    pub(crate) fn remainder_and_storage_deposit_return_outputs(
+        &self,
+    ) -> Result<(Option<RemainderData>, Vec<Output>), Error> {
         let (inputs_sum, outputs_sum, inputs_sdr, outputs_sdr) =
             amount_sums(&self.selected_inputs, &self.outputs, self.timestamp);
         let mut storage_deposit_returns = Vec::new();

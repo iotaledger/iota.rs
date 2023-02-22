@@ -18,7 +18,7 @@ use iota_types::{
 };
 
 use crate::{
-    api::{ClientBlockBuilder, GetAddressesBuilder},
+    api::{input_selection::Error as InputSelectionError, ClientBlockBuilder, GetAddressesBuilder},
     constants::{
         DEFAULT_RETRY_UNTIL_INCLUDED_INTERVAL, DEFAULT_RETRY_UNTIL_INCLUDED_MAX_AMOUNT, FIVE_MINUTES_IN_SECONDS,
     },
@@ -235,10 +235,10 @@ impl Client {
         }
 
         if total_already_spent < amount {
-            return Err(crate::Error::InsufficientAmount {
+            return Err(InputSelectionError::InsufficientAmount {
                 found: total_already_spent,
                 required: amount,
-            });
+            })?;
         }
 
         Ok(selected_inputs)

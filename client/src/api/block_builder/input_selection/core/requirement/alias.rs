@@ -1,10 +1,9 @@
 // Copyright 2023 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use super::{InputSelection, Requirement};
+use super::{Error, InputSelection, Requirement};
 use crate::{
     block::output::{AliasId, AliasTransition, Output, OutputId},
-    error::{Error, Result},
     secret::types::InputSigningData,
 };
 
@@ -75,7 +74,7 @@ impl InputSelection {
         &mut self,
         alias_id: AliasId,
         alias_transition: AliasTransition,
-    ) -> Result<Vec<(InputSigningData, Option<AliasTransition>)>> {
+    ) -> Result<Vec<(InputSigningData, Option<AliasTransition>)>, Error> {
         // Check that the alias is not burned when a state transition is required.
         if alias_transition.is_state()
             && self

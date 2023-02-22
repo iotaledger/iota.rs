@@ -1,10 +1,9 @@
 // Copyright 2023 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use super::{InputSelection, Requirement};
+use super::{Error, InputSelection, Requirement};
 use crate::{
     block::output::{AliasTransition, FoundryId, Output},
-    error::{Error, Result},
     secret::types::InputSigningData,
 };
 
@@ -22,7 +21,7 @@ impl InputSelection {
     pub(crate) fn fulfill_foundry_requirement(
         &mut self,
         foundry_id: FoundryId,
-    ) -> Result<Vec<(InputSigningData, Option<AliasTransition>)>> {
+    ) -> Result<Vec<(InputSigningData, Option<AliasTransition>)>, Error> {
         // Check if the requirement is already fulfilled.
         if let Some(input) = self
             .selected_inputs
