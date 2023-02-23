@@ -30,7 +30,7 @@ use crate::{
         types::{LedgerApp, LedgerDeviceType},
         LedgerNanoStatus, PreparedTransactionData, RemainderData,
     },
-    Error, Result,
+    unix_timestamp_now, Error, Result,
 };
 
 /// Hardened const for the bip path.
@@ -391,12 +391,7 @@ fn merge_unlocks(
     // The hashed_essence gets signed
     let hashed_essence = prepared_transaction_data.essence.hash();
 
-    let time = time.unwrap_or_else(|| {
-        instant::SystemTime::now()
-            .duration_since(instant::SystemTime::UNIX_EPOCH)
-            .expect("time went backwards")
-            .as_secs() as u32
-    });
+    let time = time.unwrap_or_else(unix_timestamp_now);
 
     let mut merged_unlocks = Vec::new();
     let mut block_indexes = HashMap::<Address, usize>::new();

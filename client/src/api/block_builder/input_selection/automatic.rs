@@ -24,7 +24,7 @@ use crate::{
     constants::HD_WALLET_TYPE,
     node_api::indexer::query_parameters::QueryParameter,
     secret::types::InputSigningData,
-    Error, Result,
+    unix_timestamp_now, Error, Result,
 };
 
 impl<'a> ClientBlockBuilder<'a> {
@@ -50,12 +50,7 @@ impl<'a> ClientBlockBuilder<'a> {
                     QueryParameter::HasExpiration(true),
                     QueryParameter::HasStorageDepositReturn(false),
                     // Ignore outputs that aren't expired yet
-                    QueryParameter::ExpiresBefore(
-                        instant::SystemTime::now()
-                            .duration_since(instant::SystemTime::UNIX_EPOCH)
-                            .expect("time went backwards")
-                            .as_secs() as u32,
-                    ),
+                    QueryParameter::ExpiresBefore(unix_timestamp_now()),
                 ])
                 .await?,
         );

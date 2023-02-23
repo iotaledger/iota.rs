@@ -44,6 +44,7 @@ use crate::{
         PreparedTransactionData, RemainderData,
     },
     secret::types::InputSigningData,
+    unix_timestamp_now,
 };
 
 /// The secret manager interface.
@@ -325,12 +326,7 @@ impl SecretManager {
             let TransactionEssence::Regular(regular) = &prepared_transaction_data.essence;
             let alias_transition = is_alias_transition(input, regular.outputs()).map(|t| t.0);
             let (input_address, _) = input.output.required_and_unlocked_address(
-                time.unwrap_or_else(|| {
-                    instant::SystemTime::now()
-                        .duration_since(instant::SystemTime::UNIX_EPOCH)
-                        .expect("time went backwards")
-                        .as_secs() as u32
-                }),
+                time.unwrap_or_else(unix_timestamp_now),
                 input.output_metadata.output_id(),
                 alias_transition,
             )?;

@@ -25,6 +25,7 @@ use crate::{
         protocol::ProtocolParameters,
     },
     secret::types::InputSigningData,
+    unix_timestamp_now,
 };
 
 // TODO make methods actually take self? There was a mut issue.
@@ -186,10 +187,7 @@ impl InputSelection {
             burn: None,
             remainder_address: None,
             protocol_parameters,
-            timestamp: instant::SystemTime::now()
-                .duration_since(instant::SystemTime::UNIX_EPOCH)
-                .expect("time went backwards")
-                .as_secs() as u32,
+            timestamp: unix_timestamp_now(),
             requirements: Vec::new(),
             automatically_transitioned: HashMap::new(),
         }
@@ -261,13 +259,10 @@ impl InputSelection {
         outputs: &[Output],
         time: Option<u32>,
     ) -> Result<Vec<InputSigningData>, Error> {
-        let time = time.unwrap_or_else(|| {
-            instant::SystemTime::now()
-                .duration_since(instant::SystemTime::UNIX_EPOCH)
-                .expect("time went backwards")
-                .as_secs() as u32
-        });
+        let time = time.unwrap_or_else(unix_timestamp_now);
         // initially sort by output to make it deterministic
+        // TODO: rethink this, we only need it deterministic for tests, for the protocol it doesn't matter, also there
+        // might be a more efficient way to do this
         inputs.sort_by_key(|i| i.output.pack_to_vec());
         // filter for ed25519 address first
         let (mut sorted_inputs, alias_nft_address_inputs): (Vec<InputSigningData>, Vec<InputSigningData>) =
