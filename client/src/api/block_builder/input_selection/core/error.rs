@@ -11,7 +11,7 @@ use serde::Serialize;
 
 use crate::{api::input_selection::Requirement, error::display_string};
 
-/// Error type of the iota client crate.
+/// Errors related to input selection.
 #[derive(Debug, thiserror::Error, Serialize)]
 #[serde(tag = "type", content = "error", rename_all = "camelCase")]
 pub enum Error {
