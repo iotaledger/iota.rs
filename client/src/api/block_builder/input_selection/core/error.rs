@@ -1,7 +1,7 @@
 // Copyright 2023 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! Error handling in iota-client crate.
+//! Error handling for input selection.
 
 use std::fmt::Debug;
 
