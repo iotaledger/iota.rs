@@ -222,6 +222,14 @@ impl<'a> ClientBlockBuilder<'a> {
                             cached_error.replace(Error::from(err));
                             continue;
                         }
+                        Err(err @ InputSelectionError::InsufficientNativeTokenAmount { .. }) => {
+                            cached_error.replace(Error::from(err));
+                            continue;
+                        }
+                        Err(err @ InputSelectionError::NoAvailableInputsProvided { .. }) => {
+                            cached_error.replace(Error::from(err));
+                            continue;
+                        }
                         // Not enough balance for a remainder.
                         Err(InputSelectionError::Block(block_error)) => match block_error {
                             iota_types::block::Error::InvalidStorageDepositAmount { .. } => {
