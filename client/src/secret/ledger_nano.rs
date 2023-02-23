@@ -24,6 +24,7 @@ use tokio::sync::Mutex;
 
 use super::{types::InputSigningData, GenerateAddressOptions, SecretManage, SecretManageExt};
 use crate::{
+    api::input_selection::Error as InputSelectionError,
     secret::{
         types::{LedgerApp, LedgerDeviceType},
         LedgerNanoStatus, PreparedTransactionData, RemainderData,
@@ -158,7 +159,7 @@ impl SecretManageExt for LedgerSecretManager {
                         .map(|seg| u32::from_be_bytes(seg.bs()))
                         .collect()
                 }
-                None => return Err(crate::Error::NoInputs),
+                None => return Err(InputSelectionError::NoAvailableInputsProvided)?,
             };
             // coin_type and account_index should be the same in each output
             if (coin_type.is_some() && coin_type != Some(bip32_indices[1]))
@@ -176,7 +177,7 @@ impl SecretManageExt for LedgerSecretManager {
         }
 
         if coin_type.is_none() || account_index.is_none() {
-            return Err(crate::Error::NoInputs);
+            return Err(InputSelectionError::NoAvailableInputsProvided)?;
         }
 
         // unwrap values
@@ -407,16 +408,18 @@ fn merge_unlocks(
                 // address already at this point, because the reference index needs to be lower
                 // than the current block index
                 if !input_address.is_ed25519() {
-                    return Err(crate::Error::MissingInputWithEd25519Address);
+                    return Err(InputSelectionError::MissingInputWithEd25519Address)?;
                 }
 
-                let unlock = unlocks.next().ok_or(crate::Error::MissingInputWithEd25519Address)?;
+                let unlock = unlocks
+                    .next()
+                    .ok_or(InputSelectionError::MissingInputWithEd25519Address)?;
 
                 if let Unlock::Signature(signature_unlock) = &unlock {
                     let Signature::Ed25519(ed25519_signature) = signature_unlock.signature();
                     let ed25519_address = match input_address {
                         Address::Ed25519(ed25519_address) => ed25519_address,
-                        _ => return Err(crate::Error::MissingInputWithEd25519Address),
+                        _ => return Err(InputSelectionError::MissingInputWithEd25519Address)?,
                     };
                     ed25519_signature.is_valid(&hashed_essence, &ed25519_address)?;
                 }

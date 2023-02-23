@@ -4,13 +4,12 @@
 use std::{collections::HashSet, str::FromStr};
 
 use iota_client::{
-    api::input_selection::{InputSelection, Requirement},
+    api::input_selection::{Error, InputSelection, Requirement},
     block::{
         address::{Address, AliasAddress, NftAddress},
         output::{AliasId, NftId},
         protocol::protocol_parameters,
     },
-    Error,
 };
 
 use crate::{

@@ -11,6 +11,6 @@ mod sender_issuer;
 mod utxo_chains;
 
 pub use self::{
-    core::{Burn, BurnDto, InputSelection, Requirement, Selected},
+    core::{Burn, BurnDto, Error, InputSelection, Requirement, Selected},
     helpers::minimum_storage_deposit_basic_output,
 };

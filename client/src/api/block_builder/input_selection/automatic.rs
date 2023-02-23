@@ -17,7 +17,7 @@ use iota_types::{
 
 use crate::{
     api::{
-        block_builder::input_selection::core::{InputSelection, Selected},
+        block_builder::input_selection::core::{Error as InputSelectionError, InputSelection, Selected},
         ClientBlockBuilder, ADDRESS_GAP_RANGE,
     },
     constants::HD_WALLET_TYPE,
@@ -218,33 +218,27 @@ impl<'a> ClientBlockBuilder<'a> {
                         Ok(r) => r,
                         // for these errors, just try again in the next round with more addresses which might have more
                         // outputs.
-                        Err(err @ crate::Error::InsufficientAmount { .. }) => {
-                            cached_error.replace(err);
+                        Err(err @ InputSelectionError::InsufficientAmount { .. }) => {
+                            cached_error.replace(Error::from(err));
                             continue;
                         }
-                        Err(err @ crate::Error::NotEnoughNativeTokens { .. }) => {
-                            cached_error.replace(err);
+                        Err(err @ InputSelectionError::InsufficientNativeTokenAmount { .. }) => {
+                            cached_error.replace(Error::from(err));
                             continue;
                         }
-                        // Native tokens left, but no balance for the storage deposit for a remainder.
-                        Err(err @ crate::Error::NoBalanceForNativeTokenRemainder) => {
-                            cached_error.replace(err);
-                            continue;
-                        }
-                        // Currently too many inputs, by scanning for more inputs, we might find some with more amount.
-                        Err(err @ crate::Error::ConsolidationRequired { .. }) => {
-                            cached_error.replace(err);
+                        Err(err @ InputSelectionError::NoAvailableInputsProvided { .. }) => {
+                            cached_error.replace(Error::from(err));
                             continue;
                         }
                         // Not enough balance for a remainder.
-                        Err(crate::Error::Block(block_error)) => match block_error {
+                        Err(InputSelectionError::Block(block_error)) => match block_error {
                             iota_types::block::Error::InvalidStorageDepositAmount { .. } => {
-                                cached_error.replace(crate::Error::Block(block_error));
+                                cached_error.replace(Error::from(InputSelectionError::Block(block_error)));
                                 continue;
                             }
                             _ => return Err(block_error.into()),
                         },
-                        Err(e) => return Err(e),
+                        Err(e) => return Err(e)?,
                     };
 
                     break 'input_selection selected_transaction_data;
@@ -262,7 +256,7 @@ impl<'a> ClientBlockBuilder<'a> {
             // The gap limit is 20 and use reference 40 here because there's public and internal addresses
             if empty_address_count >= (ADDRESS_GAP_RANGE * 2) as u64 {
                 // returned last cached error
-                return Err(cached_error.unwrap_or(Error::NoInputs));
+                return Err(cached_error.unwrap_or_else(|| Error::from(InputSelectionError::NoAvailableInputsProvided)));
             }
         };
 

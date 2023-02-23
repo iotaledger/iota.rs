@@ -4,9 +4,8 @@
 use std::{collections::HashSet, str::FromStr};
 
 use iota_client::{
-    api::input_selection::InputSelection,
+    api::input_selection::{Error, InputSelection},
     block::{output::AliasId, protocol::protocol_parameters},
-    Error,
 };
 
 use crate::{

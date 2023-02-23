@@ -13,7 +13,10 @@ use iota_types::block::{
 
 use crate::{
     api::{
-        address::search_address, block_builder::input_selection::core::requirement::alias::is_alias_transition,
+        address::search_address,
+        block_builder::input_selection::core::{
+            error::Error as InputSelectionError, requirement::alias::is_alias_transition,
+        },
         ClientBlockBuilder,
     },
     constants::HD_WALLET_TYPE,
@@ -84,7 +87,7 @@ impl<'a> ClientBlockBuilder<'a> {
                     }
 
                     if !found_output {
-                        return Err(Error::MissingInputWithEd25519Address);
+                        return Err(InputSelectionError::MissingInputWithEd25519Address)?;
                     }
                 }
                 Address::Alias(alias_address) => {

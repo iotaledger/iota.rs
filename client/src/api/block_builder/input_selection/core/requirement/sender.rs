@@ -1,10 +1,9 @@
 // Copyright 2023 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use super::{InputSelection, Requirement};
+use super::{Error, InputSelection, Requirement};
 use crate::{
     block::{address::Address, output::AliasTransition},
-    error::{Error, Result},
     secret::types::InputSigningData,
 };
 
@@ -13,7 +12,7 @@ impl InputSelection {
     pub(crate) fn fulfill_sender_requirement(
         &mut self,
         address: Address,
-    ) -> Result<Vec<(InputSigningData, Option<AliasTransition>)>> {
+    ) -> Result<Vec<(InputSigningData, Option<AliasTransition>)>, Error> {
         match address {
             Address::Ed25519(_) => {
                 log::debug!("Treating {address:?} sender requirement as an ed25519 requirement");

@@ -4,9 +4,8 @@
 use std::str::FromStr;
 
 use iota_client::{
-    api::input_selection::{Burn, InputSelection},
+    api::input_selection::{Burn, Error, InputSelection},
     block::{output::TokenId, protocol::protocol_parameters},
-    Error,
 };
 use primitive_types::U256;
 

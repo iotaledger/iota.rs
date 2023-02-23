@@ -5,15 +5,11 @@
 
 use std::fmt::{Debug, Display};
 
-use iota_types::block::{
-    output::{ChainId, NativeTokens, OutputId, TokenId},
-    semantic::ConflictReason,
-};
+use iota_types::block::semantic::ConflictReason;
 use packable::error::UnexpectedEOF;
-use primitive_types::U256;
 use serde::{ser::Serializer, Serialize};
 
-use crate::{api::input_selection::Requirement, node_api::indexer::QueryParameter};
+use crate::{api::input_selection::Error as InputSelectionError, node_api::indexer::QueryParameter};
 
 /// Type alias of `Result` in iota-client
 pub type Result<T> = std::result::Result<T, Error>;
@@ -82,15 +78,9 @@ pub enum Error {
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
     Json(#[from] serde_json::Error),
-    /// Missing input for utxo chain
-    #[error("missing input: {0}")]
-    MissingInput(String),
     /// Missing required parameters
     #[error("must provide required parameter: {0}")]
     MissingParameter(&'static str),
-    /// No input with matching ed25519 address provided
-    #[error("no input with matching ed25519 address provided")]
-    MissingInputWithEd25519Address,
     /// Error on API request
     #[error("node error: {0}")]
     Node(String),
@@ -100,15 +90,6 @@ pub enum Error {
     /// The requested data was not found.
     #[error("the requested data {0} was not found.")]
     NotFound(String),
-    /// The wallet account doesn't have any inputs found
-    #[error("no inputs found")]
-    NoInputs,
-    /// The wallet account doesn't have enough native tokens
-    #[error("the wallet account doesn't have enough native tokens, missing: {0:?}")]
-    NotEnoughNativeTokens(NativeTokens),
-    /// The wallet account doesn't have enough balance for an output with the remaining native tokens.
-    #[error("the wallet account doesn't have enough balance for an output with the remaining native tokens.")]
-    NoBalanceForNativeTokenRemainder,
     /// Output Error
     #[error("output error: {0}")]
     Output(&'static str),
@@ -205,47 +186,9 @@ pub enum Error {
     /// URL validation error
     #[error("{0}")]
     UrlValidation(String),
-
-    //////////////////////////////////////////////////////////////////////
-    // Input Selection
-    //////////////////////////////////////////////////////////////////////
-    /// Required input is forbidden.
-    #[error("required input {0} is forbidden")]
-    RequiredInputIsForbidden(OutputId),
-    /// Required input is not available.
-    #[error("required input {0} is not available")]
-    RequiredInputIsNotAvailable(OutputId),
-    /// Unfulfillable requirement.
-    #[error("unfulfillable requirement {0:?}")]
-    // TODO better name?
-    UnfulfillableRequirement(Requirement),
-    /// No available inputs were provided to input selection
-    #[error("no available inputs provided")]
-    NoAvailableInputsProvided,
-    /// No outputs were provided to input selection
-    #[error("no outputs provided")]
-    NoOutputsProvided,
-    /// Insufficient amount provided.
-    #[error("insufficient amount: found {found}, required {required}")]
-    InsufficientAmount {
-        /// The amount found.
-        found: u64,
-        /// The required amount.
-        required: u64,
-    },
-    /// Insufficient native token amount provided.
-    #[error("insufficient native token amount: found {found}, required {required}")]
-    InsufficientNativeTokenAmount {
-        /// The token ID.
-        token_id: TokenId,
-        /// The amount found.
-        found: U256,
-        /// The required amount.
-        required: U256,
-    },
-    /// Can't burn and transition an output at the same time.
-    #[error("can't burn and transition an output at the same time, chain ID: {0}")]
-    BurnAndTransition(ChainId),
+    /// Input selection error.
+    #[error("{0}")]
+    InputSelection(#[from] InputSelectionError),
 
     /// Participation error
     #[cfg(feature = "participation")]
@@ -368,7 +311,7 @@ impl From<iota_ledger_nano::api::errors::APIError> for Error {
 }
 
 /// Use this to serialize Error variants that implements Debug but not Serialize
-fn display_string<T, S>(value: &T, serializer: S) -> std::result::Result<S::Ok, S::Error>
+pub(crate) fn display_string<T, S>(value: &T, serializer: S) -> std::result::Result<S::Ok, S::Error>
 where
     T: Display,
     S: Serializer,

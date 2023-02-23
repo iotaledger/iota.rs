@@ -11,13 +11,12 @@ pub(crate) mod nft;
 pub(crate) mod sender;
 
 use self::{alias::is_alias_with_id_non_null, foundry::is_foundry_with_id, nft::is_nft_with_id_non_null};
-use super::InputSelection;
+use super::{Error, InputSelection};
 use crate::{
     block::{
         address::Address,
         output::{AliasId, AliasTransition, ChainId, Features, FoundryId, NftId, Output},
     },
-    error::{Error, Result},
     secret::types::InputSigningData,
 };
 
@@ -48,7 +47,7 @@ impl InputSelection {
     pub(crate) fn fulfill_requirement(
         &mut self,
         requirement: Requirement,
-    ) -> Result<Vec<(InputSigningData, Option<AliasTransition>)>> {
+    ) -> Result<Vec<(InputSigningData, Option<AliasTransition>)>, Error> {
         log::debug!("Fulfilling requirement {requirement:?}");
 
         match requirement {
@@ -144,7 +143,7 @@ impl InputSelection {
     }
 
     /// Gets requirements from burn.
-    pub(crate) fn burn_requirements(&mut self) -> Result<()> {
+    pub(crate) fn burn_requirements(&mut self) -> Result<(), Error> {
         if let Some(burn) = self.burn.as_ref() {
             for alias_id in &burn.aliases {
                 if self
