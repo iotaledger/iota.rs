@@ -5,7 +5,7 @@
 
 use std::fmt::{Debug, Display};
 
-use iota_types::block::{output::NativeTokens, semantic::ConflictReason};
+use iota_types::block::semantic::ConflictReason;
 use packable::error::UnexpectedEOF;
 use serde::{ser::Serializer, Serialize};
 
@@ -78,15 +78,9 @@ pub enum Error {
     #[error("{0}")]
     #[serde(serialize_with = "display_string")]
     Json(#[from] serde_json::Error),
-    /// Missing input for utxo chain
-    #[error("missing input: {0}")]
-    MissingInput(String),
     /// Missing required parameters
     #[error("must provide required parameter: {0}")]
     MissingParameter(&'static str),
-    /// No input with matching ed25519 address provided
-    #[error("no input with matching ed25519 address provided")]
-    MissingInputWithEd25519Address,
     /// Error on API request
     #[error("node error: {0}")]
     Node(String),
@@ -96,15 +90,6 @@ pub enum Error {
     /// The requested data was not found.
     #[error("the requested data {0} was not found.")]
     NotFound(String),
-    /// The wallet account doesn't have any inputs found
-    #[error("no inputs found")]
-    NoInputs,
-    /// The wallet account doesn't have enough native tokens
-    #[error("the wallet account doesn't have enough native tokens, missing: {0:?}")]
-    NotEnoughNativeTokens(NativeTokens),
-    /// The wallet account doesn't have enough balance for an output with the remaining native tokens.
-    #[error("the wallet account doesn't have enough balance for an output with the remaining native tokens.")]
-    NoBalanceForNativeTokenRemainder,
     /// Output Error
     #[error("output error: {0}")]
     Output(&'static str),

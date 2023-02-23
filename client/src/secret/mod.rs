@@ -38,7 +38,7 @@ use self::{mnemonic::MnemonicSecretManager, placeholder::PlaceholderSecretManage
 #[cfg(feature = "stronghold")]
 use crate::secret::types::StrongholdDto;
 use crate::{
-    api::{PreparedTransactionData, RemainderData},
+    api::{input_selection::Error as InputSelectionError, PreparedTransactionData, RemainderData},
     secret::types::InputSigningData,
 };
 
@@ -324,7 +324,7 @@ impl SecretManager {
                     // address already at this point, because the reference index needs to be lower
                     // than the current block index
                     if !input_address.is_ed25519() {
-                        return Err(crate::Error::MissingInputWithEd25519Address);
+                        return Err(InputSelectionError::MissingInputWithEd25519Address)?;
                     }
 
                     let block = self

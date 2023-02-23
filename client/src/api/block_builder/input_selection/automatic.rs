@@ -248,7 +248,7 @@ impl<'a> ClientBlockBuilder<'a> {
             // The gap limit is 20 and use reference 40 here because there's public and internal addresses
             if empty_address_count >= (ADDRESS_GAP_RANGE * 2) as u64 {
                 // returned last cached error
-                return Err(cached_error.unwrap_or(Error::NoInputs));
+                return Err(cached_error.unwrap_or_else(|| Error::from(InputSelectionError::NoAvailableInputsProvided)));
             }
         };
 
