@@ -101,3 +101,10 @@ mod async_runtime {
         runtime.lock().expect("failed to lock the runtime.").spawn(future);
     }
 }
+
+fn unix_timestamp_now() -> u32 {
+    instant::SystemTime::now()
+        .duration_since(instant::SystemTime::UNIX_EPOCH)
+        .expect("time went backwards")
+        .as_secs() as u32
+}

@@ -9,7 +9,9 @@ pub(crate) mod transition;
 
 use std::collections::{HashMap, HashSet};
 
-use self::requirement::alias::is_alias_transition;
+use packable::PackableExt;
+pub(crate) use requirement::is_alias_transition;
+
 pub use self::{
     burn::{Burn, BurnDto},
     error::Error,
@@ -18,11 +20,12 @@ pub use self::{
 use crate::{
     api::types::RemainderData,
     block::{
-        address::{Address, AliasAddress, Ed25519Address, NftAddress},
+        address::{Address, AliasAddress, NftAddress},
         output::{AliasTransition, ChainId, Output, OutputId},
         protocol::ProtocolParameters,
     },
     secret::types::InputSigningData,
+    unix_timestamp_now,
 };
 
 // TODO make methods actually take self? There was a mut issue.
@@ -184,10 +187,7 @@ impl InputSelection {
             burn: None,
             remainder_address: None,
             protocol_parameters,
-            timestamp: instant::SystemTime::now()
-                .duration_since(instant::SystemTime::UNIX_EPOCH)
-                .expect("time went backwards")
-                .as_secs() as u32,
+            timestamp: unix_timestamp_now(),
             requirements: Vec::new(),
             automatically_transitioned: HashMap::new(),
         }
@@ -254,35 +254,56 @@ impl InputSelection {
     }
 
     // Inputs need to be sorted before signing, because the reference unlock conditions can only reference a lower index
-    pub(crate) fn sort_input_signing_data(inputs: Vec<InputSigningData>) -> Result<Vec<InputSigningData>, Error> {
-        // filter for ed25519 address first, safe to unwrap since we encoded it before
-        let (mut sorted_inputs, alias_nft_address_inputs): (Vec<InputSigningData>, Vec<InputSigningData>) = inputs
-            .into_iter()
-            // PANIC: safe to unwrap as we encoded the address before
-            .partition(|input| {
-                Address::try_from_bech32(&input.bech32_address).unwrap().1.kind() == Ed25519Address::KIND
+    pub(crate) fn sort_input_signing_data(
+        mut inputs: Vec<InputSigningData>,
+        outputs: &[Output],
+        time: Option<u32>,
+    ) -> Result<Vec<InputSigningData>, Error> {
+        let time = time.unwrap_or_else(unix_timestamp_now);
+        // initially sort by output to make it deterministic
+        // TODO: rethink this, we only need it deterministic for tests, for the protocol it doesn't matter, also there
+        // might be a more efficient way to do this
+        inputs.sort_by_key(|i| i.output.pack_to_vec());
+        // filter for ed25519 address first
+        let (mut sorted_inputs, alias_nft_address_inputs): (Vec<InputSigningData>, Vec<InputSigningData>) =
+            inputs.into_iter().partition(|input_signing_data| {
+                let alias_transition = is_alias_transition(input_signing_data, outputs);
+                let (input_address, _) = input_signing_data
+                    .output
+                    .required_and_unlocked_address(
+                        time,
+                        input_signing_data.output_id(),
+                        alias_transition.map(|(alias_transition, _)| alias_transition),
+                    )
+                    // PANIC: safe to unwrap, because we filtered treasury outputs out before
+                    .unwrap();
+
+                input_address.is_ed25519()
             });
 
         for input in alias_nft_address_inputs {
-            let input_address = Address::try_from_bech32(&input.bech32_address);
+            let alias_transition = is_alias_transition(&input, outputs);
+            let (input_address, _) = input.output.required_and_unlocked_address(
+                time,
+                input.output_id(),
+                alias_transition.map(|(alias_transition, _)| alias_transition),
+            )?;
+
             match sorted_inputs.iter().position(|input_signing_data| match input_address {
-                Ok((_, unlock_address)) => match unlock_address {
-                    Address::Alias(unlock_address) => {
-                        if let Output::Alias(alias_output) = &input_signing_data.output {
-                            *unlock_address.alias_id() == alias_output.alias_id_non_null(input_signing_data.output_id())
-                        } else {
-                            false
-                        }
+                Address::Alias(unlock_address) => {
+                    if let Output::Alias(alias_output) = &input_signing_data.output {
+                        *unlock_address.alias_id() == alias_output.alias_id_non_null(input_signing_data.output_id())
+                    } else {
+                        false
                     }
-                    Address::Nft(unlock_address) => {
-                        if let Output::Nft(nft_output) = &input_signing_data.output {
-                            *unlock_address.nft_id() == nft_output.nft_id_non_null(input_signing_data.output_id())
-                        } else {
-                            false
-                        }
+                }
+                Address::Nft(unlock_address) => {
+                    if let Output::Nft(nft_output) = &input_signing_data.output {
+                        *unlock_address.nft_id() == nft_output.nft_id_non_null(input_signing_data.output_id())
+                    } else {
+                        false
                     }
-                    _ => false,
-                },
+                }
                 _ => false,
             }) {
                 Some(position) => {
@@ -304,10 +325,18 @@ impl InputSelection {
                     if let Some(alias_or_nft_address) = alias_or_nft_address {
                         // Check for existing outputs for this address, and insert before
                         match sorted_inputs.iter().position(|input_signing_data| {
-                            Address::try_from_bech32(&input_signing_data.bech32_address)
-                                .expect("safe to unwrap, we encoded it before")
-                                .1
-                                == alias_or_nft_address
+                            let alias_transition = is_alias_transition(input_signing_data, outputs);
+                            let (input_address, _) = input_signing_data
+                                .output
+                                .required_and_unlocked_address(
+                                    time,
+                                    input.output_id(),
+                                    alias_transition.map(|(alias_transition, _)| alias_transition),
+                                )
+                                // PANIC: safe to unwrap, because we filtered treasury outputs out before
+                                .unwrap();
+
+                            input_address == alias_or_nft_address
                         }) {
                             Some(position) => {
                                 // Insert before the output with this address required for unlocking
@@ -362,7 +391,7 @@ impl InputSelection {
         self.outputs.extend(storage_deposit_returns);
 
         Ok(Selected {
-            inputs: Self::sort_input_signing_data(self.selected_inputs)?,
+            inputs: Self::sort_input_signing_data(self.selected_inputs, &self.outputs, Some(self.timestamp))?,
             outputs: self.outputs,
             remainder,
         })

@@ -28,6 +28,7 @@ The Client to interact with nodes.
 - [prepareTransaction](Client.md#preparetransaction)
 - [storeMnemonic](Client.md#storemnemonic)
 - [signTransaction](Client.md#signtransaction)
+- [signatureUnlock](Client.md#signatureunlock)
 - [postBlockPayload](Client.md#postblockpayload)
 - [parseBech32Address](Client.md#parsebech32address)
 - [blockId](Client.md#blockid)
@@ -467,6 +468,26 @@ Sign a transaction
 #### Returns
 
 `Promise`<`PayloadTypes`\>
+
+___
+
+### signatureUnlock
+
+▸ **signatureUnlock**(`secretManager`, `inputSigningData`, `transactionEssenceHash`): `Promise`<`UnlockTypes`\>
+
+Create a signature unlock using the provided `secretManager`.
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `secretManager` | [`SecretManager`](../api_ref.md#secretmanager) |
+| `inputSigningData` | [`IInputSigningData`](../interfaces/IInputSigningData.md) |
+| `transactionEssenceHash` | `number`[] |
+
+#### Returns
+
+`Promise`<`UnlockTypes`\>
 
 ___
 

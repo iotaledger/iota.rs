@@ -5,13 +5,17 @@ use std::{collections::HashSet, str::FromStr};
 
 use iota_client::{
     api::input_selection::{Error, InputSelection},
-    block::{output::AliasId, protocol::protocol_parameters},
+    block::{
+        output::{AliasId, NftId},
+        protocol::protocol_parameters,
+    },
 };
 
 use crate::{
     addresses, build_inputs, build_outputs, is_remainder_or_return, unsorted_eq,
-    Build::{Alias, Basic},
+    Build::{Alias, Basic, Nft},
     ALIAS_ID_1, BECH32_ADDRESS_ALIAS_1, BECH32_ADDRESS_ED25519_0, BECH32_ADDRESS_ED25519_1, BECH32_ADDRESS_ED25519_2,
+    NFT_ID_1,
 };
 
 #[test]
@@ -711,4 +715,88 @@ fn expiration_expired_only_alias_addresses() {
 
     assert!(unsorted_eq(&selected.inputs, &inputs));
     assert_eq!(selected.outputs.len(), 2);
+}
+
+#[test]
+fn one_nft_output_expiration_unexpired() {
+    let protocol_parameters = protocol_parameters();
+    let nft_id_1 = NftId::from_str(NFT_ID_1).unwrap();
+
+    let inputs = build_inputs(vec![Nft(
+        2_000_000,
+        nft_id_1,
+        BECH32_ADDRESS_ED25519_1,
+        None,
+        None,
+        None,
+        None,
+        Some((BECH32_ADDRESS_ED25519_0, 150)),
+        None,
+    )]);
+    let outputs = build_outputs(vec![Nft(
+        2_000_000,
+        nft_id_1,
+        BECH32_ADDRESS_ED25519_1,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )]);
+
+    let selected = InputSelection::new(
+        inputs.clone(),
+        outputs.clone(),
+        addresses(vec![BECH32_ADDRESS_ED25519_1]),
+        protocol_parameters,
+    )
+    .timestamp(100)
+    .select()
+    .unwrap();
+
+    assert!(unsorted_eq(&selected.inputs, &inputs));
+    assert!(unsorted_eq(&selected.outputs, &outputs));
+}
+
+#[test]
+fn one_nft_output_expiration_expired() {
+    let protocol_parameters = protocol_parameters();
+    let nft_id_1 = NftId::from_str(NFT_ID_1).unwrap();
+
+    let inputs = build_inputs(vec![Nft(
+        2_000_000,
+        nft_id_1,
+        BECH32_ADDRESS_ED25519_1,
+        None,
+        None,
+        None,
+        None,
+        Some((BECH32_ADDRESS_ED25519_0, 50)),
+        None,
+    )]);
+    let outputs = build_outputs(vec![Nft(
+        2_000_000,
+        nft_id_1,
+        BECH32_ADDRESS_ED25519_1,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )]);
+
+    let selected = InputSelection::new(
+        inputs.clone(),
+        outputs.clone(),
+        addresses(vec![BECH32_ADDRESS_ED25519_0]),
+        protocol_parameters,
+    )
+    .timestamp(100)
+    .select()
+    .unwrap();
+
+    assert!(unsorted_eq(&selected.inputs, &inputs));
+    assert!(unsorted_eq(&selected.outputs, &outputs));
 }

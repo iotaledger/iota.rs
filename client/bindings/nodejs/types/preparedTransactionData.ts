@@ -42,11 +42,6 @@ export interface IInputSigningData {
      * The chain derived from seed, only for ed25519 addresses
      */
     chain?: ISegment[];
-    /**
-     * The bech32 encoded address, required because of alias outputs where we have multiple possible unlock
-     * conditions, because we otherwise don't know which one we need
-     */
-    bech32Address: string;
 }
 
 export interface IRemainder {

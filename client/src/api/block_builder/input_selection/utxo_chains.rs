@@ -212,7 +212,6 @@ impl<'a> ClientBlockBuilder<'a> {
                         address_index,
                     ])
                 }),
-                bech32_address: unlock_address.to_bech32(&bech32_hrp),
             });
         }
 

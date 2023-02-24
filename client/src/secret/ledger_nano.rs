@@ -26,10 +26,11 @@ use super::{types::InputSigningData, GenerateAddressOptions, SecretManage, Secre
 use crate::{
     api::input_selection::Error as InputSelectionError,
     secret::{
+        is_alias_transition,
         types::{LedgerApp, LedgerDeviceType},
         LedgerNanoStatus, PreparedTransactionData, RemainderData,
     },
-    Error, Result,
+    unix_timestamp_now, Error, Result,
 };
 
 /// Hardened const for the bip path.
@@ -139,7 +140,11 @@ pub fn needs_blind_signing(prepared_transaction: &PreparedTransactionData, buffe
 
 #[async_trait]
 impl SecretManageExt for LedgerSecretManager {
-    async fn sign_transaction_essence(&self, prepared_transaction: &PreparedTransactionData) -> crate::Result<Unlocks> {
+    async fn sign_transaction_essence(
+        &self,
+        prepared_transaction: &PreparedTransactionData,
+        time: Option<u32>,
+    ) -> crate::Result<Unlocks> {
         // lock the mutex to prevent multiple simultaneous requests to a ledger
         let _lock = self.mutex.lock().await;
 
@@ -307,7 +312,7 @@ impl SecretManageExt for LedgerSecretManager {
         // With blind signing the ledger only returns SignatureUnlocks, so we might have to merge them with
         // Alias/Nft/Reference unlocks
         if blind_signing {
-            unlocks = merge_unlocks(prepared_transaction, unlocks.into_iter())?;
+            unlocks = merge_unlocks(prepared_transaction, unlocks.into_iter(), time)?;
         }
 
         Ok(Unlocks::new(unlocks)?)
@@ -381,9 +386,12 @@ impl LedgerSecretManager {
 fn merge_unlocks(
     prepared_transaction_data: &PreparedTransactionData,
     mut unlocks: impl Iterator<Item = Unlock>,
+    time: Option<u32>,
 ) -> crate::Result<Vec<Unlock>> {
     // The hashed_essence gets signed
     let hashed_essence = prepared_transaction_data.essence.hash();
+
+    let time = time.unwrap_or_else(unix_timestamp_now);
 
     let mut merged_unlocks = Vec::new();
     let mut block_indexes = HashMap::<Address, usize>::new();
@@ -391,7 +399,12 @@ fn merge_unlocks(
     // Assuming inputs_data is ordered by address type
     for (current_block_index, input) in prepared_transaction_data.inputs_data.iter().enumerate() {
         // Get the address that is required to unlock the input
-        let (_, input_address) = Address::try_from_bech32(&input.bech32_address)?;
+        let TransactionEssence::Regular(regular) = &prepared_transaction_data.essence;
+        let alias_transition = is_alias_transition(input, regular.outputs()).map(|t| t.0);
+        let (input_address, _) =
+            input
+                .output
+                .required_and_unlocked_address(time, input.output_metadata.output_id(), alias_transition)?;
 
         // Check if we already added an [Unlock] for this address
         match block_indexes.get(&input_address) {

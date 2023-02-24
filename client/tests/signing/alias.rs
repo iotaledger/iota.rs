@@ -98,7 +98,7 @@ async fn sign_alias_state_transition() -> Result<()> {
     };
 
     let unlocks = secret_manager
-        .sign_transaction_essence(&prepared_transaction_data)
+        .sign_transaction_essence(&prepared_transaction_data, Some(0))
         .await?;
 
     assert_eq!(unlocks.len(), 1);
@@ -187,7 +187,7 @@ async fn sign_alias_governance_transition() -> Result<()> {
     };
 
     let unlocks = secret_manager
-        .sign_transaction_essence(&prepared_transaction_data)
+        .sign_transaction_essence(&prepared_transaction_data, Some(0))
         .await?;
 
     assert_eq!(unlocks.len(), 1);
@@ -209,7 +209,7 @@ async fn sign_alias_governance_transition() -> Result<()> {
 }
 
 #[tokio::test]
-async fn alias_reference_unlock() -> Result<()> {
+async fn alias_reference_unlocks() -> Result<()> {
     let secret_manager = SecretManager::try_from_mnemonic(&Client::generate_mnemonic()?)?;
 
     let bech32_address_0 = &secret_manager
@@ -243,22 +243,8 @@ async fn alias_reference_unlock() -> Result<()> {
                 0,
             ])),
         ),
-        Basic(
-            1_000_000,
-            alias_bech32_address,
-            None,
-            None,
-            None,
-            None,
-            None,
-            Some(Chain::from_u32_hardened(vec![
-                HD_WALLET_TYPE,
-                SHIMMER_COIN_TYPE,
-                0,
-                0,
-                0,
-            ])),
-        ),
+        Basic(1_000_000, alias_bech32_address, None, None, None, None, None, None),
+        Basic(1_000_000, alias_bech32_address, None, None, None, None, None, None),
     ]);
 
     let outputs = build_outputs(vec![
@@ -273,22 +259,7 @@ async fn alias_reference_unlock() -> Result<()> {
             None,
             None,
         ),
-        Basic(
-            1_000_000,
-            alias_bech32_address,
-            None,
-            None,
-            None,
-            None,
-            None,
-            Some(Chain::from_u32_hardened(vec![
-                HD_WALLET_TYPE,
-                SHIMMER_COIN_TYPE,
-                0,
-                0,
-                0,
-            ])),
-        ),
+        Basic(2_000_000, alias_bech32_address, None, None, None, None, None, None),
     ]);
 
     let essence = TransactionEssence::Regular(
@@ -313,12 +284,18 @@ async fn alias_reference_unlock() -> Result<()> {
     };
 
     let unlocks = secret_manager
-        .sign_transaction_essence(&prepared_transaction_data)
+        .sign_transaction_essence(&prepared_transaction_data, Some(0))
         .await?;
 
-    assert_eq!(unlocks.len(), 2);
+    assert_eq!(unlocks.len(), 3);
     assert_eq!((*unlocks).get(0).unwrap().kind(), SignatureUnlock::KIND);
     match (*unlocks).get(1).unwrap() {
+        Unlock::Alias(a) => {
+            assert_eq!(a.index(), 0);
+        }
+        _ => panic!("Invalid unlock"),
+    }
+    match (*unlocks).get(2).unwrap() {
         Unlock::Alias(a) => {
             assert_eq!(a.index(), 0);
         }

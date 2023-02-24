@@ -25,6 +25,7 @@ use async_trait::async_trait;
 use iota_types::block::{
     address::Address,
     output::Output,
+    payload::transaction::TransactionEssence,
     unlock::{AliasUnlock, NftUnlock, ReferenceUnlock, Unlock, Unlocks},
 };
 use zeroize::ZeroizeOnDrop;
@@ -38,8 +39,12 @@ use self::{mnemonic::MnemonicSecretManager, placeholder::PlaceholderSecretManage
 #[cfg(feature = "stronghold")]
 use crate::secret::types::StrongholdDto;
 use crate::{
-    api::{input_selection::Error as InputSelectionError, PreparedTransactionData, RemainderData},
+    api::{
+        input_selection::{is_alias_transition, Error as InputSelectionError},
+        PreparedTransactionData, RemainderData,
+    },
     secret::types::InputSigningData,
+    unix_timestamp_now,
 };
 
 /// The secret manager interface.
@@ -81,6 +86,7 @@ pub trait SecretManageExt {
     async fn sign_transaction_essence(
         &self,
         prepared_transaction_data: &PreparedTransactionData,
+        time: Option<u32>,
     ) -> crate::Result<Unlocks>;
 }
 
@@ -269,16 +275,25 @@ impl SecretManageExt for SecretManager {
     async fn sign_transaction_essence(
         &self,
         prepared_transaction_data: &PreparedTransactionData,
+        time: Option<u32>,
     ) -> crate::Result<Unlocks> {
         match self {
             #[cfg(feature = "stronghold")]
-            Self::Stronghold(_) => self.default_sign_transaction_essence(prepared_transaction_data).await,
+            Self::Stronghold(_) => {
+                self.default_sign_transaction_essence(prepared_transaction_data, time)
+                    .await
+            }
             #[cfg(feature = "ledger_nano")]
             Self::LedgerNano(secret_manager) => {
-                secret_manager.sign_transaction_essence(prepared_transaction_data).await
+                secret_manager
+                    .sign_transaction_essence(prepared_transaction_data, time)
+                    .await
             }
-            Self::Mnemonic(_) => self.default_sign_transaction_essence(prepared_transaction_data).await,
-            Self::Placeholder(_) => self.sign_transaction_essence(prepared_transaction_data).await,
+            Self::Mnemonic(_) => {
+                self.default_sign_transaction_essence(prepared_transaction_data, time)
+                    .await
+            }
+            Self::Placeholder(_) => self.sign_transaction_essence(prepared_transaction_data, time).await,
         }
     }
 }
@@ -298,6 +313,7 @@ impl SecretManager {
     async fn default_sign_transaction_essence<'a>(
         &self,
         prepared_transaction_data: &PreparedTransactionData,
+        time: Option<u32>,
     ) -> crate::Result<Unlocks> {
         // The hashed_essence gets signed
         let hashed_essence = prepared_transaction_data.essence.hash();
@@ -307,7 +323,13 @@ impl SecretManager {
         // Assuming inputs_data is ordered by address type
         for (current_block_index, input) in prepared_transaction_data.inputs_data.iter().enumerate() {
             // Get the address that is required to unlock the input
-            let (_, input_address) = Address::try_from_bech32(&input.bech32_address)?;
+            let TransactionEssence::Regular(regular) = &prepared_transaction_data.essence;
+            let alias_transition = is_alias_transition(input, regular.outputs()).map(|t| t.0);
+            let (input_address, _) = input.output.required_and_unlocked_address(
+                time.unwrap_or_else(unix_timestamp_now),
+                input.output_metadata.output_id(),
+                alias_transition,
+            )?;
 
             // Check if we already added an [Unlock] for this address
             match block_indexes.get(&input_address) {

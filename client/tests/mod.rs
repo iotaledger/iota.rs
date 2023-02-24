@@ -23,7 +23,6 @@ use iota_client::{
         },
         rand::{block::rand_block_id, transaction::rand_transaction_id},
     },
-    constants::SHIMMER_TESTNET_BECH32_HRP,
     secret::types::InputSigningData,
 };
 use primitive_types::U256;
@@ -35,6 +34,8 @@ const ALIAS_ID_2: &str = "0x2222222222222222222222222222222222222222222222222222
 const NFT_ID_0: &str = "0x0000000000000000000000000000000000000000000000000000000000000000";
 const NFT_ID_1: &str = "0x1111111111111111111111111111111111111111111111111111111111111111";
 const NFT_ID_2: &str = "0x2222222222222222222222222222222222222222222222222222222222222222";
+const NFT_ID_3: &str = "0x3333333333333333333333333333333333333333333333333333333333333333";
+const NFT_ID_4: &str = "0x4444444444444444444444444444444444444444444444444444444444444444";
 const TOKEN_ID_1: &str = "0x1111111111111111111111111111111111111111111111111111111111111111111111111111";
 const TOKEN_ID_2: &str = "0x2222222222222222222222222222222222222222222222222222222222222222222222222222";
 const BECH32_ADDRESS_REMAINDER: &str = "rms1qrut5ajyfrtgjs325kd9chwfwyyy2z3fewy4vgy0vvdtf2pr8prg5u3zwjn";
@@ -65,6 +66,7 @@ enum Build<'a> {
         Option<&'a str>,
         Option<&'a str>,
         Option<(&'a str, u64)>,
+        Option<(&'a str, u32)>,
         Option<Chain>,
     ),
     Alias(
@@ -136,6 +138,7 @@ fn build_basic_output(
     builder.finish_output(TOKEN_SUPPLY).unwrap()
 }
 
+#[allow(clippy::too_many_arguments)]
 fn build_nft_output(
     amount: u64,
     nft_id: NftId,
@@ -144,6 +147,7 @@ fn build_nft_output(
     bech32_sender: Option<&str>,
     bech32_issuer: Option<&str>,
     sdruc: Option<(&str, u64)>,
+    expiration: Option<(&str, u32)>,
 ) -> Output {
     let mut builder = NftOutputBuilder::new_with_amount(amount, nft_id)
         .unwrap()
@@ -179,6 +183,12 @@ fn build_nft_output(
                 TOKEN_SUPPLY,
             )
             .unwrap(),
+        ));
+    }
+
+    if let Some((address, timestamp)) = expiration {
+        builder = builder.add_unlock_condition(UnlockCondition::Expiration(
+            ExpirationUnlockCondition::new(Address::try_from_bech32(address).unwrap().1, timestamp).unwrap(),
         ));
     }
 
@@ -256,7 +266,7 @@ fn build_foundry_output(
     builder.finish_output(TOKEN_SUPPLY).unwrap()
 }
 
-fn build_output_inner(build: Build) -> (Output, String, Option<Chain>) {
+fn build_output_inner(build: Build) -> (Output, Option<Chain>) {
     match build {
         Build::Basic(amount, bech32_address, native_tokens, bech32_sender, sdruc, timelock, expiration, chain) => (
             build_basic_output(
@@ -268,10 +278,19 @@ fn build_output_inner(build: Build) -> (Output, String, Option<Chain>) {
                 timelock,
                 expiration,
             ),
-            bech32_address.to_string(),
             chain,
         ),
-        Build::Nft(amount, nft_id, bech32_address, native_tokens, bech32_sender, bech32_issuer, sdruc, chain) => (
+        Build::Nft(
+            amount,
+            nft_id,
+            bech32_address,
+            native_tokens,
+            bech32_sender,
+            bech32_issuer,
+            sdruc,
+            expiration,
+            chain,
+        ) => (
             build_nft_output(
                 amount,
                 nft_id,
@@ -280,8 +299,8 @@ fn build_output_inner(build: Build) -> (Output, String, Option<Chain>) {
                 bech32_sender,
                 bech32_issuer,
                 sdruc,
+                expiration,
             ),
-            bech32_address.to_string(),
             chain,
         ),
         Build::Alias(
@@ -305,12 +324,10 @@ fn build_output_inner(build: Build) -> (Output, String, Option<Chain>) {
                 bech32_sender,
                 bech32_issuer,
             ),
-            state_address.to_string(),
             chain,
         ),
         Build::Foundry(amount, alias_id, serial_number, token_scheme, native_tokens) => (
             build_foundry_output(amount, alias_id, serial_number, token_scheme, native_tokens),
-            Address::Alias(AliasAddress::new(alias_id)).to_bech32(SHIMMER_TESTNET_BECH32_HRP),
             None,
         ),
     }
@@ -320,7 +337,7 @@ fn build_inputs(outputs: Vec<Build>) -> Vec<InputSigningData> {
     outputs
         .into_iter()
         .map(|build| {
-            let (output, bech32_address, chain) = build_output_inner(build);
+            let (output, chain) = build_output_inner(build);
 
             InputSigningData {
                 output,
@@ -336,7 +353,6 @@ fn build_inputs(outputs: Vec<Build>) -> Vec<InputSigningData> {
                     0,
                 ),
                 chain,
-                bech32_address,
             }
         })
         .collect()

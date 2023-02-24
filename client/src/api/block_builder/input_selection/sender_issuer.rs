@@ -79,7 +79,6 @@ impl<'a> ClientBlockBuilder<'a> {
                                     internal as u32,
                                     address_index,
                                 ])),
-                                bech32_address: sender_or_issuer_address.to_bech32(&bech32_hrp),
                             });
                             found_output = true;
                             break;
@@ -142,7 +141,6 @@ impl<'a> ClientBlockBuilder<'a> {
                                         address_index,
                                     ])
                                 }),
-                                bech32_address: unlock_address.to_bech32(&bech32_hrp),
                             });
                         }
                     }
@@ -202,7 +200,6 @@ impl<'a> ClientBlockBuilder<'a> {
                                         address_index,
                                     ])
                                 }),
-                                bech32_address: unlock_address.to_bech32(&bech32_hrp),
                             });
                         }
                     }

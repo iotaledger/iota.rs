@@ -26,6 +26,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Changes from the Rust library;
 - Merged `IAuth::{username, password}` into `IAuth::basicAuthNamePwd`;
 
+### Removed
+
+- `IInputSigningData::bech32Address`;
+
 ## 1.0.0-alpha.2 - 2023-02-08
 
 ### Added
