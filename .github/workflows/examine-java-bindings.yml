@@ -67,9 +67,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install libudev-dev libusb-1.0-0-dev
 
-      - name: Start private tangle
-        uses: './.github/actions/private-tangle/setup'
-
       - name: Set Up Java ${{ matrix.java }}
         uses: actions/setup-java@v3
         with:
@@ -77,15 +74,28 @@ jobs:
           distribution: 'temurin'
       - name: Validate Gradle wrapper
         uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b
-      - name: Run Gradle Test
+
+      - name: Start private tangle
+        uses: './.github/actions/private-tangle/setup'
+        if: ${{ !startsWith(matrix.os, 'windows') }}
+
+      - name: Run Gradle Test Windows
+        if: ${{ startsWith(matrix.os, 'windows') }}
         working-directory: client/bindings/java/
         run: |
           chmod +x gradlew
-          # Only run test that doesn't require a node 
+          # Only run test that doesn't require a node because we can't use the private tangle on windows
+          ./gradlew test -i --tests "*testAddressDerivation"
+
+      - name: Run Gradle Test
+        if: ${{ !startsWith(matrix.os, 'windows') }}
+        working-directory: client/bindings/java/
+        run: |
+          chmod +x gradlew
           ./gradlew test -i
 
       - name: Tear down private tangle
-        if: always()
+        if: ${{ !startsWith(matrix.os, 'windows') }}
         uses: './.github/actions/private-tangle/tear-down'
 
   lint:
