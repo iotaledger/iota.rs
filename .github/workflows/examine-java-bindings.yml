@@ -75,33 +75,27 @@ jobs:
       - name: Validate Gradle wrapper
         uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b
 
-      - name: Install docker (macos)
-        if: ${{ startsWith(matrix.os, 'macos') }}
-        run: |
-          brew install docker
-          colima start
-
       - name: Start private tangle
         uses: './.github/actions/private-tangle/setup'
-        if: ${{ !startsWith(matrix.os, 'windows') }}
+        if: ${{ startsWith(matrix.os, 'ubuntu') }}
 
-      - name: Run Gradle Test Windows
-        if: ${{ startsWith(matrix.os, 'windows') }}
+      - name: Run Gradle Test (macos, windows)
+        if: ${{ !startsWith(matrix.os, 'ubuntu') }}
         working-directory: client/bindings/java/
         run: |
           chmod +x gradlew
-          # Only run test that doesn't require a node because we can't use the private tangle on windows
+          # Only run test that doesn't require a node because we can't use the private tangle script on macos and windows
           ./gradlew test -i --tests "*testAddressDerivation"
 
       - name: Run Gradle Test
-        if: ${{ !startsWith(matrix.os, 'windows') }}
+        if: ${{ startsWith(matrix.os, 'ubuntu') }}
         working-directory: client/bindings/java/
         run: |
           chmod +x gradlew
           ./gradlew test -i
 
       - name: Tear down private tangle
-        if: ${{ !startsWith(matrix.os, 'windows') }}
+        if: ${{ startsWith(matrix.os, 'ubuntu') }}
         uses: './.github/actions/private-tangle/tear-down'
 
   lint:
