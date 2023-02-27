@@ -19,7 +19,7 @@ lazy_static! {
 
 #[no_mangle]
 pub extern "system" fn Java_org_iota_apis_NativeApi_createMessageHandler(
-    env: JNIEnv,
+    mut env: JNIEnv,
     // this is the class that owns our
     // static method. Not going to be
     // used, but still needs to have
@@ -27,7 +27,7 @@ pub extern "system" fn Java_org_iota_apis_NativeApi_createMessageHandler(
     _class: JClass,
     config: JString,
 ) {
-    let config: String = match env.get_string(config) {
+    let config: String = match env.get_string(&config) {
         Ok(jstring) => jstring.into(),
         Err(err) => {
             env.throw_new("java/lang/Exception", err.to_string()).unwrap();
@@ -64,7 +64,7 @@ pub extern "system" fn Java_org_iota_apis_NativeApi_createMessageHandler(
 // This keeps rust from "mangling" the name and making it unique for this crate.
 #[no_mangle]
 pub extern "system" fn Java_org_iota_apis_NativeApi_sendCommand(
-    env: JNIEnv,
+    mut env: JNIEnv,
     // this is the class that owns our
     // static method. Not going to be
     // used, but still needs to have
@@ -76,7 +76,7 @@ pub extern "system" fn Java_org_iota_apis_NativeApi_sendCommand(
         return std::ptr::null_mut();
     }
 
-    let command: String = env.get_string(command).expect("Couldn't get java string!").into();
+    let command: String = env.get_string(&command).expect("Couldn't get java string!").into();
 
     let message = serde_json::from_str::<Message>(&command).unwrap();
 
