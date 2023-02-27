@@ -69,20 +69,23 @@ impl SecretManage for MnemonicSecretManager {
         essence_hash: &[u8; 32],
         _: &Option<RemainderData>,
     ) -> crate::Result<Unlock> {
+        // The signature unlock block needs to sign the hash of the entire transaction essence of the
+        // transaction payload
+        let chain = input.chain.clone().unwrap();
+        let ed25519_sig = self.sign_ed25519(essence_hash, &chain).await.unwrap();
+
+        Ok(Unlock::Signature(SignatureUnlock::new(Signature::Ed25519(ed25519_sig))))
+    }
+
+    async fn sign_ed25519(&self, msg: &[u8], chain: &Chain) -> crate::Result<Ed25519Signature> {
         // Get the private and public key for this Ed25519 address
         let private_key = self
             .0
-            .derive(Curve::Ed25519, &input.chain.clone().expect("no chain in ed25519 input"))?
+            .derive(Curve::Ed25519, &chain)?
             .secret_key();
         let public_key = private_key.public_key().to_bytes();
-
-        // The signature unlock block needs to sign the hash of the entire transaction essence of the
-        // transaction payload
-        let signature = private_key.sign(essence_hash).to_bytes();
-
-        Ok(Unlock::Signature(SignatureUnlock::new(Signature::Ed25519(
-            Ed25519Signature::new(public_key, signature),
-        ))))
+        let signature = private_key.sign(msg).to_bytes();
+        Ok(Ed25519Signature::new(public_key, signature))
     }
 }
 

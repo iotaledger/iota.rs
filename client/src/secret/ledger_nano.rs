@@ -8,6 +8,7 @@
 use std::{collections::HashMap, ops::Range};
 
 use async_trait::async_trait;
+use crypto::keys::slip10::Chain;
 use iota_ledger_nano::{
     get_app_config, get_buffer_size, get_ledger, get_opened_app, LedgerBIP32Index, Packable as LedgerNanoPackable,
     TransportTypes,
@@ -21,6 +22,7 @@ use iota_types::block::{
 };
 use packable::{unpacker::SliceUnpacker, Packable, PackableExt};
 use tokio::sync::Mutex;
+use iota_types::block::signature::Ed25519Signature;
 
 use super::{types::InputSigningData, GenerateAddressOptions, SecretManage, SecretManageExt};
 use crate::{
@@ -106,6 +108,10 @@ impl SecretManage for LedgerSecretManager {
         _metadata: &Option<RemainderData>,
     ) -> crate::Result<Unlock> {
         panic!("signature_unlock is not supported with ledger")
+    }
+
+    async fn sign_ed25519(&self, _msg: &[u8], _chain: &Chain) -> crate::Result<Ed25519Signature> {
+        panic!("sign_ed25519 is not supported with ledger")
     }
 }
 

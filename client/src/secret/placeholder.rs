@@ -6,10 +6,12 @@
 use std::ops::Range;
 
 use async_trait::async_trait;
+use crypto::keys::slip10::Chain;
 use iota_types::block::{
     address::Address,
     unlock::{Unlock, Unlocks},
 };
+use iota_types::block::signature::Ed25519Signature;
 
 use super::{types::InputSigningData, GenerateAddressOptions, SecretManage, SecretManageExt};
 use crate::secret::{PreparedTransactionData, RemainderData};
@@ -37,6 +39,13 @@ impl SecretManage for PlaceholderSecretManager {
         _essence_hash: &[u8; 32],
         _: &Option<RemainderData>,
     ) -> crate::Result<Unlock> {
+        return Err(crate::Error::PlaceholderSecretManager);
+    }
+
+    async fn sign_ed25519(&self,
+                          _msg: &[u8],
+                          _chain: &Chain,
+    ) -> crate::Result<Ed25519Signature> {
         return Err(crate::Error::PlaceholderSecretManager);
     }
 }

@@ -22,6 +22,7 @@ use std::time::Duration;
 use std::{collections::HashMap, ops::Range, str::FromStr};
 
 use async_trait::async_trait;
+use crypto::keys::slip10::Chain;
 use iota_types::block::{
     address::Address,
     output::Output,
@@ -29,6 +30,7 @@ use iota_types::block::{
     unlock::{AliasUnlock, NftUnlock, ReferenceUnlock, Unlock, Unlocks},
 };
 use zeroize::ZeroizeOnDrop;
+use iota_types::block::signature::Ed25519Signature;
 
 #[cfg(feature = "ledger_nano")]
 use self::ledger_nano::LedgerSecretManager;
@@ -69,6 +71,9 @@ pub trait SecretManage: Send + Sync {
         essence_hash: &[u8; 32],
         remainder: &Option<RemainderData>,
     ) -> crate::Result<Unlock>;
+
+    /// Signs `msg` using the given `chain`.
+    async fn sign_ed25519(&self, msg: &[u8], chain: &Chain) -> crate::Result<Ed25519Signature>;
 }
 
 /// An extension to [`SecretManager`].
@@ -266,6 +271,17 @@ impl SecretManage for SecretManager {
             Self::LedgerNano(secret_manager) => secret_manager.signature_unlock(input, essence_hash, metadata).await,
             Self::Mnemonic(secret_manager) => secret_manager.signature_unlock(input, essence_hash, metadata).await,
             Self::Placeholder(secret_manager) => secret_manager.signature_unlock(input, essence_hash, metadata).await,
+        }
+    }
+
+    async fn sign_ed25519(&self, msg: &[u8], chain: &Chain) -> crate::Result<Ed25519Signature> {
+        match self {
+            #[cfg(feature = "stronghold")]
+            Self::Stronghold(secret_manager) => secret_manager.sign_ed25519(msg, chain).await,
+            #[cfg(feature = "ledger_nano")]
+            Self::LedgerNano(secret_manager) => secret_manager.sign_ed25519(msg, chain).await,
+            Self::Mnemonic(secret_manager) => secret_manager.sign_ed25519(msg, chain).await,
+            Self::Placeholder(secret_manager) => secret_manager.sign_ed25519(msg, chain).await,
         }
     }
 }
