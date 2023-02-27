@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 mod input_selection;
+#[cfg(feature = "mqtt")]
 mod mqtt;
 mod signing;
 
