@@ -12,5 +12,5 @@ export interface Burn {
     /** Foundries to burn */
     foundries?: string[];
     /** Amounts of native tokens to burn */
-    nativeTokens?: INativeToken;
+    nativeTokens?: INativeToken[];
 }
