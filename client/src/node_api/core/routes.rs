@@ -186,9 +186,10 @@ impl Client {
                             }
                             Err(e) => {
                                 // reset local PoW state
-                                let mut client_network_info =
-                                    self.network_info.write().map_err(|_| crate::Error::PoisonError)?;
-                                client_network_info.local_pow = false;
+                                self.network_info
+                                    .write()
+                                    .map_err(|_| crate::Error::PoisonError)?
+                                    .local_pow = false;
                                 return Err(e);
                             }
                         };
@@ -255,9 +256,10 @@ impl Client {
                             }
                             Err(e) => {
                                 // reset local PoW state
-                                let mut client_network_info =
-                                    self.network_info.write().map_err(|_| crate::Error::PoisonError)?;
-                                client_network_info.local_pow = false;
+                                self.network_info
+                                    .write()
+                                    .map_err(|_| crate::Error::PoisonError)?
+                                    .local_pow = false;
                                 return Err(e);
                             }
                         };

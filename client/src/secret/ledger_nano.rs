@@ -291,6 +291,7 @@ impl SecretManageExt for LedgerSecretManager {
 
         // sign
         let signature_bytes = ledger.sign(input_len as u16)?;
+        drop(ledger);
         let mut unpacker = SliceUnpacker::new(&signature_bytes);
 
         // unpack signature to unlocks
