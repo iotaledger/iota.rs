@@ -28,7 +28,7 @@ import java.util.Map;
 
 public class Client extends NativeApi {
 
-    private static final String TESTNET_FAUCET_URL = "https://faucet.testnet.shimmer.network/api/enqueue";
+    private static final String TESTNET_FAUCET_URL = "http://localhost:8091/api/enqueue";
 
     private NodeCoreApi nodeCoreApi;
     private NodeIndexerApi nodeIndexerApi;

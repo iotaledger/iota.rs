@@ -22,7 +22,7 @@ import org.junit.jupiter.api.BeforeEach;
 
 public abstract class ApiTest {
 
-    protected static final String DEFAULT_TESTNET_NODE_URL = "https://api.testnet.shimmer.network";
+    protected static final String DEFAULT_TESTNET_NODE_URL = "http://localhost:14265";
     protected Client client;
     protected ClientConfig config = new ClientConfig().withNodes(new String[] { DEFAULT_TESTNET_NODE_URL }).withIgnoreNodeHealth(false);
 

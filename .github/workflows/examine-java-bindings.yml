@@ -67,6 +67,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install libudev-dev libusb-1.0-0-dev
 
+      - name: Start private tangle
+        uses: './.github/actions/private-tangle/setup'
+
       - name: Set Up Java ${{ matrix.java }}
         uses: actions/setup-java@v3
         with:
@@ -79,7 +82,11 @@ jobs:
         run: |
           chmod +x gradlew
           # Only run test that doesn't require a node 
-          ./gradlew test -i --tests "*testAddressDerivation"
+          ./gradlew test -i
+
+      - name: Tear down private tangle
+        if: always()
+        uses: './.github/actions/private-tangle/tear-down'
 
   lint:
     name: Lint
