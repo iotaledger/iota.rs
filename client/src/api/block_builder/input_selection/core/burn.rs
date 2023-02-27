@@ -111,28 +111,32 @@ impl Burn {
 #[serde(rename_all = "camelCase")]
 pub struct BurnDto {
     /// Aliases to burn.
-    pub(crate) aliases: HashSet<AliasId>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub(crate) aliases: Option<HashSet<AliasId>>,
     /// NFTs to burn.
-    pub(crate) nfts: HashSet<NftId>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub(crate) nfts: Option<HashSet<NftId>>,
     /// Foundries to burn.
-    pub(crate) foundries: HashSet<FoundryId>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub(crate) foundries: Option<HashSet<FoundryId>>,
     /// Amounts of native tokens to burn.
     /// `hashbrown::HashMap` to allow seamless operations with `NativeTokens`.
-    pub(crate) native_tokens: HashMap<TokenId, U256Dto>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub(crate) native_tokens: Option<HashMap<TokenId, U256Dto>>,
 }
 
 impl From<&Burn> for BurnDto {
     fn from(value: &Burn) -> Self {
         Self {
-            aliases: value.aliases.clone(),
-            nfts: value.nfts.clone(),
-            foundries: value.foundries.clone(),
-            native_tokens: HashMap::from_iter(
+            aliases: (!value.aliases.is_empty()).then_some(value.aliases.clone()),
+            nfts: (!value.nfts.is_empty()).then_some(value.nfts.clone()),
+            foundries: (!value.foundries.is_empty()).then_some(value.foundries.clone()),
+            native_tokens: (!value.native_tokens.is_empty()).then_some(HashMap::from_iter(
                 value
                     .native_tokens
                     .iter()
                     .map(|(token_id, amount)| (*token_id, U256Dto::from(amount))),
-            ),
+            )),
         }
     }
 }
@@ -142,15 +146,21 @@ impl TryFrom<&BurnDto> for Burn {
 
     fn try_from(value: &BurnDto) -> Result<Self, Self::Error> {
         Ok(Self {
-            aliases: value.aliases.clone(),
-            nfts: value.nfts.clone(),
-            foundries: value.foundries.clone(),
+            aliases: value.aliases.clone().unwrap_or_default(),
+            nfts: value.nfts.clone().unwrap_or_default(),
+            foundries: value.foundries.clone().unwrap_or_default(),
             native_tokens: value
                 .native_tokens
-                .iter()
-                .map(|(token_id, amount)| U256::try_from(amount).map(|amount| (*token_id, amount)))
-                .collect::<Result<hashbrown::HashMap<_, _>, _>>()
-                .map_err(|_| DtoError::InvalidField("native_tokens"))?,
+                .as_ref()
+                .map(|native_tokens| {
+                    native_tokens
+                        .iter()
+                        .map(|(token_id, amount)| U256::try_from(amount).map(|amount| (*token_id, amount)))
+                        .collect::<Result<hashbrown::HashMap<_, _>, _>>()
+                })
+                .transpose()
+                .map_err(|_| DtoError::InvalidField("native_tokens"))?
+                .unwrap_or_default(),
         })
     }
 }

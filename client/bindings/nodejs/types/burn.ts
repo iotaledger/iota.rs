@@ -6,11 +6,11 @@ import type { INativeToken } from '@iota/types';
 /** A DTO for [`Burn`] */
 export interface Burn {
     /** Aliases to burn */
-    aliases: string[];
+    aliases?: string[];
     /** NFTs to burn */
-    nfts: string[];
+    nfts?: string[];
     /** Foundries to burn */
-    foundries: string[];
+    foundries?: string[];
     /** Amounts of native tokens to burn */
-    nativeTokens: INativeToken;
+    nativeTokens?: INativeToken[];
 }

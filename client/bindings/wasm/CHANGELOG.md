@@ -25,6 +25,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Changes from the Rust library;
 - Merged `IAuth::{username, password}` into `IAuth::basicAuthNamePwd`;
+- `Burn` fields are now optional;
+- `Burn::nativeTokens` is now an array;
 
 ### Removed
 
