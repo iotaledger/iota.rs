@@ -128,31 +128,15 @@ pub struct BurnDto {
 impl From<&Burn> for BurnDto {
     fn from(value: &Burn) -> Self {
         Self {
-            aliases: if value.aliases.is_empty() {
-                None
-            } else {
-                Some(value.aliases.clone())
-            },
-            nfts: if value.nfts.is_empty() {
-                None
-            } else {
-                Some(value.nfts.clone())
-            },
-            foundries: if value.foundries.is_empty() {
-                None
-            } else {
-                Some(value.foundries.clone())
-            },
-            native_tokens: if value.native_tokens.is_empty() {
-                None
-            } else {
-                Some(HashMap::from_iter(
-                    value
-                        .native_tokens
-                        .iter()
-                        .map(|(token_id, amount)| (*token_id, U256Dto::from(amount))),
-                ))
-            },
+            aliases: (!value.aliases.is_empty()).then_some(value.aliases.clone()),
+            nfts: (!value.nfts.is_empty()).then_some(value.nfts.clone()),
+            foundries: (!value.foundries.is_empty()).then_some(value.foundries.clone()),
+            native_tokens: (!value.native_tokens.is_empty()).then_some(HashMap::from_iter(
+                value
+                    .native_tokens
+                    .iter()
+                    .map(|(token_id, amount)| (*token_id, U256Dto::from(amount))),
+            )),
         }
     }
 }
