@@ -78,7 +78,8 @@ jobs:
         working-directory: client/bindings/java/
         run: |
           chmod +x gradlew
-          ./gradlew test -i
+          # Only run test that doesn't require a node 
+          ./gradlew test -i --tests "*testAddressDerivation"
 
   lint:
     name: Lint
