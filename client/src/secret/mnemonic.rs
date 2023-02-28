@@ -81,7 +81,7 @@ impl SecretManage for MnemonicSecretManager {
         // Get the private and public key for this Ed25519 address
         let private_key = self
             .0
-            .derive(Curve::Ed25519, &chain)?
+            .derive(Curve::Ed25519, chain)?
             .secret_key();
         let public_key = private_key.public_key().to_bytes();
         let signature = private_key.sign(msg).to_bytes();
