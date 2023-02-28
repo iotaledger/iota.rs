@@ -12,7 +12,7 @@ use serde::{Serialize, Serializer};
 use crate::api::input_selection::Requirement;
 
 /// Errors related to input selection.
-#[derive(Debug, thiserror::Error, Serialize)]
+#[derive(Debug, Eq, PartialEq, thiserror::Error, Serialize)]
 #[serde(tag = "type", content = "error", rename_all = "camelCase")]
 pub enum Error {
     /// Block error.

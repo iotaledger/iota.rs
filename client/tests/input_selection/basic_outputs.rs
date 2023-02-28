@@ -11,6 +11,7 @@ use iota_client::{
         protocol::protocol_parameters,
     },
 };
+use packable::bounded::TryIntoBoundedU16Error;
 
 use crate::{
     addresses, build_inputs, build_outputs, is_remainder_or_return, unsorted_eq,
@@ -1230,5 +1231,106 @@ fn single_mandatory_input() {
     .unwrap();
 
     assert!(unsorted_eq(&selected.inputs, &inputs));
+    assert!(unsorted_eq(&selected.outputs, &outputs));
+}
+
+#[test]
+fn too_many_inputs() {
+    let protocol_parameters = protocol_parameters();
+
+    // 129 inputs that would be required for the amount, but that's above max inputs
+    let inputs = build_inputs(vec![
+        Basic(
+            1_000_000,
+            BECH32_ADDRESS_ED25519_0,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+        );
+        129
+    ]);
+
+    let outputs = build_outputs(vec![Basic(
+        129_000_000,
+        BECH32_ADDRESS_ED25519_0,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )]);
+
+    let selected = InputSelection::new(
+        inputs,
+        outputs.clone(),
+        addresses(vec![BECH32_ADDRESS_ED25519_0]),
+        protocol_parameters,
+    )
+    .select();
+
+    assert_eq!(
+        selected.unwrap_err(),
+        iota_client::api::input_selection::Error::Block(iota_types::block::Error::InvalidInputCount(
+            TryIntoBoundedU16Error::Truncated(129)
+        ))
+    )
+}
+
+#[test]
+fn more_than_max_inputs_only_one_needed() {
+    let protocol_parameters = protocol_parameters();
+
+    // 1000 inputs where 129 would be needed for the required amount which is above the max inputs
+    let mut inputs = build_inputs(vec![
+        Basic(
+            1_000_000,
+            BECH32_ADDRESS_ED25519_0,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+        );
+        1000
+    ]);
+    // Add the needed input
+    let needed_input = build_inputs(vec![Basic(
+        129_000_000,
+        BECH32_ADDRESS_ED25519_0,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )]);
+    inputs.push(needed_input[0].clone());
+
+    let outputs = build_outputs(vec![Basic(
+        129_000_000,
+        BECH32_ADDRESS_ED25519_0,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )]);
+
+    let selected = InputSelection::new(
+        inputs,
+        outputs.clone(),
+        addresses(vec![BECH32_ADDRESS_ED25519_0]),
+        protocol_parameters,
+    )
+    .select()
+    .unwrap();
+
+    assert!(unsorted_eq(&selected.inputs, &needed_input));
     assert!(unsorted_eq(&selected.outputs, &outputs));
 }

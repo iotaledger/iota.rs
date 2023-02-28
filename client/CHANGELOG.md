@@ -43,6 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `SecretManager::{try_from_mnemonic, try_from_hex_seed}`;
 - Derive `Serialize` for `GetAddressesBuilderOptions`, `ClientBlockBuilderOutputAddress`, `ClientBlockBuilderOptions` and `Message`;
+- Derive `Eq, PartialEq` for `input_select::Error`;
 
 ### Changed
 
@@ -73,6 +74,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ISA does not select aliases it can't unlock for amount;
 - Regex of several MQTT topics;
 - ISA makes sure the address is owned on alias Ed25519 requirements;
+- ISA will not select more than max inputs;
 
 ## 2.0.1-rc.6 - 2023-02-08
 
