@@ -3,8 +3,8 @@ const fs = require('fs')
 const { lintAll } = require('./lints')
 const generatePackage = require('./utils/generatePackage');
 
-const rustPackageName = "iota-client-wasm";
-const wasmFilename = "iota-client-wasm_bg.wasm";
+const rustPackageName = "iota_client_wasm";
+const wasmFilename = "iota_client_wasm_bg.wasm";
 
 const RELEASE_FOLDER = path.join(__dirname, '../web/wasm/');
 const entryFilePath = path.join(RELEASE_FOLDER, rustPackageName + '.js');
@@ -60,4 +60,4 @@ fs.writeFileSync(path.join(RELEASE_FOLDER + "../", 'package.json'), JSON.stringi
 
 // Export the Wasm init() function from `index.ts.
 const indexFile = path.join(__dirname, "..", "out", "lib", "index.ts");
-fs.writeFileSync(indexFile, "// @ts-ignore\nexport { init } from '../wasm/iota-client-wasm';", { flag: 'a' });
+fs.writeFileSync(indexFile, "// @ts-ignore\nexport { init } from '../wasm/iota_client_wasm';", { flag: 'a' });

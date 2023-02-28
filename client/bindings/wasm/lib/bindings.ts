@@ -7,6 +7,6 @@
 // Import needs to be in a single line, otherwise it breaks
 // prettier-ignore
 // @ts-ignore: path is set to match runtime transpiled js path when bundled.
-import { initLogger, sendMessageAsync, messageHandlerNew, listen } from '../wasm/iota-client-wasm';
+import { initLogger, sendMessageAsync, messageHandlerNew, listen } from '../wasm/iota_client_wasm';
 
 export { initLogger, sendMessageAsync, messageHandlerNew, listen };
