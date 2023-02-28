@@ -1,7 +1,5 @@
-[workspace]
-
 [package]
-name = "client_wasm"
+name = "iota-client-wasm"
 version = "0.1.0"
 authors = [ "IOTA Stiftung" ]
 edition = "2021"

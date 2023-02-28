@@ -1,7 +1,5 @@
-[workspace]
-
 [package]
-name = "iota-client"
+name = "iota-client-python"
 version = "1.0.0-rc.3"
 authors = [ "IOTA Stiftung" ]
 edition = "2021"

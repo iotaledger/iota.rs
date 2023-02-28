@@ -2,6 +2,10 @@
 resolver = "2"
 members = [
 	"client",
+	"client/bindings/java/lib/native",
+	"client/bindings/nodejs",
+	"client/bindings/python",
+	"client/bindings/wasm",
 	"pow",
 	"types",
 ]
