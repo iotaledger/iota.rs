@@ -198,32 +198,3 @@ jobs:
           args: --template .license_template
 
       # TODO: Check the Java code too
-
-  audit:
-    name: Perform Security Audit
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout the Source Code
-        uses: actions/checkout@v3
-
-      - name: Install Cargo-audit with Nightly Rust
-        uses: ./.github/actions/setup-rust
-        with:
-          toolchain: nightly
-          install: cargo-audit
-          cache: true
-          cache-job-id: ${{ github.workflow }}-${{ github.job }}
-          cache-hash: ${{ hashFiles('.github/workflows/examine-java-bindings.yml') }}
-
-      - name: Run Cargo Audit
-        uses: actions-rs/cargo@v1
-        with:
-          command: audit
-          # The ignored security advisories:
-          #
-          # - RUSTSEC-2021-0145: `atty` potential unaligned read.
-          #   - Waiting for https://github.com/mackwic/colored/pull/122 to be merged.
-          args: --file client/bindings/java/lib/native/Cargo.lock --deny warnings --ignore RUSTSEC-2021-0145
-
-      # TODO: Check the Java code too
