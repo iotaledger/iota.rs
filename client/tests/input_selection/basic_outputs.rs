@@ -1266,7 +1266,7 @@ fn too_many_inputs() {
 
     let selected = InputSelection::new(
         inputs,
-        outputs.clone(),
+        outputs,
         addresses(vec![BECH32_ADDRESS_ED25519_0]),
         protocol_parameters,
     )
