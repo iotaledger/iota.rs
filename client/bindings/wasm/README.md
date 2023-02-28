@@ -61,7 +61,7 @@ See the [Node.js examples](../nodejs/examples) for more demonstrations, the only
 
 Unlike Node.js, a few more steps are required to use this in the browser.
 
-The library loads the compiled Wasm file with an HTTP GET request, so the `client_wasm_bg.wasm` file must be copied to the root of the distribution folder.
+The library loads the compiled Wasm file with an HTTP GET request, so the `iota-client-wasm_bg.wasm` file must be copied to the root of the distribution folder.
 
 A bundler such as [webpack](https://webpack.js.org/) or [rollup](https://rollupjs.org/) is recommended.
 
@@ -84,9 +84,9 @@ import copy from 'rollup-plugin-copy'
 // Add the copy plugin to the `plugins` array:
 copy({
   targets: [{
-    src: 'node_modules/@iota/client-wasm/web/wasm/client_wasm_bg.wasm',
+    src: 'node_modules/@iota/client-wasm/web/wasm/iota-client-wasm_bg.wasm',
     dest: 'public',
-    rename: 'client_wasm_bg.wasm'
+    rename: 'iota-client-wasm_bg.wasm'
   }]
 })
 ```
@@ -117,8 +117,8 @@ plugins: [
     new CopyWebPlugin({
       patterns: [
         {
-          from: 'node_modules/@iota/client-wasm/web/wasm/client_wasm_bg.wasm',
-          to: 'client_wasm_bg.wasm'
+          from: 'node_modules/@iota/client-wasm/web/wasm/iota-client-wasm_bg.wasm',
+          to: 'iota-client-wasm_bg.wasm'
         }
       ]
     }),
@@ -139,8 +139,8 @@ init().then(() => {
   client.getInfo().then(console.log).catch(console.error);
 }).catch(console.error);
 
-// Default path to load is "client_wasm_bg.wasm", 
+// Default path to load is "iota-client-wasm_bg.wasm", 
 // but you can override it by passing a path explicitly.
 //
-// init("./static/client_wasm_bg.wasm").then(...)
+// init("./static/iota-client-wasm_bg.wasm").then(...)
 ```
