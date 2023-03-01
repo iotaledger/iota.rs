@@ -83,8 +83,8 @@ impl SecretManage for StrongholdAdapter {
         essence_hash: &[u8; 32],
         _: &Option<RemainderData>,
     ) -> Result<Unlock> {
-        let chain = input.chain.clone().unwrap();
-        let ed25519_sig = self.sign_ed25519(essence_hash, &chain).await?;
+        let chain = input.chain.as_ref().unwrap();
+        let ed25519_sig = self.sign_ed25519(essence_hash, chain).await?;
 
         // Convert the raw bytes into [Unlock].
         let unlock = Unlock::Signature(SignatureUnlock::new(Signature::Ed25519(ed25519_sig)));
@@ -125,6 +125,7 @@ impl SecretManage for StrongholdAdapter {
         // Get the Ed25519 public key from the derived SLIP-10 private key in the vault.
         let public_key = self.ed25519_public_key(derive_location.clone()).await?;
         let signature = self.ed25519_sign(derive_location, msg).await?;
+
         Ok(Ed25519Signature::new(public_key, signature))
     }
 }

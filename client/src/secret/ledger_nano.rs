@@ -17,12 +17,11 @@ use iota_types::block::{
     address::{Address, AliasAddress, Ed25519Address, NftAddress},
     output::Output,
     payload::transaction::TransactionEssence,
-    signature::Signature,
+    signature::{Ed25519Signature, Signature},
     unlock::{AliasUnlock, NftUnlock, ReferenceUnlock, Unlock, Unlocks},
 };
 use packable::{unpacker::SliceUnpacker, Packable, PackableExt};
 use tokio::sync::Mutex;
-use iota_types::block::signature::Ed25519Signature;
 
 use super::{types::InputSigningData, GenerateAddressOptions, SecretManage, SecretManageExt};
 use crate::{

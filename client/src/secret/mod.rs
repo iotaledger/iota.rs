@@ -27,10 +27,10 @@ use iota_types::block::{
     address::Address,
     output::Output,
     payload::transaction::TransactionEssence,
+    signature::Ed25519Signature,
     unlock::{AliasUnlock, NftUnlock, ReferenceUnlock, Unlock, Unlocks},
 };
 use zeroize::ZeroizeOnDrop;
-use iota_types::block::signature::Ed25519Signature;
 
 #[cfg(feature = "ledger_nano")]
 use self::ledger_nano::LedgerSecretManager;
