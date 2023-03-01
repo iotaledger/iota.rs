@@ -29,7 +29,7 @@ use crate::{
     secret::{
         is_alias_transition,
         types::{LedgerApp, LedgerDeviceType},
-        LedgerNanoStatus, PreparedTransactionData, RemainderData,
+        LedgerNanoStatus, PreparedTransactionData,
     },
     unix_timestamp_now, Error, Result,
 };
@@ -100,12 +100,7 @@ impl SecretManage for LedgerSecretManager {
     }
 
     // Ledger Nano will use `sign_transaction_essence`
-    async fn signature_unlock(
-        &self,
-        _input: &InputSigningData,
-        _essence_hash: &[u8; 32],
-        _metadata: &Option<RemainderData>,
-    ) -> crate::Result<Unlock> {
+    async fn signature_unlock(&self, _input: &InputSigningData, _essence_hash: &[u8; 32]) -> crate::Result<Unlock> {
         panic!("signature_unlock is not supported with ledger")
     }
 

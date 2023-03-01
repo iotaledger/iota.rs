@@ -23,7 +23,6 @@ use super::{
     StrongholdAdapter,
 };
 use crate::{
-    api::RemainderData,
     secret::{types::InputSigningData, GenerateAddressOptions, SecretManage},
     Error, Result,
 };
@@ -77,12 +76,7 @@ impl SecretManage for StrongholdAdapter {
         Ok(addresses)
     }
 
-    async fn signature_unlock(
-        &self,
-        input: &InputSigningData,
-        essence_hash: &[u8; 32],
-        _: &Option<RemainderData>,
-    ) -> Result<Unlock> {
+    async fn signature_unlock(&self, input: &InputSigningData, essence_hash: &[u8; 32]) -> Result<Unlock> {
         let chain = input.chain.as_ref().unwrap();
         let ed25519_sig = self.sign_ed25519(essence_hash, chain).await?;
 
@@ -301,12 +295,10 @@ mod tests {
         stronghold_adapter.clear_key().await;
 
         // Address generation returns an error when the key is cleared.
-        assert!(
-            stronghold_adapter
-                .generate_addresses(IOTA_COIN_TYPE, 0, 0..1, false, None,)
-                .await
-                .is_err()
-        );
+        assert!(stronghold_adapter
+            .generate_addresses(IOTA_COIN_TYPE, 0, 0..1, false, None,)
+            .await
+            .is_err());
 
         stronghold_adapter.set_password("drowssap").await.unwrap();
 

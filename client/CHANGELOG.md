@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `SecretManager::{try_from_mnemonic, try_from_hex_seed}`;
 - Derive `Serialize` for `GetAddressesBuilderOptions`, `ClientBlockBuilderOutputAddress`, `ClientBlockBuilderOptions` and `Message`;
+- `sign_ed25519` to `SecretManage` and to all implementors;
 
 ### Changed
 
@@ -41,6 +42,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `ClientBlockBuilder::get_output_amount_and_address()`;
 - `{InputSigningData, InputSigningDataDto}::bech32_address`;
 - Added time parameter to `SecretManageExt::sign_transaction_essence()` and `SecretManager::default_sign_transaction_essence()`;
+- `SecretManage::signature_unlock`'s `remainder` parameter;
+- `Message::SignatureUnlock`'s `remainder_data` field;
 
 ### Fixed
 

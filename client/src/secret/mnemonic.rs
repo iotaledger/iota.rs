@@ -17,7 +17,7 @@ use iota_types::block::{
 };
 
 use super::{types::InputSigningData, GenerateAddressOptions, SecretManage};
-use crate::{constants::HD_WALLET_TYPE, secret::RemainderData, Client, Result};
+use crate::{constants::HD_WALLET_TYPE, Client, Result};
 
 /// Secret manager that uses only a mnemonic.
 ///
@@ -63,12 +63,7 @@ impl SecretManage for MnemonicSecretManager {
         Ok(addresses)
     }
 
-    async fn signature_unlock(
-        &self,
-        input: &InputSigningData,
-        essence_hash: &[u8; 32],
-        _: &Option<RemainderData>,
-    ) -> crate::Result<Unlock> {
+    async fn signature_unlock(&self, input: &InputSigningData, essence_hash: &[u8; 32]) -> crate::Result<Unlock> {
         // The signature unlock block needs to sign the hash of the entire transaction essence of the
         // transaction payload
         let chain = input.chain.as_ref().unwrap();

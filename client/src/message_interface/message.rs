@@ -23,7 +23,7 @@ use crate::Topic;
 use crate::{
     api::{
         ClientBlockBuilderOptions as BuildBlockOptions, GetAddressesBuilderOptions as GenerateAddressesOptions,
-        PreparedTransactionDataDto, RemainderDataDto,
+        PreparedTransactionDataDto,
     },
     node_api::indexer::query_parameters::QueryParameter,
     node_manager::node::NodeAuth,
@@ -185,9 +185,6 @@ pub enum Message {
         /// Transaction Essence Hash
         #[serde(rename = "transactionEssenceHash")]
         transaction_essence_hash: Vec<u8>,
-        /// Metadata for Ledger Nano signing
-        #[serde(rename = "remainderData")]
-        remainder_data: Option<RemainderDataDto>,
     },
     /// Store a mnemonic in the Stronghold vault
     #[cfg(feature = "stronghold")]

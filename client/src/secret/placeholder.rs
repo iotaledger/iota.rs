@@ -14,7 +14,7 @@ use iota_types::block::{
 };
 
 use super::{types::InputSigningData, GenerateAddressOptions, SecretManage, SecretManageExt};
-use crate::secret::{PreparedTransactionData, RemainderData};
+use crate::secret::PreparedTransactionData;
 
 /// Secret manager that is only useful to prevent accidental address generation in a wallet
 /// that has an offline counterpart for address generation and signing.
@@ -33,12 +33,7 @@ impl SecretManage for PlaceholderSecretManager {
         return Err(crate::Error::PlaceholderSecretManager);
     }
 
-    async fn signature_unlock(
-        &self,
-        _input: &InputSigningData,
-        _essence_hash: &[u8; 32],
-        _: &Option<RemainderData>,
-    ) -> crate::Result<Unlock> {
+    async fn signature_unlock(&self, _input: &InputSigningData, _essence_hash: &[u8; 32]) -> crate::Result<Unlock> {
         return Err(crate::Error::PlaceholderSecretManager);
     }
 
