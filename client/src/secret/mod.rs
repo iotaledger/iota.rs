@@ -27,8 +27,7 @@ use iota_types::block::{
     address::Address,
     output::Output,
     payload::transaction::TransactionEssence,
-    signature::Ed25519Signature,
-    signature::Signature,
+    signature::{Ed25519Signature, Signature},
     unlock::{AliasUnlock, NftUnlock, ReferenceUnlock, SignatureUnlock, Unlock, Unlocks},
 };
 use zeroize::ZeroizeOnDrop;
