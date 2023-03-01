@@ -1,6 +1,7 @@
 // Copyright 2022 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+use crypto::keys::slip10::Chain;
 use iota_types::block::{
     address::AliasAddress,
     output::{
@@ -27,7 +28,7 @@ use crate::{
     },
     node_api::indexer::query_parameters::QueryParameter,
     node_manager::node::NodeAuth,
-    secret::{types::InputSigningDataDto, SecretManagerDto},
+    secret::SecretManagerDto,
 };
 
 /// Each public client method.
@@ -178,13 +179,11 @@ pub enum Message {
         /// Secret manager
         #[serde(rename = "secretManager")]
         secret_manager: SecretManagerDto,
-        /// Input Signing Data
-        // This field is boxed to not inflate the enum's size.
-        #[serde(rename = "inputSigningData")]
-        input_signing_data: Box<InputSigningDataDto>,
         /// Transaction Essence Hash
         #[serde(rename = "transactionEssenceHash")]
         transaction_essence_hash: Vec<u8>,
+        /// Chain to sign the essence hash with
+        chain: Chain,
     },
     /// Store a mnemonic in the Stronghold vault
     #[cfg(feature = "stronghold")]
