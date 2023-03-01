@@ -12,8 +12,7 @@ use crypto::{
 };
 use iota_types::block::{
     address::{Address, Ed25519Address},
-    signature::{Ed25519Signature, Signature},
-    unlock::{SignatureUnlock, Unlock},
+    signature::Ed25519Signature,
 };
 
 use super::{GenerateAddressOptions, SecretManage};
@@ -61,14 +60,6 @@ impl SecretManage for MnemonicSecretManager {
         }
 
         Ok(addresses)
-    }
-
-    async fn signature_unlock(&self, essence_hash: &[u8; 32], chain: &Chain) -> crate::Result<Unlock> {
-        // The signature unlock block needs to sign the hash of the entire transaction essence of the
-        // transaction payload
-        let ed25519_sig = self.sign_ed25519(essence_hash, chain).await?;
-
-        Ok(Unlock::Signature(SignatureUnlock::new(Signature::Ed25519(ed25519_sig))))
     }
 
     async fn sign_ed25519(&self, msg: &[u8], chain: &Chain) -> crate::Result<Ed25519Signature> {

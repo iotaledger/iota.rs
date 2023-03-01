@@ -99,11 +99,6 @@ impl SecretManage for LedgerSecretManager {
         Ok(ed25519_addresses)
     }
 
-    // Ledger Nano will use `sign_transaction_essence`
-    async fn signature_unlock(&self, _essence_hash: &[u8; 32], _chain: &Chain) -> crate::Result<Unlock> {
-        panic!("signature_unlock is not supported with ledger")
-    }
-
     async fn sign_ed25519(&self, _msg: &[u8], _chain: &Chain) -> crate::Result<Ed25519Signature> {
         panic!("sign_ed25519 is not supported with ledger")
     }

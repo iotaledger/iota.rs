@@ -7,11 +7,7 @@ use std::ops::Range;
 
 use async_trait::async_trait;
 use crypto::keys::slip10::Chain;
-use iota_types::block::{
-    address::Address,
-    signature::Ed25519Signature,
-    unlock::{Unlock, Unlocks},
-};
+use iota_types::block::{address::Address, signature::Ed25519Signature, unlock::Unlocks};
 
 use super::{GenerateAddressOptions, SecretManage, SecretManageExt};
 use crate::secret::PreparedTransactionData;
@@ -30,10 +26,6 @@ impl SecretManage for PlaceholderSecretManager {
         _internal: bool,
         _: Option<GenerateAddressOptions>,
     ) -> crate::Result<Vec<Address>> {
-        return Err(crate::Error::PlaceholderSecretManager);
-    }
-
-    async fn signature_unlock(&self, _essence_hash: &[u8; 32], _chain: &Chain) -> crate::Result<Unlock> {
         return Err(crate::Error::PlaceholderSecretManager);
     }
 

@@ -13,8 +13,7 @@ use iota_stronghold::{
 };
 use iota_types::block::{
     address::{Address, Ed25519Address},
-    signature::{Ed25519Signature, Signature},
-    unlock::{SignatureUnlock, Unlock},
+    signature::Ed25519Signature,
 };
 use zeroize::Zeroize;
 
@@ -74,15 +73,6 @@ impl SecretManage for StrongholdAdapter {
         }
 
         Ok(addresses)
-    }
-
-    async fn signature_unlock(&self, essence_hash: &[u8; 32], chain: &Chain) -> Result<Unlock> {
-        let ed25519_sig = self.sign_ed25519(essence_hash, chain).await?;
-
-        // Convert the raw bytes into [Unlock].
-        let unlock = Unlock::Signature(SignatureUnlock::new(Signature::Ed25519(ed25519_sig)));
-
-        Ok(unlock)
     }
 
     async fn sign_ed25519(&self, msg: &[u8], chain: &Chain) -> Result<Ed25519Signature> {

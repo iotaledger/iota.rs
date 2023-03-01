@@ -28,7 +28,8 @@ use iota_types::block::{
     output::Output,
     payload::transaction::TransactionEssence,
     signature::Ed25519Signature,
-    unlock::{AliasUnlock, NftUnlock, ReferenceUnlock, Unlock, Unlocks},
+    signature::Signature,
+    unlock::{AliasUnlock, NftUnlock, ReferenceUnlock, SignatureUnlock, Unlock, Unlocks},
 };
 use zeroize::ZeroizeOnDrop;
 
@@ -63,11 +64,15 @@ pub trait SecretManage: Send + Sync {
         options: Option<GenerateAddressOptions>,
     ) -> crate::Result<Vec<Address>>;
 
-    /// Signs `essence_hash` using the given `chain`, returning an [Unlock].
-    async fn signature_unlock(&self, essence_hash: &[u8; 32], chain: &Chain) -> crate::Result<Unlock>;
-
     /// Signs `msg` using the given `chain`.
     async fn sign_ed25519(&self, msg: &[u8], chain: &Chain) -> crate::Result<Ed25519Signature>;
+
+    /// Signs `essence_hash` using the given `chain`, returning an [Unlock].
+    async fn signature_unlock(&self, essence_hash: &[u8; 32], chain: &Chain) -> crate::Result<Unlock> {
+        Ok(Unlock::Signature(SignatureUnlock::new(Signature::Ed25519(
+            self.sign_ed25519(essence_hash, chain).await?,
+        ))))
+    }
 }
 
 /// An extension to [`SecretManager`].
@@ -252,17 +257,6 @@ impl SecretManage for SecretManager {
         }
     }
 
-    async fn signature_unlock(&self, essence_hash: &[u8; 32], chain: &Chain) -> crate::Result<Unlock> {
-        match self {
-            #[cfg(feature = "stronghold")]
-            Self::Stronghold(secret_manager) => secret_manager.signature_unlock(essence_hash, chain).await,
-            #[cfg(feature = "ledger_nano")]
-            Self::LedgerNano(secret_manager) => secret_manager.signature_unlock(essence_hash, chain).await,
-            Self::Mnemonic(secret_manager) => secret_manager.signature_unlock(essence_hash, chain).await,
-            Self::Placeholder(secret_manager) => secret_manager.signature_unlock(essence_hash, chain).await,
-        }
-    }
-
     async fn sign_ed25519(&self, msg: &[u8], chain: &Chain) -> crate::Result<Ed25519Signature> {
         match self {
             #[cfg(feature = "stronghold")]
@@ -273,6 +267,17 @@ impl SecretManage for SecretManager {
             Self::Placeholder(secret_manager) => secret_manager.sign_ed25519(msg, chain).await,
         }
     }
+
+    // async fn signature_unlock(&self, essence_hash: &[u8; 32], chain: &Chain) -> crate::Result<Unlock> {
+    //     match self {
+    //         #[cfg(feature = "stronghold")]
+    //         Self::Stronghold(secret_manager) => secret_manager.signature_unlock(essence_hash, chain).await,
+    //         #[cfg(feature = "ledger_nano")]
+    //         Self::LedgerNano(secret_manager) => secret_manager.signature_unlock(essence_hash, chain).await,
+    //         Self::Mnemonic(secret_manager) => secret_manager.signature_unlock(essence_hash, chain).await,
+    //         Self::Placeholder(secret_manager) => secret_manager.signature_unlock(essence_hash, chain).await,
+    //     }
+    // }
 }
 
 #[async_trait]
