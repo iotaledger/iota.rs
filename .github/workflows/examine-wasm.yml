@@ -11,7 +11,7 @@ on:
       # Watch the Rust core too
       - "**.rs"
       - "client/Cargo.toml"
-      - "client/Cargo.lock"
+      - "Cargo.lock"
   pull_request:
     branches:
       - develop
@@ -22,7 +22,7 @@ on:
       # Watch the Rust core too
       - "**.rs"
       - "client/Cargo.toml"
-      - "client/Cargo.lock"
+      - "Cargo.lock"
 
 jobs:
   wasm:
@@ -41,4 +41,4 @@ jobs:
       uses: actions-rs/cargo@v1
       with:
         command: check
-        args: --release --target=wasm32-unknown-unknown --manifest-path Cargo.toml --no-default-features --features tls,message_interface
+        args: --release --target=wasm32-unknown-unknown --manifest-path client/Cargo.toml --no-default-features --features tls,message_interface
