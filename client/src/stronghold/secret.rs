@@ -83,6 +83,16 @@ impl SecretManage for StrongholdAdapter {
         essence_hash: &[u8; 32],
         _: &Option<RemainderData>,
     ) -> Result<Unlock> {
+        let chain = input.chain.as_ref().unwrap();
+        let ed25519_sig = self.sign_ed25519(essence_hash, chain).await?;
+
+        // Convert the raw bytes into [Unlock].
+        let unlock = Unlock::Signature(SignatureUnlock::new(Signature::Ed25519(ed25519_sig)));
+
+        Ok(unlock)
+    }
+
+    async fn sign_ed25519(&self, msg: &[u8], chain: &Chain) -> Result<Ed25519Signature> {
         // Prevent the method from being invoked when the key has been cleared from the memory. Do note that Stronghold
         // only asks for a key for reading / writing a snapshot, so without our cached key this method is invocable, but
         // it doesn't make sense when it comes to our user (signing transactions / generating addresses without a key).
@@ -98,10 +108,7 @@ impl SecretManage for StrongholdAdapter {
 
         // Stronghold asks for an older version of [Chain], so we have to perform a conversion here.
         let chain = {
-            let raw: Vec<u32> = input
-                .chain
-                .as_ref()
-                .unwrap()
+            let raw: Vec<u32> = chain
                 .segments()
                 .iter()
                 // XXX: "ser32(i)". RTFSC: [crypto::keys::slip10::Segment::from_u32()]
@@ -117,16 +124,9 @@ impl SecretManage for StrongholdAdapter {
 
         // Get the Ed25519 public key from the derived SLIP-10 private key in the vault.
         let public_key = self.ed25519_public_key(derive_location.clone()).await?;
+        let signature = self.ed25519_sign(derive_location, msg).await?;
 
-        // Sign the essence hash with the derived SLIP-10 private key in the vault.
-        let signature = self.ed25519_sign(derive_location, essence_hash).await?;
-
-        // Convert the raw bytes into [Unlock].
-        let unlock = Unlock::Signature(SignatureUnlock::new(Signature::Ed25519(Ed25519Signature::new(
-            public_key, signature,
-        ))));
-
-        Ok(unlock)
+        Ok(Ed25519Signature::new(public_key, signature))
     }
 }
 
