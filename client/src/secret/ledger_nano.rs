@@ -23,7 +23,7 @@ use iota_types::block::{
 use packable::{unpacker::SliceUnpacker, Packable, PackableExt};
 use tokio::sync::Mutex;
 
-use super::{types::InputSigningData, GenerateAddressOptions, SecretManage, SecretManageExt};
+use super::{GenerateAddressOptions, SecretManage, SecretManageExt};
 use crate::{
     api::input_selection::Error as InputSelectionError,
     secret::{
@@ -100,7 +100,7 @@ impl SecretManage for LedgerSecretManager {
     }
 
     // Ledger Nano will use `sign_transaction_essence`
-    async fn signature_unlock(&self, _input: &InputSigningData, _essence_hash: &[u8; 32]) -> crate::Result<Unlock> {
+    async fn signature_unlock(&self, _essence_hash: &[u8; 32], _chain: &Chain) -> crate::Result<Unlock> {
         panic!("signature_unlock is not supported with ledger")
     }
 

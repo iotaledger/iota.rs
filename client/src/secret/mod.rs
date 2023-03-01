@@ -45,7 +45,6 @@ use crate::{
         input_selection::{is_alias_transition, Error as InputSelectionError},
         PreparedTransactionData,
     },
-    secret::types::InputSigningData,
     unix_timestamp_now,
 };
 
@@ -64,8 +63,8 @@ pub trait SecretManage: Send + Sync {
         options: Option<GenerateAddressOptions>,
     ) -> crate::Result<Vec<Address>>;
 
-    /// Sign on `essence`, unlock `input` by returning an [Unlock].
-    async fn signature_unlock(&self, input: &InputSigningData, essence_hash: &[u8; 32]) -> crate::Result<Unlock>;
+    /// Signs `essence_hash` using the given `chain`, returning an [Unlock].
+    async fn signature_unlock(&self, essence_hash: &[u8; 32], chain: &Chain) -> crate::Result<Unlock>;
 
     /// Signs `msg` using the given `chain`.
     async fn sign_ed25519(&self, msg: &[u8], chain: &Chain) -> crate::Result<Ed25519Signature>;
@@ -253,14 +252,14 @@ impl SecretManage for SecretManager {
         }
     }
 
-    async fn signature_unlock(&self, input: &InputSigningData, essence_hash: &[u8; 32]) -> crate::Result<Unlock> {
+    async fn signature_unlock(&self, essence_hash: &[u8; 32], chain: &Chain) -> crate::Result<Unlock> {
         match self {
             #[cfg(feature = "stronghold")]
-            Self::Stronghold(secret_manager) => secret_manager.signature_unlock(input, essence_hash).await,
+            Self::Stronghold(secret_manager) => secret_manager.signature_unlock(essence_hash, chain).await,
             #[cfg(feature = "ledger_nano")]
-            Self::LedgerNano(secret_manager) => secret_manager.signature_unlock(input, essence_hash).await,
-            Self::Mnemonic(secret_manager) => secret_manager.signature_unlock(input, essence_hash).await,
-            Self::Placeholder(secret_manager) => secret_manager.signature_unlock(input, essence_hash).await,
+            Self::LedgerNano(secret_manager) => secret_manager.signature_unlock(essence_hash, chain).await,
+            Self::Mnemonic(secret_manager) => secret_manager.signature_unlock(essence_hash, chain).await,
+            Self::Placeholder(secret_manager) => secret_manager.signature_unlock(essence_hash, chain).await,
         }
     }
 
@@ -355,7 +354,9 @@ impl SecretManager {
                         return Err(InputSelectionError::MissingInputWithEd25519Address)?;
                     }
 
-                    let block = self.signature_unlock(input, &hashed_essence).await?;
+                    let block = self
+                        .signature_unlock(&hashed_essence, input.chain.as_ref().unwrap())
+                        .await?;
                     blocks.push(block);
 
                     // Add the ed25519 address to the block_indexes, so it gets referenced if further inputs have

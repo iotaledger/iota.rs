@@ -435,7 +435,7 @@ impl ClientMessageHandler {
                     .map_err(|_| DtoError::InvalidField("expected 32 bytes for transactionEssenceHash"))?;
 
                 let unlock: Unlock = secret_manager
-                    .signature_unlock(&input_signing_data, &transaction_essence_hash)
+                    .signature_unlock(&transaction_essence_hash, input_signing_data.chain.as_ref().unwrap())
                     .await?;
 
                 Ok(Response::SignatureUnlock((&unlock).into()))

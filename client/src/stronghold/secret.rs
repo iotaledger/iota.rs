@@ -23,7 +23,7 @@ use super::{
     StrongholdAdapter,
 };
 use crate::{
-    secret::{types::InputSigningData, GenerateAddressOptions, SecretManage},
+    secret::{GenerateAddressOptions, SecretManage},
     Error, Result,
 };
 
@@ -76,8 +76,7 @@ impl SecretManage for StrongholdAdapter {
         Ok(addresses)
     }
 
-    async fn signature_unlock(&self, input: &InputSigningData, essence_hash: &[u8; 32]) -> Result<Unlock> {
-        let chain = input.chain.as_ref().unwrap();
+    async fn signature_unlock(&self, essence_hash: &[u8; 32], chain: &Chain) -> Result<Unlock> {
         let ed25519_sig = self.sign_ed25519(essence_hash, chain).await?;
 
         // Convert the raw bytes into [Unlock].
