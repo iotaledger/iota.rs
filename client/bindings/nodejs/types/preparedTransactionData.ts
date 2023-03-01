@@ -41,7 +41,11 @@ export interface IInputSigningData {
     /**
      * The chain derived from seed, only for ed25519 addresses
      */
-    chain?: ISegment[];
+    chain?: IChain;
+}
+
+export interface IChain {
+    segments: ISegment[]
 }
 
 export interface IRemainder {

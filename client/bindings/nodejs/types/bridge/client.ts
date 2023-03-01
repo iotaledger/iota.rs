@@ -4,7 +4,7 @@ import type { IGenerateAddressesOptions } from '../generateAddressesOptions';
 import type { IBuildBlockOptions } from '../buildBlockOptions';
 import type { BlockId } from '../blockId';
 import type {
-    IInputSigningData,
+    IChain,
     IPreparedTransactionData,
 } from '../preparedTransactionData';
 import type {
@@ -166,10 +166,8 @@ export interface __SignatureUnlockMessage__ {
     name: 'signatureUnlock';
     data: {
         secretManager: SecretManager;
-        inputSigningData: IInputSigningData;
         transactionEssenceHash: Array<number>;
-        //TODO: Expose `RemainderData`.
-        remainderData: undefined;
+        chain: IChain;
     };
 }
 
