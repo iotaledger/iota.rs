@@ -44,5 +44,10 @@ node_info = client.get_info()
 print(f'{node_info}')
 ```
 
-## Build docs
-`pydoc-markdown -p iota_client > ../../../documentation/docs/libraries/python/api_reference.md`
+## Generate API References
+
+You can generate the python API reference with the following command from this directory:
+
+```bash
+pip install pydoc-markdown && pydoc-markdown
+```
