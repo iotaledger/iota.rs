@@ -1,6 +1,6 @@
 ---
-sidebar_label: _utils
-title: iota_client._utils
+sidebar_label: utils
+title: iota_client.utils
 ---
 
 ## Utils Objects

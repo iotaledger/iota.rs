@@ -1,6 +1,6 @@
 ---
-sidebar_label: _node_core_api
-title: iota_client._node_core_api
+sidebar_label: node_core_api
+title: iota_client.node_core_api
 ---
 
 ## NodeCoreAPI Objects

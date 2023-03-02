@@ -1,6 +1,6 @@
 ---
-sidebar_label: _high_level_api
-title: iota_client._high_level_api
+sidebar_label: high_level_api
+title: iota_client.high_level_api
 ---
 
 ## HighLevelAPI Objects

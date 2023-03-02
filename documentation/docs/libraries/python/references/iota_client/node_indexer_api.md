@@ -1,6 +1,6 @@
 ---
-sidebar_label: _node_indexer_api
-title: iota_client._node_indexer_api
+sidebar_label: node_indexer_api
+title: iota_client.node_indexer_api
 ---
 
 ## NodeIndexerAPI Objects
