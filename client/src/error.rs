@@ -3,11 +3,14 @@
 
 //! Error handling in iota-client crate.
 
-use std::fmt::{Debug, Display};
+use std::fmt::Debug;
 
 use iota_types::block::semantic::ConflictReason;
 use packable::error::UnexpectedEOF;
-use serde::{ser::Serializer, Serialize};
+use serde::{
+    ser::{SerializeMap, Serializer},
+    Serialize,
+};
 
 use crate::{api::input_selection::Error as InputSelectionError, node_api::indexer::QueryParameter};
 
@@ -15,31 +18,26 @@ use crate::{api::input_selection::Error as InputSelectionError, node_api::indexe
 pub type Result<T> = std::result::Result<T, Error>;
 
 /// Error type of the iota client crate.
-#[derive(Debug, thiserror::Error, Serialize)]
+#[derive(Debug, thiserror::Error)]
 #[allow(clippy::large_enum_variant)]
-#[serde(tag = "type", content = "error", rename_all = "camelCase")]
 pub enum Error {
     /// Block dtos error
     #[error("{0}")]
-    #[serde(serialize_with = "display_string")]
     ApiTypes(#[from] iota_types::api::core::error::Error),
     /// Blake2b256 Error
     #[error("{0}")]
     Blake2b256(&'static str),
     /// Block dtos error
     #[error("{0}")]
-    #[serde(serialize_with = "display_string")]
     BlockDto(#[from] iota_types::block::DtoError),
     /// Block types error
     #[error("{0}")]
-    #[serde(serialize_with = "display_string")]
     Block(#[from] iota_types::block::Error),
     /// The wallet account has enough funds, but split on too many outputs
     #[error("the wallet account has enough funds, but split on too many outputs: {0}, max. is 128, consolidate them")]
     ConsolidationRequired(usize),
     /// Crypto.rs error
     #[error("{0}")]
-    #[serde(serialize_with = "display_string")]
     Crypto(#[from] crypto::Error),
     /// Address not found
     #[error("address: {address} not found in range: {range}")]
@@ -76,7 +74,6 @@ pub enum Error {
     },
     /// JSON error
     #[error("{0}")]
-    #[serde(serialize_with = "display_string")]
     Json(#[from] serde_json::Error),
     /// Missing required parameters
     #[error("must provide required parameter: {0}")]
@@ -104,7 +101,6 @@ pub enum Error {
     Pow(String),
     /// Prefix hex string convert error
     #[error("{0}")]
-    #[serde(serialize_with = "display_string")]
     PrefixHex(#[from] prefix_hex::Error),
     /// Error on quorum because not enough nodes are available
     #[error("not enough nodes for quorum: {available_nodes} < {minimum_threshold}")]
@@ -134,7 +130,6 @@ pub enum Error {
     },
     /// reqwest error
     #[error("{0}")]
-    #[serde(serialize_with = "display_string")]
     Reqwest(#[from] reqwest::Error),
     /// Specifically used for `TryInfo` implementations for `SecretManager`.
     #[error("cannot unwrap a SecretManager: type mismatch!")]
@@ -151,7 +146,6 @@ pub enum Error {
     #[cfg(not(target_family = "wasm"))]
     /// Tokio task join error
     #[error("{0}")]
-    #[serde(serialize_with = "display_string")]
     TaskJoin(#[from] tokio::task::JoinError),
     /// Local time doesn't match the time of the latest milestone timestamp
     #[error(
@@ -174,14 +168,12 @@ pub enum Error {
     UnsupportedQueryParameter(QueryParameter),
     /// Unpack error
     #[error("{0}")]
-    #[serde(serialize_with = "display_string")]
     Unpack(#[from] packable::error::UnpackError<iota_types::block::Error, UnexpectedEOF>),
     /// URL auth error
     #[error("can't set {0} to URL")]
     UrlAuth(&'static str),
     /// URL error
     #[error("{0}")]
-    #[serde(serialize_with = "display_string")]
     Url(#[from] url::ParseError),
     /// URL validation error
     #[error("{0}")]
@@ -194,7 +186,6 @@ pub enum Error {
     #[cfg(feature = "participation")]
     #[cfg_attr(docsrs, doc(cfg(feature = "participation")))]
     #[error("{0}")]
-    #[serde(serialize_with = "display_string")]
     Participation(#[from] iota_types::api::plugins::participation::error::Error),
 
     //////////////////////////////////////////////////////////////////////
@@ -238,7 +229,6 @@ pub enum Error {
     #[cfg(feature = "mqtt")]
     #[cfg_attr(docsrs, doc(cfg(feature = "mqtt")))]
     #[error("{0}")]
-    #[serde(serialize_with = "display_string")]
     MqttClient(#[from] rumqttc::ClientError),
     /// MQTT connection not found (all nodes MQTT's are disabled)
     #[cfg(feature = "mqtt")]
@@ -253,7 +243,6 @@ pub enum Error {
     #[cfg(feature = "stronghold")]
     #[cfg_attr(docsrs, doc(cfg(feature = "stronghold")))]
     #[error("stronghold client error: {0}")]
-    #[serde(serialize_with = "display_string")]
     StrongholdClient(#[from] iota_stronghold::ClientError),
     /// Invalid stronghold password.
     #[cfg(feature = "stronghold")]
@@ -269,7 +258,6 @@ pub enum Error {
     #[cfg(feature = "stronghold")]
     #[cfg_attr(docsrs, doc(cfg(feature = "stronghold")))]
     #[error("stronghold memory error: {0}")]
-    #[serde(serialize_with = "display_string")]
     StrongholdMemory(#[from] iota_stronghold::MemoryError),
     /// A mnemonic has been already stored into a Stronghold vault
     #[cfg(feature = "stronghold")]
@@ -285,7 +273,6 @@ pub enum Error {
     #[cfg(feature = "stronghold")]
     #[cfg_attr(docsrs, doc(cfg(feature = "stronghold")))]
     #[error("Stronghold reported a procedure error: {0}")]
-    #[serde(serialize_with = "display_string")]
     StrongholdProcedure(#[from] iota_stronghold::procedures::ProcedureError),
 }
 
@@ -310,11 +297,23 @@ impl From<iota_ledger_nano::api::errors::APIError> for Error {
     }
 }
 
-/// Use this to serialize Error variants that implements Debug but not Serialize
-pub(crate) fn display_string<T, S>(value: &T, serializer: S) -> std::result::Result<S::Ok, S::Error>
-where
-    T: Display,
-    S: Serializer,
-{
-    value.to_string().serialize(serializer)
+// Serialize type with Display error
+impl Serialize for Error {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut seq = serializer.serialize_map(Some(2))?;
+        let mut kind_dbg = format!("{self:?}");
+        // Convert first char to lowercase
+        if let Some(r) = kind_dbg.get_mut(0..1) {
+            r.make_ascii_lowercase();
+        }
+        // Split by whitespace for struct variants and split by `(` for tuple variants
+        // Safe to unwrap because kind_dbg is never an empty string
+        let kind = kind_dbg.split([' ', '(']).next().unwrap();
+        seq.serialize_entry("type", &kind)?;
+        seq.serialize_entry("error", &self.to_string())?;
+        seq.end()
+    }
 }
