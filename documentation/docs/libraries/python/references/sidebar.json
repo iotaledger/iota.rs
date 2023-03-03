@@ -1,0 +1,19 @@
+{
+  "items": [
+    {
+      "items": [
+        "references/iota_client/high_level_api",
+        "references/iota_client/node_core_api",
+        "references/iota_client/node_indexer_api",
+        "references/iota_client/utils",
+        "references/iota_client/client",
+        "references/iota_client/common",
+        "references/iota_client/secret_manager"
+      ],
+      "label": "iota_client",
+      "type": "category"
+    }
+  ],
+  "label": "Reference",
+  "type": "category"
+}

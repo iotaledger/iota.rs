@@ -5,7 +5,6 @@ from iota_client._high_level_api import HighLevelAPI
 from iota_client._utils import Utils
 from json import dumps
 
-
 class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
     def __init__(self, client_config=None):
         """Initialize the IOTA Client.
