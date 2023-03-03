@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // These are E2E test samples, so they are ignored by default.
+
 mod common;
 
 use common::create_client_and_secret_manager_with_funds;
