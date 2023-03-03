@@ -35,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Topic::try_new` parameter from `String` to `impl Into<String>`;
 - All `Error` variant related to ISA have been moved to a new ISA `Error` enum;
 - All fields of `BurnDto` are now `Option`;
+- Custom `Serialize` implementation for `Error`;
 
 ### Removed
 
