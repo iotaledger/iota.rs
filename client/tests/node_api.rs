@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // These are E2E test samples, so they are ignored by default.
+
 mod common;
 
 use common::{setup_client_with_node_health_ignored, FAUCET_URL, NODE_LOCAL};
