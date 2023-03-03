@@ -12,9 +12,6 @@ keywords = [ "iota", "tangle", "client", "python" ]
 categories = [ "cryptography::cryptocurrencies" ]
 publish = false
 
-[package.metadata.maturin]
-name = "iota-client"
-
 [lib]
 name = "iota_client"
 crate-type = [ "cdylib" ]
