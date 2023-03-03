@@ -5,7 +5,6 @@
 
 mod common;
 
-use common::create_client_and_secret_manager_with_funds;
 use iota_client::{
     block::{
         output::{unlock_condition::AddressUnlockCondition, BasicOutputBuilder, UnlockCondition},
@@ -16,9 +15,11 @@ use iota_client::{
 };
 use iota_types::block::{output::OutputId, payload::Payload};
 
+use self::common::create_client_and_secret_manager_with_funds;
+
 #[ignore]
 #[tokio::test]
-async fn test_send_basic_output() -> Result<()> {
+async fn send_basic_output() -> Result<()> {
     let (client, secret_manager) = create_client_and_secret_manager_with_funds(None).await?;
 
     let token_supply = client.get_token_supply().await?;
