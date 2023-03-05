@@ -4,13 +4,96 @@ from iota_client._node_indexer_api import NodeIndexerAPI
 from iota_client._high_level_api import HighLevelAPI
 from iota_client._utils import Utils
 from json import dumps
+import humps
+from datetime import timedelta
 
 class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
-    def __init__(self, client_config=None):
+    __default = object()
+    def __init__(
+        self,
+        node = __default, 
+        primary_node = __default,
+        primary_pow_node = __default,
+        permanode = __default,
+        ignore_node_health = __default,
+        nodes = __default,
+        api_timeout = __default, 
+        node_sync_interval = __default,
+        remote_pow_timeout = __default,
+        tips_interval = __default,
+        quorum = __default,
+        min_quorum_size = __default,
+        quorum_threshold = __default,
+        user_agent = __default,
+        local_pow = __default,
+        fallback_to_local_pow = __default,
+        pow_worker_count = __default
+    ):
         """Initialize the IOTA Client.
+
+        Parameters
+        ----------
+        node : string
+            Node URL.
+        primary_node : string
+            Node which will be tried first for all requests.
+        primary_pow_node : string
+            Node which will be tried first when using remote PoW, even before the primary_node.
+        permanode : string
+            Permanode URL.
+        ignore_node_health : bool
+            If the node health should be ignored.
+        nodes : array of strings
+            Node URLs.
+        api_timeout : datetime.timedelta
+            Timeout for API requests.
+        node_sync_interval : datetime.timedelta
+            Interval in which nodes will be checked for their sync status and the [NetworkInfo](crate::NetworkInfo) gets updated.
+        remote_pow_timeout : datetime.timedelta
+            Timeout when sending a block that requires remote proof of work.
+        tips_interval : int
+            Tips request interval during PoW in seconds.
+        quorum : bool
+            If node quorum is enabled. Will compare the responses from multiple nodes 
+            and only returns the response if `quorum_threshold`% of the nodes return the same one.
+        min_quorum_size : int
+            Minimum amount of nodes required for request when quorum is enabled.
+        quorum_threshold : int
+            % of nodes that have to return the same response so it gets accepted.
+        user_agent : string
+            The User-Agent header for requests.
+        local_pow : bool
+            Local proof of work.
+        fallback_to_local_pow : bool
+            Fallback to local proof of work if the node doesn't support remote PoW.
+        pow_worker_count : int
+            The amount of threads to be used for proof of work.
         """
-        if client_config:
-            client_config = dumps(client_config)
+
+        if (node and not self.__default):
+            if (nodes and not self.__default):
+                nodes.append(node)
+            else:
+                nodes = [node]
+
+        client_config = locals()
+        del client_config['self']
+        del client_config['node']
+
+        client_config = {k:v for k,v in client_config.items() if v != self.__default}
+
+        def get_remaining_nano_seconds(duration: timedelta):
+            return (int(duration/timedelta(microseconds=1))-int(duration.total_seconds())*1_000_000)*1_000
+
+        if 'api_timeout' in client_config:
+            client_config['api_timeout'] = {'secs': int(client_config['api_timeout'].total_seconds()), 'nanos': get_remaining_nano_seconds(client_config['api_timeout'])}
+        if 'node_sync_interval' in client_config:
+            client_config['node_sync_interval'] = {'secs': int(client_config['node_sync_interval'].total_seconds()), 'nanos': get_remaining_nano_seconds(client_config['node_sync_interval'])}
+        if 'remote_pow_timeout' in client_config:
+            client_config['remote_pow_timeout'] = {'secs': int(client_config['remote_pow_timeout'].total_seconds()), 'nanos': get_remaining_nano_seconds(client_config['remote_pow_timeout'])}
+
+        client_config = humps.camelize(client_config)
+        client_config = dumps(client_config)
 
         # Create the message handler
         self.handle = iota_client.create_message_handler(client_config)
