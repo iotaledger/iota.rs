@@ -2,13 +2,9 @@ name: Build and run specific tests on a private tangle
 
 on:
   push:
-    branches:
-      - production
-      - develop
+    branches: [develop, production]
   pull_request:
-    branches:
-      - production
-      - develop
+    branches: [develop, production]
     paths-ignore:
       - "specs/**"
       - "docs/**"

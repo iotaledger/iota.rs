@@ -1,9 +1,7 @@
 name: Wasm bindings checks
 on:
   push:
-    branches:
-      - develop
-      - production
+    branches: [develop, production]
     paths:
       - ".github/workflows/examine-wasm-bindings.yml"
       - ".github/actions/**"
@@ -13,9 +11,7 @@ on:
       - "client/Cargo.toml"
       - "Cargo.lock"
   pull_request:
-    branches:
-      - develop
-      - production
+    branches: [develop, production]
     paths:
       - ".github/workflows/examine-wasm-bindings.yml"
       - ".github/actions/**"
