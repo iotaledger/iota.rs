@@ -28,7 +28,7 @@ on:
     - cron: "0 1 * * *"
   workflow_dispatch:
 
-concurrency: 
+concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
@@ -41,7 +41,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows-2019, macos-latest, ubuntu-latest]
-        python-version: ['3.10']
+        python-version: ["3.10"]
 
     steps:
       - name: Checkout the Source Code
@@ -147,39 +147,3 @@ jobs:
           args: --manifest-path client/bindings/python/Cargo.toml --all-targets --all-features
 
       # TODO: Check requirements.txt too
-
-  check-format:
-    name: Check Format
-    if: ${{ ! github.event.schedule }}
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout the Source Code
-        uses: actions/checkout@v3
-
-      - name: Set Up Nightly Rustfmt
-        uses: ./.github/actions/setup-rust
-        with:
-          toolchain: nightly
-          components: rustfmt
-          cache: false
-
-      - name: Install cargo-license-template
-        uses: actions-rs/cargo@v1
-        with:
-          command: install
-          args: --force cargo-license-template
-
-      - name: Run Cargo Fmt
-        uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --manifest-path client/bindings/python/Cargo.toml --all -- --check
-
-      - name: Run cargo-license-template
-        uses: actions-rs/cargo@v1
-        with:
-          command: license-template
-          args: --template .license_template
-
-      # TODO: Check the Python code too

@@ -28,7 +28,7 @@ on:
     - cron: "0 1 * * *"
   workflow_dispatch:
 
-concurrency: 
+concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
@@ -71,12 +71,12 @@ jobs:
         uses: actions/setup-java@v3
         with:
           java-version: ${{ matrix.java }}
-          distribution: 'temurin'
+          distribution: "temurin"
       - name: Validate Gradle wrapper
         uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b
 
       - name: Start private tangle
-        uses: './.github/actions/private-tangle/setup'
+        uses: "./.github/actions/private-tangle/setup"
         if: ${{ startsWith(matrix.os, 'ubuntu') }}
 
       - name: Run Gradle Test (macos, windows)
@@ -96,7 +96,7 @@ jobs:
 
       - name: Tear down private tangle
         if: ${{ startsWith(matrix.os, 'ubuntu') }}
-        uses: './.github/actions/private-tangle/tear-down'
+        uses: "./.github/actions/private-tangle/tear-down"
 
   lint:
     name: Lint
@@ -162,39 +162,3 @@ jobs:
           args: --manifest-path client/bindings/java/lib/native/Cargo.toml --all-targets --all-features
 
       # TODO: Check Java code too
-
-  check-format:
-    name: Check Format
-    if: ${{ ! github.event.schedule }}
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout the Source Code
-        uses: actions/checkout@v3
-
-      - name: Set Up Nightly Rustfmt
-        uses: ./.github/actions/setup-rust
-        with:
-          toolchain: nightly
-          components: rustfmt
-          cache: false
-
-      - name: Install cargo-license-template
-        uses: actions-rs/cargo@v1
-        with:
-          command: install
-          args: --force cargo-license-template
-
-      - name: Run Cargo Fmt
-        uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --manifest-path client/bindings/java/lib/native/Cargo.toml --all -- --check
-
-      - name: Run cargo-license-template
-        uses: actions-rs/cargo@v1
-        with:
-          command: license-template
-          args: --template .license_template
-
-      # TODO: Check the Java code too

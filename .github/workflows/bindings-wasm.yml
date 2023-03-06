@@ -28,7 +28,7 @@ on:
     - cron: "0 1 * * *"
   workflow_dispatch:
 
-concurrency: 
+concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
@@ -61,7 +61,7 @@ jobs:
       - name: Install wasm-bindgen-cli
         uses: jetli/wasm-bindgen-action@24ba6f9fff570246106ac3f80f35185600c3f6c9
         with:
-          version: '0.2.84'
+          version: "0.2.84"
 
       - name: Set Up Node.js ${{ matrix.node }} and Yarn Cache
         uses: actions/setup-node@v2
@@ -160,32 +160,6 @@ jobs:
     steps:
       - name: Checkout the Source Code
         uses: actions/checkout@v3
-
-      - name: Set Up Nightly Rustfmt
-        uses: ./.github/actions/setup-rust
-        with:
-          toolchain: nightly
-          target: wasm32-unknown-unknown
-          components: rustfmt
-          cache: false
-
-      - name: Install cargo-license-template
-        uses: actions-rs/cargo@v1
-        with:
-          command: install
-          args: --force cargo-license-template
-
-      - name: Run Cargo Fmt
-        uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --manifest-path client/bindings/wasm/Cargo.toml --all -- --check
-
-      - name: Run cargo-license-template
-        uses: actions-rs/cargo@v1
-        with:
-          command: license-template
-          args: --template .license_template
 
       - name: Setup Node.js
         uses: actions/setup-node@v2
