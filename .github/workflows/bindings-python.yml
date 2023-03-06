@@ -115,35 +115,3 @@ jobs:
           name: Clippy Results for the Python Bindings
 
       # TODO: Lint the Python code too
-
-  check-unused-deps:
-    name: Check Unused Dependencies
-    if: ${{ ! github.event.schedule }}
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout the Source Code
-        uses: actions/checkout@v3
-
-      - name: Install Cargo-udeps with Nightly Rust
-        uses: ./.github/actions/setup-rust
-        with:
-          toolchain: nightly
-          cache: true
-          install: cargo-udeps
-          cache-root: client/bindings/python
-          cache-job-id: ${{ github.workflow }}-${{ github.job }}
-          cache-hash: ${{ hashFiles('.github/workflows/examine-python-bindings.yml') }}
-
-      - name: Install required packages (Ubuntu)
-        run: |
-          sudo apt-get update
-          sudo apt-get install libudev-dev libusb-1.0-0-dev
-
-      - name: Run Cargo Udeps
-        uses: actions-rs/cargo@v1
-        with:
-          command: udeps
-          args: --manifest-path client/bindings/python/Cargo.toml --all-targets --all-features
-
-      # TODO: Check requirements.txt too

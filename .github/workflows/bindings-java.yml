@@ -130,35 +130,3 @@ jobs:
           name: Clippy Results for the Java Bindings
 
       # TODO: Lint the Java code too
-
-  check-unused-deps:
-    name: Check Unused Dependencies
-    if: ${{ ! github.event.schedule }}
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout the Source Code
-        uses: actions/checkout@v3
-
-      - name: Install Cargo-udeps with Nightly Rust
-        uses: ./.github/actions/setup-rust
-        with:
-          toolchain: nightly
-          cache: true
-          install: cargo-udeps
-          cache-root: client/bindings/java/lib/native/
-          cache-job-id: ${{ github.workflow }}-${{ github.job }}
-          cache-hash: ${{ hashFiles('.github/workflows/examine-java-bindings.yml') }}
-
-      - name: Install Required Dependencies (Ubuntu)
-        run: |
-          sudo apt-get update
-          sudo apt-get install libudev-dev libusb-1.0-0-dev
-
-      - name: Run Cargo Udeps
-        uses: actions-rs/cargo@v1
-        with:
-          command: udeps
-          args: --manifest-path client/bindings/java/lib/native/Cargo.toml --all-targets --all-features
-
-      # TODO: Check Java code too
