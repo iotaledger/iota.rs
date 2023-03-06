@@ -1,7 +1,7 @@
 from iota_client import IotaClient, MnemonicSecretManager
 
 # Create an IotaClient instance
-client = IotaClient({'nodes': ['https://api.testnet.shimmer.network']})
+client = IotaClient(nodes = ['https://api.testnet.shimmer.network'])
 
 # In this example we will create addresses from a mnemonic
 

@@ -1,7 +1,7 @@
 from iota_client import IotaClient, StrongholdSecretManager
 
 # Create an IotaClient instance
-client = IotaClient({'nodes': ['https://api.testnet.shimmer.network']})
+client = IotaClient(nodes = ['https://api.testnet.shimmer.network'])
 
 secret_manager = StrongholdSecretManager("client.stronghold", "some_hopefully_secure_password")
 

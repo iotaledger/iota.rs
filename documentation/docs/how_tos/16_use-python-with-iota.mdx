@@ -106,7 +106,7 @@ from iota_client import IotaClient as ShimmerClient # Imported as ShimmerClient 
 import iota_client_production
 
 # Create an IotaClient instance
-shimmer_client = ShimmerClient({'nodes': ['https://api.testnet.shimmer.network']})
+shimmer_client = ShimmerClient(nodes = ['https://api.testnet.shimmer.network'])
 
 # Get and print the node info
 print(f'{json.dumps(shimmer_client.get_info(), indent=4)}')

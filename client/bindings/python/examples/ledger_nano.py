@@ -5,7 +5,7 @@ from iota_client import IotaClient, LedgerNanoSecretManager
 # then `./build.sh -m nanos|nanox|nanosplus -s` and use `True` in `LedgerNanoSecretManager(True)`.
 
 # Create an IotaClient instance
-client = IotaClient({'nodes': ['https://api.testnet.shimmer.network']})
+client = IotaClient(nodes = ['https://api.testnet.shimmer.network'])
 
 is_simulator = True
 

@@ -1,7 +1,7 @@
 from iota_client import IotaClient
 
 # Create an IotaClient instance
-client = IotaClient({'nodes': ['https://api.testnet.shimmer.network']})
+client = IotaClient(nodes = ['https://api.testnet.shimmer.network'])
 
 # Create and post a block without payload
 blockIdAndBlock = client.build_and_post_block()

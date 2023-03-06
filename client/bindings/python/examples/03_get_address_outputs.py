@@ -1,7 +1,7 @@
 from iota_client import IotaClient
 
 # Create an IotaClient instance
-client = IotaClient({'nodes': ['https://api.testnet.shimmer.network']})
+client = IotaClient(nodes = ['https://api.testnet.shimmer.network'])
 
 # Get output ids of basic outputs that can be controlled by this address without further unlock constraints
 output_ids_response = client.basic_output_ids([{"address": 'rms1qpllaj0pyveqfkwxmnngz2c488hfdtmfrj3wfkgxtk4gtyrax0jaxzt70zy'},

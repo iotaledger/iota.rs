@@ -1,7 +1,7 @@
 from iota_client import IotaClient
 
 # Create an IotaClient instance
-client = IotaClient({'nodes': ['https://api.testnet.shimmer.network']})
+client = IotaClient(nodes = ['https://api.testnet.shimmer.network'])
 
 options = {
     # `hello` hex encoded

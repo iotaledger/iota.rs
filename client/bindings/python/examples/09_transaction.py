@@ -1,7 +1,7 @@
 from iota_client import IotaClient, MnemonicSecretManager
 
 # Create an IotaClient instance
-client = IotaClient({'nodes': ['https://api.testnet.shimmer.network']})
+client = IotaClient(nodes = ['https://api.testnet.shimmer.network'])
 
 secret_manager = MnemonicSecretManager("flame fever pig forward exact dash body idea link scrub tennis minute " +
                                        "surge unaware prosper over waste kitten ceiling human knife arch situate civil")

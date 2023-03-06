@@ -1,7 +1,7 @@
 from iota_client import IotaClient, MnemonicSecretManager
 
 # Create an IotaClient instance
-client = IotaClient({'nodes': ['https://api.testnet.shimmer.network']})
+client = IotaClient(nodes = ['https://api.testnet.shimmer.network'])
 
 # Configure foundry output
 # TODO: replace with your own values
