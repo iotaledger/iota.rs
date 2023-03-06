@@ -14,21 +14,13 @@ pub use self::constants::{FAUCET_URL, NODE_LOCAL};
 
 /// Sets up a Client with node health ignored.
 pub fn setup_client_with_node_health_ignored() -> Client {
-    Client::builder()
-        .with_node(NODE_LOCAL)
-        .unwrap()
-        .with_ignore_node_health()
-        .finish()
-        .unwrap()
+    Client::builder().with_node(NODE_LOCAL).unwrap().finish().unwrap()
 }
 
 /// Create a client with `DEFAULT_DEVNET_NODE_URL` and a random mnemonic, request funds from the faucet to the first
 /// address and wait until they arrived.
 pub async fn create_client_and_secret_manager_with_funds(mnemonic: Option<&str>) -> Result<(Client, SecretManager)> {
-    let client = Client::builder()
-        .with_node(NODE_LOCAL)?
-        .with_ignore_node_health()
-        .finish()?;
+    let client = Client::builder().with_node(NODE_LOCAL)?.finish()?;
 
     let secret_manager = SecretManager::try_from_mnemonic(mnemonic.unwrap_or(&Client::generate_mnemonic().unwrap()))?;
 
