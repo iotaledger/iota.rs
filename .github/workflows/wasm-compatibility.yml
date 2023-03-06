@@ -1,10 +1,10 @@
-name: Wasm compatibility check
+name: Wasm compatibility
 
 on:
   push:
     branches: [develop, production]
     paths:
-      - ".github/workflows/examine-wasm.yml"
+      - ".github/workflows/wasm-compatibility.yml"
       - ".github/actions/**"
       - "**.rs"
       - "**Cargo.toml"
@@ -12,26 +12,26 @@ on:
   pull_request:
     branches: [develop, production]
     paths:
-      - ".github/workflows/examine-wasm.yml"
+      - ".github/workflows/wasm-compatibility.yml"
       - ".github/actions/**"
       - "**.rs"
       - "**Cargo.toml"
       - "**Cargo.lock"
 
 jobs:
-  wasm:
+  check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
 
-      - name: Install stable
+      - name: Install stable rust
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           target: wasm32-unknown-unknown
           override: true
 
-      - name: Check Wasm
+      - name: Cargo check
         uses: actions-rs/cargo@v1
         with:
           command: check
