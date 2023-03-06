@@ -1,4 +1,4 @@
-name: Examine the Python Bindings
+name: Python bindings checks
 on:
   push:
     branches:

@@ -1,4 +1,4 @@
-name: Examine the Java Bindings
+name: Java bindings checks
 on:
   push:
     branches:

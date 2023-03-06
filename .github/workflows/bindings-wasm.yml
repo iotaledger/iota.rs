@@ -1,4 +1,4 @@
-name: Examine the Wasm Bindings
+name: Wasm bindings checks
 on:
   push:
     branches:

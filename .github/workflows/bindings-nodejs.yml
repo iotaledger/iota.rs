@@ -1,4 +1,4 @@
-name: Examine the Node.js Bindings
+name: Nodejs bindings checks
 on:
   push:
     branches:
