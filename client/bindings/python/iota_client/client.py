@@ -180,9 +180,41 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
             'immutableFeatures': immutable_features
         })
 
-    def generate_addresses(self, secret_manager, options):
+    def generate_addresses(self,
+                           secret_manager, 
+                           account_index = __default, 
+                           start = __default, 
+                           end = __default, 
+                           internal = __default, 
+                           coin_type = __default, 
+                           bech32_hrp = __default, 
+                           ledger_nano_prompt = __default):
         """Generate addresses.
         """
+
+        options = locals()
+
+        options = {k:v for k,v in options.items() if v != self.__default}
+
+        is_start_set = 'start' in options
+        is_end_set = 'end' in options
+        if is_start_set or is_end_set:
+            options['range'] = {}
+            if is_start_set:
+                options['range']['start'] = options['start']
+                del options['start']
+            if is_end_set:
+                options['range']['end'] = options['end']
+                del options['end']
+        if 'ledger_nano_prompt' in options:
+            options['options'] = { 'ledger_nano_prompt': options['ledger_nano_prompt']}
+            del options['ledger_nano_prompt']
+
+        del options['self']
+        del options['secret_manager']
+
+        options = humps.camelize(options)
+
         return self.send_message('generateAddresses', {
             'secretManager': secret_manager,
             'options': options

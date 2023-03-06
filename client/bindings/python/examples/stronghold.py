@@ -11,12 +11,6 @@ result = client.store_mnemonic(secret_manager, "flame fever pig forward exact da
     "surge unaware prosper over waste kitten ceiling human knife arch situate civil")
 
 # Generate public address with custom account index and range.
-address = client.generate_addresses(secret_manager, {
-    "account_index": 0,
-    "range": {
-        "start": 0,
-        "end": 1,
-    },
-})
+address = client.generate_addresses(secret_manager, account_index=0, start=0, end=1)
 
 print(f'Address: {address[0]}')

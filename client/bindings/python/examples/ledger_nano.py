@@ -17,12 +17,6 @@ ledger_nano_status = client.get_ledger_nano_status(is_simulator)
 print(f'Ledger Nano status: {ledger_nano_status}')
 
 # Generate public address with custom account index and range.
-address = client.generate_addresses(secret_manager, {
-    "accountIndex": 0,
-    "range": {
-        "start": 0,
-        "end": 1,
-    },
-})
+address = client.generate_addresses(secret_manager, account_index=0, start=0, end=1)
 
 print(f'Address: {address[0]}')
