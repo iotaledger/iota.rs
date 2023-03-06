@@ -2,6 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // These are E2E test samples, so they are ignored by default.
+
+mod common;
+
+use common::{setup_client_with_node_health_ignored, FAUCET_URL, NODE_LOCAL};
 use iota_client::{
     bech32_to_hex, node_api::indexer::query_parameters::QueryParameter, request_funds_from_faucet,
     secret::SecretManager, Client,
@@ -12,20 +16,8 @@ use iota_types::block::{
     BlockId,
 };
 
-const DEFAULT_DEVNET_NODE_URL: &str = "http://localhost:14265";
-static FAUCET_URL: &str = "http://localhost:8091/api/enqueue";
 // THIS SEED SERVES FOR TESTING PURPOSES! DON'T USE THIS SEED IN PRODUCTION!
 const DEFAULT_DEVELOPMENT_SEED: &str = "0x256a818b2aac458941f7274985a410e57fb750f3a3a67969ece5bd9ae7eef5b2";
-
-// Sets up a Client with node health ignored.
-fn setup_client_with_node_health_ignored() -> Client {
-    Client::builder()
-        .with_node(DEFAULT_DEVNET_NODE_URL)
-        .unwrap()
-        .with_ignore_node_health()
-        .finish()
-        .unwrap()
-}
 
 // Sends a tagged data block to the node to test against it.
 async fn setup_tagged_data_block() -> BlockId {
@@ -64,7 +56,7 @@ async fn setup_transaction_block() -> (BlockId, TransactionId) {
         tokio::time::sleep(std::time::Duration::from_secs(1)).await;
         let output_ids = client
             .basic_output_ids(vec![
-                QueryParameter::Address(address.clone()),
+                QueryParameter::Address(address.to_string()),
                 QueryParameter::HasExpiration(false),
                 QueryParameter::HasTimelock(false),
                 QueryParameter::HasStorageDepositReturn(false),
@@ -112,7 +104,7 @@ async fn setup_transaction_block() -> (BlockId, TransactionId) {
 #[tokio::test]
 async fn test_get_health() {
     let r = setup_client_with_node_health_ignored()
-        .get_health(DEFAULT_DEVNET_NODE_URL)
+        .get_health(NODE_LOCAL)
         .await
         .unwrap();
     println!("{r:#?}");
@@ -121,7 +113,7 @@ async fn test_get_health() {
 #[ignore]
 #[tokio::test]
 async fn test_get_info() {
-    let r = Client::get_node_info(DEFAULT_DEVNET_NODE_URL, None).await.unwrap();
+    let r = Client::get_node_info(NODE_LOCAL, None).await.unwrap();
     println!("{r:#?}");
 }
 
