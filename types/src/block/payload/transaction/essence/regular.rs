@@ -238,13 +238,14 @@ fn verify_outputs<const VERIFY: bool>(outputs: &[Output], visitor: &ProtocolPara
     if VERIFY {
         let mut amount_sum: u64 = 0;
         let mut native_tokens_count: u8 = 0;
+        let mut chain_ids = HashSet::new();
 
         for output in outputs.iter() {
-            let (amount, native_tokens) = match output {
-                Output::Basic(output) => (output.amount(), output.native_tokens()),
-                Output::Alias(output) => (output.amount(), output.native_tokens()),
-                Output::Foundry(output) => (output.amount(), output.native_tokens()),
-                Output::Nft(output) => (output.amount(), output.native_tokens()),
+            let (amount, native_tokens, chain_id) = match output {
+                Output::Basic(output) => (output.amount(), output.native_tokens(), None),
+                Output::Alias(output) => (output.amount(), output.native_tokens(), Some(output.chain_id())),
+                Output::Foundry(output) => (output.amount(), output.native_tokens(), Some(output.chain_id())),
+                Output::Nft(output) => (output.amount(), output.native_tokens(), Some(output.chain_id())),
                 _ => return Err(Error::InvalidOutputKind(output.kind())),
             };
 
@@ -265,6 +266,12 @@ fn verify_outputs<const VERIFY: bool>(outputs: &[Output], visitor: &ProtocolPara
                 return Err(Error::InvalidTransactionNativeTokensCount(native_tokens_count as u16));
             }
 
+            if let Some(chain_id) = chain_id {
+                if !chain_ids.insert(chain_id) {
+                    return Err(Error::DuplicateOutputChain(chain_id));
+                }
+            }
+
             output.verify_storage_deposit(visitor.rent_structure().clone(), visitor.token_supply())?;
         }
     }
@@ -277,13 +284,14 @@ fn verify_outputs_unverified<const VERIFY: bool>(outputs: &[Output]) -> Result<(
     if VERIFY {
         let mut amount_sum: u64 = 0;
         let mut native_tokens_count: u8 = 0;
+        let mut chain_ids = HashSet::new();
 
         for output in outputs.iter() {
-            let (amount, native_tokens) = match output {
-                Output::Basic(output) => (output.amount(), output.native_tokens()),
-                Output::Alias(output) => (output.amount(), output.native_tokens()),
-                Output::Foundry(output) => (output.amount(), output.native_tokens()),
-                Output::Nft(output) => (output.amount(), output.native_tokens()),
+            let (amount, native_tokens, chain_id) = match output {
+                Output::Basic(output) => (output.amount(), output.native_tokens(), None),
+                Output::Alias(output) => (output.amount(), output.native_tokens(), Some(output.chain_id())),
+                Output::Foundry(output) => (output.amount(), output.native_tokens(), Some(output.chain_id())),
+                Output::Nft(output) => (output.amount(), output.native_tokens(), Some(output.chain_id())),
                 _ => return Err(Error::InvalidOutputKind(output.kind())),
             };
 
@@ -297,6 +305,12 @@ fn verify_outputs_unverified<const VERIFY: bool>(outputs: &[Output]) -> Result<(
 
             if native_tokens_count > NativeTokens::COUNT_MAX {
                 return Err(Error::InvalidTransactionNativeTokensCount(native_tokens_count as u16));
+            }
+
+            if let Some(chain_id) = chain_id {
+                if !chain_ids.insert(chain_id) {
+                    return Err(Error::DuplicateOutputChain(chain_id));
+                }
             }
         }
     }
