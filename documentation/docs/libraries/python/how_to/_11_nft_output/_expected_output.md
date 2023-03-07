@@ -13,7 +13,7 @@
       'type': 6,
       'essence': {
         'type': 1,
-        'networkId': '8342982141227064571',
+        'networkId': '1856588631910923207',
         'inputs': [
           {
             'type': 0,
