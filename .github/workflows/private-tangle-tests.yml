@@ -3,11 +3,20 @@ name: Build and run specific tests on a private tangle
 on:
   push:
     branches: [develop, production]
+    paths:
+      - ".github/workflows/private-tangle-tests.yml"
+      - ".github/actions/**"
+      - "**.rs"
+      - "**Cargo.toml"
+      - "**Cargo.lock"
   pull_request:
     branches: [develop, production]
-    paths-ignore:
-      - "specs/**"
-      - "docs/**"
+    paths:
+      - ".github/workflows/private-tangle-tests.yml"
+      - ".github/actions/**"
+      - "**.rs"
+      - "**Cargo.toml"
+      - "**Cargo.lock"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}

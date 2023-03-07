@@ -3,23 +3,19 @@ on:
   push:
     branches: [develop, production]
     paths:
-      - ".github/workflows/examine-core.yml"
+      - ".github/workflows/core.yml"
       - ".github/actions/**"
-      - "client/src/**"
-      - "client/tests/**"
-      - "client/examples/**"
-      - "client/Cargo.toml"
-      - "Cargo.lock"
+      - "**.rs"
+      - "**Cargo.toml"
+      - "**Cargo.lock"
   pull_request:
     branches: [develop, production]
     paths:
-      - ".github/workflows/examine-core.yml"
+      - ".github/workflows/core.yml"
       - ".github/actions/**"
-      - "client/src/**"
-      - "client/tests/**"
-      - "client/examples/**"
-      - "client/Cargo.toml"
-      - "Cargo.lock"
+      - "**.rs"
+      - "**Cargo.toml"
+      - "**Cargo.lock"
   schedule:
     - cron: "0 1 * * *"
   workflow_dispatch:
@@ -48,7 +44,7 @@ jobs:
           toolchain: nightly
           cache: true
           cache-job-id: ${{ github.workflow }}-${{ github.job }}-${{ matrix.os }}
-          cache-hash: ${{ hashFiles('.github/workflows/examine-core.yml') }}
+          cache-hash: ${{ hashFiles('.github/workflows/core.yml') }}
 
       - name: Install Protoc
         uses: arduino/setup-protoc@v1
@@ -83,7 +79,7 @@ jobs:
           components: clippy
           cache: true
           cache-job-id: ${{ github.workflow }}-${{ github.job }}
-          cache-hash: ${{ hashFiles('.github/workflows/examine-core.yml') }}
+          cache-hash: ${{ hashFiles('.github/workflows/core.yml') }}
 
       - name: Install Protoc
         uses: arduino/setup-protoc@v1
@@ -118,7 +114,7 @@ jobs:
           install: cargo-udeps
           cache: true
           cache-job-id: ${{ github.workflow }}-${{ github.job }}
-          cache-hash: ${{ hashFiles('.github/workflows/examine-core.yml') }}
+          cache-hash: ${{ hashFiles('.github/workflows/core.yml') }}
 
       - name: Install Protoc
         uses: arduino/setup-protoc@v1
@@ -185,7 +181,7 @@ jobs:
           install: cargo-audit
           cache: true
           cache-job-id: ${{ github.workflow }}-${{ github.job }}
-          cache-hash: ${{ hashFiles('.github/workflows/examine-core.yml') }}
+          cache-hash: ${{ hashFiles('.github/workflows/core.yml') }}
 
       - name: Run Cargo Audit
         uses: actions-rs/cargo@v1

@@ -3,6 +3,13 @@ name: Test coverage
 on:
   push:
     branches: [develop, production]
+    paths:
+      - ".github/workflows/coverage.yml"
+      - ".github/actions/**"
+      - "coverage.sh"
+      - "**.rs"
+      - "**Cargo.toml"
+      - "**Cargo.lock"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}

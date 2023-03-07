@@ -3,23 +3,21 @@ on:
   push:
     branches: [develop, production]
     paths:
-      - ".github/workflows/examine-wasm-bindings.yml"
+      - ".github/workflows/bindings-wasm.yml"
       - ".github/actions/**"
       - "client/bindings/wasm/**"
-      # Watch the Rust core too
-      - "client/src/**"
-      - "client/Cargo.toml"
-      - "Cargo.lock"
+      - "**.rs"
+      - "**Cargo.toml"
+      - "**Cargo.lock"
   pull_request:
     branches: [develop, production]
     paths:
-      - ".github/workflows/examine-wasm-bindings.yml"
+      - ".github/workflows/bindings-wasm.yml"
       - ".github/actions/**"
       - "client/bindings/wasm/**"
-      # Watch the Rust core too
-      - "client/src/**"
-      - "client/Cargo.toml"
-      - "Cargo.lock"
+      - "**.rs"
+      - "**Cargo.toml"
+      - "**Cargo.lock"
   schedule:
     - cron: "0 1 * * *"
   workflow_dispatch:
@@ -51,7 +49,7 @@ jobs:
           cache: true
           cache-root: client/bindings/wasm/
           cache-job-id: ${{ github.workflow }}-${{ github.job }}-${{ matrix.os }}-${{ matrix.node }}
-          cache-hash: ${{ hashFiles('.github/workflows/examine-wasm-bindings.yml') }}
+          cache-hash: ${{ hashFiles('.github/workflows/bindings-wasm.yml') }}
 
       # Download a pre-compiled wasm-bindgen binary.
       - name: Install wasm-bindgen-cli
@@ -96,7 +94,7 @@ jobs:
           cache: true
           cache-root: client/bindings/wasm/
           cache-job-id: ${{ github.workflow }}-${{ github.job }}
-          cache-hash: ${{ hashFiles('.github/workflows/examine-wasm-bindings.yml') }}
+          cache-hash: ${{ hashFiles('.github/workflows/bindings-wasm.yml') }}
 
       - name: Run Clippy
         uses: actions-rs/clippy-check@v1

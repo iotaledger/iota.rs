@@ -3,23 +3,21 @@ on:
   push:
     branches: [develop, production]
     paths:
-      - ".github/workflows/examine-python-bindings.yml"
+      - ".github/workflows/bindings-python.yml"
       - ".github/actions/**"
       - "client/bindings/python/**"
-      # Watch the Rust core too
-      - "client/src/**"
-      - "client/Cargo.toml"
-      - "Cargo.lock"
+      - "**.rs"
+      - "**Cargo.toml"
+      - "**Cargo.lock"
   pull_request:
     branches: [develop, production]
     paths:
-      - ".github/workflows/examine-python-bindings.yml"
+      - ".github/workflows/bindings-python.yml"
       - ".github/actions/**"
       - "client/bindings/python/**"
-      # Watch the Rust core too
-      - "client/src/**"
-      - "client/Cargo.toml"
-      - "Cargo.lock"
+      - "**.rs"
+      - "**Cargo.toml"
+      - "**Cargo.lock"
   schedule:
     - cron: "0 1 * * *"
   workflow_dispatch:
@@ -50,7 +48,7 @@ jobs:
           cache: true
           cache-root: client/bindings/python
           cache-job-id: ${{ github.workflow }}-${{ github.job }}-${{ matrix.os }}-${{ matrix.python }}
-          cache-hash: ${{ hashFiles('.github/workflows/examine-python-bindings.yml') }}
+          cache-hash: ${{ hashFiles('.github/workflows/bindings-python.yml') }}
 
       - name: Set Up Python ${{ matrix.python }} and Pip Cache
         uses: actions/setup-python@v4
@@ -96,7 +94,7 @@ jobs:
           cache: true
           cache-root: client/bindings/python
           cache-job-id: ${{ github.workflow }}-${{ github.job }}
-          cache-hash: ${{ hashFiles('.github/workflows/examine-python-bindings.yml') }}
+          cache-hash: ${{ hashFiles('.github/workflows/bindings-python.yml') }}
 
       - name: Install required packages (Ubuntu)
         run: |

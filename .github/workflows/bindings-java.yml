@@ -3,23 +3,21 @@ on:
   push:
     branches: [develop, production]
     paths:
-      - ".github/workflows/examine-java-bindings.yml"
+      - ".github/workflows/bindings-java.yml"
       - ".github/actions/**"
       - "client/bindings/java/**"
-      # Watch the Rust core too
-      - "client/src/**"
-      - "client/Cargo.toml"
-      - "Cargo.lock"
+      - "**.rs"
+      - "**Cargo.toml"
+      - "**Cargo.lock"
   pull_request:
     branches: [develop, production]
     paths:
-      - ".github/workflows/examine-java-bindings.yml"
+      - ".github/workflows/bindings-java.yml"
       - ".github/actions/**"
       - "client/bindings/java/**"
-      # Watch the Rust core too
-      - "client/src/**"
-      - "client/Cargo.toml"
-      - "Cargo.lock"
+      - "**.rs"
+      - "**Cargo.toml"
+      - "**Cargo.lock"
   schedule:
     - cron: "0 1 * * *"
   workflow_dispatch:
@@ -50,7 +48,7 @@ jobs:
           cache: true
           cache-root: client/bindings/java/lib/native/
           cache-job-id: ${{ github.workflow }}-${{ github.job }}-${{ matrix.os }}-${{ matrix.java }}
-          cache-hash: ${{ hashFiles('.github/workflows/examine-java-bindings.yml') }}
+          cache-hash: ${{ hashFiles('.github/workflows/bindings-java.yml') }}
 
       # This step is required for bindgen to work on Windows.
       - name: Set Up Clang/LLVM (Windows)
@@ -111,7 +109,7 @@ jobs:
           cache: true
           cache-root: client/bindings/java/lib/native/
           cache-job-id: ${{ github.workflow }}-${{ github.job }}
-          cache-hash: ${{ hashFiles('.github/workflows/examine-java-bindings.yml') }}
+          cache-hash: ${{ hashFiles('.github/workflows/bindings-java.yml') }}
 
       - name: Install Required Dependencies (Ubuntu)
         run: |
