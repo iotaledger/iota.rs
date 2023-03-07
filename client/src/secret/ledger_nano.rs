@@ -73,15 +73,16 @@ impl SecretManage for LedgerSecretManager {
         internal: bool,
         options: Option<GenerateAddressOptions>,
     ) -> crate::Result<Vec<Address>> {
-        // lock the mutex to prevent multiple simultaneous requests to a ledger
-        let lock = self.mutex.lock().await;
-
         let bip32_account = account_index | HARDENED;
 
         let bip32 = LedgerBIP32Index {
             bip32_index: address_indexes.start | HARDENED,
             bip32_change: u32::from(internal) | HARDENED,
         };
+
+        // lock the mutex to prevent multiple simultaneous requests to a ledger
+        let lock = self.mutex.lock().await;
+
         // get ledger
         let ledger = get_ledger(coin_type, bip32_account, self.is_simulator)?;
 
