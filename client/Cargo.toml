@@ -23,7 +23,7 @@ derive_more = { version = "0.99.17", default-features = false, features = [ "fro
 futures = { version = "0.3.26", default-features = false, features = [ "thread-pool" ] }
 hashbrown = { version = "0.13.2", default-features = false, features = [ "ahash", "inline-more" ] }
 instant = { version = "0.1.12", default-features = false, features = [ "wasm-bindgen" ] }
-iota-crypto = { version = "0.16.0", default-features = false, features = [ "std", "chacha", "blake2b", "ed25519", "random", "slip10", "bip39", "bip39-en", "ternary_encoding" ] }
+iota-crypto = { version = "0.15.3", default-features = false, features = [ "std", "chacha", "blake2b", "ed25519", "random", "slip10", "bip39", "bip39-en", "ternary_encoding" ] }
 iota-pow = { version = "1.0.0-rc.4", path = "../pow", default-features = false }
 iota-types = { version = "1.0.0-rc.7", path = "../types", default-features = false, features = [ "api", "block", "serde", "dto", "std" ] }
 log = { version = "0.4.17", default-features = false }

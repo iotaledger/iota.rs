@@ -24,7 +24,7 @@ derive_more = { version = "0.99.17", default-features = false, features = [ "fro
 getset = { version = "0.1.2", default-features = false, optional = true }
 hashbrown = { version = "0.13.2", default-features = false, features = [ "ahash", "inline-more", "serde" ] }
 hex = { version = "0.4.3", default-features = false, features = [ "alloc" ] }
-iota-crypto = { version = "0.16.0", default-features = false, features = [ "ed25519", "blake2b", "ternary_encoding" ] }
+iota-crypto = { version = "0.15.3", default-features = false, features = [ "ed25519", "blake2b", "ternary_encoding" ] }
 iterator-sorted = { version = "0.1.0", default-features = false }
 packable = { version = "0.7.0", default-features = false, features = [ "serde", "primitive-types" ] }
 prefix-hex = { version = "0.5.0", default-features = false, features = [ "primitive-types" ] }
