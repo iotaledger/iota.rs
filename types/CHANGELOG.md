@@ -30,6 +30,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `Error::CannotReplaceMissingField`;
 
+### Fixed
+
+- Duplicate chains in transaction outputs;
+
 ## 1.0.0-rc.6 - 2023-02-14
 
 ### Changed
