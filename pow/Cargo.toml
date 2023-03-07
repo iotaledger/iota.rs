@@ -1,6 +1,6 @@
 [package]
 name = "iota-pow"
-version = "1.0.0-rc.3"
+version = "1.0.0-rc.4"
 authors = [ "IOTA Stiftung" ]
 edition = "2021"
 description = "Provides proof of work implementations and scoring for the IOTA protocol"
@@ -16,7 +16,7 @@ all-features = true
 rustdoc-args = [ "--cfg", "docsrs" ]
 
 [dependencies]
-iota-crypto = { version = "0.15.3", default-features = false, features = [ "blake2b", "digest", "curl-p", "ternary_encoding" ] }
+iota-crypto = { version = "0.16.0", default-features = false, features = [ "blake2b", "digest", "curl-p", "ternary_encoding" ] }
 num_cpus = { version = "1.15.0", default-features = false }
 
 [target.'cfg(target_family = "wasm")'.dependencies]
