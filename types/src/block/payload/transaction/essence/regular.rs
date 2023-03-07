@@ -267,7 +267,7 @@ fn verify_outputs<const VERIFY: bool>(outputs: &[Output], visitor: &ProtocolPara
             }
 
             if let Some(chain_id) = chain_id {
-                if !chain_ids.insert(chain_id) {
+                if !chain_id.is_null() && !chain_ids.insert(chain_id) {
                     return Err(Error::DuplicateOutputChain(chain_id));
                 }
             }
@@ -308,7 +308,7 @@ fn verify_outputs_unverified<const VERIFY: bool>(outputs: &[Output]) -> Result<(
             }
 
             if let Some(chain_id) = chain_id {
-                if !chain_ids.insert(chain_id) {
+                if !chain_id.is_null() && !chain_ids.insert(chain_id) {
                     return Err(Error::DuplicateOutputChain(chain_id));
                 }
             }

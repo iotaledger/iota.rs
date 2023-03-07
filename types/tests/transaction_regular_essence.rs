@@ -421,10 +421,7 @@ fn duplicate_output_nft_null() {
         .with_outputs(vec![basic, nft.clone(), nft])
         .finish(&protocol_parameters);
 
-    assert!(matches!(
-        essence,
-        Err(Error::DuplicateOutputChain(ChainId::Nft(nft_id_0))) if nft_id_0 == nft_id
-    ));
+    assert!(essence.is_ok());
 }
 
 #[test]
