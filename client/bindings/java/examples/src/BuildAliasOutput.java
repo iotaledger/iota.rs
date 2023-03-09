@@ -10,6 +10,7 @@ import org.iota.types.output_builder.AliasOutputBuilderParams;
 import org.iota.types.secret.GenerateAddressesOptions;
 import org.iota.types.secret.MnemonicSecretManager;
 import org.iota.types.secret.Range;
+import com.google.gson.GsonBuilder;
 
 public class BuildAliasOutput {
     public static void main(String[] args) throws ClientException, InitializeClientException {
@@ -46,7 +47,7 @@ public class BuildAliasOutput {
         Output output = client.buildAliasOutput(params);
 
         // Print the output.
-        System.out.println(output.toString());
+        System.out.println(new GsonBuilder().setPrettyPrinting().create().toJson(output));
 
     }
 }

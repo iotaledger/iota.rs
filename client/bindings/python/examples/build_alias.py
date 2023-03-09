@@ -1,4 +1,5 @@
 from iota_client import IotaClient
+import json
 
 # Create an IotaClient instance
 client = IotaClient({'nodes': ['https://api.testnet.shimmer.network']})
@@ -58,4 +59,4 @@ alias_output = client.build_alias_output(
 )
 
 # Print the output
-print(alias_output)
+print(json.dumps(alias_output, indent=4))
