@@ -38,6 +38,17 @@ async fn main() -> Result<()> {
 
     println!("List of generated public addresses:\n{addresses:#?}\n");
 
+    // Generate internal addresses with custom account index and range
+    let addresses = client
+    .get_addresses(&secret_manager)
+    .with_account_index(0)
+    .with_range(0..4)
+    .with_internal_addresses(true)
+    .finish()
+    .await?;
+
+    println!("List of generated internal addresses:\n{addresses:#?}\n");
+
     // Generating addresses with `client.get_addresses(&secret_manager)`, will by default get the bech32_hrp (Bech32
     // human readable part) from the node info, generating it "offline" requires setting it with
     // `with_bech32_hrp(bech32_hrp)`
