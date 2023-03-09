@@ -1,5 +1,5 @@
-import type { HexEncodedString } from '@iota/iota.js';
 import type { FeatureTypes } from '@iota/types';
+import type { HexEncodedString } from '../../lib';
 import type { IBasicOutputBuilderOptions } from './basicOutputOptions';
 
 /**
