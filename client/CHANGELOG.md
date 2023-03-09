@@ -37,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - All `Error` variant related to ISA have been moved to a new ISA `Error` enum;
 - All fields of `BurnDto` are now `Option`;
 - Custom `Serialize` implementation for `Error`;
+- `Message::BuildAliasOutput::state_metadata` from `Option<Vec<u8>>` to `Option<String>`;
 
 ### Removed
 

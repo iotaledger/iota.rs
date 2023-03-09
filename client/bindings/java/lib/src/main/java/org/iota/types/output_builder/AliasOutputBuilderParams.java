@@ -13,7 +13,7 @@ public class AliasOutputBuilderParams {
     private NativeToken[] nativeTokens;
     private AliasId aliasId;
     private Integer stateIndex;
-    private byte[] stateMetadata;
+    private String stateMetadata;
     private Integer foundryCounter;
     private UnlockCondition[] unlockConditions;
     private Feature[] features;
@@ -39,7 +39,7 @@ public class AliasOutputBuilderParams {
         return this;
     }
 
-    public AliasOutputBuilderParams withStateMetadata(byte[] stateMetadata) {
+    public AliasOutputBuilderParams withStateMetadata(String stateMetadata) {
         this.stateMetadata = stateMetadata;
         return this;
     }
@@ -70,7 +70,7 @@ public class AliasOutputBuilderParams {
         o.add("nativeTokens", JsonUtils.toJson(nativeTokens));
         o.addProperty("aliasId", aliasId != null ? aliasId.toString() : null);
         o.addProperty("stateIndex", stateIndex);
-        o.add("stateMetadata", JsonUtils.toJson(stateMetadata));
+        o.addProperty("stateMetadata", stateMetadata);
         o.addProperty("foundryCounter", foundryCounter);
         o.add("unlockConditions", JsonUtils.toJson(unlockConditions));
         o.add("features", JsonUtils.toJson(features));

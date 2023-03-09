@@ -15,7 +15,7 @@ A DTO for [`Burn`]
 
 ### aliases
 
-• **aliases**: `string`[]
+• `Optional` **aliases**: `string`[]
 
 Aliases to burn
 
@@ -23,7 +23,7 @@ ___
 
 ### nfts
 
-• **nfts**: `string`[]
+• `Optional` **nfts**: `string`[]
 
 NFTs to burn
 
@@ -31,7 +31,7 @@ ___
 
 ### foundries
 
-• **foundries**: `string`[]
+• `Optional` **foundries**: `string`[]
 
 Foundries to burn
 
@@ -39,6 +39,6 @@ ___
 
 ### nativeTokens
 
-• **nativeTokens**: `INativeToken`
+• `Optional` **nativeTokens**: `INativeToken`[]
 
 Amounts of native tokens to burn

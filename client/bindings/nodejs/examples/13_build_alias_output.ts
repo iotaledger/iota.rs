@@ -19,26 +19,15 @@ async function run() {
     });
 
     try {
-        if (!process.env.NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1) {
-            throw new Error('.env mnemonic is undefined, see .env.example');
-        }
-        const secretManager = {
-            mnemonic: process.env.NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1,
-        };
-
-        const addresses = await client.generateAddresses(secretManager, {
-            range: {
-                start: 0,
-                end: 1,
-            },
-        });
-
-        const hexAddress = await client.bech32ToHex(addresses[0]);
+        const hexAddress = await client.bech32ToHex(
+            'rms1qpllaj0pyveqfkwxmnngz2c488hfdtmfrj3wfkgxtk4gtyrax0jaxzt70zy',
+        );
 
         const aliasOutput = await client.buildAliasOutput({
             aliasId:
                 '0x0000000000000000000000000000000000000000000000000000000000000000',
-            amount: '1000000',
+            // `hello` hex encoded
+            stateMetadata: '0x68656c6c6f',
             unlockConditions: [
                 {
                     // StateControllerAddressUnlockCondition
@@ -57,9 +46,41 @@ async function run() {
                     },
                 },
             ],
+            features: [
+                {
+                    // sender feature
+                    type: 0,
+                    address: {
+                        type: 0,
+                        pubKeyHash: hexAddress,
+                    },
+                },
+                {
+                    // MetadataFeature
+                    type: 2,
+                    // `hello` hex encoded
+                    data: '0x68656c6c6f',
+                },
+            ],
+            immutableFeatures: [
+                {
+                    // issuer feature
+                    type: 1,
+                    address: {
+                        type: 0,
+                        pubKeyHash: hexAddress,
+                    },
+                },
+                {
+                    // MetadataFeature
+                    type: 2,
+                    // `hello` hex encoded
+                    data: '0x68656c6c6f',
+                },
+            ],
         });
 
-        console.log(aliasOutput);
+        console.log(JSON.stringify(aliasOutput, null, 2));
     } catch (error) {
         console.error('Error: ', error);
     }
