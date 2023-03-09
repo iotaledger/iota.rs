@@ -33,8 +33,15 @@ async function run() {
         };
 
         // Generate public address with default account index and range.
-        const default_addresses = await client.generateAddresses(secretManager, {});
-        console.log('List of generated public addresses: ', default_addresses, '\n');
+        const default_addresses = await client.generateAddresses(
+            secretManager,
+            {},
+        );
+        console.log(
+            'List of generated public addresses: ',
+            default_addresses,
+            '\n',
+        );
 
         // Generate public address with custom account index and range.
         const address = await client.generateAddresses(secretManager, {
@@ -47,15 +54,22 @@ async function run() {
         console.log('List of generated public addresses:', address, '\n');
 
         // Generate internal addresses with custom account index and range.
-        const internalAddresses = await client.generateAddresses(secretManager, {
-            accountIndex: 0,
-            range: {
-                start: 0,
-                end: 4,
+        const internalAddresses = await client.generateAddresses(
+            secretManager,
+            {
+                accountIndex: 0,
+                range: {
+                    start: 0,
+                    end: 4,
+                },
+                internal: true,
             },
-            internal: true,
-        });
-        console.log('List of generated internal addresses:', internalAddresses, '\n');
+        );
+        console.log(
+            'List of generated internal addresses:',
+            internalAddresses,
+            '\n',
+        );
 
         // Generate addresses with providing all inputs, that way it can also be done offline without a node.
         const offlineGeneratedAddresses = await client.generateAddresses(
