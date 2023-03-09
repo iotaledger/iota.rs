@@ -53,7 +53,7 @@ pub fn send_message(handle: &ClientMessageHandler, message: String) -> Result<St
         Ok(message) => message,
         Err(e) => {
             return Ok(serde_json::to_string(&Response::Error(e.into()))
-                            .expect("the response is generated manually, so unwrap is safe."))
+                .expect("the response is generated manually, so unwrap is safe."));
         }
     };
     let response = crate::block_on(async { handle.client_message_handler.send_message(message).await });
