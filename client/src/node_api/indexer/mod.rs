@@ -18,11 +18,10 @@ impl Client {
     pub async fn get_output_ids_with_pagination(
         &self,
         route: &str,
-        query_parameters: Vec<QueryParameter>,
+        mut query_parameters: QueryParameters,
         need_quorum: bool,
         prefer_permanode: bool,
     ) -> Result<Vec<OutputId>> {
-        let mut query_parameters = QueryParameters::new(query_parameters);
         let mut output_ids = Vec::new();
 
         while let Some(cursor) = {

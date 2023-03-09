@@ -5,6 +5,8 @@
 
 use std::fmt;
 
+use crate::{Error, Result};
+
 // https://github.com/gohornet/hornet/blob/bb1271be9f3a638f6acdeb6de74eab64515f27f1/plugins/indexer/v1/routes.go#L54
 
 /// Query parameters for output_id requests.
@@ -165,6 +167,109 @@ impl fmt::Display for QueryParameter {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.to_query_string())
     }
+}
+
+macro_rules! verify_query_parameters {
+    ($query_parameters:ident, $first:path $(, $rest:path)*) => {
+        if let Some(qp) = $query_parameters.iter().find(|qp| {
+            !matches!(qp, $first(_) $(| $rest(_))*)
+        }) {
+            Err(Error::UnsupportedQueryParameter(qp.clone()))
+        } else {
+            Ok(())
+        }
+    };
+}
+
+pub(crate) fn verify_query_parameters_basic_outputs(query_parameters: Vec<QueryParameter>) -> Result<QueryParameters> {
+    verify_query_parameters!(
+        query_parameters,
+        QueryParameter::Address,
+        QueryParameter::HasNativeTokens,
+        QueryParameter::MinNativeTokenCount,
+        QueryParameter::MaxNativeTokenCount,
+        QueryParameter::HasStorageDepositReturn,
+        QueryParameter::StorageDepositReturnAddress,
+        QueryParameter::HasTimelock,
+        QueryParameter::TimelockedBefore,
+        QueryParameter::TimelockedAfter,
+        QueryParameter::HasExpiration,
+        QueryParameter::ExpiresBefore,
+        QueryParameter::ExpiresAfter,
+        QueryParameter::ExpirationReturnAddress,
+        QueryParameter::Sender,
+        QueryParameter::Tag,
+        QueryParameter::CreatedBefore,
+        QueryParameter::CreatedAfter,
+        QueryParameter::PageSize,
+        QueryParameter::Cursor
+    )?;
+
+    Ok(QueryParameters::new(query_parameters))
+}
+
+pub(crate) fn verify_query_parameters_alias_outputs(query_parameters: Vec<QueryParameter>) -> Result<QueryParameters> {
+    verify_query_parameters!(
+        query_parameters,
+        QueryParameter::StateController,
+        QueryParameter::Governor,
+        QueryParameter::Issuer,
+        QueryParameter::Sender,
+        QueryParameter::HasNativeTokens,
+        QueryParameter::MinNativeTokenCount,
+        QueryParameter::MaxNativeTokenCount,
+        QueryParameter::CreatedBefore,
+        QueryParameter::CreatedAfter,
+        QueryParameter::PageSize,
+        QueryParameter::Cursor
+    )?;
+
+    Ok(QueryParameters::new(query_parameters))
+}
+
+pub(crate) fn verify_query_parameters_foundry_outputs(
+    query_parameters: Vec<QueryParameter>,
+) -> Result<QueryParameters> {
+    verify_query_parameters!(
+        query_parameters,
+        QueryParameter::AliasAddress,
+        QueryParameter::HasNativeTokens,
+        QueryParameter::MinNativeTokenCount,
+        QueryParameter::MaxNativeTokenCount,
+        QueryParameter::CreatedBefore,
+        QueryParameter::CreatedAfter,
+        QueryParameter::PageSize,
+        QueryParameter::Cursor
+    )?;
+
+    Ok(QueryParameters::new(query_parameters))
+}
+
+pub(crate) fn verify_query_parameters_nft_outputs(query_parameters: Vec<QueryParameter>) -> Result<QueryParameters> {
+    verify_query_parameters!(
+        query_parameters,
+        QueryParameter::Address,
+        QueryParameter::HasNativeTokens,
+        QueryParameter::MinNativeTokenCount,
+        QueryParameter::MaxNativeTokenCount,
+        QueryParameter::HasStorageDepositReturn,
+        QueryParameter::StorageDepositReturnAddress,
+        QueryParameter::HasTimelock,
+        QueryParameter::TimelockedBefore,
+        QueryParameter::TimelockedAfter,
+        QueryParameter::HasExpiration,
+        QueryParameter::ExpiresBefore,
+        QueryParameter::ExpiresAfter,
+        QueryParameter::ExpirationReturnAddress,
+        QueryParameter::Sender,
+        QueryParameter::Tag,
+        QueryParameter::CreatedBefore,
+        QueryParameter::CreatedAfter,
+        QueryParameter::PageSize,
+        QueryParameter::Cursor
+    )?;
+
+    Ok(QueryParameters::new(query_parameters))
 }
 
 #[cfg(test)]
