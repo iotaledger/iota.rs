@@ -40,12 +40,12 @@ async fn main() -> Result<()> {
 
     // Generate internal addresses with custom account index and range
     let addresses = client
-    .get_addresses(&secret_manager)
-    .with_account_index(0)
-    .with_range(0..4)
-    .with_internal_addresses(true)
-    .finish()
-    .await?;
+        .get_addresses(&secret_manager)
+        .with_account_index(0)
+        .with_range(0..4)
+        .with_internal_addresses(true)
+        .finish()
+        .await?;
 
     println!("List of generated internal addresses:\n{addresses:#?}\n");
 
