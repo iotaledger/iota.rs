@@ -11,7 +11,7 @@ pub mod types;
 
 use std::sync::Mutex;
 
-use ::iota_client::message_interface::Message;
+use ::iota_client::message_interface::{Message, Response};
 use fern_logger::{logger_init, LoggerConfig, LoggerOutputConfigBuilder};
 use once_cell::sync::OnceCell;
 use pyo3::{prelude::*, wrap_pyfunction};
@@ -52,7 +52,8 @@ pub fn send_message(handle: &ClientMessageHandler, message: String) -> Result<St
     let message = match serde_json::from_str::<Message>(&message) {
         Ok(message) => message,
         Err(e) => {
-            panic!("Wrong message type! {e:?}");
+            return Ok(serde_json::to_string(&Response::Error(e.into()))
+                            .expect("the response is generated manually, so unwrap is safe."))
         }
     };
     let response = crate::block_on(async { handle.client_message_handler.send_message(message).await });

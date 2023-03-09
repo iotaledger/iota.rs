@@ -226,7 +226,7 @@ impl ClientMessageHandler {
                     native_tokens,
                     &alias_id,
                     state_index,
-                    state_metadata,
+                    state_metadata.map(|s| prefix_hex::decode(&s)).transpose()?,
                     foundry_counter,
                     unlock_conditions,
                     features,

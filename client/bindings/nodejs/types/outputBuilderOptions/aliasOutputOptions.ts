@@ -1,3 +1,4 @@
+import type { HexEncodedString } from '@iota/iota.js';
 import type { FeatureTypes } from '@iota/types';
 import type { IBasicOutputBuilderOptions } from './basicOutputOptions';
 
@@ -5,9 +6,9 @@ import type { IBasicOutputBuilderOptions } from './basicOutputOptions';
  * Options for building an Alias Output
  */
 export interface IAliasOutputBuilderOptions extends IBasicOutputBuilderOptions {
-    aliasId: string;
+    aliasId: HexEncodedString;
     stateIndex?: number;
-    stateMetadata?: Uint8Array;
+    stateMetadata?: HexEncodedString;
     foundryCounter?: number;
     immutableFeatures?: FeatureTypes[];
 }

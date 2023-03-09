@@ -47,7 +47,7 @@ pub enum Message {
         #[serde(rename = "stateIndex")]
         state_index: Option<u32>,
         #[serde(rename = "stateMetadata")]
-        state_metadata: Option<Vec<u8>>,
+        state_metadata: Option<String>,
         #[serde(rename = "foundryCounter")]
         foundry_counter: Option<u32>,
         #[serde(rename = "unlockConditions")]

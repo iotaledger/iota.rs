@@ -24,6 +24,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Changes from the Rust library;
+- `Client::build_alias_output()` state_metadata parameter is now a string;
+
+### Fixed
+
+- Error raising;
+- Don't panic for wrong messages;
 
 ## 1.0.0-rc.2 - 2023-02-09
 
