@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security -->
 
-## 2.0.1-rc.7 - 2023-XX-XX
+## 2.0.1-rc.7 - 2023-03-09
 
 ### Added
 
@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Update dependencies;
 - `DatabaseProvider` renamed to `StorageProvider`;
 - `StrongholdDatabaseProvider` renamed to `StrongholdStorageProvider`;
 - `high_level` module moved to `api`;

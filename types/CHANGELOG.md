@@ -19,10 +19,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security -->
 
-## 1.0.0-rc.7 - 2023-XX-XX
+## 1.0.0-rc.7 - 2023-03-09
 
 ### Changed
 
+- Update dependencies;
 - `{AliasOutputBuilder, BasicOutputBuilder, FoundryOutputBuilder, NftOutputBuilder}::{replace_unlock_condition, replace_feature, replace_immutable_feature}`
   now inserts the given element if it wasn't already present instead of returning an error;
 
