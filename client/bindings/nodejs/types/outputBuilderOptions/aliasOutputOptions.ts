@@ -1,5 +1,4 @@
-import type { FeatureTypes } from '@iota/types';
-import type { HexEncodedString } from '../../lib';
+import type { FeatureTypes, HexEncodedString } from '@iota/types';
 import type { IBasicOutputBuilderOptions } from './basicOutputOptions';
 
 /**
