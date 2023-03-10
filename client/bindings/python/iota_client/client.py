@@ -214,7 +214,9 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
         -------
         Addresses as array of strings.
         """
-        options = locals()
+        options = dict(locals())
+        del options['self']
+        del options['secret_manager']
 
         options = {k:v for k,v in options.items() if v != self.__default}
 
@@ -223,17 +225,11 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
         if is_start_set or is_end_set:
             options['range'] = {}
             if is_start_set:
-                options['range']['start'] = options['start']
-                del options['start']
+                options['range']['start'] = options.pop('start')
             if is_end_set:
-                options['range']['end'] = options['end']
-                del options['end']
+                options['range']['end'] = options.pop('end')
         if 'ledger_nano_prompt' in options:
-            options['options'] = { 'ledger_nano_prompt': options['ledger_nano_prompt']}
-            del options['ledger_nano_prompt']
-
-        del options['self']
-        del options['secret_manager']
+            options['options'] = { 'ledger_nano_prompt': options.pop('ledger_nano_prompt')}
 
         options = humps.camelize(options)
 
