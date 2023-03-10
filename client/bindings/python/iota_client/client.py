@@ -11,12 +11,11 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
     __default = object()
     def __init__(
         self,
-        node = __default, 
+        nodes=__default,
         primary_node = __default,
         primary_pow_node = __default,
         permanode = __default,
         ignore_node_health = __default,
-        nodes = __default,
         api_timeout = __default, 
         node_sync_interval = __default,
         remote_pow_timeout = __default,
@@ -33,8 +32,8 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
 
         Parameters
         ----------
-        node : string
-            Node URL.
+        nodes : string or array of string
+            A single Node URL or an array of URLs.
         primary_node : string
             Node which will be tried first for all requests.
         primary_pow_node : string
@@ -70,15 +69,13 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
             The amount of threads to be used for proof of work.
         """
 
-        if (node and not self.__default):
-            if (nodes and not self.__default):
-                nodes.append(node)
-            else:
-                nodes = [node]
+        if isinstance(nodes, str):
+            nodes = [nodes]
+        else:
+            nodes = nodes
 
         client_config = locals()
         del client_config['self']
-        del client_config['node']
 
         client_config = {k:v for k,v in client_config.items() if v != self.__default}
 
