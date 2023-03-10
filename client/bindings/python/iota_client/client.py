@@ -68,14 +68,23 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
         pow_worker_count : int
             The amount of threads to be used for proof of work.
         """
-
-        if isinstance(nodes, str):
-            nodes = [nodes]
-        else:
-            nodes = nodes
-
-        client_config = locals()
+        client_config = dict(locals())
         del client_config['self']
+
+        if isinstance(nodes, list):
+            _nodes = nodes
+            nodes = []
+            for node in _nodes:
+                if isinstance(node, Node):
+                    nodes.append(node.as_dict())
+                else:
+                    nodes.append(node)
+        else:
+            if isinstance(nodes, Node):
+                nodes = [nodes.as_dict()]
+            else:
+                nodes = [nodes]
+        client_config['nodes'] = nodes
 
         client_config = {k:v for k,v in client_config.items() if v != self.__default}
 
@@ -270,3 +279,44 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
         return self.send_message('postBlockPayload', {
             'payloadDto': payload_dto
         })
+
+class Node():
+    __default = object()
+
+    def __init__(self, url=__default, jwt=__default, user=__default, password=__default, disabled=__default):
+        """Initialize a Node
+
+        Parameters
+        ----------
+        url : string
+            Node url
+        jwt : string
+            JWT token
+        user : string
+            User for basic authentication
+        password : string
+            Password for basic authentication
+        disabled : bool
+            Disable node
+        """
+        self.url = url
+        self.jwt = jwt
+        self.user = user
+        self.password = password
+        self.disabled = disabled
+
+    def as_dict(self):
+        config = {k: v for k, v in self.__dict__.items() if v != self.__default}
+
+        if 'jwt' in config or 'user' in config or 'password' in config:
+            config['auth'] = {}
+            if 'jwt' in config:
+                config['auth']['jwt'] = config.pop('jwt')
+            if 'user' in config or 'password' in config:
+                basic_auth = config['auth']['basic_auth_name_pwd'] = []
+                if 'user' in config:
+                    basic_auth.append(config.pop('user'))
+                if 'password' in config:
+                    basic_auth.append(config.pop('password'))
+
+        return config
