@@ -45,7 +45,7 @@ macro_rules! impl_id {
             type Err = $crate::block::Error;
 
             fn from_str(s: &str) -> Result<Self, Self::Err> {
-                Ok($name::from(prefix_hex::decode::<[u8; Self::LENGTH]>(s).map_err($crate::block::Error::Hex)?))
+                Ok($name::new(prefix_hex::decode(s).map_err($crate::block::Error::Hex)?))
             }
         }
 
