@@ -37,16 +37,19 @@ pub async fn create_client_and_secret_manager_with_funds(mnemonic: Option<&str>)
     // Continue only after funds are received
     for _ in 0..30 {
         tokio::time::sleep(std::time::Duration::from_secs(2)).await;
-        let output_ids = client
-            .basic_output_ids(vec![
-                QueryParameter::Address(address.clone()),
-                QueryParameter::HasExpiration(false),
-                QueryParameter::HasTimelock(false),
-                QueryParameter::HasStorageDepositReturn(false),
-            ])
+        let output_ids_response = client
+            .basic_output_ids(
+                vec![
+                    QueryParameter::Address(address.clone()),
+                    QueryParameter::HasExpiration(false),
+                    QueryParameter::HasTimelock(false),
+                    QueryParameter::HasStorageDepositReturn(false),
+                ],
+                true,
+            )
             .await?;
 
-        if !output_ids.is_empty() {
+        if !output_ids_response.is_empty() {
             return Ok((client, secret_manager));
         }
     }

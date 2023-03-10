@@ -27,19 +27,22 @@ async fn main() -> Result<()> {
         .unwrap_or_else(|| String::from("rms1qrrdjmdkadtcnuw0ue5n9g4fmkelrj3dl26eyeshkha3w3uu0wheu5z5qqz"));
 
     // Get output IDs of NFT outputs that can be controlled by this address without further unlock constraints.
-    let output_ids = client
-        .nft_output_ids(vec![
-            QueryParameter::Address(address),
-            QueryParameter::HasExpiration(false),
-            QueryParameter::HasTimelock(false),
-            QueryParameter::HasStorageDepositReturn(false),
-        ])
+    let output_ids_response = client
+        .nft_output_ids(
+            vec![
+                QueryParameter::Address(address),
+                QueryParameter::HasExpiration(false),
+                QueryParameter::HasTimelock(false),
+                QueryParameter::HasStorageDepositReturn(false),
+            ],
+            true,
+        )
         .await?;
 
-    println!("Address output IDs {output_ids:#?}");
+    println!("Address output IDs {output_ids_response:#?}");
 
     // Get the outputs by their IDs.
-    let outputs_responses = client.get_outputs(output_ids).await?;
+    let outputs_responses = client.get_outputs(output_ids_response.items).await?;
 
     println!("NFT outputs: {outputs_responses:#?}");
 

@@ -200,16 +200,19 @@ async fn main() -> Result<()> {
     ];
 
     // get additional input for the new basic output
-    let output_ids = client
-        .basic_output_ids(vec![QueryParameter::Address(
-            address.to_bech32(client.get_bech32_hrp().await?),
-        )])
+    let output_ids_response = client
+        .basic_output_ids(
+            vec![QueryParameter::Address(
+                address.to_bech32(client.get_bech32_hrp().await?),
+            )],
+            true,
+        )
         .await?;
 
     let block = client
         .block()
         .with_secret_manager(&secret_manager)
-        .with_input(output_ids[0].into())?
+        .with_input(output_ids_response.items[0].into())?
         .with_input(alias_output_id.into())?
         .with_input(foundry_output_id.into())?
         .with_outputs(outputs)?

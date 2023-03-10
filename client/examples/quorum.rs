@@ -34,15 +34,18 @@ async fn main() -> Result<()> {
         .await?;
 
     // Get output ids of outputs that can be controlled by this address without further unlock constraints
-    let output_ids = client
-        .basic_output_ids(vec![
-            QueryParameter::Address(addresses[0].clone()),
-            QueryParameter::HasExpiration(false),
-            QueryParameter::HasTimelock(false),
-            QueryParameter::HasStorageDepositReturn(false),
-        ])
+    let output_ids_response = client
+        .basic_output_ids(
+            vec![
+                QueryParameter::Address(addresses[0].clone()),
+                QueryParameter::HasExpiration(false),
+                QueryParameter::HasTimelock(false),
+                QueryParameter::HasStorageDepositReturn(false),
+            ],
+            true,
+        )
         .await?;
-    println!("Address outputs: {output_ids:?}");
+    println!("Address outputs: {output_ids_response:?}");
 
     Ok(())
 }

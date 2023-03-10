@@ -27,17 +27,20 @@ async fn main() -> Result<()> {
         .unwrap_or_else(|| String::from("rms1qrrdjmdkadtcnuw0ue5n9g4fmkelrj3dl26eyeshkha3w3uu0wheu5z5qqz"));
 
     // Get output IDs of alias outputs that can be controlled by this address.
-    let output_ids = client
-        .alias_output_ids(vec![
-            QueryParameter::Governor(address.clone()),
-            QueryParameter::StateController(address),
-        ])
+    let output_ids_response = client
+        .alias_output_ids(
+            vec![
+                QueryParameter::Governor(address.clone()),
+                QueryParameter::StateController(address),
+            ],
+            true,
+        )
         .await?;
 
-    println!("Address output IDs {output_ids:#?}");
+    println!("Address output IDs {output_ids_response:#?}");
 
     // Get the outputs by their IDs.
-    let outputs_responses = client.get_outputs(output_ids).await?;
+    let outputs_responses = client.get_outputs(output_ids_response.items).await?;
 
     println!("Alias outputs: {outputs_responses:#?}");
 

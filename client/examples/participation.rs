@@ -61,16 +61,19 @@ async fn main() -> Result<()> {
     }
 
     // Get outputs for address and request if they're participating
-    let basic_output_ids = client
-        .basic_output_ids(vec![
-            QueryParameter::Address(bech32_address),
-            QueryParameter::HasExpiration(false),
-            QueryParameter::HasTimelock(false),
-            QueryParameter::HasStorageDepositReturn(false),
-        ])
+    let output_ids_response = client
+        .basic_output_ids(
+            vec![
+                QueryParameter::Address(bech32_address),
+                QueryParameter::HasExpiration(false),
+                QueryParameter::HasTimelock(false),
+                QueryParameter::HasStorageDepositReturn(false),
+            ],
+            true,
+        )
         .await?;
 
-    for output_id in basic_output_ids {
+    for output_id in output_ids_response.items {
         if let Ok(output_status) = client.output_status(&output_id).await {
             println!("{output_status:#?}");
         }

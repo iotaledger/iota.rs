@@ -6,26 +6,29 @@
 pub mod query_parameters;
 pub mod routes;
 
-use std::str::FromStr;
-
-use iota_types::{api::plugins::indexer::OutputIdsResponse, block::output::OutputId};
+use iota_types::api::plugins::indexer::OutputIdsResponse;
 
 pub(crate) use self::query_parameters::{QueryParameter, QueryParameters};
 use crate::{Client, Result};
 
 impl Client {
     /// Get all output ids for a provided URL route and query parameters.
-    pub async fn get_output_ids_with_pagination(
+    pub async fn get_output_ids(
         &self,
         route: &str,
         mut query_parameters: QueryParameters,
         need_quorum: bool,
         prefer_permanode: bool,
-    ) -> Result<Vec<OutputId>> {
-        let mut output_ids = Vec::new();
+        automatic_pagination: bool,
+    ) -> Result<OutputIdsResponse> {
+        let mut merged_output_ids_response = OutputIdsResponse {
+            ledger_index: 0,
+            cursor: None,
+            items: Vec::new(),
+        };
 
         while let Some(cursor) = {
-            let outputs_response = self
+            let output_ids_response = self
                 .node_manager
                 .get_request::<OutputIdsResponse>(
                     route,
@@ -36,15 +39,19 @@ impl Client {
                 )
                 .await?;
 
-            for output_id in outputs_response.items {
-                output_ids.push(OutputId::from_str(&output_id)?);
+            if !automatic_pagination {
+                return Ok(output_ids_response);
             }
 
-            outputs_response.cursor
+            merged_output_ids_response.ledger_index = output_ids_response.ledger_index;
+            merged_output_ids_response.cursor = output_ids_response.cursor;
+            merged_output_ids_response.items.extend(output_ids_response.items);
+
+            &merged_output_ids_response.cursor
         } {
-            query_parameters.replace(QueryParameter::Cursor(cursor));
+            query_parameters.replace(QueryParameter::Cursor(cursor.to_string()));
         }
 
-        Ok(output_ids)
+        Ok(merged_output_ids_response)
     }
 }

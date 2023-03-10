@@ -54,17 +54,20 @@ async fn setup_transaction_block() -> (BlockId, TransactionId) {
     // Continue only after funds are received
     for _ in 0..30 {
         tokio::time::sleep(std::time::Duration::from_secs(1)).await;
-        let output_ids = client
-            .basic_output_ids(vec![
-                QueryParameter::Address(address.to_string()),
-                QueryParameter::HasExpiration(false),
-                QueryParameter::HasTimelock(false),
-                QueryParameter::HasStorageDepositReturn(false),
-            ])
+        let output_ids_response = client
+            .basic_output_ids(
+                vec![
+                    QueryParameter::Address(address.to_string()),
+                    QueryParameter::HasExpiration(false),
+                    QueryParameter::HasTimelock(false),
+                    QueryParameter::HasStorageDepositReturn(false),
+                ],
+                true,
+            )
             .await
             .unwrap();
 
-        if !output_ids.is_empty() {
+        if !output_ids_response.items.is_empty() {
             break;
         }
     }
@@ -188,14 +191,17 @@ async fn test_get_address_outputs() {
         .await
         .unwrap()[0];
 
-    let address = client
-        .basic_output_ids(vec![QueryParameter::Address(
-            address.to_bech32(&client.get_bech32_hrp().await.unwrap()),
-        )])
+    let output_ids_response = client
+        .basic_output_ids(
+            vec![QueryParameter::Address(
+                address.to_bech32(&client.get_bech32_hrp().await.unwrap()),
+            )],
+            true,
+        )
         .await
         .unwrap();
 
-    let r = client.get_outputs(address).await.unwrap();
+    let r = client.get_outputs(output_ids_response.items).await.unwrap();
 
     println!("{r:#?}");
 }
