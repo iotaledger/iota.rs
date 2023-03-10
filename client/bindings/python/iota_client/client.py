@@ -190,8 +190,30 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
                            bech32_hrp = __default, 
                            ledger_nano_prompt = __default):
         """Generate addresses.
-        """
 
+        Parameters
+        ----------
+        secret_manager : Any type of SecretManager.
+            The secret manager to use. Can be (MnemonicSecretManager, SeedSecretManager, StrongholdSecretManager or LedgerNanoSecretManager.
+        account_index : int
+            Account index.
+        start : int
+            Start index of generated addresses
+        end : int
+            End index of generated addresses
+        internal : bool
+            Internal addresses
+        coin_type : int
+            Coin type. IOTA = 4218. Shimmer = 4219.
+        bech32_hrp : string
+            Bech32 human readable part.
+        ledger_nano_prompt : bool
+            Display the address on ledger devices.
+
+        Returns
+        -------
+        Addresses as array of strings.
+        """
         options = locals()
 
         options = {k:v for k,v in options.items() if v != self.__default}
