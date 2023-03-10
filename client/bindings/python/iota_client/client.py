@@ -79,7 +79,7 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
                     nodes.append(node.as_dict())
                 else:
                     nodes.append(node)
-        else:
+        elif nodes is not self.__default:
             if isinstance(nodes, Node):
                 nodes = [nodes.as_dict()]
             else:
