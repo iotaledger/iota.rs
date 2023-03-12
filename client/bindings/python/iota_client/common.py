@@ -16,7 +16,7 @@ def send_message_routine(func):
         json_response = json.loads(response)
 
         if "type" in json_response:
-            if json_response["type"] == "Error":
+            if json_response["type"] == "error":
                 raise IotaClientError(json_response['payload'])
 
         if "payload" in json_response:

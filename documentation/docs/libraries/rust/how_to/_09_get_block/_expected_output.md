@@ -15,7 +15,7 @@ Block {
                 TransactionPayload {
                     essence: Regular(
                         RegularTransactionEssence {
-                            network_id: 8342982141227064571,
+                            network_id: 1856588631910923207,
                             inputs: BoxedSlicePrefix([
                                 Utxo(
                                     UtxoInput(0xcb664cb88dcb4182df622fb82661e2d82e81ff95f3f04d5f3b071484a10fdc490100),

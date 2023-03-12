@@ -53,11 +53,11 @@ jar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
     if (!project.hasProperty('buildTarget')) {
-        from('native/target/release') {
+        from('../../../../target/release') {
             include '*.so', '*.dylib', '*.dll'
         }
     } else {
-        from('native/target/' + findProperty('buildTarget') + '/release') {
+        from('../../../../target/' + findProperty('buildTarget') + '/release') {
             include '*.so', '*.dylib', '*.dll'
         }
     }

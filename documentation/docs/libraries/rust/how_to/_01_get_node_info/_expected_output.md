@@ -22,7 +22,7 @@ NodeInfoWrapper {
         ],
         protocol: ProtocolResponse {
             version: 2,
-            network_name: "testnet",
+            network_name: "testnet-1",
             bech32_hrp: "rms",
             min_pow_score: 1500.0,
             rent_structure: RentStructureResponse {

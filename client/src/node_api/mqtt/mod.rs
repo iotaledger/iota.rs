@@ -171,8 +171,9 @@ fn poll_mqtt(
                         if !is_subscribed {
                             is_subscribed = true;
                             // resubscribe topics
-                            let mqtt_topic_handlers = mqtt_topic_handlers_guard.read().await;
-                            let topics = mqtt_topic_handlers
+                            let topics = mqtt_topic_handlers_guard
+                                .read()
+                                .await
                                 .keys()
                                 .map(|t| SubscribeFilter::new(t.topic().to_string(), QoS::AtLeastOnce))
                                 .collect::<Vec<SubscribeFilter>>();

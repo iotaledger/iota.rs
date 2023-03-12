@@ -32,26 +32,44 @@ async function run() {
             mnemonic: process.env.NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1,
         };
 
+        // Generate public address with default account index and range.
+        const default_addresses = await client.generateAddresses(
+            secretManager,
+            {},
+        );
+        console.log(
+            'List of generated public addresses: ',
+            default_addresses,
+            '\n',
+        );
+
         // Generate public address with custom account index and range.
         const address = await client.generateAddresses(secretManager, {
             accountIndex: 0,
             range: {
                 start: 0,
-                end: 1,
+                end: 4,
             },
         });
-        console.log('First public address:', address, '\n');
+        console.log('List of generated public addresses:', address, '\n');
 
-        // Generate an internal address with custom account index and range.
-        const internalAddress = await client.generateAddresses(secretManager, {
-            accountIndex: 0,
-            range: {
-                start: 0,
-                end: 1,
+        // Generate internal addresses with custom account index and range.
+        const internalAddresses = await client.generateAddresses(
+            secretManager,
+            {
+                accountIndex: 0,
+                range: {
+                    start: 0,
+                    end: 4,
+                },
+                internal: true,
             },
-            internal: true,
-        });
-        console.log('First internal address:', internalAddress, '\n');
+        );
+        console.log(
+            'List of generated internal addresses:',
+            internalAddresses,
+            '\n',
+        );
 
         // Generate addresses with providing all inputs, that way it can also be done offline without a node.
         const offlineGeneratedAddresses = await client.generateAddresses(
@@ -61,7 +79,7 @@ async function run() {
                 accountIndex: 0,
                 range: {
                     start: 0,
-                    end: 2,
+                    end: 4,
                 },
                 internal: false,
                 // Generating addresses with client.generateAddresses(secretManager, {}), will by default get the bech32_hrp (Bech32
