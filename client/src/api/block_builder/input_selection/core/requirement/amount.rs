@@ -75,6 +75,7 @@ pub(crate) fn amount_sums(
     (inputs_sum, outputs_sum, inputs_sdr, outputs_sdr)
 }
 
+#[derive(Debug, Clone)]
 struct AmountSelection {
     newly_selected_inputs: HashMap<OutputId, (InputSigningData, Option<AliasTransition>)>,
     inputs_sum: u64,
@@ -297,104 +298,38 @@ impl InputSelection {
             );
         }
 
+        // TODO if consolidate strategy: sum all the lowest amount until diff is covered.
+        // TODO this would be lowest amount of input strategy.
+
         // Try to select outputs first with ordering from low to high amount, if that fails, try reversed
-        'outer_fulfil: for i in 0..2 {
-            // TODO if consolidate strategy: sum all the lowest amount until diff is covered.
-            // TODO this would be lowest amount of input strategy.
-            if i == 0 {
-                log::debug!("Ordering inputs from low to high amount");
-                // low to high
-                self.available_inputs
-                    .sort_by(|left, right| left.output.amount().cmp(&right.output.amount()));
-            } else if i == 1 {
-                log::debug!("Ordering inputs from high to low amount");
-                // high to low
-                self.available_inputs
-                    .sort_by(|left, right| right.output.amount().cmp(&left.output.amount()));
-            };
+        log::debug!("Ordering inputs from low to high amount");
+        // low to high
+        self.available_inputs
+            .sort_by(|left, right| left.output.amount().cmp(&right.output.amount()));
+        if let Some(r) = self.fulfill_amount_requirement_loop(&mut amount_selection) {
+            return Ok(r);
+        }
 
-            'fulfil: {
-                let basic_ed25519_inputs = self.available_inputs.iter().filter(|input| {
-                    if let Output::Basic(output) = &input.output {
-                        output
-                            .unlock_conditions()
-                            .locked_address(output.address(), self.timestamp)
-                            .is_ed25519()
-                    } else {
-                        false
-                    }
-                });
+        if self.selected_inputs.len() + amount_selection.newly_selected_inputs.len() > INPUT_COUNT_MAX.into() {
+            // Clear before trying with reversed ordering
+            log::debug!("Clearing amount selection");
+            amount_selection = AmountSelection::new(self)?;
 
-                if self.fulfil(basic_ed25519_inputs, &mut amount_selection) {
-                    break 'fulfil;
-                }
-
-                let basic_non_ed25519_inputs = self.available_inputs.iter().filter(|input| {
-                    if let Output::Basic(output) = &input.output {
-                        !output
-                            .unlock_conditions()
-                            .locked_address(output.address(), self.timestamp)
-                            .is_ed25519()
-                    } else {
-                        false
-                    }
-                });
-
-                if self.fulfil(basic_non_ed25519_inputs, &mut amount_selection) {
-                    break 'fulfil;
-                }
-
-                // Other kinds of outputs.
-
-                log::debug!("Trying other types of outputs");
-
-                let mut inputs = self
-                    .available_inputs
-                    .iter()
-                    .filter(|input| match &input.output {
-                        Output::Basic(_) => false,
-                        // If alias, we are only interested in state transitions as governance can't move funds.
-                        Output::Alias(alias) => self.addresses.contains(alias.state_controller_address()),
-                        _ => true,
-                    })
-                    .peekable();
-
-                if inputs.peek().is_some() {
-                    amount_selection.fulfil(inputs);
-
-                    log::debug!(
-                        "Outputs {:?} selected to fulfill the amount requirement",
-                        amount_selection.newly_selected_inputs
-                    );
-                    log::debug!("Triggering another amount round as non-basic outputs need to be transitioned first");
-
-                    if self.selected_inputs.len() + amount_selection.newly_selected_inputs.len()
-                        <= INPUT_COUNT_MAX.into()
-                    {
-                        self.available_inputs
-                            .retain(|input| !amount_selection.newly_selected_inputs.contains_key(input.output_id()));
-
-                        // TODO explanation of Amount
-                        self.requirements.push(Requirement::Amount);
-
-                        return Ok(amount_selection.into_newly_selected_inputs());
-                    }
-                }
+            log::debug!("Ordering inputs from high to low amount");
+            // high to low
+            self.available_inputs
+                .sort_by(|left, right| right.output.amount().cmp(&left.output.amount()));
+            if let Some(r) = self.fulfill_amount_requirement_loop(&mut amount_selection) {
+                return Ok(r);
             }
+        }
 
-            if self.selected_inputs.len() + amount_selection.newly_selected_inputs.len() <= INPUT_COUNT_MAX.into() {
-                break 'outer_fulfil;
-            } else if i == 0 {
-                // Clear before trying with reversed ordering
-                log::debug!("Clearing amount selection");
-                amount_selection = AmountSelection::new(self)?;
-            } else {
-                return Err(Error::Block(iota_types::block::Error::InvalidInputCount(
-                    TryIntoBoundedU16Error::Truncated(
-                        self.selected_inputs.len() + amount_selection.newly_selected_inputs.len(),
-                    ),
-                )));
-            }
+        if self.selected_inputs.len() + amount_selection.newly_selected_inputs.len() > INPUT_COUNT_MAX.into() {
+            return Err(Error::Block(iota_types::block::Error::InvalidInputCount(
+                TryIntoBoundedU16Error::Truncated(
+                    self.selected_inputs.len() + amount_selection.newly_selected_inputs.len(),
+                ),
+            )));
         }
 
         if amount_selection.missing_amount() != 0 {
@@ -410,5 +345,79 @@ impl InputSelection {
             .retain(|input| !amount_selection.newly_selected_inputs.contains_key(input.output_id()));
 
         Ok(amount_selection.into_newly_selected_inputs())
+    }
+
+    fn fulfill_amount_requirement_loop(
+        &mut self,
+        amount_selection: &mut AmountSelection,
+    ) -> Option<Vec<(InputSigningData, Option<AliasTransition>)>> {
+        'fulfil: {
+            let basic_ed25519_inputs = self.available_inputs.iter().filter(|input| {
+                if let Output::Basic(output) = &input.output {
+                    output
+                        .unlock_conditions()
+                        .locked_address(output.address(), self.timestamp)
+                        .is_ed25519()
+                } else {
+                    false
+                }
+            });
+
+            if self.fulfil(basic_ed25519_inputs, amount_selection) {
+                break 'fulfil;
+            }
+
+            let basic_non_ed25519_inputs = self.available_inputs.iter().filter(|input| {
+                if let Output::Basic(output) = &input.output {
+                    !output
+                        .unlock_conditions()
+                        .locked_address(output.address(), self.timestamp)
+                        .is_ed25519()
+                } else {
+                    false
+                }
+            });
+
+            if self.fulfil(basic_non_ed25519_inputs, amount_selection) {
+                break 'fulfil;
+            }
+
+            // Other kinds of outputs.
+
+            log::debug!("Trying other types of outputs");
+
+            let mut inputs = self
+                .available_inputs
+                .iter()
+                .filter(|input| match &input.output {
+                    Output::Basic(_) => false,
+                    // If alias, we are only interested in state transitions as governance can't move funds.
+                    Output::Alias(alias) => self.addresses.contains(alias.state_controller_address()),
+                    _ => true,
+                })
+                .peekable();
+
+            if inputs.peek().is_some() {
+                amount_selection.fulfil(inputs);
+
+                log::debug!(
+                    "Outputs {:?} selected to fulfill the amount requirement",
+                    amount_selection.newly_selected_inputs
+                );
+                log::debug!("Triggering another amount round as non-basic outputs need to be transitioned first");
+
+                if self.selected_inputs.len() + amount_selection.newly_selected_inputs.len() <= INPUT_COUNT_MAX.into() {
+                    self.available_inputs
+                        .retain(|input| !amount_selection.newly_selected_inputs.contains_key(input.output_id()));
+
+                    // TODO explanation of Amount
+                    self.requirements.push(Requirement::Amount);
+
+                    return Some(amount_selection.clone().into_newly_selected_inputs());
+                }
+            }
+        }
+
+        None
     }
 }
