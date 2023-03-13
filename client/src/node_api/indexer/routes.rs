@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! IOTA node indexer routes
+
 use iota_types::{
     api::plugins::indexer::OutputIdsResponse,
     block::output::{AliasId, FoundryId, NftId, OutputId},
