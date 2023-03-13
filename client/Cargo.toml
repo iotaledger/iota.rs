@@ -301,6 +301,10 @@ name = "basic"
 path = "examples/output/basic.rs"
 
 [[example]]
+name = "build_basic_output"
+path = "examples/output/build_basic_output.rs"
+
+[[example]]
 name = "expiration"
 path = "examples/output/expiration.rs"
 
