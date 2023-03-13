@@ -55,15 +55,12 @@ async fn setup_transaction_block() -> (BlockId, TransactionId) {
     for _ in 0..30 {
         tokio::time::sleep(std::time::Duration::from_secs(1)).await;
         let output_ids_response = client
-            .basic_output_ids(
-                vec![
-                    QueryParameter::Address(address.to_string()),
-                    QueryParameter::HasExpiration(false),
-                    QueryParameter::HasTimelock(false),
-                    QueryParameter::HasStorageDepositReturn(false),
-                ],
-                true,
-            )
+            .basic_output_ids(vec![
+                QueryParameter::Address(address.to_string()),
+                QueryParameter::HasExpiration(false),
+                QueryParameter::HasTimelock(false),
+                QueryParameter::HasStorageDepositReturn(false),
+            ])
             .await
             .unwrap();
 
@@ -192,12 +189,9 @@ async fn test_get_address_outputs() {
         .unwrap()[0];
 
     let output_ids_response = client
-        .basic_output_ids(
-            vec![QueryParameter::Address(
-                address.to_bech32(&client.get_bech32_hrp().await.unwrap()),
-            )],
-            true,
-        )
+        .basic_output_ids(vec![QueryParameter::Address(
+            address.to_bech32(&client.get_bech32_hrp().await.unwrap()),
+        )])
         .await
         .unwrap();
 

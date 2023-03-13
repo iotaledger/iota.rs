@@ -21,7 +21,7 @@ async function run() {
 
     try {
         // Get output ids of basic outputs that can be controlled by this address without further unlock constraints
-        const outputIds = await client.basicOutputIds([
+        const outputIdsResponse = await client.basicOutputIds([
             {
                 address:
                     'rms1qpllaj0pyveqfkwxmnngz2c488hfdtmfrj3wfkgxtk4gtyrax0jaxzt70zy',
@@ -30,9 +30,9 @@ async function run() {
             { hasTimelock: false },
             { hasStorageDepositReturn: false },
         ]);
-        console.log('Output ids: ', outputIds, '\n');
+        console.log('Output ids: ', outputIdsResponse, '\n');
 
-        const addressOutputs = await client.getOutputs(outputIds);
+        const addressOutputs = await client.getOutputs(outputIdsResponse.items);
         console.log('Address outputs: ', addressOutputs);
     } catch (error) {
         console.error('Error: ', error);

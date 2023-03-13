@@ -51,7 +51,7 @@ describe.skip('Main examples', () => {
     });
 
     it('gets address outputs', async () => {
-        const outputIds = await client.basicOutputIds([
+        const outputIdsResponse = await client.basicOutputIds([
             {
                 address:
                     'rms1qpllaj0pyveqfkwxmnngz2c488hfdtmfrj3wfkgxtk4gtyrax0jaxzt70zy',
@@ -61,9 +61,9 @@ describe.skip('Main examples', () => {
             { hasStorageDepositReturn: false },
         ]);
 
-        outputIds.forEach((id) => expect(id).toBeValidOutputId());
+        outputIdsResponse.items.forEach((id) => expect(id).toBeValidOutputId());
 
-        const addressOutputs = await client.getOutputs(outputIds);
+        const addressOutputs = await client.getOutputs(outputIdsResponse.items);
 
         expect(addressOutputs).toBeDefined();
 
@@ -92,16 +92,16 @@ describe.skip('Main examples', () => {
         expect(addresses[0]).toBeValidAddress();
 
         // Get output ids of outputs that can be controlled by this address without further unlock constraints
-        const outputIds = await client.basicOutputIds([
+        const outputIdsResponse = await client.basicOutputIds([
             { address: addresses[0] },
             { hasExpiration: false },
             { hasTimelock: false },
             { hasStorageDepositReturn: false },
         ]);
-        outputIds.forEach((id) => expect(id).toBeValidOutputId());
+        outputIdsResponse.items.forEach((id) => expect(id).toBeValidOutputId());
 
         // Get outputs by their IDs
-        const addressOutputs = await client.getOutputs(outputIds);
+        const addressOutputs = await client.getOutputs(outputIdsResponse.items);
         expect(addressOutputs).toBeDefined();
     });
 

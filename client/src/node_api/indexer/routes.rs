@@ -27,17 +27,12 @@ impl Client {
     /// "hasExpiration", "expiresBefore", "expiresAfter", "hasTimelock", "timelockedBefore",
     /// "timelockedAfter", "sender", "tag", "createdBefore" and "createdAfter". Returns an empty Vec if no results
     /// are found. api/indexer/v1/outputs/basic
-    pub async fn basic_output_ids(
-        &self,
-        query_parameters: Vec<QueryParameter>,
-        automatic_pagination: bool,
-    ) -> Result<OutputIdsResponse> {
+    pub async fn basic_output_ids(&self, query_parameters: Vec<QueryParameter>) -> Result<OutputIdsResponse> {
         let route = "api/indexer/v1/outputs/basic";
 
         let query_parameters = verify_query_parameters_basic_outputs(query_parameters)?;
 
-        self.get_output_ids(route, query_parameters, true, false, automatic_pagination)
-            .await
+        self.get_output_ids(route, query_parameters, true, false).await
     }
 
     /// Get alias outputs filtered by the given parameters.
@@ -45,17 +40,12 @@ impl Client {
     /// Query parameters: "stateController", "governor", "issuer", "sender", "createdBefore", "createdAfter"
     /// Returns an empty list if no results are found.
     /// api/indexer/v1/outputs/alias
-    pub async fn alias_output_ids(
-        &self,
-        query_parameters: Vec<QueryParameter>,
-        automatic_pagination: bool,
-    ) -> Result<OutputIdsResponse> {
+    pub async fn alias_output_ids(&self, query_parameters: Vec<QueryParameter>) -> Result<OutputIdsResponse> {
         let route = "api/indexer/v1/outputs/alias";
 
         let query_parameters = verify_query_parameters_alias_outputs(query_parameters)?;
 
-        self.get_output_ids(route, query_parameters, true, false, automatic_pagination)
-            .await
+        self.get_output_ids(route, query_parameters, true, false).await
     }
 
     /// Get alias output by its aliasID.
@@ -64,7 +54,7 @@ impl Client {
         let route = format!("api/indexer/v1/outputs/alias/{alias_id}");
 
         Ok(*(self
-            .get_output_ids(&route, QueryParameters::new(Vec::new()), true, false, false)
+            .get_output_ids(&route, QueryParameters::new(Vec::new()), true, false)
             .await?
             .first()
             .ok_or_else(|| crate::Error::Node("no output id for alias".to_string()))?))
@@ -75,17 +65,12 @@ impl Client {
     /// Query parameters: "address", "createdBefore", "createdAfter"
     /// Returns an empty list if no results are found.
     /// api/indexer/v1/outputs/foundry
-    pub async fn foundry_output_ids(
-        &self,
-        query_parameters: Vec<QueryParameter>,
-        automatic_pagination: bool,
-    ) -> Result<OutputIdsResponse> {
+    pub async fn foundry_output_ids(&self, query_parameters: Vec<QueryParameter>) -> Result<OutputIdsResponse> {
         let route = "api/indexer/v1/outputs/foundry";
 
         let query_parameters = verify_query_parameters_foundry_outputs(query_parameters)?;
 
-        self.get_output_ids(route, query_parameters, true, false, automatic_pagination)
-            .await
+        self.get_output_ids(route, query_parameters, true, false).await
     }
 
     /// Get foundry output by its foundryID.
@@ -94,7 +79,7 @@ impl Client {
         let route = format!("api/indexer/v1/outputs/foundry/{foundry_id}");
 
         Ok(*(self
-            .get_output_ids(&route, QueryParameters::new(Vec::new()), true, false, false)
+            .get_output_ids(&route, QueryParameters::new(Vec::new()), true, false)
             .await?
             .first()
             .ok_or_else(|| crate::Error::Node("no output id for foundry".to_string()))?))
@@ -106,17 +91,12 @@ impl Client {
     /// "timelockedAfter", "issuer", "sender", "tag", "createdBefore", "createdAfter"
     /// Returns an empty list if no results are found.
     /// api/indexer/v1/outputs/nft
-    pub async fn nft_output_ids(
-        &self,
-        query_parameters: Vec<QueryParameter>,
-        automatic_pagination: bool,
-    ) -> Result<OutputIdsResponse> {
+    pub async fn nft_output_ids(&self, query_parameters: Vec<QueryParameter>) -> Result<OutputIdsResponse> {
         let route = "api/indexer/v1/outputs/nft";
 
         let query_parameters = verify_query_parameters_nft_outputs(query_parameters)?;
 
-        self.get_output_ids(route, query_parameters, true, false, automatic_pagination)
-            .await
+        self.get_output_ids(route, query_parameters, true, false).await
     }
 
     /// Get NFT output by its nftID.
@@ -125,7 +105,7 @@ impl Client {
         let route = format!("api/indexer/v1/outputs/nft/{nft_id}");
 
         Ok(*(self
-            .get_output_ids(&route, QueryParameters::new(Vec::new()), true, false, false)
+            .get_output_ids(&route, QueryParameters::new(Vec::new()), true, false)
             .await?
             .first()
             .ok_or_else(|| crate::Error::Node("no output id for nft".to_string()))?))

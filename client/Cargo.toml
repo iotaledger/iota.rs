@@ -234,6 +234,10 @@ path = "examples/node_api_indexer/05_get_nft_output.rs"
 name = "node_api_indexer_get_nft_outputs"
 path = "examples/node_api_indexer/06_get_nft_outputs.rs"
 
+[[example]]
+name = "node_api_indexer_get_random_basic_outputs"
+path = "examples/node_api_indexer/07_get_random_basic_outputs.rs"
+
 #######
 
 [[example]]

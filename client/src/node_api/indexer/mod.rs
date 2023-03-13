@@ -13,19 +13,22 @@ use crate::{Client, Result};
 
 impl Client {
     /// Get all output ids for a provided URL route and query parameters.
+    /// If a `QueryParameter::Cursor(_)` is provided, only a single page will be queried.
     pub async fn get_output_ids(
         &self,
         route: &str,
         mut query_parameters: QueryParameters,
         need_quorum: bool,
         prefer_permanode: bool,
-        automatic_pagination: bool,
     ) -> Result<OutputIdsResponse> {
         let mut merged_output_ids_response = OutputIdsResponse {
             ledger_index: 0,
             cursor: None,
             items: Vec::new(),
         };
+
+        // Return early with only a single page if a `QueryParameter::Cursor(_)` is provided.
+        let return_early = query_parameters.contains(QueryParameter::Cursor(String::new()).kind());
 
         while let Some(cursor) = {
             let output_ids_response = self
@@ -39,7 +42,7 @@ impl Client {
                 )
                 .await?;
 
-            if !automatic_pagination {
+            if return_early {
                 return Ok(output_ids_response);
             }
 

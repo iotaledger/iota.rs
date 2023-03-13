@@ -192,15 +192,12 @@ impl Client {
 
         for address in addresses {
             let output_ids_response = self
-                .basic_output_ids(
-                    vec![
-                        QueryParameter::Address(address.to_string()),
-                        QueryParameter::HasExpiration(false),
-                        QueryParameter::HasTimelock(false),
-                        QueryParameter::HasStorageDepositReturn(false),
-                    ],
-                    true,
-                )
+                .basic_output_ids(vec![
+                    QueryParameter::Address(address.to_string()),
+                    QueryParameter::HasExpiration(false),
+                    QueryParameter::HasTimelock(false),
+                    QueryParameter::HasStorageDepositReturn(false),
+                ])
                 .await?;
 
             available_outputs.extend(self.get_outputs(output_ids_response.items).await?);
@@ -261,15 +258,12 @@ impl Client {
         for address in addresses {
             // Get output ids of outputs that can be controlled by this address without further unlock constraints
             let basic_output_ids = self
-                .basic_output_ids(
-                    vec![
-                        QueryParameter::Address(address.to_string()),
-                        QueryParameter::HasExpiration(false),
-                        QueryParameter::HasTimelock(false),
-                        QueryParameter::HasStorageDepositReturn(false),
-                    ],
-                    true,
-                )
+                .basic_output_ids(vec![
+                    QueryParameter::Address(address.to_string()),
+                    QueryParameter::HasExpiration(false),
+                    QueryParameter::HasTimelock(false),
+                    QueryParameter::HasStorageDepositReturn(false),
+                ])
                 .await?;
 
             output_responses.extend(self.get_outputs(basic_output_ids.items).await?);

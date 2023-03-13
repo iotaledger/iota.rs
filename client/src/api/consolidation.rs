@@ -49,15 +49,12 @@ impl Client {
 
                 // Get output ids of outputs that can be controlled by this address without further unlock constraints
                 let output_ids_response = self
-                    .basic_output_ids(
-                        vec![
-                            QueryParameter::Address(address.to_string()),
-                            QueryParameter::HasExpiration(false),
-                            QueryParameter::HasTimelock(false),
-                            QueryParameter::HasStorageDepositReturn(false),
-                        ],
-                        true,
-                    )
+                    .basic_output_ids(vec![
+                        QueryParameter::Address(address.to_string()),
+                        QueryParameter::HasExpiration(false),
+                        QueryParameter::HasTimelock(false),
+                        QueryParameter::HasStorageDepositReturn(false),
+                    ])
                     .await?;
 
                 let basic_outputs_responses = self.get_outputs(output_ids_response.items).await?;

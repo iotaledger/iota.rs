@@ -34,6 +34,11 @@ impl QueryParameters {
         }
     }
 
+    /// Returns true if the slice contains an element with the given kind.
+    pub(crate) fn contains(&self, kind: u8) -> bool {
+        self.0.iter().any(|q| q.kind() == kind)
+    }
+
     /// Converts parameters to a single String.
     pub fn to_query_string(&self) -> Option<String> {
         if self.0.is_empty() {
@@ -134,7 +139,7 @@ impl QueryParameter {
         }
     }
 
-    fn kind(&self) -> u8 {
+    pub(crate) fn kind(&self) -> u8 {
         match self {
             Self::Address(_) => 0,
             Self::AliasAddress(_) => 1,
@@ -293,5 +298,9 @@ mod tests {
         // since address2 and address3 are of the same enum variant, we should only have one
         query_parameters.replace(address3);
         assert!(query_parameters.0.len() == 2);
+        // Contains address query parameter
+        assert!(query_parameters.contains(QueryParameter::Address(String::new()).kind()));
+        // Contains no cursor query parameter
+        assert!(!query_parameters.contains(QueryParameter::Cursor(String::new()).kind()));
     }
 }

@@ -15,6 +15,7 @@ import org.iota.types.output_builder.BasicOutputBuilderParams;
 import org.iota.types.output_builder.FoundryOutputBuilderParams;
 import org.iota.types.output_builder.NftOutputBuilderParams;
 import org.iota.types.responses.NodeInfoResponse;
+import org.iota.types.responses.OutputIdsResponse;
 import org.iota.types.responses.ProtocolParametersResponse;
 import org.iota.types.responses.TreasuryResponse;
 import org.iota.types.responses.UtxoChangesResponse;
@@ -304,10 +305,10 @@ public class Client extends NativeApi {
      * Returns the basic output ids that match the given query parameters
      *
      * @param params a QueryParams object that contains the following fields:
-     * @return An array of OutputIds.
+     * @return OutputIdsResponse.
      * @throws ClientException on error.
      */
-    public OutputId[] getBasicOutputIds(NodeIndexerApi.QueryParams params) throws ClientException {
+    public OutputIdsResponse getBasicOutputIds(NodeIndexerApi.QueryParams params) throws ClientException {
         return nodeIndexerApi.getBasicOutputIds(params);
     }
 
@@ -315,10 +316,10 @@ public class Client extends NativeApi {
      * Returns the alias output ids that match the given query parameters
      *
      * @param params a QueryParams object that contains the following fields:
-     * @return An array of OutputIds.
+     * @return OutputIdsResponse.
      * @throws ClientException on error.
      */
-    public OutputId[] getAliasOutputIds(NodeIndexerApi.QueryParams params) throws ClientException {
+    public OutputIdsResponse getAliasOutputIds(NodeIndexerApi.QueryParams params) throws ClientException {
         return nodeIndexerApi.getAliasOutputIds(params);
     }
 
@@ -326,10 +327,10 @@ public class Client extends NativeApi {
      * Returns the NFT output ids that match the given query parameters
      *
      * @param params a QueryParams object that contains the following fields:
-     * @return An array of OutputIds.
+     * @return OutputIdsResponse.
      * @throws ClientException on error.
      */
-    public OutputId[] getNftOutputIds(NodeIndexerApi.QueryParams params) throws ClientException {
+    public OutputIdsResponse getNftOutputIds(NodeIndexerApi.QueryParams params) throws ClientException {
         return nodeIndexerApi.getNftOutputIds(params);
     }
 
@@ -337,10 +338,10 @@ public class Client extends NativeApi {
      * Returns the Foundry output ids that match the given query parameters
      *
      * @param params a QueryParams object that contains the following fields:
-     * @return An array of OutputIds.
+     * @return OutputIdsResponse.
      * @throws ClientException on error.
      */
-    public OutputId[] getFoundryOutputIds(NodeIndexerApi.QueryParams params) throws ClientException {
+    public OutputIdsResponse getFoundryOutputIds(NodeIndexerApi.QueryParams params) throws ClientException {
         return nodeIndexerApi.getFoundryOutputIds(params);
     }
 
@@ -936,7 +937,7 @@ public class Client extends NativeApi {
                 String response2 = utilsApi.requestFundsFromFaucet(TESTNET_FAUCET_URL, address);
                 System.out.println(response2);
             }
-            if(getBasicOutputIds(new NodeIndexerApi.QueryParams().withParam("address", address)).length == 0) {
+            if(getBasicOutputIds(new NodeIndexerApi.QueryParams().withParam("address", address)).getItems().length == 0) {
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {
@@ -946,7 +947,7 @@ public class Client extends NativeApi {
                 return;
         }
 
-        if(getBasicOutputIds(new NodeIndexerApi.QueryParams().withParam("address", address)).length == 0)
+        if(getBasicOutputIds(new NodeIndexerApi.QueryParams().withParam("address", address)).getItems().length == 0)
             throw new NoFundsReceivedFromFaucetException();
     }
 

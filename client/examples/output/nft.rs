@@ -85,7 +85,7 @@ async fn main() -> Result<()> {
     tokio::time::sleep(std::time::Duration::from_secs(20)).await;
 
     let output_ids_response = client
-        .basic_output_ids(vec![QueryParameter::Address(bech32_nft_address)], true)
+        .basic_output_ids(vec![QueryParameter::Address(bech32_nft_address)])
         .await?;
     let output_response = client.get_output(&output_ids_response.items[0]).await?;
     let output = Output::try_from_dto(&output_response.output, token_supply)?;

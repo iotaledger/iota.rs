@@ -201,12 +201,9 @@ async fn main() -> Result<()> {
 
     // get additional input for the new basic output
     let output_ids_response = client
-        .basic_output_ids(
-            vec![QueryParameter::Address(
-                address.to_bech32(client.get_bech32_hrp().await?),
-            )],
-            true,
-        )
+        .basic_output_ids(vec![QueryParameter::Address(
+            address.to_bech32(client.get_bech32_hrp().await?),
+        )])
         .await?;
 
     let block = client

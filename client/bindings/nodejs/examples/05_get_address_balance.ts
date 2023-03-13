@@ -38,7 +38,7 @@ async function run() {
         });
 
         // Get output ids of basic outputs that can be controlled by this address without further unlock constraints
-        const outputIds = await client.basicOutputIds([
+        const outputIdsResponse = await client.basicOutputIds([
             { address: addresses[0] },
             { hasExpiration: false },
             { hasTimelock: false },
@@ -46,7 +46,7 @@ async function run() {
         ]);
 
         // Get outputs by their IDs
-        const addressOutputs = await client.getOutputs(outputIds);
+        const addressOutputs = await client.getOutputs(outputIdsResponse.items);
 
         // Calculate the total amount and native tokens
         let totalAmount = 0;

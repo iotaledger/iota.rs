@@ -28,13 +28,10 @@ async fn main() -> Result<()> {
 
     // Get output IDs of alias outputs that can be controlled by this address.
     let output_ids_response = client
-        .alias_output_ids(
-            vec![
-                QueryParameter::Governor(address.clone()),
-                QueryParameter::StateController(address),
-            ],
-            true,
-        )
+        .alias_output_ids(vec![
+            QueryParameter::Governor(address.clone()),
+            QueryParameter::StateController(address),
+        ])
         .await?;
 
     println!("Address output IDs {output_ids_response:#?}");

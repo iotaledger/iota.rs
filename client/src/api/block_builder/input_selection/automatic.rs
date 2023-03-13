@@ -35,13 +35,10 @@ impl<'a> ClientBlockBuilder<'a> {
         // First request to get all basic outputs that can directly be unlocked by the address.
         output_ids.extend(
             self.client
-                .basic_output_ids(
-                    vec![
-                        QueryParameter::Address(address.clone()),
-                        QueryParameter::HasStorageDepositReturn(false),
-                    ],
-                    true,
-                )
+                .basic_output_ids(vec![
+                    QueryParameter::Address(address.clone()),
+                    QueryParameter::HasStorageDepositReturn(false),
+                ])
                 .await?
                 .items,
         );
@@ -49,16 +46,13 @@ impl<'a> ClientBlockBuilder<'a> {
         // Second request to get all basic outputs that can be unlocked by the address through the expiration condition.
         output_ids.extend(
             self.client
-                .basic_output_ids(
-                    vec![
-                        QueryParameter::ExpirationReturnAddress(address),
-                        QueryParameter::HasExpiration(true),
-                        QueryParameter::HasStorageDepositReturn(false),
-                        // Ignore outputs that aren't expired yet
-                        QueryParameter::ExpiresBefore(unix_timestamp_now()),
-                    ],
-                    true,
-                )
+                .basic_output_ids(vec![
+                    QueryParameter::ExpirationReturnAddress(address),
+                    QueryParameter::HasExpiration(true),
+                    QueryParameter::HasStorageDepositReturn(false),
+                    // Ignore outputs that aren't expired yet
+                    QueryParameter::ExpiresBefore(unix_timestamp_now()),
+                ])
                 .await?
                 .items,
         );

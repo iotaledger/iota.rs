@@ -28,15 +28,12 @@ async fn main() -> Result<()> {
 
     // Get output IDs of basic outputs that can be controlled by this address without further unlock constraints.
     let output_ids_response = client
-        .basic_output_ids(
-            vec![
-                QueryParameter::Address(address),
-                QueryParameter::HasExpiration(false),
-                QueryParameter::HasTimelock(false),
-                QueryParameter::HasStorageDepositReturn(false),
-            ],
-            true,
-        )
+        .basic_output_ids(vec![
+            QueryParameter::Address(address),
+            QueryParameter::HasExpiration(false),
+            QueryParameter::HasTimelock(false),
+            QueryParameter::HasStorageDepositReturn(false),
+        ])
         .await?;
 
     println!("Address output IDs {output_ids_response:#?}");

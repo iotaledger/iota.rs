@@ -331,18 +331,12 @@ pub enum Message {
         /// Query parameters for output requests
         #[serde(rename = "queryParameters")]
         query_parameters: Vec<QueryParameter>,
-        /// Whether automatic pagination should be used
-        #[serde(rename = "automaticPagination", default = "default_true")]
-        automatic_pagination: bool,
     },
     /// Fetch alias output IDs
     AliasOutputIds {
         /// Query parameters for output requests
         #[serde(rename = "queryParameters")]
         query_parameters: Vec<QueryParameter>,
-        /// Whether automatic pagination should be used
-        #[serde(rename = "automaticPagination", default = "default_true")]
-        automatic_pagination: bool,
     },
     /// Fetch alias output ID
     AliasOutputId {
@@ -355,9 +349,6 @@ pub enum Message {
         /// Query parameters for output requests
         #[serde(rename = "queryParameters")]
         query_parameters: Vec<QueryParameter>,
-        /// Whether automatic pagination should be used
-        #[serde(rename = "automaticPagination", default = "default_true")]
-        automatic_pagination: bool,
     },
     /// Fetch NFT output ID
     NftOutputId {
@@ -370,9 +361,6 @@ pub enum Message {
         /// Query parameters for output requests
         #[serde(rename = "queryParameters")]
         query_parameters: Vec<QueryParameter>,
-        /// Whether automatic pagination should be used
-        #[serde(rename = "automaticPagination", default = "default_true")]
-        automatic_pagination: bool,
     },
     /// Fetch foundry Output ID
     FoundryOutputId {
@@ -576,8 +564,4 @@ pub enum Message {
         /// The address for request funds
         address: String,
     },
-}
-
-fn default_true() -> bool {
-    true
 }

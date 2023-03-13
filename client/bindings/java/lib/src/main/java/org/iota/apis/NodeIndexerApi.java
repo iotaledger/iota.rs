@@ -12,7 +12,7 @@ import org.iota.types.ids.AliasId;
 import org.iota.types.ids.FoundryId;
 import org.iota.types.ids.NftId;
 import org.iota.types.ids.OutputId;
-
+import org.iota.types.responses.OutputIdsResponse;
 
 public class NodeIndexerApi {
 
@@ -22,60 +22,40 @@ public class NodeIndexerApi {
         this.nativeApi = nativeApi;
     }
 
-    public OutputId[] getBasicOutputIds(QueryParams params) throws ClientException {
+    public OutputIdsResponse getBasicOutputIds(QueryParams params) throws ClientException {
         JsonObject o = new JsonObject();
         o.add("queryParameters", params.queryParams);
 
-        JsonArray responsePayload = (JsonArray) nativeApi.sendCommand(new ClientCommand("basicOutputIds", o));
+        JsonObject responsePayload = (JsonObject) nativeApi.sendCommand(new ClientCommand("basicOutputIds", o));
 
-        OutputId[] outputIds = new OutputId[responsePayload.size()];
-        for (int i = 0; i < responsePayload.size(); i++) {
-            outputIds[i] = new OutputId(responsePayload.get(i).getAsString());
-        }
-
-        return outputIds;
+        return new OutputIdsResponse(responsePayload);
     }
 
-    public OutputId[] getAliasOutputIds(QueryParams params) throws ClientException {
+    public OutputIdsResponse getAliasOutputIds(QueryParams params) throws ClientException {
         JsonObject o = new JsonObject();
         o.add("queryParameters", params.queryParams);
 
-        JsonArray responsePayload = (JsonArray) nativeApi.sendCommand(new ClientCommand("aliasOutputIds", o));
+        JsonObject responsePayload = (JsonObject) nativeApi.sendCommand(new ClientCommand("aliasOutputIds", o));
 
-        OutputId[] outputIds = new OutputId[responsePayload.size()];
-        for (int i = 0; i < responsePayload.size(); i++) {
-            outputIds[i] = new OutputId(responsePayload.get(i).getAsString());
-        }
-
-        return outputIds;
+        return new OutputIdsResponse(responsePayload);
     }
 
-    public OutputId[] getNftOutputIds(QueryParams params) throws ClientException {
+    public OutputIdsResponse getNftOutputIds(QueryParams params) throws ClientException {
         JsonObject o = new JsonObject();
         o.add("queryParameters", params.queryParams);
 
-        JsonArray responsePayload = (JsonArray) nativeApi.sendCommand(new ClientCommand("nftOutputIds", o));
+        JsonObject responsePayload = (JsonObject) nativeApi.sendCommand(new ClientCommand("nftOutputIds", o));
 
-        OutputId[] outputIds = new OutputId[responsePayload.size()];
-        for (int i = 0; i < responsePayload.size(); i++) {
-            outputIds[i] = new OutputId(responsePayload.get(i).getAsString());
-        }
-
-        return outputIds;
+        return new OutputIdsResponse(responsePayload);
     }
 
-    public OutputId[] getFoundryOutputIds(QueryParams params) throws ClientException {
+    public OutputIdsResponse getFoundryOutputIds(QueryParams params) throws ClientException {
         JsonObject o = new JsonObject();
         o.add("queryParameters", params.queryParams);
 
-        JsonArray responsePayload = (JsonArray) nativeApi.sendCommand(new ClientCommand("foundryOutputIds", o));
+        JsonObject responsePayload = (JsonObject) nativeApi.sendCommand(new ClientCommand("foundryOutputIds", o));
 
-        OutputId[] outputIds = new OutputId[responsePayload.size()];
-        for (int i = 0; i < responsePayload.size(); i++) {
-            outputIds[i] = new OutputId(responsePayload.get(i).getAsString());
-        }
-
-        return outputIds;
+        return new OutputIdsResponse(responsePayload);
     }
 
     public OutputId getAliasOutputIdByAliasId(AliasId aliasId) throws ClientException {
