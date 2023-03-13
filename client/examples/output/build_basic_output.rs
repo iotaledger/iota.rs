@@ -59,7 +59,6 @@ async fn main() -> Result<()> {
             .finish_output(token_supply)?,
         // with timelock
         basic_output_builder
-            .clone()
             .add_unlock_condition(UnlockCondition::Timelock(TimelockUnlockCondition::new(1)?))
             .finish_output(token_supply)?,
     ];
