@@ -33,7 +33,8 @@ public class BuildBasicOutput {
         BasicOutputBuilderParams metadataParams = new BasicOutputBuilderParams()
             .withAmount(amount)
             .withUnlockConditions(new UnlockCondition[]{addressUnlockCondition})
-            .withFeatures(new Feature[]{new Feature("{ type: 2, data: \"0x0d25\" }")});
+            // "Hello, World!" hex encoded
+            .withFeatures(new Feature[]{new Feature("{ type: 2, data: \"0x48656c6c6f2c20576f726c6421\" }")});
 
         Output metadataOutput = client.buildBasicOutput(metadataParams);
 

@@ -30,7 +30,7 @@
     "features": [
       {
         "type": 2,
-        "data": "0x0d25"
+        "data": "0x48656c6c6f2c20576f726c6421"
       }
     ]
   }

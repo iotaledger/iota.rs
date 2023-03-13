@@ -31,7 +31,8 @@ basic_output = client.build_basic_output(
     features=[
         {
             "type": 2,
-            "data": "0x0d25",
+            # "Hello, World!" hex encoded
+            "data": "0x48656c6c6f2c20576f726c6421",
         },
     ],
     amount='1000000',

@@ -42,7 +42,7 @@
             features: Features(
                 BoxedSlicePrefix([
                     Metadata(
-                        MetadataFeature(0x0d25),
+                        MetadataFeature(0x48656c6c6f2c20576f726c6421),
                     ),
                 ]),
             ),
