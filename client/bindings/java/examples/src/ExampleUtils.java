@@ -28,6 +28,6 @@ public class ExampleUtils {
     }
 
     public static OutputId setUpOutputId(Client client) throws ClientException {
-        return client.getBasicOutputIds(new NodeIndexerApi.QueryParams())[0];
+        return client.getBasicOutputIds(new NodeIndexerApi.QueryParams()).getItems()[0];
     }
 }

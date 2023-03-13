@@ -31,7 +31,7 @@ public class GetAddressBalance {
                 .withParam("hasExpiration", false)
                 .withParam("hasTimelock", false)
                 .withParam("hasStorageDepositReturn", false)
-        );
+        ).getItems();
 
         // Get the outputs.
         List<Map.Entry<Output, OutputMetadata>> outputs = client.getOutputs(outputIds);
