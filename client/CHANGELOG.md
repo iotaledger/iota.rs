@@ -23,7 +23,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- `OutputIdsResponse::items` from `Vec<String>` to `Vec<OutputId>`;
 - `Client::{alias_output_ids, basic_output_ids, foundry_output_ids, nft_output_ids}` will not do automatic pagination if `QueryParameter::Cursor(_)` is provided and return `OutputIdsResponse`;
 - `Message::{AliasOutputIds, BasicOutputIds, FoundryOutputIds, NftOutputIds}` return `OutputIdsResponse`;
 - `Response::OutputIds` to `Response::OutputIdsResponse`;

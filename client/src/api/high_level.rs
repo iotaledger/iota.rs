@@ -257,7 +257,7 @@ impl Client {
         // then collect the `UtxoInput` in the HashSet.
         for address in addresses {
             // Get output ids of outputs that can be controlled by this address without further unlock constraints
-            let basic_output_ids = self
+            let output_ids_response = self
                 .basic_output_ids(vec![
                     QueryParameter::Address(address.to_string()),
                     QueryParameter::HasExpiration(false),
@@ -266,7 +266,7 @@ impl Client {
                 ])
                 .await?;
 
-            output_responses.extend(self.get_outputs(basic_output_ids.items).await?);
+            output_responses.extend(self.get_outputs(output_ids_response.items).await?);
         }
 
         Ok(output_responses.clone())
