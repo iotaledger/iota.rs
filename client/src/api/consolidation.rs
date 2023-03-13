@@ -48,7 +48,7 @@ impl Client {
                 let index = index + offset;
 
                 // Get output ids of outputs that can be controlled by this address without further unlock constraints
-                let basic_output_ids = self
+                let output_ids_response = self
                     .basic_output_ids(vec![
                         QueryParameter::Address(address.to_string()),
                         QueryParameter::HasExpiration(false),
@@ -57,7 +57,7 @@ impl Client {
                     ])
                     .await?;
 
-                let basic_outputs_responses = self.get_outputs(basic_output_ids).await?;
+                let basic_outputs_responses = self.get_outputs(output_ids_response.items).await?;
 
                 if !basic_outputs_responses.is_empty() {
                     // If we reach the same index again

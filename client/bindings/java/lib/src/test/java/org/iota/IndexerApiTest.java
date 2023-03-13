@@ -26,7 +26,7 @@ public class IndexerApiTest extends ApiTest {
     public void testGetBasicOutputIds() throws ClientException, NoFundsReceivedFromFaucetException {
         String address = generateAddress(client.generateMnemonic());
         client.requestTestFundsFromFaucet(address);
-        for (OutputId outputId : client.getBasicOutputIds(new NodeIndexerApi.QueryParams().withParam("address", address)))
+        for (OutputId outputId : client.getBasicOutputIds(new NodeIndexerApi.QueryParams().withParam("address", address)).getItems())
             System.out.println(outputId);
     }
 
@@ -51,7 +51,7 @@ public class IndexerApiTest extends ApiTest {
         Map.Entry<BlockId, Block> entry = client.buildAndPostBlock(s, new BuildBlockOptions().withOutputs(new Output[] { aliasOutput }));
         client.retryUntilIncluded(entry.getKey(), 2, 15);
 
-        for (OutputId outputId : client.getAliasOutputIds(new NodeIndexerApi.QueryParams().withParam("governor", address)))
+        for (OutputId outputId : client.getAliasOutputIds(new NodeIndexerApi.QueryParams().withParam("governor", address)).getItems())
             System.out.println(outputId);
     }
 
@@ -75,7 +75,7 @@ public class IndexerApiTest extends ApiTest {
         Map.Entry<BlockId, Block> entry = client.buildAndPostBlock(s, new BuildBlockOptions().withOutputs(new Output[] { aliasOutput }));
         client.retryUntilIncluded(entry.getKey(), 2, 15);
 
-        for (OutputId outputId : client.getNftOutputIds(new NodeIndexerApi.QueryParams().withParam("address", address)))
+        for (OutputId outputId : client.getNftOutputIds(new NodeIndexerApi.QueryParams().withParam("address", address)).getItems())
             System.out.println(outputId);
     }
 
@@ -130,7 +130,7 @@ public class IndexerApiTest extends ApiTest {
 
         client.retryUntilIncluded(entry.getKey(), 2, 15);
 
-        for (OutputId outputId : client.getFoundryOutputIds(new NodeIndexerApi.QueryParams().withParam("aliasAddress", client.aliasIdToBech32(aliasId, client.getBech32Hrp()))))
+        for (OutputId outputId : client.getFoundryOutputIds(new NodeIndexerApi.QueryParams().withParam("aliasAddress", client.aliasIdToBech32(aliasId, client.getBech32Hrp()))).getItems())
             System.out.println(outputId);
     }
 
@@ -138,7 +138,7 @@ public class IndexerApiTest extends ApiTest {
     @Disabled
     public void testGetAliasOutputIdByAliasId() throws ClientException {
         OutputId outputId = null;
-        for (OutputId id : client.getAliasOutputIds(new NodeIndexerApi.QueryParams())) {
+        for (OutputId id : client.getAliasOutputIds(new NodeIndexerApi.QueryParams()).getItems()) {
             if (client.getOutput(id).getKey().toJson().get("aliasId").getAsString().equals("0x0000000000000000000000000000000000000000000000000000000000000000")) {
                 outputId = id;
                 break;
@@ -151,7 +151,7 @@ public class IndexerApiTest extends ApiTest {
     @Test
     @Disabled
     public void testGetFoundryOutputIdByFoundryId() throws ClientException {
-        OutputId foundryOutputId = client.getFoundryOutputIds(new NodeIndexerApi.QueryParams())[0];
+        OutputId foundryOutputId = client.getFoundryOutputIds(new NodeIndexerApi.QueryParams()).getItems()[0];
         Output foundryOutput = client.getOutput(foundryOutputId).getKey();
         String aliasId = foundryOutput.toJson().get("unlockConditions").getAsJsonArray().get(0).getAsJsonObject().get("address").getAsJsonObject().get("aliasId").getAsString();
         int serialNumber = foundryOutput.toJson().get("serialNumber").getAsInt();
@@ -164,7 +164,7 @@ public class IndexerApiTest extends ApiTest {
     @Disabled
     public void testGetNftOutputIdByNftId() throws ClientException {
         OutputId nftOutputId = null;
-        for (OutputId id : client.getNftOutputIds(new NodeIndexerApi.QueryParams())) {
+        for (OutputId id : client.getNftOutputIds(new NodeIndexerApi.QueryParams()).getItems()) {
             if (client.getOutput(id).getKey().toJson().get("nftId").getAsString().equals("0x0000000000000000000000000000000000000000000000000000000000000000")) {
                 nftOutputId = id;
                 break;

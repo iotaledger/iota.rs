@@ -3,7 +3,11 @@
 
 //! Node indexer responses.
 
+use core::ops::Deref;
+
 use serde::{Deserialize, Serialize};
+
+use crate::block::output::OutputId;
 
 /// Response of GET /api/indexer/v1/*
 /// Returns the output_ids for the provided query parameters.
@@ -15,5 +19,12 @@ pub struct OutputIdsResponse {
     /// Cursor confirmationMS+outputId.pageSize
     pub cursor: Option<String>,
     /// The output ids
-    pub items: Vec<String>,
+    pub items: Vec<OutputId>,
+}
+
+impl Deref for OutputIdsResponse {
+    type Target = Vec<OutputId>;
+    fn deref(&self) -> &Self::Target {
+        &self.items
+    }
 }

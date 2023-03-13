@@ -49,6 +49,7 @@
 - [IBasicOutputBuilderOptions](interfaces/IBasicOutputBuilderOptions.md)
 - [IFoundryOutputBuilderOptions](interfaces/IFoundryOutputBuilderOptions.md)
 - [INftOutputBuilderOptions](interfaces/INftOutputBuilderOptions.md)
+- [OutputIdsResponse](interfaces/OutputIdsResponse.md)
 - [IPreparedTransactionData](interfaces/IPreparedTransactionData.md)
 - [IInputSigningData](interfaces/IInputSigningData.md)
 - [IRange](interfaces/IRange.md)

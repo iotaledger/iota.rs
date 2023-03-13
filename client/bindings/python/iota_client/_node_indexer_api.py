@@ -7,14 +7,14 @@ class NodeIndexerAPI(BaseAPI):
         """Fetch basic output IDs.
         """
         return self.send_message('basicOutputIds', {
-            'queryParameters': query_parameters
+            'queryParameters': query_parameters,
         })
 
     def alias_output_ids(self, query_parameters):
         """Fetch alias output IDs.
         """
         return self.send_message('aliasOutputIds', {
-            'queryParameters': query_parameters
+            'queryParameters': query_parameters,
         })
 
     def alias_output_id(self, alias_id):
@@ -28,7 +28,7 @@ class NodeIndexerAPI(BaseAPI):
         """Fetch NFT output IDs.
         """
         return self.send_message('nftOutputIds', {
-            'queryParameters': query_parameters
+            'queryParameters': query_parameters,
         })
 
     def nft_output_id(self, nft_id):
@@ -42,7 +42,7 @@ class NodeIndexerAPI(BaseAPI):
         """Fetch foundry Output IDs.
         """
         return self.send_message('foundryOutputIds', {
-            'queryParameters': query_parameters
+            'queryParameters': query_parameters,
         })
 
     def foundry_output_id(self, foundry_id):

@@ -5,6 +5,8 @@
 
 use std::fmt;
 
+use crate::{Error, Result};
+
 // https://github.com/gohornet/hornet/blob/bb1271be9f3a638f6acdeb6de74eab64515f27f1/plugins/indexer/v1/routes.go#L54
 
 /// Query parameters for output_id requests.
@@ -21,6 +23,11 @@ impl QueryParameters {
         Self(query_parameters)
     }
 
+    /// Creates new empty QueryParameters.
+    pub fn empty() -> Self {
+        Self(Vec::new())
+    }
+
     /// Replaces or inserts an enum variant in the QueryParameters.
     pub fn replace(&mut self, query_parameter: QueryParameter) {
         match self
@@ -30,6 +37,11 @@ impl QueryParameters {
             Ok(pos) => self.0[pos] = query_parameter,
             Err(pos) => self.0.insert(pos, query_parameter),
         }
+    }
+
+    /// Returns true if the slice contains an element with the given kind.
+    pub(crate) fn contains(&self, kind: u8) -> bool {
+        self.0.iter().any(|q| q.kind() == kind)
     }
 
     /// Converts parameters to a single String.
@@ -132,7 +144,7 @@ impl QueryParameter {
         }
     }
 
-    fn kind(&self) -> u8 {
+    pub(crate) fn kind(&self) -> u8 {
         match self {
             Self::Address(_) => 0,
             Self::AliasAddress(_) => 1,
@@ -167,6 +179,109 @@ impl fmt::Display for QueryParameter {
     }
 }
 
+macro_rules! verify_query_parameters {
+    ($query_parameters:ident, $first:path $(, $rest:path)*) => {
+        if let Some(qp) = $query_parameters.iter().find(|qp| {
+            !matches!(qp, $first(_) $(| $rest(_))*)
+        }) {
+            Err(Error::UnsupportedQueryParameter(qp.clone()))
+        } else {
+            Ok(())
+        }
+    };
+}
+
+pub(crate) fn verify_query_parameters_basic_outputs(query_parameters: Vec<QueryParameter>) -> Result<QueryParameters> {
+    verify_query_parameters!(
+        query_parameters,
+        QueryParameter::Address,
+        QueryParameter::HasNativeTokens,
+        QueryParameter::MinNativeTokenCount,
+        QueryParameter::MaxNativeTokenCount,
+        QueryParameter::HasStorageDepositReturn,
+        QueryParameter::StorageDepositReturnAddress,
+        QueryParameter::HasTimelock,
+        QueryParameter::TimelockedBefore,
+        QueryParameter::TimelockedAfter,
+        QueryParameter::HasExpiration,
+        QueryParameter::ExpiresBefore,
+        QueryParameter::ExpiresAfter,
+        QueryParameter::ExpirationReturnAddress,
+        QueryParameter::Sender,
+        QueryParameter::Tag,
+        QueryParameter::CreatedBefore,
+        QueryParameter::CreatedAfter,
+        QueryParameter::PageSize,
+        QueryParameter::Cursor
+    )?;
+
+    Ok(QueryParameters::new(query_parameters))
+}
+
+pub(crate) fn verify_query_parameters_alias_outputs(query_parameters: Vec<QueryParameter>) -> Result<QueryParameters> {
+    verify_query_parameters!(
+        query_parameters,
+        QueryParameter::StateController,
+        QueryParameter::Governor,
+        QueryParameter::Issuer,
+        QueryParameter::Sender,
+        QueryParameter::HasNativeTokens,
+        QueryParameter::MinNativeTokenCount,
+        QueryParameter::MaxNativeTokenCount,
+        QueryParameter::CreatedBefore,
+        QueryParameter::CreatedAfter,
+        QueryParameter::PageSize,
+        QueryParameter::Cursor
+    )?;
+
+    Ok(QueryParameters::new(query_parameters))
+}
+
+pub(crate) fn verify_query_parameters_foundry_outputs(
+    query_parameters: Vec<QueryParameter>,
+) -> Result<QueryParameters> {
+    verify_query_parameters!(
+        query_parameters,
+        QueryParameter::AliasAddress,
+        QueryParameter::HasNativeTokens,
+        QueryParameter::MinNativeTokenCount,
+        QueryParameter::MaxNativeTokenCount,
+        QueryParameter::CreatedBefore,
+        QueryParameter::CreatedAfter,
+        QueryParameter::PageSize,
+        QueryParameter::Cursor
+    )?;
+
+    Ok(QueryParameters::new(query_parameters))
+}
+
+pub(crate) fn verify_query_parameters_nft_outputs(query_parameters: Vec<QueryParameter>) -> Result<QueryParameters> {
+    verify_query_parameters!(
+        query_parameters,
+        QueryParameter::Address,
+        QueryParameter::HasNativeTokens,
+        QueryParameter::MinNativeTokenCount,
+        QueryParameter::MaxNativeTokenCount,
+        QueryParameter::HasStorageDepositReturn,
+        QueryParameter::StorageDepositReturnAddress,
+        QueryParameter::HasTimelock,
+        QueryParameter::TimelockedBefore,
+        QueryParameter::TimelockedAfter,
+        QueryParameter::HasExpiration,
+        QueryParameter::ExpiresBefore,
+        QueryParameter::ExpiresAfter,
+        QueryParameter::ExpirationReturnAddress,
+        QueryParameter::Sender,
+        QueryParameter::Tag,
+        QueryParameter::CreatedBefore,
+        QueryParameter::CreatedAfter,
+        QueryParameter::PageSize,
+        QueryParameter::Cursor
+    )?;
+
+    Ok(QueryParameters::new(query_parameters))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -188,5 +303,9 @@ mod tests {
         // since address2 and address3 are of the same enum variant, we should only have one
         query_parameters.replace(address3);
         assert!(query_parameters.0.len() == 2);
+        // Contains address query parameter
+        assert!(query_parameters.contains(QueryParameter::Address(String::new()).kind()));
+        // Contains no cursor query parameter
+        assert!(!query_parameters.contains(QueryParameter::Cursor(String::new()).kind()));
     }
 }

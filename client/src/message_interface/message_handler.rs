@@ -537,18 +537,18 @@ impl ClientMessageHandler {
             Message::GetIncludedBlockMetadata { transaction_id } => Ok(Response::BlockMetadata(
                 self.client.get_included_block_metadata(&transaction_id).await?,
             )),
-            Message::BasicOutputIds { query_parameters } => Ok(Response::OutputIds(
+            Message::BasicOutputIds { query_parameters } => Ok(Response::OutputIdsResponse(
                 self.client.basic_output_ids(query_parameters).await?,
             )),
-            Message::AliasOutputIds { query_parameters } => Ok(Response::OutputIds(
+            Message::AliasOutputIds { query_parameters } => Ok(Response::OutputIdsResponse(
                 self.client.alias_output_ids(query_parameters).await?,
             )),
             Message::AliasOutputId { alias_id } => Ok(Response::OutputId(self.client.alias_output_id(alias_id).await?)),
-            Message::NftOutputIds { query_parameters } => {
-                Ok(Response::OutputIds(self.client.nft_output_ids(query_parameters).await?))
-            }
+            Message::NftOutputIds { query_parameters } => Ok(Response::OutputIdsResponse(
+                self.client.nft_output_ids(query_parameters).await?,
+            )),
             Message::NftOutputId { nft_id } => Ok(Response::OutputId(self.client.nft_output_id(nft_id).await?)),
-            Message::FoundryOutputIds { query_parameters } => Ok(Response::OutputIds(
+            Message::FoundryOutputIds { query_parameters } => Ok(Response::OutputIdsResponse(
                 self.client.foundry_output_ids(query_parameters).await?,
             )),
             Message::FoundryOutputId { foundry_id } => {

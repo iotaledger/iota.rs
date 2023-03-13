@@ -37,7 +37,7 @@ public class WrongSeedConversionSecretManager {
         // Get the affected outputs.
         List<OutputId> affectedOutputIds = new ArrayList<>();
         for (String address : affectedAddresses) {
-            OutputId[] outputIds = client.getBasicOutputIds(new NodeIndexerApi.QueryParams().withParam("address", address));
+            OutputId[] outputIds = client.getBasicOutputIds(new NodeIndexerApi.QueryParams().withParam("address", address)).getItems();
             affectedOutputIds.addAll(List.of(outputIds));
         }
 

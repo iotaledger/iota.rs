@@ -114,7 +114,7 @@ ___
 
 ### basicOutputIds
 
-▸ **basicOutputIds**(`queryParameters`): `Promise`<`string`[]\>
+▸ **basicOutputIds**(`queryParameters`): `Promise`<[`OutputIdsResponse`](../interfaces/OutputIdsResponse.md)\>
 
 Fetch basic output IDs based on query parameters
 
@@ -126,7 +126,7 @@ Fetch basic output IDs based on query parameters
 
 #### Returns
 
-`Promise`<`string`[]\>
+`Promise`<[`OutputIdsResponse`](../interfaces/OutputIdsResponse.md)\>
 
 ___
 
@@ -1002,7 +1002,7 @@ ___
 
 ### aliasOutputIds
 
-▸ **aliasOutputIds**(`queryParameters`): `Promise`<`string`[]\>
+▸ **aliasOutputIds**(`queryParameters`): `Promise`<[`OutputIdsResponse`](../interfaces/OutputIdsResponse.md)\>
 
 Fetch alias output IDs
 
@@ -1014,7 +1014,7 @@ Fetch alias output IDs
 
 #### Returns
 
-`Promise`<`string`[]\>
+`Promise`<[`OutputIdsResponse`](../interfaces/OutputIdsResponse.md)\>
 
 ___
 
@@ -1038,7 +1038,7 @@ ___
 
 ### nftOutputIds
 
-▸ **nftOutputIds**(`queryParameters`): `Promise`<`string`[]\>
+▸ **nftOutputIds**(`queryParameters`): `Promise`<[`OutputIdsResponse`](../interfaces/OutputIdsResponse.md)\>
 
 Fetch NFT output IDs
 
@@ -1050,7 +1050,7 @@ Fetch NFT output IDs
 
 #### Returns
 
-`Promise`<`string`[]\>
+`Promise`<[`OutputIdsResponse`](../interfaces/OutputIdsResponse.md)\>
 
 ___
 
@@ -1074,7 +1074,7 @@ ___
 
 ### foundryOutputIds
 
-▸ **foundryOutputIds**(`queryParameters`): `Promise`<`string`[]\>
+▸ **foundryOutputIds**(`queryParameters`): `Promise`<[`OutputIdsResponse`](../interfaces/OutputIdsResponse.md)\>
 
 Fetch Foundry Output IDs
 
@@ -1086,7 +1086,7 @@ Fetch Foundry Output IDs
 
 #### Returns
 
-`Promise`<`string`[]\>
+`Promise`<[`OutputIdsResponse`](../interfaces/OutputIdsResponse.md)\>
 
 ___
 
