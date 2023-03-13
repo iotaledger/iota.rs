@@ -23,6 +23,11 @@ impl QueryParameters {
         Self(query_parameters)
     }
 
+    /// Creates new empty QueryParameters.
+    pub fn empty() -> Self {
+        Self(Vec::new())
+    }
+
     /// Replaces or inserts an enum variant in the QueryParameters.
     pub fn replace(&mut self, query_parameter: QueryParameter) {
         match self

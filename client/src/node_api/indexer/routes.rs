@@ -55,7 +55,7 @@ impl Client {
         let route = format!("api/indexer/v1/outputs/alias/{alias_id}");
 
         Ok(*(self
-            .get_output_ids(&route, QueryParameters::new(Vec::new()), true, false)
+            .get_output_ids(&route, QueryParameters::empty(), true, false)
             .await?
             .first()
             .ok_or_else(|| crate::Error::Node("no output id for alias".to_string()))?))
@@ -80,7 +80,7 @@ impl Client {
         let route = format!("api/indexer/v1/outputs/foundry/{foundry_id}");
 
         Ok(*(self
-            .get_output_ids(&route, QueryParameters::new(Vec::new()), true, false)
+            .get_output_ids(&route, QueryParameters::empty(), true, false)
             .await?
             .first()
             .ok_or_else(|| crate::Error::Node("no output id for foundry".to_string()))?))
@@ -106,7 +106,7 @@ impl Client {
         let route = format!("api/indexer/v1/outputs/nft/{nft_id}");
 
         Ok(*(self
-            .get_output_ids(&route, QueryParameters::new(Vec::new()), true, false)
+            .get_output_ids(&route, QueryParameters::empty(), true, false)
             .await?
             .first()
             .ok_or_else(|| crate::Error::Node("no output id for nft".to_string()))?))
