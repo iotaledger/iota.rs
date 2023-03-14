@@ -5,7 +5,7 @@ use std::sync::Arc;
 
 use iota_client::{
     message_interface::{create_message_handler, ClientMessageHandler, Message, Response},
-    Topic,
+    mqtt::Topic,
 };
 use neon::prelude::*;
 

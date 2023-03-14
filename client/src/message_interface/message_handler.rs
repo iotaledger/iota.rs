@@ -23,7 +23,7 @@ use iota_types::block::{
 use zeroize::Zeroize;
 #[cfg(feature = "mqtt")]
 use {
-    crate::{MqttPayload, Topic},
+    crate::mqtt::{MqttPayload, Topic},
     iota_types::block::payload::milestone::option::dto::ReceiptMilestoneOptionDto,
 };
 

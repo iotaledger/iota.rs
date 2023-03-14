@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `QueryParameters::empty()`;
+- MQTT `Error`;
 
 ### Changed
 
@@ -31,6 +32,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Message::{AliasOutputIds, BasicOutputIds, FoundryOutputIds, NftOutputIds}` return `OutputIdsResponse`;
 - `Response::OutputIds` to `Response::OutputIdsResponse`;
 - Renamed `Client::get_output_ids_with_pagination()` to `Client::get_output_ids()`;
+- All MQTT related functions return an MQTT `Error`;
+- Re-export `mqtt` module instead of all its symbols;
 
 ## 2.0.1-rc.7 - 2023-03-09
 
