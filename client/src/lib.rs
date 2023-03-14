@@ -70,7 +70,7 @@ pub use packable;
 pub use url::Url;
 
 #[cfg(feature = "mqtt")]
-pub use self::node_api::mqtt::*;
+pub use self::node_api::mqtt;
 pub use self::{
     builder::{ClientBuilder, NetworkInfo, NetworkInfoDto},
     client::*,

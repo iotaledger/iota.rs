@@ -217,24 +217,11 @@ pub enum Error {
     #[error("ledger transport error")]
     LedgerMiscError,
 
-    //////////////////////////////////////////////////////////////////////
-    // MQTT
-    //////////////////////////////////////////////////////////////////////
-    /// Invalid MQTT topic.
+    /// MQTT error.
     #[cfg(feature = "mqtt")]
     #[cfg_attr(docsrs, doc(cfg(feature = "mqtt")))]
-    #[error("the MQTT topic {0} is invalid")]
-    InvalidMqttTopic(String),
-    /// Mqtt client error
-    #[cfg(feature = "mqtt")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "mqtt")))]
-    #[error("{0}")]
-    MqttClient(#[from] rumqttc::ClientError),
-    /// MQTT connection not found (all nodes MQTT's are disabled)
-    #[cfg(feature = "mqtt")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "mqtt")))]
-    #[error("mQTT connection not found (all nodes have the MQTT plugin disabled)")]
-    MqttConnectionNotFound,
+    #[error("MQTT error {0}")]
+    Mqtt(#[from] crate::node_api::mqtt::Error),
 
     //////////////////////////////////////////////////////////////////////
     // Stronghold

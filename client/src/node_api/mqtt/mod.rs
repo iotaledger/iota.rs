@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! IOTA node MQTT API
+
+mod error;
 pub mod types;
 
 use std::{
@@ -22,44 +24,36 @@ use tokio::sync::{
     RwLock,
 };
 
-pub use self::types::*;
-use crate::{Client, NetworkInfo, Result};
+pub use self::{error::Error, types::*};
+use crate::{Client, NetworkInfo};
 
 impl Client {
     /// Returns a handle to the MQTT topics manager.
-    #[cfg(feature = "mqtt")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "mqtt")))]
     pub fn subscriber(&self) -> MqttManager<'_> {
         MqttManager::new(self)
     }
 
     /// Subscribe to MQTT events with a callback.
-    #[cfg(feature = "mqtt")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "mqtt")))]
     pub async fn subscribe<C: Fn(&TopicEvent) + Send + Sync + 'static>(
         &self,
         topics: Vec<Topic>,
         callback: C,
-    ) -> crate::Result<()> {
+    ) -> Result<(), Error> {
         MqttManager::new(self).with_topics(topics).subscribe(callback).await
     }
 
     /// Unsubscribe from MQTT events.
-    #[cfg(feature = "mqtt")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "mqtt")))]
-    pub async fn unsubscribe(&self, topics: Vec<Topic>) -> crate::Result<()> {
+    pub async fn unsubscribe(&self, topics: Vec<Topic>) -> Result<(), Error> {
         MqttManager::new(self).with_topics(topics).unsubscribe().await
     }
 
     /// Returns the mqtt event receiver.
-    #[cfg(feature = "mqtt")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "mqtt")))]
     pub fn mqtt_event_receiver(&self) -> WatchReceiver<MqttEvent> {
         self.mqtt_event_channel.1.clone()
     }
 }
 
-async fn set_mqtt_client(client: &Client) -> Result<()> {
+async fn set_mqtt_client(client: &Client) -> Result<(), Error> {
     // if the client was disconnected, we clear it so we can start over
     if *client.mqtt_event_receiver().borrow() == MqttEvent::Disconnected {
         *client.mqtt_client.write().await = None;
@@ -296,13 +290,13 @@ impl<'a> MqttManager<'a> {
     }
 
     /// Unsubscribes from all subscriptions.
-    pub async fn unsubscribe(self) -> crate::Result<()> {
+    pub async fn unsubscribe(self) -> Result<(), Error> {
         MqttTopicManager::new(self.client).unsubscribe().await
     }
 
     /// Disconnects the broker.
     /// This will clear the stored topic handlers and close the MQTT connection.
-    pub async fn disconnect(self) -> Result<()> {
+    pub async fn disconnect(self) -> Result<(), Error> {
         if let Some(client) = &*self.client.mqtt_client.write().await {
             client.disconnect().await?;
             let mqtt_topic_handlers = &self.client.mqtt_topic_handlers;
@@ -345,7 +339,7 @@ impl<'a> MqttTopicManager<'a> {
     pub async fn subscribe<C: Fn(&crate::node_api::mqtt::TopicEvent) + Send + Sync + 'static>(
         self,
         callback: C,
-    ) -> Result<()> {
+    ) -> Result<(), Error> {
         let cb =
             Arc::new(Box::new(callback) as Box<dyn Fn(&crate::node_api::mqtt::TopicEvent) + Send + Sync + 'static>);
         set_mqtt_client(self.client).await?;
@@ -354,7 +348,7 @@ impl<'a> MqttTopicManager<'a> {
             .write()
             .await
             .as_ref()
-            .ok_or(crate::Error::MqttConnectionNotFound)?
+            .ok_or(Error::ConnectionNotFound)?
             .subscribe_many(
                 self.topics
                     .iter()
@@ -380,7 +374,7 @@ impl<'a> MqttTopicManager<'a> {
 
     /// Unsubscribe from the given topics.
     /// If no topics were provided, the function will unsubscribe from every subscribed topic.
-    pub async fn unsubscribe(self) -> Result<()> {
+    pub async fn unsubscribe(self) -> Result<(), Error> {
         let topics = {
             let mqtt_topic_handlers = &self.client.mqtt_topic_handlers;
             let mqtt_topic_handlers = mqtt_topic_handlers.read().await;
