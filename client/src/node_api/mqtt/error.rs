@@ -8,8 +8,8 @@ pub enum Error {
     /// Client error.
     #[error("client error {0}")]
     Client(#[from] rumqttc::ClientError),
-    /// Connection not found, all nodes have their MQTT plugin disabled.
-    #[error("connection not found, all nodes have their MQTT plugin disabled")]
+    /// Connection not found.
+    #[error("connection not found")]
     ConnectionNotFound,
     /// Crypto error.
     #[error("crypto error {0}")]
