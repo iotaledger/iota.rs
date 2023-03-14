@@ -9,7 +9,7 @@ import org.iota.types.output_builder.BasicOutputBuilderParams;
 import org.iota.types.secret.GenerateAddressesOptions;
 import org.iota.types.secret.MnemonicSecretManager;
 import org.iota.types.secret.Range;
-import com.google.gson.GsonBuilder;
+import com.google.gson.*;
 
 public class BuildBasicOutput {
     public static void main(String[] args) throws ClientException, InitializeClientException {
@@ -27,7 +27,9 @@ public class BuildBasicOutput {
 
         Output basicOutput = client.buildBasicOutput(basicParams);
 
-        System.out.println(new GsonBuilder().setPrettyPrinting().create().toJson(basicOutput));
+        System.out.println(
+            new GsonBuilder().setPrettyPrinting().create().toJson(JsonParser.parseString​(basicOutput.toString()))
+        );
 
         // Output with metadata feature block
         BasicOutputBuilderParams metadataParams = new BasicOutputBuilderParams()
@@ -38,7 +40,9 @@ public class BuildBasicOutput {
 
         Output metadataOutput = client.buildBasicOutput(metadataParams);
 
-        System.out.println(new GsonBuilder().setPrettyPrinting().create().toJson(metadataOutput));
+        System.out.println(
+            new GsonBuilder().setPrettyPrinting().create().toJson(JsonParser.parseString​(metadataOutput.toString()))
+        );
 
         // Output with storage deposit return
         UnlockCondition storageReturnUnlock = new UnlockCondition(
@@ -50,7 +54,9 @@ public class BuildBasicOutput {
 
         Output storageOutput = client.buildBasicOutput(storageParams);
 
-        System.out.println(new GsonBuilder().setPrettyPrinting().create().toJson(storageOutput));
+        System.out.println(
+            new GsonBuilder().setPrettyPrinting().create().toJson(JsonParser.parseString​(storageOutput.toString()))
+        );
 
         // Output with expiration
         UnlockCondition expirationUnlock = new UnlockCondition(
@@ -62,7 +68,9 @@ public class BuildBasicOutput {
 
         Output expirationOutput = client.buildBasicOutput(expirationParams);
 
-        System.out.println(new GsonBuilder().setPrettyPrinting().create().toJson(expirationOutput));
+        System.out.println(
+            new GsonBuilder().setPrettyPrinting().create().toJson(JsonParser.parseString​(expirationOutput.toString()))
+        );
 
         // Output with timelock
         UnlockCondition timeUnlock = new UnlockCondition(
@@ -74,6 +82,8 @@ public class BuildBasicOutput {
 
         Output timelockOutput = client.buildBasicOutput(timelockParams);
 
-        System.out.println(new GsonBuilder().setPrettyPrinting().create().toJson(timelockOutput));
+        System.out.println(
+            new GsonBuilder().setPrettyPrinting().create().toJson(JsonParser.parseString​(timelockOutput.toString()))
+        );
     }
 }
