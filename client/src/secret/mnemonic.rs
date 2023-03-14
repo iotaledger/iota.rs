@@ -17,7 +17,7 @@ use iota_types::block::{
 };
 
 use super::{types::InputSigningData, GenerateAddressOptions, SecretManage};
-use crate::{constants::HD_WALLET_TYPE, secret::RemainderData, Client, Result};
+use crate::{constants::HD_WALLET_TYPE, secret::RemainderData, Client};
 
 /// Secret manager that uses only a mnemonic.
 ///
@@ -26,6 +26,8 @@ pub struct MnemonicSecretManager(Seed);
 
 #[async_trait]
 impl SecretManage for MnemonicSecretManager {
+    type Error = crate::Error;
+
     async fn generate_addresses(
         &self,
         coin_type: u32,
@@ -33,7 +35,7 @@ impl SecretManage for MnemonicSecretManager {
         address_indexes: Range<u32>,
         internal: bool,
         _: Option<GenerateAddressOptions>,
-    ) -> crate::Result<Vec<Address>> {
+    ) -> Result<Vec<Address>, Self::Error> {
         let mut addresses = Vec::new();
 
         for address_index in address_indexes {
@@ -68,7 +70,7 @@ impl SecretManage for MnemonicSecretManager {
         input: &InputSigningData,
         essence_hash: &[u8; 32],
         _: &Option<RemainderData>,
-    ) -> crate::Result<Unlock> {
+    ) -> Result<Unlock, Self::Error> {
         // The signature unlock block needs to sign the hash of the entire transaction essence of the
         // transaction payload
         let chain = input.chain.as_ref().unwrap();
@@ -77,7 +79,7 @@ impl SecretManage for MnemonicSecretManager {
         Ok(Unlock::Signature(SignatureUnlock::new(Signature::Ed25519(ed25519_sig))))
     }
 
-    async fn sign_ed25519(&self, msg: &[u8], chain: &Chain) -> crate::Result<Ed25519Signature> {
+    async fn sign_ed25519(&self, msg: &[u8], chain: &Chain) -> Result<Ed25519Signature, Self::Error> {
         // Get the private and public key for this Ed25519 address
         let private_key = self.0.derive(Curve::Ed25519, chain)?.secret_key();
         let public_key = private_key.public_key().to_bytes();
@@ -91,12 +93,12 @@ impl MnemonicSecretManager {
     /// Create a new [`MnemonicSecretManager`] from a BIP-39 mnemonic in English.
     ///
     /// For more information, see <https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki>.
-    pub fn try_from_mnemonic(mnemonic: &str) -> Result<Self> {
+    pub fn try_from_mnemonic(mnemonic: &str) -> Result<Self, crate::Error> {
         Ok(Self(Client::mnemonic_to_seed(mnemonic)?))
     }
 
     /// Create a new [`MnemonicSecretManager`] from a hex-encoded raw seed string.
-    pub fn try_from_hex_seed(hex: &str) -> Result<Self> {
+    pub fn try_from_hex_seed(hex: &str) -> Result<Self, crate::Error> {
         let bytes: Vec<u8> = prefix_hex::decode(hex)?;
         Ok(Self(Seed::from_bytes(&bytes)))
     }

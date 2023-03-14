@@ -25,11 +25,13 @@ use super::{
 use crate::{
     api::RemainderData,
     secret::{types::InputSigningData, GenerateAddressOptions, SecretManage},
-    Error, Result,
+    Error,
 };
 
 #[async_trait]
 impl SecretManage for StrongholdAdapter {
+    type Error = crate::Error;
+
     async fn generate_addresses(
         &self,
         coin_type: u32,
@@ -37,7 +39,7 @@ impl SecretManage for StrongholdAdapter {
         address_indexes: Range<u32>,
         internal: bool,
         _options: Option<GenerateAddressOptions>,
-    ) -> Result<Vec<Address>> {
+    ) -> Result<Vec<Address>, Self::Error> {
         // Prevent the method from being invoked when the key has been cleared from the memory. Do note that Stronghold
         // only asks for a key for reading / writing a snapshot, so without our cached key this method is invocable, but
         // it doesn't make sense when it comes to our user (signing transactions / generating addresses without a key).
@@ -82,7 +84,7 @@ impl SecretManage for StrongholdAdapter {
         input: &InputSigningData,
         essence_hash: &[u8; 32],
         _: &Option<RemainderData>,
-    ) -> Result<Unlock> {
+    ) -> Result<Unlock, Self::Error> {
         let chain = input.chain.as_ref().unwrap();
         let ed25519_sig = self.sign_ed25519(essence_hash, chain).await?;
 
@@ -92,7 +94,7 @@ impl SecretManage for StrongholdAdapter {
         Ok(unlock)
     }
 
-    async fn sign_ed25519(&self, msg: &[u8], chain: &Chain) -> Result<Ed25519Signature> {
+    async fn sign_ed25519(&self, msg: &[u8], chain: &Chain) -> Result<Ed25519Signature, Self::Error> {
         // Prevent the method from being invoked when the key has been cleared from the memory. Do note that Stronghold
         // only asks for a key for reading / writing a snapshot, so without our cached key this method is invocable, but
         // it doesn't make sense when it comes to our user (signing transactions / generating addresses without a key).
@@ -133,7 +135,12 @@ impl SecretManage for StrongholdAdapter {
 /// Private methods for the secret manager implementation.
 impl StrongholdAdapter {
     /// Execute [Procedure::BIP39Recover] in Stronghold to put a mnemonic into the Stronghold vault.
-    async fn bip39_recover(&self, mnemonic: String, passphrase: Option<String>, output: Location) -> Result<()> {
+    async fn bip39_recover(
+        &self,
+        mnemonic: String,
+        passphrase: Option<String>,
+        output: Location,
+    ) -> Result<(), crate::Error> {
         self.stronghold
             .lock()
             .await
@@ -148,7 +155,12 @@ impl StrongholdAdapter {
     }
 
     /// Execute [Procedure::SLIP10Derive] in Stronghold to derive a SLIP-10 private key in the Stronghold vault.
-    async fn slip10_derive(&self, chain: Chain, input: Slip10DeriveInput, output: Location) -> Result<()> {
+    async fn slip10_derive(
+        &self,
+        chain: Chain,
+        input: Slip10DeriveInput,
+        output: Location,
+    ) -> Result<(), crate::Error> {
         if let Err(err) = self
             .stronghold
             .lock()
@@ -177,7 +189,7 @@ impl StrongholdAdapter {
 
     /// Execute [Procedure::Ed25519PublicKey] in Stronghold to get an Ed25519 public key from the SLIP-10 private key
     /// located in `private_key`.
-    async fn ed25519_public_key(&self, private_key: Location) -> Result<[u8; 32]> {
+    async fn ed25519_public_key(&self, private_key: Location) -> Result<[u8; 32], crate::Error> {
         Ok(self
             .stronghold
             .lock()
@@ -190,7 +202,7 @@ impl StrongholdAdapter {
     }
 
     /// Execute [Procedure::Ed25519Sign] in Stronghold to sign `msg` with `private_key` stored in the Stronghold vault.
-    async fn ed25519_sign(&self, private_key: Location, msg: &[u8]) -> Result<[u8; 64]> {
+    async fn ed25519_sign(&self, private_key: Location, msg: &[u8]) -> Result<[u8; 64], crate::Error> {
         Ok(self
             .stronghold
             .lock()
@@ -203,7 +215,7 @@ impl StrongholdAdapter {
     }
 
     /// Store a mnemonic into the Stronghold vault.
-    pub async fn store_mnemonic(&mut self, mut mnemonic: String) -> Result<()> {
+    pub async fn store_mnemonic(&mut self, mut mnemonic: String) -> Result<(), crate::Error> {
         // The key needs to be supplied first.
         if self.key_provider.lock().await.is_none() {
             return Err(Error::StrongholdKeyCleared);

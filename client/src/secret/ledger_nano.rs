@@ -31,7 +31,7 @@ use crate::{
         types::{LedgerApp, LedgerDeviceType},
         LedgerNanoStatus, PreparedTransactionData, RemainderData,
     },
-    unix_timestamp_now, Error, Result,
+    unix_timestamp_now, Error,
 };
 
 /// Hardened const for the bip path.
@@ -51,7 +51,7 @@ pub struct LedgerSecretManager {
 
 impl TryFrom<u8> for LedgerDeviceType {
     type Error = Error;
-    fn try_from(device: u8) -> Result<Self> {
+    fn try_from(device: u8) -> Result<Self, crate::Error> {
         match device {
             0 => Ok(Self::LedgerNanoS),
             1 => Ok(Self::LedgerNanoX),
@@ -63,6 +63,8 @@ impl TryFrom<u8> for LedgerDeviceType {
 
 #[async_trait]
 impl SecretManage for LedgerSecretManager {
+    type Error = crate::Error;
+
     async fn generate_addresses(
         &self,
         // https://github.com/satoshilabs/slips/blob/master/slip-0044.md
@@ -72,7 +74,7 @@ impl SecretManage for LedgerSecretManager {
         address_indexes: Range<u32>,
         internal: bool,
         options: Option<GenerateAddressOptions>,
-    ) -> crate::Result<Vec<Address>> {
+    ) -> Result<Vec<Address>, Self::Error> {
         let bip32_account = account_index | HARDENED;
 
         let bip32 = LedgerBIP32Index {
@@ -108,11 +110,11 @@ impl SecretManage for LedgerSecretManager {
         _input: &InputSigningData,
         _essence_hash: &[u8; 32],
         _metadata: &Option<RemainderData>,
-    ) -> crate::Result<Unlock> {
+    ) -> Result<Unlock, Self::Error> {
         panic!("signature_unlock is not supported with ledger")
     }
 
-    async fn sign_ed25519(&self, _msg: &[u8], _chain: &Chain) -> crate::Result<Ed25519Signature> {
+    async fn sign_ed25519(&self, _msg: &[u8], _chain: &Chain) -> Result<Ed25519Signature, Self::Error> {
         panic!("sign_ed25519 is not supported with ledger")
     }
 }
@@ -152,7 +154,7 @@ impl SecretManageExt for LedgerSecretManager {
         &self,
         prepared_transaction: &PreparedTransactionData,
         time: Option<u32>,
-    ) -> crate::Result<Unlocks> {
+    ) -> Result<Unlocks, Self::Error> {
         let mut input_bip32_indices: Vec<LedgerBIP32Index> = Vec::new();
         let mut coin_type: Option<u32> = None;
         let mut account_index: Option<u32> = None;

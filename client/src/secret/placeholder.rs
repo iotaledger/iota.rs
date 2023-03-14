@@ -22,6 +22,8 @@ pub struct PlaceholderSecretManager;
 
 #[async_trait]
 impl SecretManage for PlaceholderSecretManager {
+    type Error = crate::Error;
+
     async fn generate_addresses(
         &self,
         _coin_type: u32,
@@ -29,7 +31,7 @@ impl SecretManage for PlaceholderSecretManager {
         _address_indexes: Range<u32>,
         _internal: bool,
         _: Option<GenerateAddressOptions>,
-    ) -> crate::Result<Vec<Address>> {
+    ) -> Result<Vec<Address>, Self::Error> {
         return Err(crate::Error::PlaceholderSecretManager);
     }
 
@@ -38,11 +40,11 @@ impl SecretManage for PlaceholderSecretManager {
         _input: &InputSigningData,
         _essence_hash: &[u8; 32],
         _: &Option<RemainderData>,
-    ) -> crate::Result<Unlock> {
+    ) -> Result<Unlock, Self::Error> {
         return Err(crate::Error::PlaceholderSecretManager);
     }
 
-    async fn sign_ed25519(&self, _msg: &[u8], _chain: &Chain) -> crate::Result<Ed25519Signature> {
+    async fn sign_ed25519(&self, _msg: &[u8], _chain: &Chain) -> Result<Ed25519Signature, Self::Error> {
         return Err(crate::Error::PlaceholderSecretManager);
     }
 }
@@ -53,7 +55,7 @@ impl SecretManageExt for PlaceholderSecretManager {
         &self,
         _prepared_transaction_data: &PreparedTransactionData,
         _time: Option<u32>,
-    ) -> crate::Result<Unlocks> {
+    ) -> Result<Unlocks, Self::Error> {
         return Err(crate::Error::PlaceholderSecretManager);
     }
 }

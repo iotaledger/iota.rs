@@ -52,6 +52,9 @@ use crate::{
 /// The secret manager interface.
 #[async_trait]
 pub trait SecretManage: Send + Sync {
+    /// Associated error type.
+    type Error;
+
     /// Generates addresses.
     ///
     /// For `coin_type`, see also <https://github.com/satoshilabs/slips/blob/master/slip-0044.md>.
@@ -62,7 +65,7 @@ pub trait SecretManage: Send + Sync {
         address_indexes: Range<u32>,
         internal: bool,
         options: Option<GenerateAddressOptions>,
-    ) -> crate::Result<Vec<Address>>;
+    ) -> Result<Vec<Address>, Self::Error>;
 
     /// Sign on `essence`, unlock `input` by returning an [Unlock].
     async fn signature_unlock(
@@ -70,10 +73,10 @@ pub trait SecretManage: Send + Sync {
         input: &InputSigningData,
         essence_hash: &[u8; 32],
         remainder: &Option<RemainderData>,
-    ) -> crate::Result<Unlock>;
+    ) -> Result<Unlock, Self::Error>;
 
     /// Signs `msg` using the given `chain`.
-    async fn sign_ed25519(&self, msg: &[u8], chain: &Chain) -> crate::Result<Ed25519Signature>;
+    async fn sign_ed25519(&self, msg: &[u8], chain: &Chain) -> Result<Ed25519Signature, Self::Error>;
 }
 
 /// An extension to [`SecretManager`].
@@ -82,7 +85,7 @@ pub trait SecretManage: Send + Sync {
 /// internal use that are based on the methods in [`SecretManager`]. Secret managers don't implement this on their
 /// sides.
 #[async_trait]
-pub trait SecretManageExt {
+pub trait SecretManageExt: SecretManage {
     /// Signs transaction essence.
     ///
     /// Secret managers usually don't implement this, as the default implementation has taken care of the placement of
@@ -92,7 +95,7 @@ pub trait SecretManageExt {
         &self,
         prepared_transaction_data: &PreparedTransactionData,
         time: Option<u32>,
-    ) -> crate::Result<Unlocks>;
+    ) -> Result<Unlocks, Self::Error>;
 }
 
 /// Supported secret managers
@@ -166,6 +169,7 @@ pub enum SecretManagerDto {
 
 impl TryFrom<&SecretManagerDto> for SecretManager {
     type Error = crate::Error;
+
     fn try_from(value: &SecretManagerDto) -> crate::Result<Self> {
         Ok(match value {
             #[cfg(feature = "stronghold")]
@@ -224,6 +228,8 @@ impl From<&SecretManager> for SecretManagerDto {
 
 #[async_trait]
 impl SecretManage for SecretManager {
+    type Error = crate::Error;
+
     async fn generate_addresses(
         &self,
         coin_type: u32,
@@ -231,7 +237,7 @@ impl SecretManage for SecretManager {
         address_indexes: Range<u32>,
         internal: bool,
         options: Option<GenerateAddressOptions>,
-    ) -> crate::Result<Vec<Address>> {
+    ) -> Result<Vec<Address>, Self::Error> {
         match self {
             #[cfg(feature = "stronghold")]
             Self::Stronghold(secret_manager) => {
@@ -263,7 +269,7 @@ impl SecretManage for SecretManager {
         input: &InputSigningData,
         essence_hash: &[u8; 32],
         metadata: &Option<RemainderData>,
-    ) -> crate::Result<Unlock> {
+    ) -> Result<Unlock, Self::Error> {
         match self {
             #[cfg(feature = "stronghold")]
             Self::Stronghold(secret_manager) => secret_manager.signature_unlock(input, essence_hash, metadata).await,
@@ -274,7 +280,7 @@ impl SecretManage for SecretManager {
         }
     }
 
-    async fn sign_ed25519(&self, msg: &[u8], chain: &Chain) -> crate::Result<Ed25519Signature> {
+    async fn sign_ed25519(&self, msg: &[u8], chain: &Chain) -> Result<Ed25519Signature, Self::Error> {
         match self {
             #[cfg(feature = "stronghold")]
             Self::Stronghold(secret_manager) => secret_manager.sign_ed25519(msg, chain).await,
@@ -292,7 +298,7 @@ impl SecretManageExt for SecretManager {
         &self,
         prepared_transaction_data: &PreparedTransactionData,
         time: Option<u32>,
-    ) -> crate::Result<Unlocks> {
+    ) -> Result<Unlocks, Self::Error> {
         match self {
             #[cfg(feature = "stronghold")]
             Self::Stronghold(_) => {
