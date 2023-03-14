@@ -28,7 +28,7 @@ public class BuildBasicOutput {
         Output basicOutput = client.buildBasicOutput(basicParams);
 
         System.out.println(
-            new GsonBuilder().setPrettyPrinting().create().toJson(JsonParser.parseString​(basicOutput.toString()))
+            new GsonBuilder().setPrettyPrinting().create().toJson(JsonParser.parseString(basicOutput.toString()))
         );
 
         // Output with metadata feature block
@@ -41,7 +41,7 @@ public class BuildBasicOutput {
         Output metadataOutput = client.buildBasicOutput(metadataParams);
 
         System.out.println(
-            new GsonBuilder().setPrettyPrinting().create().toJson(JsonParser.parseString​(metadataOutput.toString()))
+            new GsonBuilder().setPrettyPrinting().create().toJson(JsonParser.parseString(metadataOutput.toString()))
         );
 
         // Output with storage deposit return
@@ -55,7 +55,7 @@ public class BuildBasicOutput {
         Output storageOutput = client.buildBasicOutput(storageParams);
 
         System.out.println(
-            new GsonBuilder().setPrettyPrinting().create().toJson(JsonParser.parseString​(storageOutput.toString()))
+            new GsonBuilder().setPrettyPrinting().create().toJson(JsonParser.parseString(storageOutput.toString()))
         );
 
         // Output with expiration
@@ -69,7 +69,7 @@ public class BuildBasicOutput {
         Output expirationOutput = client.buildBasicOutput(expirationParams);
 
         System.out.println(
-            new GsonBuilder().setPrettyPrinting().create().toJson(JsonParser.parseString​(expirationOutput.toString()))
+            new GsonBuilder().setPrettyPrinting().create().toJson(JsonParser.parseString(expirationOutput.toString()))
         );
 
         // Output with timelock
@@ -83,7 +83,7 @@ public class BuildBasicOutput {
         Output timelockOutput = client.buildBasicOutput(timelockParams);
 
         System.out.println(
-            new GsonBuilder().setPrettyPrinting().create().toJson(JsonParser.parseString​(timelockOutput.toString()))
+            new GsonBuilder().setPrettyPrinting().create().toJson(JsonParser.parseString(timelockOutput.toString()))
         );
     }
 }
