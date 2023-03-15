@@ -8,7 +8,7 @@ use std::{env, str::FromStr};
 use dotenv::dotenv;
 use iota_client::{
     api::GetAddressesBuilderOptions as GenerateAddressesOptions,
-    block::{block::dto::BlockDto, BlockId},
+    block::{block::dto::BlockDto, payload::transaction::dto::TransactionEssenceDto, BlockId},
     message_interface::{self, Message, Response},
     secret::SecretManagerDto,
 };
@@ -214,4 +214,52 @@ async fn stronghold() {
 
     // Remove garbage after test, but don't care about the result
     std::fs::remove_file("teststronghold.stronghold").unwrap_or(());
+}
+
+#[tokio::test]
+async fn hash_transaction_essence() {
+    let message_handler = message_interface::create_message_handler(None).unwrap();
+
+    let transaction_essence = r#"{
+        "type": 1,
+        "networkId": "8453507715857476362",
+        "inputs": [
+          {
+            "type": 0,
+            "transactionId": "0x6cb5226d9390afa41ee02306d429e1db532c617f86679a094519e8935571980f",
+            "transactionOutputIndex": 0
+          }
+        ],
+        "inputsCommitment": "0x2b9db8d620137f02061d207310ef8876cc43b78c2cb826936e0d64e13531bf85",
+        "outputs": [
+          {
+            "type": 3,
+            "amount": "1000000",
+            "unlockConditions": [
+              {
+                "type": 0,
+                "address": {
+                  "type": 0,
+                  "pubKeyHash": "0x00b35b7176c3db9cb4856df8703576ae19a563b44ea9bed069646cc6aa10d11f"
+                }
+              }
+            ]
+          }
+        ]
+      }"#;
+
+    let essence_dto: TransactionEssenceDto = serde_json::from_str(transaction_essence).unwrap();
+    let message = Message::HashTransactionEssence { essence: essence_dto };
+
+    let response = message_handler.send_message(message).await;
+
+    match response {
+        Response::TransactionEssenceHash(essence_hash) => {
+            assert_eq!(
+                essence_hash,
+                "0x4624e6735cadee3d6ee5d83f9f8848d454a434ddf2b891b885f664de87eee044"
+            );
+        }
+        response_type => panic!("Unexpected response type: {response_type:?}"),
+    }
 }

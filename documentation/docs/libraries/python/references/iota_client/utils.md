@@ -113,3 +113,11 @@ def block_id(block)
 
 Returns a block ID (Blake2b256 hash of block bytes) from a block.
 
+### hash\_transaction\_essence
+
+```python
+def hash_transaction_essence(essence)
+```
+
+Compute the hash of a transaction essence.
+

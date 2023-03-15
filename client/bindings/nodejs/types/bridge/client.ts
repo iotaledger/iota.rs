@@ -1,4 +1,4 @@
-import type { IBlock, PayloadTypes } from '@iota/types';
+import type { IBlock, ITransactionEssence, PayloadTypes } from '@iota/types';
 import type { SecretManager } from '../secretManager';
 import type { IGenerateAddressesOptions } from '../generateAddressesOptions';
 import type { IBuildBlockOptions } from '../buildBlockOptions';
@@ -499,6 +499,11 @@ export interface __BuildFoundryOutputMessage__ {
 export interface __BuildNftOutputMessage__ {
     name: 'buildNftOutput';
     data: INftOutputBuilderOptions;
+}
+
+export interface __HashTransactionEssenceMessage__ {
+    name: 'hashTransactionEssence';
+    data: { essence: ITransactionEssence };
 }
 
 export interface __ClearListenersMessage__ {

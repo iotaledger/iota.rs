@@ -14,6 +14,7 @@ use iota_types::block::{
     },
     payload::{
         dto::{MilestonePayloadDto, PayloadDto},
+        transaction::TransactionEssence,
         Payload, TransactionPayload,
     },
     protocol::dto::ProtocolParametersDto,
@@ -670,6 +671,9 @@ impl ClientMessageHandler {
                 token_scheme_kind,
             ))),
             Message::Faucet { url, address } => Ok(Response::Faucet(request_funds_from_faucet(&url, &address).await?)),
+            Message::HashTransactionEssence { essence } => Ok(Response::TransactionEssenceHash(prefix_hex::encode(
+                TransactionEssence::try_from_dto_unverified(&essence)?.hash(),
+            ))),
         }
     }
 }

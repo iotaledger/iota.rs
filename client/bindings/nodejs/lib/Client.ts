@@ -42,6 +42,7 @@ import type {
     INftOutput,
     INodeInfoProtocol,
     UnlockTypes,
+    ITransactionEssence,
 } from '@iota/types';
 import type { INodeInfoWrapper } from '../types/nodeInfo';
 
@@ -1119,6 +1120,22 @@ export class Client {
         const response = await this.messageHandler.sendMessage({
             name: 'buildNftOutput',
             data: options,
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Compute the hash of a transaction essence.
+     */
+    async hashTransactionEssence(
+        essence: ITransactionEssence,
+    ): Promise<string> {
+        const response = await this.messageHandler.sendMessage({
+            name: 'hashTransactionEssence',
+            data: {
+                essence,
+            },
         });
 
         return JSON.parse(response).payload;
