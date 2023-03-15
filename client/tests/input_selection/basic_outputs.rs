@@ -11,7 +11,6 @@ use iota_client::{
         protocol::protocol_parameters,
     },
 };
-use packable::bounded::TryIntoBoundedU16Error;
 
 use crate::{
     addresses, build_inputs, build_outputs, is_remainder_or_return, unsorted_eq,
@@ -1274,9 +1273,7 @@ fn too_many_inputs() {
 
     assert_eq!(
         selected.unwrap_err(),
-        iota_client::api::input_selection::Error::Block(iota_types::block::Error::InvalidInputCount(
-            TryIntoBoundedU16Error::Truncated(129)
-        ))
+        iota_client::api::input_selection::Error::InvalidInputCount(129)
     )
 }
 

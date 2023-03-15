@@ -10,7 +10,7 @@ pub(crate) mod transition;
 use std::collections::{HashMap, HashSet};
 
 use iota_types::block::{input::INPUT_COUNT_RANGE, output::OUTPUT_COUNT_RANGE};
-use packable::{bounded::TryIntoBoundedU16Error, PackableExt};
+use packable::PackableExt;
 pub(crate) use requirement::is_alias_transition;
 
 pub use self::{
@@ -384,9 +384,7 @@ impl InputSelection {
         }
 
         if !INPUT_COUNT_RANGE.contains(&(self.selected_inputs.len() as u16)) {
-            return Err(Error::Block(iota_types::block::Error::InvalidInputCount(
-                TryIntoBoundedU16Error::Truncated(self.selected_inputs.len()),
-            )));
+            return Err(Error::InvalidInputCount(self.selected_inputs.len()));
         }
 
         let (remainder, storage_deposit_returns) = self.remainder_and_storage_deposit_return_outputs()?;
@@ -398,9 +396,7 @@ impl InputSelection {
         self.outputs.extend(storage_deposit_returns);
 
         if !OUTPUT_COUNT_RANGE.contains(&(self.outputs.len() as u16)) {
-            return Err(Error::Block(iota_types::block::Error::InvalidOutputCount(
-                TryIntoBoundedU16Error::Truncated(self.outputs.len()),
-            )));
+            return Err(Error::InvalidOutputCount(self.outputs.len()));
         }
 
         Ok(Selected {

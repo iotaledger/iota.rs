@@ -3,8 +3,6 @@
 
 use std::collections::HashMap;
 
-use packable::bounded::TryIntoBoundedU16Error;
-
 use super::{Error, InputSelection, Requirement};
 use crate::{
     block::{
@@ -325,11 +323,9 @@ impl InputSelection {
         }
 
         if self.selected_inputs.len() + amount_selection.newly_selected_inputs.len() > INPUT_COUNT_MAX.into() {
-            return Err(Error::Block(iota_types::block::Error::InvalidInputCount(
-                TryIntoBoundedU16Error::Truncated(
-                    self.selected_inputs.len() + amount_selection.newly_selected_inputs.len(),
-                ),
-            )));
+            return Err(Error::InvalidInputCount(
+                self.selected_inputs.len() + amount_selection.newly_selected_inputs.len(),
+            ));
         }
 
         if amount_selection.missing_amount() != 0 {
