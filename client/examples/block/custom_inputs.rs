@@ -33,15 +33,15 @@ async fn main() -> Result<()> {
     println!("{}", request_funds_from_faucet(&faucet_url, &addresses[0]).await?);
     tokio::time::sleep(std::time::Duration::from_secs(15)).await;
 
-    let output_ids = client
+    let output_ids_response = client
         .basic_output_ids(vec![QueryParameter::Address(addresses[0].clone())])
         .await?;
-    println!("{output_ids:?}");
+    println!("{output_ids_response:?}");
 
     let block = client
         .block()
         .with_secret_manager(&secret_manager)
-        .with_input(UtxoInput::from(output_ids[0]))?
+        .with_input(UtxoInput::from(output_ids_response.items[0]))?
         //.with_input_range(20..25)
         .with_output(
             "atoi1qzt0nhsf38nh6rs4p6zs5knqp6psgha9wsv74uajqgjmwc75ugupx3y7x0r",

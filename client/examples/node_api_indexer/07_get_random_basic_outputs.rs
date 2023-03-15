@@ -1,8 +1,8 @@
-// Copyright 2022 IOTA Stiftung
+// Copyright 2023 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-//! Calls `GET api/indexer/v1/outputs/foundry`.
-//! Run: `cargo run --example node_api_indexer_get_foundry_outputs --release -- [NODE URL] [ADDRESS]`.
+//! Calls `GET api/indexer/v1/outputs/basic`.
+//! Run: `cargo run --example node_api_indexer_get_random_basic_outputs --release -- [NODE URL]`.
 
 use iota_client::{node_api::indexer::query_parameters::QueryParameter, Client, Result};
 
@@ -21,14 +21,9 @@ async fn main() -> Result<()> {
         .with_node(&node_url)?
         .finish()?;
 
-    // Take the address from command line argument or use a default one.
-    let alias_address = std::env::args()
-        .nth(2)
-        .unwrap_or_else(|| String::from("rms1prd5mdmy84mgzwwklzkrl8ym02p2y3dkr8af7lqclnv0pan7274uyjrmwx5"));
-
-    // Get output IDs of foundry outputs that can be controlled by this address.
+    // Get a single page with random output IDs by providing only `QueryParameter::Cursor(_)`.
     let output_ids_response = client
-        .foundry_output_ids(vec![QueryParameter::AliasAddress(alias_address)])
+        .basic_output_ids(vec![QueryParameter::Cursor(String::new())])
         .await?;
 
     println!("Address output IDs {output_ids_response:#?}");
@@ -36,7 +31,7 @@ async fn main() -> Result<()> {
     // Get the outputs by their IDs.
     let outputs_responses = client.get_outputs(output_ids_response.items).await?;
 
-    println!("Foundry outputs: {outputs_responses:#?}");
+    println!("Basic outputs: {outputs_responses:#?}");
 
     Ok(())
 }

@@ -19,7 +19,7 @@ use iota_types::block::{
 use serde::Deserialize;
 
 #[cfg(feature = "mqtt")]
-use crate::Topic;
+use crate::mqtt::Topic;
 use crate::{
     api::{
         ClientBlockBuilderOptions as BuildBlockOptions, GetAddressesBuilderOptions as GenerateAddressesOptions,

@@ -21,12 +21,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 1.0.0-rc.3 - 2023-MM-DD
 
+### Added
+
+- `OutputIdsResponse`;
+
 ### Changed
 
 - Changes from the Rust library;
 - Merged `IAuth::{username, password}` into `IAuth::basicAuthNamePwd`;
 - `Burn` fields are now optional;
 - `Burn::nativeTokens` is now an array;
+- `Client::{aliasOutputIds, basicOutputIds, foundryOutputIds, nftOutputIds}` will not do automatic pagination if `QueryParameter::Cursor(_)` is provided and return type from `string[]` to `OutputIdsResponse`;
 
 ### Removed
 

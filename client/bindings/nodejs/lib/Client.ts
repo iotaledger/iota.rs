@@ -21,6 +21,7 @@ import type {
     AliasQueryParameter,
     LedgerNanoStatus,
     IInputSigningData,
+    OutputIdsResponse,
 } from '../types';
 import type {
     IUTXOInput,
@@ -76,7 +77,9 @@ export class Client {
     }
 
     /** Fetch basic output IDs based on query parameters */
-    async basicOutputIds(queryParameters: QueryParameter[]): Promise<string[]> {
+    async basicOutputIds(
+        queryParameters: QueryParameter[],
+    ): Promise<OutputIdsResponse> {
         const response = await this.messageHandler.sendMessage({
             name: 'basicOutputIds',
             data: {
@@ -827,7 +830,7 @@ export class Client {
      */
     async aliasOutputIds(
         queryParameters: AliasQueryParameter[],
-    ): Promise<string[]> {
+    ): Promise<OutputIdsResponse> {
         const response = await this.messageHandler.sendMessage({
             name: 'aliasOutputIds',
             data: {
@@ -857,7 +860,7 @@ export class Client {
      */
     async nftOutputIds(
         queryParameters: NftQueryParameter[],
-    ): Promise<string[]> {
+    ): Promise<OutputIdsResponse> {
         const response = await this.messageHandler.sendMessage({
             name: 'nftOutputIds',
             data: {
@@ -887,7 +890,7 @@ export class Client {
      */
     async foundryOutputIds(
         queryParameters: FoundryQueryParameter[],
-    ): Promise<string[]> {
+    ): Promise<OutputIdsResponse> {
         const response = await this.messageHandler.sendMessage({
             name: 'foundryOutputIds',
             data: {

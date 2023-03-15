@@ -36,9 +36,9 @@ pub mod dto {
         type Error = DtoError;
 
         fn try_from(value: &TokenIdDto) -> Result<Self, Self::Error> {
-            let token_id: [u8; Self::LENGTH] =
-                prefix_hex::decode(&value.0).map_err(|_e| DtoError::InvalidField("tokenId"))?;
-            Ok(Self::new(token_id))
+            Ok(Self::new(
+                prefix_hex::decode(&value.0).map_err(|_e| DtoError::InvalidField("tokenId"))?,
+            ))
         }
     }
 }

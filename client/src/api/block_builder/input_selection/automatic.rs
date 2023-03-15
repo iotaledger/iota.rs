@@ -39,7 +39,8 @@ impl<'a> ClientBlockBuilder<'a> {
                     QueryParameter::Address(address.clone()),
                     QueryParameter::HasStorageDepositReturn(false),
                 ])
-                .await?,
+                .await?
+                .items,
         );
 
         // Second request to get all basic outputs that can be unlocked by the address through the expiration condition.
@@ -52,7 +53,8 @@ impl<'a> ClientBlockBuilder<'a> {
                     // Ignore outputs that aren't expired yet
                     QueryParameter::ExpiresBefore(unix_timestamp_now()),
                 ])
-                .await?,
+                .await?
+                .items,
         );
 
         self.client.get_outputs(output_ids).await

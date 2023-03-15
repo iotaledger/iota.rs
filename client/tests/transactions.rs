@@ -56,7 +56,7 @@ async fn send_basic_output() -> Result<()> {
     let bech32_hrp = client.get_bech32_hrp().await?;
 
     // output can be fetched from the second address
-    let output_ids = client
+    let output_ids_response = client
         .basic_output_ids(vec![
             QueryParameter::Address(second_address.to_bech32(bech32_hrp)),
             QueryParameter::HasExpiration(false),
@@ -65,7 +65,7 @@ async fn send_basic_output() -> Result<()> {
         ])
         .await?;
 
-    assert_eq!(output_ids, vec![output_id]);
+    assert_eq!(output_ids_response.items, vec![output_id]);
 
     Ok(())
 }
