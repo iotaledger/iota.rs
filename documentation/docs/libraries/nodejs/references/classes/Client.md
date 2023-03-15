@@ -81,6 +81,7 @@ The Client to interact with nodes.
 - [buildAliasOutput](Client.md#buildaliasoutput)
 - [buildFoundryOutput](Client.md#buildfoundryoutput)
 - [buildNftOutput](Client.md#buildnftoutput)
+- [hashTransactionEssence](Client.md#hashtransactionessence)
 - [listen](Client.md#listen)
 - [clearListeners](Client.md#clearlisteners)
 
@@ -1361,6 +1362,24 @@ Build an Nft Output.
 #### Returns
 
 `Promise`<`INftOutput`\>
+
+___
+
+### hashTransactionEssence
+
+▸ **hashTransactionEssence**(`essence`): `Promise`<`string`\>
+
+Compute the hash of a transaction essence.
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `essence` | `ITransactionEssence` |
+
+#### Returns
+
+`Promise`<`string`\>
 
 ___
 

@@ -153,5 +153,12 @@ public class UtilsApi {
 
         return new FoundryId(responsePayload);
     }
+
+    public String hashTransactionEssence(String transactionEssence) throws ClientException {
+        JsonObject o = new JsonObject();
+        o.addProperty("essence", transactionEssence);
+
+        return nativeApi.sendCommand(new ClientCommand("hashTransactionEssence", o)).getAsString();
+    }
 }
 

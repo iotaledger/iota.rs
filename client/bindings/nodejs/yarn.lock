@@ -329,35 +329,10 @@
   resolved "https://registry.npmjs.org/@humanwhocodes/object-schema/-/object-schema-1.2.1.tgz"
   integrity sha512-ZnQMnLV4e7hDlUvw8H+U8ASL02SS2Gn6+9Ac3wGGLIe7+je2AeAOxPY+izIPJDfFDb7eDjev0Us8MO1iFRN8hA==
 
-"@iota/crypto.js@2.0.0-rc.1":
-  version "2.0.0-rc.1"
-  resolved "https://registry.yarnpkg.com/@iota/crypto.js/-/crypto.js-2.0.0-rc.1.tgz#73d0640145af6abdc6275afe8313206136c9c8f7"
-  integrity sha512-gidDFvbIcthVIaxqntffUCFHHNZNhu1e3zjwt6yaYLeuqJcc2AXPv/UF8Lz9Mfkw9aSM8xVUwo8/uYDkvs2eOQ==
-  dependencies:
-    "@iota/util.js" "2.0.0-rc.1"
-    big-integer "^1.6.51"
-
-"@iota/iota.js@^2.0.0-rc.2":
-  version "2.0.0-rc.3"
-  resolved "https://registry.yarnpkg.com/@iota/iota.js/-/iota.js-2.0.0-rc.3.tgz#226399f5eb305b726826f3055d0add42a4bdc764"
-  integrity sha512-lrnmFDmI3vWscJAGzka2VOpi+x/kH1xMwvLgPOQ2WlyKOouLv/gmjc6S0K3TYCxKPRgw6DsVYMkFsK4GXXV5BA==
-  dependencies:
-    "@iota/crypto.js" "2.0.0-rc.1"
-    "@iota/util.js" "2.0.0-rc.1"
-    big-integer "^1.6.51"
-    node-fetch "2.6.7"
-
 "@iota/types@2.0.0-rc.2":
   version "2.0.0-rc.2"
   resolved "https://registry.yarnpkg.com/@iota/types/-/types-2.0.0-rc.2.tgz#a4b8e5c3423a2afd322fc05ebfaa6b27587d9a96"
   integrity sha512-huL+171zMQgGYV4/zhHLFcE8heTLRJhtlqLEJaM1Q+klb2KxNqFX0EySU8pxZ/nslh0Dem3QQ+Jmwv1FdBmpFQ==
-
-"@iota/util.js@2.0.0-rc.1":
-  version "2.0.0-rc.1"
-  resolved "https://registry.yarnpkg.com/@iota/util.js/-/util.js-2.0.0-rc.1.tgz#444c47cf7a236489ca118d7dc0e8468e856a5c5d"
-  integrity sha512-tG+qsCHhztGuthUPqLlckih3Ump+IcKCDEl+Sb7ACOOR7JM73KOGaRud8NlLu4GNqQyQh7s9Gn2GRkXBJ1apiA==
-  dependencies:
-    big-integer "^1.6.51"
 
 "@istanbuljs/load-nyc-config@^1.0.0":
   version "1.1.0"
@@ -1086,7 +1061,7 @@ bcrypt-pbkdf@^1.0.0:
   dependencies:
     tweetnacl "^0.14.3"
 
-big-integer@^1.6.17, big-integer@^1.6.51:
+big-integer@^1.6.17:
   version "1.6.51"
   resolved "https://registry.yarnpkg.com/big-integer/-/big-integer-1.6.51.tgz#0df92a5d9880560d3ff2d5fd20245c889d130686"
   integrity sha512-GPEid2Y9QU1Exl1rpO9B2IPJGHPSupF5GnVIP0blYvNOMer2bTvSWs1jGOUg04hTmu67nmLsQ9TBo1puaotBHg==
@@ -3301,13 +3276,6 @@ node-abi@^3.0.0, node-abi@^3.3.0:
   dependencies:
     semver "^7.3.5"
 
-node-fetch@2.6.7:
-  version "2.6.7"
-  resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.6.7.tgz#24de9fba827e3b4ae44dc8b20256a379160052ad"
-  integrity sha512-ZjMPFEfVx5j+y2yF35Kzx5sF7kDzxuDj6ziH4FFbOp87zKDZNx8yExJIb05OGF4Nlt9IHFIMBkRl41VdvcNdbQ==
-  dependencies:
-    whatwg-url "^5.0.0"
-
 node-gyp@^6.0.1:
   version "6.1.0"
   resolved "https://registry.npmjs.org/node-gyp/-/node-gyp-6.1.0.tgz"
@@ -4366,11 +4334,6 @@ tr46@^2.1.0:
   dependencies:
     punycode "^2.1.1"
 
-tr46@~0.0.3:
-  version "0.0.3"
-  resolved "https://registry.yarnpkg.com/tr46/-/tr46-0.0.3.tgz#8184fd347dac9cdc185992f3a6622e14b9d9ab6a"
-  integrity sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==
-
 traceur@0.0.x:
   version "0.0.111"
   resolved "https://registry.npmjs.org/traceur/-/traceur-0.0.111.tgz"
@@ -4620,11 +4583,6 @@ walker@^1.0.7:
   dependencies:
     makeerror "1.0.12"
 
-webidl-conversions@^3.0.0:
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/webidl-conversions/-/webidl-conversions-3.0.1.tgz#24534275e2a7bc6be7bc86611cc16ae0a5654871"
-  integrity sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ==
-
 webidl-conversions@^5.0.0:
   version "5.0.0"
   resolved "https://registry.npmjs.org/webidl-conversions/-/webidl-conversions-5.0.0.tgz"
@@ -4646,14 +4604,6 @@ whatwg-mimetype@^2.3.0:
   version "2.3.0"
   resolved "https://registry.npmjs.org/whatwg-mimetype/-/whatwg-mimetype-2.3.0.tgz"
   integrity sha512-M4yMwr6mAnQz76TbJm914+gPpB/nCwvZbJU28cUD6dR004SAxDLOOSUaB1JDRqLtaOV/vi0IC5lEAGFgrjGv/g==
-
-whatwg-url@^5.0.0:
-  version "5.0.0"
-  resolved "https://registry.yarnpkg.com/whatwg-url/-/whatwg-url-5.0.0.tgz#966454e8765462e37644d3626f6742ce8b70965d"
-  integrity sha512-saE57nupxk6v3HY35+jzBwYa0rKSy0XR8JSxZPwgLr7ys0IBzhGviA1/TUGJLmSVqs8pb9AnvICXEuOHLprYTw==
-  dependencies:
-    tr46 "~0.0.3"
-    webidl-conversions "^3.0.0"
 
 whatwg-url@^8.0.0, whatwg-url@^8.5.0:
   version "8.7.0"

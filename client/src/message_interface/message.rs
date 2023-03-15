@@ -12,7 +12,10 @@ use iota_types::block::{
     payload::{
         dto::PayloadDto,
         milestone::MilestoneId,
-        transaction::{dto::TransactionPayloadDto, TransactionId},
+        transaction::{
+            dto::{TransactionEssenceDto, TransactionPayloadDto},
+            TransactionId,
+        },
     },
     BlockDto, BlockId,
 };
@@ -563,5 +566,10 @@ pub enum Message {
         url: String,
         /// The address for request funds
         address: String,
+    },
+    /// Compute the hash of a transaction essence.
+    HashTransactionEssence {
+        /// The transaction essence
+        essence: TransactionEssenceDto,
     },
 }

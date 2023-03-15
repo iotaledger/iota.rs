@@ -228,6 +228,9 @@ pub enum Response {
     /// - [`Faucet`](crate::message_interface::Message::Faucet)
     Faucet(String),
     /// Response for:
+    /// - [`HashTransactionEssence`](crate::message_interface::Message::HashTransactionEssence)
+    TransactionEssenceHash(String),
+    /// Response for:
     /// - [`ClearListeners`](crate::message_interface::Message::ClearListeners)
     /// - [`StoreMnemonic`](crate::message_interface::Message::StoreMnemonic)
     Ok,

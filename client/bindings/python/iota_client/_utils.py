@@ -97,3 +97,10 @@ class Utils(BaseAPI):
         return self.send_message('blockId', {
             'block': block
         })
+
+    def hash_transaction_essence(self, essence):
+        """ Compute the hash of a transaction essence.
+        """
+        return self.send_message('hashTransactionEssence', {
+            'essence': essence
+        })

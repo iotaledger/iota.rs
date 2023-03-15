@@ -72,6 +72,7 @@ import type {
     __BuildAliasOutputMessage__,
     __BuildFoundryOutputMessage__,
     __BuildNftOutputMessage__,
+    __HashTransactionEssenceMessage__,
     __ClearListenersMessage__,
     __SignatureUnlockMessage__,
 } from './client';
@@ -151,4 +152,5 @@ export type __ClientMessages__ =
     | __BuildAliasOutputMessage__
     | __BuildFoundryOutputMessage__
     | __BuildNftOutputMessage__
+    | __HashTransactionEssenceMessage__
     | __ClearListenersMessage__;
