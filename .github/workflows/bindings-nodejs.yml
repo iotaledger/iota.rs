@@ -5,19 +5,25 @@ on:
     paths:
       - ".github/workflows/bindings-nodejs.yml"
       - ".github/actions/**"
-      - "client/bindings/nodejs/**"
-      - "**.rs"
-      - "**Cargo.toml"
-      - "**Cargo.lock"
+      - "**.rs" # Include all rust files
+      - "**Cargo.toml" # Include all Cargo.toml files
+      - "**Cargo.lock" # Include all Cargo.lock files
+      - "!**/examples/**" # Exclude all examples
+      - "!**/tests/**" # Exclude all tests
+      - "!client/bindings/**" # Exclude all bindings
+      - "client/bindings/nodejs/**" # Re-include nodejs bindings
   pull_request:
     branches: [develop, production]
     paths:
       - ".github/workflows/bindings-nodejs.yml"
       - ".github/actions/**"
-      - "client/bindings/nodejs/**"
-      - "**.rs"
-      - "**Cargo.toml"
-      - "**Cargo.lock"
+      - "**.rs" # Include all rust files
+      - "**Cargo.toml" # Include all Cargo.toml files
+      - "**Cargo.lock" # Include all Cargo.lock files
+      - "!**/examples/**" # Exclude all examples
+      - "!**/tests/**" # Exclude all tests
+      - "!client/bindings/**" # Exclude all bindings
+      - "client/bindings/nodejs/**" # Re-include nodejs bindings
   schedule:
     - cron: "0 1 * * *"
   workflow_dispatch:

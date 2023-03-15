@@ -6,17 +6,19 @@ on:
     paths:
       - ".github/workflows/wasm-compatibility.yml"
       - ".github/actions/**"
-      - "**.rs"
-      - "**Cargo.toml"
-      - "**Cargo.lock"
+      - "**.rs" # Include all rust files
+      - "**Cargo.toml" # Include all Cargo.toml files
+      - "**Cargo.lock" # Include all Cargo.lock files
+      - "!client/bindings/**" # Exclude all bindings
   pull_request:
     branches: [develop, production]
     paths:
       - ".github/workflows/wasm-compatibility.yml"
       - ".github/actions/**"
-      - "**.rs"
-      - "**Cargo.toml"
-      - "**Cargo.lock"
+      - "**.rs" # Include all rust files
+      - "**Cargo.toml" # Include all Cargo.toml files
+      - "**Cargo.lock" # Include all Cargo.lock files
+      - "!client/bindings/**" # Exclude all bindings
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}

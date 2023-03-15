@@ -7,6 +7,8 @@ on:
       - ".github/workflows/private-tangle-tests.yml"
       - ".github/actions/**"
       - "**.rs"
+      - "**/tests/**"
+      - "**/test/**"
       - "**Cargo.toml"
       - "**Cargo.lock"
   pull_request:
@@ -15,6 +17,8 @@ on:
       - ".github/workflows/private-tangle-tests.yml"
       - ".github/actions/**"
       - "**.rs"
+      - "**/tests/**"
+      - "**/test/**"
       - "**Cargo.toml"
       - "**Cargo.lock"
 
