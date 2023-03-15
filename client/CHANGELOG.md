@@ -28,7 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Message::HashTransactionEssence`;
 - `Response::TransactionEssenceHash`;
 - Derive `Eq, PartialEq` for `input_select::Error`;
-- `Error::{InvalidOutputCount, InvalidOutputCount}` variants;
+- ISA `Error::{InvalidOutputCount, InvalidOutputCount}` variants;
 
 ### Changed
 
