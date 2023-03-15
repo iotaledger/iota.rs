@@ -503,7 +503,9 @@ export interface __BuildNftOutputMessage__ {
 
 export interface __HashTransactionEssenceMessage__ {
     name: 'hashTransactionEssence';
-    data: { essence: ITransactionEssence };
+    data: {
+        essence: ITransactionEssence;
+    };
 }
 
 export interface __ClearListenersMessage__ {
