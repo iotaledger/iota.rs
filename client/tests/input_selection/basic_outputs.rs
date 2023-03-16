@@ -1331,3 +1331,90 @@ fn more_than_max_inputs_only_one_needed() {
     assert!(unsorted_eq(&selected.inputs, &needed_input));
     assert!(unsorted_eq(&selected.outputs, &outputs));
 }
+
+#[test]
+fn too_many_outputs() {
+    let protocol_parameters = protocol_parameters();
+
+    let inputs = build_inputs(vec![Basic(
+        2_000_000_000,
+        BECH32_ADDRESS_ED25519_0,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )]);
+
+    let outputs = build_outputs(vec![
+        Basic(
+            1_000_000,
+            BECH32_ADDRESS_ED25519_0,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+        );
+        129
+    ]);
+
+    let selected = InputSelection::new(
+        inputs,
+        outputs,
+        addresses(vec![BECH32_ADDRESS_ED25519_0]),
+        protocol_parameters,
+    )
+    .select();
+
+    assert_eq!(
+        selected.unwrap_err(),
+        iota_client::api::input_selection::Error::InvalidOutputCount(129)
+    )
+}
+
+#[test]
+fn too_many_outputs_with_remainder() {
+    let protocol_parameters = protocol_parameters();
+
+    let inputs = build_inputs(vec![Basic(
+        2_000_000_000,
+        BECH32_ADDRESS_ED25519_0,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )]);
+
+    let outputs = build_outputs(vec![
+        Basic(
+            1_000_000,
+            BECH32_ADDRESS_ED25519_0,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+        );
+        128
+    ]);
+
+    let selected = InputSelection::new(
+        inputs,
+        outputs,
+        addresses(vec![BECH32_ADDRESS_ED25519_0]),
+        protocol_parameters,
+    )
+    .select();
+
+    assert_eq!(
+        selected.unwrap_err(),
+        // 129 because of required remainder
+        iota_client::api::input_selection::Error::InvalidOutputCount(129)
+    )
+}

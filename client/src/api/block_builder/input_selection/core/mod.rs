@@ -360,6 +360,10 @@ impl InputSelection {
     /// Selects inputs that meet the requirements of the outputs to satisfy the semantic validation of the overall
     /// transaction. Also creates a remainder output and chain transition outputs if required.
     pub fn select(mut self) -> Result<Selected, Error> {
+        if !OUTPUT_COUNT_RANGE.contains(&(self.outputs.len() as u16)) {
+            return Err(Error::InvalidOutputCount(self.outputs.len()));
+        }
+
         self.filter_inputs();
 
         if self.available_inputs.is_empty() {
@@ -395,6 +399,7 @@ impl InputSelection {
 
         self.outputs.extend(storage_deposit_returns);
 
+        // Check again, because more outputs may have been added
         if !OUTPUT_COUNT_RANGE.contains(&(self.outputs.len() as u16)) {
             return Err(Error::InvalidOutputCount(self.outputs.len()));
         }
