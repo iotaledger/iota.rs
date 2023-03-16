@@ -42,8 +42,6 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
             Permanode URL.
         ignore_node_health : bool
             If the node health should be ignored.
-        nodes : array of strings
-            Node URLs.
         api_timeout : datetime.timedelta
             Timeout for API requests.
         node_sync_interval : datetime.timedelta
@@ -283,7 +281,7 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
 class Node():
     __default = object()
 
-    def __init__(self, url=__default, jwt=__default, user=__default, password=__default, disabled=__default):
+    def __init__(self, url=__default, jwt=__default, username=__default, password=__default, disabled=__default):
         """Initialize a Node
 
         Parameters
@@ -292,8 +290,8 @@ class Node():
             Node url
         jwt : string
             JWT token
-        user : string
-            User for basic authentication
+        username : string
+            Username for basic authentication
         password : string
             Password for basic authentication
         disabled : bool
@@ -301,21 +299,21 @@ class Node():
         """
         self.url = url
         self.jwt = jwt
-        self.user = user
+        self.username = username
         self.password = password
         self.disabled = disabled
 
     def as_dict(self):
         config = {k: v for k, v in self.__dict__.items() if v != self.__default}
 
-        if 'jwt' in config or 'user' in config or 'password' in config:
+        if 'jwt' in config or 'username' in config or 'password' in config:
             config['auth'] = {}
             if 'jwt' in config:
                 config['auth']['jwt'] = config.pop('jwt')
-            if 'user' in config or 'password' in config:
+            if 'username' in config or 'password' in config:
                 basic_auth = config['auth']['basic_auth_name_pwd'] = []
-                if 'user' in config:
-                    basic_auth.append(config.pop('user'))
+                if 'username' in config:
+                    basic_auth.append(config.pop('username'))
                 if 'password' in config:
                     basic_auth.append(config.pop('password'))
 
