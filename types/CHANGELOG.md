@@ -21,6 +21,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 1.0.0-rc.8 - 2023-XX-XX
 
+### Added
+
+- `{AliasId, NftId}::to_bech32`;
+
 ### Changed
 
 - `OutputIdsResponse::items` from `Vec<String>` to `Vec<OutputId>`;

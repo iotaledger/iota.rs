@@ -1,7 +1,10 @@
 // Copyright 2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::block::output::OutputId;
+use crate::block::{
+    address::{Address, NftAddress},
+    output::OutputId,
+};
 
 impl_id!(pub NftId, 32, "TODO.");
 
@@ -17,7 +20,16 @@ impl From<&OutputId> for NftId {
 impl NftId {
     ///
     pub fn or_from_output_id(self, output_id: &OutputId) -> Self {
-        if self.is_null() { Self::from(output_id) } else { self }
+        if self.is_null() {
+            Self::from(output_id)
+        } else {
+            self
+        }
+    }
+
+    /// Returns the bech32 encoding of the nft ID.
+    pub fn to_bech32(&self, bech32_hrp: &str) -> String {
+        Address::Nft(NftAddress::new(*self)).to_bech32(bech32_hrp)
     }
 }
 

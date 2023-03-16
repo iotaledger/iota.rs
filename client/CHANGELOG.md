@@ -37,6 +37,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - All MQTT related functions return an MQTT `Error`;
 - Re-export `mqtt` module instead of all its symbols;
 
+### Removed
+
+- `alias_id_to_bech32` and `nft_id_to_bech32` moved to `types` crate;
+
 ## 2.0.1-rc.7 - 2023-03-09
 
 ### Added
