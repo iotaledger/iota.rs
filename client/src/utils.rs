@@ -53,11 +53,6 @@ pub fn parse_bech32_address(address: &str) -> Result<Address> {
     Ok(Address::try_from_bech32(address)?.1)
 }
 
-/// Checks if a String is a valid bech32 encoded address.
-pub fn is_address_valid(address: &str) -> bool {
-    Address::try_from_bech32(address).is_ok()
-}
-
 /// Generates a new mnemonic.
 pub fn generate_mnemonic() -> Result<String> {
     let mut entropy = [0u8; 32];
@@ -143,12 +138,6 @@ impl Client {
     /// Returns a valid Address parsed from a String.
     pub fn parse_bech32_address(address: &str) -> crate::Result<Address> {
         parse_bech32_address(address)
-    }
-
-    /// Checks if a String is a valid bech32 encoded address.
-    #[must_use]
-    pub fn is_address_valid(address: &str) -> bool {
-        is_address_valid(address)
     }
 
     /// Generates a new mnemonic.

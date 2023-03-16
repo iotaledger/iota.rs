@@ -115,6 +115,12 @@ impl Address {
         bech32::encode(hrp.as_ref(), self.pack_to_vec().to_base32(), Variant::Bech32).unwrap()
     }
 
+    /// Checks if an string is a valid bech32 encoded address.
+    #[must_use]
+    pub fn is_valid_bech32(address: &str) -> bool {
+        Address::try_from_bech32(address).is_ok()
+    }
+
     ///
     pub fn unlock(
         &self,

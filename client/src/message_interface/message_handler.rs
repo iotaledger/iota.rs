@@ -6,7 +6,7 @@ use std::{any::Any, panic::AssertUnwindSafe};
 use backtrace::Backtrace;
 use futures::{Future, FutureExt};
 use iota_types::block::{
-    address::dto::AddressDto,
+    address::{dto::AddressDto, Address},
     input::dto::UtxoInputDto,
     output::{
         dto::{OutputBuilderAmountDto, OutputDto, RentStructureDto},
@@ -642,7 +642,7 @@ impl ClientMessageHandler {
             Message::ParseBech32Address { address } => Ok(Response::ParsedBech32Address(AddressDto::from(
                 &Client::parse_bech32_address(&address)?,
             ))),
-            Message::IsAddressValid { address } => Ok(Response::IsAddressValid(Client::is_address_valid(&address))),
+            Message::IsAddressValid { address } => Ok(Response::IsAddressValid(Address::is_valid_bech32(&address))),
             Message::GenerateMnemonic => Ok(Response::GeneratedMnemonic(Client::generate_mnemonic()?)),
             Message::MnemonicToHexSeed { mut mnemonic } => {
                 let response = Response::MnemonicHexSeed(Client::mnemonic_to_hex_seed(&mnemonic)?);

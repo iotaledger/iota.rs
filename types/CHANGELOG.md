@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `{AliasId, NftId}::to_bech32`;
+- `Address::is_valid_bech32`;
 
 ### Changed
 
