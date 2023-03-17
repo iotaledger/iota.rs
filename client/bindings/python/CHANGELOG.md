@@ -19,6 +19,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security -->
 
+## Unreleased - 2023-MM-DD
+
+### Added
+
+- `Node` class
+
+### Changed
+
+- `IotaClient` now uses multiple arguments instead of a single dictionary
+
 ## 1.0.0-rc.3 - 2023-MM-DD
 
 ### Added
