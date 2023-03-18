@@ -119,7 +119,12 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
         """
 
         unlock_conditions = humps.camelize([unlock_condition.as_dict() for unlock_condition in unlock_conditions])
-        
+        if features:
+            features = humps.camelize([feature.as_dict() for feature in features])
+        if immutable_features:
+            immutable_features = humps.camelize(
+                [immutable_feature.as_dict() for immutable_feature in immutable_features])
+
         return self.send_message('buildAliasOutput', {
             'aliasId': alias_id,
             'unlockConditions': unlock_conditions,
@@ -141,6 +146,8 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
         """
 
         unlock_conditions = humps.camelize([unlock_condition.as_dict() for unlock_condition in unlock_conditions])
+        if features:
+            features = humps.camelize([feature.as_dict() for feature in features])
 
         return self.send_message('buildBasicOutput', {
             'unlockConditions': unlock_conditions,
@@ -161,6 +168,11 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
         """
 
         unlock_conditions = humps.camelize([unlock_condition.as_dict() for unlock_condition in unlock_conditions])
+        if features:
+            features = humps.camelize([feature.as_dict() for feature in features])
+        if immutable_features:
+            immutable_features = humps.camelize(
+                [immutable_feature.as_dict() for immutable_feature in immutable_features])
 
         return self.send_message('buildFoundryOutput', {
             'serialNumber': serial_number,
@@ -183,6 +195,12 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
         """
 
         unlock_conditions = humps.camelize([unlock_condition.as_dict() for unlock_condition in unlock_conditions])
+        if features:
+            features = humps.camelize([feature.as_dict()
+                                      for feature in features])
+        if immutable_features:
+            immutable_features = humps.camelize(
+                [immutable_feature.as_dict() for immutable_feature in immutable_features])
 
         return self.send_message('buildNftOutput', {
             'nftId': nft_id,
@@ -460,5 +478,48 @@ class Address():
             config['alias_id'] = config.pop('address_or_id')
         elif self.type == AddressType.NFT:
             config['nft_id'] = config.pop('address_or_id')
+
+        return config
+
+class FeatureType(Enum):
+    Sender=0
+    Issuer=1
+    Metadata=2
+    Tag=3
+
+class Feature():
+    __default = object()
+
+    def __init__(self, type, sender=__default, issuer=__default, data=__default, tag=__default):
+        """Initialise a feature
+
+        Parameters
+        ----------
+        type : FeatureType
+            The type of feature
+        sender : Address
+            Sender address
+        issuer : Address
+            Issuer Address
+        data : string
+            Hex encoded metadata
+        tag : string
+        """
+        self.type = type
+        self.sender = sender
+        self.issuer = issuer
+        self.data = data
+        self.tag = tag
+
+    def as_dict(self):
+        config = {k: v for k, v in self.__dict__.items() if v != self.__default}
+
+        config['type'] = config['type'].value
+
+        if 'sender' in config:
+            config['address'] = config.pop('sender').as_dict()
+
+        if 'issuer' in config:
+            config['address'] = config.pop('issuer').as_dict()
 
         return config

@@ -1,4 +1,4 @@
-from iota_client import IotaClient, UnlockCondition, UnlockConditionType, Address, AddressType
+from iota_client import *
 import json
 
 # Create an IotaClient instance
@@ -12,7 +12,7 @@ alias_id = '0x0000000000000000000000000000000000000000000000000000000000000000'
 state_metadata = '0x68656c6c6f'
 unlock_conditions = [
     UnlockCondition(
-        UnlockConditionType.StateControllerAddress, 
+        UnlockConditionType.StateControllerAddress,
         Address(AddressType.ED25519, hexAddress)
     ),
     UnlockCondition(
@@ -21,36 +21,12 @@ unlock_conditions = [
     )
 ]
 features = [
-    {
-        # sender feature
-        'type': 0,
-        'address': {
-            'type': 0,
-            'pubKeyHash': hexAddress,
-        },
-    },
-    {
-        # MetadataFeature
-        'type': 2,
-        # `hello` hex encoded
-        'data': '0x68656c6c6f',
-    }
+    Feature(FeatureType.Sender, Address(AddressType.ED25519, hexAddress)),
+    Feature(FeatureType.Metadata, data='0x68656c6c6f')
 ]
 immutable_features = [
-    {
-        # issuer feature
-        'type': 1,
-        'address': {
-            'type': 0,
-            'pubKeyHash': hexAddress,
-        },
-    },
-    {
-        # MetadataFeature
-        'type': 2,
-        # `hello` hex encoded
-        'data': '0x68656c6c6f',
-    },
+    Feature(FeatureType.Issuer, Address(AddressType.ED25519, hexAddress)),
+    Feature(FeatureType.Metadata, data='0x68656c6c6f')
 ]
 
 # Build alias output
