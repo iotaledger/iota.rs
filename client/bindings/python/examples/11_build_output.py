@@ -1,4 +1,4 @@
-from iota_client import IotaClient
+from iota_client import IotaClient, UnlockCondition, UnlockConditionType, Address, AddressType
 import json
 
 # Create an IotaClient instance
@@ -6,13 +6,10 @@ client = IotaClient(nodes = ['https://api.testnet.shimmer.network'])
 
 hex_address = client.bech32_to_hex("rms1qpllaj0pyveqfkwxmnngz2c488hfdtmfrj3wfkgxtk4gtyrax0jaxzt70zy")
 
-address_unlock_condition = {
-    "type": 0,
-    "address": {
-        "type": 0,
-        "pubKeyHash": hex_address,
-    },
-}
+address_unlock_condition = UnlockCondition(
+    UnlockConditionType.Address, 
+    Address(AddressType.ED25519, hex_address)
+)
 
 # Build most basic output with amound and a single address unlock condition
 basic_output = client.build_basic_output(
@@ -43,14 +40,7 @@ print(json.dumps(basic_output, indent=2))
 basic_output = client.build_basic_output(
     unlock_conditions=[
         address_unlock_condition,
-        {
-            "type": 1,
-            "returnAddress": {
-                "type": 0,
-                "pubKeyHash": hex_address,
-            },
-            "amount": "1000000",
-        },
+        UnlockCondition(type=UnlockConditionType.StorageDepositReturn, amount=1000000, return_address=Address(AddressType.ED25519, hex_address))
     ],
     amount='1000000',
 )
@@ -60,14 +50,7 @@ print(json.dumps(basic_output, indent=2))
 basic_output = client.build_basic_output(
     unlock_conditions=[
         address_unlock_condition,
-        {
-            "type": 3,
-            "returnAddress": {
-                "type": 0,
-                "pubKeyHash": hex_address,
-            },
-            "unixTime": 1
-        },
+        UnlockCondition(type=UnlockConditionType.Expiration, unix_time=1, return_address=Address(AddressType.ED25519, hex_address))
     ],
     amount='1000000',
 )
@@ -77,10 +60,7 @@ print(json.dumps(basic_output, indent=2))
 basic_output = client.build_basic_output(
     unlock_conditions=[
         address_unlock_condition,
-        {
-            "type": 2,
-            "unixTime": 1
-        },
+        UnlockCondition(type=UnlockConditionType.Timelock, unix_time=1)
     ],
     amount='1000000',
 )

@@ -6,6 +6,7 @@ from iota_client._utils import Utils
 from json import dumps
 import humps
 from datetime import timedelta
+from enum import Enum
 
 class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
     def __init__(
@@ -116,6 +117,9 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
                            immutable_features=None):
         """Build an AliasOutput.
         """
+
+        unlock_conditions = humps.camelize([unlock_condition.as_dict() for unlock_condition in unlock_conditions])
+        
         return self.send_message('buildAliasOutput', {
             'aliasId': alias_id,
             'unlockConditions': unlock_conditions,
@@ -135,6 +139,9 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
                            features=None):
         """Build a BasicOutput.
         """
+
+        unlock_conditions = humps.camelize([unlock_condition.as_dict() for unlock_condition in unlock_conditions])
+
         return self.send_message('buildBasicOutput', {
             'unlockConditions': unlock_conditions,
             'amount': amount,
@@ -152,6 +159,9 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
                              immutable_features=None):
         """Build a FoundryOutput.
         """
+
+        unlock_conditions = humps.camelize([unlock_condition.as_dict() for unlock_condition in unlock_conditions])
+
         return self.send_message('buildFoundryOutput', {
             'serialNumber': serial_number,
             'tokenScheme': token_scheme,
@@ -171,6 +181,9 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
                          immutable_features=None):
         """Build an NftOutput.
         """
+
+        unlock_conditions = humps.camelize([unlock_condition.as_dict() for unlock_condition in unlock_conditions])
+
         return self.send_message('buildNftOutput', {
             'nftId': nft_id,
             'unlockConditions': unlock_conditions,
@@ -363,5 +376,89 @@ class Node():
                     basic_auth.append(config.pop('username'))
                 if 'password' in config:
                     basic_auth.append(config.pop('password'))
+
+        return config
+
+class UnlockConditionType(Enum):
+    Address = 0
+    StorageDepositReturn = 1
+    Timelock = 2
+    Expiration = 3
+    StateControllerAddress = 4
+    GovernorAddress = 5
+    ImmutableAliasAddress = 6
+
+class UnlockCondition():
+    __default = object()
+
+    def __init__(self, type=__default, address=__default, amount=__default, unix_time=__default, return_address=__default) -> None:
+        """Initialize an UnlockCondition
+        
+        Parameters
+        ----------
+        type : UnlockConditionType
+            The type of unlock condition
+        address : Address
+            Address for unlock condition
+        amount : int
+            Amount for storage deposit unlock condition
+        unix_time : int
+            Unix timestamp for timelock and expiration unlock condition
+        return_address : Address
+            Return address for expiration and storage deposit unlock condition
+        """
+        self.type = type
+        self.address = address
+        self.amount = amount
+        self.unix_time = unix_time
+        self.return_address = return_address
+
+    def as_dict(self):
+        config = {k: v for k, v in self.__dict__.items() if v != self.__default}
+        
+        if 'type' in config:
+            config['type'] = config['type'].value
+
+        if 'address' in config:
+            config['address'] = config['address'].as_dict()
+
+        if 'return_address' in config:
+            config['return_address'] = config['return_address'].as_dict()
+
+        if 'amount' in config:
+            config['amount'] = str(config['amount'])
+
+        return config
+
+class AddressType(Enum):
+    ED25519 = 0
+    ALIAS = 8
+    NFT = 16
+
+class Address():
+    def __init__(self, type, address_or_id):
+        """Initialize an Address
+        
+        Parameters
+        ----------
+        type : AddressType
+            The type of the Address
+        address_or_id : string
+            The address to use. Can either be an hex encoded ED25519 address or NFT/Alias id
+        """
+        self.type = type
+        self.address_or_id = address_or_id
+
+    def as_dict(self):
+        config = dict(self.__dict__)
+
+        config['type'] = config['type'].value
+        
+        if self.type == AddressType.ED25519:
+            config['pubKeyHash'] = config.pop('address_or_id')
+        elif self.type == AddressType.ALIAS:
+            config['aliasid'] = config.pop('address_or_id')
+        elif self.type == AddressType.NFT:
+            config['nftid'] = config.pop('address_or_id')
 
         return config
