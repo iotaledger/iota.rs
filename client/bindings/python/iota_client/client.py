@@ -119,6 +119,11 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
         """
 
         unlock_conditions = humps.camelize([unlock_condition.as_dict() for unlock_condition in unlock_conditions])
+        
+        if native_tokens:
+            native_tokens = humps.camelize(
+                [native_token.as_dict() for native_token in native_tokens])
+        
         if features:
             features = humps.camelize([feature.as_dict() for feature in features])
         if immutable_features:
@@ -146,6 +151,11 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
         """
 
         unlock_conditions = humps.camelize([unlock_condition.as_dict() for unlock_condition in unlock_conditions])
+        
+        if native_tokens:
+            native_tokens = humps.camelize(
+                [native_token.as_dict() for native_token in native_tokens])
+
         if features:
             features = humps.camelize([feature.as_dict() for feature in features])
 
@@ -168,6 +178,11 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
         """
 
         unlock_conditions = humps.camelize([unlock_condition.as_dict() for unlock_condition in unlock_conditions])
+        
+        if native_tokens:
+            native_tokens = humps.camelize(
+                [native_token.as_dict() for native_token in native_tokens])
+        
         if features:
             features = humps.camelize([feature.as_dict() for feature in features])
         if immutable_features:
@@ -195,6 +210,11 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
         """
 
         unlock_conditions = humps.camelize([unlock_condition.as_dict() for unlock_condition in unlock_conditions])
+        
+        if native_tokens:
+            native_tokens = humps.camelize(
+                [native_token.as_dict() for native_token in native_tokens])
+
         if features:
             features = humps.camelize([feature.as_dict()
                                       for feature in features])
@@ -521,5 +541,26 @@ class Feature():
 
         if 'issuer' in config:
             config['address'] = config.pop('issuer').as_dict()
+
+        return config
+
+class NativeToken():
+    def __init__(self, id, amount):
+        """Initialise NativeToken
+
+        Parameters
+        ----------
+        id : string
+            Id of the token
+        amount : int
+            Native token amount
+        """
+        self.id = id
+        self.amount = amount
+
+    def as_dict(self):
+        config = dict(self.__dict__)
+
+        config['amount'] = str(hex(config['amount']))
 
         return config
