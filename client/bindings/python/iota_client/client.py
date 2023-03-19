@@ -441,9 +441,7 @@ class UnlockConditionType(Enum):
     ImmutableAliasAddress = 6
 
 class UnlockCondition():
-    __default = object()
-
-    def __init__(self, type=__default, address=__default, amount=__default, unix_time=__default, return_address=__default) -> None:
+    def __init__(self, type=None, address=None, amount=None, unix_time=None, return_address=None) -> None:
         """Initialize an UnlockCondition
         
         Parameters
@@ -466,7 +464,7 @@ class UnlockCondition():
         self.return_address = return_address
 
     def as_dict(self):
-        config = {k: v for k, v in self.__dict__.items() if v != self.__default}
+        config = {k: v for k, v in self.__dict__.items() if v != None}
         
         if 'type' in config:
             config['type'] = config['type'].value
@@ -522,9 +520,7 @@ class FeatureType(Enum):
     Tag=3
 
 class Feature():
-    __default = object()
-
-    def __init__(self, type, sender=__default, issuer=__default, data=__default, tag=__default):
+    def __init__(self, type, sender=None, issuer=None, data=None, tag=None):
         """Initialise a feature
 
         Parameters
@@ -546,7 +542,7 @@ class Feature():
         self.tag = tag
 
     def as_dict(self):
-        config = {k: v for k, v in self.__dict__.items() if v != self.__default}
+        config = {k: v for k, v in self.__dict__.items() if v != None}
 
         config['type'] = config['type'].value
 
@@ -580,8 +576,7 @@ class NativeToken():
         return config
 
 class TokenScheme():
-    __default = object()
-    def __init__(self, melted_tokens=__default, minted_tokens=__default, maximum_supply=__default):
+    def __init__(self, melted_tokens=None, minted_tokens=None, maximum_supply=None):
         """Initialise TokenScheme
 
         Parameters
