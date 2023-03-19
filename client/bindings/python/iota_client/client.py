@@ -133,7 +133,7 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
         return self.send_message('buildAliasOutput', {
             'aliasId': alias_id,
             'unlockConditions': unlock_conditions,
-            'amount': amount,
+            'amount': str(amount),
             'nativeTokens': native_tokens,
             'stateIndex': state_index,
             'stateMetadata': state_metadata,
@@ -161,7 +161,7 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
 
         return self.send_message('buildBasicOutput', {
             'unlockConditions': unlock_conditions,
-            'amount': amount,
+            'amount': str(amount),
             'nativeTokens': native_tokens,
             'features': features,
         })
@@ -193,7 +193,7 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
             'serialNumber': serial_number,
             'tokenScheme': token_scheme,
             'unlockConditions': unlock_conditions,
-            'amount': amount,
+            'amount': str(amount),
             'nativeTokens': native_tokens,
             'features': features,
             'immutableFeatures': immutable_features
@@ -225,7 +225,7 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
         return self.send_message('buildNftOutput', {
             'nftId': nft_id,
             'unlockConditions': unlock_conditions,
-            'amount': amount,
+            'amount': str(amount),
             'nativeTokens': native_tokens,
             'features': features,
             'immutableFeatures': immutable_features
