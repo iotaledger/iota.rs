@@ -177,6 +177,8 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
         """Build a FoundryOutput.
         """
 
+        token_scheme = humps.camelize(token_scheme.as_dict())
+
         unlock_conditions = humps.camelize([unlock_condition.as_dict() for unlock_condition in unlock_conditions])
         
         if native_tokens:
@@ -562,5 +564,33 @@ class NativeToken():
         config = dict(self.__dict__)
 
         config['amount'] = str(hex(config['amount']))
+
+        return config
+
+class TokenScheme():
+    __default = object()
+    def __init__(self, melted_tokens=__default, minted_tokens=__default, maximum_supply=__default):
+        """Initialise TokenScheme
+
+        Parameters
+        ----------
+        melted_tokens : int
+        minted_tokens : int
+        maximum_supply : int
+        """
+        self.type = 0
+        self.melted_tokens = melted_tokens
+        self.minted_tokens = minted_tokens
+        self.maximum_supply = maximum_supply
+
+    def as_dict(self):
+        config = dict(self.__dict__)
+
+        if 'melted_tokens' in config:
+            config['melted_tokens'] = str(hex(config['melted_tokens']))
+        if 'minted_tokens' in config:
+            config['minted_tokens'] = str(hex(config['minted_tokens']))
+        if 'maximum_supply' in config:
+            config['maximum_supply'] = str(hex(config['maximum_supply']))
 
         return config

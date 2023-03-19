@@ -1,4 +1,5 @@
-from iota_client import IotaClient, UnlockCondition, UnlockConditionType, Address, AddressType
+from iota_client import *
+import json
 
 # Create an IotaClient instance
 client = IotaClient(nodes = ['https://api.testnet.shimmer.network'])
@@ -6,7 +7,7 @@ client = IotaClient(nodes = ['https://api.testnet.shimmer.network'])
 # Configure foundry output
 # TODO: replace with your own values
 serial_number = 1
-token_scheme = { 'type': 0, 'meltedTokens': '0x0', 'mintedTokens': '0x32', 'maximumSupply': '0x64' }
+token_scheme = TokenScheme(0, 32, 64)
 unlock_conditions = [
     UnlockCondition(
         UnlockConditionType.ImmutableAliasAddress,
@@ -22,5 +23,5 @@ output = client.build_foundry_output(
 )
 
 # Print the output
-print(output)
+print(json.dumps(output, indent=4))
 
