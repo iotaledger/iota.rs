@@ -8,25 +8,24 @@ import humps
 from datetime import timedelta
 
 class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
-    __default = object()
     def __init__(
         self,
-        nodes=__default,
-        primary_node = __default,
-        primary_pow_node = __default,
-        permanode = __default,
-        ignore_node_health = __default,
-        api_timeout = __default, 
-        node_sync_interval = __default,
-        remote_pow_timeout = __default,
-        tips_interval = __default,
-        quorum = __default,
-        min_quorum_size = __default,
-        quorum_threshold = __default,
-        user_agent = __default,
-        local_pow = __default,
-        fallback_to_local_pow = __default,
-        pow_worker_count = __default
+        nodes=None,
+        primary_node = None,
+        primary_pow_node = None,
+        permanode = None,
+        ignore_node_health = None,
+        api_timeout = None, 
+        node_sync_interval = None,
+        remote_pow_timeout = None,
+        tips_interval = None,
+        quorum = None,
+        min_quorum_size = None,
+        quorum_threshold = None,
+        user_agent = None,
+        local_pow = None,
+        fallback_to_local_pow = None,
+        pow_worker_count = None
     ):
         """Initialize the IOTA Client.
 
@@ -77,14 +76,14 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
                     nodes.append(node.as_dict())
                 else:
                     nodes.append(node)
-        elif nodes is not self.__default:
+        elif nodes:
             if isinstance(nodes, Node):
                 nodes = [nodes.as_dict()]
             else:
                 nodes = [nodes]
         client_config['nodes'] = nodes
 
-        client_config = {k:v for k,v in client_config.items() if v != self.__default}
+        client_config = {k:v for k,v in client_config.items() if v != None}
 
         def get_remaining_nano_seconds(duration: timedelta):
             return (int(duration/timedelta(microseconds=1))-int(duration.total_seconds())*1_000_000)*1_000
@@ -279,9 +278,7 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
         })
 
 class Node():
-    __default = object()
-
-    def __init__(self, url=__default, jwt=__default, username=__default, password=__default, disabled=__default):
+    def __init__(self, url=None, jwt=None, username=None, password=None, disabled=None):
         """Initialize a Node
 
         Parameters
@@ -304,7 +301,7 @@ class Node():
         self.disabled = disabled
 
     def as_dict(self):
-        config = {k: v for k, v in self.__dict__.items() if v != self.__default}
+        config = {k: v for k, v in self.__dict__.items() if v}
 
         if 'jwt' in config or 'username' in config or 'password' in config:
             config['auth'] = {}
