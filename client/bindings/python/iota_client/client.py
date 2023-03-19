@@ -182,13 +182,13 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
 
     def generate_addresses(self,
                            secret_manager, 
-                           account_index = __default, 
-                           start = __default, 
-                           end = __default, 
-                           internal = __default, 
-                           coin_type = __default, 
-                           bech32_hrp = __default, 
-                           ledger_nano_prompt = __default):
+                           account_index=None,
+                           start=None,
+                           end=None,
+                           internal=None,
+                           coin_type=None,
+                           bech32_hrp=None,
+                           ledger_nano_prompt=None):
         """Generate addresses.
 
         Parameters
@@ -218,7 +218,7 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
         del options['self']
         del options['secret_manager']
 
-        options = {k:v for k,v in options.items() if v != self.__default}
+        options = {k:v for k,v in options.items() if v != None}
 
         is_start_set = 'start' in options
         is_end_set = 'end' in options
@@ -351,7 +351,7 @@ class Node():
         self.disabled = disabled
 
     def as_dict(self):
-        config = {k: v for k, v in self.__dict__.items() if v}
+        config = {k: v for k, v in self.__dict__.items() if v != None}
 
         if 'jwt' in config or 'username' in config or 'password' in config:
             config['auth'] = {}
