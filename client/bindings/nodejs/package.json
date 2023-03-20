@@ -21,7 +21,7 @@
     "lint": "eslint --ignore-path .eslintignore --ext .js,.ts .",
     "format": "prettier --ignore-path .eslintignore -w {,*/**/}*.{ts,js,json}",
     "format-check": "prettier --ignore-path .eslintignore -c {,*/**/}*.{ts,js,json}",
-    "install": "prebuild-install --runtime napi --tag-prefix nodejs-binding-v || npm run rebuild",
+    "install": "prebuild-install --runtime napi --tag-prefix nodejs-binding-v && tsc || npm run rebuild",
     "build": "npm run build:neon && tsc",
     "build:neon": "cargo-cp-artifact -ac iota-client-nodejs ./index.node -- cargo build --release --message-format=json-render-diagnostics",
     "rebuild": "npm run build:neon && tsc && node scripts/neon-build.js --strip && node scripts/strip.js",
