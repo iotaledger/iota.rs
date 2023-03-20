@@ -37,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - All MQTT related functions return an MQTT `Error`;
 - Re-export `mqtt` module instead of all its symbols;
 - `SecretManage::signature_unlock` is now auto-implemented in the trait;
+- `SecretManage::signature_unlock`'s parameter `&InputSigningData` replaced with `&Chain`;
 
 ### Removed
 

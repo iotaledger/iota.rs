@@ -63,10 +63,10 @@ pub trait SecretManage: Send + Sync {
         options: Option<GenerateAddressOptions>,
     ) -> crate::Result<Vec<Address>>;
 
-    /// Signs `msg` using the given `chain`.
+    /// Signs `msg` using the given [`Chain`].
     async fn sign_ed25519(&self, msg: &[u8], chain: &Chain) -> crate::Result<Ed25519Signature>;
 
-    /// Signs `essence_hash` using the given `chain`, returning an [Unlock].
+    /// Signs `essence_hash` using the given `chain`, returning an [`Unlock`].
     async fn signature_unlock(&self, essence_hash: &[u8; 32], chain: &Chain) -> crate::Result<Unlock> {
         Ok(Unlock::Signature(SignatureUnlock::new(Signature::Ed25519(
             self.sign_ed25519(essence_hash, chain).await?,
