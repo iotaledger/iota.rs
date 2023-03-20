@@ -1,5 +1,32 @@
 # Changelog
 
+## \[3.0.0-rc.10]
+
+- IAliasOutputBuilderOptions::stateMetadata is now a HexEncodedString instead of Uint8Array.
+  - [7a3f8b0](https://github.com/iotaledger/iota.rs/commit/7a3f8b03be42a581ea9af44f57f46304a93738a9) CI improvements ([#1633](https://github.com/iotaledger/iota.rs/pull/1633)) on 2023-03-20
+
+- Removed `IInputSigningData::bech32Address`;
+  - [7a3f8b0](https://github.com/iotaledger/iota.rs/commit/7a3f8b03be42a581ea9af44f57f46304a93738a9) CI improvements ([#1633](https://github.com/iotaledger/iota.rs/pull/1633)) on 2023-03-20
+
+- `Burn` fields are now optional.
+  `Burn::nativeTokens` is now an array.
+  - [7a3f8b0](https://github.com/iotaledger/iota.rs/commit/7a3f8b03be42a581ea9af44f57f46304a93738a9) CI improvements ([#1633](https://github.com/iotaledger/iota.rs/pull/1633)) on 2023-03-20
+
+- Add `Client::hashTransactionEssence()`;
+  - [7a3f8b0](https://github.com/iotaledger/iota.rs/commit/7a3f8b03be42a581ea9af44f57f46304a93738a9) CI improvements ([#1633](https://github.com/iotaledger/iota.rs/pull/1633)) on 2023-03-20
+
+- Fix install command;
+  - [7a3f8b0](https://github.com/iotaledger/iota.rs/commit/7a3f8b03be42a581ea9af44f57f46304a93738a9) CI improvements ([#1633](https://github.com/iotaledger/iota.rs/pull/1633)) on 2023-03-20
+
+- ### Added
+
+- `OutputIdsResponse`;
+
+### Changed
+
+- `Client::{aliasOutputIds, basicOutputIds, foundryOutputIds, nftOutputIds}` will not do automatic pagination if `QueryParameter::Cursor(_)` is provided and return type from `string[]` to `OutputIdsResponse`;
+- [7a3f8b0](https://github.com/iotaledger/iota.rs/commit/7a3f8b03be42a581ea9af44f57f46304a93738a9) CI improvements ([#1633](https://github.com/iotaledger/iota.rs/pull/1633)) on 2023-03-20
+
 ## \[3.0.0-rc.9]
 
 - Merged `IAuth::{username, password}` into `IAuth::basicAuthNamePwd`;
