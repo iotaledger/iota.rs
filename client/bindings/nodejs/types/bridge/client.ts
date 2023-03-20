@@ -4,7 +4,7 @@ import type { IGenerateAddressesOptions } from '../generateAddressesOptions';
 import type { IBuildBlockOptions } from '../buildBlockOptions';
 import type { BlockId } from '../blockId';
 import type {
-    IChain,
+    ISegment,
     IPreparedTransactionData,
 } from '../preparedTransactionData';
 import type {
@@ -167,7 +167,7 @@ export interface __SignatureUnlockMessage__ {
     data: {
         secretManager: SecretManager;
         transactionEssenceHash: Array<number>;
-        chain: IChain;
+        chain: ISegment[];
     };
 }
 
