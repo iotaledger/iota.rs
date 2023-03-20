@@ -266,17 +266,6 @@ impl SecretManage for SecretManager {
             Self::Placeholder(secret_manager) => secret_manager.sign_ed25519(msg, chain).await,
         }
     }
-
-    // async fn signature_unlock(&self, essence_hash: &[u8; 32], chain: &Chain) -> crate::Result<Unlock> {
-    //     match self {
-    //         #[cfg(feature = "stronghold")]
-    //         Self::Stronghold(secret_manager) => secret_manager.signature_unlock(essence_hash, chain).await,
-    //         #[cfg(feature = "ledger_nano")]
-    //         Self::LedgerNano(secret_manager) => secret_manager.signature_unlock(essence_hash, chain).await,
-    //         Self::Mnemonic(secret_manager) => secret_manager.signature_unlock(essence_hash, chain).await,
-    //         Self::Placeholder(secret_manager) => secret_manager.signature_unlock(essence_hash, chain).await,
-    //     }
-    // }
 }
 
 #[async_trait]

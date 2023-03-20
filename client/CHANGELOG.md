@@ -27,7 +27,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - MQTT `Error`;
 - `Message::HashTransactionEssence`;
 - `Response::TransactionEssenceHash`;
-- `sign_ed25519` to `SecretManage` and to all implementors;
 
 ### Changed
 
