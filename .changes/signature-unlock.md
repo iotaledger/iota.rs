@@ -3,6 +3,5 @@
 "nodejs-binding": patch
 ---
 
-Add `IChain` type.
-Removed `signatureUnlock` `remainderData` parameter.
-`signatureUnlock` parameter `IInputSigningData` replaced by `IChain`.
+Removed `signatureUnlock` parameter `remainderData`.
+`signatureUnlock` parameter `IInputSigningData` replaced by `ISegment[]`.
