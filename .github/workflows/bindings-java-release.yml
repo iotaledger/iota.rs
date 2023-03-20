@@ -1,4 +1,4 @@
-name: Create Java release
+name: Java bindings release
 
 on: workflow_dispatch
 
@@ -72,7 +72,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           java-version: ${{ matrix.java }}
-          distribution: 'temurin'
+          distribution: "temurin"
 
       - name: Build JAR for default target
         shell: bash

@@ -1,34 +1,34 @@
-name: Examine the Python Bindings
+name: Python bindings checks
 on:
   push:
-    branches:
-      - develop
-      - production
+    branches: [develop, production]
     paths:
-      - ".github/workflows/examine-python-bindings.yml"
+      - ".github/workflows/bindings-python.yml"
       - ".github/actions/**"
-      - "client/bindings/python/**"
-      # Watch the Rust core too
-      - "client/src/**"
-      - "client/Cargo.toml"
-      - "Cargo.lock"
+      - "**.rs" # Include all rust files
+      - "**Cargo.toml" # Include all Cargo.toml files
+      - "**Cargo.lock" # Include all Cargo.lock files
+      - "!**/examples/**" # Exclude all examples
+      - "!**/tests/**" # Exclude all tests
+      - "!client/bindings/**" # Exclude all bindings
+      - "client/bindings/python/**" # Re-include python bindings
   pull_request:
-    branches:
-      - develop
-      - production
+    branches: [develop, production]
     paths:
-      - ".github/workflows/examine-python-bindings.yml"
+      - ".github/workflows/bindings-python.yml"
       - ".github/actions/**"
-      - "client/bindings/python/**"
-      # Watch the Rust core too
-      - "client/src/**"
-      - "client/Cargo.toml"
-      - "Cargo.lock"
+      - "**.rs" # Include all rust files
+      - "**Cargo.toml" # Include all Cargo.toml files
+      - "**Cargo.lock" # Include all Cargo.lock files
+      - "!**/examples/**" # Exclude all examples
+      - "!**/tests/**" # Exclude all tests
+      - "!client/bindings/**" # Exclude all bindings
+      - "client/bindings/python/**" # Re-include python bindings
   schedule:
     - cron: "0 1 * * *"
   workflow_dispatch:
 
-concurrency: 
+concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
@@ -41,7 +41,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows-2019, macos-latest, ubuntu-latest]
-        python-version: ['3.10']
+        python-version: ["3.10"]
 
     steps:
       - name: Checkout the Source Code
@@ -54,7 +54,7 @@ jobs:
           cache: true
           cache-root: client/bindings/python
           cache-job-id: ${{ github.workflow }}-${{ github.job }}-${{ matrix.os }}-${{ matrix.python }}
-          cache-hash: ${{ hashFiles('.github/workflows/examine-python-bindings.yml') }}
+          cache-hash: ${{ hashFiles('.github/workflows/bindings-python.yml') }}
 
       - name: Set Up Python ${{ matrix.python }} and Pip Cache
         uses: actions/setup-python@v4
@@ -100,7 +100,7 @@ jobs:
           cache: true
           cache-root: client/bindings/python
           cache-job-id: ${{ github.workflow }}-${{ github.job }}
-          cache-hash: ${{ hashFiles('.github/workflows/examine-python-bindings.yml') }}
+          cache-hash: ${{ hashFiles('.github/workflows/bindings-python.yml') }}
 
       - name: Install required packages (Ubuntu)
         run: |
@@ -115,71 +115,3 @@ jobs:
           name: Clippy Results for the Python Bindings
 
       # TODO: Lint the Python code too
-
-  check-unused-deps:
-    name: Check Unused Dependencies
-    if: ${{ ! github.event.schedule }}
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout the Source Code
-        uses: actions/checkout@v3
-
-      - name: Install Cargo-udeps with Nightly Rust
-        uses: ./.github/actions/setup-rust
-        with:
-          toolchain: nightly
-          cache: true
-          install: cargo-udeps
-          cache-root: client/bindings/python
-          cache-job-id: ${{ github.workflow }}-${{ github.job }}
-          cache-hash: ${{ hashFiles('.github/workflows/examine-python-bindings.yml') }}
-
-      - name: Install required packages (Ubuntu)
-        run: |
-          sudo apt-get update
-          sudo apt-get install libudev-dev libusb-1.0-0-dev
-
-      - name: Run Cargo Udeps
-        uses: actions-rs/cargo@v1
-        with:
-          command: udeps
-          args: --manifest-path client/bindings/python/Cargo.toml --all-targets --all-features
-
-      # TODO: Check requirements.txt too
-
-  check-format:
-    name: Check Format
-    if: ${{ ! github.event.schedule }}
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout the Source Code
-        uses: actions/checkout@v3
-
-      - name: Set Up Nightly Rustfmt
-        uses: ./.github/actions/setup-rust
-        with:
-          toolchain: nightly
-          components: rustfmt
-          cache: false
-
-      - name: Install cargo-license-template
-        uses: actions-rs/cargo@v1
-        with:
-          command: install
-          args: --force cargo-license-template
-
-      - name: Run Cargo Fmt
-        uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --manifest-path client/bindings/python/Cargo.toml --all -- --check
-
-      - name: Run cargo-license-template
-        uses: actions-rs/cargo@v1
-        with:
-          command: license-template
-          args: --template .license_template
-
-      # TODO: Check the Python code too

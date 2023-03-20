@@ -1,0 +1,44 @@
+name: Wasm compatibility
+
+on:
+  push:
+    branches: [develop, production]
+    paths:
+      - ".github/workflows/wasm-compatibility.yml"
+      - ".github/actions/**"
+      - "**.rs" # Include all rust files
+      - "**Cargo.toml" # Include all Cargo.toml files
+      - "**Cargo.lock" # Include all Cargo.lock files
+      - "!client/bindings/**" # Exclude all bindings
+  pull_request:
+    branches: [develop, production]
+    paths:
+      - ".github/workflows/wasm-compatibility.yml"
+      - ".github/actions/**"
+      - "**.rs" # Include all rust files
+      - "**Cargo.toml" # Include all Cargo.toml files
+      - "**Cargo.lock" # Include all Cargo.lock files
+      - "!client/bindings/**" # Exclude all bindings
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install stable rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: wasm32-unknown-unknown
+          override: true
+
+      - name: Cargo check
+        uses: actions-rs/cargo@v1
+        with:
+          command: check
+          args: --release --target=wasm32-unknown-unknown --manifest-path client/Cargo.toml --no-default-features --features tls,message_interface

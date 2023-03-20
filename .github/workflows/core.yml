@@ -1,34 +1,28 @@
 name: Examine the Rust Core
 on:
   push:
-    branches:
-      - develop
-      - production
+    branches: [develop, production]
     paths:
-      - ".github/workflows/examine-core.yml"
+      - ".github/workflows/core.yml"
       - ".github/actions/**"
-      - "client/src/**"
-      - "client/tests/**"
-      - "client/examples/**"
-      - "client/Cargo.toml"
-      - "Cargo.lock"
+      - "**.rs" # Include all rust files
+      - "**Cargo.toml" # Include all Cargo.toml files
+      - "**Cargo.lock" # Include all Cargo.lock files
+      - "!client/bindings/**" # Exclude all bindings
   pull_request:
-    branches:
-      - develop
-      - production
+    branches: [develop, production]
     paths:
-      - ".github/workflows/examine-core.yml"
+      - ".github/workflows/core.yml"
       - ".github/actions/**"
-      - "client/src/**"
-      - "client/tests/**"
-      - "client/examples/**"
-      - "client/Cargo.toml"
-      - "Cargo.lock"
+      - "**.rs" # Include all rust files
+      - "**Cargo.toml" # Include all Cargo.toml files
+      - "**Cargo.lock" # Include all Cargo.lock files
+      - "!client/bindings/**" # Exclude all bindings
   schedule:
     - cron: "0 1 * * *"
   workflow_dispatch:
 
-concurrency: 
+concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
@@ -52,7 +46,7 @@ jobs:
           toolchain: nightly
           cache: true
           cache-job-id: ${{ github.workflow }}-${{ github.job }}-${{ matrix.os }}
-          cache-hash: ${{ hashFiles('.github/workflows/examine-core.yml') }}
+          cache-hash: ${{ hashFiles('.github/workflows/core.yml') }}
 
       - name: Install Protoc
         uses: arduino/setup-protoc@v1
@@ -87,7 +81,7 @@ jobs:
           components: clippy
           cache: true
           cache-job-id: ${{ github.workflow }}-${{ github.job }}
-          cache-hash: ${{ hashFiles('.github/workflows/examine-core.yml') }}
+          cache-hash: ${{ hashFiles('.github/workflows/core.yml') }}
 
       - name: Install Protoc
         uses: arduino/setup-protoc@v1
@@ -122,7 +116,7 @@ jobs:
           install: cargo-udeps
           cache: true
           cache-job-id: ${{ github.workflow }}-${{ github.job }}
-          cache-hash: ${{ hashFiles('.github/workflows/examine-core.yml') }}
+          cache-hash: ${{ hashFiles('.github/workflows/core.yml') }}
 
       - name: Install Protoc
         uses: arduino/setup-protoc@v1
@@ -189,7 +183,7 @@ jobs:
           install: cargo-audit
           cache: true
           cache-job-id: ${{ github.workflow }}-${{ github.job }}
-          cache-hash: ${{ hashFiles('.github/workflows/examine-core.yml') }}
+          cache-hash: ${{ hashFiles('.github/workflows/core.yml') }}
 
       - name: Run Cargo Audit
         uses: actions-rs/cargo@v1

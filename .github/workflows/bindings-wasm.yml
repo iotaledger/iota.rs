@@ -1,34 +1,34 @@
-name: Examine the Wasm Bindings
+name: Wasm bindings checks
 on:
   push:
-    branches:
-      - develop
-      - production
+    branches: [develop, production]
     paths:
-      - ".github/workflows/examine-wasm-bindings.yml"
+      - ".github/workflows/bindings-wasm.yml"
       - ".github/actions/**"
-      - "client/bindings/wasm/**"
-      # Watch the Rust core too
-      - "client/src/**"
-      - "client/Cargo.toml"
-      - "Cargo.lock"
+      - "**.rs" # Include all rust files
+      - "**Cargo.toml" # Include all Cargo.toml files
+      - "**Cargo.lock" # Include all Cargo.lock files
+      - "!**/examples/**" # Exclude all examples
+      - "!**/tests/**" # Exclude all tests
+      - "!client/bindings/**" # Exclude all bindings
+      - "client/bindings/wasm/**" # Re-include wasm bindings
   pull_request:
-    branches:
-      - develop
-      - production
+    branches: [develop, production]
     paths:
-      - ".github/workflows/examine-wasm-bindings.yml"
+      - ".github/workflows/bindings-wasm.yml"
       - ".github/actions/**"
-      - "client/bindings/wasm/**"
-      # Watch the Rust core too
-      - "client/src/**"
-      - "client/Cargo.toml"
-      - "Cargo.lock"
+      - "**.rs" # Include all rust files
+      - "**Cargo.toml" # Include all Cargo.toml files
+      - "**Cargo.lock" # Include all Cargo.lock files
+      - "!**/examples/**" # Exclude all examples
+      - "!**/tests/**" # Exclude all tests
+      - "!client/bindings/**" # Exclude all bindings
+      - "client/bindings/wasm/**" # Re-include wasm bindings
   schedule:
     - cron: "0 1 * * *"
   workflow_dispatch:
 
-concurrency: 
+concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
@@ -55,13 +55,13 @@ jobs:
           cache: true
           cache-root: client/bindings/wasm/
           cache-job-id: ${{ github.workflow }}-${{ github.job }}-${{ matrix.os }}-${{ matrix.node }}
-          cache-hash: ${{ hashFiles('.github/workflows/examine-wasm-bindings.yml') }}
+          cache-hash: ${{ hashFiles('.github/workflows/bindings-wasm.yml') }}
 
       # Download a pre-compiled wasm-bindgen binary.
       - name: Install wasm-bindgen-cli
         uses: jetli/wasm-bindgen-action@24ba6f9fff570246106ac3f80f35185600c3f6c9
         with:
-          version: '0.2.84'
+          version: "0.2.84"
 
       - name: Set Up Node.js ${{ matrix.node }} and Yarn Cache
         uses: actions/setup-node@v2
@@ -100,7 +100,7 @@ jobs:
           cache: true
           cache-root: client/bindings/wasm/
           cache-job-id: ${{ github.workflow }}-${{ github.job }}
-          cache-hash: ${{ hashFiles('.github/workflows/examine-wasm-bindings.yml') }}
+          cache-hash: ${{ hashFiles('.github/workflows/bindings-wasm.yml') }}
 
       - name: Run Clippy
         uses: actions-rs/clippy-check@v1
@@ -124,34 +124,6 @@ jobs:
         working-directory: client/bindings/wasm/
         run: yarn lint
 
-  check-unused-deps:
-    name: Check Unused Dependencies
-    if: ${{ ! github.event.schedule }}
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout the Source Code
-        uses: actions/checkout@v3
-
-      - name: Install Cargo-udeps with Nightly Rust
-        uses: ./.github/actions/setup-rust
-        with:
-          toolchain: nightly
-          target: wasm32-unknown-unknown
-          cache: true
-          install: cargo-udeps
-          cache-root: client/bindings/wasm/
-          cache-job-id: ${{ github.workflow }}-${{ github.job }}
-          cache-hash: ${{ hashFiles('.github/workflows/examine-wasm-bindings.yml') }}
-
-      - name: Run Cargo Udeps
-        uses: actions-rs/cargo@v1
-        with:
-          command: udeps
-          args: --manifest-path client/bindings/wasm/Cargo.toml --all-targets --all-features
-
-      # TODO: Check yarn too
-
   check-format:
     name: Check Format
     if: ${{ ! github.event.schedule }}
@@ -160,32 +132,6 @@ jobs:
     steps:
       - name: Checkout the Source Code
         uses: actions/checkout@v3
-
-      - name: Set Up Nightly Rustfmt
-        uses: ./.github/actions/setup-rust
-        with:
-          toolchain: nightly
-          target: wasm32-unknown-unknown
-          components: rustfmt
-          cache: false
-
-      - name: Install cargo-license-template
-        uses: actions-rs/cargo@v1
-        with:
-          command: install
-          args: --force cargo-license-template
-
-      - name: Run Cargo Fmt
-        uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --manifest-path client/bindings/wasm/Cargo.toml --all -- --check
-
-      - name: Run cargo-license-template
-        uses: actions-rs/cargo@v1
-        with:
-          command: license-template
-          args: --template .license_template
 
       - name: Setup Node.js
         uses: actions/setup-node@v2
