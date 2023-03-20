@@ -69,9 +69,8 @@ class IotaClient(NodeCoreAPI, NodeIndexerAPI, HighLevelAPI, Utils):
         del client_config['self']
 
         if isinstance(nodes, list):
-            for i, node in enumerate(nodes):
-                if isinstance(node, Node):
-                    nodes[i] = node.as_dict()
+            nodes = [node.as_dict() if isinstance(node, Node)
+                     else node for node in nodes]
         elif nodes:
             if isinstance(nodes, Node):
                 nodes = [nodes.as_dict()]
