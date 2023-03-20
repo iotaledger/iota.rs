@@ -9,7 +9,6 @@ import { addresses } from '../fixtures/addresses';
 import * as signedTransactionJson from '../fixtures/signedTransaction.json';
 import * as sigUnlockPreparedTx from '../fixtures/sigUnlockPreparedTx.json';
 import type { PayloadTypes } from '@iota/types';
-import { TransactionHelper } from '@iota/iota.js';
 
 const onlineClient = new Client({
     nodes: [
@@ -92,13 +91,13 @@ describe('Offline signing examples', () => {
                 'good reason pipe keen price glory mystery illegal loud isolate wolf trash raise guilt inflict guide modify bachelor length galaxy lottery there mango comfort',
         };
         const preparedTx = sigUnlockPreparedTx as IPreparedTransactionData;
-        const txHash = Array.from(
-            TransactionHelper.getTransactionEssenceHash(preparedTx.essence),
+        const txEssenceHash = await offlineClient.hashTransactionEssence(
+            preparedTx.essence,
         );
 
         const unlock = await offlineClient.signatureUnlock(
             secretManager,
-            txHash,
+            hexToBytes(txEssenceHash),
             preparedTx.inputsData[0].chain,
         );
 
@@ -114,3 +113,15 @@ describe('Offline signing examples', () => {
         });
     });
 });
+
+// Convert a hex string to a byte array
+function hexToBytes(hex: string) {
+    // Remove hex prefix if existent
+    if (hex.startsWith('0x')) {
+        hex = hex.slice(2);
+    }
+    const bytes = [];
+    for (let c = 0; c < hex.length; c += 2)
+        bytes.push(parseInt(hex.substr(c, 2), 16));
+    return bytes;
+}

@@ -14,6 +14,7 @@ use iota_types::block::{
     },
     payload::{
         dto::{MilestonePayloadDto, PayloadDto},
+        transaction::TransactionEssence,
         Payload, TransactionPayload,
     },
     protocol::dto::ProtocolParametersDto,
@@ -23,7 +24,7 @@ use iota_types::block::{
 use zeroize::Zeroize;
 #[cfg(feature = "mqtt")]
 use {
-    crate::{MqttPayload, Topic},
+    crate::mqtt::{MqttPayload, Topic},
     iota_types::block::payload::milestone::option::dto::ReceiptMilestoneOptionDto,
 };
 
@@ -226,7 +227,7 @@ impl ClientMessageHandler {
                     native_tokens,
                     &alias_id,
                     state_index,
-                    state_metadata,
+                    state_metadata.map(prefix_hex::decode).transpose()?,
                     foundry_counter,
                     unlock_conditions,
                     features,
@@ -530,18 +531,18 @@ impl ClientMessageHandler {
             Message::GetIncludedBlockMetadata { transaction_id } => Ok(Response::BlockMetadata(
                 self.client.get_included_block_metadata(&transaction_id).await?,
             )),
-            Message::BasicOutputIds { query_parameters } => Ok(Response::OutputIds(
+            Message::BasicOutputIds { query_parameters } => Ok(Response::OutputIdsResponse(
                 self.client.basic_output_ids(query_parameters).await?,
             )),
-            Message::AliasOutputIds { query_parameters } => Ok(Response::OutputIds(
+            Message::AliasOutputIds { query_parameters } => Ok(Response::OutputIdsResponse(
                 self.client.alias_output_ids(query_parameters).await?,
             )),
             Message::AliasOutputId { alias_id } => Ok(Response::OutputId(self.client.alias_output_id(alias_id).await?)),
-            Message::NftOutputIds { query_parameters } => {
-                Ok(Response::OutputIds(self.client.nft_output_ids(query_parameters).await?))
-            }
+            Message::NftOutputIds { query_parameters } => Ok(Response::OutputIdsResponse(
+                self.client.nft_output_ids(query_parameters).await?,
+            )),
             Message::NftOutputId { nft_id } => Ok(Response::OutputId(self.client.nft_output_id(nft_id).await?)),
-            Message::FoundryOutputIds { query_parameters } => Ok(Response::OutputIds(
+            Message::FoundryOutputIds { query_parameters } => Ok(Response::OutputIdsResponse(
                 self.client.foundry_output_ids(query_parameters).await?,
             )),
             Message::FoundryOutputId { foundry_id } => {
@@ -663,6 +664,9 @@ impl ClientMessageHandler {
                 token_scheme_kind,
             ))),
             Message::Faucet { url, address } => Ok(Response::Faucet(request_funds_from_faucet(&url, &address).await?)),
+            Message::HashTransactionEssence { essence } => Ok(Response::TransactionEssenceHash(prefix_hex::encode(
+                TransactionEssence::try_from_dto_unverified(&essence)?.hash(),
+            ))),
         }
     }
 }

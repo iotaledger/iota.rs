@@ -51,7 +51,7 @@ fn as_methods() {
 
 #[test]
 fn new_bytes() {
-    let bytes = prefix_hex::decode::<[u8; Ed25519Address::LENGTH]>(ED25519_ADDRESS).unwrap();
+    let bytes = prefix_hex::decode(ED25519_ADDRESS).unwrap();
     let ed25519_address = Ed25519Address::new(bytes);
 
     assert_eq!(ed25519_address.as_ref(), &bytes);

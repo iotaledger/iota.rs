@@ -21,9 +21,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 1.0.0-rc.3 - 2023-MM-DD
 
+### Added
+
+- `OutputIdsResponse`;
+- `Client::hashTransactionEssence()`;
+
 ### Changed
 
 - Changes from the Rust library;
+- `AliasOutputBuilderParams::stateMetadata` from `byte[]` to `String`;
+- `Client::{getAliasOutputIds, getBasicOutputIds, getFoundryOutputIds, getNftOutputIds}` will not do automatic pagination if `QueryParameter::Cursor(_)` is provided and return type from `OutputId[]` to `OutputIdsResponse`;
 
 ## 1.0.0-rc.2 - 2023-02-09
 

@@ -3,13 +3,13 @@
 
 //! Error handling for input selection.
 
-use std::fmt::Debug;
+use std::fmt::{Debug, Display};
 
 use iota_types::block::output::{ChainId, OutputId, TokenId};
 use primitive_types::U256;
-use serde::Serialize;
+use serde::{Serialize, Serializer};
 
-use crate::{api::input_selection::Requirement, error::display_string};
+use crate::api::input_selection::Requirement;
 
 /// Errors related to input selection.
 #[derive(Debug, thiserror::Error, Serialize)]
@@ -58,4 +58,13 @@ pub enum Error {
     /// Unfulfillable requirement.
     #[error("unfulfillable requirement {0:?}")]
     UnfulfillableRequirement(Requirement),
+}
+
+/// Use this to serialize Error variants that implements Debug but not Serialize
+pub(crate) fn display_string<T, S>(value: &T, serializer: S) -> std::result::Result<S::Ok, S::Error>
+where
+    T: Display,
+    S: Serializer,
+{
+    value.to_string().serialize(serializer)
 }

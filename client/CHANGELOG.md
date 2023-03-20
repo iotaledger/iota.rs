@@ -19,7 +19,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security -->
 
-## 2.0.1-rc.7 - 2023-XX-XX
+## 2.0.1-rc.8 - 2023-XX-XX
+
+### Added
+
+- `QueryParameters::empty()`;
+- MQTT `Error`;
+- `Message::HashTransactionEssence`;
+- `Response::TransactionEssenceHash`;
+
+### Changed
+
+- `Client::{alias_output_ids, basic_output_ids, foundry_output_ids, nft_output_ids}` will not do automatic pagination if `QueryParameter::Cursor(_)` is provided and return `OutputIdsResponse`;
+- `Message::{AliasOutputIds, BasicOutputIds, FoundryOutputIds, NftOutputIds}` return `OutputIdsResponse`;
+- `Response::OutputIds` to `Response::OutputIdsResponse`;
+- Renamed `Client::get_output_ids_with_pagination()` to `Client::get_output_ids()`;
+- All MQTT related functions return an MQTT `Error`;
+- Re-export `mqtt` module instead of all its symbols;
+
+## 2.0.1-rc.7 - 2023-03-09
 
 ### Added
 
@@ -29,6 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Update dependencies;
 - `DatabaseProvider` renamed to `StorageProvider`;
 - `StrongholdDatabaseProvider` renamed to `StrongholdStorageProvider`;
 - `high_level` module moved to `api`;
@@ -36,6 +55,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Topic::try_new` parameter from `String` to `impl Into<String>`;
 - All `Error` variant related to ISA have been moved to a new ISA `Error` enum;
 - All fields of `BurnDto` are now `Option`;
+- Custom `Serialize` implementation for `Error`;
+- `Message::BuildAliasOutput::state_metadata` from `Option<Vec<u8>>` to `Option<String>`;
 
 ### Removed
 

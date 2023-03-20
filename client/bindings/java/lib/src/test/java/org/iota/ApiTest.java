@@ -48,7 +48,7 @@ public abstract class ApiTest {
 
     protected OutputId setupBasicOutput(String address) throws ClientException, InitializeClientException, NoFundsReceivedFromFaucetException {
         client.requestTestFundsFromFaucet(address);
-        return client.getBasicOutputIds(new NodeIndexerApi.QueryParams().withParam("address", address))[0];
+        return client.getBasicOutputIds(new NodeIndexerApi.QueryParams().withParam("address", address)).getItems()[0];
     }
 
     protected String generateAddress(String mnemonic) throws ClientException {

@@ -5,10 +5,10 @@ on:
       - develop
       - production
     paths-ignore:
-      - 'specs/**'
-      - 'documentation/**'
+      - "specs/**"
+      - "documentation/**"
 
-concurrency: 
+concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
@@ -42,8 +42,8 @@ jobs:
       - name: Set Up Node.js 14
         uses: actions/setup-node@v2
         with:
-          node-version: '14'
-          registry-url: 'https://registry.npmjs.org'
+          node-version: "14"
+          registry-url: "https://registry.npmjs.org"
 
       - name: Configure the Git User to Use
         run: |
@@ -52,7 +52,7 @@ jobs:
 
       - name: Set up Homebrew
         uses: Homebrew/actions/setup-homebrew@master
-      
+
       - name: Install Dasel
         run: |
           brew update --preinstall
@@ -76,7 +76,7 @@ jobs:
           branch: release/version-updates
           title: Apply Version Updates From Current Changes
           commit-message: apply version updates
-          labels: version updates
+          labels: i-release
           body: ${{ steps.covector.outputs.change }}
 
   nodejs-binding-prebuild:
@@ -105,7 +105,7 @@ jobs:
       - name: Set up Node.js 16.x
         uses: actions/setup-node@v2
         with:
-          node-version: '16.x'
+          node-version: "16.x"
 
       - name: Install required packages (Ubuntu)
         if: ${{ startsWith(matrix.os, 'ubuntu') }}
@@ -118,7 +118,7 @@ jobs:
       - name: Set up Python 3.10
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: "3.10"
 
       - name: Run Yarn Install
         working-directory: client/bindings/nodejs/

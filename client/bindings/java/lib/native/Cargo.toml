@@ -22,8 +22,8 @@ futures = { version = "0.3.26", default-features = false }
 jni = { version = "0.21.0", default-features = false }
 lazy_static = { version = "1.4.0", default-features = false }
 once_cell = { version = "1.17.1", default-features = false }
-serde_json = { version = "1.0.93", default-features = false }
-tokio = { version = "1.25.0", default-features = false, features = [ "macros" ] }
+serde_json = { version = "1.0.94", default-features = false }
+tokio = { version = "1.26.0", default-features = false, features = [ "macros" ] }
 
 [features]
 ledger_nano = [ "iota-client/ledger_nano" ]

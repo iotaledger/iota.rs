@@ -13,14 +13,17 @@ use iota_types::block::{
     payload::{
         dto::PayloadDto,
         milestone::MilestoneId,
-        transaction::{dto::TransactionPayloadDto, TransactionId},
+        transaction::{
+            dto::{TransactionEssenceDto, TransactionPayloadDto},
+            TransactionId,
+        },
     },
     BlockDto, BlockId,
 };
 use serde::Deserialize;
 
 #[cfg(feature = "mqtt")]
-use crate::Topic;
+use crate::mqtt::Topic;
 use crate::{
     api::{
         ClientBlockBuilderOptions as BuildBlockOptions, GetAddressesBuilderOptions as GenerateAddressesOptions,
@@ -48,7 +51,7 @@ pub enum Message {
         #[serde(rename = "stateIndex")]
         state_index: Option<u32>,
         #[serde(rename = "stateMetadata")]
-        state_metadata: Option<Vec<u8>>,
+        state_metadata: Option<String>,
         #[serde(rename = "foundryCounter")]
         foundry_counter: Option<u32>,
         #[serde(rename = "unlockConditions")]
@@ -559,5 +562,10 @@ pub enum Message {
         url: String,
         /// The address for request funds
         address: String,
+    },
+    /// Compute the hash of a transaction essence.
+    HashTransactionEssence {
+        /// The transaction essence
+        essence: TransactionEssenceDto,
     },
 }

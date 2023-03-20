@@ -10,10 +10,10 @@ use iota_types::block::{
     Block,
 };
 use regex::RegexSet;
-use serde::{Deserialize, Deserializer};
+use serde::{de::Error as _, Deserialize, Deserializer};
 use serde_json::Value;
 
-use crate::{serde::de::Error, Result};
+use super::Error;
 
 type TopicHandler = Box<dyn Fn(&TopicEvent) + Send + Sync>;
 
@@ -144,7 +144,7 @@ impl BrokerOptions {
 pub struct Topic(String);
 
 impl TryFrom<String> for Topic {
-    type Error = crate::Error;
+    type Error = Error;
 
     fn try_from(value: String) -> std::result::Result<Self, Self::Error> {
         Self::try_new(value)
@@ -163,7 +163,7 @@ impl<'de> Deserialize<'de> for Topic {
 
 impl Topic {
     /// Creates a new topic and checks if it's valid.
-    pub fn try_new(topic: impl Into<String>) -> Result<Self> {
+    pub fn try_new(topic: impl Into<String>) -> Result<Self, Error> {
         let valid_topics = lazy_static!(
         RegexSet::new([
             // Milestone topics.
@@ -195,7 +195,7 @@ impl Topic {
         if valid_topics.is_match(&topic) {
             Ok(Self(topic))
         } else {
-            Err(crate::Error::InvalidMqttTopic(topic))
+            Err(Error::InvalidTopic(topic))
         }
     }
 

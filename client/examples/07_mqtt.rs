@@ -5,7 +5,10 @@
 
 use std::sync::{mpsc::channel, Arc, Mutex};
 
-use iota_client::{Client, MqttEvent, MqttPayload, Result, Topic};
+use iota_client::{
+    mqtt::{MqttEvent, MqttPayload, Topic},
+    Client, Result,
+};
 
 // Connecting to a MQTT broker using raw ip doesn't work with TCP. This is a limitation of rustls.
 #[tokio::main]

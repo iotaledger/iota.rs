@@ -27,14 +27,14 @@ async fn main() -> Result<()> {
         .unwrap_or_else(|| String::from("rms1prd5mdmy84mgzwwklzkrl8ym02p2y3dkr8af7lqclnv0pan7274uyjrmwx5"));
 
     // Get output IDs of foundry outputs that can be controlled by this address.
-    let output_ids = client
+    let output_ids_response = client
         .foundry_output_ids(vec![QueryParameter::AliasAddress(alias_address)])
         .await?;
 
-    println!("Address output IDs {output_ids:#?}");
+    println!("Address output IDs {output_ids_response:#?}");
 
     // Get the outputs by their IDs.
-    let outputs_responses = client.get_outputs(output_ids).await?;
+    let outputs_responses = client.get_outputs(output_ids_response.items).await?;
 
     println!("Foundry outputs: {outputs_responses:#?}");
 

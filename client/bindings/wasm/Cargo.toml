@@ -20,8 +20,8 @@ iota-client = { path = "../../", default-features = false, features = [ "message
 
 console_error_panic_hook = { version = "0.1.7", default-features = false }
 js-sys = { version = "0.3.61", default-features = false, features = [] }
-serde_json = { version = "1.0.93", default-features = false }
-tokio = { version = "1.25.0", default-features = false, features = [ "sync" ] }
+serde_json = { version = "1.0.94", default-features = false }
+tokio = { version = "1.26.0", default-features = false, features = [ "sync" ] }
 wasm-bindgen = { version = "0.2.84", default-features = false, features = [ "spans", "std", "serde-serialize" ] }
 wasm-bindgen-futures = { version = "0.4.34", default-features = false }
 

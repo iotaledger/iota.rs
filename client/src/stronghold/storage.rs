@@ -13,6 +13,7 @@ use crate::{storage::StorageProvider, Error, Result};
 
 #[async_trait]
 impl StorageProvider for StrongholdAdapter {
+    #[allow(clippy::significant_drop_tightening)]
     async fn get(&mut self, k: &[u8]) -> Result<Option<Vec<u8>>> {
         let data = match self
             .stronghold

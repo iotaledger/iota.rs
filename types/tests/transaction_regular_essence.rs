@@ -2,9 +2,16 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use iota_types::block::{
-    address::{Address, Ed25519Address},
+    address::{Address, AliasAddress, Ed25519Address},
     input::{Input, TreasuryInput, UtxoInput},
-    output::{unlock_condition::AddressUnlockCondition, BasicOutput, Output, TreasuryOutput},
+    output::{
+        unlock_condition::{
+            AddressUnlockCondition, GovernorAddressUnlockCondition, ImmutableAliasAddressUnlockCondition,
+            StateControllerAddressUnlockCondition, UnlockCondition,
+        },
+        AliasId, AliasOutput, BasicOutput, ChainId, FoundryId, FoundryOutput, NativeToken, NftId, NftOutput, Output,
+        SimpleTokenScheme, TokenId, TokenScheme, TreasuryOutput,
+    },
     payload::{
         milestone::MilestoneId,
         transaction::{RegularTransactionEssence, TransactionId},
@@ -19,6 +26,7 @@ use iota_types::block::{
     Error,
 };
 use packable::bounded::TryIntoBoundedU16Error;
+use primitive_types::U256;
 
 const TRANSACTION_ID: &str = "0x52fdfc072182654f163f5f0f9a621d729566c74d10037c4d7bbb0407d1e2c649";
 const ED25519_ADDRESS_1: &str = "0xd56da1eb7726ed482dfe9d457cf548c2ae2a6ce3e053dbf82f11223be476adb9";
@@ -353,4 +361,141 @@ fn getters() {
 
     assert_eq!(essence.outputs(), outputs.as_slice());
     assert_eq!(essence.payload().unwrap(), &payload);
+}
+
+#[test]
+fn duplicate_output_nft() {
+    let protocol_parameters = protocol_parameters();
+    let transaction_id = TransactionId::new(prefix_hex::decode(TRANSACTION_ID).unwrap());
+    let input1 = Input::Utxo(UtxoInput::new(transaction_id, 0).unwrap());
+    let input2 = Input::Utxo(UtxoInput::new(transaction_id, 1).unwrap());
+    let bytes: [u8; 32] = prefix_hex::decode(ED25519_ADDRESS_1).unwrap();
+    let address = Address::from(Ed25519Address::new(bytes));
+    let amount = 1_000_000;
+    let basic = BasicOutput::build_with_amount(amount)
+        .unwrap()
+        .add_unlock_condition(AddressUnlockCondition::new(address).into())
+        .finish_output(protocol_parameters.token_supply())
+        .unwrap();
+    let nft_id = NftId::from(bytes);
+    let nft = NftOutput::build_with_amount(1_000_000, nft_id)
+        .unwrap()
+        .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
+        .finish_output(protocol_parameters.token_supply())
+        .unwrap();
+
+    let essence = RegularTransactionEssence::builder(protocol_parameters.network_id(), rand_inputs_commitment())
+        .with_inputs(vec![input1, input2])
+        .with_outputs(vec![basic, nft.clone(), nft])
+        .finish(&protocol_parameters);
+
+    assert!(matches!(
+        essence,
+        Err(Error::DuplicateOutputChain(ChainId::Nft(nft_id_0))) if nft_id_0 == nft_id
+    ));
+}
+
+#[test]
+fn duplicate_output_nft_null() {
+    let protocol_parameters = protocol_parameters();
+    let transaction_id = TransactionId::new(prefix_hex::decode(TRANSACTION_ID).unwrap());
+    let input1 = Input::Utxo(UtxoInput::new(transaction_id, 0).unwrap());
+    let input2 = Input::Utxo(UtxoInput::new(transaction_id, 1).unwrap());
+    let bytes: [u8; 32] = prefix_hex::decode(ED25519_ADDRESS_1).unwrap();
+    let address = Address::from(Ed25519Address::new(bytes));
+    let amount = 1_000_000;
+    let basic = BasicOutput::build_with_amount(amount)
+        .unwrap()
+        .add_unlock_condition(AddressUnlockCondition::new(address).into())
+        .finish_output(protocol_parameters.token_supply())
+        .unwrap();
+    let nft_id = NftId::null();
+    let nft = NftOutput::build_with_amount(1_000_000, nft_id)
+        .unwrap()
+        .add_unlock_condition(UnlockCondition::Address(AddressUnlockCondition::new(address)))
+        .finish_output(protocol_parameters.token_supply())
+        .unwrap();
+
+    let essence = RegularTransactionEssence::builder(protocol_parameters.network_id(), rand_inputs_commitment())
+        .with_inputs(vec![input1, input2])
+        .with_outputs(vec![basic, nft.clone(), nft])
+        .finish(&protocol_parameters);
+
+    assert!(essence.is_ok());
+}
+
+#[test]
+fn duplicate_output_alias() {
+    let protocol_parameters = protocol_parameters();
+    let transaction_id = TransactionId::new(prefix_hex::decode(TRANSACTION_ID).unwrap());
+    let input1 = Input::Utxo(UtxoInput::new(transaction_id, 0).unwrap());
+    let input2 = Input::Utxo(UtxoInput::new(transaction_id, 1).unwrap());
+    let bytes: [u8; 32] = prefix_hex::decode(ED25519_ADDRESS_1).unwrap();
+    let address = Address::from(Ed25519Address::new(bytes));
+    let amount = 1_000_000;
+    let basic = BasicOutput::build_with_amount(amount)
+        .unwrap()
+        .add_unlock_condition(AddressUnlockCondition::new(address).into())
+        .finish_output(protocol_parameters.token_supply())
+        .unwrap();
+    let alias_id = AliasId::from(bytes);
+    let alias = AliasOutput::build_with_amount(1_000_000, alias_id)
+        .unwrap()
+        .add_unlock_condition(UnlockCondition::StateControllerAddress(
+            StateControllerAddressUnlockCondition::new(address),
+        ))
+        .add_unlock_condition(UnlockCondition::GovernorAddress(GovernorAddressUnlockCondition::new(
+            address,
+        )))
+        .finish_output(protocol_parameters.token_supply())
+        .unwrap();
+
+    let essence = RegularTransactionEssence::builder(protocol_parameters.network_id(), rand_inputs_commitment())
+        .with_inputs(vec![input1, input2])
+        .with_outputs(vec![basic, alias.clone(), alias])
+        .finish(&protocol_parameters);
+
+    assert!(matches!(
+        essence,
+        Err(Error::DuplicateOutputChain(ChainId::Alias(alias_id_0))) if alias_id_0 == alias_id
+    ));
+}
+
+#[test]
+fn duplicate_output_foundry() {
+    let protocol_parameters = protocol_parameters();
+    let transaction_id = TransactionId::new(prefix_hex::decode(TRANSACTION_ID).unwrap());
+    let input1 = Input::Utxo(UtxoInput::new(transaction_id, 0).unwrap());
+    let input2 = Input::Utxo(UtxoInput::new(transaction_id, 1).unwrap());
+    let bytes: [u8; 32] = prefix_hex::decode(ED25519_ADDRESS_1).unwrap();
+    let address = Address::from(Ed25519Address::new(bytes));
+    let amount = 1_000_000;
+    let basic = BasicOutput::build_with_amount(amount)
+        .unwrap()
+        .add_unlock_condition(AddressUnlockCondition::new(address).into())
+        .finish_output(protocol_parameters.token_supply())
+        .unwrap();
+    let alias_id = AliasId::from(bytes);
+    let token_scheme =
+        TokenScheme::Simple(SimpleTokenScheme::new(U256::from(70u8), U256::from(0u8), U256::from(100u8)).unwrap());
+    let foundry_id = FoundryId::build(&AliasAddress::from(alias_id), 1, token_scheme.kind());
+    let token_id = TokenId::from(foundry_id);
+    let foundry = FoundryOutput::build_with_amount(1_000_000, 1, token_scheme)
+        .unwrap()
+        .add_native_token(NativeToken::new(token_id, U256::from(70u8)).unwrap())
+        .add_unlock_condition(UnlockCondition::ImmutableAliasAddress(
+            ImmutableAliasAddressUnlockCondition::new(AliasAddress::from(alias_id)),
+        ))
+        .finish_output(protocol_parameters.token_supply())
+        .unwrap();
+
+    let essence = RegularTransactionEssence::builder(protocol_parameters.network_id(), rand_inputs_commitment())
+        .with_inputs(vec![input1, input2])
+        .with_outputs(vec![basic, foundry.clone(), foundry])
+        .finish(&protocol_parameters);
+
+    assert!(matches!(
+        essence,
+        Err(Error::DuplicateOutputChain(ChainId::Foundry(foundry_id_0))) if foundry_id_0 == foundry_id
+    ));
 }

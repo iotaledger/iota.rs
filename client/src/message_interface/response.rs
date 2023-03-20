@@ -5,12 +5,15 @@
 use std::collections::HashSet;
 
 use iota_types::{
-    api::core::{
-        dto::{PeerDto, ReceiptDto},
-        response::{
-            BlockMetadataResponse, InfoResponse as NodeInfo, OutputWithMetadataResponse, TreasuryResponse,
-            UtxoChangesResponse as MilestoneUTXOChanges,
+    api::{
+        core::{
+            dto::{PeerDto, ReceiptDto},
+            response::{
+                BlockMetadataResponse, InfoResponse as NodeInfo, OutputWithMetadataResponse, TreasuryResponse,
+                UtxoChangesResponse as MilestoneUTXOChanges,
+            },
         },
+        plugins::indexer::OutputIdsResponse,
     },
     block::{
         address::dto::AddressDto,
@@ -162,7 +165,7 @@ pub enum Response {
     /// - [`AliasOutputIds`](crate::message_interface::Message::AliasOutputIds)
     /// - [`NftOutputIds`](crate::message_interface::Message::NftOutputIds)
     /// - [`FoundryOutputIds`](crate::message_interface::Message::FoundryOutputIds)
-    OutputIds(Vec<OutputId>),
+    OutputIdsResponse(OutputIdsResponse),
     /// Response for:
     /// - [`FindBlocks`](crate::message_interface::Message::FindBlocks)
     Blocks(Vec<BlockDto>),
@@ -224,6 +227,9 @@ pub enum Response {
     /// Response for:
     /// - [`Faucet`](crate::message_interface::Message::Faucet)
     Faucet(String),
+    /// Response for:
+    /// - [`HashTransactionEssence`](crate::message_interface::Message::HashTransactionEssence)
+    TransactionEssenceHash(String),
     /// Response for:
     /// - [`ClearListeners`](crate::message_interface::Message::ClearListeners)
     /// - [`StoreMnemonic`](crate::message_interface::Message::StoreMnemonic)

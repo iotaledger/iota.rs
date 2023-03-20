@@ -21,6 +21,7 @@ import type {
     AliasQueryParameter,
     LedgerNanoStatus,
     IChain,
+    OutputIdsResponse,
 } from '../types';
 import type {
     IUTXOInput,
@@ -41,6 +42,7 @@ import type {
     INftOutput,
     INodeInfoProtocol,
     UnlockTypes,
+    ITransactionEssence,
 } from '@iota/types';
 import type { INodeInfoWrapper } from '../types/nodeInfo';
 
@@ -76,7 +78,9 @@ export class Client {
     }
 
     /** Fetch basic output IDs based on query parameters */
-    async basicOutputIds(queryParameters: QueryParameter[]): Promise<string[]> {
+    async basicOutputIds(
+        queryParameters: QueryParameter[],
+    ): Promise<OutputIdsResponse> {
         const response = await this.messageHandler.sendMessage({
             name: 'basicOutputIds',
             data: {
@@ -826,7 +830,7 @@ export class Client {
      */
     async aliasOutputIds(
         queryParameters: AliasQueryParameter[],
-    ): Promise<string[]> {
+    ): Promise<OutputIdsResponse> {
         const response = await this.messageHandler.sendMessage({
             name: 'aliasOutputIds',
             data: {
@@ -856,7 +860,7 @@ export class Client {
      */
     async nftOutputIds(
         queryParameters: NftQueryParameter[],
-    ): Promise<string[]> {
+    ): Promise<OutputIdsResponse> {
         const response = await this.messageHandler.sendMessage({
             name: 'nftOutputIds',
             data: {
@@ -886,7 +890,7 @@ export class Client {
      */
     async foundryOutputIds(
         queryParameters: FoundryQueryParameter[],
-    ): Promise<string[]> {
+    ): Promise<OutputIdsResponse> {
         const response = await this.messageHandler.sendMessage({
             name: 'foundryOutputIds',
             data: {
@@ -1115,6 +1119,22 @@ export class Client {
         const response = await this.messageHandler.sendMessage({
             name: 'buildNftOutput',
             data: options,
+        });
+
+        return JSON.parse(response).payload;
+    }
+
+    /**
+     * Compute the hash of a transaction essence.
+     */
+    async hashTransactionEssence(
+        essence: ITransactionEssence,
+    ): Promise<string> {
+        const response = await this.messageHandler.sendMessage({
+            name: 'hashTransactionEssence',
+            data: {
+                essence,
+            },
         });
 
         return JSON.parse(response).payload;

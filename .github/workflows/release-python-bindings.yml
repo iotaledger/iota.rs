@@ -80,25 +80,65 @@ jobs:
           name: wheels
           path: dist
 
+  build-wheels-aarch64:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        docker-container: ['python:3.9.12-slim-bullseye', 'python:3.10.10-slim-bullseye', 'python:3.11.1-slim-bullseye']
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3 # Required to mount the Github Workspace to a volume
+      - uses: addnab/docker-run-action@v3
+        with:
+          image: ${{ matrix.docker-container }}
+          options: -v ${{ github.workspace }}:/root
+          run: |
+            cd root
+
+            apt-get update 
+            apt-get install -y git curl build-essential libudev-dev libusb-1.0-0-dev pkg-config clang
+            curl https://sh.rustup.rs -sSf | sh -s -- -y 
+            . "$HOME/.cargo/env" 
+
+            cd client/bindings/python 
+            pip install -r requirements-dev.txt 
+            pip install patchelf
+            pip install maturin
+            maturin build --out ../../../dist --release
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@v3
+        with:
+          name: wheels
+          path: dist
+
   release:
     name: Release
     runs-on: ubuntu-latest
-    needs: [ build-wheels ]
+    needs: [ build-wheels, build-wheels-aarch64 ]
     steps:
+      - uses: actions/checkout@v3
+      - name: Get tag name
+        id: tagname
+        run: |
+          cd client/bindings/python
+          tagName="iota-client-python-$(cargo read-manifest | jq -r '.version')"
+          echo $tagName
+          echo "TAG_NAME=$tagName" >> $GITHUB_OUTPUT
+
       - uses: actions/download-artifact@v3
         with:
           name: wheels
           path: wheels
-
       - run: ls -R
 
-      - name: Get tag name
-        shell: bash
-        id: tagname
-        run: |
-          cd wheels
-          tagName="iota-client-python$(ls | grep -m 1 win_amd64.whl | rev | cut -c 26-34 | rev)"
-          echo "TAG_NAME=$tagName" >> $GITHUB_OUTPUT
+      - uses: actions/download-artifact@v3
+        with:
+          name: wheels
+          path: wheels
+      - run: ls -R
 
       - name: Upload Wheels to Github
         uses: softprops/action-gh-release@v1

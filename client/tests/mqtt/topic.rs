@@ -1,7 +1,7 @@
 // Copyright 2023 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use iota_client::{node_api::mqtt::Topic, Error};
+use iota_client::mqtt::{Error, Topic};
 
 #[test]
 fn valid_topics() {
@@ -49,41 +49,41 @@ fn invalid_tags() {
     // Empty.
     assert!(matches!(
         Topic::try_new("blocks/transaction/tagged-data/0x"),
-        Err(Error::InvalidMqttTopic(_))
+        Err(Error::InvalidTopic(_))
     ));
     assert!(matches!(
         Topic::try_new("blocks/tagged-data/0x"),
-        Err(Error::InvalidMqttTopic(_))
+        Err(Error::InvalidTopic(_))
     ));
     // Uneven.
     assert!(matches!(
         Topic::try_new("blocks/transaction/tagged-data/0x0123456789abcde"),
-        Err(Error::InvalidMqttTopic(_))
+        Err(Error::InvalidTopic(_))
     ));
     assert!(matches!(
         Topic::try_new("blocks/tagged-data/0x0123456789abcde"),
-        Err(Error::InvalidMqttTopic(_))
+        Err(Error::InvalidTopic(_))
     ));
     // Too large.
     assert!(matches!(
         Topic::try_new(
             "blocks/transaction/tagged-data/0xb21517992e96865d5fd90b403fe05fe25c6d4acfb6cdd6e7c9bbfb4266d05151b21517992e96865d5fd90b403fe05fe25c6d4acfb6cdd6e7c9bbfb4266d05151ff"
         ),
-        Err(Error::InvalidMqttTopic(_))
+        Err(Error::InvalidTopic(_))
     ));
     assert!(matches!(
         Topic::try_new(
             "blocks/tagged-data/0xb21517992e96865d5fd90b403fe05fe25c6d4acfb6cdd6e7c9bbfb4266d05151b21517992e96865d5fd90b403fe05fe25c6d4acfb6cdd6e7c9bbfb4266d05151ff"
         ),
-        Err(Error::InvalidMqttTopic(_))
+        Err(Error::InvalidTopic(_))
     ));
     // Invalid chars.
     assert!(matches!(
         Topic::try_new("blocks/transaction/tagged-data/0x012345@789abcde"),
-        Err(Error::InvalidMqttTopic(_))
+        Err(Error::InvalidTopic(_))
     ));
     assert!(matches!(
         Topic::try_new("blocks/tagged-data/0x012345@789abcde"),
-        Err(Error::InvalidMqttTopic(_))
+        Err(Error::InvalidTopic(_))
     ));
 }

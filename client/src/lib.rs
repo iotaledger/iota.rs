@@ -28,7 +28,8 @@
 #![allow(
     clippy::redundant_pub_crate,
     clippy::module_name_repetitions,
-    clippy::missing_const_for_fn
+    clippy::missing_const_for_fn,
+    clippy::significant_drop_in_scrutinee
 )]
 
 #[macro_use]
@@ -69,7 +70,7 @@ pub use packable;
 pub use url::Url;
 
 #[cfg(feature = "mqtt")]
-pub use self::node_api::mqtt::*;
+pub use self::node_api::mqtt;
 pub use self::{
     builder::{ClientBuilder, NetworkInfo, NetworkInfoDto},
     client::*,

@@ -38,7 +38,7 @@ async fn main() -> Result<()> {
         .await?;
 
     // Get output ids of outputs that can be controlled by this address without further unlock constraints
-    let output_ids = client
+    let output_ids_response = client
         .basic_output_ids(vec![
             QueryParameter::Address(addresses[0].clone()),
             QueryParameter::HasExpiration(false),
@@ -48,7 +48,7 @@ async fn main() -> Result<()> {
         .await?;
 
     // Get the outputs by their id
-    let outputs_responses = client.get_outputs(output_ids).await?;
+    let outputs_responses = client.get_outputs(output_ids_response.items).await?;
 
     // Calculate the total amount and native tokens
     let mut total_amount = 0;

@@ -73,15 +73,16 @@ impl SecretManage for LedgerSecretManager {
         internal: bool,
         options: Option<GenerateAddressOptions>,
     ) -> crate::Result<Vec<Address>> {
-        // lock the mutex to prevent multiple simultaneous requests to a ledger
-        let _lock = self.mutex.lock().await;
-
         let bip32_account = account_index | HARDENED;
 
         let bip32 = LedgerBIP32Index {
             bip32_index: address_indexes.start | HARDENED,
             bip32_change: u32::from(internal) | HARDENED,
         };
+
+        // lock the mutex to prevent multiple simultaneous requests to a ledger
+        let lock = self.mutex.lock().await;
+
         // get ledger
         let ledger = get_ledger(coin_type, bip32_account, self.is_simulator)?;
 
@@ -91,6 +92,8 @@ impl SecretManage for LedgerSecretManager {
         } else {
             ledger.get_addresses(false, bip32, address_indexes.len())?
         };
+
+        drop(lock);
 
         let mut ed25519_addresses = Vec::new();
         for address in addresses {
@@ -140,9 +143,6 @@ impl SecretManageExt for LedgerSecretManager {
         prepared_transaction: &PreparedTransactionData,
         time: Option<u32>,
     ) -> crate::Result<Unlocks> {
-        // lock the mutex to prevent multiple simultaneous requests to a ledger
-        let _lock = self.mutex.lock().await;
-
         let mut input_bip32_indices: Vec<LedgerBIP32Index> = Vec::new();
         let mut coin_type: Option<u32> = None;
         let mut account_index: Option<u32> = None;
@@ -187,6 +187,9 @@ impl SecretManageExt for LedgerSecretManager {
         // pack essence and hash into vec
         let essence_bytes = prepared_transaction.essence.pack_to_vec();
         let essence_hash = prepared_transaction.essence.hash().to_vec();
+
+        // lock the mutex to prevent multiple simultaneous requests to a ledger
+        let lock = self.mutex.lock().await;
 
         let ledger = get_ledger(coin_type, bip32_account, self.is_simulator)?;
         let blind_signing = needs_blind_signing(prepared_transaction, ledger.get_buffer_size());
@@ -287,6 +290,7 @@ impl SecretManageExt for LedgerSecretManager {
         // sign
         let signature_bytes = ledger.sign(input_len as u16)?;
         drop(ledger);
+        drop(lock);
         let mut unpacker = SliceUnpacker::new(&signature_bytes);
 
         // unpack signature to unlocks

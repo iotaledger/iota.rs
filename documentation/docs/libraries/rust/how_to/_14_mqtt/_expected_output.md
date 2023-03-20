@@ -9,7 +9,7 @@ Topic: blocksBlock{
   ])),
   payload: OptionalPayload(Some(Transaction(TransactionPayload{
     essence: Regular(RegularTransactionEssence{
-      network_id: 8342982141227064571,
+      network_id: 1856588631910923207,
       inputs: BoxedSlicePrefix([
         Utxo(UtxoInput(0x8e7b59a567f0f439ef7d3b01de094ce2f81aa8e68e09f26705dfd1d39ddf471b0000)),
         Utxo(UtxoInput(0x60e8afa096f3705b6f1a694f5496d51721ea4b4e9876b219dfecdf99586949fd0100)),

@@ -293,11 +293,11 @@ impl<'a> ClientBlockBuilder<'a> {
         }
 
         if let Some(tag) = options.tag {
-            self = self.with_tag(prefix_hex::decode(&tag)?);
+            self = self.with_tag(prefix_hex::decode(tag)?);
         }
 
         if let Some(data) = options.data {
-            self = self.with_data(prefix_hex::decode(&data)?);
+            self = self.with_data(prefix_hex::decode(data)?);
         }
 
         if let Some(parents) = options.parents {

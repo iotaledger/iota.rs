@@ -1,6 +1,6 @@
 [package]
 name = "iota-pow"
-version = "1.0.0-rc.3"
+version = "1.0.0-rc.4"
 authors = [ "IOTA Stiftung" ]
 edition = "2021"
 description = "Provides proof of work implementations and scoring for the IOTA protocol"

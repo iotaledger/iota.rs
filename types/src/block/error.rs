@@ -11,7 +11,7 @@ use primitive_types::U256;
 use crate::block::{
     input::UtxoInput,
     output::{
-        feature::FeatureCount, unlock_condition::UnlockConditionCount, AliasId, MetadataFeatureLength,
+        feature::FeatureCount, unlock_condition::UnlockConditionCount, AliasId, ChainId, MetadataFeatureLength,
         NativeTokenCount, NftId, OutputIndex, StateMetadataLength, TagFeatureLength,
     },
     parent::ParentCount,
@@ -122,6 +122,7 @@ pub enum Error {
     UnallowedUnlockCondition { index: usize, kind: u8 },
     UnlockConditionsNotUniqueSorted,
     UnsupportedOutputKind(u8),
+    DuplicateOutputChain(ChainId),
 }
 
 #[cfg(feature = "std")]
@@ -333,6 +334,7 @@ impl fmt::Display for Error {
             }
             Self::UnlockConditionsNotUniqueSorted => write!(f, "unlock conditions are not unique and/or sorted"),
             Self::UnsupportedOutputKind(k) => write!(f, "unsupported output kind: {k}"),
+            Self::DuplicateOutputChain(chain_id) => write!(f, "duplicate output chain {chain_id}"),
         }
     }
 }
