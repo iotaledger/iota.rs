@@ -181,6 +181,9 @@ pub enum Error {
     /// Input selection error.
     #[error("{0}")]
     InputSelection(#[from] InputSelectionError),
+    /// Missing chain to sign with.
+    #[error("missing chain to sign with")]
+    MissingChain,
 
     /// Participation error
     #[cfg(feature = "participation")]

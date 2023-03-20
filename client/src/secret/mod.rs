@@ -45,7 +45,7 @@ use crate::{
         input_selection::{is_alias_transition, Error as InputSelectionError},
         PreparedTransactionData,
     },
-    unix_timestamp_now,
+    unix_timestamp_now, Error,
 };
 
 /// The secret manager interface.
@@ -347,9 +347,9 @@ impl SecretManager {
                         return Err(InputSelectionError::MissingInputWithEd25519Address)?;
                     }
 
-                    let block = self
-                        .signature_unlock(&hashed_essence, input.chain.as_ref().unwrap())
-                        .await?;
+                    let chain = input.chain.as_ref().ok_or(Error::MissingChain)?;
+
+                    let block = self.signature_unlock(&hashed_essence, chain).await?;
                     blocks.push(block);
 
                     // Add the ed25519 address to the block_indexes, so it gets referenced if further inputs have
