@@ -40,7 +40,7 @@ Add `iota-client` as a dependency in `Cargo.toml`:
 
 ```toml
 [dependencies]
-iota-client = "1.3.0"
+iota-client = "1.4.0"
 ```
 
 Or, for the latest changes:
