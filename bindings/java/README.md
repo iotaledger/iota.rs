@@ -6,11 +6,17 @@ Java binding to the iota.rs library.
 
 Ensure you have first installed the required dependencies for the library [here](https://github.com/iotaledger/iota.rs/blob/dev/README.md).
 
+- A valid C compiler
+- [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) to clone the repository
+- [Java](https://openjdk.org/install/) JDK and JRE, Java 8 or higher
+- [Rust](https://www.rust-lang.org/tools/install) installation on your path
+- [Gradle](https://gradle.org/install/) v4 or higher or [Maven](https://maven.apache.org/download.cgi) installed
+
 ## Installation
 
 Clone project
 ```
-git clone https://github.com/iotaledger/iota.rs
+git clone -b production https://github.com/iotaledger/iota.rs
 ```
 
 Build the rust library (This generates the java source code and JNI library file)
@@ -56,7 +62,6 @@ mvn exec:exec
 The Android app needs further compilation instructions.
 
 Specific instructions in `iota.rs/bindings/java/examples/android-app/README.md`
-
 
 ## Example for an external project
 Project skeleton can be found [here](https://github.com/kwek20/iota-rs-java).
