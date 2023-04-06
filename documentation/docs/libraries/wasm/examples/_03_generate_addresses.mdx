@@ -1,8 +1,8 @@
 import CodeBlock from '@theme/CodeBlock';
 import generate_addresses from '!!raw-loader!../../../../../bindings/wasm/examples/03_generate_addresses.js';
 
-You can generate an IOTA address using the [`AddressGetter`](./../libraries/wasm/api_reference#addressgetter) helper
-class and calling the [`Client.getAddresses()`](./../libraries/wasm/api_reference#getaddressesseed-addressgetter)
+You can generate an IOTA address using the [`AddressGetter`](./../api_reference.md#addressgetter) helper
+class and calling the [`Client.getAddresses()`](./../api_reference.md#getaddressesseed-addressgetter)
 function and respective chaining calls that will return a list of tuples with the generated addresses. You can find
 more information on the parameters in the [Address/Key Space section](./../../../explanations/address_key_space.md).
 
@@ -33,10 +33,10 @@ parts relevant to this example:
 * The last 6 characters are reserved for a checksum.
 
 Addresses can be also represented in a hex format and `iota.rs` provides some convenient functions to convert addresses:
-[`Client.bech32ToHex(address)`](./../libraries/wasm/api_reference#clientbech32tohexaddress--string) and
-[`Client.hexToBech32(address, bech32) `](./../libraries/wasm/api_reference#clienthextobech32address-bech32--promiseany).
+[`Client.bech32ToHex(address)`](./../api_reference.md#clientbech32tohexaddress--string) and
+[`Client.hexToBech32(address, bech32) `](./../api_reference.md#clienthextobech32address-bech32--promiseany).
 
 If you want to quickly validate any IOTA address, you can use the
-[`Client.isAddressValid()`](./../libraries/wasm/api_reference#clientisaddressvalidaddress--boolean) function that
+[`Client.isAddressValid()`](./../api_reference.md#clientisaddressvalidaddress--boolean) function that
 returns a `bool` value. You should perform a sanity check on address before using it.
 

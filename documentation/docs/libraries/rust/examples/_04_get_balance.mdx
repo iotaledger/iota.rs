@@ -27,13 +27,13 @@ generated addresses. Since it does not know how many addresses are used in fact,
 `.with_gap_limit(gap_limit)` argument to know when to stop searching. If the `.gap_limit` amount of addresses in a row
 have no balance, the function returns results and searching does not continue.
 
-## [`Client.get_address().balance(address: &str)`](./../libraries/java/api_reference#balanceaddress-balanceaddressresponse)
+## [`Client.get_address().balance(address: &str)`](./../api_reference.md#balanceaddress-balanceaddressresponse)
 
 You can use the [`GetAdressBuilder`](https://docs.rs/iota-client/latest/iota_client/node/struct.GetAddressBuilder.html)
 on a `Client` instance and query for an addresses' balances by chaining a call to the `balance(address: String)`
 function.
 
-## [`Client.get_address().outputs(address: &str, options: OutputOptions)`](./../libraries/java/api_reference#balanceaddress-balanceaddressresponse)
+## [`Client.get_address().outputs(address: &str, options: OutputOptions)`](./../api_reference.md#balanceaddress-balanceaddressresponse)
 
 You can use the [`GetAdressBuilder`](https://docs.rs/iota-client/latest/iota_client/node/struct.GetAddressBuilder.html)
 on a `Client` instance and query for an addresses' balances by chaining a call to the `outputs(address: String)`

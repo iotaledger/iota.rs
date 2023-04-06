@@ -12,8 +12,8 @@ const a_get_address_outputs = java_examples.substring(indexStart, indexEnd);
 
 ## Client.get_address().outputs(address: String, options: OutputOptions)
 
-This [`Client.get_address().outputs(address: String, options: OutputOptions)`](./../libraries/java/api_reference#outputsaddress-options-balanceaddressresponse)
-expects an address in Bech32 format and will get all outputs that use a given address.  You can use [OutputOptions](./../libraries/java/api_reference#outputsoptions) to limit the returned results.
+This [`Client.get_address().outputs(address: String, options: OutputOptions)`](./../api_reference.md#outputsaddress-options-balanceaddressresponse)
+expects an address in Bech32 format and will get all outputs that use a given address.  You can use [OutputOptions](./../api_reference.md#outputsoptions) to limit the returned results.
 
 <CodeBlock className="language-java">{a_get_address_outputs}</CodeBlock>
 
@@ -28,12 +28,12 @@ expects an address in Bech32 format and will get all outputs that use a given ad
 ```
 ## Client.getOutput(output_id: String)
 
-The [`Client.getOutput(output_id: String)`](./../libraries/java/api_reference#getoutputoutput_id-outputresponse) function to get metadata about the an `output_id`:
+The [`Client.getOutput(output_id: String)`](./../api_reference.md#getoutputoutput_id-outputresponse) function to get metadata about the an `output_id`:
 
 
 ## Client.findOutputs(output_ids:String[], addresses:String[])
 
 The
-[`Client.findOutputs(output_ids:String[], addresses:String[])`](./../libraries/java/api_reference#findoutputsoutput_ids-addresses-outputresponse)
+[`Client.findOutputs(output_ids:String[], addresses:String[])`](./../api_reference.md#findoutputsoutput_ids-addresses-outputresponse)
 function expects an array of Strings representing the output ids to look up, as well as an array of Strings representing
 the addresses to look up.

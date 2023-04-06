@@ -2,7 +2,7 @@ import CodeBlock from '@theme/CodeBlock';
 import generate_addresses from '!!raw-loader!../../../../../bindings/python/examples/03_generate_addresses.py';
 
 You can generate an IOTA address using the
-[`Client.get_addresses()`](./../libraries/python/api_reference##get_addressesseed-account_index-optional-input_range_begin-optional-input_range_end-optional-get_all-optional-liststr-bool-optional)
+[`Client.get_addresses()`](./../api_reference.md##get_addressesseed-account_index-optional-input_range_begin-optional-input_range_end-optional-get_all-optional-liststr-bool-optional)
 function that will return a list of tuples with the generated addresses. You can find more information on the
 parameters in the [Address/Key Space section](../../../explanations/address_key_space.md).
 
@@ -50,10 +50,10 @@ parts relevant to this example:
 * The last 6 characters are reserved for a checksum.
 
 Addresses can be also represented in a hex format and `iota.rs` provides some convenient functions to convert addresses:
-[`Client.bech32_to_hex()`](./../libraries/python/api_reference#bech32_to_hexbech32) and
-[`Client.hex_to_bech32()`](./../libraries/python/api_reference#hex_to_bech32hex-bech32_hrp-optional).
+[`Client.bech32_to_hex()`](./../api_reference.md#bech32_to_hexbech32) and
+[`Client.hex_to_bech32()`](./../api_reference.md#hex_to_bech32hex-bech32_hrp-optional).
 
 If you want to quickly validate any IOTA address, you can use the
-[`Client.is_address_valid()`](./../libraries/python/api_reference#is_address_validaddress-bool) function that returns a
+[`Client.is_address_valid()`](./../api_reference.md#is_address_validaddress-bool) function that returns a
 `bool` value. You should perform a sanity check on address before using it.
 

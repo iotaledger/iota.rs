@@ -9,7 +9,7 @@ import c_find_outputs from "!!raw-loader!./../../../../../bindings/nodejs/exampl
 
 ## Client.getAddressOutputs(str)
 
-This [`Client.getAddressOutputs(str)`](./../libraries/nodejs/api_reference#getaddressoutputsaddress-options-promisestring) expects an address in Bech32 format and returns a `str[]` of `output_ids`.
+This [`Client.getAddressOutputs(str)`](./../api_reference.md#getaddressoutputsaddress-options-promisestring) expects an address in Bech32 format and returns a `str[]` of `output_ids`.
 
 <CodeBlock className="language-javascript">{a_get_address_outputs}</CodeBlock>
 
@@ -25,7 +25,7 @@ This [`Client.getAddressOutputs(str)`](./../libraries/nodejs/api_reference#getad
 
 ## Client.getOutput(str)
 
-You can use the [`Client.getOutput(str)`](./../libraries/nodejs/api_reference#getoutputoutputid-promise) function to get metadata about the an `output_id`:
+You can use the [`Client.getOutput(str)`](./../api_reference.md#getoutputoutputid-promise) function to get metadata about the an `output_id`:
 
 <CodeBlock className="language-javascript">{b_get_output}</CodeBlock>
 
@@ -44,7 +44,7 @@ You can use the [`Client.getOutput(str)`](./../libraries/nodejs/api_reference#ge
 
 ## Client.findOutputs(output_ids (optional), addresses (optional))
 
-The function [`Client.findOutputs()`](./../libraries/nodejs/api_reference#findoutputsoutputids-addresses-promiseoutputmetadata) is a convenient shortcut combining both `Client.getAddressOutputs(str)` and
+The function [`Client.findOutputs()`](./../api_reference.md#findoutputsoutputids-addresses-promiseoutputmetadata) is a convenient shortcut combining both `Client.getAddressOutputs(str)` and
 `Client.getOutput(str)` methods in a single call. It supports two arguments, a list of `output_ids` or a list of
 `addresses`.
 

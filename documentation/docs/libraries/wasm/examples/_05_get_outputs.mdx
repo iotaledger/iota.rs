@@ -10,7 +10,7 @@ import c_find_outputs from "!!raw-loader!./../../../../../bindings/wasm/examples
 ## Client.getAddress().outputs(str)
 
 This
-[`Client.getAddress().outputs(str)`](./../libraries/wasm/api_reference#getaddressbuilderoutputsaddress-options--promiseany)
+[`Client.getAddress().outputs(str)`](./../api_reference.md#getaddressbuilderoutputsaddress-options--promiseany)
 expects an address in Bech32 format and returns a `str[]` of `output_ids`.
 
 <CodeBlock className="language-javascript">{a_get_address_outputs}</CodeBlock>
@@ -27,7 +27,7 @@ expects an address in Bech32 format and returns a `str[]` of `output_ids`.
 
 ## Client.getOutput(str)
 
-The function [`Client.getOutput(str)`](./../libraries/wasm/api_reference#clientgetoutputoutput_id--promiseany) can be
+The function [`Client.getOutput(str)`](./../api_reference.md#clientgetoutputoutput_id--promiseany) can be
 used to get metadata about the given `output_id`:
 
 <CodeBlock className="language-javascript">{b_get_output}</CodeBlock>
@@ -47,7 +47,7 @@ used to get metadata about the given `output_id`:
 
 ## Client.findOutputs(output_ids (optional), addresses (optional))
 
-The function [`Client.findOutputs()`](./../libraries/wasm/api_reference#clientfindoutputsoutputs-addresses--promiseany)
+The function [`Client.findOutputs()`](./../api_reference.md#clientfindoutputsoutputs-addresses--promiseany)
 is a convenient shortcut combining both `Client.getAddressOutputs(str)` and `Client.getOutput(str)` methods in a single
 call. It supports two arguments, a list of `output_ids` or a list of `addresses`.
 
