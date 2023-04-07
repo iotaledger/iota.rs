@@ -3,23 +3,23 @@ import get_balance from "!!raw-loader!../../../../../bindings/nodejs/examples/04
 
 There are three common API calls you can use to get a balance:
 
-## [`Client.getAddressBalance(address: string)`](./../libraries/nodejs/api_reference#getaddressbalanceaddress-promise)
+## [`Client.getAddressBalance(address: string)`](./../api_reference.md#getaddressbalanceaddress-promise)
 
 It expects a single address in Bech32 format and returns `dict` with a balance for the address.
 
-## [`Client.getAddressBalances(AddressBalance[]: string[])`](./../libraries/nodejs/api_reference#getaddressbalancesaddresses-promiseaddressbalance)
+## [`Client.getAddressBalances(AddressBalance[]: string[])`](./../api_reference.md#getaddressbalancesaddresses-promiseaddressbalance)
 
 A convenient function that expects `list` of addresses in Bech32 format and returns list of `dict` with balances for all
 given addresses.
 
-## [`Client.getBalance(seed: string)`](./../libraries/nodejs/api_reference#getbalanceseed-string-balancegetter)
+## [`Client.getBalance(seed: string)`](./../api_reference.md#getbalanceseed-string-balancegetter)
 
-A convenient helper [`BalanceGetter`](./../libraries/nodejs/api_reference#balancegetter) class that combines
-[`Client.getAddresses()`](./../libraries/nodejs/api_reference#getaddressesseed-addressgetter) and
+A convenient helper [`BalanceGetter`](./../api_reference.md#balancegetter) class that combines
+[`Client.getAddresses()`](./../api_reference.md#getaddressesseed-addressgetter) and
 `Client.getAddressBalance()` api calls. It returns a combined balance for the provided `seed` and optional chaining
-calls [`.accountIndex(index: number)`](./../libraries/nodejs/api_reference#accountindexindex-balancegetter),
-[`.initialAddressIndex(index: number)`](./../libraries/nodejs/api_reference#initialaddressindexindex-balancegetter) and
-[`.gapLimit(amount: number)`](./../libraries/nodejs/api_reference#gaplimitamount-balancegetter).
+calls [`.accountIndex(index: number)`](./../api_reference.md#accountindexindex-balancegetter),
+[`.initialAddressIndex(index: number)`](./../api_reference.md#initialaddressindexindex-balancegetter) and
+[`.gapLimit(amount: number)`](./../api_reference.md#gaplimitamount-balancegetter).
 
 `Client.getBalance(seed)` performs several tasks under the hood. It starts by generating addresses for the provided
 `seed` and `.accountIndex` from `.initialAddressIndex(index)`, and checks for a balance of each of the generated

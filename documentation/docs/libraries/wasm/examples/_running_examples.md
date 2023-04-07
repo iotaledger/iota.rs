@@ -1,6 +1,6 @@
 ## Prequisites
 
-Before you run the examples, please refer to the [Wasm Getting Started guide](./../getting_started/wasm) , and make sure you have [built the bindings](./../getting_started/wasm#build) for
+Before you run the examples, please refer to the [Wasm Getting Started guide](./../../../getting_started/wasm.md) , and make sure you have [built the bindings](./../../../getting_started/wasm.md#build) for
 `node.js`.
 
 ## Run the Examples

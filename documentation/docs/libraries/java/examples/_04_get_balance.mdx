@@ -6,28 +6,28 @@ const nextJavaFunctionName = " public static void getOutputs() {",
   indexEnd = java_examples.indexOf(nextJavaFunctionName);
 const get_balance = java_examples.substring(indexStart, indexEnd);
 
-## [`Client.getBalance(seed: String)`](./../libraries/java/api_reference#getbalanceseed-getbalancebuilderapi)
+## [`Client.getBalance(seed: String)`](./../api_reference.md#getbalanceseed-getbalancebuilderapi)
 
-Combines [`Client.getAddresses()`](./../libraries/java/api_reference#getaddressesseed-getaddressesbuilder) and
+Combines [`Client.getAddresses()`](./../api_reference.md#getaddressesseed-getaddressesbuilder) and
 `Client.getAddressBalance()` api calls. It returns a combined balance for the provided `seed`.
 
-## [`Client.getAddressBalance(address: String)`](./../libraries/java/api_reference#getaddressbalanceaddress-balanceaddressresponse)
+## [`Client.getAddressBalance(address: String)`](./../api_reference.md#getaddressbalanceaddress-balanceaddressresponse)
 
 Expects a single address in Bech32 format and returns `dict` with a balance for the address.
 
-## [`Client.getAddressBalances(addresses: String[])`](./../libraries/java/api_reference#getaddressesbalancesaddresses-balanceaddressresponse)
+## [`Client.getAddressBalances(addresses: String[])`](./../api_reference.md#getaddressesbalancesaddresses-balanceaddressresponse)
 
 A convenient function that expects `list` of addresses in Bech32 format and returns list of `dict` with balances for all
 given addresses.
 
-## [`Client.getAddress().balance(address: String)`](./../libraries/java/api_reference#balanceaddress-balanceaddressresponse)
+## [`Client.getAddress().balance(address: String)`](./../api_reference.md#balanceaddress-balanceaddressresponse)
 
-You can use the [`GetAdressBuilder`](./../libraries/java/api_reference#getaddressesbuilder) on a `Client` instance and
+You can use the [`GetAdressBuilder`](./../api_reference.md#getaddressesbuilder) on a `Client` instance and
 query for and addresses' balances by chaining a call to the `balance(address: String)` function.
 
-## [`Client.getAddress().outputs(address: String, options: OutputOptions)`](./../libraries/java/api_reference#outputsaddress-options-balanceaddressresponse)
+## [`Client.getAddress().outputs(address: String, options: OutputOptions)`](./../api_reference.md#outputsaddress-options-balanceaddressresponse)
 
-You can use the [`GetAdressBuilder`](./../libraries/java/api_reference#getaddressesbuilde) on a `Client` instance and
+You can use the [`GetAdressBuilder`](./../api_reference.md#getaddressesbuilde) on a `Client` instance and
 query for and addresses' balances by chaining a call to the `outputs(address: String)` function.
 
 <CodeBlock className="language-java">{get_balance}</CodeBlock>

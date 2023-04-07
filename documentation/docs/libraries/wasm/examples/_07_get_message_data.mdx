@@ -2,12 +2,12 @@ import CodeBlock from "@theme/CodeBlock";
 import get_message_data from "!!raw-loader!../../../../../bindings/nodejs/examples/07_get_message_data.js";
 
 Once a [message](../../../explanations/messages_payloads_and_transactions.md#messages) is broadcast, you can use the
-[`MessageGetter`](./../libraries/wasm/api_reference#messagegetter) helper class that you can instantiate using the
-[`Client.getMessage()`](./../libraries/wasm/api_reference#clientgetmessage--codemessagegettercode) function to retrieve
+[`MessageGetter`](./../api_reference.md#messagegetter) helper class that you can instantiate using the
+[`Client.getMessage()`](./../api_reference.md#clientgetmessage--codemessagegettercode) function to retrieve
 it from the network. The `MessageGetter` provides helper functions related to the message, such as
-[`Client.getMessage().data(message_id: String)`](./../libraries/wasm/api_reference#messagegetterdatamessage_id--promiseany)
+[`Client.getMessage().data(message_id: String)`](./../api_reference.md#messagegetterdatamessage_id--promiseany)
 and
-[`Client.getMessage().metadata(message_id: String)`](./../libraries/wasm/api_reference#messagegettermetadatamessage_id--promiseany):
+[`Client.getMessage().metadata(message_id: String)`](./../api_reference.md#messagegettermetadatamessage_id--promiseany):
 
 <CodeBlock className="language-javascript">{get_message_data}</CodeBlock>
 

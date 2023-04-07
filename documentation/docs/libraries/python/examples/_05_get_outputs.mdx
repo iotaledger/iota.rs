@@ -9,7 +9,7 @@ import c_find_outputs from "!!raw-loader!./../../../../../bindings/python/exampl
 
 ## Client.get_address_outputs(address, options (optional))
 
-The [`Client.get_address_outputs(str)`](./../libraries/python/api_reference#get_address_outputsaddress-options-optional-listutxoinput) function expects an address in Bech32 format and returns a `str[]` of
+The [`Client.get_address_outputs(str)`](./../api_reference.md#get_address_outputsaddress-options-optional-listutxoinput) function expects an address in Bech32 format and returns a `str[]` of
 `output_ids`.
 
 <CodeBlock className="language-javascript">{a_get_address_outputs}</CodeBlock>
@@ -30,7 +30,7 @@ The resulting `output_id` is the unique id of the given `output`.
 
 ## Client.get_output(output_id)
 
-You can use the [`Client.get_output(output_id)`](./../libraries/python/api_reference#get_outputoutput_id-outputresponse) function to get metadata about the an `output_id`:
+You can use the [`Client.get_output(output_id)`](./../api_reference.md#get_outputoutput_id-outputresponse) function to get metadata about the an `output_id`:
 
 <CodeBlock className="language-javascript">{b_get_output}</CodeBlock>
 
@@ -49,7 +49,7 @@ You can use the [`Client.get_output(output_id)`](./../libraries/python/api_refer
 
 ## Client.find_outputs(output_ids (optional), addresses (optional))
 
-The function [`Client.find_outputs(output_ids (optional), addresses (optional))`](./../libraries/python/api_reference#find_outputsoutput_ids-optional-addresses-optional-listoutputresponse) is a convenient shortcut combining both
+The function [`Client.find_outputs(output_ids (optional), addresses (optional))`](./../api_reference.md#find_outputsoutput_ids-optional-addresses-optional-listoutputresponse) is a convenient shortcut combining both
 `Client.get_address_outputs(str)` and `Client.get_output(str)` methods in a single call. It supports two arguments, a
 list of `output_ids` or a list of `addresses`.
 
