@@ -5,7 +5,7 @@ the library.
 
 ## Run Code Examples
 
-The iota.rs library has numerous [examples](https://github.com/iotaledger/iota.rs/tree/develop/bindings/python/examples)
+The iota.rs library has numerous [examples](https://github.com/iotaledger/iota.rs/tree/develop/client/bindings/python/examples)
 you can run to get acquainted with the library. After you have followed the instructions to
 [install the library](./../../../getting_started/python.mdx#install-the-library), you can run any example with the following
 command from the `bindings/python` directory:
