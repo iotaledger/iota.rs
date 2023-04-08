@@ -19,10 +19,10 @@ client = IotaClient({'nodes': ['https://api.testnet.shimmer.network']})
 ########################################################
 # Data is submitted to the Shimmer network as a block.
 # This block can contain a 'payload' with data.
-# This data has a 'tag' and the 'data' itself, both in hex format.
+# This payload has a 'tag' and the 'data' itself, both in hex format.
 # The Shimmer network requires a "0x" at the beginning of hex strings.
 
-# Write a tag for your message
+# Write a tag and message
 tag = "Hello"
 # message = "Hello again. You can use one line or multiple lines!"
 message = """
@@ -30,6 +30,7 @@ I am a
 robot!
 """
 
+# Convert to hex
 # 1) Ensure the string is in UTF-8 using `encode()`.
 # 2) Convert to hex using `hex()`.
 # 3) Prepend the `0x` required by Shimmer.
@@ -42,13 +43,15 @@ print(f'  tag converted to hex: {tag_hex}')
 print(f'  message: {message}')
 print(f'  message converted to hex: {message_hex}')
 
-# Collect your hex data into a dictionary. This will be the payload.
+# Collect your hex data into a dictionary. This will be the payload
 payload = {"tag": tag_hex, "data": message_hex}
 
 
 ########################################################
 # Step 2: Submit your block to the Shimmer test network
 ########################################################
+# A block must be built, to which the payload is attached.
+# The build_and_post_block function handles this task.
 
 # Create and post a block with a tagged data payload
 # The client returns your block data (blockIdAndBlock)
@@ -66,7 +69,8 @@ print(f'  {block}')
 ########################################################
 # Step 3: Use the block ID to read the payload back
 ########################################################
-# Using the block ID, the network can be queried:
+# The network can be queried using the block ID.
+# There are two methods to query the network.
 #   get_block_metadata - metadata only
 #   get_block_data - metadata and payload
 
@@ -79,8 +83,8 @@ payload_out = block['payload']
 tag_hex_out = block['payload']['tag']
 message_hex_out = block['payload']['data']
 
-# Decode the reply
-# Remember to remove the '0x'
+# Unpackage the payload (from hex to text)
+# Remember to remove the '0x' from the hex
 message_out = bytes.fromhex(message_hex_out[2:]).decode('utf-8')
 print(f'\nYour message, read from the Shimmer network:')
 print(f'  {message_out}')
