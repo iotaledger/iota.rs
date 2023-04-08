@@ -85,12 +85,12 @@ cargo doc --document-private-items --no-deps --open
 
 ## Bindings
 
-Bindings to other programming languages are available under the folder [bindings](bindings/).
+Bindings to other programming languages are available under the folder [bindings](./client/bindings/).
 
-* [Node.js binding](bindings/nodejs/)
-* [Python binding](bindings/python/)
-* [Java binding](bindings/java/)
-* [Wasm binding](bindings/wasm/)
+* [Node.js binding](./client/bindings/nodejs/)
+* [Python binding](./client/bindings/python/)
+* [Java binding](./client/bindings/java/)
+* [Wasm binding](./client/bindings/wasm/)
 
 ## Joining the discussion
 
