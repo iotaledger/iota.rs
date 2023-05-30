@@ -21,8 +21,7 @@ rustup update stable
 
 The nightly version should also be fine, but some changes might not be compatible.
 
-`no_std` is not currently supported.  We are working on it in [Bee](https://github.com/iotaledger/bee), and will provide 
-it as feature once the new implementation is ready.
+`no_std` is not currently supported.  
 
 ## Using the Library
 

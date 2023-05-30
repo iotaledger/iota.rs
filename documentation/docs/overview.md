@@ -48,7 +48,9 @@ a [network for testing purposes (devnet)](https://wiki.iota.org/chrysalis-docs/d
 
 Different nodes can run on different software, but they always expose the same interface to clients. For example, one
 node could be a [Hornet](https://wiki.iota.org/hornet/welcome) node, and the other could be
-a [Bee](https://wiki.iota.org/bee/welcome) node, and they both would appear the same for any client.
+a different implementation of the 
+[core REST API](https://wiki.iota.org/shimmer/develop/nodes/core-rest-api/iota-core-rest-api/), and they both would 
+appear the same for any client.
 
 ![A diagram that illustrates the text above. It has three layers: the application layer that includes iota.rs and its bindings, communication layer (the Internet network), and IOTA network layer with nodes that operate on one of the IOTA networks.](/img/overview/layered_overview.svg "An overview of IOTA layers.")
 

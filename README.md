@@ -59,7 +59,7 @@ use iota_client;
 
 ## Limitations
 
-- `no_std` is not currently supported, but we are working on it in [bee](https://github.com/iotaledger/bee), and will provide it as feature once the new implementation is ready.
+- `no_std` is not currently supported.
 - When using the `mqtt` feature, connecting to a MQTT broker using raw IP doesn't work with TCP. This is a limitation of `rustls`.
 
 ## Examples
