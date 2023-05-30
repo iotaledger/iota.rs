@@ -464,7 +464,7 @@ A tuple with the newly promoted `(MessageId,  Message)`.
 
 # Full node API
 
-HORNET will still be public. Users who know this relative low level Restful API can still call it directly if they are confident and think it’s good for them. Note that HORNET hasn't finalized their APIs either. Following items and signatures might change later.
+HORNET will still be public. Users who know this relative low level Restful API can still call it directly if they are confident and think it’s good for them. Note that HORNET hasn't finalized their APIs either. The following items and signatures might change later.
 
 ## `get_health()`
 
