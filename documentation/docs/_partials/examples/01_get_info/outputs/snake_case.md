@@ -28,6 +28,6 @@ The most important properties are:
   that it should be aware of all transactions in the Tangle. It is better to avoid interacting with nodes which are not
   fully synced.
 * `bech32_hrp`: Indicates whether the given node is a part of [devnet](https://wiki.iota.org/introduction/reference/networks/devnet)
-  (`atoi`) or [mainnet](hhttps://wiki.iota.org/introduction/reference/networks/mainnet) (`iota`). You can find more info regarding the
+  (`atoi`) or [mainnet](https://wiki.iota.org/introduction/reference/networks/mainnet) (`iota`). You can find more info regarding the
   [IOTA address format](https://wiki.iota.org/chrysalis-docs/guides/developer/#iota-15-address-anatom) in the official
   [Chrysalis documentation](https://wiki.iota.org/chrysalis-docs/welcome).
