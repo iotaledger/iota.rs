@@ -43,7 +43,7 @@ powerful no matter which language you choose.
 Your application communicates with iota.rs either directly in Rust or through one of the language bindings. The iota.rs
 library turns your requests into REST API calls and sends them to a node through the Internet. The node, in turn,
 interacts with the rest of an IOTA network, which could be
-the [main operational network (mainnet)](hhttps://wiki.iota.org/introduction/reference/networks/mainnet) or
+the [main operational network (mainnet)](https://wiki.iota.org/introduction/reference/networks/mainnet) or
 a [network for testing purposes (devnet)](https://wiki.iota.org/introduction/reference/networks/devnet).
 
 Different nodes can run on different software, but they always expose the same interface to clients. For example, one
