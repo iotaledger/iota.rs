@@ -1,6 +1,6 @@
 ---
 description: Getting started with the official IOTA Client Library Rust library.
-image: /img/logo/iota_mark_light.png
+image: /img/logo/libraries.png
 keywords:
 - Rust
 - install

@@ -1,6 +1,6 @@
 ---
 description: Getting started with the official IOTA Client Library Node.js binding.
-image: /img/logo/iota_mark_light.png
+image: /img/logo/libraries.png
 keywords:
 - Node.js
 - dotenv
