@@ -58,7 +58,7 @@ And there are few additional interesting notes:
 planning on using many multiple accounts then you may be interested in our stateful library
 [wallet.rs](https://wiki.iota.org/wallet.rs/welcome) that incorporates all business logic needed to efficiently manage
 independent accounts.
-Our [exchange guide](https://wiki.iota.org/docs/build/exchange-integration/exchange-integration-guide)
+Our [exchange guide](https://wiki.iota.org/introduction/how_tos/exchange)
 provides some useful tips on how different accounts may be leveraged.
 
 ![address_generation](/img/libraries/address_generation.svg)

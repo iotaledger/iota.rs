@@ -1,7 +1,7 @@
 ---
 title: API Reference
 description: Official IOTA Client Library Java API reference.
-image: /img/logo/iota_mark_light.png
+image: /img/logo/libraries.png
 keywords:
 - api
 - Java

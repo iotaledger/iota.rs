@@ -1,6 +1,6 @@
 ---
 description: Troubleshooting the IOTA Client Library.  
-image: /img/logo/iota_mark_light.png
+image: /img/logo/libraries.png
 keywords:
 - discussion
 - channel
