@@ -11,7 +11,10 @@ use bee_rest_api::types::{
     dtos::{AddressDto, OutputDto},
     responses::OutputResponse,
 };
-use crypto::keys::slip10::{Chain, Curve, Seed};
+use crypto::{
+    keys::slip10::{Chain, Seed},
+    signatures::ed25519,
+};
 #[cfg(feature = "wasm")]
 use gloo_timers::future::TimeoutFuture;
 #[cfg(not(feature = "wasm"))]
@@ -618,7 +621,7 @@ impl<'a> ClientMessageBuilder<'a> {
                 let private_key = seed
                     .or(self.seed)
                     .ok_or(crate::Error::MissingParameter("Seed"))?
-                    .derive(Curve::Ed25519, &recorder.chain)?
+                    .derive::<ed25519::SecretKey>(&recorder.chain)?
                     .secret_key();
                 let public_key = private_key.public_key().to_bytes();
                 // The signature unlock block needs to sign the hash of the entire transaction essence of the
@@ -870,9 +873,9 @@ pub fn do_pow(
 #[cfg(feature = "wasm")]
 use bee_message::payload::option_payload_pack;
 #[cfg(feature = "wasm")]
-use bee_ternary::{b1t6, Btrit, T1B1Buf, TritBuf};
-#[cfg(feature = "wasm")]
 use bytes::Buf;
+#[cfg(feature = "wasm")]
+use crypto::encoding::ternary::{b1t6, Btrit, T1B1Buf, TritBuf};
 #[cfg(feature = "wasm")]
 use crypto::hashes::ternary::{
     curl_p::{CurlPBatchHasher, BATCH_SIZE},
