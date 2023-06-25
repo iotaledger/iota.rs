@@ -29,6 +29,14 @@ If you are using NPM, you can install the binding in your project by running the
 npm i @iota/client
 ```
 
+If you have some install errors, maybe you are trying to install an older version from the library from npm,
+try download latests version in an imperative way, like this
+
+```bash
+npm i @iota/client@3.0.0-rc.9
+```
+
+
 ### Yarn
 
 If you are using Yarn, you can install the binding in your project by running the following command:
