@@ -7,7 +7,7 @@ processors:
   - type: crossref
 renderer:
   type: docusaurus
-  docs_base_path: ../../../documentation/docs/libraries/python/
+  docs_base_path: ./docs
   relative_output_path: references
 
   markdown:
