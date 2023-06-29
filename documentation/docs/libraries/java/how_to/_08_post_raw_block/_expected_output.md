@@ -1,3 +1,0 @@
-```plaintext
-0x601aab8d3b391923f44528e54caff74f1e869ba8c587ddf99d277dd140289f89
-```
