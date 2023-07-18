@@ -34,8 +34,8 @@ use bee_rest_api::types::{
 use crypto::{
     hashes::{blake2b::Blake2b256, Digest},
     keys::{
-        bip39::{mnemonic_to_seed, wordlist},
-        slip10::Seed,
+        bip39,
+        slip10,
     },
     utils,
 };
@@ -565,10 +565,10 @@ impl Client {
     }
 
     /// Generates a new mnemonic.
-    pub fn generate_mnemonic() -> Result<String> {
+    pub fn generate_mnemonic() -> Result<bip39::Mnemonic> {
         let mut entropy = [0u8; 32];
         utils::rand::fill(&mut entropy)?;
-        let mnemonic = wordlist::encode(&entropy, &crypto::keys::bip39::wordlist::ENGLISH)
+        let mnemonic = bip39::wordlist::encode(&entropy, &crypto::keys::bip39::wordlist::ENGLISH)
             .map_err(|e| crate::Error::MnemonicError(format!("{:?}", e)))?;
         entropy.zeroize();
         Ok(mnemonic)
@@ -577,12 +577,14 @@ impl Client {
     /// Returns a hex encoded seed for a mnemonic.
     pub fn mnemonic_to_hex_seed(mnemonic: &str) -> Result<String> {
         // trim because empty spaces could create a different seed https://github.com/iotaledger/crypto.rs/issues/125
-        let mnemonic = mnemonic.trim();
-        // first we check if the mnemonic is valid to give meaningful errors
-        crypto::keys::bip39::wordlist::verify(mnemonic, &crypto::keys::bip39::wordlist::ENGLISH)
+        let mnemonic = mnemonic
+            .trim()
+            .try_into()
             .map_err(|e| crate::Error::InvalidMnemonic(format!("{:?}", e)))?;
-        let mut mnemonic_seed = [0u8; 64];
-        mnemonic_to_seed(mnemonic, "", &mut mnemonic_seed);
+        // first we check if the mnemonic is valid to give meaningful errors
+        bip39::wordlist::verify(mnemonic, &bip39::wordlist::ENGLISH)
+            .map_err(|e| crate::Error::InvalidMnemonic(format!("{:?}", e)))?;
+        let mnemonic_seed = bip39::mnemonic_to_seed(mnemonic, "".try_into().unwrap());
         Ok(hex::encode(mnemonic_seed))
     }
 
@@ -1158,12 +1160,12 @@ impl Client {
     }
 
     /// Return a valid unspent address.
-    pub fn get_unspent_address<'a>(&'a self, seed: &'a Seed) -> GetUnspentAddressBuilder<'a> {
+    pub fn get_unspent_address<'a>(&'a self, seed: &'a slip10::Seed) -> GetUnspentAddressBuilder<'a> {
         GetUnspentAddressBuilder::new(self, seed)
     }
 
     /// Return a list of addresses from the seed regardless of their validity.
-    pub fn get_addresses<'a>(&'a self, seed: &'a Seed) -> GetAddressesBuilder<'a> {
+    pub fn get_addresses<'a>(&'a self, seed: &'a slip10::Seed) -> GetAddressesBuilder<'a> {
         GetAddressesBuilder::new(seed).with_client(self)
     }
 
@@ -1203,7 +1205,7 @@ impl Client {
     /// Return the balance for a provided seed and its wallet chain account index.
     /// Addresses with balance must be consecutive, so this method will return once it encounters a zero
     /// balance address.
-    pub fn get_balance<'a>(&'a self, seed: &'a Seed) -> GetBalanceBuilder<'a> {
+    pub fn get_balance<'a>(&'a self, seed: &'a slip10::Seed) -> GetBalanceBuilder<'a> {
         GetBalanceBuilder::new(self, seed)
     }
 
@@ -1350,7 +1352,7 @@ impl Client {
     /// Returns the address to which the funds got consolidated, if any were available
     pub async fn consolidate_funds(
         &self,
-        seed: &Seed,
+        seed: &slip10::Seed,
         account_index: usize,
         address_range: Range<usize>,
     ) -> crate::Result<String> {

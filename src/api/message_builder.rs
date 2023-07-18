@@ -12,7 +12,7 @@ use bee_rest_api::types::{
     responses::OutputResponse,
 };
 use crypto::{
-    keys::slip10::{Chain, Seed},
+    keys::{bip44, slip10},
     signatures::ed25519,
 };
 #[cfg(feature = "wasm")]
@@ -54,7 +54,7 @@ pub struct AddressIndexRecorder {
     /// index of this address on the seed
     pub address_index: usize,
     /// The chain derived from seed
-    pub chain: Chain,
+    pub chain: bip44::Bip44,
     /// Whether this is an internal address
     pub internal: bool,
     /// The address
@@ -73,7 +73,7 @@ struct OutputWrapper {
 /// Builder of the message API
 pub struct ClientMessageBuilder<'a> {
     client: &'a Client,
-    seed: Option<&'a Seed>,
+    seed: Option<&'a slip10::Seed>,
     account_index: Option<usize>,
     initial_address_index: Option<usize>,
     inputs: Option<Vec<UtxoInput>>,
@@ -102,7 +102,7 @@ impl<'a> ClientMessageBuilder<'a> {
     }
 
     /// Sets the seed.
-    pub fn with_seed(mut self, seed: &'a Seed) -> Self {
+    pub fn with_seed(mut self, seed: &'a slip10::Seed) -> Self {
         self.seed.replace(seed);
         self
     }
@@ -222,8 +222,7 @@ impl<'a> ClientMessageBuilder<'a> {
         // instead of `path/index/_offset` or `path/_offset`.
 
         // 44 is for BIP 44 (HD wallets) and 4218 is the registered index for IOTA https://github.com/satoshilabs/slips/blob/master/slip-0044.md
-        let chain = Chain::from_u32_hardened(vec![
-            44,
+        let chain = bip44::Bip44::from([
             4218,
             account_index as u32,
             internal as u32,
@@ -579,7 +578,7 @@ impl<'a> ClientMessageBuilder<'a> {
     pub async fn sign_transaction(
         &self,
         prepared_transaction_data: PreparedTransactionData,
-        seed: Option<&'a Seed>,
+        seed: Option<&'a slip10::Seed>,
         inputs_range: Option<Range<usize>>,
     ) -> Result<Payload> {
         let essence = prepared_transaction_data.essence;
@@ -618,10 +617,9 @@ impl<'a> ClientMessageBuilder<'a> {
                 unlock_blocks.push(UnlockBlock::Reference(ReferenceUnlock::new(*block_index as u16)?));
             } else {
                 // If not, we need to create a signature unlock block
-                let private_key = seed
+                let private_key = recorder.chain.derive_from_seed::<ed25519::SecretKey, _>(seed
                     .or(self.seed)
-                    .ok_or(crate::Error::MissingParameter("Seed"))?
-                    .derive::<ed25519::SecretKey>(&recorder.chain)?
+                    .ok_or(crate::Error::MissingParameter("Seed"))?)
                     .secret_key();
                 let public_key = private_key.public_key().to_bytes();
                 // The signature unlock block needs to sign the hash of the entire transaction essence of the

@@ -7,7 +7,7 @@ use bee_message::prelude::{Address, Ed25519Address};
 use core::convert::TryInto;
 use crypto::{
     hashes::{blake2b::Blake2b256, Digest},
-    keys::slip10::{Chain, Seed},
+    keys::{bip44, slip10},
     signatures::ed25519,
 };
 use std::ops::Range;
@@ -15,7 +15,7 @@ use std::ops::Range;
 /// Builder of get_addresses API
 pub struct GetAddressesBuilder<'a> {
     client: Option<&'a Client>,
-    seed: Option<&'a Seed>,
+    seed: Option<&'a slip10::Seed>,
     account_index: usize,
     range: Range<usize>,
     bech32_hrp: Option<String>,
@@ -35,7 +35,7 @@ impl<'a> Default for GetAddressesBuilder<'a> {
 
 impl<'a> GetAddressesBuilder<'a> {
     /// Create get_addresses builder
-    pub fn new(seed: &'a Seed) -> Self {
+    pub fn new(seed: &'a slip10::Seed) -> Self {
         Self {
             seed: Some(seed),
             ..Default::default()
@@ -121,11 +121,10 @@ impl<'a> GetAddressesBuilder<'a> {
     }
 }
 
-fn generate_address(seed: &Seed, account_index: u32, address_index: u32, internal: bool) -> Result<Address> {
+fn generate_address(seed: &slip10::Seed, account_index: u32, address_index: u32, internal: bool) -> Result<Address> {
     // 44 is for BIP 44 (HD wallets) and 4218 is the registered index for IOTA https://github.com/satoshilabs/slips/blob/master/slip-0044.md
-    let chain = Chain::from_u32_hardened(vec![44, 4218, account_index, internal as u32, address_index]);
-    let public_key = seed
-        .derive::<ed25519::SecretKey>(&chain)?
+    let chain = bip44::Bip44::from([4218, account_index, internal as u32, address_index]);
+    let public_key = chain.derive_from_seed::<ed25519::SecretKey, _>(&seed)
         .secret_key()
         .public_key()
         .to_bytes();
@@ -139,7 +138,7 @@ fn generate_address(seed: &Seed, account_index: u32, address_index: u32, interna
 
 /// Function to find the index and public or internal type of an Bech32 encoded address
 pub async fn search_address(
-    seed: &Seed,
+    seed: &slip10::Seed,
     bech32_hrp: &str,
     account_index: usize,
     range: Range<usize>,
