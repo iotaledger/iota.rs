@@ -584,7 +584,8 @@ impl Client {
         // first we check if the mnemonic is valid to give meaningful errors
         bip39::wordlist::verify(mnemonic, &bip39::wordlist::ENGLISH)
             .map_err(|e| crate::Error::InvalidMnemonic(format!("{:?}", e)))?;
-        let mnemonic_seed = bip39::mnemonic_to_seed(mnemonic, "".try_into().unwrap());
+        let no_passphrase = bip39::Passphrase::new();
+        let mnemonic_seed = bip39::mnemonic_to_seed(mnemonic, &no_passphrase);
         Ok(hex::encode(mnemonic_seed))
     }
 
