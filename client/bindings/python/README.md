@@ -1,3 +1,6 @@
+> **Warning**
+> Deprecated - The client has been moved to https://github.com/iotaledger/iota-sdk
+
 # IOTA Client Library - Python binding
 
 Python binding to the iota.rs client library.
