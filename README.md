@@ -1,3 +1,6 @@
+> **Warning**
+> Deprecated - The client has been moved to https://github.com/iotaledger/iota-sdk
+
 # iota.rs (iota-client)
 
 The official, general-purpose IOTA client library in Rust for interaction with the IOTA network (Tangle).

@@ -1,3 +1,6 @@
+> **Warning**
+> Deprecated - The client has been moved to https://github.com/iotaledger/iota-sdk
+
 # IOTA Client Library - WebAssembly bindings
 
 WebAssembly (Wasm) bindings for TypeScript/JavaScript to the `iota.rs` client library.

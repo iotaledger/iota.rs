@@ -1,3 +1,6 @@
+> **Warning**
+> Deprecated - The client has been moved to https://github.com/iotaledger/iota-sdk
+
 # IOTA Client Library - Node.js binding
 
 Node.js binding to the iota.rs client library.
