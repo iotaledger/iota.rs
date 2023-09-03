@@ -13,6 +13,13 @@ Node.js binding to the iota.rs client library.
 $ npm i @iota/client
 ```
 
+If you have some install errors, maybe you are trying to install an older version from the library from npm,
+try download latests version in an imperative way, like this
+
+```bash
+npm i @iota/client@3.0.0-rc.9
+```
+
 - Using yarn:
 
 ```bash
